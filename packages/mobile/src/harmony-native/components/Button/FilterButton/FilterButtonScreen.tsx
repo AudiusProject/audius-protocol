@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { ComponentType } from 'react'
 
-import type { Nullable } from '@audius/common/utils'
+import type { Maybe, Nullable } from '@audius/common/utils'
 
 import { ModalScreen } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
@@ -27,7 +27,7 @@ export const FilterButtonScreen = () => {
     screen: Screen
   } = params ?? {}
 
-  const [value, setValue] = useState(initialValue)
+  const [value, setValue] = useState<Maybe<string>>(initialValue)
 
   const handleSubmit = useCallback(() => {
     onSubmit(value)
@@ -44,9 +44,11 @@ export const FilterButtonScreen = () => {
           data={options}
           screenTitle={title}
           onChange={setValue}
-          value={value}
+          value={value ?? ''}
           onSubmit={handleSubmit}
           searchText={`Search ${title}`}
+          clearable={Boolean(value)}
+          onClear={() => setValue(undefined)}
         />
       </ModalScreen>
     )
