@@ -20,7 +20,7 @@ services:
     volumes:
       - ../startup/initdb:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD', 'pg_isready']
+      test: [ 'CMD', 'pg_isready' ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -73,7 +73,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: ['CMD', 'true']
+      test: [ 'CMD', 'true' ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -106,7 +106,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -120,7 +120,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -134,7 +134,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -255,7 +255,7 @@ services:
     environment:
       POSTGRES_DB: 'discovery_provider'
     healthcheck:
-      test: ['CMD', 'pg_isready']
+      test: [ 'CMD', 'pg_isready' ]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -269,7 +269,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: ['CMD', 'redis-cli', 'PING']
+      test: [ 'CMD', 'redis-cli', 'PING' ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -389,7 +389,7 @@ services:
     environment:
       POSTGRES_PASSWORD: example
     healthcheck:
-      test: ['CMD', 'pg_isready']
+      test: [ 'CMD', 'pg_isready' ]
       interval: 3s
       timeout: 3s
     logging: *default-logging
@@ -408,7 +408,7 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -459,7 +459,7 @@ services:
     environment:
       POSTGRES_DB: 'identity_service'
     healthcheck:
-      test: ['CMD', 'pg_isready']
+      test: [ 'CMD', 'pg_isready' ]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -474,7 +474,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ['CMD', 'redis-cli', 'PING']
+      test: [ 'CMD', 'redis-cli', 'PING' ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -566,7 +566,7 @@ services:
       file: docker-compose.yml
       service: ddex-mongo
     logging: *default-logging
-  
+
   ddex-mongo-init:
     extends:
       file: docker-compose.yml
@@ -627,6 +627,7 @@ services:
 
 networks:
   ddex-network:
+
 
 volumes:
   poa-contracts-abis:

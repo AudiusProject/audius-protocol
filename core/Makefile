@@ -15,6 +15,7 @@ gen: $(SQL_SRCS)
 		"Run 'make deps' to install necessary tooling." \
 		&& false \
 	)
+	go generate ./...
 	cd db && sqlc generate
 
 .PHONY: dev-discovery-1 dev-content-1 dev-content-2 dev-content-3
@@ -29,4 +30,8 @@ dev-content-2:
 
 dev-content-3:
 	@go run main.go -env-file=./infra/dev_config/content-three.env
+
+.PHONY: sandbox
+sandbox:
+	@go run ./scripts/sandbox.go
 

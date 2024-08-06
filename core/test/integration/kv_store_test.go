@@ -2,58 +2,34 @@ package integration_test
 
 import (
 	"context"
+	"time"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
+	"github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("KvStore", func() {
-	It("should be on the same network and peer", func() {
+	It("should set kv values on one node and read on the others", func() {
 		ctx := context.Background()
 
-		discovery1rpc, err := http.New("http://core-discovery-1:26657")
-		Expect(err).To(BeNil())
+		req := &proto.SetKeyValueRequest{
+			Key:   uuid.NewString(),
+			Value: uuid.NewString(),
+		}
 
-		res, err := discovery1rpc.Status(ctx)
+		res, err := utils.DiscoveryOne.SetKeyValue(ctx, req)
 		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
+		Expect(res.Key).To(Equal(req.Key))
+		Expect(res.Value).To(Equal(req.Value))
 
-		netRes, err := discovery1rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(0)) // TODO
+		time.Sleep(time.Second * 2)
 
-		content1rpc, err := http.New("http://core-content-1:26657")
+		queryRes, err := utils.ContentOne.GetKeyValue(ctx, &proto.GetKeyValueRequest{Key: req.Key})
 		Expect(err).To(BeNil())
-
-		res, err = content1rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content1rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(0)) // TODO
-
-		content2rpc, err := http.New("http://core-content-2:26657")
-		Expect(err).To(BeNil())
-
-		res, err = content2rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content2rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(0)) // TODO
-
-		content3rpc, err := http.New("http://core-content-3:26657")
-		Expect(err).To(BeNil())
-
-		res, err = content3rpc.Status(ctx)
-		Expect(err).To(BeNil())
-		Expect(res.NodeInfo.Network).To(Equal("audius-devnet"))
-
-		netRes, err = content3rpc.NetInfo(ctx)
-		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(0)) // TODO
+		Expect(queryRes.Key).To(Equal(req.Key))
+		Expect(queryRes.Value).To(Equal(req.Value))
 	})
 })
