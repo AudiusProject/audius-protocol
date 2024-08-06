@@ -18,7 +18,7 @@ logger = StructuredLogger(__name__)
 
 REPAIR_AUDIO_ANALYSES_LOCK = "repair_audio_analyses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
-BATCH_SIZE = 5000
+BATCH_SIZE = 1000
 
 
 def valid_musical_key(musical_key):
