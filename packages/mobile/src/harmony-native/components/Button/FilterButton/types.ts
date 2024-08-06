@@ -1,6 +1,6 @@
-import type { ReactNode, RefObject } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
-import type { Button } from 'react-native/types'
+import type { GestureResponderEvent } from 'react-native'
 
 import type { IconComponent } from '@audius/harmony-native'
 
@@ -14,32 +14,39 @@ export type FilterButtonOption = {
   icon?: IconComponent
 }
 
-type ChildrenProps = {
+export type FilterButtonOptionType<Value extends string> = {
+  value: Value
   /**
-   * State representing whether the FilterButton is open.
-   * This can be used to implement a popup via `children`
+   * The label to display. If not provided, uses the value.
    */
-  isOpen: boolean
+  label?: string
+  helperText?: string
+  icon?: IconComponent
   /**
-   * Set open state
+   * A leading element to display before the option label. Useful for icons/emojis
    */
-  setIsOpen: (isOpen: boolean) => void
+  leadingElement?: JSX.Element
+  /**
+   * A leading element to display before the filter button label
+   */
+  labelLeadingElement?: JSX.Element
+}
+
+export type ScreenProps<Value> = {
   /**
    * A function to handle when the value is changed
    */
-  handleChange: (value: string, label: string) => void
-  /**
-   * A ref to the anchor element (button)
-   */
-  anchorRef: RefObject<Button>
+  onChange: (value: Value) => void
+  onSubmit: () => void
+  value: Value
 }
 
-export type FilterButtonProps = {
+export type FilterButtonProps<Value extends string = string> = {
   /**
-   * Children render prop. This can be used to render a dropdown component
-   * for example
+   * Selection options
+   * e.g. { label: 'Option A', icon: IconRadar }
    */
-  children?: (props: ChildrenProps) => ReactNode
+  options?: FilterButtonOptionType<Value>[]
 
   /**
    * The text that appears on the button component.
@@ -83,7 +90,12 @@ export type FilterButtonProps = {
   /**
    * What to do when the value is changed
    */
-  onChange?: (value: string) => void
+  onChange?: (value: Value | undefined) => void
+
+  /**
+   * Optional screen name to open when filter button pressed
+   */
+  filterScreen?: string
 
   /**
    * What to do when the filter button is opened
@@ -99,7 +111,7 @@ export type FilterButtonProps = {
    * What to do when the button is pressed
    * This will override the default behavior of toggling isOpen
    */
-  onPress?: () => void
+  onPress?: (e: GestureResponderEvent) => void
 
   /**
    * Whether interaction is disabled
@@ -109,5 +121,11 @@ export type FilterButtonProps = {
   /**
    * Optional leading element to include on the left side of the button
    */
+
   leadingElement?: ReactNode
+  /**
+   * When provided, render the screen instead of the default list selection screen
+   */
+  screen?: ComponentType<ScreenProps<Value>>
+  renderLabel?: (label: string) => ReactNode
 }
