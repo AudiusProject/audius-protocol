@@ -1,30 +1,18 @@
 .icon {
   height: 30px;
-  width: 30px;
+  aspect-ratio: 1;
   margin-right: var(--harmony-unit-2);
 }
-.iconFollow {
-  composes: icon;
-}
 
-.iconRepost {
-  composes: icon;
-  height: 18px;
-}
-
-.iconFavorite {
-  composes: icon;
-}
-
-.iconMilestone {
-  composes: icon;
-  height: 24px;
-}
-
-.iconRelease {
-  composes: icon;
-  height: 28px;
-}
+/* .iconFollow, */
+/* .iconRepost, */
+/* .iconFavorite, */
+/* .iconMilestone, */
+/* .iconRelease, */
+/* .iconTrending, */
+/* .iconRemix, */
+/* .iconTip, */
+/* .iconAddTrackToPlaylist {} */
 
 .iconRewards {
   margin-right: var(--harmony-unit-2);
@@ -34,10 +22,6 @@
   margin-bottom: 0 !important;
 }
 
-.iconTrending {
-  composes: icon;
-}
-
 .iconTier {
   margin-right: var(--harmony-unit-2);
 }
@@ -45,19 +29,4 @@
 .iconTier img {
   height: 32px;
   width: 32px;
-}
-
-.iconRemix {
-  composes: icon;
-  height: 24px;
-}
-
-.iconTip {
-  composes: icon;
-  height: 24px;
-}
-
-.iconAddTrackToPlaylist {
-  composes: icon;
-  height: 24px;
 }

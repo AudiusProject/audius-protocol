@@ -2,7 +2,7 @@ import { Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
 
 import { createApi } from '~/audius-query'
-import { UserTrackMetadata } from '~/models'
+import { Name, SearchSource, UserTrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
@@ -28,13 +28,19 @@ type getSearchArgs = {
   category?: SearchCategory
   limit?: number
   offset?: number
+  source?: SearchSource
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
   const bpmParts = bpm ? bpm.split('-') : [undefined, undefined]
   const bpmMin = bpmParts[0] ? parseFloat(bpmParts[0]) : undefined
   const bpmMax = bpmParts[1] ? parseFloat(bpmParts[1]) : bpmMin
-  return [bpmMin, bpmMax]
+
+  // Because we round the bpm display to the nearest whole number, we need to add a small buffer
+  const bufferedBpmMin = bpmMin ? Math.round(bpmMin) - 0.5 : undefined
+  const bufferedBpmMax = bpmMax ? Math.round(bpmMax) + 0.5 : undefined
+
+  return [bufferedBpmMin, bufferedBpmMax]
 }
 
 const searchApi = createApi({
@@ -43,10 +49,17 @@ const searchApi = createApi({
     getSearchResults: {
       fetch: async (
         args: getSearchArgs,
-        { apiClient, audiusBackend, getFeatureEnabled }
+        { apiClient, audiusBackend, getFeatureEnabled, analytics }
       ) => {
-        const { category, currentUserId, query, limit, offset, ...filters } =
-          args
+        const {
+          category,
+          currentUserId,
+          query,
+          limit,
+          offset,
+          source = 'search results page',
+          ...filters
+        } = args
 
         const isUSDCEnabled = await getFeatureEnabled(
           FeatureFlags.USDC_PURCHASES
@@ -65,7 +78,7 @@ const searchApi = createApi({
         const [bpmMin, bpmMax] = getMinMaxFromBpm(filters.bpm)
 
         const searchTags = async () => {
-          return await audiusBackend.searchTags({
+          const searchParams = {
             userTagCount: 1,
             kind,
             query: query.toLowerCase().slice(1),
@@ -75,11 +88,25 @@ const searchApi = createApi({
             bpmMin,
             bpmMax,
             key: formatMusicalKey(filters.key)
-          })
+          }
+
+          // Fire analytics only for the first page of results
+          if (offset === 0) {
+            analytics.track(
+              analytics.make({
+                eventName: Name.SEARCH_SEARCH,
+                term: query,
+                source,
+                ...searchParams
+              })
+            )
+          }
+
+          return await audiusBackend.searchTags(searchParams)
         }
 
         const search = async () => {
-          return await apiClient.getSearchFull({
+          const searchParams = {
             kind,
             currentUserId,
             query,
@@ -90,7 +117,19 @@ const searchApi = createApi({
             bpmMin,
             bpmMax,
             key: formatMusicalKey(filters.key)
-          })
+          }
+          // Fire analytics only for the first page of results
+          if (offset === 0) {
+            analytics.track(
+              analytics.make({
+                eventName: Name.SEARCH_SEARCH,
+                term: query,
+                source,
+                ...searchParams
+              })
+            )
+          }
+          return await apiClient.getSearchFull(searchParams)
         }
 
         const results = query?.[0] === '#' ? await searchTags() : await search()

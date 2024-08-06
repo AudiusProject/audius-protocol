@@ -12,7 +12,7 @@ debian | ubuntu)
 
     # Install packages to allow apt to use a repository over HTTPS
     sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg lsb-release
+    sudo NEEDRESTART_MODE=l apt-get install -y ca-certificates curl gnupg lsb-release
 
     # Add Docker's official GPG key:
     if ! [ -f /etc/apt/keyrings/docker.gpg ]; then

@@ -106,7 +106,7 @@ describe('StorageNodeSelector', () => {
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeB.endpoint
+      storageNodeA.endpoint
     )
   })
 
@@ -146,7 +146,7 @@ describe('StorageNodeSelector', () => {
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeB.endpoint
+        storageNodeA.endpoint
       )
     })
   })
@@ -172,7 +172,7 @@ describe('StorageNodeSelector', () => {
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeB.endpoint
+        storageNodeA.endpoint
       )
     })
   })
@@ -189,8 +189,8 @@ describe('StorageNodeSelector', () => {
     })
 
     expect(await storageNodeSelector.getNodes(cid)).toEqual([
-      storageNodeA.endpoint,
-      storageNodeB.endpoint
+      storageNodeB.endpoint,
+      storageNodeA.endpoint
     ])
   })
 
@@ -205,12 +205,12 @@ describe('StorageNodeSelector', () => {
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeB.endpoint
+      storageNodeA.endpoint
     )
 
     // force reselect
     expect(await storageNodeSelector.getSelectedNode(true)).toEqual(
-      storageNodeA.endpoint
+      storageNodeB.endpoint
     )
   })
 

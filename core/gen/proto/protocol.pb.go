@@ -9,6 +9,7 @@ package proto
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -20,157 +21,12 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// generic signature structure
-// TODO: add protection for replay attacks
-type Signature struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// sha256 of signature data
-	Data []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	// ecdsa signature of related data
-	SignedData string `protobuf:"bytes,2,opt,name=signed_data,json=signedData,proto3" json:"signed_data,omitempty"`
-}
-
-func (x *Signature) Reset() {
-	*x = Signature{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protocol_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Signature) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Signature) ProtoMessage() {}
-
-func (x *Signature) ProtoReflect() protoreflect.Message {
-	mi := &file_protocol_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Signature.ProtoReflect.Descriptor instead.
-func (*Signature) Descriptor() ([]byte, []int) {
-	return file_protocol_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Signature) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *Signature) GetSignedData() string {
-	if x != nil {
-		return x.SignedData
-	}
-	return ""
-}
-
-// what gets persisted to chain, canon and indexable
-type SignedEvent struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// sent in initial request
-	SenderSignature *Signature `protobuf:"bytes,1,opt,name=sender_signature,json=senderSignature,proto3" json:"sender_signature,omitempty"`
-	// created before checktx step by node that responded to request
-	ResponderSignature *Signature `protobuf:"bytes,2,opt,name=responder_signature,json=responderSignature,proto3" json:"responder_signature,omitempty"`
-	// created at proposal step by node responsible for the new block
-	ProposerSignature *Signature `protobuf:"bytes,3,opt,name=proposer_signature,json=proposerSignature,proto3" json:"proposer_signature,omitempty"`
-	Event             *Event     `protobuf:"bytes,4,opt,name=event,proto3" json:"event,omitempty"`
-}
-
-func (x *SignedEvent) Reset() {
-	*x = SignedEvent{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protocol_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SignedEvent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SignedEvent) ProtoMessage() {}
-
-func (x *SignedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_protocol_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SignedEvent.ProtoReflect.Descriptor instead.
-func (*SignedEvent) Descriptor() ([]byte, []int) {
-	return file_protocol_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SignedEvent) GetSenderSignature() *Signature {
-	if x != nil {
-		return x.SenderSignature
-	}
-	return nil
-}
-
-func (x *SignedEvent) GetResponderSignature() *Signature {
-	if x != nil {
-		return x.ResponderSignature
-	}
-	return nil
-}
-
-func (x *SignedEvent) GetProposerSignature() *Signature {
-	if x != nil {
-		return x.ProposerSignature
-	}
-	return nil
-}
-
-func (x *SignedEvent) GetEvent() *Event {
-	if x != nil {
-		return x.Event
-	}
-	return nil
-}
-
-// what the user sends, outside world
 type Event struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// eth address
-	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	// prod, stage, dev, custom
-	Network   string `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"`
-	Timestamp uint32 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// for replay attacks, random client generated
-	EventId string `protobuf:"bytes,4,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	// for knowing if the protocol can process tx
-	ProtocolVersion string `protobuf:"bytes,5,opt,name=protocol_version,json=protocolVersion,proto3" json:"protocol_version,omitempty"`
-	// jump up body slot in case more event metadata is added
-	//
+	Signature string `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
 	// Types that are assignable to Body:
 	//
 	//	*Event_Plays
@@ -180,7 +36,7 @@ type Event struct {
 func (x *Event) Reset() {
 	*x = Event{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protocol_proto_msgTypes[2]
+		mi := &file_protocol_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -193,7 +49,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_protocol_proto_msgTypes[2]
+	mi := &file_protocol_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -206,40 +62,12 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_protocol_proto_rawDescGZIP(), []int{2}
+	return file_protocol_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Event) GetSender() string {
+func (x *Event) GetSignature() string {
 	if x != nil {
-		return x.Sender
-	}
-	return ""
-}
-
-func (x *Event) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *Event) GetTimestamp() uint32 {
-	if x != nil {
-		return x.Timestamp
-	}
-	return 0
-}
-
-func (x *Event) GetEventId() string {
-	if x != nil {
-		return x.EventId
-	}
-	return ""
-}
-
-func (x *Event) GetProtocolVersion() string {
-	if x != nil {
-		return x.ProtocolVersion
+		return x.Signature
 	}
 	return ""
 }
@@ -268,17 +96,110 @@ type Event_Plays struct {
 
 func (*Event_Plays) isEvent_Body() {}
 
-type Play struct {
+type SubmitEventRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ListenerAddress string `protobuf:"bytes,1,opt,name=listenerAddress,proto3" json:"listenerAddress,omitempty"`
-	Count           int32  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	Event *Event `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 }
 
-func (x *Play) Reset() {
-	*x = Play{}
+func (x *SubmitEventRequest) Reset() {
+	*x = SubmitEventRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubmitEventRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitEventRequest) ProtoMessage() {}
+
+func (x *SubmitEventRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitEventRequest.ProtoReflect.Descriptor instead.
+func (*SubmitEventRequest) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SubmitEventRequest) GetEvent() *Event {
+	if x != nil {
+		return x.Event
+	}
+	return nil
+}
+
+type SubmitEventResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Txhash string `protobuf:"bytes,1,opt,name=txhash,proto3" json:"txhash,omitempty"`
+}
+
+func (x *SubmitEventResponse) Reset() {
+	*x = SubmitEventResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubmitEventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitEventResponse) ProtoMessage() {}
+
+func (x *SubmitEventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitEventResponse.ProtoReflect.Descriptor instead.
+func (*SubmitEventResponse) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *SubmitEventResponse) GetTxhash() string {
+	if x != nil {
+		return x.Txhash
+	}
+	return ""
+}
+
+type GetEventRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Txhash string `protobuf:"bytes,1,opt,name=txhash,proto3" json:"txhash,omitempty"`
+}
+
+func (x *GetEventRequest) Reset() {
+	*x = GetEventRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_protocol_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -286,13 +207,13 @@ func (x *Play) Reset() {
 	}
 }
 
-func (x *Play) String() string {
+func (x *GetEventRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Play) ProtoMessage() {}
+func (*GetEventRequest) ProtoMessage() {}
 
-func (x *Play) ProtoReflect() protoreflect.Message {
+func (x *GetEventRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_protocol_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -304,23 +225,63 @@ func (x *Play) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Play.ProtoReflect.Descriptor instead.
-func (*Play) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetEventRequest.ProtoReflect.Descriptor instead.
+func (*GetEventRequest) Descriptor() ([]byte, []int) {
 	return file_protocol_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Play) GetListenerAddress() string {
+func (x *GetEventRequest) GetTxhash() string {
 	if x != nil {
-		return x.ListenerAddress
+		return x.Txhash
 	}
 	return ""
 }
 
-func (x *Play) GetCount() int32 {
-	if x != nil {
-		return x.Count
+type GetEventResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Event *Event `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+}
+
+func (x *GetEventResponse) Reset() {
+	*x = GetEventResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
 	}
-	return 0
+}
+
+func (x *GetEventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEventResponse) ProtoMessage() {}
+
+func (x *GetEventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEventResponse.ProtoReflect.Descriptor instead.
+func (*GetEventResponse) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetEventResponse) GetEvent() *Event {
+	if x != nil {
+		return x.Event
+	}
+	return nil
 }
 
 type PlaysEvent struct {
@@ -328,13 +289,13 @@ type PlaysEvent struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Plays map[string]*Play `protobuf:"bytes,1,rep,name=plays,proto3" json:"plays,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Listens []*Listen `protobuf:"bytes,1,rep,name=listens,proto3" json:"listens,omitempty"`
 }
 
 func (x *PlaysEvent) Reset() {
 	*x = PlaysEvent{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protocol_proto_msgTypes[4]
+		mi := &file_protocol_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -347,7 +308,7 @@ func (x *PlaysEvent) String() string {
 func (*PlaysEvent) ProtoMessage() {}
 
 func (x *PlaysEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_protocol_proto_msgTypes[4]
+	mi := &file_protocol_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -360,82 +321,29 @@ func (x *PlaysEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlaysEvent.ProtoReflect.Descriptor instead.
 func (*PlaysEvent) Descriptor() ([]byte, []int) {
-	return file_protocol_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *PlaysEvent) GetPlays() map[string]*Play {
-	if x != nil {
-		return x.Plays
-	}
-	return nil
-}
-
-type EventRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Signature *Signature `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
-	Event     *Event     `protobuf:"bytes,2,opt,name=event,proto3" json:"event,omitempty"`
-}
-
-func (x *EventRequest) Reset() {
-	*x = EventRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_protocol_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *EventRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EventRequest) ProtoMessage() {}
-
-func (x *EventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protocol_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EventRequest.ProtoReflect.Descriptor instead.
-func (*EventRequest) Descriptor() ([]byte, []int) {
 	return file_protocol_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *EventRequest) GetSignature() *Signature {
+func (x *PlaysEvent) GetListens() []*Listen {
 	if x != nil {
-		return x.Signature
+		return x.Listens
 	}
 	return nil
 }
 
-func (x *EventRequest) GetEvent() *Event {
-	if x != nil {
-		return x.Event
-	}
-	return nil
-}
-
-type EventResponse struct {
+type Listen struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Txhash string       `protobuf:"bytes,1,opt,name=txhash,proto3" json:"txhash,omitempty"`
-	Event  *SignedEvent `protobuf:"bytes,2,opt,name=event,proto3" json:"event,omitempty"`
+	UserId    string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	TrackId   string                 `protobuf:"bytes,2,opt,name=track_id,json=trackId,proto3" json:"track_id,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Signature string                 `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
 }
 
-func (x *EventResponse) Reset() {
-	*x = EventResponse{}
+func (x *Listen) Reset() {
+	*x = Listen{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_protocol_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -443,13 +351,13 @@ func (x *EventResponse) Reset() {
 	}
 }
 
-func (x *EventResponse) String() string {
+func (x *Listen) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventResponse) ProtoMessage() {}
+func (*Listen) ProtoMessage() {}
 
-func (x *EventResponse) ProtoReflect() protoreflect.Message {
+func (x *Listen) ProtoReflect() protoreflect.Message {
 	mi := &file_protocol_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -461,96 +369,358 @@ func (x *EventResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EventResponse.ProtoReflect.Descriptor instead.
-func (*EventResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use Listen.ProtoReflect.Descriptor instead.
+func (*Listen) Descriptor() ([]byte, []int) {
 	return file_protocol_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *EventResponse) GetTxhash() string {
+func (x *Listen) GetUserId() string {
 	if x != nil {
-		return x.Txhash
+		return x.UserId
 	}
 	return ""
 }
 
-func (x *EventResponse) GetEvent() *SignedEvent {
+func (x *Listen) GetTrackId() string {
 	if x != nil {
-		return x.Event
+		return x.TrackId
+	}
+	return ""
+}
+
+func (x *Listen) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
 	}
 	return nil
+}
+
+func (x *Listen) GetSignature() string {
+	if x != nil {
+		return x.Signature
+	}
+	return ""
+}
+
+type PingRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *PingRequest) Reset() {
+	*x = PingRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PingRequest) ProtoMessage() {}
+
+func (x *PingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
+func (*PingRequest) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{7}
+}
+
+type PingResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *PingResponse) Reset() {
+	*x = PingResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PingResponse) ProtoMessage() {}
+
+func (x *PingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
+func (*PingResponse) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PingResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type SetKeyValueRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *SetKeyValueRequest) Reset() {
+	*x = SetKeyValueRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetKeyValueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetKeyValueRequest) ProtoMessage() {}
+
+func (x *SetKeyValueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetKeyValueRequest.ProtoReflect.Descriptor instead.
+func (*SetKeyValueRequest) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SetKeyValueRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *SetKeyValueRequest) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+type GetKeyValueRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *GetKeyValueRequest) Reset() {
+	*x = GetKeyValueRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetKeyValueRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetKeyValueRequest) ProtoMessage() {}
+
+func (x *GetKeyValueRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetKeyValueRequest.ProtoReflect.Descriptor instead.
+func (*GetKeyValueRequest) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetKeyValueRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type KeyValueResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *KeyValueResponse) Reset() {
+	*x = KeyValueResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protocol_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *KeyValueResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KeyValueResponse) ProtoMessage() {}
+
+func (x *KeyValueResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protocol_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KeyValueResponse.ProtoReflect.Descriptor instead.
+func (*KeyValueResponse) Descriptor() ([]byte, []int) {
+	return file_protocol_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *KeyValueResponse) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *KeyValueResponse) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
 }
 
 var File_protocol_proto protoreflect.FileDescriptor
 
 var file_protocol_proto_rawDesc = []byte{
 	0x0a, 0x0e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x12, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x22, 0x40, 0x0a, 0x09, 0x53, 0x69,
-	0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1f, 0x0a, 0x0b, 0x73,
-	0x69, 0x67, 0x6e, 0x65, 0x64, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0a, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x44, 0x61, 0x74, 0x61, 0x22, 0xfe, 0x01, 0x0a,
-	0x0b, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x3e, 0x0a, 0x10,
-	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x5f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
-	0x6c, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x52, 0x0f, 0x73, 0x65, 0x6e,
-	0x64, 0x65, 0x72, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x44, 0x0a, 0x13,
-	0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x64, 0x65, 0x72, 0x5f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74,
-	0x75, 0x72, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x52, 0x12,
-	0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x64, 0x65, 0x72, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75,
-	0x72, 0x65, 0x12, 0x42, 0x0a, 0x12, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x65, 0x72, 0x5f, 0x73,
-	0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74,
-	0x75, 0x72, 0x65, 0x52, 0x11, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x65, 0x72, 0x53, 0x69, 0x67,
-	0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x25, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
-	0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0xd4, 0x01,
-	0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12,
-	0x18, 0x0a, 0x07, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x07, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x09, 0x74, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x19, 0x0a, 0x08, 0x65, 0x76, 0x65, 0x6e, 0x74,
-	0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x65, 0x76, 0x65, 0x6e, 0x74,
-	0x49, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x5f, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x2d, 0x0a,
-	0x05, 0x70, 0x6c, 0x61, 0x79, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x73, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x48, 0x00, 0x52, 0x05, 0x70, 0x6c, 0x61, 0x79, 0x73, 0x42, 0x06, 0x0a, 0x04,
-	0x62, 0x6f, 0x64, 0x79, 0x22, 0x46, 0x0a, 0x04, 0x50, 0x6c, 0x61, 0x79, 0x12, 0x28, 0x0a, 0x0f,
-	0x6c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x65, 0x72, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x8d, 0x01, 0x0a,
-	0x0a, 0x50, 0x6c, 0x61, 0x79, 0x73, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x35, 0x0a, 0x05, 0x70,
-	0x6c, 0x61, 0x79, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x73, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x2e, 0x50, 0x6c, 0x61, 0x79, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x70, 0x6c, 0x61,
-	0x79, 0x73, 0x1a, 0x48, 0x0a, 0x0a, 0x50, 0x6c, 0x61, 0x79, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79,
-	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
-	0x65, 0x79, 0x12, 0x24, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x6c, 0x61,
-	0x79, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x68, 0x0a, 0x0c,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x31, 0x0a, 0x09,
-	0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x61,
-	0x74, 0x75, 0x72, 0x65, 0x52, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12,
-	0x25, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f,
+	0x12, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x5c, 0x0a, 0x05, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75,
+	0x72, 0x65, 0x12, 0x2d, 0x0a, 0x05, 0x70, 0x6c, 0x61, 0x79, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x6c,
+	0x61, 0x79, 0x73, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x48, 0x00, 0x52, 0x05, 0x70, 0x6c, 0x61, 0x79,
+	0x73, 0x42, 0x06, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22, 0x3b, 0x0a, 0x12, 0x53, 0x75, 0x62,
+	0x6d, 0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x25, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52,
-	0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x54, 0x0a, 0x0d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x78, 0x68, 0x61, 0x73,
-	0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x78, 0x68, 0x61, 0x73, 0x68, 0x12,
-	0x2b, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0x4c, 0x0a, 0x08,
-	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x12, 0x40, 0x0a, 0x0b, 0x53, 0x75, 0x62, 0x6d,
-	0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
-	0x6f, 0x6c, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0f, 0x5a, 0x0d, 0x2e, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x2d, 0x0a, 0x13, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a,
+	0x06, 0x74, 0x78, 0x68, 0x61, 0x73, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74,
+	0x78, 0x68, 0x61, 0x73, 0x68, 0x22, 0x29, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x78, 0x68, 0x61,
+	0x73, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x78, 0x68, 0x61, 0x73, 0x68,
+	0x22, 0x39, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x25, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x52, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0x38, 0x0a, 0x0a, 0x50,
+	0x6c, 0x61, 0x79, 0x73, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x2a, 0x0a, 0x07, 0x6c, 0x69, 0x73,
+	0x74, 0x65, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x52, 0x07, 0x6c, 0x69,
+	0x73, 0x74, 0x65, 0x6e, 0x73, 0x22, 0x94, 0x01, 0x0a, 0x06, 0x4c, 0x69, 0x73, 0x74, 0x65, 0x6e,
+	0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x72, 0x61,
+	0x63, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x74, 0x72, 0x61,
+	0x63, 0x6b, 0x49, 0x64, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x1c,
+	0x0a, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0x0d, 0x0a, 0x0b,
+	0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x28, 0x0a, 0x0c, 0x50,
+	0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x6d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x3c, 0x0a, 0x12, 0x53, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b,
+	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x22, 0x26, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c,
+	0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x3a, 0x0a, 0x10, 0x4b,
+	0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65,
+	0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x32, 0xe2, 0x02, 0x0a, 0x08, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x6f, 0x6c, 0x12, 0x4a, 0x0a, 0x0b, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x45, 0x76,
+	0x65, 0x6e, 0x74, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53,
+	0x75, 0x62, 0x6d, 0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x75, 0x62,
+	0x6d, 0x69, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x41, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x19, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x47, 0x65, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x47, 0x65, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x35, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x15, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x69,
+	0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x47, 0x0a, 0x0b, 0x53, 0x65,
+	0x74, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x53, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
+	0x6f, 0x6c, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x47, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c,
+	0x75, 0x65, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x47, 0x65,
+	0x74, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x4b, 0x65, 0x79, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0f, 0x5a, 0x0d,
+	0x2e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -565,35 +735,43 @@ func file_protocol_proto_rawDescGZIP() []byte {
 	return file_protocol_proto_rawDescData
 }
 
-var file_protocol_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_protocol_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_protocol_proto_goTypes = []any{
-	(*Signature)(nil),     // 0: protocol.Signature
-	(*SignedEvent)(nil),   // 1: protocol.SignedEvent
-	(*Event)(nil),         // 2: protocol.Event
-	(*Play)(nil),          // 3: protocol.Play
-	(*PlaysEvent)(nil),    // 4: protocol.PlaysEvent
-	(*EventRequest)(nil),  // 5: protocol.EventRequest
-	(*EventResponse)(nil), // 6: protocol.EventResponse
-	nil,                   // 7: protocol.PlaysEvent.PlaysEntry
+	(*Event)(nil),                 // 0: protocol.Event
+	(*SubmitEventRequest)(nil),    // 1: protocol.SubmitEventRequest
+	(*SubmitEventResponse)(nil),   // 2: protocol.SubmitEventResponse
+	(*GetEventRequest)(nil),       // 3: protocol.GetEventRequest
+	(*GetEventResponse)(nil),      // 4: protocol.GetEventResponse
+	(*PlaysEvent)(nil),            // 5: protocol.PlaysEvent
+	(*Listen)(nil),                // 6: protocol.Listen
+	(*PingRequest)(nil),           // 7: protocol.PingRequest
+	(*PingResponse)(nil),          // 8: protocol.PingResponse
+	(*SetKeyValueRequest)(nil),    // 9: protocol.SetKeyValueRequest
+	(*GetKeyValueRequest)(nil),    // 10: protocol.GetKeyValueRequest
+	(*KeyValueResponse)(nil),      // 11: protocol.KeyValueResponse
+	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
 }
 var file_protocol_proto_depIdxs = []int32{
-	0,  // 0: protocol.SignedEvent.sender_signature:type_name -> protocol.Signature
-	0,  // 1: protocol.SignedEvent.responder_signature:type_name -> protocol.Signature
-	0,  // 2: protocol.SignedEvent.proposer_signature:type_name -> protocol.Signature
-	2,  // 3: protocol.SignedEvent.event:type_name -> protocol.Event
-	4,  // 4: protocol.Event.plays:type_name -> protocol.PlaysEvent
-	7,  // 5: protocol.PlaysEvent.plays:type_name -> protocol.PlaysEvent.PlaysEntry
-	0,  // 6: protocol.EventRequest.signature:type_name -> protocol.Signature
-	2,  // 7: protocol.EventRequest.event:type_name -> protocol.Event
-	1,  // 8: protocol.EventResponse.event:type_name -> protocol.SignedEvent
-	3,  // 9: protocol.PlaysEvent.PlaysEntry.value:type_name -> protocol.Play
-	5,  // 10: protocol.Protocol.SubmitEvent:input_type -> protocol.EventRequest
-	6,  // 11: protocol.Protocol.SubmitEvent:output_type -> protocol.EventResponse
-	11, // [11:12] is the sub-list for method output_type
-	10, // [10:11] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	5,  // 0: protocol.Event.plays:type_name -> protocol.PlaysEvent
+	0,  // 1: protocol.SubmitEventRequest.event:type_name -> protocol.Event
+	0,  // 2: protocol.GetEventResponse.event:type_name -> protocol.Event
+	6,  // 3: protocol.PlaysEvent.listens:type_name -> protocol.Listen
+	12, // 4: protocol.Listen.timestamp:type_name -> google.protobuf.Timestamp
+	1,  // 5: protocol.Protocol.SubmitEvent:input_type -> protocol.SubmitEventRequest
+	3,  // 6: protocol.Protocol.GetEvent:input_type -> protocol.GetEventRequest
+	7,  // 7: protocol.Protocol.Ping:input_type -> protocol.PingRequest
+	9,  // 8: protocol.Protocol.SetKeyValue:input_type -> protocol.SetKeyValueRequest
+	10, // 9: protocol.Protocol.GetKeyValue:input_type -> protocol.GetKeyValueRequest
+	2,  // 10: protocol.Protocol.SubmitEvent:output_type -> protocol.SubmitEventResponse
+	4,  // 11: protocol.Protocol.GetEvent:output_type -> protocol.GetEventResponse
+	8,  // 12: protocol.Protocol.Ping:output_type -> protocol.PingResponse
+	11, // 13: protocol.Protocol.SetKeyValue:output_type -> protocol.KeyValueResponse
+	11, // 14: protocol.Protocol.GetKeyValue:output_type -> protocol.KeyValueResponse
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_protocol_proto_init() }
@@ -603,30 +781,6 @@ func file_protocol_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_protocol_proto_msgTypes[0].Exporter = func(v any, i int) any {
-			switch v := v.(*Signature); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protocol_proto_msgTypes[1].Exporter = func(v any, i int) any {
-			switch v := v.(*SignedEvent); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_protocol_proto_msgTypes[2].Exporter = func(v any, i int) any {
 			switch v := v.(*Event); i {
 			case 0:
 				return &v.state
@@ -638,8 +792,32 @@ func file_protocol_proto_init() {
 				return nil
 			}
 		}
+		file_protocol_proto_msgTypes[1].Exporter = func(v any, i int) any {
+			switch v := v.(*SubmitEventRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[2].Exporter = func(v any, i int) any {
+			switch v := v.(*SubmitEventResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_protocol_proto_msgTypes[3].Exporter = func(v any, i int) any {
-			switch v := v.(*Play); i {
+			switch v := v.(*GetEventRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -651,7 +829,7 @@ func file_protocol_proto_init() {
 			}
 		}
 		file_protocol_proto_msgTypes[4].Exporter = func(v any, i int) any {
-			switch v := v.(*PlaysEvent); i {
+			switch v := v.(*GetEventResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -663,7 +841,7 @@ func file_protocol_proto_init() {
 			}
 		}
 		file_protocol_proto_msgTypes[5].Exporter = func(v any, i int) any {
-			switch v := v.(*EventRequest); i {
+			switch v := v.(*PlaysEvent); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -675,7 +853,67 @@ func file_protocol_proto_init() {
 			}
 		}
 		file_protocol_proto_msgTypes[6].Exporter = func(v any, i int) any {
-			switch v := v.(*EventResponse); i {
+			switch v := v.(*Listen); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[7].Exporter = func(v any, i int) any {
+			switch v := v.(*PingRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[8].Exporter = func(v any, i int) any {
+			switch v := v.(*PingResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[9].Exporter = func(v any, i int) any {
+			switch v := v.(*SetKeyValueRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[10].Exporter = func(v any, i int) any {
+			switch v := v.(*GetKeyValueRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protocol_proto_msgTypes[11].Exporter = func(v any, i int) any {
+			switch v := v.(*KeyValueResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -687,7 +925,7 @@ func file_protocol_proto_init() {
 			}
 		}
 	}
-	file_protocol_proto_msgTypes[2].OneofWrappers = []any{
+	file_protocol_proto_msgTypes[0].OneofWrappers = []any{
 		(*Event_Plays)(nil),
 	}
 	type x struct{}
@@ -696,7 +934,7 @@ func file_protocol_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protocol_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

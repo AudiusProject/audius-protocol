@@ -139,7 +139,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
   })
 
   // TODO: implement filtering
-  // The state management is already done because this was copied from OptionsFilterButton
+  // The state management is already done because this was copied from FilterButton
   // but I would like to support filtering the options by typing in the SelectInput
   const [filterInputValue, setFilterInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === selection)

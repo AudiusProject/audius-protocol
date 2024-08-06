@@ -1,23 +1,23 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Status } from '@audius/common/models'
+import { ID, Kind, Name, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults } from '../utils'
+import { useGetSearchResults, useSearchParams } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
   playlists: 'Playlists',
-  // layoutOptionsLabel: 'View As',
   sortOptionsLabel: 'Sort By'
 }
 
@@ -29,6 +29,7 @@ type PlaylistResultsProps = {
 
 export const PlaylistResults = (props: PlaylistResultsProps) => {
   const { limit = 100, ids, skeletonCount = 10 } = props
+  const { query } = useSearchParams()
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -46,9 +47,17 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
             }
           })
         )
+        dispatch(
+          make(Name.SEARCH_RESULT_SELECT, {
+            term: query,
+            source: 'search results page',
+            id,
+            kind: 'playlist'
+          })
+        )
       }
     },
-    [dispatch]
+    [dispatch, query]
   )
 
   return (
@@ -88,8 +97,6 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
 }
 
 export const PlaylistResultsPage = () => {
-  // const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
-
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
@@ -98,15 +105,6 @@ export const PlaylistResultsPage = () => {
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
-
-  // const playlistsLineupProps = useLineupProps({
-  //   actions: searchResultsPagePlaylistsLineupActions,
-  //   getLineupSelector: getSearchPlaylistsLineup,
-  //   variant: LineupVariant.PLAYLIST,
-  //   numPlaylistSkeletonRows: 5,
-  //   scrollParent: containerRef.current!,
-  //   isOrdered: true
-  // })
 
   return (
     <Flex
@@ -120,15 +118,6 @@ export const PlaylistResultsPage = () => {
             {messages.playlists}
           </Text>
           <SortMethodFilterButton />
-          {/* <OptionsFilterButton */}
-          {/*   selection={playlistsLayout} */}
-          {/*   variant='replaceLabel' */}
-          {/*   optionsLabel={messages.layoutOptionsLabel} */}
-          {/*   onChange={(value) => { */}
-          {/*     setPlaylistsLayout(value as ViewLayout) */}
-          {/*   }} */}
-          {/*   options={viewLayoutOptions} */}
-          {/* /> */}
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}

@@ -71,7 +71,6 @@ export const EditTrackPage = (props: EditPageProps) => {
   const onDeleteTrack = () => {
     if (!track) return
     dispatch(deleteTrack(track.track_id))
-    setShowDeleteConfirmation(false)
     dispatch(pushRoute(`/${track.user.handle}`))
   }
 
@@ -128,6 +127,7 @@ export const EditTrackPage = (props: EditPageProps) => {
             initialValues={initialValues}
             onSubmit={onSubmit}
             onDeleteTrack={() => setShowDeleteConfirmation(true)}
+            disableNavigationPrompt={showDeleteConfirmation}
           />
         </EditFormScrollContext.Provider>
       )}

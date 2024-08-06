@@ -64,6 +64,7 @@ const trackMetadataSchema = {
   parental_warning_type: null,
   allowed_api_keys: null,
   bpm: null,
+  is_custom_bpm: false,
   musical_key: null,
   audio_analysis_error_count: 0
 }

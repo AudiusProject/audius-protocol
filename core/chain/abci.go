@@ -8,9 +8,11 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/db"
+	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
 )
 
 type KVStoreApplication struct {
@@ -52,6 +54,11 @@ func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRe
 }
 
 func (app *KVStoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
+	// check if protobuf event
+	if app.isValidProtoEvent(check.Tx) {
+		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
+	}
+	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
 	code := app.isValid(check.Tx)
 	return &abcitypes.CheckTxResponse{Code: code}, nil
 }
@@ -82,6 +89,12 @@ func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
+		// just store events in blocks, no indexing yet
+		if app.isValidProtoEvent(tx) {
+			// TODO: index plays straight from here
+			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+			continue
+		}
 		if code := app.isValid(tx); code != 0 {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
@@ -167,4 +180,10 @@ func (app *KVStoreApplication) isValid(tx []byte) uint32 {
 	}
 
 	return 0
+}
+
+func (app *KVStoreApplication) isValidProtoEvent(tx []byte) bool {
+	var msg gen_proto.Event
+	err := proto.Unmarshal(tx, &msg)
+	return err == nil
 }

@@ -26,7 +26,9 @@ import {
   DOWNLOAD_CONDITIONS,
   PREVIEW,
   PRICE,
-  ALBUM_TRACK_PRICE
+  ALBUM_TRACK_PRICE,
+  GateKeeper,
+  LAST_GATE_KEEPER
 } from '../../types'
 
 const messagesV1 = {
@@ -114,6 +116,9 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
+  const showPremiumDownloadsMessage =
+    downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
 
   const messages = useMessages(
     messagesV1,
@@ -140,9 +145,6 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             />
           )}
           <input type='hidden' name={PREVIEW} value='0' />
-          {downloadConditions && !isAlbum ? (
-            <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
-          ) : null}
         </>
       ) : (
         <>
@@ -153,7 +155,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             prefillValue={100}
           />
           <PreviewField disabled={disabled} />
-          {downloadConditions ? (
+          {showPremiumDownloadsMessage ? (
             <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
           ) : null}
         </>

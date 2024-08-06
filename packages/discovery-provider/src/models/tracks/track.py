@@ -100,6 +100,7 @@ class Track(Base, RepresentableMixin):
 
     # Audio analysis
     bpm = Column(Float)
+    is_custom_bpm = Column(Boolean, server_default=text("false"))
     musical_key = Column(String)
     audio_analysis_error_count = Column(
         Integer, nullable=False, server_default=text("0")
