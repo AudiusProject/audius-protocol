@@ -58,6 +58,8 @@ export enum FeatureFlags {
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
+  COMMENTS_ENABLED = 'comments_enabled',
+  COMMENT_POSTING_ENABLED = 'comment_posting_enabled',
   PAID_SCHEDULED = 'paid_scheduled',
   ONE_TO_MANY_DMS = 'one_to_many_dms'
 }
@@ -133,6 +135,8 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
+  [FeatureFlags.COMMENTS_ENABLED]: false,
+  [FeatureFlags.COMMENT_POSTING_ENABLED]: false,
   [FeatureFlags.PAID_SCHEDULED]: false,
   [FeatureFlags.ONE_TO_MANY_DMS]: false
 }
