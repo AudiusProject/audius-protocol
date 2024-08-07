@@ -20,42 +20,6 @@ services:
     profiles:
       - chain
 
-  poa-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-      POSTGRES_USER: 'postgres'
-    healthcheck:
-      test: ['CMD', 'pg_isready']
-      interval: 10s
-      timeout: 5s
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
-  poa-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: 'ganache'
-      ETHEREUM_JSONRPC_HTTP_URL: 'http://poa-ganache:8545'
-      ETHEREUM_JSONRPC_WS_URL: 'ws://poa-ganache:8545'
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      DATABASE_URL: 'postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false'
-      ECTO_USE_SSL: false
-    ports:
-      - '9545:4000'
-    depends_on:
-      poa-blockscout-db:
-        condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
   # eth-contracts
 
   eth-ganache:
@@ -75,42 +39,6 @@ services:
       mode: global
     profiles:
       - chain
-
-  eth-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-      POSTGRES_USER: 'postgres'
-    healthcheck:
-      test: ['CMD', 'pg_isready']
-      interval: 10s
-      timeout: 5s
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
-  eth-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: 'ganache'
-      ETHEREUM_JSONRPC_HTTP_URL: 'http://eth-ganache:8545'
-      ETHEREUM_JSONRPC_WS_URL: 'ws://eth-ganache:8545'
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      DATABASE_URL: 'postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false'
-      ECTO_USE_SSL: false
-    ports:
-      - '9546:4000'
-    depends_on:
-      eth-blockscout-db:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
 
   # solana-programs
 

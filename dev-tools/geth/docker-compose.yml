@@ -1,0 +1,23 @@
+name: chains
+services:
+  acdc:
+    build:
+      context: ./acdc
+    container_name: acdc
+    ports:
+      - "8545:8545"
+
+  eth:
+    build:
+      context: ./eth
+    container_name: eth
+    ports:
+      - "8546:8545"
+
+  deployer:
+    build:
+      context: ./deployer
+    container_name: deployer
+    depends_on:
+      - acdc
+      - eth
