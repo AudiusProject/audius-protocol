@@ -6,8 +6,6 @@ export * from './Activity';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';
 export * from './BlobInfo';
-export * from './Comment';
-export * from './CommentResponse';
 export * from './CollectionActivity';
 export * from './Comment';
 export * from './CommentResponse';
