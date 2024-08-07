@@ -28,6 +28,38 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 		return err
 	}
 
+	// add to existing threads
+	// todo: this only works for "follows" target atm
+	fanOutSql := `
+	with targ as (
+		select
+			$1 as blast_id,
+			followee_user_id as from_user_id,
+			follower_user_id as to_user_id,
+			chat_member.chat_id
+		from follows
+		join chat_member on followee_user_id = chat_member.user_id
+		where followee_user_id = $2
+		  and is_delete = false
+	)
+	insert into chat_message
+		(message_id, chat_id, user_id, created_at, blast_id)
+	select
+		targ.blast_id || targ.chat_id,
+		targ.chat_id,
+		targ.from_user_id,
+		$3,
+		targ.blast_id
+	from targ
+	on conflict do nothing
+	;
+	`
+
+	_, err = tx.Exec(fanOutSql, params.BlastID, userId, ts)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

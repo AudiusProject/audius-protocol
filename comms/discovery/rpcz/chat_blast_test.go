@@ -114,7 +114,13 @@ func TestChatBlast(t *testing.T) {
 	tx.QueryRow(`select count(*) from chat_blast`).Scan(&count)
 	assert.Equal(t, 2, count)
 
-	// todo: user 101 above should have second blast added to the chat history...
+	// user 101 above should have second blast added to the chat history...
+	{
+		chatId := misc.ChatID(101, 69)
+
+		tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId).Scan(&count)
+		assert.Equal(t, 2, count)
+	}
 
 	tx.Rollback()
 }
