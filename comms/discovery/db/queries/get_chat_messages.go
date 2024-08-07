@@ -27,15 +27,21 @@ func ChatMessage(q db.Queryable, ctx context.Context, arg ChatMessageParams) (db
 
 // Get chat messages and reactions
 const chatMessagesAndReactions = `
-SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat_message.created_at, chat_message.ciphertext, COALESCE(jsonb_agg(reactions) FILTER (WHERE reactions.message_id IS NOT NULL), '[]') AS reactions
+SELECT
+	chat_message.message_id,
+	chat_message.chat_id,
+	chat_message.user_id,
+	chat_message.created_at,
+	COALESCE(chat_message.ciphertext, chat_message.blast_id::text, '') as ciphertext, -- todo: separate out ciphertext + plaintext... make ciphertext nullable
+	COALESCE(jsonb_agg(reactions) FILTER (WHERE reactions.message_id IS NOT NULL), '[]') AS reactions
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
 LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
 WHERE chat_member.user_id = $1
 	AND chat_message.chat_id = $2
-	AND chat_message.created_at < $4 
-	AND chat_message.created_at > $5 
-	AND (chat_member.cleared_history_at IS NULL 
+	AND chat_message.created_at < $4
+	AND chat_message.created_at > $5
+	AND (chat_member.cleared_history_at IS NULL
 		OR chat_message.created_at > chat_member.cleared_history_at
 	)
 GROUP BY chat_message.message_id

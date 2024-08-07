@@ -1,8 +1,10 @@
 package rpcz
 
 import (
+	"context"
 	"time"
 
+	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
@@ -28,6 +30,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 	}
 
 	for _, invite := range params.Invites {
+
 		invitedUserId, err := misc.DecodeHashId(invite.UserID)
 		if err != nil {
 			return err
@@ -43,6 +46,30 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		on conflict (chat_id, user_id)
 		do update set invited_by_user_id=$2, invite_code=$3, created_at=$5 where chat_member.created_at > $5`,
 			params.ChatID, userId, invite.InviteCode, invitedUserId, ts)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	// seed chat with any blasts...
+	// todo: do we have to do this in both directions?
+	// todo: do we have to do this for all audiences too?
+	//       if it is related to an `audience_track_id` we won't have that here...
+	//       so maybe the client can pass a separate param like `seed_blast_ids` to seed the thread context.
+	// todo: should mark hidden for blaster
+	blasts, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
+		UserID: userId,
+	})
+	for _, blast := range blasts {
+		_, err = tx.Exec(`
+		insert into chat_message
+			(message_id, chat_id, user_id, created_at, blast_id)
+		values
+			($1, $2, $3, $4, $5)
+		on conflict do nothing
+		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, ts, blast.BlastID)
+
 		if err != nil {
 			return err
 		}
