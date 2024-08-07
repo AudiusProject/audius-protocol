@@ -103,11 +103,18 @@ export const useSearchCategory = () => {
         ...(query && { query }),
         ...(genre && commonFilters.includes('genre') && { genre }),
         ...(mood && commonFilters.includes('mood') && { mood }),
-        ...(isPremium && commonFilters.includes('isPremium') && { isPremium }),
+        ...(isPremium &&
+          commonFilters.includes('isPremium') && {
+            isPremium: String(isPremium)
+          }),
         ...(hasDownloads &&
-          commonFilters.includes('hasDownloads') && { hasDownloads }),
+          commonFilters.includes('hasDownloads') && {
+            hasDownloads: String(hasDownloads)
+          }),
         ...(isVerified &&
-          commonFilters.includes('isVerified') && { isVerified })
+          commonFilters.includes('isVerified') && {
+            isVerified: String(isVerified)
+          })
       }
 
       const pathname =
