@@ -7,7 +7,7 @@ import { Flex, Text } from '@audius/harmony'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import { useGetSearchResults } from '../utils'
+import { useGetSearchResults } from '../hooks'
 
 import { AlbumResults } from './AlbumResults'
 import { PlaylistResults } from './PlaylistResults'

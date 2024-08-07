@@ -24,6 +24,8 @@ def get_feed_es(args, limit=10, offset=0):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
+    # We use size to fetch es results to make sure we get enough results
+    size = offset + limit
 
     explicit_ids = args.get("followee_user_ids", [])
 
@@ -77,7 +79,7 @@ def get_feed_es(args, limit=10, offset=0):
                             "must_not": [{"exists": {"field": "stem_of"}}],
                         }
                     },
-                    "size": offset + limit,
+                    "size": offset + size,
                     "sort": {"created_at": "desc"},
                 },
                 {"index": ES_PLAYLISTS},
@@ -94,7 +96,7 @@ def get_feed_es(args, limit=10, offset=0):
                             ]
                         }
                     },
-                    "size": offset + limit,
+                    "size": offset + size,
                     "sort": {"created_at": "desc"},
                 },
             ]
@@ -168,7 +170,7 @@ def get_feed_es(args, limit=10, offset=0):
 
     # take a "soft limit" here.  Some tracks / reposts might get filtered out below
     # if is_delete, or if track is collectible gated
-    sorted_with_reposts = sorted_with_reposts[0 : (offset + limit) * 2]
+    sorted_with_reposts = sorted_with_reposts[0 : size * 2]
 
     mget_reposts = []
     keyed_reposts = {}
@@ -310,7 +312,7 @@ def get_feed_es(args, limit=10, offset=0):
         for item in sorted_feed
     ]
 
-    return sorted_feed[offset:limit]
+    return sorted_feed[offset:size]
 
 
 def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):

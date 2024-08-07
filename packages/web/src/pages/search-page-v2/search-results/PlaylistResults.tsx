@@ -12,13 +12,12 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../utils'
+import { useGetSearchResults, useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
   playlists: 'Playlists',
-  // layoutOptionsLabel: 'View As',
   sortOptionsLabel: 'Sort By'
 }
 
@@ -98,8 +97,6 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
 }
 
 export const PlaylistResultsPage = () => {
-  // const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
-
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
@@ -108,15 +105,6 @@ export const PlaylistResultsPage = () => {
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
-
-  // const playlistsLineupProps = useLineupProps({
-  //   actions: searchResultsPagePlaylistsLineupActions,
-  //   getLineupSelector: getSearchPlaylistsLineup,
-  //   variant: LineupVariant.PLAYLIST,
-  //   numPlaylistSkeletonRows: 5,
-  //   scrollParent: containerRef.current!,
-  //   isOrdered: true
-  // })
 
   return (
     <Flex
@@ -130,15 +118,6 @@ export const PlaylistResultsPage = () => {
             {messages.playlists}
           </Text>
           <SortMethodFilterButton />
-          {/* <OptionsFilterButton */}
-          {/*   selection={playlistsLayout} */}
-          {/*   variant='replaceLabel' */}
-          {/*   optionsLabel={messages.layoutOptionsLabel} */}
-          {/*   onChange={(value) => { */}
-          {/*     setPlaylistsLayout(value as ViewLayout) */}
-          {/*   }} */}
-          {/*   options={viewLayoutOptions} */}
-          {/* /> */}
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}

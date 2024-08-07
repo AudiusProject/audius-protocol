@@ -163,9 +163,10 @@ export const TrackScreenDetailsTile = ({
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
-  const isPlaying = useSelector(getPlaying)
+  const isPlaybackActive = useSelector(getPlaying)
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingId = playingId === track.track_id
+  const isPlaying = isPlaybackActive && isPlayingId
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )

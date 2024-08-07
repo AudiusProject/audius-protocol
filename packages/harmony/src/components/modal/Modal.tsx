@@ -352,7 +352,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                         role='dialog'
                         aria-labelledby={titleId}
                         aria-describedby={subtitleId}
-                        onClick={handleModalContentClicked}
+                        onMouseDown={handleModalContentClicked}
                       >
                         <>
                           {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}

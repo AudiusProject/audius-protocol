@@ -52,6 +52,7 @@ import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { TargetedMessageModal } from 'pages/chat-page/components/TargetedMessageModal'
 
 import { AppModal } from './AppModal'
 
@@ -106,6 +107,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
+  TargetedMessageModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
   CoinflowOnramp: CoinflowOnrampModal,

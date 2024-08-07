@@ -10,7 +10,7 @@ import {
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { Flex, OptionsFilterButton, Text, useTheme } from '@audius/harmony'
+import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -22,8 +22,9 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { ALL_RESULTS_LIMIT, useSearchParams } from '../utils'
+import { ALL_RESULTS_LIMIT } from '../utils'
 
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
@@ -188,13 +189,11 @@ export const TrackResultsPage = () => {
         </Text>
         <Flex gap='s'>
           <SortMethodFilterButton />
-          <OptionsFilterButton
-            selection={tracksLayout}
+          <FilterButton
+            value={tracksLayout}
             variant='replaceLabel'
             optionsLabel={messages.layoutOptionsLabel}
-            onChange={(value) => {
-              setTracksLayout(value as ViewLayout)
-            }}
+            onChange={setTracksLayout}
             options={viewLayoutOptions}
           />
         </Flex>

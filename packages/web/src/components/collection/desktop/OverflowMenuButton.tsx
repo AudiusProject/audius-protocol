@@ -74,6 +74,8 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     isOwner,
     includeEmbed: !is_private && !is_stream_gated,
     includeFavorite: hasStreamAccess,
+    includeRepost: hasStreamAccess,
+    includeShare: true,
     includeVisitPage: false,
     isPublic: !is_private,
     extraMenuItems,

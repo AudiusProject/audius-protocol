@@ -6,12 +6,10 @@ import {
   Box,
   Button,
   Divider,
+  FilterButtonOption,
   FilterButton,
-  FilterButtonOptions,
   Flex,
   IconCaretDown,
-  Paper,
-  Popup,
   SegmentedControl,
   TextInput,
   useTheme
@@ -21,7 +19,7 @@ import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useBpmMaskedInput } from 'hooks/useBpmMaskedInput'
 
-import { useUpdateSearchParams } from './utils'
+import { useUpdateSearchParams } from './hooks'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
@@ -174,15 +172,18 @@ const BpmRangeView = ({ value, handleChange }: ViewProps) => {
   return (
     <>
       <Flex direction='column' w='100%' ph='s'>
-        <FilterButtonOptions
-          activeValue={
-            isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
-          }
-          options={bpmOptions}
-          onChange={(option) => {
-            handleChange(option.value, option.helperText ?? option.value)
-          }}
-        />
+        {bpmOptions.map((option) => (
+          <FilterButtonOption
+            key={option.value}
+            option={option}
+            activeValue={
+              isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
+            }
+            onChange={() =>
+              handleChange(option.value, option.helperText ?? option.value)
+            }
+          />
+        ))}
       </Flex>
       <Flex
         ph='s'
@@ -362,45 +363,38 @@ export const BpmFilter = () => {
       label={label}
       onChange={updateSearchParams}
       iconRight={IconCaretDown}
+      popupProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' }
+      }}
     >
-      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      {({ onChange }) => (
+        <Flex
+          w='100%'
+          pv='s'
+          gap='s'
+          direction='column'
+          alignItems='flex-start'
         >
-          <Paper w={242} mt='s' border='strong' shadow='far'>
-            <Flex
-              w='100%'
-              pv='s'
-              gap='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-            >
-              <Flex
-                direction='column'
-                w='100%'
-                ph='s'
-                // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
-                onClick={(e) => e.stopPropagation()}
-              >
-                <SegmentedControl
-                  options={[
-                    { key: 'range', text: 'Range' },
-                    { key: 'target', text: 'Target' }
-                  ]}
-                  selected={bpmFilterType}
-                  onSelectOption={setBpmFilterType}
-                />
-              </Flex>
-              <Divider css={{ width: '100%' }} />
-              <InputView value={validatedBpm} handleChange={handleChange} />
-            </Flex>
-          </Paper>
-        </Popup>
+          <Flex
+            direction='column'
+            w='100%'
+            ph='s'
+            // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SegmentedControl
+              options={[
+                { key: 'range', text: 'Range' },
+                { key: 'target', text: 'Target' }
+              ]}
+              selected={bpmFilterType}
+              onSelectOption={setBpmFilterType}
+            />
+          </Flex>
+          <Divider css={{ width: '100%' }} />
+          <InputView value={validatedBpm} handleChange={onChange} />
+        </Flex>
       )}
     </FilterButton>
   )

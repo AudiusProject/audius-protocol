@@ -7,6 +7,7 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
+import { TargetedMessageModalState } from './create-targeted-message-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
@@ -74,6 +75,7 @@ export type Modals =
   | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchaseModal'
   | 'CreateChatModal'
+  | 'TargetedMessageModal'
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
@@ -100,6 +102,7 @@ export type BasicModalsState = {
 export type StatefulModalsState = {
   CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
+  TargetedMessageModal: TargetedMessageModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState
