@@ -55,12 +55,11 @@ const getComputedOrigins = (
 
   let containerWidth, containerHeight
   if (containerRef && containerRef.current) {
+    const containerRect = containerRef.current.getBoundingClientRect()
     containerWidth =
-      containerRef.current.getBoundingClientRect().width -
-      CONTAINER_INSET_PADDING
+      containerRect.width + containerRect.x - CONTAINER_INSET_PADDING
     containerHeight =
-      containerRef.current.getBoundingClientRect().height -
-      CONTAINER_INSET_PADDING
+      containerRect.height + containerRect.y - CONTAINER_INSET_PADDING
   } else {
     containerWidth =
       portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
