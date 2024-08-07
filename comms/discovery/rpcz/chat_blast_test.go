@@ -86,18 +86,24 @@ func TestChatBlast(t *testing.T) {
 		tx.QueryRow(`select count(*) from chat_member where chat_id = $1`, chatId).Scan(&count)
 		assert.Equal(t, 2, count)
 
+		tx.QueryRow(`select count(*) from chat_member where chat_id = $1 and user_id = 101`, chatId).Scan(&count)
+		assert.Equal(t, 1, count)
+
+		tx.QueryRow(`select count(*) from chat_member where chat_id = $1 and user_id = 69`, chatId).Scan(&count)
+		assert.Equal(t, 1, count)
+
 		tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId).Scan(&count)
 		assert.Equal(t, 1, count)
 
-		// todo: we should be able to get the blast message from the endpoint...
-		// but this returns empty slice atm...
-		// messages, err := queries.ChatMessagesAndReactions(db.Conn, ctx, queries.ChatMessagesAndReactionsParams{
-		// 	UserID: 101,
-		// 	ChatID: chatId,
-		// 	Limit:  10,
-		// })
-		// assert.NoError(t, err)
-		// assert.Len(t, messages, 1)
+		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
+			UserID: 101,
+			ChatID: chatId,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour),
+			After:  time.Now().Add(time.Hour * -1),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, messages, 1)
 
 		// todo: new blasts should omit this one now
 
@@ -107,7 +113,7 @@ func TestChatBlast(t *testing.T) {
 	err = chatBlast(tx, 69, time.Now(), schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
-		Message:  "happy thursday",
+		Message:  "happy wed",
 	})
 	assert.NoError(t, err)
 
@@ -120,7 +126,18 @@ func TestChatBlast(t *testing.T) {
 
 		tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId).Scan(&count)
 		assert.Equal(t, 2, count)
+
+		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
+			UserID: 69,
+			ChatID: chatId,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour),
+			After:  time.Now().Add(time.Hour * -1),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, messages, 2)
 	}
 
-	tx.Rollback()
+	err = tx.Rollback()
+	assert.NoError(t, err)
 }
