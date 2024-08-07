@@ -1,8 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/react'
-
-import { Flex } from '../..'
-
-import { Timestamp } from './Timestamp'
 import {
   DAY_IN_MONTH,
   HR_IN_DAY,
@@ -10,7 +5,12 @@ import {
   MONTH_IN_YEAR,
   MS_IN_S,
   S_IN_MIN
-} from './types'
+} from '@audius/harmony/src/components/comments/Timestamp/types'
+import type { Meta, StoryObj } from '@storybook/react'
+
+import { Flex } from '../..'
+
+import { Timestamp } from './Timestamp'
 
 const meta: Meta<typeof Timestamp> = {
   title: 'Components/Comments/Timestamp [beta]',
