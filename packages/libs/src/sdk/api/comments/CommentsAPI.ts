@@ -12,10 +12,10 @@ import {
 } from '../generated/default'
 
 export type CommentMetadata = {
-  body: string
+  body?: string
   userId: number
   entityId: number
-  entityType: EntityType // For now just tracks are supported, but we left the door open for more
+  entityType?: EntityType // For now just tracks are supported, but we left the door open for more
   parentCommentId?: number
   timestamp_s?: number
 }
@@ -43,8 +43,48 @@ export class CommentsApi extends GeneratedCommentsApi {
       }),
       auth: this.auth
     })
+    this.logger.info('Successfully posted a comment')
+    return response
+  }
 
-    this.logger.info('Successfully uploaded comment')
+  async editComment(metadata: CommentMetadata) {
+    const { userId, entityId } = metadata
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(metadata)
+      }),
+      auth: this.auth
+    })
+    return response
+  }
+
+  async deleteComment(metadata: CommentMetadata) {
+    const { userId, entityId } = metadata
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.DELETE,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async reactComment(userId: number, entityId: number, isLiked: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: isLiked ? Action.REACT : Action.UNREACT,
+      metadata: '',
+      auth: this.auth
+    })
     return response
   }
 }
