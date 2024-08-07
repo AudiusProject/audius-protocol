@@ -37,7 +37,7 @@ const NotificationCount = (props: TextProps) => {
     right: 2,
     transform: 'translate(50%, -50%)',
     borderRadius: cornerRadius.m,
-    backgroundColor: color.special.orange,
+    backgroundColor: color.special.red,
     minWidth: '14px',
     minHeight: '14px'
   }
