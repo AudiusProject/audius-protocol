@@ -358,7 +358,7 @@ export class AlbumsApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          priority: 'HIGH'
+          microLamports: 100000
         }
       })
       return transaction
@@ -399,7 +399,7 @@ export class AlbumsApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          priority: 'HIGH'
+          microLamports: 100000
         }
       })
       return transaction
