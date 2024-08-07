@@ -9,7 +9,7 @@ import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
-import { HideConfirmationModalState } from './hide-confirmation-modal'
+import { HideContentConfirmationModalState } from './hide-confirmation-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
@@ -80,7 +80,7 @@ export type Modals =
   | 'EditAccessConfirmation'
   | 'EarlyReleaseConfirmation'
   | 'PublishConfirmation'
-  | 'HideConfirmation'
+  | 'HideContentConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
@@ -116,7 +116,7 @@ export type StatefulModalsState = {
   EditAccessConfirmation: EditAccessConfirmationModalState
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
   PublishConfirmation: PublishConfirmationModalState
-  HideConfirmation: HideConfirmationModalState
+  HideContentConfirmation: HideContentConfirmationModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

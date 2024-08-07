@@ -1,19 +1,19 @@
 import { useCallback } from 'react'
 
-import { useHideConfirmationModal } from '@audius/common/store'
+import { useHideContentConfirmationModal } from '@audius/common/store'
 
 import { ConfirmationDrawer } from 'app/components/drawers'
 
 const messages = {
   header: 'Confirm Update',
   description:
-    "You're about to change your content from public to hidden. It will be hidden from the public and your followers will lose access.",
+    "You're about to change your content from public to hidden. It will not be visible from the public and your followers will lose access.",
   cancel: 'Cancel',
   confirm: 'Make Hidden'
 }
 
-export const HideConfirmationDrawer = () => {
-  const { data, onClose } = useHideConfirmationModal()
+export const HideContentConfirmationDrawer = () => {
+  const { data, onClose } = useHideContentConfirmationModal()
   const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {
@@ -29,7 +29,7 @@ export const HideConfirmationDrawer = () => {
   return (
     <ConfirmationDrawer
       variant='affirmative'
-      modalName='HideConfirmation'
+      modalName='HideContentConfirmation'
       onConfirm={handleConfirm}
       onCancel={handleCancel}
       messages={messages}

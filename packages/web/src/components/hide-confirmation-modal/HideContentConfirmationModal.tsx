@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useHideConfirmationModal } from '@audius/common/store'
+import { useHideContentConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -19,8 +19,8 @@ const messages = {
   confirm: 'Make Hidden'
 }
 
-export const HideConfirmationModal = () => {
-  const { data, isOpen, onClose } = useHideConfirmationModal()
+export const HideContentConfirmationModal = () => {
+  const { data, isOpen, onClose } = useHideContentConfirmationModal()
   const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {

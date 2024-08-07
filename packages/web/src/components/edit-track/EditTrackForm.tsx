@@ -6,7 +6,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   TrackMetadataForUpload,
   useEarlyReleaseConfirmationModal,
-  useHideConfirmationModal,
+  useHideContentConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
 import {
@@ -91,7 +91,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const initiallyHidden = initialTrackValues.is_unlisted
   const isInitiallyScheduled = initialTrackValues.is_scheduled_release
 
-  const { onOpen: openHideConfirmation } = useHideConfirmationModal()
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
@@ -107,7 +108,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       const isToBePublished =
         !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
       if (usersMayLoseAccess) {
-        openHideConfirmation({ confirmCallback })
+        openHideContentConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled) {
         openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
       } else if (isToBePublished) {
@@ -121,7 +122,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       initiallyHidden,
       isUpload,
       isInitiallyScheduled,
-      openHideConfirmation,
+      openHideContentConfirmation,
       openEarlyReleaseConfirmation,
       openPublishConfirmation
     ]

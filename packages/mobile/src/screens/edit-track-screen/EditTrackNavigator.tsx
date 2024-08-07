@@ -13,7 +13,7 @@ import { messages as completeMessages } from '../upload-screen/screens/CompleteT
 import { EditTrackForm } from './EditTrackForm'
 import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
 import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
-import { HideConfirmationDrawer } from './components/HideConfirmationDrawer'
+import { HideContentConfirmationDrawer } from './components/HideContentConfirmationDrawer'
 import { PublishConfirmationDrawer } from './components/PublishConfirmationDrawer'
 import {
   AdvancedScreen,
@@ -72,7 +72,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       </Stack.Navigator>
       <SupportersInfoDrawer />
       <EditAccessConfirmationDrawer />
-      <HideConfirmationDrawer />
+      <HideContentConfirmationDrawer />
       <PublishConfirmationDrawer />
       <EarlyReleaseConfirmationDrawer />
     </>

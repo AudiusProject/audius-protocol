@@ -182,7 +182,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.RELEASE_NOW]: () => {
       openPublishConfirmation({
         contentType: 'playlist',
-        confirmCallback: dispatch(trackPageActions.makeTrackPublic(id))
+        confirmCallback: () => dispatch(trackPageActions.makeTrackPublic(id))
       })
     },
 

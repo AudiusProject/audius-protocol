@@ -9,7 +9,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import {
   useEarlyReleaseConfirmationModal,
-  useHideConfirmationModal,
+  useHideContentConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
@@ -76,7 +76,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
-  const { onOpen: openHideConfirmation } = useHideConfirmationModal()
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
@@ -97,7 +98,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         isAlbum && !isUpload && !initiallyHidden && values.is_private
       const isToBePublished = !isUpload && initiallyHidden && !values.is_private
       if (usersMayLoseAccess) {
-        openHideConfirmation({ confirmCallback })
+        openHideContentConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled && isAlbum) {
         openEarlyReleaseConfirmation({ contentType: 'album', confirmCallback })
       } else if (isToBePublished) {
@@ -115,7 +116,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       isInitiallyScheduled,
       isUpload,
       onSubmit,
-      openHideConfirmation,
+      openHideContentConfirmation,
       openEarlyReleaseConfirmation,
       openPublishConfirmation
     ]

@@ -1,1 +1,1 @@
-export { HideConfirmationModal } from './HideConfirmationModal'
+export { HideContentConfirmationModal } from './HideContentConfirmationModal'

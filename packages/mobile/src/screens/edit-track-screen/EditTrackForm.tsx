@@ -4,7 +4,7 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
   useEarlyReleaseConfirmationModal,
-  useHideConfirmationModal,
+  useHideContentConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
 import { Keyboard } from 'react-native'
@@ -90,7 +90,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
 
-  const { onOpen: openHideConfirmation } = useHideConfirmationModal()
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
@@ -113,7 +114,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     Keyboard.dismiss()
 
     if (usersMayLoseAccess) {
-      openHideConfirmation({ confirmCallback: handleSubmitProp })
+      openHideContentConfirmation({ confirmCallback: handleSubmitProp })
     } else if (isToBePublished && isInitiallyScheduled) {
       openEarlyReleaseConfirmation({
         contentType: 'track',
@@ -132,7 +133,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     isToBePublished,
     isInitiallyScheduled,
     handleSubmitProp,
-    openHideConfirmation,
+    openHideContentConfirmation,
     openEarlyReleaseConfirmation,
     openPublishConfirmation
   ])

@@ -8,7 +8,7 @@ import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
-import { hideConfirmationModalReducer } from './hide-confirmation-modal'
+import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
@@ -55,7 +55,7 @@ const combinedReducers = combineReducers({
   EditAccessConfirmation: editAccessConfirmationModalReducer,
   EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
-  HideConfirmation: hideConfirmationModalReducer
+  HideContentConfirmation: hideContentConfirmationModalReducer
 })
 
 /**

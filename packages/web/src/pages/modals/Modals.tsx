@@ -23,7 +23,7 @@ import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
-import { HideConfirmationModal } from 'components/hide-confirmation-modal'
+import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
@@ -87,7 +87,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   EditAccessConfirmation: EditAccessConfirmationModal,
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModal,
   PublishConfirmation: PublishConfirmationModal,
-  HideConfirmation: HideConfirmationModal,
+  HideContentConfirmation: HideContentConfirmationModal,
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,

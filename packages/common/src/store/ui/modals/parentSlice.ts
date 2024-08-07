@@ -56,7 +56,7 @@ export const initialState: BasicModalsState = {
   EditAccessConfirmation: { isOpen: false },
   EarlyReleaseConfirmation: { isOpen: false },
   PublishConfirmation: { isOpen: false },
-  HideConfirmation: { isOpen: false },
+  HideContentConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },

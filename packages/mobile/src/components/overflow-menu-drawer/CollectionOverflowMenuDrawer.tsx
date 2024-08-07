@@ -113,7 +113,7 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.PUBLISH_PLAYLIST]: () =>
       openPublishConfirmation({
         contentType: is_album ? 'album' : 'playlist',
-        confirmCallback: dispatch(publishPlaylist(Number(id)))
+        confirmCallback: () => dispatch(publishPlaylist(Number(id)))
       })
   }
 

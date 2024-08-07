@@ -4,7 +4,7 @@ import type { EditCollectionValues } from '@audius/common/store'
 import {
   deletePlaylistConfirmationModalUIActions,
   useEarlyReleaseConfirmationModal,
-  useHideConfirmationModal,
+  useHideContentConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
 import { useField, type FormikProps } from 'formik'
@@ -108,14 +108,15 @@ export const EditCollectionForm = (
     navigation.goBack()
   }, [handleSubmitProp, navigation])
 
-  const { onOpen: openHideConfirmation } = useHideConfirmationModal()
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleSubmit = useCallback(() => {
     if (usersMayLoseAccess) {
-      openHideConfirmation({ confirmCallback: submitAndGoBack })
+      openHideContentConfirmation({ confirmCallback: submitAndGoBack })
     } else if (
       isToBePublished &&
       isInitiallyScheduled &&
@@ -138,7 +139,7 @@ export const EditCollectionForm = (
     isToBePublished,
     isInitiallyScheduled,
     submitAndGoBack,
-    openHideConfirmation,
+    openHideContentConfirmation,
     openEarlyReleaseConfirmation,
     openPublishConfirmation,
     entityType

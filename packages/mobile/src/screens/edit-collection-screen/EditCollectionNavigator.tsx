@@ -1,5 +1,4 @@
 import type { EditCollectionValues } from '@audius/common/store'
-import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { FormikProps } from 'formik'
 
@@ -13,7 +12,7 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { EarlyReleaseConfirmationDrawer } from '../edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { EditAccessConfirmationDrawer } from '../edit-track-screen/components/EditAccessConfirmationDrawer'
-import { HideConfirmationDrawer } from '../edit-track-screen/components/HideConfirmationDrawer'
+import { HideContentConfirmationDrawer } from '../edit-track-screen/components/HideContentConfirmationDrawer'
 import { PublishConfirmationDrawer } from '../edit-track-screen/components/PublishConfirmationDrawer'
 
 import { AdvancedAlbumScreen } from './AdvancedAlbumScreen'
@@ -41,12 +40,11 @@ export const EditCollectionNavigator = (
         />
         <Stack.Screen name='Advanced' component={AdvancedAlbumScreen} />
       </Stack.Navigator>
-      <PortalHost name='ConfirmPublishTrackPortal' />
       <DeletePlaylistConfirmationDrawer />
       <EditAccessConfirmationDrawer />
       <EarlyReleaseConfirmationDrawer />
       <PublishConfirmationDrawer />
-      <HideConfirmationDrawer />
+      <HideContentConfirmationDrawer />
     </>
   )
 }

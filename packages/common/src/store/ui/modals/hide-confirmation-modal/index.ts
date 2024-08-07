@@ -1,22 +1,23 @@
 import { createModal } from '../createModal'
 
-export type HideConfirmationModalState = {
+export type HideContentConfirmationModalState = {
   confirmCallback: () => void
   cancelCallback?: () => void
 }
 
-const hideConfirmationModal = createModal<HideConfirmationModalState>({
-  reducerPath: 'HideConfirmation',
-  initialState: {
-    isOpen: false,
-    confirmCallback: () => {},
-    cancelCallback: () => {}
-  },
-  sliceSelector: (state) => state.ui.modals
-})
+const hideContentConfirmationModal =
+  createModal<HideContentConfirmationModalState>({
+    reducerPath: 'HideContentConfirmation',
+    initialState: {
+      isOpen: false,
+      confirmCallback: () => {},
+      cancelCallback: () => {}
+    },
+    sliceSelector: (state) => state.ui.modals
+  })
 
 export const {
-  hook: useHideConfirmationModal,
-  reducer: hideConfirmationModalReducer,
-  actions: hideConfirmationModalActions
-} = hideConfirmationModal
+  hook: useHideContentConfirmationModal,
+  reducer: hideContentConfirmationModalReducer,
+  actions: hideContentConfirmationModalActions
+} = hideContentConfirmationModal
