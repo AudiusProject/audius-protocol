@@ -5,18 +5,18 @@ import type {
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
 import { useFocusEffect } from '@react-navigation/native'
-import { Image, ScrollView } from 'react-native'
+import { ScrollView } from 'react-native'
 
+import { Flex, IconCloseAlt, SelectablePill } from '@audius/harmony-native'
+
+import { BpmFilter } from './BpmFilter'
 import {
-  FilterButton,
-  Flex,
-  IconCloseAlt,
-  SelectablePill,
-  spacing
-} from '@audius/harmony-native'
-import { useNavigation } from 'app/hooks/useNavigation'
-import { moodMap } from 'app/utils/moods'
-
+  GenreFilter,
+  IsPremiumFilter,
+  IsVerifiedFilter,
+  KeyFilter,
+  MoodFilter
+} from './SearchFilters'
 import { useSearchCategory, useSearchFilters } from './searchState'
 
 type SearchCategoryProps = {
@@ -58,16 +58,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
   )
 }
 
-const filterInfoMap: Record<SearchFilter, { label: string; screen: string }> = {
-  genre: { label: 'Genre', screen: 'FilterGenre' },
-  mood: { label: 'Mood', screen: 'FilterMood' },
-  key: { label: 'Key', screen: 'FilterKey' },
-  bpm: { label: 'BPM', screen: 'FilterBpm' },
-  isVerified: { label: 'Verified', screen: '' },
-  isPremium: { label: 'Premium', screen: '' },
-  hasDownloads: { label: 'Downloadable', screen: '' }
-}
-
 const filtersByCategory: Record<SearchCategoryType, SearchFilter[]> = {
   all: [],
   users: ['genre', 'isVerified'],
@@ -84,10 +74,18 @@ const filtersByCategory: Record<SearchCategoryType, SearchFilter[]> = {
   playlists: ['genre', 'mood', 'isVerified']
 }
 
+const searchFilterButtons = {
+  genre: GenreFilter,
+  mood: MoodFilter,
+  key: KeyFilter,
+  bpm: BpmFilter,
+  isPremium: IsPremiumFilter,
+  isVerified: IsVerifiedFilter
+}
+
 export const SearchCategoriesAndFilters = () => {
-  const navigation = useNavigation()
   const [category] = useSearchCategory()
-  const [filters, setFilters] = useSearchFilters()
+  const [filters] = useSearchFilters()
 
   const scrollViewRef = useRef<ScrollView>(null)
 
@@ -96,55 +94,6 @@ export const SearchCategoriesAndFilters = () => {
       scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: false })
     }, [])
   )
-
-  const handlePressFilter = useCallback(
-    (filter: string) => {
-      if (filterInfoMap[filter].screen) {
-        navigation.navigate(filterInfoMap[filter].screen)
-      } else {
-        const newFilters = { ...filters }
-        newFilters[filter] = true
-        setFilters(newFilters)
-      }
-    },
-    [filters, navigation, setFilters]
-  )
-
-  const handleResetFilter = useCallback(
-    (filter: string) => {
-      setFilters((filters) => {
-        const newFilters = { ...filters }
-        delete newFilters[filter]
-        return newFilters
-      })
-    },
-    [setFilters]
-  )
-
-  const getFilterLabel = (filter: string) => {
-    if (filter === 'bpm') {
-      return filters[filter] ? `${filters[filter]} BPM` : 'BPM'
-    }
-
-    return typeof filters[filter] === 'string'
-      ? String(filters[filter])
-      : filterInfoMap[filter].label
-  }
-
-  const getLeadingElement = (filter: string) => {
-    if (filter === 'mood') {
-      const mood = filters[filter]
-      if (mood) {
-        return (
-          <Image
-            source={moodMap[mood]}
-            style={{ height: spacing.l, width: spacing.l }}
-          />
-        )
-      }
-    }
-    return undefined
-  }
 
   const categoryFilters = filtersByCategory[category]
   const activeFilterKeys = categoryFilters.filter((key) =>
@@ -165,24 +114,13 @@ export const SearchCategoriesAndFilters = () => {
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
           <SearchCategory category='playlists' />
-          {sortedFilterKeys.map((filter) => (
-            <FilterButton
-              key={filter}
-              size='small'
-              value={
-                filters[filter] !== undefined
-                  ? String(filters[filter])
-                  : undefined
-              }
-              label={getFilterLabel(filter)}
-              onChange={handlePressFilter}
-              onPress={() => {
-                handlePressFilter(filter)
-              }}
-              onReset={() => handleResetFilter(filter)}
-              leadingElement={getLeadingElement(filter)}
-            />
-          ))}
+          {sortedFilterKeys.map((filter) => {
+            const SearchFilterButton = searchFilterButtons[filter]
+            if (SearchFilterButton) {
+              return <SearchFilterButton key={filter} />
+            }
+            return null
+          })}
         </Flex>
       </ScrollView>
     </Flex>

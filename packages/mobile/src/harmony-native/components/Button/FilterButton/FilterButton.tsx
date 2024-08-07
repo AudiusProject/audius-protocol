@@ -7,12 +7,15 @@ import { Pressable, type GestureResponderEvent } from 'react-native'
 
 import type { IconProps } from '@audius/harmony-native'
 import { IconCloseAlt, Text } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 
 import type { FilterButtonProps } from './types'
 
-export const FilterButton = (props: FilterButtonProps) => {
+export const FilterButton = <Value extends string>(
+  props: FilterButtonProps<Value>
+) => {
   const {
     value,
     label,
@@ -23,8 +26,17 @@ export const FilterButton = (props: FilterButtonProps) => {
     variant = 'fillContainer',
     size = 'default',
     iconRight,
-    leadingElement
+    leadingElement,
+    onChange,
+    filterScreen = 'FilterButton',
+    options,
+    screen
   } = props
+
+  const selectedOption = options?.find((option) => option.value === value)
+  const selectedLabel = selectedOption?.label ?? selectedOption?.value
+
+  const navigation = useNavigation()
 
   const { color, cornerRadius, spacing, typography } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
@@ -97,15 +109,22 @@ export const FilterButton = (props: FilterButtonProps) => {
     }
   }, [isOpen, onOpen])
 
-  const handlePress = useCallback(() => {
-    if (onPress) {
-      onPress()
-    } else {
-      if (variant === 'fillContainer') {
-        setIsOpen((isOpen: boolean) => !isOpen)
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      onPress?.(e)
+      setIsOpen((isOpen) => !isOpen)
+      if (options || screen) {
+        navigation.navigate(filterScreen, {
+          options,
+          title: label,
+          onChange,
+          value,
+          screen
+        })
       }
-    }
-  }, [onPress, variant])
+    },
+    [onPress, options, screen, navigation, filterScreen, label, onChange, value]
+  )
 
   const iconSize = size === 'small' ? 's' : 'm'
   const textColor =
@@ -118,6 +137,8 @@ export const FilterButton = (props: FilterButtonProps) => {
             hitSlop={20}
             onPress={(e: GestureResponderEvent) => {
               e.stopPropagation()
+              onPress?.(e)
+              onChange?.(undefined)
               onReset?.()
             }}
           >
@@ -125,7 +146,7 @@ export const FilterButton = (props: FilterButtonProps) => {
           </Pressable>
         )
       : iconRight ?? undefined
-  }, [variant, value, onReset, iconRight])
+  }, [variant, value, iconRight, onPress, onChange, onReset])
 
   return (
     <BaseButton
@@ -144,7 +165,7 @@ export const FilterButton = (props: FilterButtonProps) => {
       aria-expanded={isOpen}
     >
       {leadingElement}
-      <Text color={textColor}>{label}</Text>
+      <Text color={textColor}>{selectedLabel ?? label}</Text>
     </BaseButton>
   )
 }

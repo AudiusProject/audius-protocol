@@ -1,13 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { isBpmValid } from '@audius/common/utils'
 
-import { Button, Flex, Text, TextInput, useTheme } from '@audius/harmony-native'
+import {
+  Button,
+  FilterButton,
+  Flex,
+  Text,
+  TextInput,
+  useTheme
+} from '@audius/harmony-native'
 import { KeyboardAvoidingView, SegmentedControl } from 'app/components/core'
 import { FormScreen } from 'app/screens/form-screen'
 import { SelectionItemList } from 'app/screens/list-selection-screen/SelectionItemList'
 
-import { useSearchBpmType, useSearchFilter } from '../searchState'
+import { useSearchFilter } from './searchState'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
@@ -211,7 +218,6 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
     ? Number(minMaxValue[1]) - Number(minMaxValue[0])
     : null
   const isValidDiff = minMaxDiff === 20 || minMaxDiff === 10
-
   const { color } = useTheme()
   const [bpmTarget, setBpmTarget] = useState(
     isValidDiff && minMaxValue
@@ -229,14 +235,6 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
   const onChange = useMemo(() => setValue, [])
 
   useEffect(() => {
-    if (!value && bpmTarget) {
-      setBpmTarget('')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-
-  useEffect(() => {
-    if (minMaxValue && !isValidDiff) return
     // Validation
     const val = Number(bpmTarget)
     let hasError = false
@@ -273,7 +271,9 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
       }
     }
 
-    onChange(value)
+    if (value) {
+      onChange(value)
+    }
   }, [bpmTarget, bpmTargetType, error, isValidDiff, minMaxValue, onChange])
 
   return (
@@ -311,32 +311,34 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
   )
 }
 
-export const FilterBpmScreen = () => {
-  const [bpm, setBpm, clearBpm] = useSearchFilter('bpm')
-  const [bpmType, setBpmType] = useSearchBpmType()
-  const [bpmValue, setBpmValue] = useState(isBpmValid(bpm ?? '') ? bpm : '')
+// Given a bpm or bpm range, determine if it should be displayed as a range or target
+const getBpmType = (bpm: string | undefined) => {
+  if (!bpm) return 'range'
+  if (!bpm.includes('-')) return 'target'
 
-  const handleSubmit = useCallback(() => {
-    if (bpmValue) {
-      setBpm(bpmValue)
-    } else {
-      clearBpm()
-    }
-  }, [bpmValue, clearBpm, setBpm])
+  if (rangeOptions.some((range) => range.value === bpm)) {
+    return 'range'
+  }
+  const [min, max] = bpm.split('-').map((bpm) => parseInt(bpm, 10))
 
-  const handleClear = useCallback(() => {
-    setBpmValue('')
-  }, [setBpmValue])
+  if (max - min === 10 || max - min === 20) return 'target'
+
+  return 'range'
+}
+
+export const FilterBpmScreen = (props) => {
+  const { value: bpm, onChange, onSubmit, ...other } = props
+  const [bpmType, setBpmType] = useState(getBpmType(bpm))
 
   const InputView = bpmType === 'range' ? BpmRangeView : BpmTargetView
 
   return (
     <FormScreen
       title={messages.title}
-      onSubmit={handleSubmit}
-      onClear={handleClear}
+      onSubmit={onSubmit}
       variant='white'
-      clearable={Boolean(bpmValue)}
+      clearable={Boolean(bpm)}
+      {...other}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -354,8 +356,27 @@ export const FilterBpmScreen = () => {
             equalWidth
           />
         </Flex>
-        <InputView value={bpmValue} setValue={setBpmValue} />
+        <InputView value={bpm} setValue={onChange} />
       </KeyboardAvoidingView>
     </FormScreen>
+  )
+}
+
+export const BpmFilter = () => {
+  const [bpm, setBpm] = useSearchFilter('bpm')
+
+  const getLabel = () => {
+    if (!bpm) return messages.title
+    return `${bpm} BPM`
+  }
+
+  return (
+    <FilterButton
+      label={getLabel()}
+      value={bpm}
+      onChange={setBpm}
+      screen={FilterBpmScreen}
+      size='small'
+    />
   )
 }
