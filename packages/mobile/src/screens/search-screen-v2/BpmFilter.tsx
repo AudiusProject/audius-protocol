@@ -235,7 +235,6 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
   const onChange = useMemo(() => setValue, [])
 
   useEffect(() => {
-    // if (minMaxValue && !isValidDiff) return
     // Validation
     const val = Number(bpmTarget)
     let hasError = false

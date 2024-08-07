@@ -71,13 +71,6 @@ export const SearchScreenV2 = () => {
   const searchBarRef = useRef<TextInput>(null)
   const [refsSet, setRefsSet] = useState(false)
 
-  useEffect(() => {
-    setQuery(params?.query ?? '')
-    setCategory(params?.category ?? 'all')
-    setFilters(params?.filters ?? {})
-    setAutoFocus(params?.autoFocus ?? false)
-  }, [params])
-
   useEffectOnce(() => {
     setRefsSet(true)
   })
