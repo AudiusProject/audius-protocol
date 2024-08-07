@@ -1,0 +1,1 @@
+export { IconText } from './IconText'
