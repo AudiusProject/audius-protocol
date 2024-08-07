@@ -52,7 +52,7 @@ export const env: Env = {
   HELIUS_DAS_API_URL: 'https://sol-collectibles.audius.workers.dev',
   OPTIMIZELY_KEY: 'MX4fYBgANQetvmBXGpuxzF',
   ORACLE_ETH_ADDRESSES: '0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf',
-  PAYMENT_ROUTER_PROGRAM_ID: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',
+  PAYMENT_ROUTER_PROGRAM_ID: 'sp28KA2bTnTA4oSZ3r9tTSKfmiXZtZQHnYYQqWfUyVa',
   PUBLIC_HOSTNAME: 'staging.audius.co',
   PUBLIC_PROTOCOL: 'https:',
   BASENAME: '/',
