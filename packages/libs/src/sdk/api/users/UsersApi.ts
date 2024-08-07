@@ -342,7 +342,8 @@ export class UsersApi extends GeneratedUsersApi {
     const transaction = await this.claimableTokens.buildTransaction({
       instructions: [secp, transfer],
       priorityFee: {
-        priority: 'VERY_HIGH'
+        priority: 'VERY_HIGH',
+        minimumMicroLamports: 100000
       }
     })
     return await this.claimableTokens.sendTransaction(transaction)

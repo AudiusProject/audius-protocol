@@ -27,6 +27,8 @@ import {
   GenerateSpecifierSchema
 } from './types'
 
+const CHALLENGES_MINIMUM_MICRO_LAMPORTS = 100000
+
 export class ChallengesApi extends BaseAPI {
   constructor(
     config: Configuration,
@@ -245,7 +247,8 @@ export class ChallengesApi extends BaseAPI {
     const submitAAOTransaction = await this.rewardManager.buildTransaction({
       instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction],
       priorityFee: {
-        priority: 'VERY_HIGH'
+        priority: 'VERY_HIGH',
+        minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
       }
     })
     return {
@@ -322,7 +325,8 @@ export class ChallengesApi extends BaseAPI {
       const submitTransaction = await this.rewardManager.buildTransaction({
         instructions: [secpInstruction, submitInstruction],
         priorityFee: {
-          priority: 'VERY_HIGH'
+          priority: 'VERY_HIGH',
+          minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
         }
       })
       transactions.push(submitTransaction)
@@ -359,7 +363,8 @@ export class ChallengesApi extends BaseAPI {
     const transaction = await this.rewardManager.buildTransaction({
       instructions: [instruction],
       priorityFee: {
-        priority: 'VERY_HIGH'
+        priority: 'VERY_HIGH',
+        minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
       }
     })
     // Skip preflight since we likely just submitted the attestations and

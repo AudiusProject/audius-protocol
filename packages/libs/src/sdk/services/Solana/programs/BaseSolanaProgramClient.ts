@@ -135,8 +135,7 @@ export class BaseSolanaProgramClient {
           0
         )
         const microLamports = Math.max(
-          (orderedFees[percentileIndex] ?? 0) +
-            (priorityFee.additionalMicroLamports ?? 0),
+          orderedFees[percentileIndex] ?? 0,
           priorityFee.minimumMicroLamports ?? 0
         )
         if (microLamports !== undefined) {

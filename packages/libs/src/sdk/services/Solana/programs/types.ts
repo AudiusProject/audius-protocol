@@ -72,12 +72,7 @@ export const BuildTransactionSchema = z
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
            */
-          minimumMicroLamports: z.number().min(0).optional(),
-          /**
-           * Additional microLamports to add to the percentile-based priority
-           * fee per compute unit.
-           */
-          additionalMicroLamports: z.number().min(0).optional()
+          minimumMicroLamports: z.number().min(0).optional()
         }),
         z.object({
           /**
@@ -89,12 +84,7 @@ export const BuildTransactionSchema = z
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
            */
-          minimumMicroLamports: z.number().min(0).optional(),
-          /**
-           * Additional microLamports to add to the percentile-based priority
-           * fee per compute unit.
-           */
-          additionalMicroLamports: z.number().min(0).optional()
+          minimumMicroLamports: z.number().min(0).optional()
         })
       ])
       .optional()
