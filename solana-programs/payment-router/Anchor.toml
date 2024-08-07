@@ -3,10 +3,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-payment_router = "sp28KA2bTnTA4oSZ3r9tTSKfmiXZtZQHnYYQqWfUyVa"
+payment_router = "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa"
 
 [programs.mainnet]
-payment_router = "sp28KA2bTnTA4oSZ3r9tTSKfmiXZtZQHnYYQqWfUyVa"
+payment_router = "paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa"
 
 [registry]
 url = "https://api.apr.dev"

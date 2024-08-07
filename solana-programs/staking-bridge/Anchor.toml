@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.mainnet]
-staking_bridge = "stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj"
+staking_bridge = "stkB5DZziVJT1C1VmzvDdRtdWxfs5nwcHViiaNBDK31"
 
 [registry]
 url = "https://api.apr.dev"
