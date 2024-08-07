@@ -93,7 +93,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = useCurrentCommentSection()
 
   const [showEditInput, setShowEditInput] = useState(false)
-  const [reactionState, setReactionState] = useState(true)
+  const [reactionState, setReactionState] = useState(false)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
@@ -130,6 +130,16 @@ export const CommentBlock = (props: CommentBlockProps) => {
     if (decodedCommentId) {
       setReactionState(!reactionState)
       handleReactComment(decodedCommentId, !reactionState)
+    }
+  }
+
+  const handleCommentDelete = () => {
+    let decodedCommentId
+    if (commentId) {
+      decodedCommentId = decodeHashId(commentId.toString())
+    }
+    if (decodedCommentId) {
+      handleDeleteComment(decodedCommentId)
     }
   }
   return (
@@ -185,10 +195,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
           <Flex alignItems='center'>
             <IconButton
               icon={IconHeart}
-              color='subdued'
+              color={reactionState ? 'active' : 'subdued'}
               aria-label='Heart comment'
               onClick={() => {
-                handleReactComment(commentId)
+                handleCommentReact()
               }}
             />
             <Text color='default'> {reactCount}</Text>
@@ -222,7 +232,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               size='s'
               color='subdued'
               onClick={() => {
-                handleDeleteComment(commentId)
+                handleCommentDelete()
               }}
             />
           ) : null}
