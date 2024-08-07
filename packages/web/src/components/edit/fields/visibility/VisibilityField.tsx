@@ -30,7 +30,8 @@ import { mergeReleaseDateValues } from './mergeReleaseDateValues'
 
 const messages = {
   ...visibilityMessages,
-  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`
+  scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`,
+  emptyPlaylistTooltipText: 'You must add at least 1 song.'
 }
 
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
@@ -38,6 +39,7 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
   isUpload: boolean
+  isPublishable?: boolean
 }
 
 const visibilitySchema = z
@@ -76,7 +78,7 @@ const visibilitySchema = z
   )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType, isUpload } = props
+  const { entityType, isUpload, isPublishable = true } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [
     { value: isHidden },
@@ -179,6 +181,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         <VisibilityMenuFields
           entityType={entityType}
           initiallyPublic={!initiallyHidden && !isUpload}
+          isPublishable={isPublishable}
         />
       }
     />
@@ -188,6 +191,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 type VisibilityMenuFieldsProps = {
   entityType: 'track' | 'album' | 'playlist'
   initiallyPublic?: boolean
+  isPublishable?: boolean
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
@@ -197,7 +201,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
-  const { initiallyPublic, entityType } = props
+  const { initiallyPublic, isPublishable = true, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -206,6 +210,10 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         value='public'
         label={messages.public}
         description={messages.publicDescription}
+        disabled={!isPublishable}
+        tooltipText={
+          isPublishable ? undefined : messages.emptyPlaylistTooltipText
+        }
       />
       <ModalRadioItem
         value='hidden'

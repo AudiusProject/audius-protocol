@@ -5,6 +5,7 @@ import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
 import { ChallengesApi } from './api/challenges/ChallengesApi'
 import { ChatsApi } from './api/chats/ChatsApi'
+import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
@@ -282,6 +283,12 @@ const initializeApis = ({
     services.auth,
     services.logger
   )
+  const comments = new CommentsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth,
+    services.logger
+  )
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
   const chats = new ChatsApi(
@@ -351,7 +358,8 @@ const initializeApis = ({
     developerApps,
     dashboardWalletUsers,
     challenges,
-    services
+    services,
+    comments
   }
 }
 

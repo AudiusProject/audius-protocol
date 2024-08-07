@@ -38,7 +38,6 @@ import { getLocation } from 'store/routing/selectors'
 const {
   getCollectible,
   getId: getQueueTrackId,
-  getPlayerBehavior,
   getIndex,
   getLength,
   getOvershot,
@@ -50,7 +49,11 @@ const {
   getCurrentArtist
 } = queueSelectors
 
-const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
+const {
+  getTrackId: getPlayerTrackId,
+  getUid: getPlayerUid,
+  getPlayerBehavior
+} = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
   queueActions
@@ -158,6 +161,7 @@ export function* watchPlay() {
     // Play a specific uid
     const playerUid = yield* select(getPlayerUid)
     const playerTrackId = yield* select(getPlayerTrackId)
+    const playerPlayerBehavior = yield* select(getPlayerBehavior)
 
     if (uid || trackId) {
       const playActionTrack = yield* select(
@@ -200,7 +204,15 @@ export function* watchPlay() {
       const trackIsDifferent = playerTrackId !== playActionTrack.track_id
       const trackIsSameButDifferentUid =
         playerTrackId === playActionTrack.track_id && uid !== playerUid
-      if (noTrackPlaying || trackIsDifferent || trackIsSameButDifferentUid) {
+      const trackIsSameButDifferentPlayerBehavior =
+        playerTrackId === playActionTrack.track_id &&
+        playerPlayerBehavior !== playerBehavior
+      if (
+        noTrackPlaying ||
+        trackIsDifferent ||
+        trackIsSameButDifferentUid ||
+        trackIsSameButDifferentPlayerBehavior
+      ) {
         yield* put(
           playerActions.play({
             uid,

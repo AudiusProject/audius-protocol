@@ -47,7 +47,7 @@ mobile-comment-native-code-change:
     - checkout
     - mobile-halt-if-no-native-changes
     - web-pr-comment:
-        comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @nicoback2 @sliptype'
+        comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @dylanjeffers @sliptype'
 
 mobile-build-staging-ios:
   working_directory: ~/audius-protocol

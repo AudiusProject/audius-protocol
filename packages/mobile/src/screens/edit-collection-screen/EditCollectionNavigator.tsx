@@ -1,4 +1,5 @@
 import type { EditCollectionValues } from '@audius/common/store'
+import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { FormikProps } from 'formik'
 
@@ -35,6 +36,7 @@ export const EditCollectionNavigator = (
         />
         <Stack.Screen name='Advanced' component={AdvancedAlbumScreen} />
       </Stack.Navigator>
+      <PortalHost name='ConfirmPublishTrackPortal' />
       <DeletePlaylistConfirmationDrawer />
     </>
   )

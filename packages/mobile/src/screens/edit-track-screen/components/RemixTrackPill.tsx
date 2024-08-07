@@ -1,11 +1,11 @@
-import type { Track, User } from '@audius/common/models'
+import { useGetTrackById } from '@audius/common/api'
+import type { ID } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
-import { View } from 'react-native'
 
-import { Pill, Text } from 'app/components/core'
-import { TrackImage } from 'app/components/image/TrackImage'
-import UserBadges from 'app/components/user-badges'
+import { Flex, Paper, Text } from '@audius/harmony-native'
+import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { UserLink } from 'app/components/user-link'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -13,8 +13,7 @@ const messages = {
 }
 
 type RemixTrackPillProps = {
-  track: Track
-  user: User
+  trackId: ID
   style?: StyleProp<ViewStyle>
 }
 
@@ -44,26 +43,38 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 export const RemixTrackPill = (props: RemixTrackPillProps) => {
-  const { track, user, style } = props
+  const { trackId, style } = props
+  const { data: track } = useGetTrackById({ id: trackId })
   const styles = useStyles()
 
+  if (!track) return null
+
+  const { user, title } = track
+
   return (
-    <Pill style={[styles.trackPill, style]}>
-      <TrackImage
-        track={track}
+    <Paper
+      style={[styles.trackPill, style]}
+      backgroundColor='surface2'
+      shadow='flat'
+      border='strong'
+      borderRadius='xs'
+      direction='row'
+      alignItems='center'
+      p='s'
+      gap='xs'
+    >
+      <TrackImageV2
+        trackId={trackId}
         size={SquareSizes.SIZE_150_BY_150}
-        style={styles.trackArtwork}
+        style={{ height: 20, width: 20 }}
+        borderRadius='xs'
       />
-      <View style={styles.trackTextContainer}>
-        <Text style={styles.trackText} numberOfLines={1} ellipsizeMode='middle'>
-          {track.title}{' '}
-          <Text style={[styles.trackText, styles.byText]}>
-            {messages.trackBy}{' '}
-          </Text>
-          <Text style={styles.trackText}>{user.name} </Text>
+      <Flex direction='row' alignItems='center'>
+        <Text size='s' numberOfLines={1} ellipses>
+          {title} <Text color='subdued'>{messages.trackBy} </Text>
         </Text>
-      </View>
-      <UserBadges user={user} hideName />
-    </Pill>
+        <UserLink userId={user.user_id} size='s' disabled />
+      </Flex>
+    </Paper>
   )
 }

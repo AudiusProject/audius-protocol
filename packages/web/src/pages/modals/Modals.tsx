@@ -50,6 +50,7 @@ import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { TargetedMessageModal } from 'pages/chat-page/components/TargetedMessageModal'
 
 import { AppModal } from './AppModal'
 
@@ -68,9 +69,6 @@ const TrendingRewardsModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
 )
 
-const EditTrackModal = lazy(
-  () => import('components/edit-track/EditTrackModal')
-)
 const InboxSettingsModal = lazy(
   () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
@@ -79,7 +77,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
-  EditTrack: EditTrackModal,
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
@@ -106,6 +103,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
+  TargetedMessageModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
   CoinflowOnramp: CoinflowOnrampModal,

@@ -42,11 +42,11 @@ export const useTrackMetadata = ({
     duration,
     genre,
     release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease,
     mood,
     is_unlisted: isUnlisted,
     musical_key,
-    bpm
+    bpm,
+    is_custom_bpm: isCustomBpm
   } = track
 
   const labels = [
@@ -64,7 +64,7 @@ export const useTrackMetadata = ({
       id: TrackMetadataType.RELEASE_DATE,
       value: formatDate(releaseDate ?? ''),
       label: 'Released',
-      isHidden: isUnlisted || !releaseDate || isScheduledRelease
+      isHidden: isUnlisted
     },
     {
       id: TrackMetadataType.MOOD,
@@ -74,7 +74,7 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.BPM,
       label: 'BPM',
-      value: bpm ? Math.round(bpm ?? 0).toString() : '',
+      value: bpm ? (bpm ?? 0).toFixed(isCustomBpm ? 2 : 0).toString() : '',
       isHidden: !isSearchV2Enabled
     },
     {

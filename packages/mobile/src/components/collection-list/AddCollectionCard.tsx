@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { ID } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
 import { cacheCollectionsActions } from '@audius/common/store'
+import type { Maybe } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -45,13 +46,22 @@ export const AddCollectionCard = ({
     )
   }, [onCreate, dispatch, collectionType, source, sourceTrackId])
 
+  const [height, setHeight] = useState<Maybe<number>>(undefined)
+
   return (
     <Paper
-      h={276}
       alignItems='center'
       justifyContent='center'
       gap='xs'
       onPress={handlePress}
+      h={height}
+      onLayout={(e) => {
+        // Dynamically size this card based on the width of it's container
+        // to match collection card image.
+        // 98 is the height of the rest of the collection card, which is static
+        setHeight(e.nativeEvent.layout.width + 98)
+      }}
+      style={{ minHeight: 250 }}
     >
       <IconSave color='default' size='m' />
       <Text numberOfLines={2} variant='title' textAlign='center'>

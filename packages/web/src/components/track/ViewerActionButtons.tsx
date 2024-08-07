@@ -49,7 +49,7 @@ type EntityDetails = {
 }
 
 const useTrackEntityDetails = (id: ID): EntityDetails => {
-  const { data: track } = useGetTrackById({ id })
+  const { data: track } = useGetTrackById({ id }, { disabled: id === -1 })
 
   const {
     stream_conditions: streamConditions,
@@ -67,7 +67,10 @@ const useTrackEntityDetails = (id: ID): EntityDetails => {
 }
 
 const useCollectionEntityDetails = (id: ID): EntityDetails => {
-  const { data: collection } = useGetPlaylistById({ playlistId: id })
+  const { data: collection } = useGetPlaylistById(
+    { playlistId: id },
+    { disabled: id === -1 }
+  )
 
   const {
     stream_conditions: streamConditions,

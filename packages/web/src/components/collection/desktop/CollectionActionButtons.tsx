@@ -128,7 +128,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       })}
       role='group'
       aria-label={messages.actionGroupLabel}
-      gap='2xl'
+      gap='xl'
       alignItems='center'
     >
       {shouldShowPlay ? playButton : null}

@@ -26,3 +26,21 @@ func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
 	)
 	return i, err
 }
+
+const getTx = `-- name: GetTx :one
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results where tx_hash = $1 limit 1
+`
+
+func (q *Queries) GetTx(ctx context.Context, txHash string) (CoreTxResult, error) {
+	row := q.db.QueryRow(ctx, getTx, txHash)
+	var i CoreTxResult
+	err := row.Scan(
+		&i.Rowid,
+		&i.BlockID,
+		&i.Index,
+		&i.CreatedAt,
+		&i.TxHash,
+		&i.TxResult,
+	)
+	return i, err
+}

@@ -134,6 +134,7 @@ class TrackMetadata(TypedDict):
     parental_warning_type: Optional[str]
     allowed_api_keys: Optional[str]
     bpm: Optional[float]
+    is_custom_bpm: Optional[bool]
     musical_key: Optional[str]
     audio_analysis_error_count: Optional[int]
 
@@ -189,6 +190,7 @@ track_metadata_format: TrackMetadata = {
     "parental_warning_type": None,
     "allowed_api_keys": None,
     "bpm": None,
+    "is_custom_bpm": False,
     "musical_key": None,
     "audio_analysis_error_count": 0,
 }
@@ -221,6 +223,14 @@ user_metadata_format = {
     "is_verified": False,
     "artist_pick_track_id": None,
     "allow_ai_attribution": False,
+}
+
+comment_metadata_format = {
+    "body": None,
+    "user_id": None,
+    "entity_id": None,
+    "entity_type": None,
+    "parent_comment_id": None,
 }
 
 

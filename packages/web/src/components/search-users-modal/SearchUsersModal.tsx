@@ -65,6 +65,7 @@ type UsersSearchProps = {
 type SearchUsersModalProps = {
   titleProps: ModalTitleProps
   onCancel?: () => void
+  footer?: ReactNode
 } & Omit<UsersSearchProps, 'query' | 'onChange'> &
   Omit<ModalProps, 'children'>
 
@@ -206,6 +207,7 @@ export const SearchUsersModal = ({
   onClosed,
   onClose,
   isOpen,
+  footer,
   ...rest
 }: SearchUsersModalProps) => {
   const [query, setQuery] = useState('')
@@ -236,6 +238,7 @@ export const SearchUsersModal = ({
         onClose={handleClose}
         {...rest}
       />
+      {footer ?? null}
     </Modal>
   )
 }

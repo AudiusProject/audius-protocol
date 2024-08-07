@@ -19,6 +19,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
+  GateKeeper,
+  LAST_GATE_KEEPER,
   STREAM_AVAILABILITY_TYPE,
   STREAM_CONDITIONS
 } from '../../types'
@@ -53,6 +55,9 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     )
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
+  const showPremiumDownloadsMessage =
+    downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
 
   const { ethCollectionMap, solCollectionMap, isLoading } = useSelector(
     getSupportedUserCollections
@@ -172,7 +177,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         dropdownInputStyle={styles.dropdownInput}
         disabled={disabled}
       />
-      {downloadConditions ? (
+      {showPremiumDownloadsMessage ? (
         <Box mt='l'>
           <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
         </Box>

@@ -62,7 +62,8 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const {
     playlist_id,
     is_private: initiallyHidden,
-    is_scheduled_release: isInitiallyScheduled
+    is_scheduled_release: isInitiallyScheduled,
+    playlist_contents: initialContents
   } = initialValues
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
@@ -125,7 +126,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root} id={formId}>
-        <CollectionNavigationPrompt />
+        <CollectionNavigationPrompt disabled={isDeleteConfirmationOpen} />
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
@@ -157,6 +158,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <VisibilityField
               entityType={isAlbum ? 'album' : 'playlist'}
               isUpload={isUpload}
+              isPublishable={
+                isAlbum ||
+                (!isAlbum &&
+                  (initialContents?.track_ids?.length ?? 1) > 0 &&
+                  !isUpload)
+              }
             />
           ) : (
             <ReleaseDateFieldLegacy />
@@ -207,7 +214,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               collectionId={playlist_id}
               entity={collectionTypeName}
               onCancel={() => setIsDeleteConfirmationOpen(false)}
-              onDelete={() => setIsDeleteConfirmationOpen(false)}
             />
             {!isUpload && confirmDrawerType ? (
               <ReleaseCollectionConfirmationModal

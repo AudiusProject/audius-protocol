@@ -125,7 +125,7 @@ class SearchPageContent extends Component {
     const onClickTile = (trackId, source) => {
       this.props.dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
-          searchText,
+          term: searchText,
           kind: 'track',
           id: trackId,
           source

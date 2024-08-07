@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-  useContext,
-  useLayoutEffect
-} from 'react'
+import { useCallback, useEffect, useState, useLayoutEffect } from 'react'
 
 import { statusIsNotFinalized } from '@audius/common/models'
 import {
@@ -23,7 +17,7 @@ import { AudioTransactionsTable } from 'components/audio-transactions-table'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { useSelector } from 'utils/reducer'
 
 import styles from './AudioTransactionsPage.module.css'
@@ -80,7 +74,7 @@ export const AudioTransactionsPage = () => {
     useState<full.GetAudioTransactionHistorySortDirectionEnum>(
       full.GetAudioTransactionHistorySortDirectionEnum.Desc
     )
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
   const dispatch = useDispatch()
   const setVisibility = useSetVisibility()
 

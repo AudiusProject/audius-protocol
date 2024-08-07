@@ -32,6 +32,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
+    comment_metadata_format,
     playlist_metadata_format,
     track_metadata_format,
     user_metadata_format,
@@ -96,6 +97,7 @@ class EntityType(str, Enum):
     TRACK_ROUTE = "TrackRoute"
     PLAYLIST_ROUTE = "PlaylistRoute"
     TIP = "Tip"
+    COMMENT = "Comment"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -313,6 +315,10 @@ def get_metadata_type_and_format(entity_type):
     elif entity_type == EntityType.USER:
         metadata_type = "user"
         metadata_format = user_metadata_format
+    elif entity_type == EntityType.COMMENT:
+        metadata_type = "comment"
+        metadata_format = comment_metadata_format
+
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format

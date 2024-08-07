@@ -23,7 +23,8 @@ import {
   OverflowAction,
   playbackPositionActions,
   PurchaseableContentType,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  artistPickModalActions
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -97,6 +98,16 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       )
     }
   }, [track, openPremiumContentPurchaseModal])
+
+  const handleSetAsArtistPick = useCallback(() => {
+    if (track) {
+      dispatch(artistPickModalActions.open({ trackId: track.track_id }))
+    }
+  }, [dispatch, track])
+
+  const handleUnsetAsArtistPick = useCallback(() => {
+    dispatch(artistPickModalActions.open({ trackId: null }))
+  }, [dispatch])
 
   if (!track || !user) {
     return null
@@ -197,7 +208,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
       toast({ content: messages.markedAsUnplayed })
     },
-    [OverflowAction.PURCHASE_TRACK]: handlePurchasePress
+    [OverflowAction.PURCHASE_TRACK]: handlePurchasePress,
+    [OverflowAction.SET_ARTIST_PICK]: handleSetAsArtistPick,
+    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick
   }
 
   return render(callbacks)

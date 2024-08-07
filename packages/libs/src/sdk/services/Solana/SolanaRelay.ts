@@ -1,4 +1,8 @@
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import {
+  PublicKey,
+  SendTransactionError,
+  TransactionInstruction
+} from '@solana/web3.js'
 
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
@@ -102,15 +106,38 @@ export class SolanaRelay extends BaseAPI {
       sendOptions
     }
 
-    const response = await this.request(
-      {
-        path: '/relay',
-        method: 'POST',
-        headers: headerParameters,
-        body
-      },
-      initOverrides
-    )
+    let response: Response
+    try {
+      response = await this.request(
+        {
+          path: '/relay',
+          method: 'POST',
+          headers: headerParameters,
+          body
+        },
+        initOverrides
+      )
+    } catch (e) {
+      // Catch response errors, and if possible, recreate the original
+      // SendTransactionError to transparently raise to the caller.
+      if (e instanceof Error && e.name === 'ResponseError') {
+        const resp = (e as runtime.ResponseError).response.clone()
+        const body = await resp.json()
+        if (
+          'error' in body &&
+          'transactionMessage' in body &&
+          'signature' in body
+        ) {
+          throw new SendTransactionError({
+            action: body.error.indexOf('Simulation') > -1 ? 'simulate' : 'send',
+            signature: body.signature,
+            transactionMessage: body.transactionMessage,
+            logs: body.transactionLogs
+          })
+        }
+      }
+      throw e
+    }
 
     return await new runtime.JSONApiResponse(response, (json) => {
       if (!runtime.exists(json, 'signature')) {

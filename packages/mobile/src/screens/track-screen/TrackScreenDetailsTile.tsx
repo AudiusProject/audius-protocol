@@ -40,9 +40,9 @@ import {
   usePublishContentModal
 } from '@audius/common/store'
 import {
+  formatReleaseDate,
   Genre,
   getDogEarType,
-  getLocalTimezone,
   removeNullable
 } from '@audius/common/utils'
 import dayjs from 'dayjs'
@@ -115,9 +115,7 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -197,7 +195,8 @@ export const TrackScreenDetailsTile = ({
     is_delete: isDeleted,
     release_date: releaseDate,
     is_scheduled_release: isScheduledRelease,
-    _is_publishing
+    _is_publishing,
+    preview_cid
   } = track as Track
 
   const isOwner = ownerId === currentUserId
@@ -229,7 +228,8 @@ export const TrackScreenDetailsTile = ({
     isUnlisted &&
     releaseDate &&
     dayjs(releaseDate).isAfter(dayjs())
-  const shouldShowPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
+  const shouldShowPreview =
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   const shouldHideFavoriteCount =
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
   const shouldHideRepostCount =

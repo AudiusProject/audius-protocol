@@ -262,7 +262,7 @@ export const RemixSettingsScreen = () => {
                 returnKeyType='done'
               />
               {parentTrack && parentTrackArtist && !isInvalidParentTrack ? (
-                <RemixTrackPill track={parentTrack} user={parentTrackArtist} />
+                <RemixTrackPill trackId={parentTrackId} />
               ) : null}
               {hasErrors ? (
                 <InputErrorMessage

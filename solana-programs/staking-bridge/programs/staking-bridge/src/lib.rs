@@ -35,7 +35,7 @@ use crate::wormhole::{
 #[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
-declare_id!("HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV");
+declare_id!("stkB5DZziVJT1C1VmzvDdRtdWxfs5nwcHViiaNBDK31");
 
 #[program]
 pub mod staking_bridge {
