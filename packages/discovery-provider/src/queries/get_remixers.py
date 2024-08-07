@@ -1,7 +1,6 @@
 import logging
 from typing import Optional, TypedDict  # pylint: disable=C0302
 
-from flask.globals import request
 from sqlalchemy import distinct
 
 from src.models.tracks.remix import Remix
@@ -9,7 +8,6 @@ from src.models.tracks.track import Track
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import add_query_pagination, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import extract_key
 
 logger = logging.getLogger(__name__)
 
