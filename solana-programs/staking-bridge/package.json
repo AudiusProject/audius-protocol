@@ -12,6 +12,7 @@
     "@raydium-io/raydium-sdk": "1.3.1-beta.8",
     "@solana/spl-token": "0.3.8"
   },
+  "packageManager": "yarn@1.22.22",
   "devDependencies": {
     "@types/bn.js": "5.1.0",
     "@types/chai": "4.3.0",

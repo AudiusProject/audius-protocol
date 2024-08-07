@@ -31,6 +31,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
       items={items}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       ref={ref}
       renderTrigger={children}
       zIndex={zIndex}

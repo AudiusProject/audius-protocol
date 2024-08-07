@@ -24,26 +24,32 @@ export const useClickOutside = (
     const handleClick = (e: MouseEvent) => {
       if (e.target) {
         if (
-          !ref.current ||
-          (ref.current && ref.current.contains(e.target)) ||
-          ignoreClick(e.target)
+          ignoreClick
+            ? ignoreClick(e.target)
+            : !ref.current || (ref.current && ref.current.contains(e.target))
         ) {
           return
         }
       }
-      onClick()
+
+      const handleMouseup = () => {
+        onClick()
+        document.removeEventListener('mouseup', handleMouseup)
+      }
+
+      document.addEventListener('mouseup', handleMouseup)
     }
 
     if (isVisible) {
       // Don't attach the listener until all the current events are finished bubbling
       setTimeout(() => {
-        document.addEventListener('click', handleClick)
+        document.addEventListener('mousedown', handleClick)
       }, 0)
     }
     return () => {
       // Don't remove the listener until after the listener has been attached
       setTimeout(() => {
-        document.removeEventListener('click', handleClick)
+        document.removeEventListener('mousedown', handleClick)
       }, 0)
     }
   }, [onClick, ignoreClick, isVisible])
