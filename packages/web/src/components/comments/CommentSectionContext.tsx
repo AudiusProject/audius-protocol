@@ -36,6 +36,8 @@ type CommentSectionContextType = CommentSectionContextProps & {
   handleEditComment: (commentId: ID, newMessage: string) => void
   handleDeleteComment: (commentId: ID) => void
   handleReportComment: (commentId: ID) => void
+  handleLoadMoreRootComments: () => void
+  handleLoadMoreReplies: (commentId: ID) => void
   fetchComments: () => void
 }
 
@@ -52,6 +54,8 @@ const initialContextValues: CommentSectionContextType = {
   handleEditComment: emptyFn,
   handleDeleteComment: emptyFn,
   handleReportComment: emptyFn,
+  handleLoadMoreRootComments: emptyFn,
+  handleLoadMoreReplies: emptyFn,
   fetchComments: emptyFn
 }
 
@@ -136,6 +140,12 @@ export const CommentSectionProvider = ({
   const handleReportComment = (commentId: ID) => {
     console.log('Clicked report for ', commentId)
   }
+  const handleLoadMoreRootComments = () => {
+    console.log('Loading more root comments')
+  }
+  const handleLoadMoreReplies = (commentId: ID) => {
+    console.log('Loading more replies for', commentId)
+  }
 
   // TODO: move this to audius-query
   // load comments logic
@@ -178,7 +188,9 @@ export const CommentSectionProvider = ({
         handleEditComment,
         handleDeleteComment,
         handleReportComment,
-        fetchComments
+        handleLoadMoreReplies,
+        handleLoadMoreRootComments,
+        fetchComments // todo: temporary - remove later
       }}
     >
       {children}
