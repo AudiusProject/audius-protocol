@@ -1,4 +1,7 @@
-import { userMetadataFromSDK } from '@audius/common/adapters'
+import {
+  userMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import {
   Name,
   FavoriteSource,
@@ -15,7 +18,6 @@ import {
   MAX_HANDLE_LENGTH,
   getCityAndRegion
 } from '@audius/common/services'
-import { transformAndCleanList } from '@audius/common/src/adapters/utils'
 import {
   accountActions,
   accountSelectors,

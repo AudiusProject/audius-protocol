@@ -1,8 +1,10 @@
-import { ID, Id, OptionalId } from '@audius/common/models'
-import { userMetadataFromSDK } from '@audius/common/src/adapters/user'
-import { transformAndCleanList } from '@audius/common/src/adapters/utils'
-import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
+  userMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { ID, Id, OptionalId } from '@audius/common/models'
+import {
+  accountSelectors,
   UserListSagaFactory,
   relatedArtistsUserListActions,
   relatedArtistsUserListSelectors,
@@ -31,7 +33,7 @@ function* fetchRelatedArtists({
 }: FetchRelatedArtistsArgs) {
   const offset = currentPage * pageSize
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* select(accountSelectors.getUserId)
 
   const { data } = yield* call(
     [sdk.full.users, sdk.full.users.getRelatedUsers],
