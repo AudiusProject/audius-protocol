@@ -31,7 +31,7 @@ export const NavHeader = () => {
       justifyContent='space-between'
       p={spacing.l}
       flex={0}
-      css={{ minHeight: spacing.unit14 }}
+      css={{ minHeight: 58 }}
     >
       <Link to={HOME_PAGE} aria-label={messages.homeLink}>
         <IconAudiusLogoHorizontal

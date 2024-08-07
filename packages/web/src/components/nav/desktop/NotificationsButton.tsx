@@ -3,7 +3,13 @@ import { useCallback, useRef } from 'react'
 import { Name } from '@audius/common/models'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { Text, IconNotificationOn, TextProps, useTheme } from '@audius/harmony'
+import {
+  Text,
+  IconNotificationOn,
+  TextProps,
+  useTheme,
+  Flex
+} from '@audius/harmony'
 import { CSSObject } from '@emotion/styled'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -24,20 +30,34 @@ const messages = {
 }
 
 const NotificationCount = (props: TextProps) => {
-  const { color, cornerRadius, spacing } = useTheme()
-  const css: CSSObject = {
+  const { color, cornerRadius } = useTheme()
+  const backgroundCss: CSSObject = {
     position: 'absolute',
-    top: -7,
-    right: 0,
-    transform: 'translateX(50%)',
+    top: 2,
+    right: 2,
+    transform: 'translate(50%, -50%)',
     borderRadius: cornerRadius.m,
-    backgroundColor: color.text.danger,
+    backgroundColor: color.special.orange,
+    minWidth: '14px',
+    minHeight: '14px'
+  }
+  const textCss: CSSObject = {
     color: color.text.staticWhite,
-    paddingLeft: spacing.xs,
-    paddingRight: spacing.xs
+    fontSize: '11px',
+    lineHeight: '14px',
+    fontWeight: 700
   }
 
-  return <Text variant='label' size='s' css={css} {...props} />
+  return (
+    <Flex
+      ph='2xs'
+      justifyContent='center'
+      alignItems='center'
+      css={backgroundCss}
+    >
+      <Text variant='label' css={textCss} {...props} />
+    </Flex>
+  )
 }
 
 export const NotificationsButton = () => {
@@ -65,18 +85,6 @@ export const NotificationsButton = () => {
         aria-label={messages.label(notificationCount)}
         onClick={handleToggleNotificationPanel}
         isActive={notificationPanelIsOpen}
-        css={(theme) =>
-          notificationCount > 0
-            ? {
-                backgroundColor: theme.color.icon.warning,
-                svg: { path: { fill: theme.color.static.white } },
-                '&:hover,&:active': {
-                  backgroundColor: theme.color.icon.warning,
-                  svg: { path: { fill: theme.color.static.white } }
-                }
-              }
-            : null
-        }
       >
         {notificationCount > 0 && !notificationPanelIsOpen ? (
           <NotificationCount>
