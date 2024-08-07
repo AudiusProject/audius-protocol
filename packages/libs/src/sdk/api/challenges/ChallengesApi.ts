@@ -320,7 +320,10 @@ export class ChallengesApi extends BaseAPI {
           senderEthAddress
         })
       const submitTransaction = await this.rewardManager.buildTransaction({
-        instructions: [secpInstruction, submitInstruction]
+        instructions: [secpInstruction, submitInstruction],
+        priorityFee: {
+          priority: 'VERY_HIGH'
+        }
       })
       transactions.push(submitTransaction)
     }
