@@ -340,7 +340,10 @@ export class UsersApi extends GeneratedUsersApi {
     })
 
     const transaction = await this.claimableTokens.buildTransaction({
-      instructions: [secp, transfer]
+      instructions: [secp, transfer],
+      priorityFee: {
+        priority: 'VERY_HIGH'
+      }
     })
     return await this.claimableTokens.sendTransaction(transaction)
   }

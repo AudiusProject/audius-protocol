@@ -243,7 +243,10 @@ export class ChallengesApi extends BaseAPI {
         senderEthAddress: antiAbuseOracleEthAddress
       })
     const submitAAOTransaction = await this.rewardManager.buildTransaction({
-      instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
+      instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction],
+      priorityFee: {
+        priority: 'VERY_HIGH'
+      }
     })
     return {
       transactionSignature: await this.rewardManager.sendTransaction(
@@ -351,7 +354,10 @@ export class ChallengesApi extends BaseAPI {
         amount
       })
     const transaction = await this.rewardManager.buildTransaction({
-      instructions: [instruction]
+      instructions: [instruction],
+      priorityFee: {
+        priority: 'VERY_HIGH'
+      }
     })
     // Skip preflight since we likely just submitted the attestations and
     // the chosen RPC's state might not yet reflect that

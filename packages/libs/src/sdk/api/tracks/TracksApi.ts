@@ -51,6 +51,8 @@ import {
   GetPurchaseTrackTransactionSchema
 } from './types'
 
+const PURCHASE_MINIMUM_MICRO_LAMPORTS = 150000
+
 // Extend that new class
 export class TracksApi extends GeneratedTracksApi {
   private readonly trackUploadHelper: TrackUploadHelper
@@ -514,7 +516,8 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          microLamports: 100000
+          priority: 'VERY_HIGH',
+          minimumMicroLamports: PURCHASE_MINIMUM_MICRO_LAMPORTS
         }
       })
       return transaction
@@ -555,7 +558,8 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          microLamports: 100000
+          priority: 'VERY_HIGH',
+          minimumMicroLamports: PURCHASE_MINIMUM_MICRO_LAMPORTS
         }
       })
       return transaction

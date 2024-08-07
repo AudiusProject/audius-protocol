@@ -244,11 +244,11 @@ export const PayoutWalletModal = () => {
                       ataPubkey,
                       addressPubkey,
                       usdcMint
-                    ),
-                    ComputeBudgetProgram.setComputeUnitPrice({
-                      microLamports: 100000
-                    })
-                  ]
+                    )
+                  ],
+                  priorityFee: {
+                    microLamports: 100000
+                  }
                 })
 
               const { signature } = await sdk.services.solanaRelay.relay({

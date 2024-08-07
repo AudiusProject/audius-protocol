@@ -123,18 +123,22 @@ export class BaseSolanaProgramClient {
         )
       } else {
         const res = await this.connection.getRecentPrioritizationFees()
-        const orderedFees = res.map((r) => r.prioritizationFee).sort()
+        const orderedFees = res
+          .map((r) => r.prioritizationFee)
+          .sort((a, b) => a - b)
         const percentile =
           'percentile' in priorityFee
             ? priorityFee.percentile
             : priorityToPercentileMap[priorityFee.priority]
-        const microLamports =
-          orderedFees[
-            Math.max(
-              Math.round((percentile / 100.0) * orderedFees.length - 1),
-              0
-            )
-          ]
+        const percentileIndex = Math.max(
+          Math.round((percentile / 100.0) * orderedFees.length - 1),
+          0
+        )
+        const microLamports = Math.max(
+          (orderedFees[percentileIndex] ?? 0) +
+            (priorityFee.additionalMicroLamports ?? 0),
+          priorityFee.minimumMicroLamports ?? 0
+        )
         if (microLamports !== undefined) {
           instructions.push(
             ComputeBudgetProgram.setComputeUnitPrice({

@@ -45,6 +45,8 @@ import {
   UploadAlbumRequest
 } from './types'
 
+const PURCHASE_MINIMUM_MICRO_LAMPORTS = 150000
+
 export class AlbumsApi {
   private readonly playlistsApi: PlaylistsApi
   constructor(
@@ -358,7 +360,8 @@ export class AlbumsApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          microLamports: 100000
+          priority: 'VERY_HIGH',
+          minimumMicroLamports: PURCHASE_MINIMUM_MICRO_LAMPORTS
         }
       })
       return transaction
@@ -399,7 +402,8 @@ export class AlbumsApi {
           locationMemoInstruction
         ],
         priorityFee: {
-          microLamports: 100000
+          priority: 'VERY_HIGH',
+          minimumMicroLamports: PURCHASE_MINIMUM_MICRO_LAMPORTS
         }
       })
       return transaction
