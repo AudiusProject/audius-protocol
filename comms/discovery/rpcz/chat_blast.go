@@ -36,9 +36,13 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			$1 as blast_id,
 			followee_user_id as from_user_id,
 			follower_user_id as to_user_id,
-			chat_member.chat_id
+			member_a.chat_id
 		from follows
-		join chat_member on followee_user_id = chat_member.user_id
+
+		-- add to chat where both parties have a chat_member with the same chat_id
+		join chat_member member_a on followee_user_id = member_a.user_id
+		join chat_member member_b on follower_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
+
 		where followee_user_id = $2
 		  and is_delete = false
 	)
