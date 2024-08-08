@@ -512,3 +512,13 @@ func (ss *MediorumServer) serveInternalBlobPOST(c echo.Context) error {
 
 	return c.JSON(200, "ok")
 }
+
+func (ss *MediorumServer) serveLegacyBlobAnalysis(c echo.Context) error {
+	cid := c.Param("cid")
+	var analysis *QmAudioAnalysis
+	err := ss.crud.DB.First(&analysis, "cid = ?", cid).Error
+	if err != nil {
+		return echo.NewHTTPError(404, err.Error())
+	}
+	return c.JSON(200, analysis)
+}
