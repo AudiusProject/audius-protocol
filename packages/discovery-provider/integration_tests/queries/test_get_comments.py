@@ -57,7 +57,6 @@ def test_get_comments_most_recent(app):
         comments = get_track_comments({}, 1)
         assert len(comments) == 5
         for comment in comments:
-            logger.info(f"asdf comment {comment}")
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
                 assert comment["react_count"] == 1
