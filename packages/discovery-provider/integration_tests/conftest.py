@@ -41,6 +41,9 @@ TEST_CONFIG_OVERRIDE = {
         "engine_args_literal": ENGINE_ARGS_LITERAL,
         "run_migrations": "true",
     },
+    "solana": {
+        "staking_bridge_usdc_payout_wallet": "staking-bridge-usdc-payout-wallet"
+    }
 }
 
 
