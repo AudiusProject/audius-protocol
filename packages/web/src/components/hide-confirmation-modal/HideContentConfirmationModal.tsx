@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useEditAccessConfirmationModal } from '@audius/common/store'
+import { useHideContentConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -14,13 +14,13 @@ import {
 const messages = {
   title: 'Confirm Update',
   description:
-    "You're about to change the audience for your content. This update may cause others to lose the ability to listen and share.",
+    "You're about to change your content from public to hidden. It will be hidden from the public and your followers will lose access.",
   cancel: 'Cancel',
-  confirm: 'Update Audience'
+  confirm: 'Make Hidden'
 }
 
-export const EditAccessConfirmationModal = () => {
-  const { data, isOpen, onClose } = useEditAccessConfirmationModal()
+export const HideContentConfirmationModal = () => {
+  const { data, isOpen, onClose } = useHideContentConfirmationModal()
   const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {

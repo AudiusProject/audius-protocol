@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useEditAccessConfirmationModal } from '@audius/common/store'
+import { useEarlyReleaseConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -8,20 +8,22 @@ import {
   ModalFooter,
   Button,
   Text,
-  Flex
+  Flex,
+  IconRocket
 } from '@audius/harmony'
 
-const messages = {
-  title: 'Confirm Update',
-  description:
-    "You're about to change the audience for your content. This update may cause others to lose the ability to listen and share.",
+const getMessages = (contentType: 'track' | 'album') => ({
+  title: 'Confirm Early Release',
+  description: `Do you want to release your ${contentType} now? Your followers will be notified.`,
   cancel: 'Cancel',
-  confirm: 'Update Audience'
-}
+  confirm: 'Release Now'
+})
 
-export const EditAccessConfirmationModal = () => {
-  const { data, isOpen, onClose } = useEditAccessConfirmationModal()
-  const { confirmCallback, cancelCallback } = data
+export const EarlyReleaseConfirmationModal = () => {
+  const { data, isOpen, onClose } = useEarlyReleaseConfirmationModal()
+  const { contentType, confirmCallback, cancelCallback } = data
+
+  const messages = getMessages(contentType)
 
   const handleConfirm = useCallback(() => {
     confirmCallback()
@@ -37,6 +39,7 @@ export const EditAccessConfirmationModal = () => {
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
         <Flex alignSelf='center' gap='s'>
+          <IconRocket color='default' size='l' />
           <Text variant='label' size='xl' strength='strong'>
             {messages.title}
           </Text>

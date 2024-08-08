@@ -33,11 +33,13 @@ import {
   OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
+  trackPageActions,
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
   PurchaseableContentType,
-  usePublishContentModal
+  usePublishConfirmationModal,
+  useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import {
   formatReleaseDate,
@@ -171,7 +173,9 @@ export const TrackScreenDetailsTile = ({
   const isCurrentTrack = useSelector((state: CommonState) => {
     return track && track.track_id === getTrackId(state)
   })
-  const { onOpen: openPublishModal } = usePublishContentModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
   const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
     FeatureFlags.SEARCH_V2
   )
@@ -434,9 +438,28 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const publish = useCallback(() => {
+    dispatch(trackPageActions.makeTrackPublic(trackId))
+  }, [dispatch, trackId])
+
   const handlePressPublish = useCallback(() => {
-    openPublishModal({ contentId: trackId, contentType: 'track' })
-  }, [openPublishModal, trackId])
+    if (isScheduledRelease) {
+      openEarlyReleaseConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    } else {
+      openPublishConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    }
+  }, [
+    openPublishConfirmation,
+    openEarlyReleaseConfirmation,
+    isScheduledRelease,
+    publish
+  ])
 
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
