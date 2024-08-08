@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { ID, Kind, Name, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
-import { Box, Flex, Text, useTheme } from '@audius/harmony'
+import { Box, FilterButton, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -12,12 +12,14 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { ViewLayout, viewLayoutOptions } from '../types'
 import { useGetSearchResults, useSearchParams } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 
 const messages = {
   playlists: 'Playlists',
+  layoutOptionsLabel: 'View As',
   sortOptionsLabel: 'Sort By'
 }
 
@@ -97,6 +99,7 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
 }
 
 export const PlaylistResultsPage = () => {
+  const [playlistsLayout, setPlaylistsLayout] = useState<ViewLayout>('grid')
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
@@ -117,7 +120,18 @@ export const PlaylistResultsPage = () => {
           <Text variant='heading' textAlign='left'>
             {messages.playlists}
           </Text>
-          <SortMethodFilterButton />
+          <Flex gap='s'>
+            <SortMethodFilterButton />
+            <FilterButton
+              value={playlistsLayout}
+              variant='replaceLabel'
+              optionsLabel={messages.layoutOptionsLabel}
+              onChange={(value: ViewLayout) => {
+                setPlaylistsLayout(value)
+              }}
+              options={viewLayoutOptions}
+            />
+          </Flex>
         </Flex>
       ) : null}
       {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}
