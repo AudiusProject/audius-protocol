@@ -19,10 +19,10 @@ export const IconText = ({
 
   return (
     <Flex direction='row' h='l' gap='xs' alignItems='center'>
-      {icons.map(({ icon: Icon, color: iconColor = 'default' }, idx) => (
+      {icons.map(({ icon: Icon, color: iconColor = 'default' }, index) => (
         <>
-          {idx > 0 ? separator : null}
-          <Icon key={`icon${idx}`} size='2xs' color={iconColor} />
+          {index > 0 ? separator : null}
+          <Icon key={`icon${index}`} size='2xs' color={iconColor} />
         </>
       ))}
       <Text variant='body' size='xs' color={color}>
