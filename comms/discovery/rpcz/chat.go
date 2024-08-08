@@ -13,6 +13,19 @@ import (
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
+	// first find any blasts that should seed this chat ...
+	// todo: do we have to do this in both directions?
+	// todo: do we have to do this for all audiences too?
+	//       if it is related to an `audience_track_id` we won't have that here...
+	//       so maybe the client can pass a separate param like `seed_blast_ids` to seed the thread context.
+	// todo: should mark hidden for blaster
+	blasts, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
+		UserID: userId,
+	})
+	if err != nil {
+		return err
+	}
+
 	// it is possible that two conflicting chats get created at the same time
 	// in which case there will be two different chat secrets
 	// to deterministically resolve this, if there is a conflict
@@ -52,15 +65,6 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 
 	}
 
-	// seed chat with any blasts...
-	// todo: do we have to do this in both directions?
-	// todo: do we have to do this for all audiences too?
-	//       if it is related to an `audience_track_id` we won't have that here...
-	//       so maybe the client can pass a separate param like `seed_blast_ids` to seed the thread context.
-	// todo: should mark hidden for blaster
-	blasts, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
-		UserID: userId,
-	})
 	for _, blast := range blasts {
 		_, err = tx.Exec(`
 		insert into chat_message

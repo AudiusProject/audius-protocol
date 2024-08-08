@@ -109,6 +109,15 @@ func TestChatBlast(t *testing.T) {
 
 	}
 
+	// after upgrade... user 101 has no pending blasts
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 101,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 0)
+	}
+
 	// ----------------- a second message ------------------------
 	err = chatBlast(tx, 69, time.Now(), schema.ChatBlastRPCParams{
 		BlastID:  "b2",

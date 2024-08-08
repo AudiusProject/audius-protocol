@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"comms.audius.co/discovery/db"
+	"comms.audius.co/discovery/misc"
 )
 
 type BlastRow struct {
+	PendingChatID   string        `db:"-" json:"pending_chat_id"`
 	BlastID         string        `db:"blast_id" json:"chat_id"`
 	FromUserID      int32         `db:"from_user_id" json:"from_user_id"`
 	Audience        string        `db:"audience" json:"audience"`
@@ -22,7 +24,8 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 	var stmt = `
 	select *
 	from chat_blast b
-	where from_user_id in (
+	where
+	from_user_id in (
 		select followee_user_id
 		from follows
 		where follower_user_id = $1
@@ -37,14 +40,35 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 		return nil, err
 	}
 
-	// todo: get existing chat_ids for current user
-	//       and filter out any blasts that already have a chat ID
+	for idx, row := range items {
+		chatId := misc.ChatID(int(arg.UserID), int(row.FromUserID))
+		items[idx].PendingChatID = chatId
+	}
 
-	// for idx, row := range items {
-	// 	chatId := misc.ChatID(int(arg.UserID), int(row.FromUserID))
-	//
-	// }
-	// return items, err
+	var existingChatIdList []string
+	err = q.SelectContext(ctx, &existingChatIdList, `
+		select chat_id from chat_member where user_id = $1
+	`, arg.UserID)
+	if err != nil {
+		panic(err)
+	}
+
+	existingChatIds := map[string]bool{}
+	for _, id := range existingChatIdList {
+		existingChatIds[id] = true
+	}
+
+	// // todo: filter out blast rows where chatIds is taken
+	filtered := make([]BlastRow, 0, len(items))
+	for _, item := range items {
+		if existingChatIds[item.PendingChatID] {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+
+	return filtered, err
 
 	return items, nil
+
 }
