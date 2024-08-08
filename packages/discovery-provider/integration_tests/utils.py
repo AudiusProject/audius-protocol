@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from src.models.comments.comment import Comment
+from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -49,8 +52,6 @@ from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, Use
 from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
 from src.models.users.user_tip import UserTip
-from src.models.comments.comment import Comment
-from src.models.comments.comment_thread import CommentThread
 from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -124,6 +125,7 @@ def populate_mock_db(db, entities, block_offset=None):
         tracks = entities.get("tracks", [])
         comments = entities.get("comments", [])
         comment_threads = entities.get("comment_threads", [])
+        comment_reactions = entities.get("comment_reactions", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -799,5 +801,18 @@ def populate_mock_db(db, entities, block_offset=None):
                 comment_id=comment_threads_meta.get("comment_id", i),
             )
             session.add(comment_thread_record)
+        for i, comment_reactions_meta in enumerate(comment_reactions):
+            comment_reactions_record = CommentReaction(
+                comment_id=comment_reactions_meta.get("comment_id", i),
+                user_id=comment_reactions_meta.get("user_id", i),
+                is_delete=comment_reactions_meta.get("is_delete", i),
+                created_at=comment_reactions_meta.get("created_at", datetime.now()),
+                updated_at=comment_reactions_meta.get("updated_at", datetime.now()),
+                txhash=comment_reactions_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_reactions_meta.get(
+                    "blockhash", str(i + block_offset)
+                ),
+            )
+            session.add(comment_reactions_record)
 
         session.commit()
