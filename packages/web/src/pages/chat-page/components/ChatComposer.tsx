@@ -73,9 +73,9 @@ export const ChatComposer = (props: ChatComposerProps) => {
       if (isBlast) {
         dispatch(
           sendTargetedMessage({
-            blastId: chatId,
+            blastId: ChatBlastAudience.FOLLOWERS,
             audience: ChatBlastAudience.FOLLOWERS,
-            message
+            message: value
           })
         )
       } else if (chatId && value) {
@@ -85,7 +85,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
         onMessageSent()
       }
     },
-    [chatId, value, setValue, dispatch, onMessageSent]
+    [isBlast, chatId, value, dispatch, onMessageSent]
   )
 
   // Submit when pressing enter while not holding shift

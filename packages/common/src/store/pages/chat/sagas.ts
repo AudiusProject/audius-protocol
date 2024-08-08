@@ -570,9 +570,12 @@ function* doSendTargetedMessage(
     // )
 
     yield* call([sdk.chats, sdk.chats.messageBlast], {
-      audience: ChatBlastAudience.FOLLOWERS,
+      audience,
+      // TODO: use blastId if it's already set?
       blastId: messageIdToUse,
-      message
+      message,
+      currentUserId,
+      audienceTrackId
     })
     // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
   } catch (e) {

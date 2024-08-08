@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import { useCanSendMessage } from '@audius/common/hooks'
 import { chatActions, chatSelectors } from '@audius/common/store'
+import { ChatBlastAudience } from '@audius/sdk'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -35,6 +36,8 @@ export const ChatPage = ({
   const dispatch = useDispatch()
   const { firstOtherUser, canSendMessage } = useCanSendMessage(currentChatId)
   const chat = useSelector((state) => getChat(state, currentChatId ?? ''))
+
+  const isBlastMessage = currentChatId === ChatBlastAudience.FOLLOWERS
 
   // Get the height of the header so we can slide the messages list underneath it for the blur effect
   const [headerRef, headerBounds] = useMeasure({
@@ -106,7 +109,7 @@ export const ChatPage = ({
                 className={styles.messageList}
                 chatId={currentChatId}
               />
-              {canSendMessage && chat ? (
+              {isBlastMessage || (canSendMessage && chat) ? (
                 <ChatComposer
                   chatId={currentChatId}
                   onMessageSent={handleMessageSent}

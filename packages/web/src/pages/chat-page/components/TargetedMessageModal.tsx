@@ -69,10 +69,9 @@ export const TargetedMessageModal = () => {
   }
 
   const handleSubmit = (values: FormikValues) => {
-    window.alert(JSON.stringify(values))
     switch (values.target_audience) {
       case 'followers':
-        dispatch(goToChat({ chatId: 'followers' }))
+        dispatch(goToChat({ chatId: ChatBlastAudience.FOLLOWERS }))
         break
       case 'supporters':
         // do something
@@ -86,6 +85,7 @@ export const TargetedMessageModal = () => {
       default:
         break
     }
+    onClose()
   }
 
   return (
