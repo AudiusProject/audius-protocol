@@ -1,5 +1,6 @@
+import { ReactNode } from 'react'
+
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
@@ -7,17 +8,35 @@ import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
 import styles from './Header.module.css'
 
-const Header = (props) => {
+export type HeaderProps = {
+  primary: ReactNode
+  topLeftElement?: ReactNode // e.g. searchbar
+  bottomBar?: ReactNode // e.g. tabs
+  secondary?: ReactNode
+  rightDecorator?: ReactNode
+  variant?: 'main' | 'mini' | 'section' | 'page'
+  containerStyles?: string
+  wrapperClassName?: string
+  showBackButton?: boolean
+  onClickBack?: () => void
+  overrideWidth?: number
+  children?: ReactNode
+  isChromeOrSafari?: boolean
+  scrollBarWidth?: number
+  headerContainerRef?: React.RefObject<HTMLDivElement>
+}
+
+const Header = (props: HeaderProps) => {
   const {
     primary,
     secondary = null,
     rightDecorator = null,
     topLeftElement = null,
     children,
-    variant,
-    containerStyles,
+    variant = 'main',
+    containerStyles = '',
     wrapperClassName,
-    showBackButton,
+    showBackButton = false,
     onClickBack,
     bottomBar,
     overrideWidth = null,
@@ -57,7 +76,7 @@ const Header = (props) => {
         >
           <div
             className={styles.middleRow}
-            style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
+            style={overrideWidth !== null ? { maxWidth: overrideWidth } : {}}
           >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
               {showBackButton ? (
@@ -81,26 +100,6 @@ const Header = (props) => {
       )}
     </>
   )
-}
-
-Header.propTypes = {
-  primary: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
-  topLeftElement: PropTypes.node, // e.g. searchbar
-  bottomBar: PropTypes.node, // e.g. tabs
-  secondary: PropTypes.node,
-  rightDecorator: PropTypes.node,
-  variant: PropTypes.oneOf(['main', 'mini', 'section', 'page']),
-  containerStyles: PropTypes.string,
-  wrapperClassName: PropTypes.string,
-  showBackButton: PropTypes.bool,
-  onClickBack: PropTypes.func,
-  overrideWidth: PropTypes.number
-}
-
-Header.defaultProps = {
-  variant: 'main',
-  containerStyles: '',
-  showBackButton: false
 }
 
 export default Header

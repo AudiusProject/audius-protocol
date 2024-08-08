@@ -4,7 +4,7 @@ import { Flex, RadioGroup, SelectablePill, Text } from '@audius/harmony'
 import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
-import Header from 'components/header/desktop/Header'
+import Header, { HeaderProps } from 'components/header/desktop/Header'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
@@ -12,7 +12,7 @@ import { categories } from './categories'
 import { useSearchCategory, useSearchParams } from './hooks'
 import { Category, CategoryKey } from './types'
 
-export const SearchHeader = () => {
+export const SearchHeader = (props: Partial<HeaderProps>) => {
   const { query } = useSearchParams()
   const [categoryKey, setCategory] = useSearchCategory()
   const isMobile = useIsMobile()
@@ -74,6 +74,7 @@ export const SearchHeader = () => {
     </Flex>
   ) : (
     <Header
+      {...props}
       primary='Search'
       secondary={
         query ? (
