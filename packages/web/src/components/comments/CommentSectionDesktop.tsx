@@ -1,4 +1,3 @@
-import { commentsApiFetch, useGetCommentsByTrackId } from '@audius/common/api'
 import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
@@ -9,7 +8,6 @@ import { CommentThread } from './CommentThread'
 export const CommentSectionDesktop = () => {
   const {
     userId,
-    entityId,
     comments,
     isLoading,
     handlePostComment,
@@ -45,7 +43,6 @@ export const CommentSectionDesktop = () => {
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
       <CommentHeader commentCount={comments.length} />
-      <Button onClick={() => console.log('clicked')}>Refresh</Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed !== null ? (
           <>

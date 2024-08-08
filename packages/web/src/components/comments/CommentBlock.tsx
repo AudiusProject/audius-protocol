@@ -76,12 +76,8 @@ export const CommentBlock = (props: CommentBlockProps) => {
     timestampS,
     id: commentId,
     createdAt,
-    userId: id
+    userId: userIdStr
   } = comment
-  console.log({ comment })
-  const userId = Number(id)
-
-  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
 
   const {
     handleEditComment,
@@ -91,55 +87,35 @@ export const CommentBlock = (props: CommentBlockProps) => {
     handlePinComment
   } = useCurrentCommentSection()
 
+  const userId = Number(userIdStr)
+  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+
   const [showEditInput, setShowEditInput] = useState(false)
-  const [reactionState, setReactionState] = useState(false)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
+  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
+  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
 
   const handleCommentEdit = (commentMessage: string) => {
     setShowEditInput(false)
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      handleEditComment(decodedCommentId, commentMessage)
-    }
+    handleEditComment(commentId, commentMessage)
   }
 
   const handleCommentReply = (commentMessage: string) => {
     setShowReplyInput(false)
-    let decodedParentCommentId
-    if (parentCommentId) {
-      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
-    }
-
-    handlePostComment(
-      commentMessage,
-      decodedParentCommentId ?? undefined // omitting null from the value type
-    )
+    handlePostComment(commentMessage, parentCommentId)
   }
+
   const handleCommentReact = () => {
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      setReactionState(!reactionState)
-      handleReactComment(decodedCommentId, !reactionState)
-    }
+    setReactionState(!reactionState)
+    handleReactComment(commentId, !reactionState)
   }
 
   const handleCommentDelete = () => {
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      handleDeleteComment(decodedCommentId)
-    }
+    // TODO: what should UI be doing here
+    handleDeleteComment(commentId)
   }
+
   return (
     <Flex w='100%' gap='l'>
       <Avatar
@@ -195,9 +171,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconHeart}
               color={reactionState ? 'active' : 'subdued'}
               aria-label='Heart comment'
-              onClick={() => {
-                handleCommentReact()
-              }}
+              onClick={handleCommentReact}
             />
             <Text color='default'> {reactCount}</Text>
           </Flex>
@@ -229,9 +203,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconTrash}
               size='s'
               color='subdued'
-              onClick={() => {
-                handleCommentDelete()
-              }}
+              onClick={handleCommentDelete}
             />
           ) : null}
           {isOwner ? (
