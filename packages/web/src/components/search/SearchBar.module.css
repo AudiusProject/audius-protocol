@@ -30,10 +30,6 @@
   stroke: var(--harmony-n-500) !important;
 }
 
-.clearButton {
-  transition: opacity 0.3s ease-in-out;
-}
-
 .searchBar :global(.ant-select-selection) {
   background: none;
   margin-bottom: 4px;
