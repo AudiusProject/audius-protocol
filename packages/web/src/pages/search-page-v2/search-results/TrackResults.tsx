@@ -17,12 +17,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
+import { LineupV2 } from 'components/lineup-v2/LineupV2'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useSearchParams } from '../hooks'
+import { useGetSearchResults, useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
 import { ALL_RESULTS_LIMIT } from '../utils'
 
@@ -54,6 +55,10 @@ type TrackResultsProps = {
 
 export const TrackResults = (props: TrackResultsProps) => {
   const { category = 'tracks', viewLayout = 'list', count } = props
+
+  const { data: ids, status } = useGetSearchResults('tracks')
+  const isLoading = status === Status.LOADING
+
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
 
@@ -136,43 +141,50 @@ export const TrackResults = (props: TrackResultsProps) => {
   }
 
   return (
-    <Lineup
-      variant={
-        viewLayout === 'grid' ? LineupVariant.SECTION : LineupVariant.MAIN
-      }
-      count={count}
-      loadMore={loadMore}
-      scrollParent={mainContentRef.current}
-      key='searchTracks'
-      lineup={lineup}
-      playingSource={currentQueueItem.source}
-      playingUid={currentQueueItem.uid}
-      playingTrackId={currentQueueItem.track && currentQueueItem.track.track_id}
-      playing={playing}
-      buffering={buffering}
-      playTrack={(uid, trackId) => {
-        handleClickTrackTile(trackId)
-        dispatch(searchResultsPageTracksLineupActions.play(uid))
-      }}
-      pauseTrack={() => dispatch(searchResultsPageTracksLineupActions.pause())}
-      actions={searchResultsPageTracksLineupActions}
-      onClickTile={handleClickTrackTile}
-      {...(!isMobile
-        ? {
-            lineupContainerStyles: css({ width: '100%' }),
-            tileContainerStyles: css({
-              display: 'grid',
-              gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
-              gap: '4px 16px',
-              justifyContent: 'space-between'
-            }),
-            tileStyles: css({
-              maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
-            })
-          }
-        : {})}
+    <LineupV2
+      name='TrackSearchResults'
+      items={(ids ?? []).map((id) => ({ kind: Kind.TRACKS, id }))}
     />
   )
+
+  // return (
+  //   <Lineup
+  //     variant={
+  //       viewLayout === 'grid' ? LineupVariant.SECTION : LineupVariant.MAIN
+  //     }
+  //     count={count}
+  //     loadMore={loadMore}
+  //     scrollParent={mainContentRef.current}
+  //     key='searchTracks'
+  //     lineup={lineup}
+  //     playingSource={currentQueueItem.source}
+  //     playingUid={currentQueueItem.uid}
+  //     playingTrackId={currentQueueItem.track && currentQueueItem.track.track_id}
+  //     playing={playing}
+  //     buffering={buffering}
+  //     playTrack={(uid, trackId) => {
+  //       handleClickTrackTile(trackId)
+  //       dispatch(searchResultsPageTracksLineupActions.play(uid))
+  //     }}
+  //     pauseTrack={() => dispatch(searchResultsPageTracksLineupActions.pause())}
+  //     actions={searchResultsPageTracksLineupActions}
+  //     onClickTile={handleClickTrackTile}
+  //     {...(!isMobile
+  //       ? {
+  //           lineupContainerStyles: css({ width: '100%' }),
+  //           tileContainerStyles: css({
+  //             display: 'grid',
+  //             gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+  //             gap: '4px 16px',
+  //             justifyContent: 'space-between'
+  //           }),
+  //           tileStyles: css({
+  //             maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
+  //           })
+  //         }
+  //       : {})}
+  //   />
+  // )
 }
 
 export const TrackResultsPage = () => {

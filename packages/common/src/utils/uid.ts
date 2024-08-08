@@ -99,8 +99,8 @@ export function makeUids(
   }
 }
 
-export function makeUid(kind: string, id: ID, source?: string) {
-  const uid = Uid.build(kind, id, source)
+export function makeUid(kind: string, id: ID, source?: string, index?: number) {
+  const uid = Uid.build(kind, id, source, index)
   return uid.toString()
 }
 
