@@ -152,13 +152,6 @@ export interface GetFollowersRequest {
     userId?: string;
 }
 
-export interface GetFollowers0Request {
-    id: string;
-    offset?: number;
-    limit?: number;
-    userId?: string;
-}
-
 export interface GetFollowingRequest {
     id: string;
     offset?: number;
@@ -203,6 +196,13 @@ export interface GetPurchasesCountRequest {
 }
 
 export interface GetRelatedUsersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+}
+
+export interface GetRemixersRequest {
     id: string;
     offset?: number;
     limit?: number;
@@ -781,49 +781,6 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * All users that follow the provided user
-     */
-    async getFollowers_1Raw(params: GetFollowers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullRemixersResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getFollowers_1.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}/remixers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullRemixersResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * All users that follow the provided user
-     */
-    async getFollowers_1(params: GetFollowers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullRemixersResponse> {
-        const response = await this.getFollowers_1Raw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
      * All users that the provided user follows
      */
     async getFollowingRaw(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
@@ -1114,7 +1071,50 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the count of unique users who have remixed tracks by the given user, or a specific track if provided
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
+     */
+    async getRemixersRaw(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullRemixersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getRemixers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/remixers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullRemixersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
+     */
+    async getRemixers(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullRemixersResponse> {
+        const response = await this.getRemixersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the count of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
     async getRemixersCountRaw(params: GetRemixersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesCountResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -1152,7 +1152,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the count of unique users who have remixed tracks by the given user, or a specific track if provided
+     * Gets the count of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
     async getRemixersCount(params: GetRemixersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesCountResponse> {
         const response = await this.getRemixersCountRaw(params, initOverrides);

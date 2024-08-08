@@ -723,7 +723,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the list of unique users who have remixed tracks by the given user, or a specific track if provided
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
     async getRemixersRaw(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixersResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -757,7 +757,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the list of unique users who have remixed tracks by the given user, or a specific track if provided
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
     async getRemixers(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixersResponse> {
         const response = await this.getRemixersRaw(params, initOverrides);
