@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Commitment } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -23,10 +24,12 @@ import { useInterval } from './useInterval'
  */
 export const useUSDCBalance = ({
   isPolling,
-  pollingInterval = 1000
+  pollingInterval = 1000,
+  commitment = 'processed'
 }: {
   isPolling?: boolean
   pollingInterval?: number
+  commitment?: Commitment
 } = {}) => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
@@ -44,16 +47,20 @@ export const useUSDCBalance = ({
   const refresh = useCallback(async () => {
     setBalanceStatus(Status.LOADING)
     try {
-      const account = await getUserbankAccountInfo(audiusBackend, {
-        mint: 'usdc'
-      })
+      const account = await getUserbankAccountInfo(
+        audiusBackend,
+        {
+          mint: 'usdc'
+        },
+        commitment
+      )
       const balance = (account?.amount ?? new BN(0)) as BNUSDC
       setData(balance)
       setBalanceStatus(Status.SUCCESS)
     } catch (e) {
       setBalanceStatus(Status.ERROR)
     }
-  }, [audiusBackend, setData])
+  }, [audiusBackend, setData, commitment])
 
   // Refresh balance on mount
   useEffect(() => {

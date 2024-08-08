@@ -9,6 +9,7 @@ import {
 } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  Commitment,
   ComputeBudgetProgram,
   Keypair,
   PublicKey,
@@ -101,16 +102,22 @@ export const getRecentBlockhash = async (
 export const getTokenAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   {
+    tokenAccount,
     mint = DEFAULT_MINT,
-    tokenAccount
+    commitment
   }: {
-    mint?: MintName
     tokenAccount: PublicKey
+    mint?: MintName
+    commitment?: Commitment
   }
 ): Promise<Account | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), mint)
+  ).solanaWeb3Manager!.getTokenAccountInfo(
+    tokenAccount.toString(),
+    mint,
+    commitment
+  )
 }
 
 export const deriveUserBankPubkey = async (
@@ -174,7 +181,8 @@ function isCreateUserBankIfNeededError(
  */
 export const getUserbankAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
-  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
+  commitment?: Commitment
 ): Promise<Account | null> => {
   const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
   const ethAddress =
@@ -193,7 +201,8 @@ export const getUserbankAccountInfo = async (
 
   return getTokenAccountInfo(audiusBackendInstance, {
     tokenAccount,
-    mint
+    mint,
+    commitment
   })
 }
 
