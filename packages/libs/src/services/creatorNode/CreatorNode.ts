@@ -245,7 +245,7 @@ export class CreatorNode {
       const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
       updatedMetadata.preview_cid = audioResp.results[previewKey]
     }
-    if (audioResp.audio_analysis_results !== null) {
+    if (audioResp.audio_analysis_results != null) {
       if ('bpm' in audioResp.audio_analysis_results) {
         updatedMetadata.bpm = audioResp.audio_analysis_results.bpm
       }
