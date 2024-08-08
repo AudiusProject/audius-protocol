@@ -40,7 +40,10 @@ export const SelectMoodScreen = () => {
       data={moods}
       renderItem={({ item }) => (
         <View style={styles.item}>
-          <Image source={moodMap[item.label]} style={styles.emoji} />
+          <Image
+            source={moodMap[item.label ?? item.value]}
+            style={styles.emoji}
+          />
           <Text fontSize='large' weight='demiBold'>
             {item.label}
           </Text>

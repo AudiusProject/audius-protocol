@@ -1,4 +1,3 @@
-import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import {
@@ -12,6 +11,10 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
+import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
+import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
+import { HideContentConfirmationDrawer } from './components/HideContentConfirmationDrawer'
+import { PublishConfirmationDrawer } from './components/PublishConfirmationDrawer'
 import {
   AdvancedScreen,
   IsrcIswcScreen,
@@ -68,8 +71,10 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
       <SupportersInfoDrawer />
-      <PortalHost name='ConfirmPublishTrackPortal' />
-      <PortalHost name='EditPriceAndAudienceConfirmation' />
+      <EditAccessConfirmationDrawer />
+      <HideContentConfirmationDrawer />
+      <PublishConfirmationDrawer />
+      <EarlyReleaseConfirmationDrawer />
     </>
   )
 }

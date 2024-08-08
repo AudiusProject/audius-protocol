@@ -1,4 +1,4 @@
-import { forwardRef, Ref, useCallback } from 'react'
+import { forwardRef, MouseEventHandler, Ref, useCallback } from 'react'
 
 import { CSSObject } from '@emotion/react'
 
@@ -58,9 +58,13 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
     }
   }
 
-  const handleChange = useCallback(() => {
-    onChange(option.value)
-  }, [option.value, onChange])
+  const handleChange = useCallback<MouseEventHandler>(
+    (e) => {
+      e.stopPropagation()
+      onChange(option.value)
+    },
+    [option.value, onChange]
+  )
 
   return (
     <BaseButton

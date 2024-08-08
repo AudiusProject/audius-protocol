@@ -7,11 +7,14 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
 export const CommentSectionDesktop = () => {
-  const { userId, entityId, comments, isLoading, handlePostComment } =
-    useCurrentCommentSection()
-  const refreshComments = () => {
-    commentsApiFetch.
-  }
+  const {
+    userId,
+    entityId,
+    comments,
+    isLoading,
+    handlePostComment,
+    handleLoadMoreRootComments
+  } = useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
   // Loading state
@@ -59,6 +62,16 @@ export const CommentSectionDesktop = () => {
               <CommentThread commentId={id} key={id} />
             ))}
           </Flex>
+          {/* TODO: this button is temporary; will be replaced with endless scroll */}
+          <Button
+            onClick={() => {
+              handleLoadMoreRootComments()
+            }}
+            size='small'
+            css={{ width: 'max-content', marginTop: '16px' }}
+          >
+            Load more comments
+          </Button>
         </Flex>
       </Paper>
     </Flex>

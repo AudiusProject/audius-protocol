@@ -24,6 +24,8 @@ import {
   playbackPositionActions,
   PurchaseableContentType,
   usePremiumContentPurchaseModal,
+  usePublishConfirmationModal,
+  trackPageActions,
   artistPickModalActions
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
@@ -98,6 +100,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       )
     }
   }, [track, openPremiumContentPurchaseModal])
+
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleSetAsArtistPick = useCallback(() => {
     if (track) {
@@ -176,13 +180,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('EditTrack', { id })
     },
     [OverflowAction.RELEASE_NOW]: () => {
-      dispatch(
-        setVisibility({
-          drawer: 'PublishContentDrawer',
-          visible: true,
-          data: { contentId: id, contentType: 'track' }
-        })
-      )
+      openPublishConfirmation({
+        contentType: 'playlist',
+        confirmCallback: () => dispatch(trackPageActions.makeTrackPublic(id))
+      })
     },
 
     [OverflowAction.DELETE_TRACK]: () => {
