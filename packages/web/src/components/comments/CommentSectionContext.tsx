@@ -1,14 +1,20 @@
 /* eslint-disable no-console */
-import { PropsWithChildren, createContext, useContext, useState } from 'react'
+import { PropsWithChildren, createContext, useContext } from 'react'
 
-import { ID } from '@audius/common/models'
-import { Nullable, encodeHashId } from '@audius/common/utils'
-import { EntityType } from '@audius/sdk'
+import {
+  useDeleteCommentById,
+  useEditCommentById,
+  useGetCommentsByTrackId,
+  usePinCommentById,
+  useReactToCommentById
+} from '@audius/common/api'
+import { ID, Status } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import { CommentsApi, EntityType } from '@audius/sdk'
 import { useAsync } from 'react-use'
 
 import { audiusSdk } from 'services/audius-sdk'
 
-import { MOCK_COMMENT_DATA } from './mock-data'
 import { Comment, CommentReply } from './types'
 
 /**
@@ -36,13 +42,15 @@ type CommentSectionContextType = CommentSectionContextProps & {
   handleEditComment: (commentId: ID, newMessage: string) => void
   handleDeleteComment: (commentId: ID) => void
   handleReportComment: (commentId: ID) => void
+  handleLoadMoreRootComments: () => void
+  handleLoadMoreReplies: (commentId: ID) => void
   fetchComments: () => void
 }
 
 const emptyFn = () => {}
 const initialContextValues: CommentSectionContextType = {
   userId: null,
-  entityId: -1,
+  entityId: 0, // this matches the default track id in TrackPage
   entityType: EntityType.TRACK,
   isLoading: true,
   comments: [],
@@ -52,6 +60,8 @@ const initialContextValues: CommentSectionContextType = {
   handleEditComment: emptyFn,
   handleDeleteComment: emptyFn,
   handleReportComment: emptyFn,
+  handleLoadMoreRootComments: emptyFn,
+  handleLoadMoreReplies: emptyFn,
   fetchComments: emptyFn
 }
 
@@ -64,28 +74,24 @@ export const CommentSectionProvider = ({
   entityType = EntityType.TRACK,
   children
 }: PropsWithChildren<CommentSectionContextProps>) => {
-  const [comments, setComments] = useState(initialContextValues.comments)
+  const commentRes = useGetCommentsByTrackId(
+    { entityId },
+    { disabled: entityId === 0, force: true }
+  )
+  const [editComment] = useEditCommentById()
+  const [reactToComment] = useReactToCommentById()
+  const [pinComment] = usePinCommentById()
+  const [deleteComment] = useDeleteCommentById()
 
-  // TODO: temporarily including state management here to optimistic update and avoid constantly needing to refresh
-  const addComment = (comment: Comment) => {
-    const newComments = [comment, ...comments]
-    setComments(newComments)
-  }
+  const comments = commentRes.data ?? []
+  const isLoading =
+    commentRes.status === Status.LOADING || commentRes.status === Status.IDLE
 
-  const addReply = (comment: CommentReply, parentCommentIndex: number) => {
-    const newComments = [...comments]
-    const parentComment = newComments[parentCommentIndex]
-    parentComment.replies = [...(parentComment.replies || []), comment]
-    setComments(newComments)
-  }
+  const addComment = (comment: Comment) => {}
 
-  const [isLoading, setIsLoading] = useState(initialContextValues.isLoading)
+  const addReply = (comment: CommentReply, parentCommentIndex: number) => {}
 
-  const handlePostComment = async (
-    message: string,
-    parentCommentId?: ID,
-    parentCommentIndex?: number
-  ) => {
+  const handlePostComment = async (message: string, parentCommentId?: ID) => {
     if (userId && entityId) {
       try {
         const sdk = await audiusSdk()
@@ -96,22 +102,6 @@ export const CommentSectionProvider = ({
           entityType: EntityType.TRACK, // Comments are only on tracks for now; likely expand to collections in the future
           parentCommentId // aka reply
         }
-
-        // TEMPORARY optimistic update for now
-        const optimisticCommentData = {
-          id: null, // idk
-          userId,
-          message,
-          react_count: 0,
-          is_pinned: false,
-          created_at: new Date(),
-          replies: null
-        } as unknown as CommentReply
-        if (parentCommentIndex !== undefined) {
-          addReply(optimisticCommentData, parentCommentIndex)
-        } else {
-          addComment(optimisticCommentData)
-        }
         // API call
         await sdk.comments.postComment(commentData)
       } catch (e) {
@@ -120,45 +110,32 @@ export const CommentSectionProvider = ({
     }
   }
 
-  // TODO: these are all empty for now
-  const handleReactComment = (commentId: ID) => {
-    console.log('Clicked react for ', commentId)
+  const handleReactComment = (id: ID) => {
+    reactToComment({ id })
   }
-  const handlePinComment = (commentId: ID) => {
-    console.log('Clicked pin for ', commentId)
+  const handlePinComment = (id: ID) => {
+    pinComment({ id })
   }
-  const handleEditComment = (commentId: ID, newMessage: string) => {
-    console.log(`Edited comment ${commentId} to ${newMessage}`)
+  const handleEditComment = (id: ID, newMessage: string) => {
+    editComment({ id, newMessage })
   }
-  const handleDeleteComment = (commentId: ID) => {
-    console.log('Clicked delete for ', commentId)
+  const handleDeleteComment = (id: ID) => {
+    deleteComment({ id })
   }
-  const handleReportComment = (commentId: ID) => {
-    console.log('Clicked report for ', commentId)
+  const handleReportComment = (id: ID) => {
+    console.log('Clicked report for ', id)
+  }
+
+  const handleLoadMoreRootComments = () => {
+    console.log('Loading more root comments')
+  }
+  const handleLoadMoreReplies = (id: ID) => {
+    console.log('Loading more replies for', commentId)
   }
 
   // TODO: move this to audius-query
   // load comments logic
-  const fetchComments = async () => {
-    if (entityId) {
-      try {
-        setIsLoading(true)
-        const sdk = await audiusSdk()
-        const commentsRes = await sdk.tracks.trackComments({
-          trackId: encodeHashId(entityId)
-        })
-        if (commentsRes?.data) {
-          // TODO: Shouldn't need to cast; need to figure out how to work with SDK types
-          setComments(commentsRes.data as unknown as Comment[])
-        }
-        setIsLoading(false)
-      } catch (e) {
-        setComments(MOCK_COMMENT_DATA) // TODO: eventually remove, this is backup mock data for UI testing
-        setIsLoading(false)
-        console.log('COMMENTS DEBUG: Error fetching comments', e)
-      }
-    }
-  }
+  const fetchComments = async () => {}
 
   useAsync(async () => {
     fetchComments()
@@ -178,7 +155,9 @@ export const CommentSectionProvider = ({
         handleEditComment,
         handleDeleteComment,
         handleReportComment,
-        fetchComments
+        handleLoadMoreReplies,
+        handleLoadMoreRootComments,
+        fetchComments // todo: temporary
       }}
     >
       {children}

@@ -127,8 +127,10 @@ export const createApi = <
       (endpointName, fetchArgs, updateRecipe) =>
       (dispatch: Dispatch, getState: () => any) => {
         const key = getKeyFromFetchArgs(fetchArgs)
-        const endpointState = getState().api[reducerPath][endpointName][key]
-        if (!endpointState) return
+        let endpointState = getState().api[reducerPath][endpointName][key]
+        if (!endpointState) {
+          endpointState = { status: Status.SUCCESS, normalizedData: {} }
+        }
         const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]

@@ -62,14 +62,12 @@ const formatTrackTimestamp = (timestamp_s: number) => {
 export type CommentBlockProps = {
   comment: Comment
   parentCommentId?: ID
-  parentCommentIndex?: number
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
   const {
     comment,
-    parentCommentId, // Parent comment ID & index will only exist on replies
-    parentCommentIndex // Parent comment index helps quickly look up the parent comment
+    parentCommentId // Parent comment ID will only exist on replies
   } = props
   const {
     isPinned,
@@ -80,6 +78,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
     createdAt,
     userId: id
   } = comment
+  console.log({ comment })
   const userId = Number(id)
 
   const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
@@ -112,8 +111,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
     handlePostComment(
       commentMessage,
-      decodedParentCommentId ?? undefined, // omitting null from the value type
-      parentCommentIndex
+      decodedParentCommentId ?? undefined // omitting null from the value type
     )
   }
 

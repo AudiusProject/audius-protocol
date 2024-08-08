@@ -1,4 +1,5 @@
-import { Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+import { commentsApiFetch, useGetCommentsByTrackId } from '@audius/common/api'
+import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
@@ -6,8 +7,11 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
 export const CommentSectionDesktop = () => {
-  const { userId, isLoading, comments, handlePostComment } =
+  const { userId, entityId, comments, isLoading, handlePostComment } =
     useCurrentCommentSection()
+  const refreshComments = () => {
+    commentsApiFetch.
+  }
   const commentPostAllowed = userId !== null
 
   // Loading state
@@ -38,6 +42,7 @@ export const CommentSectionDesktop = () => {
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
       <CommentHeader commentCount={comments.length} />
+      <Button onClick={() => console.log('clicked')}>Refresh</Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed !== null ? (
           <>
@@ -49,7 +54,11 @@ export const CommentSectionDesktop = () => {
           </>
         ) : null}
         <Flex gap='s' p='xl' w='100%' direction='column'>
-          <CommentThread />
+          <Flex direction='column' gap='m'>
+            {comments.map(({ id }) => (
+              <CommentThread commentId={id} key={id} />
+            ))}
+          </Flex>
         </Flex>
       </Paper>
     </Flex>
