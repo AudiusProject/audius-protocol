@@ -36,6 +36,9 @@ type CommentSectionContextType = CommentSectionContextProps & {
   handleEditComment: (commentId: ID, newMessage: string) => void
   handleDeleteComment: (commentId: ID) => void
   handleReportComment: (commentId: ID) => void
+  handleLoadMoreRootComments: () => void
+  handleLoadMoreReplies: (commentId: ID) => void
+  fetchComments: () => void
 }
 
 const emptyFn = () => {}
@@ -50,7 +53,10 @@ const initialContextValues: CommentSectionContextType = {
   handlePinComment: emptyFn,
   handleEditComment: emptyFn,
   handleDeleteComment: emptyFn,
-  handleReportComment: emptyFn
+  handleReportComment: emptyFn,
+  handleLoadMoreRootComments: emptyFn,
+  handleLoadMoreReplies: emptyFn,
+  fetchComments: emptyFn
 }
 
 export const CommentSectionContext =
@@ -110,6 +116,7 @@ export const CommentSectionProvider = ({
         } else {
           addComment(optimisticCommentData)
         }
+        // API call
         await sdk.comments.postComment(commentData)
       } catch (e) {
         console.log('COMMENTS DEBUG: Error posting comment', e)
@@ -161,10 +168,16 @@ export const CommentSectionProvider = ({
   const handleReportComment = (commentId: ID) => {
     console.log('Clicked report for ', commentId)
   }
+  const handleLoadMoreRootComments = () => {
+    console.log('Loading more root comments')
+  }
+  const handleLoadMoreReplies = (commentId: ID) => {
+    console.log('Loading more replies for', commentId)
+  }
 
   // TODO: move this to audius-query
   // load comments logic
-  useAsync(async () => {
+  const fetchComments = async () => {
     if (entityId) {
       try {
         setIsLoading(true)
@@ -183,6 +196,10 @@ export const CommentSectionProvider = ({
         console.log('COMMENTS DEBUG: Error fetching comments', e)
       }
     }
+  }
+
+  useAsync(async () => {
+    fetchComments()
   }, [entityId])
 
   return (
@@ -198,7 +215,10 @@ export const CommentSectionProvider = ({
         handlePinComment,
         handleEditComment,
         handleDeleteComment,
-        handleReportComment
+        handleReportComment,
+        handleLoadMoreReplies,
+        handleLoadMoreRootComments,
+        fetchComments // todo: temporary - remove later
       }}
     >
       {children}

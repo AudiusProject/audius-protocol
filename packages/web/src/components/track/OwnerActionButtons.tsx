@@ -3,7 +3,7 @@ import { MouseEventHandler, ReactNode, useCallback } from 'react'
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
-  publishTrackConfirmationModalUIActions,
+  usePublishConfirmationModal,
   trackPageActions
 } from '@audius/common/store'
 import {
@@ -18,8 +18,6 @@ import { useDispatch } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
-const { requestOpen: openPublishTrackConfirmationModal } =
-  publishTrackConfirmationModalUIActions
 const { makeTrackPublic } = trackPageActions
 
 const messages = {
@@ -100,20 +98,20 @@ const BaseOwnerActionButtons = ({
   const dispatch = useDispatch()
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleEdit = useCallback(() => {
     dispatch(pushRoute(`${permalink}/edit`))
   }, [permalink, dispatch])
 
   const handlePublishClick = useCallback(() => {
-    dispatch(
-      openPublishTrackConfirmationModal({
-        confirmCallback: () => {
-          dispatch(makeTrackPublic(contentId))
-        }
-      })
-    )
-  }, [dispatch, contentId])
+    openPublishConfirmation({
+      contentType: 'track',
+      confirmCallback: () => {
+        dispatch(makeTrackPublic(contentId))
+      }
+    })
+  }, [contentId, dispatch, openPublishConfirmation])
 
   return (
     <Flex justifyContent='space-between' w='100%' alignItems='center'>

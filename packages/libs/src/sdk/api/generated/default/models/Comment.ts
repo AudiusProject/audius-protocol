@@ -38,6 +38,12 @@ export interface Comment {
      * @type {string}
      * @memberof Comment
      */
+    userId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
     message: string;
     /**
      * 
@@ -51,12 +57,6 @@ export interface Comment {
      * @memberof Comment
      */
     reactCount: number;
-    /**
-     * 
-     * @type {Array<ReplyComment>}
-     * @memberof Comment
-     */
-    replies?: Array<ReplyComment>;
     /**
      * 
      * @type {boolean}
@@ -75,6 +75,12 @@ export interface Comment {
      * @memberof Comment
      */
     updatedAt?: string;
+    /**
+     * 
+     * @type {Array<ReplyComment>}
+     * @memberof Comment
+     */
+    replies?: Array<ReplyComment>;
 }
 
 /**
@@ -83,6 +89,7 @@ export interface Comment {
 export function instanceOfComment(value: object): value is Comment {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "isPinned" in value && value["isPinned"] !== undefined;
@@ -102,13 +109,14 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
     return {
         
         'id': json['id'],
+        'userId': json['user_id'],
         'message': json['message'],
         'timestampS': !exists(json, 'timestamp_s') ? undefined : json['timestamp_s'],
         'reactCount': json['react_count'],
-        'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
         'isPinned': json['is_pinned'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
+        'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
     };
 }
 
@@ -122,13 +130,14 @@ export function CommentToJSON(value?: Comment | null): any {
     return {
         
         'id': value.id,
+        'user_id': value.userId,
         'message': value.message,
         'timestamp_s': value.timestampS,
         'react_count': value.reactCount,
-        'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
         'is_pinned': value.isPinned,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
+        'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
     };
 }
 

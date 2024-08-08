@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
@@ -18,7 +18,7 @@ import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
@@ -181,7 +181,7 @@ export const PurchasesTab = ({
   onClickRow,
   fetchMore
 }: Omit<ReturnType<typeof usePurchases>, 'downloadCSV'>) => {
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
 
   const columns = isMobile

@@ -7,10 +7,15 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
+import { TargetedMessageModalState } from './create-targeted-message-modal'
+import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
+import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
+import { HideContentConfirmationModalState } from './hide-confirmation-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
-import { PublishContentModalState } from './publish-content-modal'
+import { PublishConfirmationModalState } from './publish-confirmation-modal'
+import { UploadConfirmationModalState } from './upload-confirmation-modal'
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
@@ -70,12 +75,14 @@ export type Modals =
   | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchaseModal'
   | 'CreateChatModal'
+  | 'TargetedMessageModal'
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
   | 'EditAccessConfirmation'
-  | 'EditPriceAndAudienceConfirmation'
-  | 'PublishTrackConfirmation'
+  | 'EarlyReleaseConfirmation'
+  | 'PublishConfirmation'
+  | 'HideContentConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
@@ -95,6 +102,7 @@ export type BasicModalsState = {
 export type StatefulModalsState = {
   CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
+  TargetedMessageModal: TargetedMessageModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState
@@ -107,7 +115,11 @@ export type StatefulModalsState = {
   WaitForDownloadModal: WaitForDownloadModalState
   ArtistPick: ArtistPickModalState
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModalState
-  PublishContentModal: PublishContentModalState
+  UploadConfirmation: UploadConfirmationModalState
+  EditAccessConfirmation: EditAccessConfirmationModalState
+  EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
+  PublishConfirmation: PublishConfirmationModalState
+  HideContentConfirmation: HideContentConfirmationModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

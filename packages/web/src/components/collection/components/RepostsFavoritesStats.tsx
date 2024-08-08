@@ -59,8 +59,10 @@ export const RepostsFavoritesStats = ({
           onClick={handleOnClickReposts}
           css={{ padding: 0 }}
         >
-          <span>{formatCount(repostCount)}</span>
-          {pluralize(messages.reposts, repostCount)}
+          {`${formatCount(repostCount)} ${pluralize(
+            messages.reposts,
+            repostCount
+          )}`}
         </PlainButton>
       )}
       {!!saveCount && (
@@ -71,8 +73,10 @@ export const RepostsFavoritesStats = ({
           onClick={handleOnClickFavorites}
           css={{ padding: 0 }}
         >
-          <span>{formatCount(saveCount)}</span>
-          {pluralize(messages.favorites, saveCount)}
+          {`${formatCount(saveCount)} ${pluralize(
+            messages.favorites,
+            saveCount
+          )}`}
         </PlainButton>
       )}
     </Flex>

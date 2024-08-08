@@ -1,6 +1,11 @@
 when: << pipeline.parameters.run-release-workflow >>
 jobs:
   - push-docker-image:
+      name: push-core
+      context: [Vercel, dockerhub, slack-secrets]
+      service: core
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-identity-service
       context: [Vercel, dockerhub, slack-secrets]
       service: identity-service
@@ -102,6 +107,12 @@ jobs:
       notify_slack_on_failure: true
 
   - push-arm-image:
+      name: push-core-arm
+      context: [Vercel, dockerhub]
+      service: core
+      requires:
+        - push-core
+  - push-arm-image:
       name: push-discovery-provider-arm
       context: [Vercel, dockerhub]
       service: discovery-provider
@@ -131,7 +142,6 @@ jobs:
       service: solana-relay
       requires:
         - push-pedalboard-solana-relay
-
   - push-arm-image:
       name: push-pedalboard-sla-auditor-arm
       context: [Vercel, dockerhub]
@@ -215,6 +225,7 @@ jobs:
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
+        - push-core
         - push-identity-service
         - push-mediorum
         - push-discovery-provider
@@ -234,6 +245,7 @@ jobs:
         - push-uptime
         - push-ddex-processor
         # uncomment these when arm builds are stable
+        # - push-core-arm
         # - push-identity-service-arm
         # - push-mediorum-arm
         # - push-discovery-provider-arm

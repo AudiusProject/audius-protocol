@@ -11,10 +11,11 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 type ListItemData = {
-  label: string
+  label?: string
   value: string
   icon?: IconComponent
   disabled?: boolean
+  leadingElement?: JSX.Element
 }
 
 type SelectionItemListProps = {
@@ -31,14 +32,15 @@ type SelectionItemListProps = {
 }
 
 const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => {
-  const { label, icon: Icon } = item
+  const { label, icon: Icon, value, leadingElement } = item
 
-  const title = <Text>{label}</Text>
+  const title = <Text>{label ?? value}</Text>
 
-  if (Icon) {
+  if (Icon || leadingElement) {
     return (
-      <Flex direction='row' alignItems='center'>
-        <Icon />
+      <Flex direction='row' alignItems='center' gap='s'>
+        {leadingElement}
+        {Icon ? <Icon /> : null}
         {title}
       </Flex>
     )

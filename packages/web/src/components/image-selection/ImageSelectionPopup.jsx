@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useContext } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 import { RandomImage } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
@@ -11,7 +11,7 @@ import { useWindowSize } from 'react-use'
 
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
@@ -228,7 +228,7 @@ const ImageSelectionPopup = ({
   onSelect,
   source
 }) => {
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
   const [page, setPage] = useState(messages.uploadYourOwn)
   const windowSize = useWindowSize()
   const { collectibles, collectibleList, solanaCollectibleList } =

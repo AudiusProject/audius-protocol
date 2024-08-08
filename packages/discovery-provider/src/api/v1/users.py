@@ -2188,6 +2188,13 @@ purchases_and_sales_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
+purchases_and_sales_parser.add_argument(
+    "content_ids",
+    required=False,
+    description="Filters purchases by track or album IDs",
+    type=str,
+    action="append",
+)
 
 
 purchases_response = make_full_response(
@@ -2218,18 +2225,28 @@ class FullPurchases(Resource):
         offset = get_default_max(args.get("offset"), 0)
         sort_method = args.get("sort_method", PurchaseSortMethod.date)
         sort_direction = args.get("sort_direction", None)
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesArgs(
             buyer_user_id=decoded_id,
             limit=limit,
             offset=offset,
             sort_method=sort_method,
             sort_direction=sort_direction,
+            content_ids=decoded_content_ids,
         )
         purchases = get_usdc_purchases(args)
         return success_response(list(map(extend_purchase, purchases)))
 
 
 purchases_and_sales_count_parser = current_user_parser.copy()
+purchases_and_sales_count_parser.add_argument(
+    "content_ids",
+    required=False,
+    description="Filters purchases by track or album IDs",
+    type=str,
+    action="append",
+)
 
 
 @full_ns.route("/<string:id>/purchases/count")
@@ -2246,8 +2263,11 @@ class FullPurchasesCount(Resource):
         decoded_id = decode_with_abort(id, full_ns)
         check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
+            content_ids=decoded_content_ids,
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)
@@ -2271,12 +2291,15 @@ class FullSales(Resource):
         offset = get_default_max(args.get("offset"), 0)
         sort_method = args.get("sort_method", PurchaseSortMethod.date)
         sort_direction = args.get("sort_direction", None)
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesArgs(
             seller_user_id=decoded_id,
             limit=limit,
             offset=offset,
             sort_method=sort_method,
             sort_direction=sort_direction,
+            content_ids=decoded_content_ids,
         )
         purchases = get_usdc_purchases(args)
         return success_response(list(map(extend_purchase, purchases)))
@@ -2296,8 +2319,11 @@ class FullSalesCount(Resource):
         decoded_id = decode_with_abort(id, full_ns)
         check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesCountArgs(
             seller_user_id=decoded_id,
+            content_ids=decoded_content_ids,
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)

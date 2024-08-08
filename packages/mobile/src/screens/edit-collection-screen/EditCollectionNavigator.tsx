@@ -10,6 +10,11 @@ import {
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
+import { EarlyReleaseConfirmationDrawer } from '../edit-track-screen/components/EarlyReleaseConfirmationDrawer'
+import { EditAccessConfirmationDrawer } from '../edit-track-screen/components/EditAccessConfirmationDrawer'
+import { HideContentConfirmationDrawer } from '../edit-track-screen/components/HideContentConfirmationDrawer'
+import { PublishConfirmationDrawer } from '../edit-track-screen/components/PublishConfirmationDrawer'
+
 import { AdvancedAlbumScreen } from './AdvancedAlbumScreen'
 import { EditCollectionForm } from './EditCollectionForm'
 
@@ -36,6 +41,10 @@ export const EditCollectionNavigator = (
         <Stack.Screen name='Advanced' component={AdvancedAlbumScreen} />
       </Stack.Navigator>
       <DeletePlaylistConfirmationDrawer />
+      <EditAccessConfirmationDrawer />
+      <EarlyReleaseConfirmationDrawer />
+      <PublishConfirmationDrawer />
+      <HideContentConfirmationDrawer />
     </>
   )
 }

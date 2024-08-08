@@ -1078,7 +1078,6 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for _, dashboard_wallet_json in dashboard_wallets
         }
 
-    logger.info(f"asdf entities_to_fetch {entities_to_fetch}")
     if entities_to_fetch["Comment"]:
         comments: List[Tuple[Comment, dict]] = (
             session.query(
@@ -1088,11 +1087,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .filter(Comment.comment_id.in_(entities_to_fetch["Comment"]))
             .all()
         )
-        logger.info(f"asdf existing comments: {comments}")
         existing_entities[EntityType.COMMENT] = {
             comment.comment_id: comment for comment, _ in comments
         }
-        logger.info(f"asdf existing_entities {existing_entities}")
         existing_entities_in_json[EntityType.COMMENT] = {
             comment_json["comment_id"]: comment_json for _, comment_json in comments
         }

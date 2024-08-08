@@ -11,16 +11,14 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { modalsActions } from '@audius/common/store'
+import { useEditAccessConfirmationModal } from '@audius/common/store'
 import { getUsersMayLoseAccess, type Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
 import type {
   FormValues,
   RemixOfField
@@ -37,7 +35,7 @@ import { SpecialAccessRadioField } from './SpecialAccessRadioField'
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
 export const PriceAndAudienceScreen = () => {
-  const { initialValues } = useFormikContext<FormValues>()
+  const { initialValues, validateForm } = useFormikContext<FormValues>()
   const [, , { setValue: setIsStreamGated }] =
     useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
@@ -81,6 +79,9 @@ export const PriceAndAudienceScreen = () => {
     // we only care about what the initial value was here
     // eslint-disable-next-line
   }, [])
+
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
 
   const {
     disableUsdcGate: disableUsdcGateOption,
@@ -137,7 +138,6 @@ export const PriceAndAudienceScreen = () => {
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
   const [specialAccessType, setSpecialAccessType] = useState<
@@ -166,24 +166,21 @@ export const PriceAndAudienceScreen = () => {
   }, [availability, initialStreamConditions, specialAccessType])
 
   const handleSubmit = useCallback(() => {
+    validateForm() // Fixes any erroneous errors that haven't been revalidated
     if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
-      dispatch(
-        modalsActions.setVisibility({
-          modal: 'EditPriceAndAudienceConfirmation',
-          visible: true
-        })
-      )
-    }
-  }, [dispatch, isEditableAccessEnabled, isUpload, usersMayLoseAccess])
-
-  const handleCancel = useCallback(() => {
-    dispatch(
-      modalsActions.setVisibility({
-        modal: 'EditPriceAndAudienceConfirmation',
-        visible: false
+      onOpenEditAccessConfirmationModal({
+        confirmCallback: navigation.goBack,
+        cancelCallback: navigation.goBack
       })
-    )
-  }, [dispatch])
+    }
+  }, [
+    isEditableAccessEnabled,
+    isUpload,
+    usersMayLoseAccess,
+    validateForm,
+    navigation.goBack,
+    onOpenEditAccessConfirmationModal
+  ])
 
   return (
     <FormScreen
@@ -229,12 +226,6 @@ export const PriceAndAudienceScreen = () => {
           />
         ) : null}
       </ExpandableRadioGroup>
-      {!isUpload ? (
-        <EditPriceAndAudienceConfirmationDrawer
-          onConfirm={navigation.goBack}
-          onCancel={handleCancel}
-        />
-      ) : null}
     </FormScreen>
   )
 }

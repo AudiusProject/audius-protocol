@@ -26,7 +26,7 @@ import {
 } from '@audius/common/store'
 import { encodeHashId, waitForValue } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk, ChallengeId, Errors } from '@audius/sdk'
+import { AudiusSdk, ChallengeId, Errors, RewardManagerError } from '@audius/sdk'
 import {
   call,
   fork,
@@ -278,6 +278,17 @@ async function claimRewardsForChallenge({
                 amount: specifierWithAmount.amount,
                 url: error.response.url,
                 error: await error.response.clone().text()
+              })
+            )
+          } else if (error instanceof RewardManagerError) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                error: error.customErrorName ?? 'Unkown',
+                instruction: error.instructionName
               })
             )
           } else {

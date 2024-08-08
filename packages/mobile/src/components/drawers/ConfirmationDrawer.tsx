@@ -17,9 +17,6 @@ const defaultMessages = {
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     paddingHorizontal: spacing(4)
-  },
-  confirmButton: {
-    marginBottom: spacing(4)
   }
 }))
 
@@ -34,6 +31,7 @@ type BaseConfirmationDrawerProps = {
   onCancel?: () => void
   variant?: 'destructive' | 'affirmative'
   icon?: IconComponent
+  addBottomInset?: boolean
 }
 
 type NativeConfirmationDrawerProps = BaseConfirmationDrawerProps & {
@@ -59,9 +57,9 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
     onCancel,
     onClose,
     variant = 'destructive',
-    icon: Icon = IconInfo
+    icon: Icon = IconInfo,
+    addBottomInset
   } = props
-  const styles = useStyles()
   const messages = { ...defaultMessages, ...messagesProp }
   const insets = useSafeAreaInsets()
   const { spacing } = useTheme()
@@ -90,11 +88,12 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
           {messages.header}
         </Text>
       </Flex>
-      <Text size='l'>{messages.description}</Text>
-      <Flex>
+      <Text size='l' textAlign='center'>
+        {messages.description}
+      </Text>
+      <Flex gap='l'>
         <Button
           variant={variant === 'destructive' ? 'destructive' : 'primary'}
-          style={styles.confirmButton}
           fullWidth
           onPress={handleConfirm}
         >
@@ -104,7 +103,7 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
           {messages.cancel}
         </Button>
       </Flex>
-      <Flex h={insets.bottom + spacing.xl} />
+      {addBottomInset ? <Flex h={insets.bottom + spacing.xl} /> : null}
     </Flex>
   )
 }

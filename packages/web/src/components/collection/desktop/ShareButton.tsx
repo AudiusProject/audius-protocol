@@ -52,7 +52,7 @@ export const ShareButton = (props: ShareButtonProps) => {
     <IconButton
       icon={IconShare}
       onClick={handleShare}
-      size='l'
+      size='2xl'
       color='subdued'
       aria-label={messages.share}
       {...other}

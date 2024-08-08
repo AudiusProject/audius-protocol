@@ -33,11 +33,11 @@ def create_comment(params: ManageEntityParameters):
     params.add_record(comment_id, comment_record)
 
     if params.metadata["parent_comment_id"]:
-        comment_thread = CommentThread(
+        remix = CommentThread(
             parent_comment_id=params.metadata["parent_comment_id"],
             comment_id=comment_id,
         )
-        params.session.add(comment_thread)
+        params.session.add(remix)
 
 
 def update_comment(params: ManageEntityParameters):

@@ -5,13 +5,13 @@ import { EntityType } from '@audius/sdk/src/sdk/services/EntityManager/types'
 // TODO: This should come from common or SDK models
 type BaseComment = {
   id: ID
-  userId: ID
+  userId: string
   message: string
-  timestamp_s?: number
-  react_count: number
-  is_pinned: boolean
-  created_at: Date
-  updated_at?: Nullable<Date>
+  timestampS?: number
+  reactCount: number
+  isPinned: boolean
+  createdAt: string
+  updatedAt?: Nullable<string>
 }
 
 export type CommentReply = BaseComment & { replies: null }

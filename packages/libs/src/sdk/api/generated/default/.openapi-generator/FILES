@@ -15,9 +15,9 @@ models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
 models/BlobInfo.ts
+models/CollectionActivity.ts
 models/Comment.ts
 models/CommentResponse.ts
-models/CollectionActivity.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts

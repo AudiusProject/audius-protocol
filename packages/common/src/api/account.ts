@@ -4,6 +4,7 @@ import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
 
+import { useGetUserById } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -247,6 +248,11 @@ const accountApi = createApi({
     }
   }
 })
+
+export const useGetCurrentUser = () => {
+  const { data: userId } = accountApi.hooks.useGetCurrentUserId({})
+  return useGetUserById({ id: userId! })
+}
 
 export const {
   useGetCurrentUserId,

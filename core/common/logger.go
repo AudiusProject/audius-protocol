@@ -27,6 +27,10 @@ func (l *Logger) Info(msg string, keyvals ...interface{}) {
 	l.log.Info(msg, keyvals...)
 }
 
+func (l *Logger) Warn(msg string, keyvals ...interface{}) {
+	l.log.Warn(msg, keyvals...)
+}
+
 func (l *Logger) Error(msg string, keyvals ...interface{}) {
 	l.log.Error(msg, keyvals...)
 }

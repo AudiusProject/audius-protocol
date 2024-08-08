@@ -7,6 +7,11 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  useEarlyReleaseConfirmationModal,
+  useHideContentConfirmationModal,
+  usePublishConfirmationModal
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconTrash, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -33,7 +38,6 @@ import { Tile } from 'components/tile'
 import { CollectionNavigationPrompt } from './CollectionNavigationPrompt'
 import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
 import styles from './EditCollectionForm.module.css'
-import { ReleaseCollectionConfirmationModal } from './ReleaseCollectionConfirmationModal'
 
 const messages = {
   name: 'Name',
@@ -62,18 +66,21 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const {
     playlist_id,
     is_private: initiallyHidden,
-    is_scheduled_release: isInitiallyScheduled
+    is_scheduled_release: isInitiallyScheduled,
+    playlist_contents: initialContents
   } = initialValues
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
-  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
-    useState(false)
-  const [confirmDrawerType, setConfirmDrawerType] =
-    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
@@ -84,37 +91,34 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      if (isReleaseConfirmationOpen) {
-        setIsReleaseConfirmationOpen(false)
+      const confirmCallback = () => {
         onSubmit(values)
+      }
+      const usersMayLoseAccess =
+        isAlbum && !isUpload && !initiallyHidden && values.is_private
+      const isToBePublished = !isUpload && initiallyHidden && !values.is_private
+      if (usersMayLoseAccess) {
+        openHideContentConfirmation({ confirmCallback })
+      } else if (isToBePublished && isInitiallyScheduled && isAlbum) {
+        openEarlyReleaseConfirmation({ contentType: 'album', confirmCallback })
+      } else if (isToBePublished) {
+        openPublishConfirmation({
+          contentType: isAlbum ? 'album' : 'playlist',
+          confirmCallback
+        })
       } else {
-        const usersMayLoseAccess =
-          isAlbum && !isUpload && !initiallyHidden && values.is_private
-        const isToBePublished =
-          !isUpload && initiallyHidden && !values.is_private
-        const showConfirmDrawer = usersMayLoseAccess || isToBePublished
-        if (showConfirmDrawer) {
-          if (usersMayLoseAccess) {
-            setConfirmDrawerType('hidden')
-          } else if (isInitiallyScheduled) {
-            setConfirmDrawerType('early_release')
-          } else {
-            setConfirmDrawerType('release')
-          }
-          setIsReleaseConfirmationOpen(true)
-        } else {
-          setIsReleaseConfirmationOpen(false)
-          onSubmit(values)
-        }
+        onSubmit(values)
       }
     },
     [
       initiallyHidden,
       isAlbum,
       isInitiallyScheduled,
-      isReleaseConfirmationOpen,
       isUpload,
-      onSubmit
+      onSubmit,
+      openHideContentConfirmation,
+      openEarlyReleaseConfirmation,
+      openPublishConfirmation
     ]
   )
 
@@ -125,7 +129,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root} id={formId}>
-        <CollectionNavigationPrompt />
+        <CollectionNavigationPrompt disabled={isDeleteConfirmationOpen} />
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
             <ArtworkField
@@ -157,6 +161,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <VisibilityField
               entityType={isAlbum ? 'album' : 'playlist'}
               isUpload={isUpload}
+              isPublishable={
+                isAlbum ||
+                (!isAlbum &&
+                  (initialContents?.track_ids?.length ?? 1) > 0 &&
+                  !isUpload)
+              }
             />
           ) : (
             <ReleaseDateFieldLegacy />
@@ -207,17 +217,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               collectionId={playlist_id}
               entity={collectionTypeName}
               onCancel={() => setIsDeleteConfirmationOpen(false)}
-              onDelete={() => setIsDeleteConfirmationOpen(false)}
             />
-            {!isUpload && confirmDrawerType ? (
-              <ReleaseCollectionConfirmationModal
-                isOpen={isReleaseConfirmationOpen}
-                onClose={() => setIsReleaseConfirmationOpen(false)}
-                collectionType={isAlbum ? 'album' : 'playlist'}
-                releaseType={confirmDrawerType}
-                formId={formId}
-              />
-            ) : null}
           </>
         ) : null}
       </Form>

@@ -120,7 +120,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         'follower_count', follower_count,
         'is_verified', users.is_verified,
         'created_at', users.created_at,
-        'updated_at', users.updated_at
+        'updated_at', users.updated_at,
+        'is_deactivated', users.is_deactivated
       ) as user,
 
       array(
