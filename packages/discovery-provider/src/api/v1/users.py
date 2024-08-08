@@ -2442,8 +2442,8 @@ class FullRemixersUsers(Resource):
         return success_response(users)
 
     @full_ns.doc(
-        id="""Get Followers""",
-        description="""All users that follow the provided user""",
+        id="""Get remixers""",
+        description="Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -2458,7 +2458,7 @@ class FullRemixersUsers(Resource):
 class RemixersUsers(FullRemixersUsers):
     @ns.doc(
         id="""Get remixers""",
-        description="Gets the list of unique users who have remixed tracks by the given user, or a specific track if provided",
+        description="Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -2472,7 +2472,7 @@ class RemixersUsers(FullRemixersUsers):
 class FullRemixersUsersCount(Resource):
     @full_ns.doc(
         id="Get remixers count",
-        description="Gets the count of unique users who have remixed tracks by the given user, or a specific track if provided",
+        description="Gets the count of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
