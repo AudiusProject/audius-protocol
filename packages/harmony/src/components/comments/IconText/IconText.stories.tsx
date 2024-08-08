@@ -17,39 +17,33 @@ type Story = StoryObj<typeof IconText>
 export const Default: Story = {
   render: () => (
     <Flex direction='column' gap='l' p='s'>
-      <IconText text='Test Text' />
-      <IconText text='Test Text' color='accent' />
-      <IconText text='Test Text' color='active' />
+      <IconText>Test Text</IconText>
+      <IconText color='accent'>Test Text</IconText>
+      <IconText color='active'>Test Text</IconText>
 
       <Divider />
 
-      <IconText icons={[{ icon: IconPin }]} text='Pinned By Artist' />
-      <IconText
-        icons={[{ icon: IconHeart, color: 'active' }]}
-        text='Liked By Artist'
-      />
+      <IconText icons={[{ icon: IconPin }]}> Pinned By Artist </IconText>
+      <IconText icons={[{ icon: IconHeart, color: 'active' }]}>
+        Liked By Artist
+      </IconText>
       <IconText
         icons={[{ icon: IconPin }, { icon: IconHeart, color: 'active' }]}
-        text='Liked By Artist'
-      />
+      >
+        Liked By Artist
+      </IconText>
 
       <Divider />
 
-      <IconText
-        icons={[{ icon: IconTrophy, color: 'accent' }]}
-        text='Top Supporter'
-        color='accent'
-      />
-      <IconText
-        icons={[{ icon: IconTipping, color: 'accent' }]}
-        text='Tip Supporter'
-        color='accent'
-      />
-      <IconText
-        icons={[{ icon: IconStar, color: 'accent' }]}
-        text='Artist'
-        color='accent'
-      />
+      <IconText icons={[{ icon: IconTrophy, color: 'accent' }]} color='accent'>
+        Top Supporter
+      </IconText>
+      <IconText icons={[{ icon: IconTipping, color: 'accent' }]} color='accent'>
+        Tip Supporter
+      </IconText>
+      <IconText icons={[{ icon: IconStar, color: 'accent' }]} color='accent'>
+        Artist
+      </IconText>
     </Flex>
   )
 }

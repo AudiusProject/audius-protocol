@@ -27,6 +27,8 @@ export const Identifier = ({ type }: IdentifierProps) => {
   const { label, icon } = typeInfoMap[type]
 
   return (
-    <IconText icons={[{ icon, color: 'accent' }]} text={label} color='accent' />
+    <IconText icons={[{ icon, color: 'accent' }]} color='accent'>
+      {label}
+    </IconText>
   )
 }

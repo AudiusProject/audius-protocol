@@ -7,14 +7,19 @@ import { IconText } from '../IconText'
 const pinIcon = { icon: IconPin }
 const heartIcon = { icon: IconHeart, color: 'active' }
 
-export const ArtistPick = ({ type }: ArtistPickProps) => {
-  const isPicked = type === 'picked' || type === 'both'
-  const isLiked = type === 'liked' || type === 'both'
+export const ArtistPick = ({
+  isPinned = false,
+  isLiked = false
+}: ArtistPickProps) => {
+  if (!isPinned && !isLiked) return null
+
+  const text = `${isLiked ? 'Liked' : 'Pinned'} by Artist`
 
   return (
     <IconText
-      icons={[...(isPicked ? [pinIcon] : []), ...(isLiked ? [heartIcon] : [])]}
-      text={`${isLiked ? 'Liked' : 'Picked'} by Artist`}
-    />
+      icons={[...(isPinned ? [pinIcon] : []), ...(isLiked ? [heartIcon] : [])]}
+    >
+      {text}
+    </IconText>
   )
 }

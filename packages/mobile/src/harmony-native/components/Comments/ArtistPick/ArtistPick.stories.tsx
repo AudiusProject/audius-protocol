@@ -16,9 +16,9 @@ type Story = StoryObj<typeof ArtistPick>
 export const Default: Story = {
   render: () => (
     <Flex direction='column' gap='l' p='s'>
-      <ArtistPick type='picked' />
-      <ArtistPick type='liked' />
-      <ArtistPick type='both' />
+      <ArtistPick isPinned />
+      <ArtistPick isLiked />
+      <ArtistPick isPinned isLiked />
     </Flex>
   )
 }

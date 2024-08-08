@@ -1,11 +1,11 @@
-import type { IconTextProps } from '@audius/harmony/src/components/comments/IconText/types'
-
 import { Flex, Text } from '../..'
 
+import type { IconTextProps } from './types'
+
 export const IconText = ({
-  icons = [],
-  text,
-  color = 'default'
+  children,
+  color = 'default',
+  icons = []
 }: IconTextProps) => {
   const separator = (
     <Text
@@ -18,7 +18,7 @@ export const IconText = ({
   )
 
   return (
-    <Flex direction='row' h={16} gap='xs' alignItems='center'>
+    <Flex direction='row' h='l' gap='xs' alignItems='center'>
       {icons.map(({ icon: Icon, color: iconColor = 'default' }, idx) => (
         <>
           {idx > 0 ? separator : null}
@@ -26,7 +26,7 @@ export const IconText = ({
         </>
       ))}
       <Text variant='body' size='xs' color={color}>
-        {text}
+        {children}
       </Text>
     </Flex>
   )

@@ -4,9 +4,9 @@ import { Text } from 'components/text'
 import { IconTextProps } from './types'
 
 export const IconText = ({
-  icons = [],
-  text,
-  color = 'default'
+  children,
+  color = 'default',
+  icons = []
 }: IconTextProps) => {
   const separator = (
     <Text variant='body' color='default' css={{ fontSize: 8 }}>
@@ -15,7 +15,7 @@ export const IconText = ({
   )
 
   return (
-    <Flex h={16} gap='xs' alignItems='center'>
+    <Flex h='l' gap='xs' alignItems='center'>
       {icons.map(({ icon: Icon, color: iconColor = 'default' }, idx) => (
         <>
           {idx > 0 ? separator : null}
@@ -23,7 +23,7 @@ export const IconText = ({
         </>
       ))}
       <Text variant='body' size='xs' color={color}>
-        {text}
+        {children}
       </Text>
     </Flex>
   )

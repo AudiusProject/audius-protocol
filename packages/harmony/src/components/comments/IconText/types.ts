@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { IconComponent } from 'components/icon'
 import { IconColors, TextColors } from 'foundations'
 
@@ -8,6 +10,6 @@ type IconInfo = {
 
 export type IconTextProps = {
   icons?: IconInfo[]
-  text: string
+  children?: ReactNode
   color?: TextColors
 }
