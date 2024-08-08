@@ -202,15 +202,11 @@ func TestGetChats(t *testing.T) {
 				Summary: &expectedSummary,
 			},
 		)
-		_ = expectedResponse
 		assert.NoError(t, err)
 
 		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-
-			// todo: removed the LIMIT stuff from getChats query for the sake of adding blasts in...
-			// which causes this test to fail... so skip for now
-			// assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 

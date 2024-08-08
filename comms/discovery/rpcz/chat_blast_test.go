@@ -57,16 +57,6 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, blasts, 1)
-
-		// comes back mixed into chats list
-		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
-			UserID: 101,
-			Before: time.Now().Add(time.Hour),
-			After:  time.Now().Add(time.Hour * -1),
-		})
-		assert.NoError(t, err)
-		assert.Len(t, chats, 1)
-		assert.Equal(t, "blast_b1", chats[0].ChatID)
 	}
 
 	// user 999 does not
@@ -115,18 +105,7 @@ func TestChatBlast(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, messages, 1)
 
-		// chat list omits blast now that it's upgraded to real chat
-		{
-			// comes back mixed into chats list
-			chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
-				UserID: 101,
-				Before: time.Now().Add(time.Hour),
-				After:  time.Now().Add(time.Hour * -1),
-			})
-			assert.NoError(t, err)
-			assert.Len(t, chats, 1)
-			assert.Equal(t, chatId, chats[0].ChatID)
-		}
+		// todo: new blasts should omit this one now
 
 	}
 
