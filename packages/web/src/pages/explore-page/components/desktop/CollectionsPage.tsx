@@ -22,8 +22,8 @@ const CollectionsPage = (props: CollectionsPageProps) => {
     <Header
       primary={title}
       secondary={description}
-      containerStyles={description ? styles.header : null}
-      wrapperClassName={description ? styles.headerWrapper : null}
+      containerStyles={description ? styles.header : undefined}
+      wrapperClassName={description ? styles.headerWrapper : undefined}
     />
   )
 
