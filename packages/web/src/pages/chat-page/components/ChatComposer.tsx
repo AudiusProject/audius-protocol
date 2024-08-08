@@ -58,6 +58,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const [value, setValue] = useState(presetMessage ?? '')
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
+  const isBlast = chatId === ChatBlastAudience.FOLLOWERS
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -69,9 +70,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault()
-      if (chatId && value) {
-        const message = value
-        // dispatch(sendMessage({ chatId, message }))
+      if (isBlast) {
         dispatch(
           sendTargetedMessage({
             blastId: chatId,
@@ -79,6 +78,9 @@ export const ChatComposer = (props: ChatComposerProps) => {
             message
           })
         )
+      } else if (chatId && value) {
+        const message = value
+        dispatch(sendMessage({ chatId, message }))
         setValue('')
         onMessageSent()
       }

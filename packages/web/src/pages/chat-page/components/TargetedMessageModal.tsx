@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
+import { chatActions } from '@audius/common/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -18,7 +19,10 @@ import {
   ModalContent,
   Select
 } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, FormikValues, useField } from 'formik'
+import { useDispatch } from 'react-redux'
+const { goToChat } = chatActions
 
 const messages = {
   title: 'Target Audience',
@@ -55,6 +59,7 @@ type TargetedMessageFormValues = {
 }
 
 export const TargetedMessageModal = () => {
+  const dispatch = useDispatch()
   const { isOpen, onClose } = useTargetedMessageModal()
 
   const initialValues: TargetedMessageFormValues = {
@@ -67,7 +72,7 @@ export const TargetedMessageModal = () => {
     window.alert(JSON.stringify(values))
     switch (values.target_audience) {
       case 'followers':
-        // do something
+        dispatch(goToChat({ chatId: 'followers' }))
         break
       case 'supporters':
         // do something
