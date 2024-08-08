@@ -84,6 +84,7 @@ export const stagingConfig: SdkServicesConfig = {
     "rewardManagerProgramAddress": "CDpzvz7DfgbF95jSSCHLX3ERkugyfgn9Fw8ypNZ1hfXp",
     "rewardManagerStateAddress": "GaiG9LDYHfZGqeNaoGRzFEnLiwUT7WiC6sA6FDJX9ZPq",
     "paymentRouterProgramAddress": "sp28KA2bTnTA4oSZ3r9tTSKfmiXZtZQHnYYQqWfUyVa",
+    "stakingBridgeProgramAddress": "stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo"

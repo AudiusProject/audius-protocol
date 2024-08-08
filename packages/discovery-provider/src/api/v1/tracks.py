@@ -1825,6 +1825,14 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
 )
 
+access_info_parser = current_user_parser.copy()
+access_info_parser.add_argument(
+    "include_network_cut",
+    required=False,
+    type=bool,
+    description="Whether to include the staking system as a recipient",
+)
+
 
 @ns.route("/<string:track_id>/access-info")
 class GetTrackAccessInfo(Resource):
