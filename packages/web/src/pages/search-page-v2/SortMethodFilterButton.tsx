@@ -1,6 +1,6 @@
 import { FilterButton } from '@audius/harmony'
 
-import { useSearchParams, useUpdateSearchParams } from './utils'
+import { useSearchParams, useUpdateSearchParams } from './hooks'
 
 const messages = {
   sortOptionsLabel: 'Sort By'

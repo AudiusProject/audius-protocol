@@ -3,8 +3,12 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { TrackMetadataForUpload } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import {
+  TrackMetadataForUpload,
+  useEarlyReleaseConfirmationModal,
+  useHideContentConfirmationModal,
+  usePublishConfirmationModal
+} from '@audius/common/store'
 import {
   IconCaretLeft,
   IconCaretRight,
@@ -35,7 +39,6 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './EditTrackForm.module.css'
-import { ReleaseTrackConfirmationModal } from './ReleaseTrackConfirmationModal'
 import { PreviewButton } from './components/PreviewButton'
 import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
@@ -83,47 +86,45 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     hideContainer,
     disableNavigationPrompt
   } = props
-  const [isReleaseConfirmationOpen, setIsReleaseConfirmationOpen] =
-    useState(false)
-  const [confirmDrawerType, setConfirmDrawerType] =
-    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
   const initialTrackValues = initialValues.trackMetadatas[0] ?? {}
   const isUpload = initialTrackValues.track_id === undefined
   const initiallyHidden = initialTrackValues.is_unlisted
   const isInitiallyScheduled = initialTrackValues.is_scheduled_release
 
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+
   const handleSubmit = useCallback(
     (values: TrackEditFormValues) => {
-      if (isReleaseConfirmationOpen) {
-        setIsReleaseConfirmationOpen(false)
+      const confirmCallback = () => {
         onSubmit(values)
+      }
+
+      const usersMayLoseAccess =
+        !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
+      const isToBePublished =
+        !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
+      if (usersMayLoseAccess) {
+        openHideContentConfirmation({ confirmCallback })
+      } else if (isToBePublished && isInitiallyScheduled) {
+        openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
+      } else if (isToBePublished) {
+        openPublishConfirmation({ contentType: 'track', confirmCallback })
       } else {
-        const usersMayLoseAccess =
-          !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
-        const isToBePublished =
-          !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
-        const showConfirmDrawer = usersMayLoseAccess || isToBePublished
-        if (showConfirmDrawer) {
-          if (usersMayLoseAccess) {
-            setConfirmDrawerType('hidden')
-          } else if (isInitiallyScheduled) {
-            setConfirmDrawerType('early_release')
-          } else {
-            setConfirmDrawerType('release')
-          }
-          setIsReleaseConfirmationOpen(true)
-        } else {
-          setIsReleaseConfirmationOpen(false)
-          onSubmit(values)
-        }
+        onSubmit(values)
       }
     },
     [
-      isReleaseConfirmationOpen,
       onSubmit,
       initiallyHidden,
       isUpload,
-      isInitiallyScheduled
+      isInitiallyScheduled,
+      openHideContentConfirmation,
+      openEarlyReleaseConfirmation,
+      openPublishConfirmation
     ]
   )
 
@@ -142,14 +143,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             disableNavigationPrompt={disableNavigationPrompt}
             updatedArtwork={initialTrackValues.artwork}
           />
-          {!isUpload && confirmDrawerType ? (
-            <ReleaseTrackConfirmationModal
-              isOpen={isReleaseConfirmationOpen}
-              onClose={() => setIsReleaseConfirmationOpen(false)}
-              releaseType={confirmDrawerType}
-              formId={formId}
-            />
-          ) : null}
         </>
       )}
     </Formik>

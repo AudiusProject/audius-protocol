@@ -19,7 +19,7 @@ import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useBpmMaskedInput } from 'hooks/useBpmMaskedInput'
 
-import { useUpdateSearchParams } from './utils'
+import { useUpdateSearchParams } from './hooks'
 
 const MIN_BPM = 1
 const MAX_BPM = 999

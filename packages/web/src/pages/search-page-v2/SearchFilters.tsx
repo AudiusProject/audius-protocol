@@ -16,8 +16,9 @@ import { Mood } from '@audius/sdk'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { BpmFilter } from './BpmFilter'
+import { useUpdateSearchParams } from './hooks'
+import { MOODS } from './moods'
 import { Filter } from './types'
-import { MOODS, useUpdateSearchParams } from './utils'
 
 const messages = {
   genre: 'Genre',

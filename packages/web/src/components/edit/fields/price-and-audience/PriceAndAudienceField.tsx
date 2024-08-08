@@ -19,7 +19,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   EditCollectionValues,
-  editAccessConfirmationModalUIActions
+  useEditAccessConfirmationModal
 } from '@audius/common/store'
 import { getUsersMayLoseAccess } from '@audius/common/utils'
 import {
@@ -33,7 +33,7 @@ import {
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -74,9 +74,6 @@ import {
 import styles from './PriceAndAudienceField.module.css'
 import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { priceAndAudienceSchema } from './priceAndAudienceSchema'
-
-const { requestOpen: openEditAccessConfirmationModal } =
-  editAccessConfirmationModalUIActions
 
 const { getUserId } = accountSelectors
 
@@ -135,7 +132,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isPublishDisabled = false
   } = props
 
-  const dispatch = useDispatch()
   const [isConfirmationCancelled, setIsConfirmationCancelled] = useState(false)
 
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
@@ -233,6 +229,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     [accountUserId, savedStreamConditions]
   )
 
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
+
   const isUsdcGated = isContentUSDCPurchaseGated(savedStreamConditions)
   const isTipGated = isContentTipGated(savedStreamConditions)
   const isFollowGated = isContentFollowGated(savedStreamConditions)
@@ -298,25 +297,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     fieldVisibility,
     preview
   ])
-
-  const openEditAccessConfirmation = useCallback(
-    ({
-      confirmCallback,
-      cancelCallback
-    }: {
-      confirmCallback: () => void
-      cancelCallback: () => void
-    }) => {
-      dispatch(
-        openEditAccessConfirmationModal({
-          type: 'audience',
-          confirmCallback,
-          cancelCallback
-        })
-      )
-    },
-    [dispatch]
-  )
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
@@ -598,7 +578,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
         })
 
         if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
-          openEditAccessConfirmation({
+          onOpenEditAccessConfirmationModal({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
               setIsConfirmationCancelled(true)

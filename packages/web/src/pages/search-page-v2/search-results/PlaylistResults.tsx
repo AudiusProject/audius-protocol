@@ -12,8 +12,8 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
+import { useGetSearchResults, useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
-import { useGetSearchResults, useSearchParams } from '../utils'
 
 const { addItem: addRecentSearch } = searchActions
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { publishTrackConfirmationModalUISelectors } from '@audius/common/store'
+import { usePublishConfirmationModal } from '@audius/common/store'
 import {
   Button,
   Modal,
@@ -12,26 +12,18 @@ import {
   IconRocket
 } from '@audius/harmony'
 
-import { useModalState } from 'common/hooks/useModalState'
-import { useSelector } from 'common/hooks/useSelector'
-
-const { getConfirmCallback } = publishTrackConfirmationModalUISelectors
-
-const messages = {
+const getMessages = (contentType: 'track' | 'album' | 'playlist') => ({
   title: 'Confirm Release',
-  description:
-    'Are you sure you want to make this track public? Your followers will be notified.',
+  description: `Are you sure you want to make this ${contentType} public? Your followers will be notified.`,
   cancel: 'Go Back',
   release: 'Release Now'
-}
+})
 
-export const PublishTrackConfirmationModal = () => {
-  const confirmCallback = useSelector(getConfirmCallback)
-  const [isOpen, setIsOpen] = useModalState('PublishTrackConfirmation')
+export const PublishConfirmationModal = () => {
+  const { data, isOpen, onClose } = usePublishConfirmationModal()
+  const { contentType, confirmCallback } = data
 
-  const onClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
+  const messages = getMessages(contentType)
 
   const handleConfirm = useCallback(() => {
     confirmCallback()
