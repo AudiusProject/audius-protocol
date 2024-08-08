@@ -746,7 +746,8 @@ class CollectionPage extends Component<
       tracks,
       userId,
       userPlaylists,
-      smartCollection
+      smartCollection,
+      trackCount
     } = this.props
     const { allowReordering } = this.state
     const { playlistId } = this.props
@@ -803,7 +804,8 @@ class CollectionPage extends Component<
       onClickReposts: this.onClickReposts,
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
-      refresh: this.refreshCollection
+      refresh: this.refreshCollection,
+      trackCount
     }
 
     if ((metadata?.is_delete || metadata?._marked_deleted) && user) {

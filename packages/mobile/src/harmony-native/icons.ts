@@ -74,6 +74,7 @@ export { default as IconMood } from '@audius/harmony/src/assets/icons/Mood.svg'
 export { default as IconTipping } from '@audius/harmony/src/assets/icons/Tipping.svg'
 export { default as IconCloudDownload } from '@audius/harmony/src/assets/icons/CloudDownload.svg'
 export { default as IconNoWifi } from '@audius/harmony/src/assets/icons/NoWifi.svg'
+export { default as IconTowerBroadcast } from '@audius/harmony/src/assets/icons/TowerBroadcast.svg'
 export { default as IconTransaction } from '@audius/harmony/src/assets/icons/Transaction.svg'
 export { default as IconCloudDownloadError } from '@audius/harmony/src/assets/icons/CloudDownloadError.svg'
 export { default as IconNote } from '@audius/harmony/src/assets/icons/Note.svg'
@@ -146,6 +147,7 @@ export { default as IconSoundwave } from '@audius/harmony/src/assets/icons/Sound
 export { default as IconCreditCard } from '@audius/harmony/src/assets/icons/CreditCard.svg'
 export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Waveform.svg'
 export { default as IconMoneyBracket } from '@audius/harmony/src/assets/icons/MoneyBracket.svg'
+export { default as IconPin } from '@audius/harmony/src/assets/icons/Pin.svg'
 
 // Two Tone / Special Styling
 

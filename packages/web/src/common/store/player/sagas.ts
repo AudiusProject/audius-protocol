@@ -105,6 +105,7 @@ export function* watchPlay() {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const currentUserId = yield* select(getUserId)
+      const isOwner = currentUserId === track.owner_id
 
       const encodedTrackId = encodeHashId(trackId)
 
@@ -151,7 +152,13 @@ export function* watchPlay() {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
-      const url = usePrefetchStreamUrls && streamUrl ? streamUrl : mp3Url
+      // Always prefer stream url unless an owner is previewing their own track,
+      // since we haven't prefetched the preview.
+      const url =
+        usePrefetchStreamUrls && streamUrl && !(shouldPreview && isOwner)
+          ? streamUrl
+          : mp3Url
+
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           trackDuration ||

@@ -449,7 +449,6 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 	go ss.startAudioAnalyzer()
-	go ss.startLegacyAudioAnalyzer()
 
 	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker

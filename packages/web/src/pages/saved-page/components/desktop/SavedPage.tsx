@@ -1,5 +1,3 @@
-import { useContext } from 'react'
-
 import { Kind, Status, ID, UID, Lineup, User } from '@audius/common/models'
 import {
   savedPageSelectors,
@@ -28,7 +26,7 @@ import { dateSorter } from 'components/table'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import useTabs from 'hooks/useTabs/useTabs'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -120,7 +118,7 @@ const SavedPage = ({
   onClickRepost,
   onSortTracks
 }: SavedPageProps) => {
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
   const initFetch = useSelector(getInitialFetchStatus)
 
   const emptyTracksHeader = useSelector((state: CommonState) => {

@@ -1,8 +1,8 @@
-import { forwardRef, useContext } from 'react'
+import { forwardRef } from 'react'
 
 import { PopupMenu, PopupMenuItem, PopupMenuProps } from '@audius/harmony'
 
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import CollectionMenu, {
   OwnProps as CollectionMenuProps
@@ -24,14 +24,14 @@ export type MenuProps = {
 
 const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
   const { menu, onClose, zIndex, children, ...other } = props
-
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   const renderMenu = (items: PopupMenuItem[]) => (
     <PopupMenu
       items={items}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       ref={ref}
       renderTrigger={children}
       zIndex={zIndex}

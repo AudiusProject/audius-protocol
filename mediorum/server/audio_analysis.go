@@ -13,8 +13,11 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 	"gocloud.dev/gcerrors"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
+
+const MAX_TRIES = 3
 
 func (ss *MediorumServer) startAudioAnalyzer() {
 	work := make(chan *Upload)
@@ -78,6 +81,12 @@ func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work 
 
 		cid, ok := upload.TranscodeResults["320"]
 		if !ok {
+			if slices.Index(upload.Mirrors, ss.Config.Self.Host) == 0 {
+				upload.AudioAnalysisStatus = JobStatusError
+				upload.AudioAnalysisError = "missing transcoded audio"
+				upload.AudioAnalysisErrorCount = MAX_TRIES
+				ss.crud.Update(upload)
+			}
 			continue
 		}
 		_, isMine := ss.rendezvousAllHosts(cid)
@@ -284,7 +293,7 @@ func (ss *MediorumServer) analyzeBPM(filename string) (float64, error) {
 
 // converts an MP3 file to WAV format using ffmpeg
 func convertToWav(inputFile, outputFile string) error {
-	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "30", outputFile)
+	cmd := exec.Command("ffmpeg", "-i", inputFile, "-f", "wav", "-t", "60", outputFile)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to convert to WAV: %v, output: %s", err, string(output))
 	}

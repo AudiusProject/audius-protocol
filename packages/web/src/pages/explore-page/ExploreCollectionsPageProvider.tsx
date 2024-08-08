@@ -44,6 +44,11 @@ const ExploreCollectionsPageProvider = ({
   children: Children
 }: ExploreCollectionsPageProviderProps) => {
   const { location } = useHistory()
+  const match = matchPath<{
+    mood: string
+  }>(getPathname(location), {
+    path: EXPLORE_MOOD_PLAYLISTS_PAGE
+  })
   const [info, setInfo] = useState<
     ExploreCollection | ExploreMoodCollection | null
   >(null)
@@ -51,12 +56,7 @@ const ExploreCollectionsPageProvider = ({
   useEffect(() => {
     if (variant === ExploreCollectionsVariant.MOOD) {
       // Mood playlist
-      const match = matchPath<{
-        mood: string
-      }>(getPathname(location), {
-        path: EXPLORE_MOOD_PLAYLISTS_PAGE
-      })
-      if (match && match.params.mood) {
+      if (match?.params.mood) {
         const collectionInfo = EXPLORE_MOOD_COLLECTIONS_MAP[match.params.mood]
         fetch(variant, collectionInfo.moods)
         setInfo(collectionInfo)
@@ -68,7 +68,8 @@ const ExploreCollectionsPageProvider = ({
       fetch(variant)
       setInfo(EXPLORE_COLLECTIONS_MAP[variant])
     }
-  }, [variant, fetch, location])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant, fetch])
 
   const title = info
     ? info.variant === ExploreCollectionsVariant.MOOD

@@ -248,7 +248,8 @@ export const CollectionScreenDetailsTile = ({
   const isLineupLoading = useSelector(selectIsLineupLoading)
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
-  const isPlaying = useSelector(getPlaying)
+  const isPlaybackActive = useSelector(getPlaying)
+  const isPlaying = isPlaybackActive && isQueued
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingPreview = isPreviewing && isPlaying
   const playingTrack = useSelector(getCurrentTrack)
@@ -263,7 +264,9 @@ export const CollectionScreenDetailsTile = ({
     dayjs(releaseDate).isAfter(dayjs())
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
-  const shouldHideActions = hideActions || (isPrivate && !isOwner)
+  const shouldHideActions =
+    hideActions || (isPrivate && !isOwner) || !hasStreamAccess
+  const shouldeHideShare = hideActions || (isPrivate && !isOwner)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
@@ -457,7 +460,7 @@ export const CollectionScreenDetailsTile = ({
           hideFavorite={shouldHideActions}
           hideOverflow={shouldHideOverflow}
           hideRepost={shouldHideActions}
-          hideShare={shouldHideActions}
+          hideShare={shouldeHideShare}
           isOwner={isOwner}
           isCollection
           collectionId={numericCollectionId}

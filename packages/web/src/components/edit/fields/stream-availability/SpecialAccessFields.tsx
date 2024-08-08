@@ -13,6 +13,8 @@ import Tooltip from 'components/tooltip/Tooltip'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
+  GateKeeper,
+  LAST_GATE_KEEPER,
   STREAM_CONDITIONS,
   SpecialAccessType
 } from '../types'
@@ -41,13 +43,16 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   const [specialAccessTypeField] = useField({
     name: SPECIAL_ACCESS_TYPE
   })
+  const [{ value: downloadConditions }] =
+    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
+  const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
+  const showPremiumDownloadsMessage =
+    downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
 
   const [, , { setValue: setStreamConditionsValue }] =
     useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
-  const [{ value: downloadConditions }] =
-    useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +107,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
           </Tooltip>
         </label>
       </RadioGroup>
-      {downloadConditions ? (
+      {showPremiumDownloadsMessage ? (
         <Hint icon={IconInfo}>{messages.premiumDownloads}</Hint>
       ) : null}
     </>

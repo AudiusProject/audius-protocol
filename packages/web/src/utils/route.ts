@@ -132,6 +132,11 @@ export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
 export const SEARCH_CATEGORY_PAGE_LEGACY = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:category?'
 export const SEARCH_BASE_ROUTE = '/search'
+export const SEARCH_PAGE_ALL = '/search/all'
+export const SEARCH_PAGE_PROFILES = '/search/profiles'
+export const SEARCH_PAGE_TRACKS = '/search/tracks'
+export const SEARCH_PAGE_ALBUMS = '/search/albums'
+export const SEARCH_PAGE_PLAYLISTS = '/search/playlists'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
 export const EDIT_PLAYLIST_PAGE = '/:handle/playlist/:slug/edit'
@@ -302,6 +307,11 @@ export const staticRoutes = new Set([
   TRENDING_PAGE,
   EXPLORE_PAGE,
   SEARCH_BASE_ROUTE,
+  SEARCH_PAGE_ALL,
+  SEARCH_PAGE_PROFILES,
+  SEARCH_PAGE_TRACKS,
+  SEARCH_PAGE_ALBUMS,
+  SEARCH_PAGE_PLAYLISTS,
   SAVED_PAGE,
   LIBRARY_PAGE,
   FAVORITES_PAGE,

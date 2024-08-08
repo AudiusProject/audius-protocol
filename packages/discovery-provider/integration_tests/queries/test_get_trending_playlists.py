@@ -3,8 +3,8 @@ from time import time
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_trending_playlists import _get_trending_playlists_with_session
-from src.trending_strategies.BDNxn_trending_playlists_strategy import (
-    TrendingPlaylistsStrategyBDNxn,
+from src.trending_strategies.pnagD_trending_playlists_strategy import (
+    TrendingPlaylistsStrategypnagD,
 )
 from src.utils.db_session import get_db
 
@@ -98,7 +98,7 @@ def test_get_trending_playlists(app):
         res = _get_trending_playlists_with_session(
             session,
             {"time": "week", "offset": 0, "limit": 10},
-            TrendingPlaylistsStrategyBDNxn(),
+            TrendingPlaylistsStrategypnagD(),
             use_request_context=False,
         )
         # Second playlist ranks above first with 1 more repost
@@ -194,7 +194,7 @@ def test_get_trending_playlists_filters(app):
         res = _get_trending_playlists_with_session(
             session,
             {"time": "week", "offset": 0, "limit": 10},
-            TrendingPlaylistsStrategyBDNxn(),
+            TrendingPlaylistsStrategypnagD(),
             use_request_context=False,
         )
         # No results, all filtered

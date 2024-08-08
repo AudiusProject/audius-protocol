@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  uploadConfirmationModalUIActions,
   uploadActions,
   uploadSelectors,
-  UploadType
+  UploadType,
+  useUploadConfirmationModal
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -20,8 +20,6 @@ import SelectPage from './pages/SelectPage'
 import { UploadFormState } from './types'
 
 const { uploadTracks, undoResetState } = uploadActions
-const { requestOpen: openUploadConfirmationModal } =
-  uploadConfirmationModalUIActions
 const { getShouldReset } = uploadSelectors
 
 const messages = {
@@ -81,6 +79,20 @@ export const UploadPage = (props: UploadPageProps) => {
       pageTitle = messages.selectPageTitle
   }
 
+  const { onOpen: openUploadConfirmationModal } = useUploadConfirmationModal()
+
+  const openUploadConfirmation = useCallback(
+    (hasPublicTracks: boolean) => {
+      openUploadConfirmationModal({
+        hasPublicTracks,
+        confirmCallback: () => {
+          setPhase(Phase.FINISH)
+        }
+      })
+    },
+    [openUploadConfirmationModal]
+  )
+
   let page
   switch (phase) {
     case Phase.SELECT:
@@ -130,20 +142,6 @@ export const UploadPage = (props: UploadPageProps) => {
         )
       }
   }
-
-  const openUploadConfirmation = useCallback(
-    (hasPublicTracks: boolean) => {
-      dispatch(
-        openUploadConfirmationModal({
-          hasPublicTracks,
-          confirmCallback: () => {
-            setPhase(Phase.FINISH)
-          }
-        })
-      )
-    },
-    [dispatch]
-  )
 
   useEffect(() => {
     if (shouldResetState) {

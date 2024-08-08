@@ -1,17 +1,18 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Status } from '@audius/common/models'
+import { ID, Kind, Name, Status } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults } from '../utils'
+import { useGetSearchResults, useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -28,6 +29,7 @@ type ProfileResultsProps = {
 
 export const ProfileResults = (props: ProfileResultsProps) => {
   const { limit = 100, ids, skeletonCount = 10 } = props
+  const { query } = useSearchParams()
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
@@ -45,9 +47,17 @@ export const ProfileResults = (props: ProfileResultsProps) => {
             }
           })
         )
+        dispatch(
+          make(Name.SEARCH_RESULT_SELECT, {
+            term: query,
+            source: 'search results page',
+            id,
+            kind: 'profile'
+          })
+        )
       }
     },
-    [dispatch]
+    [dispatch, query]
   )
 
   return (

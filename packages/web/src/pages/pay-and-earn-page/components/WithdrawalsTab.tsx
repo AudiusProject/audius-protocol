@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   Id,
@@ -35,7 +35,7 @@ import { ThunkDispatch } from 'redux-thunk'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { make, track } from 'services/analytics'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
@@ -308,7 +308,7 @@ export const WithdrawalsTab = ({
   isLoading
 }: Omit<ReturnType<typeof useWithdrawals>, 'downloadCSV'>) => {
   const isMobile = useIsMobile()
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   const columns = isMobile
     ? (['date', 'amount'] as WithdrawalsTableColumn[])

@@ -22,7 +22,8 @@ import {
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
-  usePublishContentModal
+  trackPageActions,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
@@ -96,7 +97,7 @@ export const TrackTileComponent = ({
   )
 
   const currentUserId = useSelector(getUserId)
-  const { onOpen: openPublishModal } = usePublishContentModal()
+  const { onOpen: openPublishModal } = usePublishConfirmationModal()
 
   const isOwner = currentUserId === track.owner_id
 
@@ -115,6 +116,9 @@ export const TrackTileComponent = ({
     ddex_app: ddexApp,
     is_unlisted: isUnlisted
   } = track
+
+  const { artist_pick_track_id } = user
+  const isArtistPick = isOwner && artist_pick_track_id === track_id
 
   const hasPreview =
     isUSDCEnabled &&
@@ -169,6 +173,8 @@ export const TrackTileComponent = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
+      isOwner && !isArtistPick ? OverflowAction.SET_ARTIST_PICK : null,
+      isArtistPick ? OverflowAction.UNSET_ARTIST_PICK : null,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
@@ -192,6 +198,7 @@ export const TrackTileComponent = ({
     isUnlisted,
     albumInfo,
     playbackPositionInfo?.status,
+    isArtistPick,
     isOnArtistsTracksTab,
     track?.is_scheduled_release,
     track?.is_unlisted,
@@ -233,9 +240,13 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_reposted])
 
+  const publish = useCallback(() => {
+    dispatch(trackPageActions.makeTrackPublic(track_id))
+  }, [dispatch, track_id])
+
   const handlePressPublish = useCallback(() => {
-    openPublishModal({ contentId: track_id, contentType: 'track' })
-  }, [openPublishModal, track_id])
+    openPublishModal({ contentType: 'track', confirmCallback: publish })
+  }, [openPublishModal, publish])
 
   const onPressEdit = useCallback(() => {
     navigation?.push('EditTrack', { id: track_id })

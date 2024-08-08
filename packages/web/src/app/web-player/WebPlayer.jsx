@@ -46,11 +46,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
-import {
-  MainContentContext,
-  MainContentContextProvider,
-  MAIN_CONTENT_ID
-} from 'pages/MainContentContext'
+import { MainContentContext, MAIN_CONTENT_ID } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
@@ -475,7 +471,7 @@ class WebPlayer extends Component {
           <Notice />
           <Navigator />
           <div
-            ref={this.props.mainContentRef}
+            ref={this.props.setMainContentRef}
             id={MAIN_CONTENT_ID}
             role='main'
             className={cn(styles.mainContentWrapper, {
@@ -1058,13 +1054,13 @@ const RouterWebPlayer = withRouter(
 
 const MainContentRouterWebPlayer = () => {
   return (
-    <MainContentContextProvider>
-      <MainContentContext.Consumer>
-        {({ mainContentRef }) => (
-          <RouterWebPlayer mainContentRef={mainContentRef} />
-        )}
-      </MainContentContext.Consumer>
-    </MainContentContextProvider>
+    <MainContentContext.Consumer>
+      {({ ref, setRef }) => {
+        return (
+          <RouterWebPlayer setMainContentRef={setRef} mainContentRef={ref} />
+        )
+      }}
+    </MainContentContext.Consumer>
   )
 }
 

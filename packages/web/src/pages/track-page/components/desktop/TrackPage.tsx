@@ -1,8 +1,11 @@
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import cn from 'classnames'
+import { Box, Flex, Text } from '@audius/harmony'
 
+import { CommentSectionProvider } from 'components/comments/CommentSectionContext'
+import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -106,7 +109,13 @@ const TrackPage = ({
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
+
+  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
   const loading = !heroTrack || isFetchingNFTAccess
+
+  const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -180,17 +189,19 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <div className={cn(styles.lineupHeader, styles.large)}>
+    <Text color='default' variant='title' size='l'>
       {messages.originalTrack}
-    </div>
+    </Text>
   )
 
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <div
-        className={styles.lineupHeader}
-      >{`${messages.moreBy} ${user?.name}`}</div>
+      <Text
+        color='default'
+        variant='title'
+        size='l'
+      >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
   return (
@@ -205,63 +216,117 @@ const TrackPage = ({
       fromOpacity={1}
       noIndex={defaults.isUnlisted}
     >
-      <div className={styles.headerWrapper}>
+      <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
         <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <StatBanner isEmpty />
         <NavBanner empty />
-      </div>
-      <div className={styles.contentWrapper}>{renderGiantTrackTile()}</div>
-      {defaults.fieldVisibility.remixes &&
-        defaults.remixTrackIds &&
-        defaults.remixTrackIds.length > 0 && (
-          <div className={styles.remixes}>
-            <Remixes
-              trackIds={defaults.remixTrackIds}
-              goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
-            />
-          </div>
-        )}
-      <div className={styles.moreByArtistLineupWrapper}>
-        {hasValidRemixParent ? renderOriginalTrackTitle() : renderMoreByTitle()}
-        <Lineup
-          lineup={tracks}
-          // Styles for leading element (original track if remix).
-          leadingElementId={defaults.remixParentTrackId}
-          leadingElementDelineator={
-            <div className={styles.originalTrackDelineator}>
-              <SectionButton
-                text={messages.viewOtherRemixes}
-                onClick={goToParentRemixesPage}
+      </Box>
+      <Flex
+        direction='column'
+        css={{
+          display: 'flex',
+          position: 'relative',
+          padding: '200px 16px 60px'
+        }}
+      >
+        {renderGiantTrackTile()}
+        {defaults.fieldVisibility.remixes &&
+          defaults.remixTrackIds &&
+          defaults.remixTrackIds.length > 0 && (
+            <Flex justifyContent='center' mt='3xl' ph='l'>
+              <Remixes
+                trackIds={defaults.remixTrackIds}
+                goToAllRemixes={goToAllRemixesPage}
+                count={defaults.remixesCount}
               />
-              {renderMoreByTitle()}
-            </div>
-          }
-          leadingElementTileProps={{ size: TrackTileSize.LARGE }}
-          laggingContainerClassName={styles.moreByArtistContainer}
-          leadingElementClassName={styles.originalTrack}
-          showLeadingElementArtistPick={false}
-          applyLeadingElementStylesToSkeleton
-          // Don't render the first tile in the lineup since it's actually the "giant"
-          // track tile this page is about.
-          start={1}
-          // Show max 5 loading tiles
-          count={6}
-          // Managed from the parent rather than allowing the lineup to fetch content itself.
-          selfLoad={false}
-          variant={LineupVariant.CONDENSED}
-          playingUid={currentQueueItem.uid}
-          playingSource={currentQueueItem.source}
-          playingTrackId={
-            currentQueueItem.track && currentQueueItem.track.track_id
-          }
-          playing={isPlaying}
-          buffering={isBuffering}
-          playTrack={play}
-          pauseTrack={pause}
-          actions={tracksActions}
-        />
-      </div>
+            </Flex>
+          )}
+        <Flex
+          gap='2xl'
+          w='100%'
+          direction='row'
+          mt='3xl'
+          mh='auto'
+          css={{ maxWidth: 1080 }}
+          justifyContent='center'
+        >
+          {isCommentingEnabled ? (
+            <Flex flex='3'>
+              <CommentSectionProvider
+                userId={userId}
+                entityId={defaults.trackId}
+              >
+                <CommentSectionDesktop />
+              </CommentSectionProvider>
+            </Flex>
+          ) : null}
+          {hasMoreByTracks ? (
+            <Flex
+              direction='column'
+              alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
+              gap='l'
+              flex={1}
+              css={{
+                minWidth: 330,
+                maxWidth: isCommentingEnabled ? '100%' : '774px'
+              }}
+            >
+              {hasValidRemixParent
+                ? renderOriginalTrackTitle()
+                : renderMoreByTitle()}
+              <Lineup
+                lineup={tracks}
+                // Styles for leading element (original track if remix).
+                leadingElementId={defaults.remixParentTrackId}
+                leadingElementDelineator={
+                  <Flex gap='3xl' direction='column' alignItems='center'>
+                    <SectionButton
+                      text={messages.viewOtherRemixes}
+                      onClick={goToParentRemixesPage}
+                    />
+                    <Flex
+                      mb='l'
+                      justifyContent={
+                        isCommentingEnabled ? 'flex-start' : 'center'
+                      }
+                    >
+                      {renderMoreByTitle()}
+                    </Flex>
+                  </Flex>
+                }
+                leadingElementTileProps={{ size: TrackTileSize.LARGE }}
+                laggingContainerClassName={
+                  !isCommentingEnabled
+                    ? styles.moreByArtistContainer
+                    : undefined
+                }
+                lineupContainerStyles={styles.width100}
+                showLeadingElementArtistPick={false}
+                applyLeadingElementStylesToSkeleton
+                // Don't render the first tile in the lineup since it's actually the "giant"
+                // track tile this page is about.
+                start={1}
+                // Show max 5 loading tiles
+                count={6}
+                // Managed from the parent rather than allowing the lineup to fetch content itself.
+                selfLoad={false}
+                variant={LineupVariant.CONDENSED}
+                playingUid={currentQueueItem.uid}
+                playingSource={currentQueueItem.source}
+                playingTrackId={
+                  currentQueueItem.track && currentQueueItem.track.track_id
+                }
+                playing={isPlaying}
+                buffering={isBuffering}
+                playTrack={play}
+                pauseTrack={pause}
+                actions={tracksActions}
+                useSmallTiles={isCommentingEnabled}
+              />
+            </Flex>
+          ) : null}
+        </Flex>
+      </Flex>
     </Page>
   )
 }

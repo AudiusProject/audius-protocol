@@ -179,6 +179,7 @@ export interface GetPurchasesRequest {
     userId?: string;
     sortMethod?: GetPurchasesSortMethodEnum;
     sortDirection?: GetPurchasesSortDirectionEnum;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -186,6 +187,7 @@ export interface GetPurchasesRequest {
 export interface GetPurchasesCountRequest {
     id: string;
     userId?: string;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -218,6 +220,7 @@ export interface GetSalesRequest {
     userId?: string;
     sortMethod?: GetSalesSortMethodEnum;
     sortDirection?: GetSalesSortDirectionEnum;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -225,6 +228,7 @@ export interface GetSalesRequest {
 export interface GetSalesCountRequest {
     id: string;
     userId?: string;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -925,6 +929,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -966,6 +974,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1156,6 +1168,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -1197,6 +1213,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

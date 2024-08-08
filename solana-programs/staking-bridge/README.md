@@ -13,7 +13,7 @@ The methods of the Staking Bridge are independent to reduce price impact of swap
 
 This program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
-Here is the [deployed program](https://explorer.solana.com/address/HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV).
+Here is the [deployed program](https://explorer.solana.com/address/stkB5DZziVJT1C1VmzvDdRtdWxfs5nwcHViiaNBDK31).
 
 ## Versions
 
