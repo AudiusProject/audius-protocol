@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"comms.audius.co/discovery/db"
+	"comms.audius.co/discovery/misc"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,6 +19,8 @@ type UserChatRow struct {
 	LastActiveAt     sql.NullTime   `db:"last_active_at" json:"last_active_at"`
 	UnreadCount      int32          `db:"unread_count" json:"unread_count"`
 	ClearedHistoryAt sql.NullTime   `db:"cleared_history_at" json:"cleared_history_at"`
+
+	BlastFromUserID int32 `db:"blast_from_user_id" json:"blast_from_user_id"`
 }
 
 // Get a chat's last_message_at
@@ -37,7 +40,7 @@ func ChatLastMessageAt(q db.Queryable, ctx context.Context, chatId string) (time
 const userChat = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
+  chat.created_at,
 	chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
@@ -59,23 +62,47 @@ func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (Us
 const userChats = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
-	chat.last_message,
+  chat.created_at,
+  chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
   chat_member.last_active_at,
   chat_member.unread_count,
-  chat_member.cleared_history_at
+  chat_member.cleared_history_at,
+  0 as blast_from_user_id
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1
-  AND chat.last_message IS NOT NULL
-	AND chat.last_message_at < $3
-	AND chat.last_message_at > $4
-  AND (chat_member.cleared_history_at IS NULL
-	  OR chat.last_message_at > chat_member.cleared_history_at)
-ORDER BY chat.last_message_at DESC, chat.chat_id
-LIMIT $2
+  -- AND chat.last_message IS NOT NULL
+  AND chat.last_message_at < $2
+  AND chat.last_message_at > $3
+  AND (
+    chat_member.cleared_history_at IS NULL
+    OR chat.last_message_at > chat_member.cleared_history_at
+  )
+
+union all
+
+SELECT
+  'blast_' || b.blast_id       as chat_id, -- will rewrite later
+  b.created_at                 as created_at,
+  plaintext                    as last_message,
+  b.created_at                 as last_message_at,
+  ''                           as invite_code,
+  b.created_at                 as last_active_at,
+  1                            as unread_count,
+  null                         as cleared_history_at,
+  from_user_id                 as blast_from_user_id
+
+from chat_blast b
+where from_user_id in (
+  select followee_user_id
+  from follows
+  where follower_user_id = $1
+    and follows.created_at < b.created_at
+)
+
+ORDER BY last_message_at DESC, chat_id
 `
 
 type UserChatsParams struct {
@@ -87,8 +114,26 @@ type UserChatsParams struct {
 
 func UserChats(q db.Queryable, ctx context.Context, arg UserChatsParams) ([]UserChatRow, error) {
 	var items []UserChatRow
-	err := q.SelectContext(ctx, &items, userChats, arg.UserID, arg.Limit, arg.Before, arg.After)
-	return items, err
+	err := q.SelectContext(ctx, &items, userChats, arg.UserID, arg.Before, arg.After)
+
+	var chatIds = map[string]bool{}
+	for _, item := range items {
+		if item.BlastFromUserID == 0 {
+			chatIds[item.ChatID] = true
+		}
+	}
+
+	var deduped = make([]UserChatRow, 0, len(items))
+	for _, item := range items {
+		if item.BlastFromUserID > 0 {
+			chatId := misc.ChatID(int(arg.UserID), int(item.BlastFromUserID))
+			if chatIds[chatId] {
+				continue
+			}
+		}
+		deduped = append(deduped, item)
+	}
+	return deduped, err
 }
 
 const maxNumNewChatsSince = `
