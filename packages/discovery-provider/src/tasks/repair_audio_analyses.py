@@ -130,7 +130,6 @@ def repair(session: Session, redis: Redis):
                     session.commit()
                     num_tracks_updated += 1
                 except Exception as e:
-                    session.rollback()
                     logger.error(
                         f"repair_audio_analyses.py | Error committing track update for track ID {track.track_id}",
                         exc_info=True,
