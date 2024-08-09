@@ -245,10 +245,7 @@ export const PayoutWalletModal = () => {
                       addressPubkey,
                       usdcMint
                     )
-                  ],
-                  priorityFee: {
-                    microLamports: 100000
-                  }
+                  ]
                 })
 
               const { signature } = await sdk.services.solanaRelay.relay({
