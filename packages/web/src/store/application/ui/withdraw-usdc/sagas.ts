@@ -66,7 +66,7 @@ function* doWithdrawUSDCCoinflow({
     const rootSolanaAccount = yield* call(getRootSolanaAccount)
 
     const destinationAddress = rootSolanaAccount.publicKey.toString()
-    const connection = getSolanaConnection()
+    const connection = yield* call(getSolanaConnection)
 
     const user = yield* select(accountSelectors.getAccountUser)
     if (!user?.wallet) {

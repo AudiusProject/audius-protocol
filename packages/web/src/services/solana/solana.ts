@@ -9,16 +9,14 @@ import {
 import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
+import { audiusSdk } from 'services/audius-sdk'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 export const TRANSACTION_FEE_FALLBACK = 10000
 
-/**
- * Gets the solana connection from libs.
- */
 export const getSolanaConnection = async () => {
-  const libs = await getLibs()
-  return libs.solanaWeb3Manager!.getConnection()
+  const sdk = await audiusSdk()
+  return sdk.services.claimableTokensClient.connection
 }
 
 /**

@@ -67,7 +67,7 @@ export const transferUserBankUSDC = async ({
   analyticsFields: any
   signer?: Keypair
 }) => {
-  const connection = getSolanaConnection()
+  const connection = await getSolanaConnection()
   const sdk = await audiusSdk()
   let isCreatingTokenAccount = false
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
