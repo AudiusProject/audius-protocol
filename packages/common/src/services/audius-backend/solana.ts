@@ -104,7 +104,7 @@ export const getTokenAccountInfo = async (
   {
     tokenAccount,
     mint = DEFAULT_MINT,
-    commitment
+    commitment = 'processed'
   }: {
     tokenAccount: PublicKey
     mint?: MintName
