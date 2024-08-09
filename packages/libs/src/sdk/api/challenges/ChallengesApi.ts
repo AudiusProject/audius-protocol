@@ -27,8 +27,6 @@ import {
   GenerateSpecifierSchema
 } from './types'
 
-const CHALLENGES_MINIMUM_MICRO_LAMPORTS = 150_000
-
 export class ChallengesApi extends BaseAPI {
   constructor(
     config: Configuration,
@@ -245,11 +243,7 @@ export class ChallengesApi extends BaseAPI {
         senderEthAddress: antiAbuseOracleEthAddress
       })
     const submitAAOTransaction = await this.rewardManager.buildTransaction({
-      instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction],
-      priorityFee: {
-        priority: 'VERY_HIGH',
-        minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
-      }
+      instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
     })
     return {
       transactionSignature: await this.rewardManager.sendTransaction(
@@ -323,11 +317,7 @@ export class ChallengesApi extends BaseAPI {
           senderEthAddress
         })
       const submitTransaction = await this.rewardManager.buildTransaction({
-        instructions: [secpInstruction, submitInstruction],
-        priorityFee: {
-          priority: 'VERY_HIGH',
-          minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
-        }
+        instructions: [secpInstruction, submitInstruction]
       })
       transactions.push(submitTransaction)
     }
