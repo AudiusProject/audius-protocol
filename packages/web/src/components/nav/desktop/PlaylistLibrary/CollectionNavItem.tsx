@@ -14,8 +14,7 @@ import {
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { PopupMenuItem } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex, PopupMenuItem, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
@@ -31,9 +30,9 @@ import {
 import { useSelector } from 'utils/reducer'
 import { BASE_URL } from 'utils/route'
 
-import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
+import { LeftNavDroppable } from '../LeftNavDroppable'
+import { LeftNavLink } from '../LeftNavLink'
 
-import styles from './CollectionNavItem.module.css'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 
@@ -74,6 +73,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const navigate = useNavigate()
+
+  const { spacing, color } = useTheme()
 
   const collection = useSelector((state) =>
     getCollection(state, { id: typeof id === 'string' ? null : id })
@@ -167,6 +168,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
+  const indentAmount = level * spacing.l
+
   return (
     <>
       <LeftNavDroppable
@@ -182,6 +185,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           kind='library-playlist'
         >
           <LeftNavLink
+            asChild
             to={url}
             onClick={onClick}
             disabled={isDisabled}
@@ -189,21 +193,41 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onDragLeave={handleDragLeave}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={styles.root}
           >
-            <span
-              className={cn(styles.content, {
-                [styles.level1]: level === 1
-              })}
+            <Flex
+              alignItems='center'
+              w='100%'
+              pl={indentAmount}
+              gap='xs'
+              css={{ position: 'relative' }}
             >
-              {hasUpdate ? <PlaylistUpdateDot /> : null}
-              <span className={styles.collectionName}>{name}</span>
+              {hasUpdate ? (
+                <div
+                  css={{
+                    position: 'absolute',
+                    left: -spacing.m + indentAmount
+                  }}
+                >
+                  <PlaylistUpdateDot />
+                </div>
+              ) : null}
+              <Text
+                size='s'
+                css={{
+                  '.droppableLinkActive &': {
+                    color: color.text.accent
+                  }
+                }}
+                ellipses
+              >
+                {name}
+              </Text>
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
                 items={kebabItems}
               />
-            </span>
+            </Flex>
           </LeftNavLink>
         </Draggable>
       </LeftNavDroppable>

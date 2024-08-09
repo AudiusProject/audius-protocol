@@ -37,7 +37,7 @@ export const useAccountSwitcher = () => {
 
       window.location.reload()
     },
-    [currentWeb3User, localStorage]
+    [currentWeb3User, localStorage, make, track]
   )
 
   /** Convenience method to switch out of Manager Mode and back to the current web3 user */

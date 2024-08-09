@@ -1,11 +1,12 @@
 import copy
 import os
 
-from elasticsearch import Elasticsearch, logger, logging
+from elasticsearch import Elasticsearch, logging
 
 from src.utils.spl_audio import to_wei
 
-logger.setLevel(logging.WARNING)
+logging.getLogger("elasticsearch").setLevel(logging.WARNING)
+logging.getLogger("elastic_transport.transport").setLevel(logging.WARNING)
 _esclient = None
 
 # uses aliases

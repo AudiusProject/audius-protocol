@@ -19,6 +19,9 @@ var addDelistReasonsDDL string
 //go:embed drop_blobs.sql
 var dropBlobs string
 
+//go:embed clean_uploads_audio_analyses.sql
+var cleanUploadsAudioAnalysesDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -45,6 +48,8 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, `drop table if exists "Files", "ClockRecords", "Tracks", "AudiusUsers", "CNodeUsers", "SessionTokens", "ContentBlacklists", "Playlists", "SequelizeMeta", blobs, cid_lookup, cid_log cascade`)
 
 	runMigration(db, qmSyncTable)
+
+	runMigration(db, cleanUploadsAudioAnalysesDDL)
 }
 
 func runMigration(db *sql.DB, ddl string) {

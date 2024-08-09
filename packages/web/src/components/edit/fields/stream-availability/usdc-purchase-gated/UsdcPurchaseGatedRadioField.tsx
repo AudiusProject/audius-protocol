@@ -8,7 +8,7 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { pluralize } from '@audius/common/utils'
-import { IconCart, IconStars } from '@audius/harmony'
+import { Hint, IconCart, IconStars } from '@audius/harmony'
 
 import { ExternalTextLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
@@ -16,9 +16,10 @@ import { useMessages } from 'hooks/useMessages'
 import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
-import styles from './UsdcPurchaseGatedRadioField.module.css'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
+const PREMIUM_ALBUMS_BLOG =
+  'https://blog.audius.co/article/premium-albums-now-available'
 
 const messagesV1 = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
@@ -30,6 +31,7 @@ const messagesV1 = {
   waitlist:
     'Start selling your music on Audius today! Limited access beta now available.',
   join: 'Join the Waitlist',
+  learnMore: 'Learn More',
   comingSoon: 'Coming Soon'
 }
 
@@ -90,19 +92,28 @@ export const UsdcPurchaseGatedRadioField = (
   })
   const disabled = disableUsdcGate || !isUsdcUploadEnabled
 
-  const helpContent = (
-    <div className={styles.helpContent}>
-      <div>{messages.waitlist}</div>
-      <ExternalTextLink
-        onClick={handleClickWaitListLink}
-        className={styles.link}
-        to={WAITLIST_TYPEFORM}
-        target='_blank'
-        ignoreWarning
-      >
-        {messages.join}
-      </ExternalTextLink>
-    </div>
+  const waitlistHint = (
+    <Hint
+      icon={IconStars}
+      actions={
+        <>
+          <ExternalTextLink
+            variant='visible'
+            to={WAITLIST_TYPEFORM}
+            onClick={handleClickWaitListLink}
+          >
+            {messages.join}
+          </ExternalTextLink>
+          {isAlbum ? (
+            <ExternalTextLink variant='visible' to={PREMIUM_ALBUMS_BLOG}>
+              {messages.learnMore}
+            </ExternalTextLink>
+          ) : null}
+        </>
+      }
+    >
+      {messages.waitlist}
+    </Hint>
   )
 
   return (
@@ -112,8 +123,7 @@ export const UsdcPurchaseGatedRadioField = (
       description={messages.usdcPurchaseSubtitle(isAlbum ? 'album' : 'track')}
       value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
-      hintIcon={IconStars}
-      hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
+      hint={!isUsdcUploadEnabled ? waitlistHint : undefined}
       tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={
         <UsdcPurchaseFields

@@ -3,7 +3,7 @@
   position: fixed;
   right: 0;
   left: 0;
-  top: 100vh;
+  top: 100%;
   background: var(--harmony-white);
   margin-bottom: 0px;
   padding-top: 0px;
@@ -51,20 +51,6 @@
   left: 0;
   top: 0;
   bottom: 0;
-}
-
-/*
- * Fixes positioning on ios Safari due to the navigation
- * bar that appears while scrolling up / down.
- * When testing this, make sure to test Safari embedded inside Twitter.
- */
-@supports (-webkit-overflow-scrolling: touch) {
-  .drawer:not(.fullDrawer).isOpen {
-    top: calc(100vh - 100px);
-  }
-  .drawer:not(.fullDrawer):not(.isOpen) {
-    top: calc(100vh + 100px);
-  }
 }
 
 .skirt {

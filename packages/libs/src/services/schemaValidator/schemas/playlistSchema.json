@@ -64,13 +64,7 @@
           "default": null
         }
       },
-      "required": [
-        "playlist_name",
-        "playlist_id",
-        "description",
-        "is_album",
-        "is_private"
-      ],
+      "required": ["playlist_name", "playlist_id"],
       "title": "Playlist"
     },
     "CID": {

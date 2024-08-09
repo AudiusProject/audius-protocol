@@ -10,7 +10,6 @@ import { useTrackImage } from 'app/components/image/TrackImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
-import { setVisibility } from 'app/store/drawers/slice'
 
 import { EditTrackScreen } from './EditTrackScreen'
 
@@ -19,7 +18,7 @@ const { editTrack } = cacheTracksActions
 
 const messages = {
   title: 'Edit Track',
-  save: 'Save Changes'
+  save: 'Save'
 }
 
 export const EditTrackModalScreen = () => {
@@ -37,23 +36,10 @@ export const EditTrackModalScreen = () => {
 
   const handleSubmit = useCallback(
     (metadata: TrackMetadataForUpload) => {
-      if (track?.is_unlisted === true && metadata.is_unlisted === false) {
-        dispatch(
-          setVisibility({
-            drawer: 'PublishContentDrawer',
-            visible: true,
-            data: {
-              contentId: id,
-              contentType: 'track'
-            }
-          })
-        )
-      } else {
-        dispatch(editTrack(id, metadata))
-      }
-      navigation.goBack()
+      dispatch(editTrack(id, metadata))
+      navigation.navigate('Track', { id })
     },
-    [dispatch, id, navigation, track?.is_unlisted]
+    [dispatch, id, navigation]
   )
 
   if (!track) return null
@@ -64,7 +50,8 @@ export const EditTrackModalScreen = () => {
     trackArtwork:
       trackImage && isImageUriSource(trackImage.source)
         ? trackImage.source.uri
-        : undefined
+        : undefined,
+    isUpload: false
   }
 
   return (

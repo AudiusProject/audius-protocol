@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.89",
+  "version": "1.5.93",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@amplitude/react-native": "2.17.2",
     "@audius/common": "*",
-    "@audius/fetch-nft": "0.2.6",
+    "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
@@ -102,6 +102,7 @@
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
     "color": "4.2.3",
+    "dayjs": "1.10.7",
     "deprecated-react-native-prop-types": "5.0.0",
     "expo-crypto": "9.2.0",
     "ffmpeg-kit-react-native": "6.0.2",

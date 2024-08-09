@@ -1,8 +1,14 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  TrackMetadataForUpload,
+  useEarlyReleaseConfirmationModal,
+  useHideContentConfirmationModal,
+  usePublishConfirmationModal
+} from '@audius/common/store'
 import {
   IconCaretLeft,
   IconCaretRight,
@@ -34,7 +40,10 @@ import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
+import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
+
+const formId = 'edit-track-form'
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>
@@ -43,8 +52,14 @@ const messages = {
   next: 'Next Track',
   preview: 'Preview',
   deleteTrack: 'DELETE TRACK',
-  navigationPrompt: {
+  uploadNavigationPrompt: {
     title: 'Discard upload?',
+    body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
+    cancel: 'Cancel',
+    proceed: 'Discard'
+  },
+  editNavigationPrompt: {
+    title: 'Discard Edit?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
     cancel: 'Cancel',
     proceed: 'Discard'
@@ -56,6 +71,7 @@ type EditTrackFormProps = {
   onSubmit: (values: TrackEditFormValues) => void
   onDeleteTrack?: () => void
   hideContainer?: boolean
+  disableNavigationPrompt?: boolean
 }
 
 const EditFormValidationSchema = z.object({
@@ -63,20 +79,71 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { initialValues, onSubmit, onDeleteTrack, hideContainer } = props
+  const {
+    initialValues,
+    onSubmit,
+    onDeleteTrack,
+    hideContainer,
+    disableNavigationPrompt
+  } = props
+  const initialTrackValues = initialValues.trackMetadatas[0] ?? {}
+  const isUpload = initialTrackValues.track_id === undefined
+  const initiallyHidden = initialTrackValues.is_unlisted
+  const isInitiallyScheduled = initialTrackValues.is_scheduled_release
+
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+
+  const handleSubmit = useCallback(
+    (values: TrackEditFormValues) => {
+      const confirmCallback = () => {
+        onSubmit(values)
+      }
+
+      const usersMayLoseAccess =
+        !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
+      const isToBePublished =
+        !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
+      if (usersMayLoseAccess) {
+        openHideContentConfirmation({ confirmCallback })
+      } else if (isToBePublished && isInitiallyScheduled) {
+        openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
+      } else if (isToBePublished) {
+        openPublishConfirmation({ contentType: 'track', confirmCallback })
+      } else {
+        onSubmit(values)
+      }
+    },
+    [
+      onSubmit,
+      initiallyHidden,
+      isUpload,
+      isInitiallyScheduled,
+      openHideContentConfirmation,
+      openEarlyReleaseConfirmation,
+      openPublishConfirmation
+    ]
+  )
 
   return (
     <Formik<TrackEditFormValues>
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
       {(props) => (
-        <TrackEditForm
-          {...props}
-          hideContainer={hideContainer}
-          onDeleteTrack={onDeleteTrack}
-        />
+        <>
+          <TrackEditForm
+            {...props}
+            hideContainer={hideContainer}
+            onDeleteTrack={onDeleteTrack}
+            disableNavigationPrompt={disableNavigationPrompt}
+            updatedArtwork={initialTrackValues.artwork}
+          />
+        </>
       )}
     </Formik>
   )
@@ -86,6 +153,8 @@ const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
     onDeleteTrack?: () => void
+    disableNavigationPrompt?: boolean
+    updatedArtwork?: TrackMetadataForUpload['artwork']
   }
 ) => {
   const {
@@ -93,7 +162,9 @@ const TrackEditForm = (
     dirty,
     isSubmitting,
     onDeleteTrack,
-    hideContainer = false
+    disableNavigationPrompt = false,
+    hideContainer = false,
+    updatedArtwork
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
@@ -107,12 +178,26 @@ const TrackEditForm = (
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
+  const [, , { setValue: setArtworkValue }] = useField(
+    getTrackFieldName(0, 'artwork')
+  )
+  useEffect(() => {
+    setArtworkValue(updatedArtwork)
+    // Url is the only thing that we care about changing inside artwork or else
+    // we will listen to all changes from the user, rather than just a new image from
+    // the backend.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatedArtwork?.url, setArtworkValue])
 
   return (
-    <Form>
+    <Form id={formId}>
       <NavigationPrompt
-        when={dirty && !isSubmitting}
-        messages={messages.navigationPrompt}
+        when={dirty && !isSubmitting && !disableNavigationPrompt}
+        messages={
+          isUpload
+            ? messages.uploadNavigationPrompt
+            : messages.editNavigationPrompt
+        }
       />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
         <div
@@ -141,7 +226,7 @@ const TrackEditForm = (
                 forceOpen={forceOpenAccessAndSale}
                 setForceOpen={setForceOpenAccessAndSale}
               />
-              <AdvancedField />
+              <AdvancedField isUpload={isUpload} />
               <StemsAndDownloadsField
                 isUpload={isUpload}
                 closeMenuCallback={(data) => {

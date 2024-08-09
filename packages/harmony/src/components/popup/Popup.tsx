@@ -2,6 +2,7 @@ import {
   forwardRef,
   MutableRefObject,
   Ref,
+  SetStateAction,
   useCallback,
   useEffect,
   useRef,
@@ -54,17 +55,15 @@ const getComputedOrigins = (
 
   let containerWidth, containerHeight
   if (containerRef && containerRef.current) {
+    const containerRect = containerRef.current.getBoundingClientRect()
     containerWidth =
-      containerRef.current.getBoundingClientRect().width -
-      CONTAINER_INSET_PADDING
+      containerRect.width + containerRect.x - CONTAINER_INSET_PADDING
     containerHeight =
-      containerRef.current.getBoundingClientRect().height -
-      CONTAINER_INSET_PADDING
+      containerRect.height + containerRect.y - CONTAINER_INSET_PADDING
   } else {
-    containerWidth =
-      portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
-    containerHeight =
-      portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
+    const portalRect = portal.getBoundingClientRect()
+    containerWidth = portalRect.width + portalRect.x - CONTAINER_INSET_PADDING
+    containerHeight = portalRect.height + portalRect.y - CONTAINER_INSET_PADDING
   }
 
   // Get new wrapper position
@@ -190,7 +189,44 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props: PopupProps,
   ref: Ref<HTMLDivElement>
 ) {
+  const { isVisible: isVisibleProp } = props
+  const [popupState, setPopupState] = useState<ModalState>('closed')
+
+  const isVisible = popupState !== 'closed'
+  useEffect(() => {
+    if (popupState === 'closed' && isVisibleProp) {
+      setPopupState('opening')
+    } else if (popupState === 'open' && !isVisibleProp) {
+      setPopupState('closing')
+    }
+  }, [isVisibleProp, popupState])
+
+  return isVisible ? (
+    <PopupInternal
+      ref={ref}
+      popupState={popupState}
+      setPopupState={setPopupState}
+      {...props}
+    />
+  ) : null
+})
+
+export const PopupInternal = forwardRef<
+  HTMLDivElement,
+  PopupProps & {
+    popupState: ModalState
+    setPopupState: (value: SetStateAction<ModalState>) => void
+  }
+>(function Popup(
+  props: PopupProps & {
+    popupState: ModalState
+    setPopupState: (value: SetStateAction<ModalState>) => void
+  },
+  ref: Ref<HTMLDivElement>
+) {
   const {
+    popupState,
+    setPopupState,
     anchorRef,
     checkIfClickInside,
     children,
@@ -212,7 +248,6 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     takeWidthOfAnchor
   } = props
   const { spring, shadows } = useTheme()
-  const [popupState, setPopupState] = useState<ModalState>('closed')
 
   const isVisible = popupState !== 'closed'
 
@@ -289,17 +324,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
       originalTopPosition.current = top
     }
-  }, [
-    isVisible,
-    wrapperRef,
-    anchorRef,
-    anchorOrigin,
-    transformOrigin,
-    setComputedTransformOrigin,
-    originalTopPosition,
-    portalLocation,
-    containerRef
-  ])
+  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position
@@ -351,9 +376,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
   useEffect(() => {
     if (popupState === 'closed' && isVisibleProp) {
-      setPopupState('opening')
     } else if (popupState === 'open' && !isVisibleProp) {
-      setPopupState('closing')
       anchorRef.current?.focus()
     }
   }, [anchorRef, isVisibleProp, popupState])

@@ -1,16 +1,14 @@
 import { useCallback } from 'react'
 
 import type { Modals } from '@audius/common/store'
-import { View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { IconInfo, Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import type { IconComponent } from '@audius/harmony-native'
+import { Text, IconInfo, Button, Flex, useTheme } from '@audius/harmony-native'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { Drawer } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
 
 const defaultMessages = {
   cancel: 'Nevermind'
@@ -19,23 +17,6 @@ const defaultMessages = {
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     paddingHorizontal: spacing(4)
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing(4),
-    marginBottom: spacing(6)
-  },
-  headerIcon: {
-    marginRight: spacing(3)
-  },
-  description: {
-    marginBottom: spacing(4),
-    textAlign: 'center'
-  },
-  confirmButton: {
-    marginBottom: spacing(4)
   }
 }))
 
@@ -48,7 +29,9 @@ type BaseConfirmationDrawerProps = {
   }
   onConfirm: () => void
   onCancel?: () => void
-  bottomChinHeight?: number
+  variant?: 'destructive' | 'affirmative'
+  icon?: IconComponent
+  addBottomInset?: boolean
 }
 
 type NativeConfirmationDrawerProps = BaseConfirmationDrawerProps & {
@@ -72,12 +55,14 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
     messages: messagesProp,
     onConfirm,
     onCancel,
-    bottomChinHeight = spacing(6),
-    onClose
+    onClose,
+    variant = 'destructive',
+    icon: Icon = IconInfo,
+    addBottomInset
   } = props
-  const styles = useStyles()
-  const { neutral } = useThemeColors()
   const messages = { ...defaultMessages, ...messagesProp }
+  const insets = useSafeAreaInsets()
+  const { spacing } = useTheme()
 
   const handleConfirm = useCallback(() => {
     onClose()
@@ -90,34 +75,36 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
   }, [onClose, onCancel])
 
   return (
-    <>
-      <View style={styles.header}>
-        <IconInfo
-          style={styles.headerIcon}
-          height={spacing(5)}
-          width={spacing(5)}
-          fill={neutral}
-        />
-        <Text fontSize='xl' weight='heavy' textTransform='uppercase'>
+    <Flex gap='xl' pv='xl'>
+      <Flex
+        direction='row'
+        gap='s'
+        pb='l'
+        alignItems='center'
+        justifyContent='center'
+      >
+        <Icon size='xl' color='subdued' />
+        <Text variant='label' size='xl' strength='strong' color='subdued'>
           {messages.header}
         </Text>
-      </View>
-      <Text fontSize='large' style={styles.description}>
+      </Flex>
+      <Text size='l' textAlign='center'>
         {messages.description}
       </Text>
-      <Button
-        variant='destructive'
-        style={styles.confirmButton}
-        fullWidth
-        onPress={handleConfirm}
-      >
-        {messages.confirm}
-      </Button>
-      <Button variant='secondary' fullWidth onPress={handleCancel}>
-        {messages.cancel}
-      </Button>
-      <View style={{ height: bottomChinHeight }} />
-    </>
+      <Flex gap='l'>
+        <Button
+          variant={variant === 'destructive' ? 'destructive' : 'primary'}
+          fullWidth
+          onPress={handleConfirm}
+        >
+          {messages.confirm}
+        </Button>
+        <Button variant='secondary' fullWidth onPress={handleCancel}>
+          {messages.cancel}
+        </Button>
+      </Flex>
+      {addBottomInset ? <Flex h={insets.bottom + spacing.xl} /> : null}
+    </Flex>
   )
 }
 

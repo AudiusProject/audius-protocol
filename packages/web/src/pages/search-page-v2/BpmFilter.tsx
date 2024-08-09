@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useStateDebounced } from '@audius/common/hooks'
+import { isBpmValid } from '@audius/common/utils'
 import {
+  Box,
   Button,
   Divider,
+  FilterButtonOption,
   FilterButton,
-  FilterButtonOptions,
   Flex,
   IconCaretDown,
-  Paper,
-  Popup,
   SegmentedControl,
   TextInput,
   useTheme
@@ -17,7 +17,9 @@ import {
 import { css } from '@emotion/css'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
-import { useUpdateSearchParams } from './utils'
+import { useBpmMaskedInput } from 'hooks/useBpmMaskedInput'
+
+import { useUpdateSearchParams } from './hooks'
 
 const MIN_BPM = 1
 const MAX_BPM = 999
@@ -76,23 +78,49 @@ const messages = {
   maxBpm: 'Max',
   tooLowError: `BPM less than ${MIN_BPM}`,
   tooHighError: `BPM greater than ${MAX_BPM}`,
-  invalidMinMaxError: 'Min greater than max'
+  invalidMinMaxError: 'Invalid range'
 }
 
 type ViewProps = {
+  value: string | null
   handleChange: (value: string, label: string) => void
 }
 
-const BpmRangeView = ({ handleChange }: ViewProps) => {
-  const [minBpm, setMinBpm] = useStateDebounced('')
-  const [maxBpm, setMaxBpm] = useStateDebounced('')
+const BpmRangeView = ({ value, handleChange }: ViewProps) => {
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const isValueRangeOption = Boolean(
+    bpmOptions.find((opt) => opt.value === value)
+  )
+
+  const initialMinValue = isValueRangeOption ? '' : minMaxValue?.[0] ?? ''
+  const initialMaxValue = isValueRangeOption ? '' : minMaxValue?.[1] ?? ''
+
+  const [minBpm, setMinBpm] = useStateDebounced(initialMinValue)
+  const [maxBpm, setMaxBpm] = useStateDebounced(initialMaxValue)
   const [minError, setMinError] = useState<string | null>(null)
   const [maxError, setMaxError] = useState<string | null>(null)
+  const [hasChanged, setHasChanged] = useState(false)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
+  const minBpmMaskedInputProps = useBpmMaskedInput({
+    onChange: (e) => {
+      setHasChanged(true)
+      setMinBpm(e.target.value)
+    }
+  })
+
+  const maxBpmMaskedInputProps = useBpmMaskedInput({
+    onChange: (e) => {
+      setHasChanged(true)
+      setMaxBpm(e.target.value)
+    }
+  })
+
   useEffect(() => {
+    if (!hasChanged) return
+
     // Validation
     const minVal = Number(minBpm)
     const maxVal = Number(maxBpm)
@@ -139,64 +167,99 @@ const BpmRangeView = ({ handleChange }: ViewProps) => {
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [maxBpm, minBpm, minError, maxError, onChange])
+  }, [maxBpm, minBpm, minError, maxError, onChange, hasChanged])
 
   return (
     <>
       <Flex direction='column' w='100%' ph='s'>
-        <FilterButtonOptions
-          options={bpmOptions}
-          onChange={(option) => {
-            handleChange(option.value, option.helperText ?? option.value)
-          }}
-        />
+        {bpmOptions.map((option) => (
+          <FilterButtonOption
+            key={option.value}
+            option={option}
+            activeValue={
+              isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
+            }
+            onChange={() =>
+              handleChange(option.value, option.helperText ?? option.value)
+            }
+          />
+        ))}
       </Flex>
       <Flex
         ph='s'
         gap='xs'
         w={240}
-        alignItems='center'
+        alignItems='flex-start'
         // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
         onClick={(e) => e.stopPropagation()}
       >
         <TextInput
+          defaultValue={initialMinValue}
           label={messages.minBpm}
           type='number'
+          maxLength={3}
           error={!!minError}
           helperText={minError}
           aria-errormessage={minError ?? undefined}
           placeholder={messages.minBpm}
           hideLabel
-          onChange={(e) => setMinBpm(e.target.value)}
           inputRootClassName={css({ height: '48px !important' })}
+          {...minBpmMaskedInputProps}
         />
-        -
+        <Box pv='l'>-</Box>
         <TextInput
+          defaultValue={initialMaxValue}
           label={messages.maxBpm}
           type='number'
+          maxLength={3}
           error={!!maxError}
           helperText={maxError}
           aria-errormessage={maxError ?? undefined}
           placeholder={messages.maxBpm}
           hideLabel
-          onChange={(e) => setMaxBpm(e.target.value)}
           inputRootClassName={css({ height: '48px !important' })}
+          {...maxBpmMaskedInputProps}
         />
       </Flex>
     </>
   )
 }
 
-const BpmTargetView = ({ handleChange }: ViewProps) => {
+const BpmTargetView = ({ value, handleChange }: ViewProps) => {
+  const minMaxValue = value?.includes('-') ? value.split('-') : null
+  const minMaxDiff = minMaxValue
+    ? Number(minMaxValue[1]) - Number(minMaxValue[0])
+    : null
+  const isValidDiff = minMaxDiff === 20 || minMaxDiff === 10
+
+  const initialTargetValue =
+    minMaxValue && isValidDiff
+      ? String(Number(minMaxValue[0]) + minMaxDiff / 2)
+      : minMaxValue // If range is not valid for target view
+      ? ''
+      : value
+
   const { color } = useTheme()
-  const [bpmTarget, setBpmTarget] = useStateDebounced('')
-  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>('exact')
+  const [bpmTarget, setBpmTarget] = useStateDebounced(initialTargetValue)
+  const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>(
+    minMaxDiff === 20 ? 'range10' : minMaxDiff === 10 ? 'range5' : 'exact'
+  )
+  const [hasChanged, setHasChanged] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // NOTE: Memo to avoid the constantly changing function instance from triggering the effect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useMemo(() => handleChange, [])
 
+  const bpmMaskedInputProps = useBpmMaskedInput({
+    onChange: (e) => {
+      setHasChanged(true)
+      setBpmTarget(e.target.value)
+    }
+  })
+
   useEffect(() => {
+    if (!hasChanged) return
+
     // Validation
     const val = Number(bpmTarget)
     let hasError = false
@@ -233,7 +296,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
     }
 
     onChange(value, `${value} ${messages.bpm}`)
-  }, [bpmTarget, bpmTargetType, error, onChange])
+  }, [bpmTarget, bpmTargetType, error, hasChanged, onChange])
 
   return (
     <Flex
@@ -245,6 +308,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
       onClick={(e) => e.stopPropagation()}
     >
       <TextInput
+        defaultValue={initialTargetValue ?? ''}
         label={messages.bpm}
         type='number'
         error={!!error}
@@ -252,8 +316,8 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
         aria-errormessage={error ?? undefined}
         placeholder={messages.bpm}
         hideLabel
-        onChange={(e) => setBpmTarget(e.target.value)}
         inputRootClassName={css({ height: '48px !important' })}
+        {...bpmMaskedInputProps}
       />
       <Flex justifyContent='center' alignItems='center' gap='xs'>
         {targetOptions.map((option) => (
@@ -268,7 +332,10 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
                 : undefined
             }
             fullWidth
-            onClick={() => setBpmTargetType(option.value)}
+            onClick={() => {
+              if (bpmTarget) setHasChanged(true)
+              setBpmTargetType(option.value)
+            }}
           >
             {option.label}
           </Button>
@@ -281,6 +348,7 @@ const BpmTargetView = ({ handleChange }: ViewProps) => {
 export const BpmFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const bpm = urlSearchParams.get('bpm')
+  const validatedBpm = isBpmValid(bpm ?? '') ? bpm : null
   const updateSearchParams = useUpdateSearchParams('bpm')
   const [bpmFilterType, setBpmFilterType] = useState<'range' | 'target'>(
     'range'
@@ -295,45 +363,38 @@ export const BpmFilter = () => {
       label={label}
       onChange={updateSearchParams}
       iconRight={IconCaretDown}
+      popupProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' }
+      }}
     >
-      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      {({ onChange }) => (
+        <Flex
+          w='100%'
+          pv='s'
+          gap='s'
+          direction='column'
+          alignItems='flex-start'
         >
-          <Paper w={242} mt='s' border='strong' shadow='far'>
-            <Flex
-              w='100%'
-              pv='s'
-              gap='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-            >
-              <Flex
-                direction='column'
-                w='100%'
-                ph='s'
-                // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
-                onClick={(e) => e.stopPropagation()}
-              >
-                <SegmentedControl
-                  options={[
-                    { key: 'range', text: 'Range' },
-                    { key: 'target', text: 'Target' }
-                  ]}
-                  selected={bpmFilterType}
-                  onSelectOption={setBpmFilterType}
-                />
-              </Flex>
-              <Divider css={{ width: '100%' }} />
-              <InputView handleChange={handleChange} />
-            </Flex>
-          </Paper>
-        </Popup>
+          <Flex
+            direction='column'
+            w='100%'
+            ph='s'
+            // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SegmentedControl
+              options={[
+                { key: 'range', text: 'Range' },
+                { key: 'target', text: 'Target' }
+              ]}
+              selected={bpmFilterType}
+              onSelectOption={setBpmFilterType}
+            />
+          </Flex>
+          <Divider css={{ width: '100%' }} />
+          <InputView value={validatedBpm} handleChange={onChange} />
+        </Flex>
       )}
     </FilterButton>
   )

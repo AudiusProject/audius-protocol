@@ -4,7 +4,7 @@ from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import Response, request
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, fields, inputs, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -50,11 +50,12 @@ from src.api.v1.helpers import (
     verify_token_parser,
 )
 from src.api.v1.models.activities import (
+    activity_full_model,
     activity_model,
-    activity_model_full,
-    collection_activity_model_full,
+    collection_activity_full_without_tracks_model,
+    make_polymorph_activity,
+    track_activity_full_model,
     track_activity_model,
-    track_activity_model_full,
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
@@ -652,11 +653,10 @@ class HandleAITrackList(HandleFullAITrackList):
 
 USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 
-reposts_response = make_response(
-    "reposts", ns, fields.List(fields.Nested(activity_model))
-)
+reposts_response = make_response("reposts", ns, fields.List(activity_model))
+
 full_reposts_response = make_full_response(
-    "full_reposts", full_ns, fields.List(fields.Nested(activity_model_full))
+    "full_reposts", full_ns, fields.List(activity_full_model)
 )
 
 
@@ -735,7 +735,7 @@ class FullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
 
 REPOST_LIST_ROUTE = "/handle/<string:handle>/reposts"
@@ -768,7 +768,7 @@ class HandleFullRepostList(Resource):
                 )
         activities = list(map(extend_activity, reposts))
 
-        return success_response(activities)
+        return success_response(list(map(make_polymorph_activity, activities)))
 
     @full_ns.doc(
         id="""Get Reposts by Handle""",
@@ -832,13 +832,13 @@ favorites_response = make_response(
 track_library_full_response = make_full_response(
     "track_library_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(track_activity_full_model)),
 )
 
 collection_library_full_response = make_full_response(
     "collection_library_response_full",
     full_ns,
-    fields.List(fields.Nested(collection_activity_model_full)),
+    fields.List(fields.Nested(collection_activity_full_without_tracks_model)),
 )
 
 
@@ -893,7 +893,7 @@ class UserTracksLibraryFull(Resource):
         filter_type = format_library_filter(args)
 
         get_tracks_args = GetTrackLibraryArgs(
-            filter_deleted=False,
+            filter_deleted=True,
             user_id=decoded_id,
             current_user_id=decoded_id,
             limit=limit,
@@ -1060,7 +1060,7 @@ history_response = make_response(
 history_response_full = make_full_response(
     "history_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(track_activity_full_model)),
 )
 
 USER_HISTORY_TRACKS_ROUTE = "/<string:id>/history/tracks"
@@ -2081,6 +2081,22 @@ managed_users_response = make_response(
     "managed_users_response", full_ns, fields.List(fields.Nested(managed_user))
 )
 
+managed_users_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+managed_users_route_parser.add_argument(
+    "is_approved",
+    required=False,
+    type=inputs.boolean,
+    default=None,
+    description="If true, only show users where the management request has been accepted. If false, only show those where the request was rejected. If omitted, shows all users regardless of approval status.",
+)
+managed_users_route_parser.add_argument(
+    "is_revoked",
+    required=False,
+    type=inputs.boolean,
+    default=False,
+    description="If true, only show users where the management request has been revoked. If false, only show those with a pending or accepted request. Defaults to false.",
+)
+
 
 @full_ns.route("/<string:id>/managed_users")
 class ManagedUsers(Resource):
@@ -2097,12 +2113,20 @@ class ManagedUsers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(require_auth=True)
+    @full_ns.expect(managed_users_route_parser)
+    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managed_users_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
-        users = get_managed_users_with_grants(GetManagedUsersArgs(user_id=user_id))
+        args = managed_users_route_parser.parse_args()
+        is_approved = args.get("is_approved", None)
+        is_revoked = args.get("is_revoked", False)
+        users = get_managed_users_with_grants(
+            GetManagedUsersArgs(
+                user_id=user_id, is_approved=is_approved, is_revoked=is_revoked
+            )
+        )
         users = list(map(format_managed_user, users))
 
         return success_response(users)
@@ -2128,14 +2152,22 @@ class Managers(Resource):
             500: "Server error",
         },
     )
-    @auth_middleware(require_auth=True)
+    @full_ns.expect(managed_users_route_parser)
+    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managers_response)
     def get(self, id, authed_user_id):
         user_id = decode_with_abort(id, full_ns)
         check_authorized(user_id, authed_user_id)
 
-        args = GetUserManagersArgs(user_id=user_id)
-        managers = get_user_managers_with_grants(args)
+        args = managed_users_route_parser.parse_args()
+        logger.debug(f"DEBUG::args: {args}")
+        is_approved = args.get("is_approved", None)
+        is_revoked = args.get("is_revoked", False)
+        managers = get_user_managers_with_grants(
+            GetUserManagersArgs(
+                user_id=user_id, is_approved=is_approved, is_revoked=is_revoked
+            )
+        )
         managers = list(map(format_user_manager, managers))
 
         return success_response(managers)
@@ -2155,6 +2187,13 @@ purchases_and_sales_parser.add_argument(
     description="The sort direction",
     type=str,
     choices=SortDirection._member_names_,
+)
+purchases_and_sales_parser.add_argument(
+    "content_ids",
+    required=False,
+    description="Filters purchases by track or album IDs",
+    type=str,
+    action="append",
 )
 
 
@@ -2186,18 +2225,28 @@ class FullPurchases(Resource):
         offset = get_default_max(args.get("offset"), 0)
         sort_method = args.get("sort_method", PurchaseSortMethod.date)
         sort_direction = args.get("sort_direction", None)
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesArgs(
             buyer_user_id=decoded_id,
             limit=limit,
             offset=offset,
             sort_method=sort_method,
             sort_direction=sort_direction,
+            content_ids=decoded_content_ids,
         )
         purchases = get_usdc_purchases(args)
         return success_response(list(map(extend_purchase, purchases)))
 
 
 purchases_and_sales_count_parser = current_user_parser.copy()
+purchases_and_sales_count_parser.add_argument(
+    "content_ids",
+    required=False,
+    description="Filters purchases by track or album IDs",
+    type=str,
+    action="append",
+)
 
 
 @full_ns.route("/<string:id>/purchases/count")
@@ -2214,8 +2263,11 @@ class FullPurchasesCount(Resource):
         decoded_id = decode_with_abort(id, full_ns)
         check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
+            content_ids=decoded_content_ids,
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)
@@ -2239,12 +2291,15 @@ class FullSales(Resource):
         offset = get_default_max(args.get("offset"), 0)
         sort_method = args.get("sort_method", PurchaseSortMethod.date)
         sort_direction = args.get("sort_direction", None)
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesArgs(
             seller_user_id=decoded_id,
             limit=limit,
             offset=offset,
             sort_method=sort_method,
             sort_direction=sort_direction,
+            content_ids=decoded_content_ids,
         )
         purchases = get_usdc_purchases(args)
         return success_response(list(map(extend_purchase, purchases)))
@@ -2264,8 +2319,11 @@ class FullSalesCount(Resource):
         decoded_id = decode_with_abort(id, full_ns)
         check_authorized(decoded_id, authed_user_id)
         args = purchases_and_sales_count_parser.parse_args()
+        content_ids = args.get("content_ids", [])
+        decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
         args = GetUSDCPurchasesCountArgs(
             seller_user_id=decoded_id,
+            content_ids=decoded_content_ids,
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)

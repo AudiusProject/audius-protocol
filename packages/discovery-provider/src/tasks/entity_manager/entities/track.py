@@ -33,7 +33,7 @@ from src.tasks.entity_manager.utils import (
     parse_release_date,
     validate_signer,
 )
-from src.tasks.metadata import immutable_track_fields
+from src.tasks.metadata import immutable_track_fields, is_valid_musical_key
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
@@ -305,6 +305,17 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 if parsed_release_date:
                     track_record.release_date = str(parsed_release_date)  # type: ignore
         elif key == "is_unlisted":
+            # if track is being published (changing from private to public),
+            # override release_date and is_scheduled_release.
+            if (
+                track_record.is_unlisted
+                # default to true so this statement doesn't trigger if is_private is missing
+                and not track_metadata.get("is_unlisted", True)
+                and action == Action.UPDATE
+            ):
+                track_record.is_scheduled_release = False
+                track_record.release_date = str(datetime.now())  # type: ignore
+
             if "is_unlisted" in track_metadata:
                 track_record.is_unlisted = track_metadata["is_unlisted"]
 
@@ -401,6 +412,28 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 track_record.producer_copyright_line = track_metadata[
                     "producer_copyright_line"
                 ]
+
+        elif key == "bpm":
+            if "bpm" in track_metadata:
+                bpm_value = track_metadata["bpm"]
+                if bpm_value is None:
+                    track_record.bpm = None
+                else:
+                    try:
+                        bpm_float = float(bpm_value)
+                        if bpm_float != 0:
+                            track_record.bpm = bpm_float  # type: ignore
+                    except (ValueError, TypeError):
+                        continue
+
+        elif key == "musical_key":
+            if "musical_key" in track_metadata:
+                key_value = track_metadata["musical_key"]
+                if key_value is None:
+                    track_record.musical_key = None
+                else:
+                    if isinstance(key_value, str) and is_valid_musical_key(key_value):
+                        track_record.musical_key = key_value
 
         else:
             # For most fields, update the track_record when the corresponding field exists

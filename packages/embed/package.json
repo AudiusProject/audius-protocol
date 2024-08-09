@@ -21,7 +21,7 @@
     "@cloudflare/kv-asset-handler": "^0.3.0",
     "@vitejs/plugin-react": "4.1.0",
     "env-cmd": "10.1.0",
-    "eslint": "8.25.0",
+    "eslint": "8.56.0",
     "identity-obj-proxy": "3.0.0",
     "jest": "29.4.2",
     "per-env": "1.0.2",
@@ -33,7 +33,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.6",
+    "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",

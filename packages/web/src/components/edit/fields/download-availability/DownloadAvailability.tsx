@@ -72,6 +72,9 @@ type DownloadAvailabilityProps = {
 export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
   const { isUpload, initialDownloadConditions, value, setValue } = props
   const messages = getMessages(props)
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -112,9 +115,13 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
   }, [setStatus, submitForm])
 
   const isFollowersOptionDisabled =
-    !isUpload && !isContentFollowGated(initialDownloadConditions)
+    !isEditableAccessEnabled &&
+    !isUpload &&
+    !isContentFollowGated(initialDownloadConditions)
   const isPremiumOptionDisabled =
-    !isUpload && !isContentUSDCPurchaseGated(initialDownloadConditions)
+    !isEditableAccessEnabled &&
+    !isUpload &&
+    !isContentUSDCPurchaseGated(initialDownloadConditions)
   const options: Option<DownloadTrackAvailabilityType>[] = [
     {
       key: DownloadTrackAvailabilityType.PUBLIC,

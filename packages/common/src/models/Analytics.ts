@@ -221,6 +221,8 @@ export enum Name {
 
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
+  TRACK_EDIT_BPM_CHANGED = 'Track Edit: BPM Changed',
+  TRACK_EDIT_MUSICAL_KEY_CHANGED = 'Track Edit: Musical Key Changed',
 
   // Collection Edits
   COLLECTION_EDIT_ACCESS_CHANGED = 'Collection Edit: Access Changed',
@@ -1167,6 +1169,20 @@ type TrackEditAccessChanged = {
   to: TrackAccessType
 }
 
+type TrackEditBpmChanged = {
+  eventName: Name.TRACK_EDIT_BPM_CHANGED
+  id: number
+  from: number
+  to: number
+}
+
+type TrackEditMusicalKeyChanged = {
+  eventName: Name.TRACK_EDIT_MUSICAL_KEY_CHANGED
+  id: number
+  from: string
+  to: string
+}
+
 // Collection Edits
 type CollectionEditAccessChanged = {
   eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED
@@ -1427,6 +1443,7 @@ export enum ModalSource {
   LineUpCollectionTile = 'collection tile - lineup',
   TrackListItem = 'track list item',
   OverflowMenu = 'overflow menu',
+  TrackLibrary = 'track library',
   // Should never be used, but helps with type-checking
   Unknown = 'unknown'
 }
@@ -1443,33 +1460,40 @@ type ModalClosed = {
   name: string
 }
 
+export type SearchSource =
+  | 'autocomplete'
+  | 'search results page'
+  | 'more results page'
+
 // Search
 type SearchTerm = {
   eventName: Name.SEARCH_SEARCH
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchTag = {
   eventName: Name.SEARCH_TAG_SEARCH
   tag: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchMoreResults = {
   eventName: Name.SEARCH_MORE_RESULTS
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchResultSelect = {
   eventName: Name.SEARCH_RESULT_SELECT
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
   id: ID
   kind: 'track' | 'profile' | 'playlist' | 'album'
 }
 
+// This event is no longer fired with search v2
+// Use page views instead
 type SearchTabClick = {
   eventName: Name.SEARCH_TAB_CLICK
   term: string
@@ -1707,6 +1731,7 @@ type RewardsClaimFailure = {
   amount: number
   url?: string
   error: string
+  instruction?: string
 }
 
 type RewardsClaimBlocked = {
@@ -2514,6 +2539,8 @@ export type AllTrackingEvents =
   | TrackDownloadSuccessfulDownloadSingle
   | TrackDownloadFailedDownloadSingle
   | TrackEditAccessChanged
+  | TrackEditBpmChanged
+  | TrackEditMusicalKeyChanged
   | CollectionEditAccessChanged
   | CollectionEdit
   | TrackUploadSuccess

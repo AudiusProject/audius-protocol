@@ -18,6 +18,8 @@ export const keyExtractor = (item: PlaylistLibraryItem) => {
     case 'folder':
       return item.id
     case 'playlist':
+    case 'audio_nft_playlist':
+    case 'explore_playlist':
       return item.playlist_id
   }
 }

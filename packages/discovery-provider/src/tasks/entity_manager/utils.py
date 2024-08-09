@@ -12,6 +12,8 @@ from web3.datastructures import AttributeDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.comments.comment import Comment
+from src.models.comments.comment_reaction import CommentReaction
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -32,6 +34,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
+    comment_metadata_format,
     playlist_metadata_format,
     track_metadata_format,
     user_metadata_format,
@@ -70,6 +73,8 @@ class Action(str, Enum):
     APPROVE = "Approve"
     REJECT = "Reject"
     DOWNLOAD = "Download"
+    REACT = "React"
+    UNREACT = "Unreact"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -97,6 +102,8 @@ class EntityType(str, Enum):
     TRACK_ROUTE = "TrackRoute"
     PLAYLIST_ROUTE = "PlaylistRoute"
     TIP = "Tip"
+    COMMENT = "Comment"
+    COMMENT_REACTION = "CommentReaction"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -132,6 +139,8 @@ class RecordDict(TypedDict):
     DeveloperApp: Dict[str, List[DeveloperApp]]
     DashboardWalletUser: Dict[str, List[DashboardWalletUser]]
     Grant: Dict[Tuple, List[Grant]]
+    Comment: Dict[int, List[Comment]]
+    CommentReaction: Dict[Tuple, List[CommentReaction]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -149,6 +158,8 @@ class ExistingRecordDict(TypedDict):
     Grant: Dict[Tuple, Grant]
     TrackRoute: Dict[int, TrackRoute]
     PlaylistRoute: Dict[int, PlaylistRoute]
+    Comment: Dict[int, Comment]
+    CommentReaction: Dict[Tuple, CommentReaction]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -168,6 +179,8 @@ class EntitiesToFetchDict(TypedDict):
     UserEvent: Set[int]
     AssociatedWallet: Set[int]
     UserWallet: Set[str]
+    Comment: Set[int]
+    CommentReaction: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -314,6 +327,10 @@ def get_metadata_type_and_format(entity_type):
     elif entity_type == EntityType.USER:
         metadata_type = "user"
         metadata_format = user_metadata_format
+    elif entity_type == EntityType.COMMENT:
+        metadata_type = "comment"
+        metadata_format = comment_metadata_format
+
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
@@ -387,7 +404,16 @@ def get_record_key(user_id: int, entity_type: str, entity_id: int):
 
 
 def copy_record(
-    old_record: Union[User, Track, Playlist, DeveloperApp, Grant, DashboardWalletUser],
+    old_record: Union[
+        User,
+        Track,
+        Playlist,
+        DeveloperApp,
+        Grant,
+        DashboardWalletUser,
+        Comment,
+        CommentReaction,
+    ],
     block_number: int,
     event_blockhash: str,
     txhash: str,

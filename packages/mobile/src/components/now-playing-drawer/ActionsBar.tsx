@@ -61,7 +61,8 @@ const messages = {
   favoriteProhibited: "You can't Favorite your own Track!",
   castLabel: 'Cast to Device',
   shareLabel: 'Share Content',
-  optionsLabel: 'More Options'
+  optionsLabel: 'More Options',
+  price: (price: number) => `$${formatPrice(price)}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -112,6 +113,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isReachable = useSelector(getIsReachable)
 
   const isOwner = track?.owner_id === accountUser?.user_id
+  const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
@@ -136,6 +138,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     track?.stream_conditions &&
     'usdc_purchase' in track.stream_conditions &&
     !hasStreamAccess
+  const shouldShowActions = hasStreamAccess && !isUnlisted
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -191,7 +194,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
-        OverflowAction.ADD_TO_PLAYLIST,
+        !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
         isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
@@ -212,7 +215,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [track, isOwner, albumInfo, playbackPositionInfo?.status, dispatch])
+  }, [
+    track,
+    isOwner,
+    isUnlisted,
+    albumInfo,
+    playbackPositionInfo?.status,
+    dispatch
+  ])
 
   const { openAirplayDialog } = useAirplay()
   const castDevices = useDevices()
@@ -224,8 +234,12 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     ) {
       const price = track.stream_conditions.usdc_purchase.price
       return (
-        <Button style={styles.buyButton} onPress={handlePurchasePress}>
-          {formatPrice(price)}
+        <Button
+          color='lightGreen'
+          style={styles.buyButton}
+          onPress={handlePurchasePress}
+        >
+          {messages.price(price)}
         </Button>
       )
     }
@@ -313,10 +327,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     <View style={styles.container}>
       {shouldShowPurchasePill ? renderPurchaseButton() : null}
       <View style={styles.actions}>
-        {!shouldShowPurchasePill ? renderCastButton() : null}
-        {!shouldShowPurchasePill ? renderRepostButton() : null}
-        {!shouldShowPurchasePill ? renderFavoriteButton() : null}
-        {renderShareButton()}
+        {renderCastButton()}
+        {shouldShowActions ? renderRepostButton() : null}
+        {shouldShowActions ? renderFavoriteButton() : null}
+        {shouldShowActions ? renderShareButton() : null}
         {renderOptionsButton()}
       </View>
     </View>

@@ -23,8 +23,6 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
-  uploadConfirmationModalUISagas,
-  publishTrackConfirmationModalUISagas,
   modalsSagas
 } from '~/store/ui'
 
@@ -61,8 +59,6 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   modals: modalsSagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
-  uploadConfirmationModalUI: uploadConfirmationModalUISagas,
-  publishTrackConfirmationModalUI: publishTrackConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
   playlistUpdates: playlistUpdatesSagas

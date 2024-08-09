@@ -1,5 +1,6 @@
-import { searchApiFetch } from '@audius/common/api'
+import { searchApiFetchSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -9,10 +10,13 @@ import {
   SearchKind
 } from '@audius/common/store'
 import { trimToAlphaNumeric } from '@audius/common/utils'
-import { select, all, call } from 'typed-redux-saga'
+import { select, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
+import {
+  getSearchResults,
+  getTagSearchResults
+} from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
@@ -30,7 +34,15 @@ function* getSearchPageResultsTracks({
   payload?: any
 }) {
   const isNativeMobile = yield* getContext('isNativeMobile')
-  if (category === SearchKind.TRACKS || isNativeMobile || isMobileWeb()) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isSearchV2Enabled = getFeatureEnabled(FeatureFlags.SEARCH_V2)
+
+  if (
+    category === SearchKind.TRACKS ||
+    isNativeMobile ||
+    isMobileWeb() ||
+    (category === SearchKind.ALL && isSearchV2Enabled)
+  ) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results: Track[]
     if (isTagSearch) {
@@ -42,34 +54,38 @@ function* getSearchPageResultsTracks({
         offset
       )
       results = tracks
+      return results
     } else {
-      const audiusBackend = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
-      const reportToSentry = yield* getContext('reportToSentry')
       const currentUserId = yield* select(getUserId)
 
-      // searchApiFetch.getSearchResults already handles tag search,
-      // so we don't need to specify isTagSearch necessarily
-      const { tracks } = yield* call(
-        searchApiFetch.getSearchResults,
-        {
-          currentUserId,
-          query,
-          category,
+      if (!isSearchV2Enabled) {
+        const { tracks } = yield* call(getSearchResults, {
+          searchText: query,
+          kind: category,
           limit,
-          offset,
-          ...filters
-        },
-        {
-          audiusBackend,
-          apiClient,
-          reportToSentry,
-          dispatch
-        } as any
-      )
-      results = tracks as unknown as Track[]
+          offset
+        })
+        results = tracks as unknown as Track[]
+        if (results) return results
+      } else {
+        // searchApiFetch.getSearchResults already handles tag search,
+        // so we don't need to specify isTagSearch necessarily
+
+        const { tracks }: { tracks: Track[] } = yield* call(
+          searchApiFetchSaga.getSearchResults,
+          {
+            currentUserId,
+            query,
+            category,
+            limit,
+            offset,
+            ...filters
+          }
+        )
+
+        if (tracks) return tracks
+      }
     }
-    if (results) return results
     return [] as Track[]
   } else {
     // If we are part of the all results search page
@@ -78,11 +94,9 @@ function* getSearchPageResultsTracks({
 
       // getTracks returns an unsorted map of ID to track metadata.
       // We sort this object by trackIds, which is returned sorted by discprov.
-      const [tracks, sortedIds] = yield* all([
-        select(getTracks, { ids: trackIds }),
-        select(getSearchResultsPageTracks)
-      ])
-      const sortedTracks = (sortedIds as number[]).map((id) => tracks[id])
+      const tracks = yield* select(getTracks, { ids: trackIds })
+
+      const sortedTracks = trackIds.map((id) => tracks[id])
       return sortedTracks as Track[]
     } catch (e) {
       console.error(e)

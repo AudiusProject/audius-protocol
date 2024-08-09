@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { uploadConfirmationModalUISelectors } from '@audius/common/store'
+import { useUploadConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -13,12 +13,6 @@ import {
   Flex
 } from '@audius/harmony'
 
-import { useModalState } from 'common/hooks/useModalState'
-import { useSelector } from 'common/hooks/useSelector'
-
-const { getConfirmCallback, getHasPublicTracks } =
-  uploadConfirmationModalUISelectors
-
 const messages = {
   title: 'Confirm Upload',
   publicDescription:
@@ -29,13 +23,8 @@ const messages = {
 }
 
 export const UploadConfirmationModal = () => {
-  const confirmCallback = useSelector(getConfirmCallback)
-  const hasPublicTracks = useSelector(getHasPublicTracks)
-  const [isOpen, setIsOpen] = useModalState('UploadConfirmation')
-
-  const onClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
+  const { data, isOpen, onClose } = useUploadConfirmationModal()
+  const { confirmCallback, hasPublicTracks } = data
 
   const handleConfirm = useCallback(() => {
     confirmCallback()

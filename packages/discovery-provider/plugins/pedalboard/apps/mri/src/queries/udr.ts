@@ -5,17 +5,19 @@ import { S3Config, publishToS3 } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
+import { formatDateISO, getYearMonth } from '../date'
 
 dayjs.extend(quarterOfYear)
 
 const config = readConfig()
 const isDev = config.env === 'dev'
 
-export type UsageDetailReporting = {
+type UsageDetailReporting = {
   ServiceName: 'AUDIUS'
   ReportPeriodType: 'Q'
   ReportingPeriod: string // MMDDYYYY
   ServiceType: 'I'
+  UniqueTrackIdentifier: number
   SongTitle: string
   Artist: string
   AlbumId: number
@@ -23,11 +25,12 @@ export type UsageDetailReporting = {
   NumberOfPerformances: number
 }
 
-export const ClientLabelMetadataHeader: (keyof UsageDetailReporting)[] = [
+const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'ServiceName',
   'ReportPeriodType',
   'ReportingPeriod',
   'ServiceType',
+  'UniqueTrackIdentifier',
   'SongTitle',
   'Artist',
   'AlbumId',
@@ -45,16 +48,21 @@ export const udr = async (
 ): Promise<void> => {
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
-  const start = dayjs(date).startOf('quarter').toDate()
-  const end = dayjs(date).startOf('quarter').add(1, 'quarter').toDate()
-  const reportingPeriod = dayjs(end).format('MMDDYYYY')
+  const startOfThisQuarter = dayjs(date).startOf('quarter')
+  const endOfLastQuarter = startOfThisQuarter.subtract(1, 'day')
+  const startOfPreviousQuarter = endOfLastQuarter.startOf('quarter')
+  const endOfPreviousQuarter = startOfPreviousQuarter.add(1, 'quarter').subtract(1, 'day')
+
+  const start = startOfPreviousQuarter.toDate()
+  const end = endOfPreviousQuarter.toDate()
+  const reportingPeriod = endOfPreviousQuarter.format('MMDDYYYY')
 
   logger.info(
     { start: start.toISOString(), end: end.toISOString() },
     'time range'
   )
 
-  const udrRows: UsageDetailReporting[] = await db.raw(
+  const queryResult = await db.raw(
     `
       with play_counts as (
         select
@@ -70,6 +78,7 @@ export const udr = async (
         'Q' as "ReportPeriodType",
         :reportingPeriod as "ReportingPeriod",
         'I' as "ServiceType",
+        t.track_id as "UniqueTrackIdentifier",
         t.title as "SongTitle",
         u.name as "Artist",
         (
@@ -87,13 +96,16 @@ export const udr = async (
     { start, end, reportingPeriod }
   )
 
-  const csv = toCsvString(udrRows)
+  const udrRows: UsageDetailReporting[] = queryResult.rows
+  const csv = toCsvString(udrRows, UsageDetailReportingHeader)
   if (isDev) {
     logger.info(csv)
   }
+  // YYYYMM_Service_Territory_yyyymmddThhmmss_detail_<DistributionType>
+  const fileName = `${getYearMonth(start)}_AUDIUS_${formatDateISO(date)}`
 
   const uploads = s3s.map((s3config) =>
-    publishToS3(logger, s3config, date, csv)
+    publishToS3(logger, s3config, csv, fileName)
   )
   const results = await Promise.allSettled(uploads)
   results.forEach((objUrl) =>

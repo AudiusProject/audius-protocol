@@ -171,6 +171,7 @@ export const createUploadTrackMetadataSchema = () =>
     producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
     parentalWarningType: z.optional(z.string().nullable()),
     bpm: z.optional(z.number().nullable()),
+    isCustomBpm: z.optional(z.boolean()),
     musicalKey: z.optional(z.string().nullable()),
     audioAnalysisErrorCount: z.optional(z.number())
   })

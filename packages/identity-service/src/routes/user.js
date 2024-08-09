@@ -155,45 +155,6 @@ module.exports = function (app) {
   )
 
   /**
-   * Change authenticated user's email address
-   */
-  app.put(
-    '/user/email',
-    authMiddleware,
-    handleResponse(async (req, _res, _next) => {
-      const { email, otp } = req.body ?? {}
-      if (!email) {
-        return errorResponseBadRequest('Missing email')
-      }
-
-      // Check OTP
-      const redis = req.app.get('redis')
-      const sendgrid = req.app.get('sendgrid')
-      if (!sendgrid) {
-        req.logger.error('Missing sendgrid api key')
-      }
-
-      if (!otp) {
-        await sendOtp({ email, redis, sendgrid })
-        return errorResponseForbidden('Missing otp')
-      }
-
-      const isOtpValid = await validateOtp({ email, otp, redis })
-      if (!isOtpValid) {
-        return errorResponseBadRequest('Invalid credentials')
-      }
-
-      // Update email
-      const { blockchainUserId } = req.user
-      await models.User.update(
-        { email: req.body.email },
-        { where: { blockchainUserId } }
-      )
-      return successResponse()
-    })
-  )
-
-  /**
    * Retrieve authenticated user's email address
    */
   app.get(

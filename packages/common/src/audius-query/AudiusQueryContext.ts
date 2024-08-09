@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 
 import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
+import { getContext } from 'typed-redux-saga'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
 import {
@@ -10,9 +11,12 @@ import {
   FeatureFlags,
   RemoteConfigInstance
 } from '~/services/index'
-import { SDKMigrationChecker } from '~/utils/sdkMigrationUtils'
 
-import { ReportToSentryArgs } from '../models'
+import {
+  AllTrackingEvents,
+  AnalyticsEvent,
+  ReportToSentryArgs
+} from '../models'
 
 export type AudiusQueryContextType = {
   apiClient: AudiusAPIClient
@@ -20,7 +24,6 @@ export type AudiusQueryContextType = {
   audiusBackend: AudiusBackend
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
-  checkSDKMigration: SDKMigrationChecker
   env: Env
   fetch: typeof fetch
   remoteConfigInstance: RemoteConfigInstance
@@ -28,6 +31,22 @@ export type AudiusQueryContextType = {
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean> | boolean
+  analytics: {
+    init: (isMobile: boolean) => Promise<void>
+    track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
+    identify: (
+      handle: string,
+      traits?: Record<string, unknown>,
+      options?: Record<string, unknown>,
+      callback?: () => void
+    ) => Promise<void>
+    make: <T extends AllTrackingEvents>(
+      event: T
+    ) => {
+      eventName: string
+      properties: any
+    }
+  }
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(
@@ -44,4 +63,38 @@ export const useAudiusQueryContext = () => {
   }
 
   return audiusQueryContext
+}
+
+export function* getAudiusQueryContext(): Generator<
+  any,
+  AudiusQueryContextType,
+  any
+> {
+  // We can't use common typed `getContext` here because of circular dependency
+  return {
+    apiClient: yield* getContext<AudiusQueryContextType['apiClient']>(
+      'apiClient'
+    ),
+    audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
+      'audiusBackendInstance'
+    ),
+    audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
+      'audiusSdk'
+    ),
+    dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
+    env: yield* getContext<AudiusQueryContextType['env']>('env'),
+    fetch,
+    getFeatureEnabled: yield* getContext<
+      AudiusQueryContextType['getFeatureEnabled']
+    >('getFeatureEnabled'),
+    remoteConfigInstance: yield* getContext<
+      AudiusQueryContextType['remoteConfigInstance']
+    >('remoteConfigInstance'),
+    reportToSentry: yield* getContext<AudiusQueryContextType['reportToSentry']>(
+      'reportToSentry'
+    ),
+    analytics: yield* getContext<AudiusQueryContextType['analytics']>(
+      'analytics'
+    )
+  }
 }

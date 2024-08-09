@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
@@ -16,7 +16,12 @@ import {
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, EditPlaylistValues } from '@audius/common/store'
+import {
+  accountSelectors,
+  EditCollectionValues,
+  useEditAccessConfirmationModal
+} from '@audius/common/store'
+import { getUsersMayLoseAccess } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
@@ -127,6 +132,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isPublishDisabled = false
   } = props
 
+  const [isConfirmationCancelled, setIsConfirmationCancelled] = useState(false)
+
   const isHiddenFieldName = isAlbum ? IS_PRIVATE : IS_UNLISTED
 
   const [{ value: index }] = useField('trackMetadatasIndex')
@@ -140,6 +147,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
+  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
+    FeatureFlags.EDITABLE_ACCESS_ENABLED
+  )
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
@@ -147,7 +157,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
   // So we take this from the parent form and pass it down to the menu fields
   const { initialValues: parentFormInitialValues } = useFormikContext<
-    EditPlaylistValues | CollectionValues | TrackEditFormValues
+    EditCollectionValues | CollectionValues | TrackEditFormValues
   >()
   const parentFormInitialStreamConditions =
     'stream_conditions' in parentFormInitialValues
@@ -219,6 +229,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     [accountUserId, savedStreamConditions]
   )
 
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
+
   const isUsdcGated = isContentUSDCPurchaseGated(savedStreamConditions)
   const isTipGated = isContentTipGated(savedStreamConditions)
   const isFollowGated = isContentFollowGated(savedStreamConditions)
@@ -259,7 +272,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
-    set(initialValues, PREVIEW, preview)
+    set(initialValues, PREVIEW, preview ?? 0)
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
@@ -554,7 +567,27 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       }
       icon={<IconHidden />}
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={(values) => {
+        const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
+        const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
+        const usersMayLoseAccess = getUsersMayLoseAccess({
+          availability: availabilityType,
+          initialStreamConditions: parentFormInitialStreamConditions,
+          specialAccessType:
+            specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
+        })
+
+        if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
+          onOpenEditAccessConfirmationModal({
+            confirmCallback: () => handleSubmit(values),
+            cancelCallback: () => {
+              setIsConfirmationCancelled(true)
+            }
+          })
+        } else {
+          handleSubmit(values)
+        }
+      }}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         priceAndAudienceSchema(
@@ -578,8 +611,16 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           isPublishDisabled={isPublishDisabled}
         />
       }
-      forceOpen={forceOpen}
-      setForceOpen={setForceOpen}
+      forceOpen={
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? isConfirmationCancelled
+          : forceOpen
+      }
+      setForceOpen={
+        isEditableAccessEnabled && isConfirmationCancelled
+          ? setIsConfirmationCancelled
+          : setForceOpen
+      }
     />
   )
 }

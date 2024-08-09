@@ -3,11 +3,12 @@ import { logger as plogger } from "../logger";
 import { toCsvString } from "../csv";
 import { S3Config, publishToS3 } from "../s3";
 import { readConfig } from "../config";
+import { formatDate } from "../date";
 
 const config = readConfig()
 const isDev = config.env === "dev"
 
-export type ClientLabelMetadata = {
+type ClientLabelMetadata = {
     UniqueTrackIdentifier: number;
     TrackTitle: string;
     Artist: string;
@@ -21,7 +22,7 @@ export type ClientLabelMetadata = {
     ResourceType: string;
 }
 
-export const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
+const ClientLabelMetadataHeader: (keyof ClientLabelMetadata)[] = [
     "UniqueTrackIdentifier",
     "TrackTitle",
     "Artist",
@@ -77,12 +78,12 @@ export const clm = async (db: Knex, s3s: S3Config[], date: Date): Promise<void> 
         .where('tracks.created_at', '>=', start)
         .where('tracks.created_at', '<', end)
 
-    const csv = toCsvString(clmRows)
+    const csv = toCsvString(clmRows, ClientLabelMetadataHeader)
     if (isDev) {
         logger.info(csv)
     }
 
-    const uploads = s3s.map((s3config) => publishToS3(logger, s3config, date, csv))
+    const uploads = s3s.map((s3config) => publishToS3(logger, s3config, csv, formatDate(date)))
     const results = await Promise.allSettled(uploads)
     results.forEach((objUrl) => logger.info({ objUrl, records: clmRows.length }, "upload result"))
 }

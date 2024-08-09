@@ -195,7 +195,7 @@ def process_state_changes(
             _,
         ) = bulk_processor(*tx_processing_args)
 
-        logger.info(
+        logger.debug(
             f"{bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
@@ -230,7 +230,7 @@ def is_block_on_chain(web3: Web3, block: Block):
 
 def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     if latest_database_block.number is None:
-        logger.info(f"Block number invalid {latest_database_block}, returning early")
+        logger.debug(f"Block number invalid {latest_database_block}, returning early")
         return False
 
     # Get next block to index
@@ -242,7 +242,7 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         next_block["number"] = next_block["number"] + final_poa_block
         return next_block
     except BlockNotFound:
-        logger.info(f"Block not found {next_block_number}, returning early")
+        logger.debug(f"Block not found {next_block_number}, returning early")
         # Return early because we've likely indexed up to the head of the chain
         return False
 
@@ -385,7 +385,7 @@ def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
         block = copy.deepcopy(block)
         return block
     except BlockNotFound:
-        logger.info(f"Block not found {adjusted_blocknumber}")
+        logger.debug(f"Block not found {adjusted_blocknumber}")
         return False
 
 
@@ -468,7 +468,7 @@ def revert_block(session: Session, block_to_revert: Block):
         )
         if previous_track_route_entry:
             previous_track_route_entry.is_current = True
-        logger.info(f"Reverting track route {track_route_to_revert}")
+        logger.debug(f"Reverting track route {track_route_to_revert}")
         session.delete(track_route_to_revert)
 
     for playlist_route_to_revert in revert_playlist_routes:
@@ -484,13 +484,13 @@ def revert_block(session: Session, block_to_revert: Block):
         )
         if previous_playlist_route_entry:
             previous_playlist_route_entry.is_current = True
-        logger.info(f"Reverting playlist route {playlist_route_to_revert}")
+        logger.debug(f"Reverting playlist route {playlist_route_to_revert}")
         session.delete(playlist_route_to_revert)
 
     # delete block record and cascade delete from tables ^
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
     if not revert_block_record:
-        logger.info("No reverts to apply")
+        logger.debug("No reverts to apply")
         return
 
     revert_records = []
@@ -510,7 +510,7 @@ def revert_block(session: Session, block_to_revert: Block):
     # Remove outdated block entry
     session.add_all(revert_records)
 
-    logger.info(
+    logger.warn(
         f"Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
     )
 

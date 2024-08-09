@@ -16,7 +16,10 @@ import type {
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { FilterButtonScreen } from '@audius/harmony-native'
+import type { FilterButtonScreenParams } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { setLastNavAction } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
@@ -34,7 +37,7 @@ import {
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
 import type { SearchParams } from 'app/screens/search-screen-v2'
-import { SearchScreenStack } from 'app/screens/search-screen-v2'
+import { SearchScreenV2 } from 'app/screens/search-screen-v2'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -78,7 +81,7 @@ export type AppTabScreenParamList = {
     collectionType?: 'playlist' | 'album'
     handle?: string
   }
-  EditPlaylist: { id: ID }
+  EditCollection: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }
   Reposts: { id: ID; repostType: RepostType }
   Followers: { userId: ID }
@@ -124,6 +127,7 @@ export type AppTabScreenParamList = {
     chatId: string
     presetMessage?: string
   }
+  FilterButton: FilterButtonScreenParams
 }
 
 const forFade = ({ current }) => ({
@@ -143,11 +147,6 @@ type AppTabScreenProps = {
     Stack: ReturnType<typeof createNativeStackNavigator>
   ) => React.ReactNode
   Stack: ReturnType<typeof createNativeStackNavigator>
-}
-
-export let lastNavAction: any
-export const setLastNavAction = (action: any) => {
-  lastNavAction = action
 }
 
 /**
@@ -185,7 +184,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
    * catch events from other screens
    */
   const handleTransitionEnd = useCallback(() => {
-    lastNavAction = undefined
+    setLastNavAction(undefined)
   }, [])
 
   useEffect(() => {
@@ -224,8 +223,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       {isSearchV2Enabled ? (
         <Stack.Screen
           name='Search'
-          component={SearchScreenStack}
-          options={{ ...screenOptions, headerShown: false }}
+          component={SearchScreenV2}
+          options={screenOptions}
         />
       ) : (
         <Stack.Group>
@@ -333,6 +332,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           component={AccountVerificationScreen}
         />
       </Stack.Group>
+      <Stack.Screen
+        name='FilterButton'
+        component={FilterButtonScreen}
+        options={{ ...screenOptions, presentation: 'fullScreenModal' }}
+      />
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
         <Stack.Screen name='ChatUserList' component={ChatUserListScreen} />

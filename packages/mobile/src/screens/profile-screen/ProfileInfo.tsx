@@ -8,14 +8,12 @@ import {
   chatSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex } from '@audius/harmony-native'
-import { FollowButton, FollowsYouChip } from 'app/components/user'
-import UserBadges from 'app/components/user-badges'
+import { Flex, Text } from '@audius/harmony-native'
+import { FollowButton, FollowsYouBadge } from 'app/components/user'
+import { UserLink } from 'app/components/user-link'
 import { useRoute } from 'app/hooks/useRoute'
-import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
 import { MessageButton } from './MessageButton'
@@ -28,55 +26,6 @@ const { getCanCreateChat } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getProfileUserId } = profilePageSelectors
 
-const useStyles = makeStyles(({ typography, palette, spacing }) => ({
-  name: {
-    ...flexRowCentered(),
-    marginRight: spacing(2),
-    marginBottom: spacing(1)
-  },
-  username: {
-    ...typography.h1,
-    color: palette.neutral,
-    marginBottom: 0 // Override h1 bottom margin for this layout to work
-  },
-  badges: {
-    marginTop: 2,
-    marginLeft: 2,
-    flexGrow: 1
-  },
-  handleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1
-  },
-  handle: {
-    marginRight: spacing(2),
-    textAlignVertical: 'bottom'
-  },
-  handleText: {
-    ...typography.h4,
-    color: palette.neutralLight4
-  },
-  followsYou: {
-    marginTop: -6,
-    borderRadius: 4,
-    overflow: 'hidden',
-    borderColor: palette.neutralLight4,
-    borderWidth: 1,
-    paddingVertical: spacing(1),
-    paddingHorizontal: spacing(2)
-  },
-  info: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    marginBottom: spacing(2)
-  },
-  text: {
-    marginTop: spacing(2),
-    flexShrink: 1
-  }
-}))
-
 type ProfileInfoProps = {
   onFollow: () => void
 }
@@ -87,7 +36,6 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { getIsReachable } = reachabilitySelectors
   const isReachable = useSelector(getIsReachable)
   const accountHandle = useSelector(getUserHandle)
-  const styles = useStyles()
   const dispatch = useDispatch()
 
   const profileUserId = useSelector((state) =>
@@ -110,13 +58,11 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   const profile = useSelectProfile([
     'user_id',
-    'name',
     'handle',
-    'does_current_user_follow',
-    'is_verified'
+    'does_current_user_follow'
   ])
 
-  const { user_id, name, handle, does_current_user_follow } = profile
+  const { user_id, handle, does_current_user_follow } = profile
 
   const isOwner =
     params.handle === 'accountUser' ||
@@ -147,7 +93,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     )
 
   return (
-    <View pointerEvents='box-none' style={styles.info}>
+    <Flex pointerEvents='box-none' pv='s'>
       <Flex
         direction='row'
         justifyContent='flex-end'
@@ -156,31 +102,15 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
       >
         {isReachable ? actionButtons : null}
       </Flex>
-      <View pointerEvents='none' style={styles.text}>
-        <View style={styles.name}>
-          <Text
-            accessibilityRole='header'
-            numberOfLines={1}
-            style={styles.username}
-          >
-            {name}
+      <Flex pointerEvents='none' alignItems='flex-start' gap='2xs'>
+        <UserLink userId={user_id} textVariant='title' size='l' />
+        <Flex direction='row' gap='s'>
+          <Text size='l' color='subdued'>
+            @{handle}
           </Text>
-          <UserBadges
-            user={profile}
-            badgeSize={12}
-            style={styles.badges}
-            hideName
-          />
-        </View>
-        <View style={styles.handleInfo}>
-          <View style={styles.handle}>
-            <Text style={styles.handleText} numberOfLines={1}>
-              @{handle}
-            </Text>
-          </View>
-          <FollowsYouChip userId={profile.user_id} />
-        </View>
-      </View>
-    </View>
+          <FollowsYouBadge userId={user_id} />
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }

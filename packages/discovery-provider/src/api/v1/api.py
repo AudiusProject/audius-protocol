@@ -5,6 +5,7 @@ from flask_restx import Api
 from src.api.v1.challenges import full_ns as full_challenges_ns
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.cid_data import full_ns as cid_data_full_ns
+from src.api.v1.comments import ns as comments_ns
 from src.api.v1.dashboard_wallet_users import ns as dashboard_wallet_users_ns
 from src.api.v1.developer_apps import ns as developer_apps_ns
 from src.api.v1.metrics import ns as metrics_ns
@@ -47,6 +48,7 @@ api_v1.add_namespace(developer_apps_ns)
 api_v1.add_namespace(dashboard_wallet_users_ns)
 api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
+api_v1.add_namespace(comments_ns)
 
 
 bp_full = Blueprint("api_v1_full", __name__, url_prefix="/v1/full")

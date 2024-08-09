@@ -1,9 +1,8 @@
 import { createObjectCsvStringifier } from 'csv-writer';
-import { ClientLabelMetadataHeader } from './queries/clm';
 
-export const toCsvString = (rows: any[]): string => {
+export const toCsvString = (rows: any[], header: string[]): string => {
   const csvStringifier = createObjectCsvStringifier({
-    header: ClientLabelMetadataHeader.map(key => ({ id: key, title: key }))
+    header: header.map(key => ({ id: key, title: key }))
   })
 
   const csvString = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(rows)

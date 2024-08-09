@@ -1,14 +1,6 @@
 import { ReactNode, useContext, useEffect, useState } from 'react'
 
-import {
-  Tag,
-  Radio,
-  RadioGroupContext,
-  Text,
-  IconComponent,
-  Hint,
-  IconQuestionCircle
-} from '@audius/harmony'
+import { Tag, Radio, RadioGroupContext, Text, Box } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
@@ -22,8 +14,7 @@ type ModalRadioItemProps = {
   label: string
   title?: ReactNode
   description?: ReactNode
-  hintContent?: string | ReactNode
-  hintIcon?: IconComponent
+  hint?: ReactNode
   tag?: string
   value: any
   disabled?: boolean
@@ -36,8 +27,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
   const {
     icon,
     label,
-    hintContent,
-    hintIcon = IconQuestionCircle,
+    hint,
     tag,
     title,
     description,
@@ -84,7 +74,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           {tag ? <Tag className={styles.tag}>{tag}</Tag> : null}
         </Tooltip>
       </div>
-      {hintContent ? <Hint icon={hintIcon}>{hintContent}</Hint> : null}
+      {hint ? <Box pt='s'>{hint}</Box> : null}
       {checkedContent || description ? (
         <div
           className={cn(styles.collapsibleContainer, {

@@ -103,19 +103,18 @@ export const sendTransactionWithRetries = async ({
   }
 
   const start = Date.now()
-  const connection = connections[0]
+  const connection = getConnection()
   const abortController = new AbortController()
   let success = false
   try {
     if (!sendOptions?.skipPreflight) {
       const simulatedRes = await connection.simulateTransaction(transaction)
       if (simulatedRes.value.err) {
-        // @ts-ignore Typescript is confused about deps
         throw new SendTransactionError({
           action: 'simulate',
           signature: confirmationStrategy.signature,
           transactionMessage: JSON.stringify(simulatedRes.value.err),
-          logs: simulatedRes.value.logs
+          logs: simulatedRes.value.logs ?? undefined
         })
       }
     }
@@ -132,7 +131,6 @@ export const sendTransactionWithRetries = async ({
       throw new Error('Failed to get transaction confirmation result')
     }
     if (res.value.err) {
-      // @ts-ignore Typescript is confused about deps
       throw new SendTransactionError({
         action: 'send',
         signature: confirmationStrategy.signature,

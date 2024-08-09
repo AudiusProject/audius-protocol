@@ -2,11 +2,17 @@
 
 Indexes data from postgres to elasticsearch.
 
-To run in the discovery container, set env variables:
+
+## Tests
+
+e2e tests are in discovery provider:
 
 ```
-audius_elasticsearch_url=http://elasticsearch:9200
+audius-compose test discovery-provider integration_tests/tasks/test_get_feed_es.py
+audius-compose test discovery-provider integration_tests/queries/test_search_user_tags.py
+audius-compose test discovery-provider integration_tests/queries/test_search_track_tags.py
 ```
+
 
 ## Mapping Changes
 
@@ -37,11 +43,7 @@ npm run dev --drop
 
 > it's important to run with `--drop` to catch any errors in index settings. Without --drop 400 errors will be silently ignored.
 
-## How it works
-
-Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it switches to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
-
-Any error or exception will cause the program to crash and be restarted by pm2. This is inspired by the erlang "let it crash" mantra, since the startup behavior is designed to get everything into a good state.
+## Listener
 
 When program boots it does the following:
 
@@ -52,25 +54,30 @@ When program boots it does the following:
 - when catchup is complete it cuts over read alias to complete index
 - after this it processes buffered events (during catchup) and processes subsequent events on a 500ms interval.
 
+Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it switches to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
+
+Any error or exception will cause the program to crash and be restarted by pm2. This is inspired by the erlang "let it crash" mantra, since the startup behavior is designed to get everything into a good state.
+
+
 ## Debugging
 
 Check "elasticsearch" health info in `/health_check?verbose=true` endpoint.
 
-(instructions for sandbox3... subject to change):
-
-Use Kibana:
-Uncomment the kibana container and restart discovery-provider.
-
-List indices:
+You can interact via curl directly in ES container:
 
 ```
-curl http://localhost:9200/_cat/indices?v
+docker exec -it elasticsearch bash
 ```
+
+* List indices: `curl http://localhost:9200/_cat/indices?v`
+* List aliases: `curl http://localhost:9200/_cat/aliases?v`
+* Show mapping for tracks index: `curl http://localhost:9200/tracks?pretty=true`
+* Get a track by ID: `curl http://localhost:9200/tracks/_doc/1?pretty=true`
 
 Use the sql cli:
 
 ```
-docker-compose exec elasticsearch elasticsearch-sql-cli
+docker exec -it elasticsearch elasticsearch-sql-cli
 
 select max(blocknumber) from users;
 select max(created_at) from users;
@@ -79,5 +86,6 @@ select max(created_at) from users;
 Tail the es-indexer logs:
 
 ```
-docker-compose logs -f discovery | grep es-indexer
+docker logs -f elasticsearch
+docker logs -f es-indexer
 ```

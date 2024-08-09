@@ -95,8 +95,22 @@ export async function startListener() {
       // pending.userIds.add(follow.followee_user_id)
       pending.userIds.add(follow.follower_user_id)
     },
-    users: (user: UserRow) => {
+    users: async (user: UserRow) => {
       pending.userIds.add(user.user_id)
+      // re-index any playlists owned by this user
+      const playlists = await client.query(
+        `select playlist_id from playlists where playlist_owner_id = ${user.user_id}`
+      )
+      for (const r of playlists.rows) {
+        pending.playlistIds.add(r.playlist_id)
+      }
+      // re-index any tracks owned by this user
+      const tracks = await client.query(
+        `select track_id from tracks where owner_id = ${user.user_id}`
+      )
+      for (const r of tracks.rows) {
+        pending.trackIds.add(r.track_id)
+      }
     },
     tracks: async (track: TrackRow) => {
       pending.trackIds.add(track.track_id)
@@ -106,6 +120,13 @@ export async function startListener() {
       )
       for (const r of playlists.rows) {
         pending.playlistIds.add(r.playlist_id)
+      }
+      // re-index any tracks this is a stem of
+      const tracks = await client.query(
+        `select parent_track_id from stems where child_track_id = ${track.track_id}`
+      )
+      for (const r of tracks.rows) {
+        pending.trackIds.add(r.parent_track_id)
       }
     },
     playlists: (playlist: PlaylistRow) => {

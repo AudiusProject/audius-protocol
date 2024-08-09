@@ -213,8 +213,8 @@ export const getCollectionWithUser = (
   const user = getUserById(state, { id: userId })
   if (collection && user) {
     return {
-      user,
-      ...collection
+      ...collection,
+      user
     }
   }
   return null

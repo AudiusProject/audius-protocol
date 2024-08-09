@@ -328,7 +328,7 @@ def extend_supporter_dethroned(action: NotificationAction):
 def extend_challenge_reward(action: NotificationAction):
     data: ChallengeRewardNotification = action["data"]  # type: ignore
     return {
-        "specifier": encode_int_id(int(action["specifier"])),
+        "specifier": action["specifier"],
         "type": action["type"],
         "timestamp": (
             datetime.timestamp(action["timestamp"])
@@ -346,7 +346,7 @@ def extend_challenge_reward(action: NotificationAction):
 def extend_claimable_reward(action: NotificationAction):
     data: ClaimableRewardNotification = action["data"]  # type: ignore
     return {
-        "specifier": encode_int_id(int(action["specifier"])),
+        "specifier": action["specifier"],
         "type": action["type"],
         "timestamp": (
             datetime.timestamp(action["timestamp"])
@@ -385,7 +385,6 @@ def extend_reaction(action: NotificationAction):
 
 def extend_milestone(action: NotificationAction):
     type = action["type"].lower()
-    logger.info("notification mapping")
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": type,
@@ -428,7 +427,6 @@ def extend_milestone(action: NotificationAction):
             "track_id": encode_int_id(track_data["track_id"]),
         }
     elif action["group_id"].startswith("milestone:FOLLOWER_COUNT"):
-        logger.info("notification mapping found follower ")
         user_data: FollowerMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
             "type": user_data["type"].lower(),

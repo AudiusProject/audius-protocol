@@ -10,12 +10,11 @@ import {
   Variant,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionsPageType,
   PurchaseableContentType
 } from '@audius/common/store'
-import { Nullable, formatReleaseDate } from '@audius/common/utils'
+import { Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -37,7 +36,6 @@ import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
@@ -126,9 +124,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     streamConditions
   } = props
 
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
+  const { spacing } = useTheme()
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
@@ -137,13 +133,16 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const {
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
-    permalink
+    permalink,
+    is_private: isPrivate
   } = collection ?? {}
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
-  const { spacing } = useTheme()
 
   const hasStreamAccess = access?.stream
+  const shouldShowStats = variant !== Variant.SMART && (!isPrivate || isOwner)
+  const shouldShowScheduledRelease =
+    isScheduledRelease && releaseDate && dayjs(releaseDate).isAfter(dayjs())
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -160,15 +159,14 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return <Skeleton height='20px' width='120px' />
-    return (
+    return shouldShowStats ? (
       <RepostsFavoritesStats
-        isUnlisted={false}
         repostCount={reposts}
         saveCount={saves}
         onClickReposts={onClickReposts}
         onClickFavorites={onClickFavorites}
       />
-    )
+    ) : null
   }
 
   const isLoading = loading || artworkLoading
@@ -189,6 +187,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       />
       <Flex
         direction='column'
+        gap='xl'
         justifyContent='space-between'
         css={{ minWidth: 400 }}
       >
@@ -276,7 +275,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         css={{ position: 'absolute', right: spacing.l, top: spacing.l }}
       >
         {!isPublished ? (
-          isScheduledRelease && releaseDate ? (
+          shouldShowScheduledRelease ? (
             <MusicBadge variant='accent' icon={IconCalendarMonth}>
               {messages.releases(releaseDate)}
             </MusicBadge>
@@ -313,7 +312,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       borderTop='strong'
       borderBottom='strong'
     >
-      {isPremiumAlbumsEnabled && isStreamGated && streamConditions ? (
+      {isStreamGated && streamConditions ? (
         <GatedContentSection
           isLoading={isLoading}
           contentId={collectionId}

@@ -2,6 +2,7 @@ abi
 audius
 blockhash
 ciphertexts
+cloudflare
 ddex
 delegater
 delegaters
@@ -64,6 +65,7 @@ sp
 spl
 staker
 stakers
+supportings
 testnet
 toc
 ts

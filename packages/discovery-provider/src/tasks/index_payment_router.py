@@ -177,10 +177,10 @@ def get_sol_tx_info(
     try:
         existing_tx = redis.get(get_solana_transaction_key(tx_sig))
         if existing_tx is not None and existing_tx != "":
-            logger.info(f"index_payment_router.py | Cache hit: {tx_sig}")
+            logger.debug(f"index_payment_router.py | Cache hit: {tx_sig}")
             tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
             return (tx_info, tx_sig)
-        logger.info(f"index_payment_router.py | Cache miss: {tx_sig}")
+        logger.debug(f"index_payment_router.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -257,6 +257,8 @@ def parse_route_transaction_memos(
                 continue
             if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
+                if not geo_data:
+                    raise Exception("No geo data found in geo memo")
                 city = geo_data.get("city")
                 region = geo_data.get("region")
                 country = geo_data.get("country")
@@ -289,7 +291,7 @@ def parse_route_transaction_memos(
                     access_str,
                 ) = content_metadata
             else:
-                logger.info(
+                logger.warn(
                     f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
                 )
 
@@ -391,10 +393,10 @@ def parse_route_transaction_memos(
                     f"index_payment_router.py | Couldn't find relevant price for {content_metadata}."
                 )
         except (ValueError, KeyError) as e:
-            logger.info(
+            logger.error(
                 f"index_payment_router.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
             )
-    logger.info("index_payment_router.py | Failed to find known memo format")
+    logger.warn("index_payment_router.py | Failed to find known memo format")
     if not route_transaction_memo:
         route_transaction_memo = RouteTransactionMemo(
             type=RouteTransactionMemoType.unknown, metadata=None
@@ -598,7 +600,7 @@ def validate_and_index_usdc_transfers(
         )
 
         # dispatch audio matching challenge events
-        logger.info(
+        logger.debug(
             f"index_payment_router.py | tx: {tx_sig} | Purchase memo found. Dispatching challenge events"
         )
         purchase_metadata = memo["metadata"]
@@ -844,7 +846,7 @@ def process_payment_router_txs() -> None:
     challenge_bus: ChallengeEventBus = index_payment_router.challenge_event_bus
     db = index_payment_router.db
     redis = index_payment_router.redis
-    logger.info("index_payment_router.py | Acquired lock")
+    logger.debug("index_payment_router.py | Acquired lock")
 
     # Exit if required configs are not found
     if not check_config():
@@ -870,14 +872,14 @@ def process_payment_router_txs() -> None:
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_highest_payment_router_tx_slot(session)
-        logger.info(f"index_payment_router.py | high tx = {latest_processed_slot}")
+        logger.debug(f"index_payment_router.py | high tx = {latest_processed_slot}")
         while not intersection_found:
             fetch_size = (
                 INITIAL_FETCH_SIZE
                 if is_initial_fetch
                 else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
-            logger.info(
+            logger.debug(
                 f"index_payment_router.py | Requesting {fetch_size} transactions for {PAYMENT_ROUTER_ADDRESS} before {last_tx_signature}"
             )
             transactions_history = solana_client_manager.get_signatures_for_address(
@@ -887,7 +889,7 @@ def process_payment_router_txs() -> None:
             transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
-                logger.info(
+                logger.debug(
                     f"index_payment_router.py | No transactions found before {last_tx_signature}"
                 )
             else:
@@ -914,7 +916,7 @@ def process_payment_router_txs() -> None:
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
-                        logger.info(
+                        logger.debug(
                             f"index_payment_router.py | Latest slot re-traversal\
                             slot={tx_slot}, sig={tx_sig},\
                             latest_processed_slot(db)={latest_processed_slot}"
@@ -941,7 +943,7 @@ def process_payment_router_txs() -> None:
                     transaction_signatures = transaction_signatures[
                         -TX_SIGNATURES_RESIZE_LENGTH:
                     ]
-                    logger.info(
+                    logger.debug(
                         f"index_payment_router.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
 
@@ -955,7 +957,7 @@ def process_payment_router_txs() -> None:
 
         num_txs_processed = 0
         for tx_sig_batch in transaction_signatures:
-            logger.info(f"index_payment_router.py | processing {tx_sig_batch}")
+            logger.debug(f"index_payment_router.py | processing {tx_sig_batch}")
             batch_start_time = time.time()
 
             tx_infos: List[Tuple[GetTransactionResp, str]] = []
@@ -1018,7 +1020,7 @@ def process_payment_router_txs() -> None:
 
             batch_end_time = time.time()
             batch_duration = batch_end_time - batch_start_time
-            logger.info(
+            logger.debug(
                 f"index_payment_router.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
             )
 
@@ -1065,7 +1067,7 @@ def index_payment_router(self):
             with challenge_bus.use_scoped_dispatch_queue():
                 process_payment_router_txs()
         else:
-            logger.info("index_payment_router.py | Failed to acquire lock")
+            logger.debug("index_payment_router.py | Failed to acquire lock")
 
     except Exception as e:
         logger.error(

@@ -27,7 +27,7 @@ const messagesMap = {
     confirm: 'Set Track'
   },
   update: {
-    title: 'Change your artist pick?',
+    title: 'Change your Artist Pick?',
     description:
       'This track will appear at the top of your profile and replace your previously picked track.',
     confirm: 'Change Track'

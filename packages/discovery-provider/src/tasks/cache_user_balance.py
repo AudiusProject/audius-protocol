@@ -124,7 +124,7 @@ def refresh_user_ids(
         lazy_refresh_user_ids = []
         immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
 
-        logger.info(
+        logger.debug(
             f"cache_user_balance.py | Starting refresh with {len(lazy_refresh_user_ids)} "
             f"lazy refresh user_ids: {lazy_refresh_user_ids} and {len(immediate_refresh_user_ids)} "
             f"immediate refresh user_ids: {immediate_refresh_user_ids}"
@@ -154,7 +154,7 @@ def refresh_user_ids(
         if new_balances:
             session.add_all(new_balances)
             all_user_balance = existing_user_balances + new_balances
-            logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
+            logger.debug(f"cache_user_balance.py | adding new users: {not_present_set}")
 
         user_balances = {user.user_id: user for user in all_user_balance}
 
@@ -214,7 +214,7 @@ def refresh_user_ids(
                         wallet_chain  # type: ignore
                     ].append(associated_wallet)
 
-        logger.info(
+        logger.debug(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
         )
 
@@ -349,7 +349,7 @@ def refresh_user_ids(
         to_create_ids = set(user_balance_ids) - {
             e.user_id for e in existing_user_balance_changes
         }
-        logger.info(
+        logger.debug(
             f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids},\
                     existing: {[e.user_id for e in existing_user_balance_changes]}, to create: {to_create_ids}"
         )
@@ -378,7 +378,7 @@ def refresh_user_ids(
         session.commit()
 
         # Remove the fetched balances from Redis set
-        logger.info(
+        logger.debug(
             f"cache_user_balance.py | Got balances for {len(user_associated_wallet_query)} users, removing from Redis."
         )
         if lazy_refresh_user_ids:
@@ -508,11 +508,11 @@ def update_user_balances_task(self):
 
             end_time = time.time()
             redis.set(user_balances_refresh_last_completion_redis_key, int(end_time))
-            logger.info(
+            logger.debug(
                 f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds"
             )
         else:
-            logger.info("cache_user_balance.py | Failed to acquire lock")
+            logger.debug("cache_user_balance.py | Failed to acquire lock")
     except Exception as e:
         logger.error("cache_user_balance.py | Fatal error in main loop", exc_info=True)
         raise e

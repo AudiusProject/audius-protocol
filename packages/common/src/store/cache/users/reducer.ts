@@ -10,6 +10,7 @@ import {
   ADD_ENTRIES,
   ADD_SUCCEEDED
 } from '../actions'
+import { Entry } from '../types'
 
 import type { UsersCacheState } from './types'
 
@@ -18,7 +19,7 @@ const initialState: UsersCacheState = {
   handles: {}
 }
 
-const addEntries = (state: UsersCacheState, entries: any[]) => {
+const addEntries = (state: UsersCacheState, entries: Entry[]) => {
   const newHandles: Record<string, ID> = {}
 
   for (const entry of entries) {
@@ -54,17 +55,24 @@ const actionsMap = {
     const matchingEntries = entriesByKind[kind]
 
     if (!matchingEntries) return state
-    return addEntries(state, matchingEntries)
+    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+      ([id, entry]) => ({
+        id: parseInt(id, 10),
+        metadata: entry
+      })
+    )
+    return addEntries(state, cacheableEntries)
   }
 }
 
 const reducer = (
   state: UsersCacheState = initialState,
-  action: AddSuccededAction<User>
+  action: any,
+  kind: Kind
 ) => {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+  return matchingReduceFunction(state, action, kind)
 }
 
 export default reducer

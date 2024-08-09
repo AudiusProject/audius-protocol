@@ -9,7 +9,8 @@ import {
   PlaybackSource,
   FavoriteType,
   SquareSizes,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
 } from '@audius/common/models'
 import type {
   UID,
@@ -18,6 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -31,15 +33,18 @@ import {
   OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
+  trackPageActions,
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  usePublishConfirmationModal,
+  useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import {
+  formatReleaseDate,
   Genre,
   getDogEarType,
-  getLocalTimezone,
   removeNullable
 } from '@audius/common/utils'
 import dayjs from 'dayjs'
@@ -77,6 +82,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
@@ -111,9 +117,7 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -159,15 +163,22 @@ export const TrackScreenDetailsTile = ({
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
-  const isPlaying = useSelector(getPlaying)
+  const isPlaybackActive = useSelector(getPlaying)
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingId = playingId === track.track_id
+  const isPlaying = isPlaybackActive && isPlayingId
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
   const isCurrentTrack = useSelector((state: CommonState) => {
     return track && track.track_id === getTrackId(state)
   })
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_V2
+  )
 
   const {
     _co_sign: coSign,
@@ -188,8 +199,10 @@ export const TrackScreenDetailsTile = ({
     ddex_app: ddexApp,
     is_delete: isDeleted,
     release_date: releaseDate,
-    is_scheduled_release: isScheduledRelease
-  } = track
+    is_scheduled_release: isScheduledRelease,
+    _is_publishing,
+    preview_cid
+  } = track as Track
 
   const isOwner = ownerId === currentUserId
   const hideFavorite = isUnlisted || !hasStreamAccess
@@ -215,9 +228,13 @@ export const TrackScreenDetailsTile = ({
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
-  const isUnpublishedScheduledRelease =
-    track?.is_scheduled_release && track?.is_unlisted && releaseDate
-  const shouldShowPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
+  const shouldShowScheduledRelease =
+    isScheduledRelease &&
+    isUnlisted &&
+    releaseDate &&
+    dayjs(releaseDate).isAfter(dayjs())
+  const shouldShowPreview =
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   const shouldHideFavoriteCount =
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
   const shouldHideRepostCount =
@@ -227,11 +244,20 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
-  const headerText = isRemix
-    ? messages.remix
-    : isStreamGated
-    ? messages.premiumTrack
-    : messages.track
+  let headerText
+  if (isRemix) {
+    headerText = messages.remix
+  } else if (isStreamGated) {
+    if (isContentCollectibleGated(streamConditions)) {
+      headerText = messages.collectibleGated
+    } else if (isContentUSDCPurchaseGated(streamConditions)) {
+      headerText = messages.premiumTrack
+    } else {
+      headerText = messages.specialAccess
+    }
+  } else {
+    headerText = messages.track
+  }
 
   const PlayIcon =
     playbackPositionInfo?.status === 'COMPLETED' && !isCurrentTrack
@@ -242,7 +268,7 @@ export const TrackScreenDetailsTile = ({
     aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
     ) : null,
-    isUnpublishedScheduledRelease ? (
+    shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
         {messages.releases(releaseDate)}
       </MusicBadge>
@@ -363,9 +389,13 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      navigation.push('TagSearch', { query: tag })
+      if (isSearchV2Enabled) {
+        navigation.push('Search', { query: `#${tag}` })
+      } else {
+        navigation.push('TagSearch', { query: tag })
+      }
     },
-    [navigation]
+    [isSearchV2Enabled, navigation]
   )
 
   const handlePressEdit = useCallback(() => {
@@ -379,7 +409,7 @@ export const TrackScreenDetailsTile = ({
       isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const overflowActions = [
       addToAlbumAction,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       isOwner
         ? null
         : user.does_current_user_follow
@@ -407,6 +437,29 @@ export const TrackScreenDetailsTile = ({
       })
     )
   }
+
+  const publish = useCallback(() => {
+    dispatch(trackPageActions.makeTrackPublic(trackId))
+  }, [dispatch, trackId])
+
+  const handlePressPublish = useCallback(() => {
+    if (isScheduledRelease) {
+      openEarlyReleaseConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    } else {
+      openPublishConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    }
+  }, [
+    openPublishConfirmation,
+    openEarlyReleaseConfirmation,
+    isScheduledRelease,
+    publish
+  ])
 
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
@@ -526,17 +579,18 @@ export const TrackScreenDetailsTile = ({
           hideShare={hideShare}
           isOwner={isOwner}
           isCollection={false}
+          isPublished={!isUnlisted || _is_publishing}
           onPressEdit={handlePressEdit}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}
           onPressSave={handlePressSave}
           onPressShare={handlePressShare}
+          onPressPublish={handlePressPublish}
         />
       </Flex>
       <Flex
         p='l'
         gap='l'
-        alignItems='center'
         borderTop='default'
         backgroundColor='surface1'
         borderBottomLeftRadius='m'

@@ -1,5 +1,6 @@
 import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+// import { convertGenreLabelToValue } from '@audius/common/src/utils/genres'
 import { Genre, Mood } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
@@ -131,6 +132,11 @@ export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
 export const SEARCH_CATEGORY_PAGE_LEGACY = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:category?'
 export const SEARCH_BASE_ROUTE = '/search'
+export const SEARCH_PAGE_ALL = '/search/all'
+export const SEARCH_PAGE_PROFILES = '/search/profiles'
+export const SEARCH_PAGE_TRACKS = '/search/tracks'
+export const SEARCH_PAGE_ALBUMS = '/search/albums'
+export const SEARCH_PAGE_PLAYLISTS = '/search/playlists'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
 export const EDIT_PLAYLIST_PAGE = '/:handle/playlist/:slug/edit'
@@ -301,6 +307,11 @@ export const staticRoutes = new Set([
   TRENDING_PAGE,
   EXPLORE_PAGE,
   SEARCH_BASE_ROUTE,
+  SEARCH_PAGE_ALL,
+  SEARCH_PAGE_PROFILES,
+  SEARCH_PAGE_TRACKS,
+  SEARCH_PAGE_ALBUMS,
+  SEARCH_PAGE_PLAYLISTS,
   SAVED_PAGE,
   LIBRARY_PAGE,
   FAVORITES_PAGE,
@@ -476,6 +487,9 @@ export const searchResultsPageV2 = (
   category: SearchCategory,
   query: string
 ) => {
+  if (category === 'all') {
+    return `/search?query=${query}`
+  }
   return `/search/${category}/?query=${query}`
 }
 
@@ -560,6 +574,8 @@ export const pushUniqueRoute = (location: Location, route: string) => {
   return { type: '' }
 }
 
+const ELECTRONIC_PREFIX = 'Electronic - '
+
 export const getSearchPageLocation = ({
   category,
   ...searchParams
@@ -575,7 +591,10 @@ export const getSearchPageLocation = ({
   hasDownloads?: boolean
 }) => {
   const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
-    acc[key] = String(val)
+    acc[key] =
+      key === 'genre'
+        ? (val as Genre).replace(ELECTRONIC_PREFIX, '')
+        : String(val)
     return acc
   }, {})
 

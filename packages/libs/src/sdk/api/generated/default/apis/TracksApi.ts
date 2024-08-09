@@ -18,6 +18,7 @@ import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
   TopListener,
+  TrackCommentsResponse,
   TrackInspect,
   TrackResponse,
   TrackSearch,
@@ -28,6 +29,8 @@ import {
     AccessInfoResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
+    TrackCommentsResponseFromJSON,
+    TrackCommentsResponseToJSON,
     TrackInspectFromJSON,
     TrackInspectToJSON,
     TrackResponseFromJSON,
@@ -85,8 +88,17 @@ export interface InspectTrackRequest {
 }
 
 export interface SearchTracksRequest {
-    query: string;
+    query?: string;
+    genre?: Array<string>;
+    sortMethod?: SearchTracksSortMethodEnum;
+    mood?: Array<string>;
     onlyDownloadable?: string;
+    includePurchaseable?: string;
+    isPurchaseable?: string;
+    hasDownloads?: string;
+    key?: Array<string>;
+    bpmMin?: string;
+    bpmMax?: string;
 }
 
 export interface StreamTrackRequest {
@@ -100,6 +112,10 @@ export interface StreamTrackRequest {
     apiKey?: string;
     skipCheck?: boolean;
     noRedirect?: boolean;
+}
+
+export interface TrackCommentsRequest {
+    trackId: string;
 }
 
 /**
@@ -419,18 +435,50 @@ export class TracksApi extends runtime.BaseAPI {
      * Search for a track or tracks
      */
     async searchTracksRaw(params: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackSearch>> {
-        if (params.query === null || params.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling searchTracks.');
-        }
-
         const queryParameters: any = {};
 
         if (params.query !== undefined) {
             queryParameters['query'] = params.query;
         }
 
+        if (params.genre) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.mood) {
+            queryParameters['mood'] = params.mood;
+        }
+
         if (params.onlyDownloadable !== undefined) {
             queryParameters['only_downloadable'] = params.onlyDownloadable;
+        }
+
+        if (params.includePurchaseable !== undefined) {
+            queryParameters['includePurchaseable'] = params.includePurchaseable;
+        }
+
+        if (params.isPurchaseable !== undefined) {
+            queryParameters['is_purchaseable'] = params.isPurchaseable;
+        }
+
+        if (params.hasDownloads !== undefined) {
+            queryParameters['has_downloads'] = params.hasDownloads;
+        }
+
+        if (params.key) {
+            queryParameters['key'] = params.key;
+        }
+
+        if (params.bpmMin !== undefined) {
+            queryParameters['bpm_min'] = params.bpmMin;
+        }
+
+        if (params.bpmMax !== undefined) {
+            queryParameters['bpm_max'] = params.bpmMax;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -448,7 +496,7 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Search for a track or tracks
      */
-    async searchTracks(params: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackSearch> {
+    async searchTracks(params: SearchTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackSearch> {
         const response = await this.searchTracksRaw(params, initOverrides);
         return await response.value();
     }
@@ -521,6 +569,37 @@ export class TracksApi extends runtime.BaseAPI {
         await this.streamTrackRaw(params, initOverrides);
     }
 
+    /**
+     * @hidden
+     * Get a list of comments for a track
+     */
+    async trackCommentsRaw(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackComments.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a list of comments for a track
+     */
+    async trackComments(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponse> {
+        const response = await this.trackCommentsRaw(params, initOverrides);
+        return await response.value();
+    }
+
 }
 
 /**
@@ -533,3 +612,12 @@ export const GetTrendingTracksTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetTrendingTracksTimeEnum = typeof GetTrendingTracksTimeEnum[keyof typeof GetTrendingTracksTimeEnum];
+/**
+ * @export
+ */
+export const SearchTracksSortMethodEnum = {
+    Relevant: 'relevant',
+    Popular: 'popular',
+    Recent: 'recent'
+} as const;
+export type SearchTracksSortMethodEnum = typeof SearchTracksSortMethodEnum[keyof typeof SearchTracksSortMethodEnum];

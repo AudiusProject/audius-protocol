@@ -127,9 +127,10 @@ export const configureStore = (
     amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
   }
 
+  const context = buildStoreContext({ isMobile })
   const sagaMiddleware = createSagaMiddleware({
     onError: onSagaError,
-    context: buildStoreContext({ isMobile })
+    context
   })
 
   const middlewares = applyMiddleware(
@@ -153,6 +154,7 @@ export const configureStore = (
     initialStoreState,
     composeEnhancers(middlewares)
   )
+  context.dispatch = store.dispatch
 
   if (typeof window !== 'undefined') {
     sagaMiddleware.run(rootSaga)

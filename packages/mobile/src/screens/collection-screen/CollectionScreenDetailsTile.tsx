@@ -24,7 +24,7 @@ import {
   PurchaseableContentType,
   queueActions
 } from '@audius/common/store'
-import { getDogEarType, getLocalTimezone } from '@audius/common/utils'
+import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
@@ -127,9 +127,7 @@ const getMessages = (
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -250,7 +248,8 @@ export const CollectionScreenDetailsTile = ({
   const isLineupLoading = useSelector(selectIsLineupLoading)
   const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
-  const isPlaying = useSelector(getPlaying)
+  const isPlaybackActive = useSelector(getPlaying)
+  const isPlaying = isPlaybackActive && isQueued
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingPreview = isPreviewing && isPlaying
   const playingTrack = useSelector(getCurrentTrack)
@@ -258,11 +257,16 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
   const isPublished = !isPrivate || isPublishing
-  const isUnpublishedScheduledRelease =
-    isScheduledRelease && isPrivate && releaseDate
+  const shouldShowScheduledRelease =
+    isScheduledRelease &&
+    isPrivate &&
+    releaseDate &&
+    dayjs(releaseDate).isAfter(dayjs())
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
-  const shouldHideActions = hideActions || (isPrivate && !isOwner)
+  const shouldHideActions =
+    hideActions || (isPrivate && !isOwner) || !hasStreamAccess
+  const shouldeHideShare = hideActions || (isPrivate && !isOwner)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
@@ -285,7 +289,7 @@ export const CollectionScreenDetailsTile = ({
   useRefetchLineupOnTrackAdd(collectionId)
 
   const badges = [
-    isUnpublishedScheduledRelease ? (
+    shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
         {messages.releases(releaseDate)}
       </MusicBadge>
@@ -456,7 +460,7 @@ export const CollectionScreenDetailsTile = ({
           hideFavorite={shouldHideActions}
           hideOverflow={shouldHideOverflow}
           hideRepost={shouldHideActions}
-          hideShare={shouldHideActions}
+          hideShare={shouldeHideShare}
           isOwner={isOwner}
           isCollection
           collectionId={numericCollectionId}

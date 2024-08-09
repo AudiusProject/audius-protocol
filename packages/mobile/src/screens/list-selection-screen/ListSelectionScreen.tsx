@@ -6,6 +6,7 @@ import type { ListRenderItem, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
+import type { IconComponent } from '@audius/harmony-native'
 import { Flex } from '@audius/harmony-native'
 import { TextInput } from 'app/components/core'
 import type { FormScreenProps } from 'app/screens/form-screen'
@@ -15,9 +16,12 @@ import { makeStyles } from 'app/styles'
 import { SelectionItemList } from './SelectionItemList'
 
 export type ListSelectionData = {
-  label: string
+  label?: string
   value: string
   disabled?: boolean
+  icon?: IconComponent
+  leadingElement?: JSX.Element
+  labelLeadingElement?: JSX.Element
 }
 
 export type ListSelectionProps = Partial<Omit<FormScreenProps, 'header'>> & {
@@ -75,7 +79,9 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
   const styles = useStyles()
   const [filterInput, setFilterInput] = useState('')
   const filterRegexp = new RegExp(filterInput, 'i')
-  const filteredData = data.filter(({ label }) => label.match(filterRegexp))
+  const filteredData = data.filter(({ label, value }) =>
+    (label ?? value).match(filterRegexp)
+  )
 
   return (
     <FormScreen
@@ -87,7 +93,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       {...other}
     >
       <View style={[styles.content, footer ? styles.noFlex : undefined]}>
-        <Flex p='l'>{header}</Flex>
+        {header ? <Flex p='l'>{header}</Flex> : null}
         {disableSearch ? null : (
           <Flex p='l'>
             <TextInput

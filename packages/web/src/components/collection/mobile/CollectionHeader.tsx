@@ -13,7 +13,7 @@ import {
   OverflowAction,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
+import { dayjs, formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -147,6 +147,10 @@ const CollectionHeader = ({
 
   const showPremiumSection =
     isPremiumAlbumsEnabled && isAlbum && streamConditions && collectionId
+  const shouldShowStats =
+    isPublished && variant !== Variant.SMART && (!isPrivate || isOwner)
+  const shouldShowScheduledRelease =
+    isScheduledRelease && releaseDate && dayjs(releaseDate).isAfter(dayjs())
 
   const onSaveCollection = () => {
     if (!isOwner) onSave?.()
@@ -228,7 +232,7 @@ const CollectionHeader = ({
       {renderDogEar()}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
         {!isPublished ? (
-          isScheduledRelease && releaseDate ? (
+          shouldShowScheduledRelease ? (
             <MusicBadge variant='accent' icon={IconCalendarMonth} size='s'>
               {messages.releases(releaseDate)}
             </MusicBadge>
@@ -338,9 +342,8 @@ const CollectionHeader = ({
             />
           </Box>
         ) : null}
-        {isPublished && variant !== Variant.SMART ? (
+        {shouldShowStats ? (
           <RepostsFavoritesStats
-            isUnlisted={false}
             repostCount={reposts}
             saveCount={saves}
             onClickReposts={onClickReposts}

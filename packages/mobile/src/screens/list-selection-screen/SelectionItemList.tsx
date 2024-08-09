@@ -1,17 +1,21 @@
+import type { ReactElement } from 'react'
 import { useCallback } from 'react'
 
 import type { ListRenderItem, ViewStyle } from 'react-native'
 import { TouchableOpacity, View, FlatList } from 'react-native'
 
-import { Text } from '@audius/harmony-native'
+import type { IconComponent } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import { Divider, RadioButton } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 type ListItemData = {
-  label: string
+  label?: string
   value: string
+  icon?: IconComponent
   disabled?: boolean
+  leadingElement?: JSX.Element
 }
 
 type SelectionItemListProps = {
@@ -24,11 +28,26 @@ type SelectionItemListProps = {
   itemStyles?: ViewStyle
   itemContentStyles?: ViewStyle
   renderItem?: ListRenderItem<ListItemData>
+  footerComponent?: ReactElement
 }
 
-const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => (
-  <Text>{item.label}</Text>
-)
+const defaultRenderItem: ListRenderItem<ListItemData> = ({ item }) => {
+  const { label, icon: Icon, value, leadingElement } = item
+
+  const title = <Text>{label ?? value}</Text>
+
+  if (Icon || leadingElement) {
+    return (
+      <Flex direction='row' alignItems='center' gap='s'>
+        {leadingElement}
+        {Icon ? <Icon /> : null}
+        {title}
+      </Flex>
+    )
+  }
+
+  return title
+}
 
 const messages = {
   loading: 'Loading...',
@@ -75,7 +94,8 @@ export const SelectionItemList = ({
   hideSelectionLabel,
   itemStyles,
   itemContentStyles,
-  isLoading
+  isLoading,
+  footerComponent
 }: SelectionItemListProps) => {
   const styles = useStyles()
 
@@ -171,6 +191,7 @@ export const SelectionItemList = ({
       renderItem={renderItem}
       ItemSeparatorComponent={Divider}
       data={data}
+      ListFooterComponent={footerComponent}
     />
   )
 }

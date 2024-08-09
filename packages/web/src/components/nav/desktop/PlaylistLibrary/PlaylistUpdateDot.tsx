@@ -1,8 +1,6 @@
 import { Tooltip } from 'components/tooltip'
 import { UpdateDot } from 'components/update-dot'
 
-import styles from './PlaylistUpdateDot.module.css'
-
 const messages = { recentlyUpdatedTooltip: 'Recently Updated' }
 
 export const PlaylistUpdateDot = () => {
@@ -12,7 +10,7 @@ export const PlaylistUpdateDot = () => {
       text={messages.recentlyUpdatedTooltip}
       placement='right'
     >
-      <UpdateDot className={styles.root} />
+      <UpdateDot />
     </Tooltip>
   )
 }

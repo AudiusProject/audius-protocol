@@ -1,16 +1,22 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
+import {
+  PriceAndAudienceScreen,
+  priceAndAudienceScreenName
+} from 'app/components/edit/PriceAndAudienceField'
+import { VisibilityScreen } from 'app/components/edit/VisibilityField'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
-import { accessAndSaleScreenName } from './fields'
+import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
+import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
+import { HideContentConfirmationDrawer } from './components/HideContentConfirmationDrawer'
+import { PublishConfirmationDrawer } from './components/PublishConfirmationDrawer'
 import {
-  AccessAndSaleScreen,
-  AdvancedOptionsScreen,
+  AdvancedScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
   RemixSettingsScreen,
@@ -30,6 +36,7 @@ const screenOptionOverrides = { headerRight: () => null }
 type EditTrackNavigatorProps = EditTrackFormProps
 
 export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
+  const { doneText, initialValues } = props
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
@@ -47,28 +54,27 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           component={ReleaseDateScreen}
           initialParams={{
             isInitiallyUnlisted:
-              props.doneText === completeMessages.done
+              doneText === completeMessages.done
                 ? true
-                : props.initialValues.is_unlisted
+                : initialValues.is_unlisted
           }}
         />
+        <Stack.Screen name='Visibility' component={VisibilityScreen} />
+        <Stack.Screen name='Advanced' component={AdvancedScreen} />
         <Stack.Screen
-          name='AdvancedOptions'
-          component={AdvancedOptionsScreen}
-        />
-        <Stack.Screen
-          name={accessAndSaleScreenName}
-          component={AccessAndSaleScreen}
+          name={priceAndAudienceScreenName}
+          component={PriceAndAudienceScreen}
         />
         <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
         <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
-      <GatedContentUploadPromptDrawer
-        isUpload={!props.initialValues.track_id}
-      />
       <SupportersInfoDrawer />
+      <EditAccessConfirmationDrawer />
+      <HideContentConfirmationDrawer />
+      <PublishConfirmationDrawer />
+      <EarlyReleaseConfirmationDrawer />
     </>
   )
 }

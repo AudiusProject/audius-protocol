@@ -1,5 +1,6 @@
 import { useEffect, MouseEvent, useCallback } from 'react'
 
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   ID,
   UID,
@@ -24,6 +25,7 @@ import {
 import {
   Box,
   Flex,
+  IconVisibilityHidden,
   IconVolumeLevel2 as IconVolume,
   Text
 } from '@audius/harmony'
@@ -43,6 +45,7 @@ import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { GatedContentLabel } from '../GatedContentLabel'
+import { LineupTileLabel } from '../LineupTileLabel'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -65,7 +68,8 @@ const DISPLAY_TRACK_COUNT = 5
 
 const messages = {
   by: 'by',
-  deleted: '[Deleted by Artist]'
+  deleted: '[Deleted by Artist]',
+  hidden: 'Hidden'
 }
 
 const TrackItem = (props: TrackItemProps) => {
@@ -253,6 +257,19 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     streamConditions,
     source
   } = props
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: id,
+    currentUserId
+  })
+
+  const {
+    is_private: isPrivate,
+    repost_count: repostCount,
+    save_count: saveCount
+  } = collection ?? {}
+
   useEffect(() => {
     if (!showSkeleton) {
       hasLoaded(index)
@@ -267,6 +284,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
   const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
   const gatedContentStatus = id ? gatedContentStatusMap[id] : undefined
+  const shouldShowStats = !isPrivate && !!(repostCount || saveCount)
 
   const [, setModalVisibility] = useModalState('LockedContent')
   const dispatch = useDispatch()
@@ -305,7 +323,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   })
 
   let specialContentLabel = null
-
   if (isStreamGated) {
     specialContentLabel = (
       <GatedContentLabel
@@ -313,6 +330,13 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         hasStreamAccess={!!hasStreamAccess}
         isOwner={isOwner}
       />
+    )
+  }
+  if (isPrivate) {
+    specialContentLabel = (
+      <LineupTileLabel icon={IconVisibilityHidden}>
+        {messages.hidden}
+      </LineupTileLabel>
     )
   }
 
@@ -398,12 +422,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 isVisible={isTrending && shouldShow}
                 showCrown={showRankIcon}
               />
-              {isReadonly ? (
-                <Text variant='body' size='xs' strength='default'>
-                  {specialContentLabel}
-                </Text>
-              ) : null}
-              {!!(props.repostCount || props.saveCount) && (
+              {isReadonly ? specialContentLabel : null}
+              {shouldShowStats ? (
                 <>
                   <Flex
                     gap='xs'
@@ -448,7 +468,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                     {formatCount(props.repostCount)}
                   </Flex>
                 </>
-              )}
+              ) : null}
             </Flex>
             <Text
               variant='body'

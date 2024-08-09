@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
@@ -18,7 +18,7 @@ import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
@@ -174,7 +174,7 @@ export const SalesTab = ({
   isLoading
 }: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
   const isMobile = useIsMobile()
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   const columns = isMobile
     ? (['contentName', 'date', 'value'] as SalesTableColumn[])

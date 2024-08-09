@@ -13,7 +13,8 @@ import {
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
   OverflowAction,
-  usePublishContentModal
+  usePublishConfirmationModal,
+  cacheCollectionsActions
 } from '@audius/common/store'
 import type { OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,6 +34,7 @@ const {
   unsaveCollection,
   shareCollection
 } = collectionsSocialActions
+const { publishPlaylist } = cacheCollectionsActions
 const { getUser } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
 
@@ -51,7 +53,7 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(id)
   )
-  const { onOpen } = usePublishContentModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const user = useSelector((state) =>
     getUser(state, { id: playlist?.playlist_owner_id })
@@ -99,17 +101,20 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Profile', { handle })
     },
     [OverflowAction.EDIT_ALBUM]: () => {
-      navigation?.push('EditPlaylist', { id })
+      navigation?.push('EditCollection', { id })
     },
     [OverflowAction.EDIT_PLAYLIST]: () => {
-      navigation?.push('EditPlaylist', { id })
+      navigation?.push('EditCollection', { id })
     },
     [OverflowAction.DELETE_ALBUM]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.DELETE_PLAYLIST]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.PUBLISH_PLAYLIST]: () =>
-      onOpen({ contentId: Number(id), contentType: 'playlist' })
+      openPublishConfirmation({
+        contentType: is_album ? 'album' : 'playlist',
+        confirmCallback: () => dispatch(publishPlaylist(Number(id)))
+      })
   }
 
   return render(callbacks)

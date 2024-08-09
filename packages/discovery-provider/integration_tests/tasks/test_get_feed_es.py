@@ -158,6 +158,12 @@ def test_get_feed_es(app):
         assert feed_results[1]["playlist_id"] == 3
         assert feed_results[2]["track_id"] == 5
 
+        # Test limit works
+        feed_results = get_feed_es({"user_id": "1"}, offset=1, limit=1)
+        assert len(feed_results) == 1
+        assert feed_results[0]["track_id"] == 1
+        assert feed_results[0]["save_count"] == 1
+
         # playlist <> track dedupe:
         # user2 follows user3
         # user3 should have one playlist and one track

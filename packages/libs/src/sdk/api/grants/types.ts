@@ -41,10 +41,3 @@ export const ApproveGrantSchema = z.object({
 })
 
 export type ApproveGrantRequest = z.input<typeof ApproveGrantSchema>
-
-export const RejectGrantSchema = z.object({
-  userId: HashId,
-  grantorUserId: HashId
-})
-
-export type RejectGrantRequest = z.input<typeof RejectGrantSchema>

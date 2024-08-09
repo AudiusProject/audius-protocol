@@ -158,10 +158,18 @@ export interface GetFollowingRequest {
 
 export interface GetManagedUsersRequest {
     id: string;
+    isApproved?: boolean;
+    isRevoked?: boolean;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetManagersRequest {
     id: string;
+    isApproved?: boolean;
+    isRevoked?: boolean;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetPurchasesRequest {
@@ -171,6 +179,7 @@ export interface GetPurchasesRequest {
     userId?: string;
     sortMethod?: GetPurchasesSortMethodEnum;
     sortDirection?: GetPurchasesSortDirectionEnum;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -178,6 +187,7 @@ export interface GetPurchasesRequest {
 export interface GetPurchasesCountRequest {
     id: string;
     userId?: string;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -210,6 +220,7 @@ export interface GetSalesRequest {
     userId?: string;
     sortMethod?: GetSalesSortMethodEnum;
     sortDirection?: GetSalesSortDirectionEnum;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -217,6 +228,7 @@ export interface GetSalesRequest {
 export interface GetSalesCountRequest {
     id: string;
     userId?: string;
+    contentIds?: Array<string>;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -803,7 +815,23 @@ export class UsersApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (params.isApproved !== undefined) {
+            queryParameters['is_approved'] = params.isApproved;
+        }
+
+        if (params.isRevoked !== undefined) {
+            queryParameters['is_revoked'] = params.isRevoked;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/managed_users`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -834,7 +862,23 @@ export class UsersApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (params.isApproved !== undefined) {
+            queryParameters['is_approved'] = params.isApproved;
+        }
+
+        if (params.isRevoked !== undefined) {
+            queryParameters['is_revoked'] = params.isRevoked;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/managers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -885,6 +929,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -926,6 +974,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1116,6 +1168,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -1157,6 +1213,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentIds) {
+            queryParameters['content_ids'] = params.contentIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

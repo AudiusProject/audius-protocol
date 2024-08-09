@@ -29,7 +29,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -113,7 +112,6 @@ const CollectionTileComponent = ({
   variant,
   ...lineupTileProps
 }: CollectionTileProps) => {
-  const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
@@ -133,11 +131,11 @@ const CollectionTileComponent = ({
     playlist_id,
     playlist_name,
     playlist_owner_id,
-    stream_conditions
+    stream_conditions,
+    is_private: isPrivate
   } = collection
 
-  const hasPreview =
-    isUSDCEnabled && isContentUSDCPurchaseGated(stream_conditions)
+  const hasPreview = isContentUSDCPurchaseGated(stream_conditions)
 
   const isOwner = playlist_owner_id === currentUserId
 
@@ -273,6 +271,7 @@ const CollectionTileComponent = ({
       item={collection}
       user={user}
       variant={variant}
+      isUnlisted={isPrivate}
     >
       <CollectionTileTrackList
         tracks={tracks}

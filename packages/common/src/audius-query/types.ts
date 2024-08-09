@@ -56,6 +56,12 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
   fetch: {
     [Property in keyof EndpointDefinitions]: EndpointDefinitions[Property]['fetch']
   }
+  fetchSaga: {
+    [Property in keyof EndpointDefinitions]: (
+      fetchArgs: any,
+      force?: boolean
+    ) => Generator<any, any, any>
+  }
 }
 
 export type CreateApiConfig = {

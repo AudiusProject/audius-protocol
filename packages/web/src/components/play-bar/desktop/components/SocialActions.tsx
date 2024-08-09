@@ -8,6 +8,7 @@ import {
   CommonState,
   PurchaseableContentType
 } from '@audius/common/store'
+import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
@@ -51,6 +52,7 @@ export const SocialActions = ({
   const isFavoriteAndRepostDisabled = !uid || isOwner
   const favorited = track?.has_current_user_saved ?? false
   const reposted = track?.has_current_user_reposted ?? false
+  const isUnlisted = track?.is_unlisted
   const favoriteText = favorited ? messages.unfavorite : messages.favorite
   const repostText = reposted ? messages.reposted : messages.repost
 
@@ -71,7 +73,7 @@ export const SocialActions = ({
   const matrix = theme === Theme.MATRIX
 
   return (
-    <div className={styles.root}>
+    <Flex className={styles.root}>
       {track?.stream_conditions &&
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess ? (
@@ -83,46 +85,54 @@ export const SocialActions = ({
         />
       ) : (
         <>
-          <div className={styles.toggleRepostContainer}>
+          <Flex className={styles.toggleRepostContainer}>
             <Tooltip
               text={repostText}
               disabled={isFavoriteAndRepostDisabled}
               mount='body'
               placement='top'
             >
-              <span>
-                <RepostButton
-                  aria-label={repostText}
-                  onClick={() => onToggleRepost(reposted, trackId)}
-                  isActive={reposted}
-                  isDisabled={isFavoriteAndRepostDisabled || track?.is_unlisted}
-                  isDarkMode={shouldShowDark(theme)}
-                  isMatrixMode={matrix}
-                />
-              </span>
+              <Flex>
+                {!isUnlisted ? (
+                  <RepostButton
+                    aria-label={repostText}
+                    onClick={() => onToggleRepost(reposted, trackId)}
+                    isActive={reposted}
+                    isDisabled={
+                      isFavoriteAndRepostDisabled || track?.is_unlisted
+                    }
+                    isDarkMode={shouldShowDark(theme)}
+                    isMatrixMode={matrix}
+                  />
+                ) : null}
+              </Flex>
             </Tooltip>
-          </div>
+          </Flex>
 
-          <div className={styles.toggleFavoriteContainer}>
+          <Flex className={styles.toggleFavoriteContainer}>
             <Tooltip
               text={favoriteText}
               disabled={isFavoriteAndRepostDisabled}
               placement='top'
               mount='body'
             >
-              <span>
-                <FavoriteButton
-                  isDisabled={isFavoriteAndRepostDisabled || track?.is_unlisted}
-                  isMatrixMode={matrix}
-                  isActive={favorited}
-                  isDarkMode={shouldShowDark(theme)}
-                  onClick={() => onToggleFavorite(favorited, trackId)}
-                />
-              </span>
+              <Flex>
+                {!isUnlisted ? (
+                  <FavoriteButton
+                    isDisabled={
+                      isFavoriteAndRepostDisabled || track?.is_unlisted
+                    }
+                    isMatrixMode={matrix}
+                    isActive={favorited}
+                    isDarkMode={shouldShowDark(theme)}
+                    onClick={() => onToggleFavorite(favorited, trackId)}
+                  />
+                ) : null}
+              </Flex>
             </Tooltip>
-          </div>
+          </Flex>
         </>
       )}
-    </div>
+    </Flex>
   )
 }

@@ -1,0 +1,247 @@
+---
+id: inspect-track
+title: 'Inspects the details of the file for a track'
+description: 'Inspect a track'
+sidebar_label: 'Get Track Details'
+hide_title: true
+hide_table_of_contents: true
+api: eJylVMGO0zAQ/RXLJ5BK0yK49FYEQj2BYOGyWq2myaTxrht77UlFifLvzDhpm+5GSIhTkvHzmzfPz2l1wOhdHTHqVavfLhbyKDDmwXgyrtYr/b3Jc4xRz3TuasKaBALeW5ODQLKHKLhWx7zCPcibD85jINOzFkCpGvCpMQELvbo9Ud3T0SMzR/Mb9d3s2cZU5WcCrbThLTsMuptdb78gIgVT73THiKHitg+Y02RFau+mBv4AhRKtGEl6vZ80BcMBg8IQXEjs18ubOnruokBRgPyRJ5S5kl2bYrR+M6x6CLBHwsBz37a65g9Gpb33pmCAEVYPVPH7xUcKDT5vve5J1eaj+Ho+khcOnbu4YHamBnvqwoOHo35O+yW9gFVvlClVRFLklPRXpp8lKqpQncjUUwPW0FGVxuKUkK1zFqFOfUpoLKeqBBux6zgGBDsxojcgSjDYnMqJczuk5Bc7sdJZD8jak1NdNqiRlumIekObYBleEfm4yrLCxNzx2pHjdjAFhjk0hWniPHfZYalFgalLl9QasiJ3/XXDlMLX27GcL15YtE4k6udSCZoz4V2kPaS7MXi9GXtVIIGxUbkyfYpTqnRhFJor/vZy/ybyNdhK+Isyb4FPkgWksdvBrbOdMwnOKFm9YTx0xXoF17ZbiPgj2K6Tch8IsZGNg62V5KWz+ovA/4zL5DSPeLyO6wFsI7B0YgcIRsT9o9BX34bb9Fpd3ZxJBUMR6uO4+0nZ2dTujrEVAicrqemX1/wb9TTa+OIf2o2D/vnTDV/TP1Ym7SM=
+sidebar_class_name: 'get api-method'
+info_path: developers/api/api
+custom_edit_url: null
+---
+
+import ApiTabs from '@theme/ApiTabs'
+import DiscriminatorTabs from '@theme/DiscriminatorTabs'
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import SecuritySchemes from '@theme/ApiExplorer/SecuritySchemes'
+import MimeTabs from '@theme/MimeTabs'
+import ParamsItem from '@theme/ParamsItem'
+import ResponseSamples from '@theme/ResponseSamples'
+import SchemaItem from '@theme/SchemaItem'
+import SchemaTabs from '@theme/SchemaTabs'
+import Markdown from '@theme/Markdown'
+import Heading from '@theme/Heading'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+
+<Heading
+  as={'h1'}
+  className={'openapi__heading'}
+  children={'Inspects the details of the file for a track'}
+></Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/tracks/{track_id}/inspect"}
+>
+
+</MethodEndpoint>
+
+Inspect a track
+
+<Heading
+  id={'request'}
+  as={'h2'}
+  className={'openapi-tabs__heading'}
+  children={'Request'}
+></Heading>
+
+<details
+  style={{"marginBottom":"1rem"}}
+  className={"openapi-markdown__details"}
+  data-collapsed={false}
+  open={true}
+>
+  <summary
+    style={{}}
+  >
+    <h3
+      className={"openapi-markdown__details-summary-header-params"}
+    >
+      Path Parameters
+    </h3>
+  </summary><div>
+    <ul>
+      <ParamsItem
+        className={"paramsItem"}
+        param={{"name":"track_id","in":"path","required":true,"description":"A Track ID","schema":{"type":"string"}}}
+      >
+
+      </ParamsItem>
+    </ul>
+
+  </div>
+</details><details
+  style={{"marginBottom":"1rem"}}
+  className={"openapi-markdown__details"}
+  data-collapsed={false}
+  open={true}
+>
+  <summary
+    style={{}}
+  >
+    <h3
+      className={"openapi-markdown__details-summary-header-params"}
+    >
+      Query Parameters
+    </h3>
+  </summary><div>
+    <ul>
+      <ParamsItem
+        className={"paramsItem"}
+        param={{"name":"original","in":"query","description":"Optional - if set to true inspects the original quality file","schema":{"type":"boolean","default":false}}}
+      >
+
+      </ParamsItem>
+    </ul>
+
+  </div>
+</details><div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+
+          Success
+
+
+        </div><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <SchemaItem
+                        collapsible={true}
+                        className={"schemaItem"}
+                      >
+                        <details
+                          style={{}}
+                          className={"openapi-markdown__details"}
+                        >
+                          <summary
+                            style={{}}
+                          >
+                            <span
+                              className={"openapi-schema__container"}
+                            >
+                              <strong
+                                className={"openapi-schema__property"}
+                              >
+                                data
+                              </strong><span
+                                className={"openapi-schema__name"}
+                              >
+                                 object
+                              </span>
+                            </span>
+                          </summary><div
+                            style={{"marginLeft":"1rem"}}
+                          >
+                            <SchemaItem
+                              collapsible={false}
+                              name={"size"}
+                              required={true}
+                              schemaName={"integer"}
+                              qualifierMessage={undefined}
+                              schema={{"type":"integer"}}
+                            >
+
+                            </SchemaItem><SchemaItem
+                              collapsible={false}
+                              name={"content_type"}
+                              required={true}
+                              schemaName={"string"}
+                              qualifierMessage={undefined}
+                              schema={{"type":"string"}}
+                            >
+
+                            </SchemaItem>
+                          </div>
+                        </details>
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem><TabItem
+                  label={"Example"}
+                  value={"Example"}
+                >
+                  <ResponseSamples
+                    responseExample={"{\n  \"data\": {\n    \"size\": 0,\n    \"content_type\": \"string\"\n  }\n}"}
+                    language={"json"}
+                  >
+
+                  </ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem><TabItem
+        label={"400"}
+        value={"400"}
+      >
+        <div>
+
+
+          Bad request
+
+
+        </div><div>
+
+        </div>
+      </TabItem><TabItem
+        label={"500"}
+        value={"500"}
+      >
+        <div>
+
+
+          Server error
+
+
+        </div><div>
+
+        </div>
+      </TabItem>
+    </ApiTabs>
+
+  </div>
+</div>

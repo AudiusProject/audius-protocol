@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	ctx := c.Request().Context()
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
+	skipCache, _ := strconv.ParseBool(c.QueryParam("skipCache"))
 	isOriginalJpg := variant == "original.jpg"
 	cacheKey := jobID + variant
 
@@ -45,9 +47,11 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	}
 
 	// use cache if possible
-	if blobData, ok := ss.imageCache.Get(cacheKey); ok {
-		c.Response().Header().Set("x-image-cache-hit", "true")
-		return serveSuccessWithBytes(blobData, ss.StartedAt)
+	if !skipCache {
+		if blobData, ok := ss.imageCache.Get(cacheKey); ok && len(blobData) > 0 {
+			c.Response().Header().Set("x-image-cache-hit", "true")
+			return serveSuccessWithBytes(blobData, ss.StartedAt)
+		}
 	}
 
 	serveSuccess := func(blobPath string) error {
@@ -91,8 +95,10 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
 
 		// we already have the resized version
-		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-			return serveSuccessWithReader(blob)
+		if !skipCache {
+			if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
+				return serveSuccessWithReader(blob)
+			}
 		}
 
 		// open the orig for resizing

@@ -1,6 +1,42 @@
+from enum import Enum
 from typing import Any, List, Optional, TypedDict
 
 # Required format for track metadata retrieved from the content system
+
+
+class MusicalKey(str, Enum):
+    A_MAJOR = "A major"
+    A_MINOR = "A minor"
+    B_FLAT_MAJOR = "B flat major"
+    B_FLAT_MINOR = "B flat minor"
+    B_MAJOR = "B major"
+    B_MINOR = "B minor"
+    C_MAJOR = "C major"
+    C_MINOR = "C minor"
+    D_FLAT_MAJOR = "D flat major"
+    D_FLAT_MINOR = "D flat minor"
+    D_MAJOR = "D major"
+    D_MINOR = "D minor"
+    E_FLAT_MAJOR = "E flat major"
+    E_FLAT_MINOR = "E flat minor"
+    E_MAJOR = "E major"
+    E_MINOR = "E minor"
+    F_MAJOR = "F major"
+    F_MINOR = "F minor"
+    G_FLAT_MAJOR = "G flat major"
+    G_FLAT_MINOR = "G flat minor"
+    G_MAJOR = "G major"
+    G_MINOR = "G minor"
+    A_FLAT_MAJOR = "A flat major"
+    A_FLAT_MINOR = "A flat minor"
+    SILENCE = "Silence"
+
+    def __str__(self) -> str:
+        return str.__str__(self)
+
+
+def is_valid_musical_key(musical_key: str) -> bool:
+    return musical_key in MusicalKey.__members__.values()
 
 
 class TrackParent(TypedDict):
@@ -98,6 +134,7 @@ class TrackMetadata(TypedDict):
     parental_warning_type: Optional[str]
     allowed_api_keys: Optional[str]
     bpm: Optional[float]
+    is_custom_bpm: Optional[bool]
     musical_key: Optional[str]
     audio_analysis_error_count: Optional[int]
 
@@ -153,6 +190,7 @@ track_metadata_format: TrackMetadata = {
     "parental_warning_type": None,
     "allowed_api_keys": None,
     "bpm": None,
+    "is_custom_bpm": False,
     "musical_key": None,
     "audio_analysis_error_count": 0,
 }
@@ -185,6 +223,14 @@ user_metadata_format = {
     "is_verified": False,
     "artist_pick_track_id": None,
     "allow_ai_attribution": False,
+}
+
+comment_metadata_format = {
+    "body": None,
+    "user_id": None,
+    "entity_id": None,
+    "entity_type": None,
+    "parent_comment_id": None,
 }
 
 

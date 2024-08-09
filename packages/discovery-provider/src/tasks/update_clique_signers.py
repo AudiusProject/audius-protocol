@@ -35,7 +35,7 @@ def update_signers(self, redis):
     other_wallets = set(
         [node["delegateOwnerWallet"].lower() for node in nodes] if nodes else None
     )
-    logger.info(
+    logger.debug(
         f"update_clique_signers.py | Other registered discovery addresses: {other_wallets}"
     )
 
@@ -46,7 +46,7 @@ def update_signers(self, redis):
     current_signers = set(
         [wallet.lower() for wallet in signers_response_dict["result"]]
     )
-    logger.info(f"update_clique_signers.py | Current chain signers: {current_signers}")
+    logger.debug(f"update_clique_signers.py | Current chain signers: {current_signers}")
 
     # only signers can propose
     if current_wallet not in current_signers:
@@ -65,7 +65,7 @@ def update_signers(self, redis):
                 f"update_clique_signers.py | Failed to add signer {wallet} with error {response_dict['error']['message']}"
             )
         else:
-            logger.info(f"update_clique_signers.py | Proposed to add signer {wallet}")
+            logger.debug(f"update_clique_signers.py | Proposed to add signer {wallet}")
 
     # remove unregistered nodes as signers
     remove_wallets = sorted(list(current_signers - other_wallets))
@@ -79,7 +79,7 @@ def update_signers(self, redis):
                 f"update_clique_signers.py | Failed to remove signer {wallet} with error {response_dict['error']['message']}"
             )
         else:
-            logger.info(
+            logger.debug(
                 f"update_clique_signers.py | Proposed to remove signer {wallet}"
             )
 
@@ -98,7 +98,7 @@ def update_clique_signers(self):
             #     update_signers(self, redis)
             pass
         else:
-            logger.info(
+            logger.debug(
                 "update_clique_signers.py | Failed to acquire update_clique_signers"
             )
     except Exception as e:

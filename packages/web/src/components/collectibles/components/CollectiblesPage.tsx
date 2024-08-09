@@ -53,7 +53,7 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
@@ -560,7 +560,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       onClick: handleEditClick
     })
   }
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   return (
     <div

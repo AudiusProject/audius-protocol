@@ -449,8 +449,9 @@ class CollectionPage extends Component<
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
       (item) =>
-        item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-        item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+        !item.is_delete &&
+        (item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+          item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
     )
     const filteredIndex =
       playingIndex > -1
@@ -745,7 +746,8 @@ class CollectionPage extends Component<
       tracks,
       userId,
       userPlaylists,
-      smartCollection
+      smartCollection,
+      trackCount
     } = this.props
     const { allowReordering } = this.state
     const { playlistId } = this.props
@@ -802,7 +804,8 @@ class CollectionPage extends Component<
       onClickReposts: this.onClickReposts,
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
-      refresh: this.refreshCollection
+      refresh: this.refreshCollection,
+      trackCount
     }
 
     if ((metadata?.is_delete || metadata?._marked_deleted) && user) {

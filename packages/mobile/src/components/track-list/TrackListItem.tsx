@@ -10,7 +10,6 @@ import {
   type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -40,10 +39,10 @@ import {
   IconPlaybackPause,
   IconPlaybackPlay,
   useTheme,
-  IconRemove
+  IconRemove,
+  IconVisibilityHidden
 } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
@@ -216,7 +215,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     is_delete,
-    is_unlisted,
+    is_unlisted: isUnlisted,
     title,
     track_id,
     owner_id,
@@ -226,7 +225,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
-  const isUnlisted = is_unlisted
 
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
   const isLocked = !isFetchingNFTAccess && !hasStreamAccess
@@ -239,9 +237,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
+  const isPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
-  const isPlayable =
-    !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
+  const isPlayable = !isDeleted && (!isLocked || isPurchaseGated)
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -265,11 +263,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     }
   }
 
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-
   const currentUserId = useSelector(getUserId)
   const isTrackOwner = currentUserId && currentUserId === owner_id
   const isContextPlaylistOwner =
@@ -288,7 +281,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
-      OverflowAction.SHARE,
+      !isUnlisted || isTrackOwner ? OverflowAction.SHARE : null,
       !isTrackOwner && !isLocked && !isUnlisted
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
@@ -299,16 +292,16 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked && !isDeleted
+      !isTrackOwner && isLocked && isPurchaseGated && !isDeleted
         ? OverflowAction.PURCHASE_TRACK
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
-      OverflowAction.ADD_TO_PLAYLIST,
-      isNewPodcastControlsEnabled && isLongFormContent
+      !isUnlisted || isTrackOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       !showViewAlbum && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -334,7 +327,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isDeleted,
     ddexApp,
-    isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
     albumInfo,
@@ -342,7 +334,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId
+    contextPlaylistId,
+    isPurchaseGated
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
@@ -369,7 +362,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       >
         <ListItemView
           style={styles.trackInnerContainer}
-          onPress={isReorderable ? undefined : onPressTrack}
+          onPress={isReorderable || isLocked ? undefined : onPressTrack}
           disabled={!isPlayable}
         >
           {!hideArt ? (
@@ -422,7 +415,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
               {!isDeleted && (
                 <View style={styles.downloadIndicator}>
-                  <TrackDownloadStatusIndicator trackId={track_id} size={16} />
+                  <TrackDownloadStatusIndicator trackId={track_id} size='s' />
                 </View>
               )}
             </View>
@@ -431,6 +424,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <UserBadges user={user} badgeSize={12} hideName />
             </Text>
           </View>
+          {isUnlisted ? (
+            <IconVisibilityHidden
+              color='subdued'
+              width={spacing.l}
+              height={spacing.l}
+            />
+          ) : null}
           {!isDeleted && isLocked ? (
             <IconLock color='subdued' width={spacing.l} height={spacing.l} />
           ) : null}

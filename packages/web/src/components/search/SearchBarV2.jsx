@@ -5,7 +5,10 @@ import {
   IconArrowRight as IconArrow,
   IconSearch,
   setupHotkeys,
-  removeHotkeys
+  removeHotkeys,
+  IconCloseAlt,
+  IconButton,
+  spacing
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -383,17 +386,26 @@ class SearchBar extends Component {
       !isTagSearch && this.state.open && !this.props.isViewingSearchPage
     const showTagPopup =
       isTagSearch && this.state.open && !this.state.shouldDismissTagPopup
-    return (
-      <div
-        className={styles.searchBar}
-        id='search-bar-autocomplete'
-        ref={this.searchBarRef}
-      >
-        {/* show search spinner if not a tag search and there is some value present */}
-        {!isTagSearch && this.state.value && (
+    const showSpinner = status === Status.LOADING && this.state.open
+
+    const renderSuffix = () => {
+      if (this.state.value && !showSpinner) {
+        return (
+          <IconButton
+            icon={IconCloseAlt}
+            size='2xs'
+            color='subdued'
+            onClick={this.props.onClear}
+          />
+        )
+      }
+
+      /* show search spinner if not a tag search and there is some value present */
+      if (!isTagSearch && this.state.value) {
+        return (
           <div
             className={cn(styles.loadingAnimation, {
-              [styles.show]: status === Status.LOADING && this.state.open
+              [styles.show]: showSpinner
             })}
           >
             <Lottie
@@ -404,7 +416,16 @@ class SearchBar extends Component {
               }}
             />
           </div>
-        )}
+        )
+      }
+    }
+
+    return (
+      <div
+        className={styles.searchBar}
+        id='search-bar-autocomplete'
+        ref={this.searchBarRef}
+      >
         <AutoComplete
           ref={this.autoCompleteRef}
           dropdownClassName={cn(styles.searchBox, {
@@ -427,12 +448,14 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
+            style={{ paddingRight: spacing.s }}
             prefix={
               <IconSearch
                 color='subdued'
                 onClick={() => this.props.onSubmit('')}
               />
             }
+            suffix={renderSuffix()}
             onKeyDown={this.onKeyDown}
             spellCheck={false}
           />

@@ -178,7 +178,7 @@ def index_user_listening_history(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
+            logger.debug(
                 f"index_user_listening_history.py | Updating {USER_LISTENING_HISTORY_TABLE_NAME}"
             )
             start_time = time.time()
@@ -186,12 +186,12 @@ def index_user_listening_history(self):
             with db.scoped_session() as session:
                 _index_user_listening_history(session)
 
-            logger.info(
+            logger.debug(
                 f"index_user_listening_history.py | Finished updating "
                 f"{USER_LISTENING_HISTORY_TABLE_NAME} in: {time.time()-start_time} sec"
             )
         else:
-            logger.info(
+            logger.debug(
                 "index_user_listening_history.py | Failed to acquire index_user_listening_history_lock"
             )
     except Exception as e:

@@ -40,9 +40,8 @@ export const AccountDetails = () => {
         </Box>
       ) : null}
       <Flex
-        pt='l'
+        pv='s'
         pr='s'
-        pb='s'
         pl='m'
         {...(isManagedAccount
           ? {

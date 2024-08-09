@@ -211,6 +211,7 @@ def create_grant(params: ManageEntityParameters):
         ),  # cast to assert non null (since we validated above)
         is_current=True,
         is_approved=None if grantee_type == "user" else True,
+        is_revoked=False,
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -295,6 +296,7 @@ def reject_grant(params: ManageEntityParameters):
     )
 
     rejected_grant.is_approved = False
+    rejected_grant.is_revoked = True
 
     validate_grant_record(rejected_grant)
     params.add_record(grant_key, rejected_grant)

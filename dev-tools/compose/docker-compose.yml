@@ -65,6 +65,46 @@ services:
       service: audius-cmd
     <<: *common
 
+  # Core
+  
+  # service name intentionally left as "core" despite being core-discovery-1
+  # for compatibility with audius-compose CI tooling
+  core:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-discovery-1
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+    <<: *common
+
+  core-content-1:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-1
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
+    <<: *common
+
+  core-content-2:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-2
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
+    <<: *common
+
+  core-content-3:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-3
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
+    <<: *common
+
   # Identity
 
   identity-service-redis:
@@ -198,6 +238,12 @@ services:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: backfill-audio-analyses
+    <<: *common
+
+  verified-notifications:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: verified-notifications
     <<: *common
 
   # DDEX

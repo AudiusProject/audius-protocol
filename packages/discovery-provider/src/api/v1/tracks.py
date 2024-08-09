@@ -38,11 +38,13 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
+from src.api.v1.models.comments import base_comment_model
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
+from src.queries.get_comments import get_track_comments
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -460,6 +462,33 @@ class TrackInspect(Resource):
                 logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
 
         abort_not_found(track_id, ns)
+
+
+track_comments_response = make_response(
+    "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
+)
+
+
+# Comment
+@ns.route("/<string:track_id>/comments")
+class TrackComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comments""",
+        description="""Get a list of comments for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(track_comments_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, ns)
+        track_comments = get_track_comments(decoded_id)
+        return success_response(track_comments)
 
 
 # Stream
@@ -1794,6 +1823,14 @@ class GetUnclaimedTrackId(Resource):
 
 access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
+)
+
+access_info_parser = current_user_parser.copy()
+access_info_parser.add_argument(
+    "include_network_cut",
+    required=False,
+    type=bool,
+    description="Whether to include the staking system as a recipient",
 )
 
 

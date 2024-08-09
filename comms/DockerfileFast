@@ -30,4 +30,4 @@ COPY --from=builder /go/bin/* /bin
 COPY ./build/comms-amd64 /bin/comms
 
 VOLUME ["/tmp"]
-ENTRYPOINT ["comms"]
+ENTRYPOINT ["comms", "discovery"]

@@ -18,26 +18,29 @@ import {
   Button,
   Flex,
   IconButton,
-  IconClose,
+  IconCloseAlt,
   Paper,
   Skeleton,
   Text,
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useRouteMatch } from 'react-router-dom'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
+import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useMedia } from 'hooks/useMedia'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { profilePage } from 'utils/route'
+import { SEARCH_PAGE, profilePage } from 'utils/route'
+
+import { CategoryView } from './types'
 
 const MAX_RECENT_SEARCHES = 12
 
 const { removeItem, clearHistory } = searchActions
-const { getSearchHistory } = searchSelectors
+const { getV2SearchHistory: getSearchHistory } = searchSelectors
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
@@ -94,7 +97,7 @@ const RecentSearch = (props: RecentSearchProps) => {
         {children}
         <IconButton
           aria-label={messages.remove}
-          icon={IconClose}
+          icon={IconCloseAlt}
           color='subdued'
           size='s'
           onClick={handleClickRemove}
@@ -229,7 +232,13 @@ const RecentSearchUser = (props: { searchItem: SearchItem }) => {
     >
       <Avatar userId={id} w={40} borderWidth='thin' />
       <Flex direction='column' alignItems='flex-start' w='100%'>
-        <UserLink userId={user.user_id} size='s' badgeSize='xs' />
+        <UserLink
+          popover
+          popoverMount={MountPlacement.PAGE}
+          userId={user.user_id}
+          size='s'
+          badgeSize='xs'
+        />
         <Text variant='body' size='xs' color='subdued'>
           Profile
         </Text>
@@ -244,14 +253,38 @@ const itemComponentByKind = {
   [Kind.COLLECTIONS]: RecentSearchCollection
 }
 
+const itemKindByCategory = {
+  [CategoryView.ALL]: null,
+  [CategoryView.PROFILES]: Kind.USERS,
+  [CategoryView.TRACKS]: Kind.TRACKS,
+  [CategoryView.PLAYLISTS]: Kind.COLLECTIONS,
+  [CategoryView.ALBUMS]: Kind.COLLECTIONS
+}
+
 export const RecentSearches = () => {
   const searchItems = useSelector(getSearchHistory)
   const dispatch = useDispatch()
-  const { isMobile } = useMedia()
+  const isMobile = useIsMobile()
+  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
+  const category = routeMatch?.params.category
+
+  const categoryKind: Kind | null = category
+    ? itemKindByCategory[category as CategoryView]
+    : null
+
+  const filteredSearchItems = useMemo(() => {
+    return categoryKind
+      ? searchItems.filter(
+          (item) =>
+            // @ts-ignore
+            item.kind === categoryKind
+        )
+      : searchItems
+  }, [categoryKind, searchItems])
 
   const truncatedSearchItems = useMemo(
-    () => searchItems.slice(0, MAX_RECENT_SEARCHES),
-    [searchItems]
+    () => filteredSearchItems.slice(0, MAX_RECENT_SEARCHES),
+    [filteredSearchItems]
   )
 
   const handleClickClear = useCallback(() => {
@@ -269,7 +302,8 @@ export const RecentSearches = () => {
         {(truncatedSearchItems || []).map((searchItem) => {
           if (isSearchItem(searchItem)) {
             const { kind, id } = searchItem
-            const ItemComponent = itemComponentByKind[kind]
+            const ItemComponent =
+              itemComponentByKind[kind as keyof typeof itemComponentByKind]
             return <ItemComponent searchItem={searchItem} key={id} />
           }
           return null
@@ -297,6 +331,8 @@ export const RecentSearches = () => {
       pv='xl'
       w='100%'
       css={{ maxWidth: '688px' }}
+      backgroundColor='white'
+      border='default'
       direction='column'
       gap='l'
     >

@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 
 import { IconUser } from '@audius/harmony-native'
 import { Text, ProfilePicture } from 'app/components/core'
-import { FollowButton, FollowsYouChip } from 'app/components/user'
+import { FollowButton, FollowsYouBadge } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
@@ -88,7 +88,7 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressOut={handlePressOut}
       >
         <View style={styles.infoRoot}>
-          <ProfilePicture userId={user.user_id} />
+          <ProfilePicture userId={user.user_id} size='large' />
           <View style={styles.userInfo}>
             <Text variant='h3' style={styles.displayName}>
               {name}
@@ -108,7 +108,7 @@ export const UserListItem = (props: UserListItemProps) => {
                   {messages.followers(follower_count)}
                 </Text>
               </View>
-              <FollowsYouChip userId={user.user_id} />
+              <FollowsYouBadge userId={user.user_id} />
             </View>
             {tag === 'SUPPORTING' ? <SupportingInfo user={user} /> : null}
             {tag === 'TOP SUPPORTERS' ? <SupporterInfo user={user} /> : null}

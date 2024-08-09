@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
+import { visibilityMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
   IconCalendarMonth,
@@ -23,24 +24,13 @@ import { formatCalendarTime } from 'utils/dateUtils'
 
 import { IS_PRIVATE, IS_SCHEDULED_RELEASE, IS_UNLISTED } from '../types'
 
-import { ReleaseDateField } from './ReleaseDateField'
+import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 import { mergeReleaseDateValues } from './mergeReleaseDateValues'
 
 const messages = {
-  title: 'Visibility',
-  description:
-    'Change the visibility of this release or schedule it to release in the future.',
-  public: 'Public',
-  publicDescription: 'Visible to everyone on Audius.',
-  hidden: 'Hidden',
-  hiddenDescription:
-    'Only you and people you share a direct link with will be able to listen.',
+  ...visibilityMessages,
   scheduled: (date: string) => `Scheduled for ${formatCalendarTime(date)}`,
-  scheduledRelease: 'Scheduled Release',
-  scheduledReleaseDescription:
-    'Select the date and time this will become public.',
-  hiddenHint: (entityType: 'track' | 'album' | 'playlist') =>
-    `You can’t make a public ${entityType} hidden`
+  emptyPlaylistTooltipText: 'You must add at least 1 song.'
 }
 
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
@@ -48,12 +38,15 @@ type VisibilityType = 'scheduled' | 'public' | 'hidden'
 type VisibilityFieldProps = {
   entityType: 'track' | 'album' | 'playlist'
   isUpload: boolean
+  isPublishable?: boolean
 }
 
 const visibilitySchema = z
   .object({
     visibilityType: z.enum(['hidden', 'public', 'scheduled']),
-    releaseDate: z.string().optional()
+    releaseDate: z.string().optional(),
+    releaseDateTime: z.string().optional(),
+    releaseDateMeridian: z.string().optional()
   })
   .refine(
     (data) => {
@@ -62,9 +55,29 @@ const visibilitySchema = z
     },
     { message: 'Release date required', path: ['releaseDate'] }
   )
+  .refine(
+    (data) => {
+      const {
+        visibilityType,
+        releaseDate,
+        releaseDateTime,
+        releaseDateMeridian
+      } = data
+      if (visibilityType === 'scheduled') {
+        const time = mergeReleaseDateValues(
+          releaseDate!,
+          releaseDateTime!,
+          releaseDateMeridian!
+        ).toString()
+        return dayjs(time).isAfter(dayjs())
+      }
+      return true
+    },
+    { message: 'Select a time in the future', path: ['releaseDate'] }
+  )
 
 export const VisibilityField = (props: VisibilityFieldProps) => {
-  const { entityType, isUpload } = props
+  const { entityType, isUpload, isPublishable = true } = props
   const useEntityField = entityType === 'track' ? useTrackField : useField
   const [
     { value: isHidden },
@@ -167,6 +180,7 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
         <VisibilityMenuFields
           entityType={entityType}
           initiallyPublic={!initiallyHidden && !isUpload}
+          isPublishable={isPublishable}
         />
       }
     />
@@ -176,13 +190,17 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
 type VisibilityMenuFieldsProps = {
   entityType: 'track' | 'album' | 'playlist'
   initiallyPublic?: boolean
+  isPublishable?: boolean
 }
 
 const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
-  const { initiallyPublic, entityType } = props
+  const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
+    FeatureFlags.PAID_SCHEDULED
+  )
+  const { initiallyPublic, isPublishable = true, entityType } = props
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
@@ -191,6 +209,10 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
         value='public'
         label={messages.public}
         description={messages.publicDescription}
+        disabled={!isPublishable}
+        tooltipText={
+          isPublishable ? undefined : messages.emptyPlaylistTooltipText
+        }
       />
       <ModalRadioItem
         value='hidden'
@@ -203,12 +225,14 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
             : undefined
         }
       />
-      {!initiallyPublic ? (
+      {!initiallyPublic &&
+      (entityType === 'track' ||
+        (isPaidScheduledEnabled && entityType === 'album')) ? (
         <ModalRadioItem
           value='scheduled'
           label={messages.scheduledRelease}
           description={messages.scheduledReleaseDescription}
-          checkedContent={<ReleaseDateField />}
+          checkedContent={<ScheduledReleaseDateField />}
         />
       ) : null}
     </RadioGroup>

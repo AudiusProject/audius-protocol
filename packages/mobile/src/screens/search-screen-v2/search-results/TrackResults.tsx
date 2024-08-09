@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
-import { Kind, Status } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
+import { Kind, Name, Status } from '@audius/common/models'
 import {
   lineupSelectors,
-  searchResultsPageTracksLineupActions as tracksActions,
+  searchResultsPageTracksLineupActions,
   searchResultsPageSelectors,
   SearchKind,
   searchActions
@@ -14,12 +15,11 @@ import { useDebounce } from 'react-use'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
-import { LineupTileSkeleton } from 'app/components/lineup-tile'
+import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
 import {
-  useGetSearchResults,
   useIsEmptySearch,
   useSearchFilters,
   useSearchQuery
@@ -33,7 +33,6 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 const { addItem: addRecentSearch } = searchActions
 
 export const TrackResults = () => {
-  const { status } = useGetSearchResults('tracks')
   const [query] = useSearchQuery()
   const [filters] = useSearchFilters()
   const dispatch = useDispatch()
@@ -44,23 +43,32 @@ export const TrackResults = () => {
   const getResults = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatch(
-        tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
-          category: SearchKind.TRACKS,
-          query,
-          filters,
-          dispatch
-        })
+        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
+          offset,
+          limit,
+          overwrite,
+          {
+            category: SearchKind.TRACKS,
+            query,
+            filters,
+            dispatch
+          }
+        )
       )
     },
     [dispatch, query, filters]
   )
+
+  useEffect(() => {
+    dispatch(searchResultsPageTracksLineupActions.reset())
+  }, [dispatch, query, filters])
 
   useDebounce(
     () => {
       getResults(0, 10, true)
     },
     500,
-    [getResults]
+    [dispatch, getResults, query, filters]
   )
 
   const loadMore = useCallback(
@@ -70,40 +78,48 @@ export const TrackResults = () => {
     [getResults]
   )
 
+  const handlePress = useCallback(
+    (id: ID) => {
+      Keyboard.dismiss()
+      dispatch(
+        addRecentSearch({
+          searchItem: {
+            kind: Kind.TRACKS,
+            id
+          }
+        })
+      )
+
+      record(
+        make({
+          eventName: Name.SEARCH_RESULT_SELECT,
+          term: query,
+          source: 'search results page',
+          id,
+          kind: 'track'
+        })
+      )
+    },
+    [dispatch, query]
+  )
+
   if (isEmptySearch) return <SearchCatalogTile />
-  if ((!lineup || lineup.entries.length === 0) && status === Status.SUCCESS) {
+  if (
+    (!lineup || lineup.entries.length === 0) &&
+    lineup.status === Status.SUCCESS
+  ) {
     return <NoResultsTile />
   }
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      {status === Status.LOADING ? (
-        <Flex p='m' gap='m'>
-          <LineupTileSkeleton />
-          <LineupTileSkeleton />
-          <LineupTileSkeleton />
-          <LineupTileSkeleton />
-          <LineupTileSkeleton />
-        </Flex>
-      ) : (
-        <Lineup
-          actions={tracksActions}
-          lineup={lineup}
-          loadMore={loadMore}
-          keyboardShouldPersistTaps='handled'
-          onPressItem={(id) => {
-            Keyboard.dismiss()
-            dispatch(
-              addRecentSearch({
-                searchItem: {
-                  kind: Kind.TRACKS,
-                  id
-                }
-              })
-            )
-          }}
-        />
-      )}
+      <Lineup
+        actions={searchResultsPageTracksLineupActions}
+        lineup={lineup}
+        loadMore={loadMore}
+        keyboardShouldPersistTaps='handled'
+        onPressItem={handlePress}
+      />
     </Flex>
   )
 }

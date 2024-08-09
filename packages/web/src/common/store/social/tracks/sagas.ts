@@ -756,17 +756,6 @@ function* watchDownloadTrack() {
       const controller = new AbortController()
       const task = yield* fork(function* () {
         const { trackIds, parentTrackId, original } = action
-        if (
-          trackIds === undefined ||
-          trackIds.length === 0 ||
-          (trackIds.length > 1 && !parentTrackId)
-        ) {
-          console.error(
-            `Could not download track ${trackIds}: Invalid trackIds or missing parentTrackId`
-          )
-          return
-        }
-
         yield* call(waitForRead)
 
         // Check if there is a logged in account and if not,

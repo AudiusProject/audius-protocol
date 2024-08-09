@@ -1,6 +1,5 @@
 import { ConfirmationDrawer } from 'app/components/drawers'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { spacing } from 'app/styles/spacing'
 
 const messages = {
   header: 'Are You Sure?',
@@ -17,7 +16,7 @@ export const CancelEditTrackDrawer = () => {
       drawerName='CancelEditTrack'
       messages={messages}
       onConfirm={navigation.goBack}
-      bottomChinHeight={spacing(30)}
+      addBottomInset
     />
   )
 }

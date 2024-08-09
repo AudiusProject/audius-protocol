@@ -26,10 +26,13 @@ def _publish_scheduled_releases(session):
         .limit(batch_size)
         .all()
     )
+    if len(tracks_to_release) == 0:
+        return
+
     logger.info(f"Found {len(tracks_to_release)} tracks ready for release")
 
     for track in tracks_to_release:
-        logger.info(f"Releasing track {track.track_id}")
+        logger.debug(f"Releasing track {track.track_id}")
         track.is_unlisted = False
 
     playlists_to_release = (
@@ -45,10 +48,10 @@ def _publish_scheduled_releases(session):
         .limit(batch_size)
         .all()
     )
-    logger.info(f"Found {len(playlists_to_release)} albums ready for release")
+    logger.debug(f"Found {len(playlists_to_release)} albums ready for release")
 
     for playlist in playlists_to_release:
-        logger.info(f"Releasing album {playlist.playlist_id}")
+        logger.debug(f"Releasing album {playlist.playlist_id}")
         playlist.is_private = False
 
 
@@ -71,7 +74,7 @@ def publish_scheduled_releases(self):
                 _publish_scheduled_releases(session)
 
         else:
-            logger.info("Failed to acquire lock")
+            logger.debug("Failed to acquire lock")
     except Exception as e:
         logger.error(f"ERROR caching node info {e}")
         raise e

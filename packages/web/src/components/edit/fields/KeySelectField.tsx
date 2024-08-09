@@ -4,7 +4,7 @@ import { MUSICAL_KEYS } from '@audius/common/utils'
 import {
   Box,
   Divider,
-  FilterButtonOptions,
+  FilterButtonOption,
   Flex,
   Paper,
   Popup,
@@ -76,15 +76,18 @@ export const KeySelectField = (props: KeySelectFieldProps) => {
               </Box>
               <Divider css={{ width: '100%' }} />
               <Flex direction='column' w='100%' ph='s'>
-                <FilterButtonOptions
-                  options={keyOptions}
-                  onChange={(option) =>
-                    handleChange(
-                      `${option.value} ${scale}`,
-                      `${option.label} ${scale}`
-                    )
-                  }
-                />
+                {keyOptions.map((option) => (
+                  <FilterButtonOption
+                    key={option.value}
+                    option={option}
+                    onChange={() =>
+                      handleChange(
+                        `${option.value} ${scale}`,
+                        `${option.label} ${scale}`
+                      )
+                    }
+                  />
+                ))}
               </Flex>
             </Flex>
           </Paper>

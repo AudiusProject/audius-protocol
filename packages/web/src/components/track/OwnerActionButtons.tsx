@@ -3,9 +3,8 @@ import { MouseEventHandler, ReactNode, useCallback } from 'react'
 import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
-  publishTrackConfirmationModalUIActions,
-  trackPageActions,
-  useEditTrackModal
+  usePublishConfirmationModal,
+  trackPageActions
 } from '@audius/common/store'
 import {
   Flex,
@@ -14,12 +13,11 @@ import {
   IconRocket,
   IconShare
 } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
-const { requestOpen: openPublishTrackConfirmationModal } =
-  publishTrackConfirmationModalUIActions
 const { makeTrackPublic } = trackPageActions
 
 const messages = {
@@ -29,8 +27,7 @@ const messages = {
 }
 
 type OwnerActionButtonProps = {
-  contentId: ID
-  contentType: 'track' | 'collection'
+  contentId: ID // Collection or Track ID
   isDisabled?: boolean
   isLoading?: boolean
   rightActions?: ReactNode
@@ -41,38 +38,80 @@ type OwnerActionButtonProps = {
   onClickShare: MouseEventHandler<HTMLButtonElement>
 }
 
+type EntityDetails = {
+  isUnlisted: boolean
+  permalink?: string
+}
+
 export const OwnerActionButtons = ({
-  contentId,
   contentType,
+  ...rest
+}: OwnerActionButtonProps & { contentType: 'track' | 'collection' }) => {
+  return contentType === 'track' ? (
+    <TrackOwnerActionButtons {...rest} />
+  ) : (
+    <CollectionOwnerActionButtons {...rest} />
+  )
+}
+
+const TrackOwnerActionButtons = ({
+  contentId,
+  ...rest
+}: OwnerActionButtonProps) => {
+  const { data: track } = useGetTrackById({ id: contentId })
+  return (
+    <BaseOwnerActionButtons
+      isUnlisted={track?.is_unlisted ?? false}
+      permalink={track?.permalink}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const CollectionOwnerActionButtons = ({
+  contentId,
+  ...rest
+}: OwnerActionButtonProps) => {
+  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+  return (
+    <BaseOwnerActionButtons
+      isUnlisted={collection?.is_private ?? false}
+      permalink={collection?.permalink}
+      contentId={contentId}
+      {...rest}
+    />
+  )
+}
+
+const BaseOwnerActionButtons = ({
+  isUnlisted,
+  permalink,
+  contentId,
   isDisabled,
   isLoading,
   rightActions,
   bottomBar,
   showIconButtons,
   onClickShare
-}: OwnerActionButtonProps) => {
+}: OwnerActionButtonProps & EntityDetails) => {
   const dispatch = useDispatch()
-  const { data: track } = useGetTrackById({ id: contentId })
-  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
-  const isUnlisted =
-    contentType === 'track' ? track?.is_unlisted : collection?.is_private
-  const { onOpen: onEditTrackOpen } = useEditTrackModal()
 
   const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handleEdit = useCallback(() => {
-    onEditTrackOpen({ trackId: contentId })
-  }, [onEditTrackOpen, contentId])
+    dispatch(pushRoute(`${permalink}/edit`))
+  }, [permalink, dispatch])
 
   const handlePublishClick = useCallback(() => {
-    dispatch(
-      openPublishTrackConfirmationModal({
-        confirmCallback: () => {
-          dispatch(makeTrackPublic(contentId))
-        }
-      })
-    )
-  }, [dispatch, contentId])
+    openPublishConfirmation({
+      contentType: 'track',
+      confirmCallback: () => {
+        dispatch(makeTrackPublic(contentId))
+      }
+    })
+  }, [contentId, dispatch, openPublishConfirmation])
 
   return (
     <Flex justifyContent='space-between' w='100%' alignItems='center'>

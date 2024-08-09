@@ -537,7 +537,10 @@ export class TracksApi extends GeneratedTracksApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ],
+        priorityFee: {
+          microLamports: 100000
+        }
       })
       return transaction
     } else {
@@ -575,7 +578,10 @@ export class TracksApi extends GeneratedTracksApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ],
+        priorityFee: {
+          microLamports: 100000
+        }
       })
       return transaction
     }

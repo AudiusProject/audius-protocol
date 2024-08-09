@@ -25,6 +25,7 @@ docker-tag-images:
           'creator-node',
           'identity-service',
           'ddex',
+          'core',
           'all'
         ]
   steps:
@@ -56,6 +57,7 @@ docker-tag-images:
             trpc
             uptime
             backfill-audio-analyses
+            verified-notifications
           )
           creator=(
             mediorum
@@ -65,6 +67,9 @@ docker-tag-images:
           )
           ddex=(
             ddex-processor
+          )
+          core=(
+            core
           )
 
           case "<< parameters.service >>" in
@@ -80,12 +85,16 @@ docker-tag-images:
             ddex)
               images=( "${ddex[@]}" )
               ;;
+            core)
+              images=( "${core[@]}" )
+              ;;
             all)
               images=(
                 "${discovery[@]}"
                 "${creator[@]}"
                 "${identity[@]}"
                 "${ddex[@]}"
+                "${core[@]}"
               )
               ;;
             *)

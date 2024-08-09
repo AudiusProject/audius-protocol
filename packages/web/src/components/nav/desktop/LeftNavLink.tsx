@@ -1,58 +1,109 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, useMemo } from 'react'
 
-import cn from 'classnames'
+import { Text, TextProps, useTheme } from '@audius/harmony'
+import { CSSInterpolation } from '@emotion/css'
+import { Interpolation, Theme } from '@emotion/react'
+import { Slot } from '@radix-ui/react-slot'
 import { NavLink, NavLinkProps } from 'react-router-dom'
-import { SetOptional } from 'type-fest'
-
-import { Droppable, DroppableProps } from 'components/dragndrop'
-import { selectDragnDropState } from 'store/dragndrop/slice'
-import { useSelector } from 'utils/reducer'
-
-import styles from './LeftNavLink.module.css'
 
 export type LeftNavLinkProps =
-  | { disabled?: boolean } & (
+  | { disabled?: boolean; asChild?: boolean } & (
       | Omit<NavLinkProps, 'onDrop'>
       | Omit<ComponentProps<'div'>, 'onDrop'>
     )
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
-  const { disabled, className: classNameProp, ...other } = props
-  const className = cn(classNameProp, styles.link, {
-    [styles.disabledLink]: disabled
-  })
+  const { asChild, disabled, children, ...other } = props
+
+  const theme = useTheme()
+
+  const css = useMemo(() => {
+    const { color, spacing, typography, cornerRadius } = theme
+    const indicatorCss: CSSInterpolation = {
+      content: '""',
+      display: 'block',
+      width: spacing.unit5,
+      height: spacing.unit5,
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      margin: 'auto 0',
+      left: -spacing.l,
+      borderRadius: cornerRadius.s,
+      borderRightWidth: cornerRadius.s,
+      borderRightStyle: 'solid',
+      borderRightColor: 'transparent'
+    }
+
+    const linkInteractionCss: CSSInterpolation = {
+      '&:hover': {
+        cursor: 'pointer',
+        color: color.neutral.n950
+      },
+      '&:hover:before': [
+        indicatorCss,
+        {
+          borderRightColor: color.neutral.n400
+        }
+      ],
+      '&.active': {
+        color: color.text.active,
+        fontWeight: typography.weight.medium
+      },
+      '&.active:before': [
+        indicatorCss,
+        {
+          borderRightColor: color.primary.primary
+        }
+      ]
+    }
+
+    const disabledDropCss: CSSInterpolation = {
+      opacity: 0.6,
+      cursor: 'not-allowed'
+    }
+
+    const combined: Interpolation<Theme> = [
+      {
+        position: 'relative',
+        height: spacing.xl,
+        display: 'flex',
+        alignItems: 'center',
+        gap: spacing.s,
+        minWidth: 100,
+        // Leaves space for the hover indicator
+        paddingLeft: spacing.unit7,
+        paddingRight: spacing.l,
+        color: color.text.default,
+        border: 0,
+        background: 'none',
+        textAlign: 'inherit'
+      },
+      linkInteractionCss,
+      disabled && disabledDropCss
+    ]
+    return combined
+  }, [disabled, theme])
+
+  const TextComp = asChild ? Slot : Text
+  const textProps = asChild
+    ? undefined
+    : ({
+        tag: 'span',
+        size: 's',
+        css: { display: 'flex', alignItems: 'center' }
+      } as TextProps<'span'>)
 
   if ('to' in other) {
-    return <NavLink {...other} activeClassName='active' className={className} />
+    return (
+      <NavLink {...other} activeClassName='active' css={css}>
+        <TextComp {...textProps}>{children}</TextComp>
+      </NavLink>
+    )
   }
-  return <div {...other} className={className} />
-}
-
-type LeftNavDroppableProps = SetOptional<
-  DroppableProps,
-  'hoverClassName' | 'activeClassName' | 'inactiveClassName'
->
-
-export const LeftNavDroppable = (props: LeftNavDroppableProps) => {
-  const { kind } = useSelector(selectDragnDropState)
-
-  const hoverClassName =
-    kind === 'track'
-      ? styles.droppableLinkHoverTrack
-      : styles.droppableLinkHoverPlaylist
-
-  const activeClassName =
-    kind === 'track'
-      ? cn(styles.droppableLinkActive, 'droppableLinkActive')
-      : undefined
-
   return (
-    <Droppable
-      className={styles.droppableLink}
-      hoverClassName={hoverClassName}
-      activeClassName={activeClassName}
-      inactiveClassName={styles.droppableLinkInactive}
-      {...props}
-    />
+    <div {...other} css={css}>
+      <TextComp {...textProps}>{children}</TextComp>
+    </div>
   )
 }

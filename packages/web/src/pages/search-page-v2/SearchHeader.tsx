@@ -1,52 +1,21 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import { Maybe } from '@audius/common/utils'
-import {
-  Flex,
-  IconAlbum,
-  IconNote,
-  IconPlaylists,
-  IconUser,
-  RadioGroup,
-  SelectablePill,
-  Text
-} from '@audius/harmony'
+import { Flex, RadioGroup, SelectablePill, Text } from '@audius/harmony'
 import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
-import Header from 'components/header/desktop/Header'
-import { useMedia } from 'hooks/useMedia'
+import Header, { HeaderProps } from 'components/header/desktop/Header'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
-import { Category } from './types'
+import { categories } from './categories'
+import { useSearchCategory, useSearchParams } from './hooks'
+import { Category, CategoryKey } from './types'
 
-export const categories = {
-  all: { filters: [] },
-  profiles: { icon: IconUser, filters: ['genre', 'isVerified'] },
-  tracks: {
-    icon: IconNote,
-    filters: ['genre', 'mood', 'key', 'bpm', 'isPremium', 'hasDownloads']
-  },
-  albums: {
-    icon: IconAlbum,
-    filters: ['genre', 'mood', 'isPremium', 'hasDownloads']
-  },
-  playlists: { icon: IconPlaylists, filters: ['genre', 'mood'] }
-} satisfies Record<string, Category>
-
-export type CategoryKey = keyof typeof categories
-
-type SearchHeaderProps = {
-  category?: CategoryKey
-  setCategory: (category: CategoryKey) => void
-  title: string
-  query: Maybe<string>
-}
-
-export const SearchHeader = (props: SearchHeaderProps) => {
-  const { category: categoryKey = 'all', setCategory, query, title } = props
-
-  const { isMobile } = useMedia()
+export const SearchHeader = (props: Partial<HeaderProps>) => {
+  const { query } = useSearchParams()
+  const [categoryKey, setCategory] = useSearchCategory()
+  const isMobile = useIsMobile()
   const { color } = useTheme()
 
   const mobileHeaderCss: CSSObject = {
@@ -71,7 +40,7 @@ export const SearchHeader = (props: SearchHeaderProps) => {
     [setCategory]
   )
 
-  const filterKeys = categories[categoryKey].filters
+  const filterKeys: string[] = categories[categoryKey].filters
 
   const categoryRadioGroup = (
     <RadioGroup
@@ -106,18 +75,18 @@ export const SearchHeader = (props: SearchHeaderProps) => {
   ) : (
     <Header
       {...props}
-      primary={title}
+      primary='Search'
       secondary={
         query ? (
-          <Flex ml='l'>
-            <Text variant='heading' strength='weak'>
-              &#8220;{query}&#8221;
+          <Flex ml='l' css={{ maxWidth: 200 }}>
+            <Text variant='heading' strength='weak' ellipses>
+              {query}
             </Text>
           </Flex>
         ) : null
       }
       bottomBar={
-        <Flex direction='row' gap='s' mv='m'>
+        <Flex direction='row' gap='s' mv={filterKeys.length ? 'm' : undefined}>
           {filterKeys.map((filterKey) => {
             const FilterComponent = filters[filterKey]
             return <FilterComponent key={filterKey} />

@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons, parseMusicalKey, License } from '@audius/common/utils'
+import {
+  creativeCommons,
+  parseMusicalKey,
+  License,
+  isBpmValid
+} from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -29,6 +34,7 @@ import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Tooltip } from 'components/tooltip'
+import { useBpmMaskedInput } from 'hooks/useBpmMaskedInput'
 import { env } from 'services/env'
 
 import styles from './AdvancedField.module.css'
@@ -149,7 +155,7 @@ const AdvancedFormSchema = z
     [ALLOW_ATTRIBUTION]: z.optional(z.boolean()),
     [COMMERCIAL_USE]: z.optional(z.boolean()),
     [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
-    [BPM]: z.optional(z.number().nullable()),
+    [BPM]: z.optional(z.string().nullable()),
     [MUSICAL_KEY]: z.optional(z.string().nullable())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
@@ -167,8 +173,20 @@ const AdvancedFormSchema = z
 
 export type AdvancedFormValues = z.input<typeof AdvancedFormSchema>
 
-export type AdvancedFieldProps = { isHidden?: boolean }
-export const AdvancedField = () => {
+export type AdvancedFieldProps = {
+  isHidden?: boolean
+  isUpload?: boolean
+}
+
+const getInitialBpm = (bpm: number | null | undefined) => {
+  if (bpm) {
+    const bpmString = bpm.toString()
+    return isBpmValid(bpmString) ? bpmString : undefined
+  }
+  return undefined
+}
+
+export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
@@ -200,7 +218,7 @@ export const AdvancedField = () => {
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
     set(initialValues, LICENSE_TYPE, computeLicenseVariables(license))
     set(initialValues, BLOCK_THIRD_PARTY_STREAMING, !!allowedApiKeys)
-    set(initialValues, BPM, bpm)
+    set(initialValues, BPM, getInitialBpm(bpm))
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)
     set(initialValues, IS_UNLISTED, isHidden)
@@ -238,7 +256,8 @@ export const AdvancedField = () => {
           get(values, DERIVATIVE_WORKS)
         ).licenseType
       )
-      setBpm(get(values, BPM) ?? bpm)
+      const bpmValue = get(values, BPM)
+      setBpm(typeof bpmValue !== 'undefined' ? Number(bpmValue) : bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
     },
@@ -319,13 +338,13 @@ export const AdvancedField = () => {
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(AdvancedFormSchema)}
-      menuFields={<AdvancedModalFields />}
+      menuFields={<AdvancedModalFields isUpload={isUpload} />}
       renderValue={renderValue}
     />
   )
 }
 
-const AdvancedModalFields = () => {
+const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -335,6 +354,13 @@ const AdvancedModalFields = () => {
   const [{ value: commercialUse }] = useField<boolean>(COMMERCIAL_USE)
   const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
   const [{ value: isHidden }] = useField<boolean>(IS_UNLISTED)
+  const [, , { setValue: setBpmValue }] = useField<string>(BPM)
+
+  const bpmMaskedInputProps = useBpmMaskedInput({
+    onChange: (e) => {
+      setBpmValue(e.target.value)
+    }
+  })
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -468,33 +494,37 @@ const AdvancedModalFields = () => {
             </Flex>
           </>
         ) : null}
-        <Divider />
-        <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
-          <Flex direction='column' w='100%'>
-            <Box mb='m'>
-              <Text variant='title' size='l' tag='h3'>
-                {messages.bpm.header}
-              </Text>
-            </Box>
+        {!isUpload ? (
+          <>
+            <Divider />
+            <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
+              <Flex direction='column' w='100%'>
+                <Box mb='m'>
+                  <Text variant='title' size='l' tag='h3'>
+                    {messages.bpm.header}
+                  </Text>
+                </Box>
 
-            <TextField
-              name={BPM}
-              type='number'
-              label={messages.bpm.header}
-              placeholder={messages.bpm.label}
-              autoComplete='off'
-            />
-          </Flex>
-          <Flex direction='column' w='100%'>
-            <Box mb='m'>
-              <Text variant='title' size='l' tag='h3'>
-                Key
-              </Text>
-            </Box>
+                <TextField
+                  name={BPM}
+                  type='number'
+                  label={messages.bpm.label}
+                  autoComplete='off'
+                  {...bpmMaskedInputProps}
+                />
+              </Flex>
+              <Flex direction='column' w='100%'>
+                <Box mb='m'>
+                  <Text variant='title' size='l' tag='h3'>
+                    Key
+                  </Text>
+                </Box>
 
-            <KeySelectField name={MUSICAL_KEY} />
-          </Flex>
-        </span>
+                <KeySelectField name={MUSICAL_KEY} />
+              </Flex>
+            </span>
+          </>
+        ) : null}
       </div>
       <Divider />
       <SwitchRowField

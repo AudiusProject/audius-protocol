@@ -16,7 +16,8 @@ import {
   IconDrag,
   IconKebabHorizontal,
   IconLock,
-  IconButton
+  IconButton,
+  IconVisibilityHidden
 } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
@@ -147,6 +148,7 @@ const TrackListItem = ({
   trackId,
   uid,
   coverArtSizes,
+  isUnlisted,
   isDeleted,
   isLocked,
   isPremium,
@@ -216,6 +218,7 @@ const TrackListItem = ({
           {messages.deleted}
         </SeoLink>
       </div>
+      {isUnlisted ? <IconVisibilityHidden color='subdued' size='s' /> : null}
       {!isDeleted && isLocked ? <IconLock color='subdued' size='s' /> : null}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>
