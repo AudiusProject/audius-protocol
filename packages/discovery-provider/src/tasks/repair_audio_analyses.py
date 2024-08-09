@@ -4,7 +4,8 @@ from typing import List
 
 import requests
 from redis import Redis
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm.session import Session
 
 from src.models.tracks.track import Track
@@ -32,9 +33,24 @@ def valid_bpm(bpm):
 def query_tracks(session: Session) -> List[Track]:
     tracks = (
         session.query(Track)
+        .options(
+            # Eagerly load necessary attributes to avoid DetachedInstanceError
+            load_only(
+                Track.track_id,
+                Track.track_cid,
+                Track.audio_upload_id,
+                Track.musical_key,
+                Track.bpm,
+                Track.is_custom_bpm,
+                Track.audio_analysis_error_count,
+            )
+        )
         .filter(
             Track.is_current == True,
-            or_(Track.musical_key == None, Track.bpm == None),
+            or_(
+                Track.musical_key == None,
+                and_(Track.bpm == None, Track.is_custom_bpm == False),
+            ),
             Track.audio_analysis_error_count < 3,
             Track.track_cid != None,
             Track.genre != "Podcasts",
@@ -55,10 +71,12 @@ def select_content_nodes(redis: Redis):
     return random.sample(endpoints, min(5, len(endpoints)))
 
 
-def repair(db, redis: Redis):
+def repair(session: Session, redis: Redis):
     # Query batch of tracks that are missing key or bpm and have err counts < 3 from db
-    with db.scoped_session() as session:
-        tracks = query_tracks(session)
+    tracks = query_tracks(session)
+    session.commit()  # Close tx
+    session.expunge_all()  # Detach all instances so they can be referenced without a session
+
     nodes = select_content_nodes(redis)
     num_tracks_updated = 0
     for track in tracks:
@@ -98,7 +116,7 @@ def repair(db, redis: Redis):
                 if valid_musical_key(key):
                     track_updated = True
                     track.musical_key = key
-            if bpm and not track.bpm:
+            if bpm and not track.bpm and not track.is_custom_bpm:
                 if valid_bpm(bpm):
                     track_updated = True
                     track.bpm = bpm
@@ -106,11 +124,17 @@ def repair(db, redis: Redis):
                 track_updated = True
                 track.audio_analysis_error_count = error_count
             if track_updated:
-                num_tracks_updated += 1
-
-            with db.scoped_session() as session:
-                session.merge(track)
-                session.commit()
+                # Update track in a tx
+                try:
+                    session.merge(track)
+                    session.commit()
+                    num_tracks_updated += 1
+                except Exception as e:
+                    logger.error(
+                        f"repair_audio_analyses.py | Error committing track update for track ID {track.track_id}",
+                        exc_info=True,
+                    )
+                    raise e
 
             if error_count >= 3:
                 logger.warning(
@@ -141,7 +165,8 @@ def repair_audio_analyses(self) -> None:
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
         try:
-            repair(db, redis)
+            with db.scoped_session(expire_on_commit=False) as session:
+                repair(session, redis)
         except Exception as e:
             logger.error(
                 "repair_audio_analyses.py | Fatal error in main loop", exc_info=True
