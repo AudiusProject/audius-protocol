@@ -258,16 +258,18 @@ def get_extended_purchase_gate(
                 return _get_extended_purchase_gate(session, gate, include_network_cut)
 
 
-def get_legacy_purchase_gate(gate: AccessGate, session=None):
+def get_legacy_purchase_gate(gate: AccessGate, session=None, include_network_cut=False):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            new_gate = _get_extended_purchase_gate(session, gate)
+            new_gate = _get_extended_purchase_gate(session, gate, include_network_cut)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                new_gate = _get_extended_purchase_gate(session, gate)
+                new_gate = _get_extended_purchase_gate(
+                    session, gate, include_network_cut
+                )
         extended_splits = new_gate["usdc_purchase"]["splits"]
         splits = to_wallet_amount_map(extended_splits)
         new_gate["usdc_purchase"]["splits"] = splits
