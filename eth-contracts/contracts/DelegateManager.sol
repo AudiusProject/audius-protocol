@@ -615,7 +615,7 @@ contract DelegateManager is InitializableV2 {
 
         // Update lockup
         removeDelegatorRequests[_serviceProvider][_delegator] = (
-            block.number + removeDelegatorLockupDuration
+            block.number.add(removeDelegatorLockupDuration)
         );
 
         emit RemoveDelegatorRequested(
@@ -672,7 +672,7 @@ contract DelegateManager is InitializableV2 {
 
         // Enforce evaluation window for request
         require(
-            block.number < removeDelegatorRequests[_serviceProvider][_delegator] + removeDelegatorEvalDuration,
+            block.number < (removeDelegatorRequests[_serviceProvider][_delegator].add(removeDelegatorEvalDuration)),
             "DelegateManager: RemoveDelegator evaluation window expired"
         );
 
@@ -1140,8 +1140,8 @@ contract DelegateManager is InitializableV2 {
         for (uint256 i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
             if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
                 // Overwrite and shrink delegators list
-                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
-                spDelegateInfo[_serviceProvider].delegators.length--;
+                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length.sub(1)];
+                spDelegateInfo[_serviceProvider].delegators.pop();
                 break;
             }
         }

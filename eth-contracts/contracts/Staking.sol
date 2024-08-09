@@ -313,7 +313,7 @@ contract Staking is InitializableV2 {
 
         uint256 length = accounts[_accountAddress].stakedHistory.history.length;
         if (length > 0) {
-            return uint256(accounts[_accountAddress].stakedHistory.history[length - 1].time);
+            return uint256(accounts[_accountAddress].stakedHistory.history[length.sub(1)].time);
         }
         return 0;
     }
