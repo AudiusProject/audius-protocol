@@ -48,7 +48,7 @@ import {
  * withdrawal.
  * - Users have restrictions on creating token accounts
  */
-export const transferUserBankUSDC = async ({
+export const transferFromUsdcUserBank = async ({
   amount,
   ethWallet,
   destinationAccountKey,

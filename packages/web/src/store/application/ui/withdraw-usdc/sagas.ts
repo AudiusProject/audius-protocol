@@ -18,7 +18,7 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { env } from 'services/env'
-import { transferUserBankUSDC } from 'services/solana/WithdrawUSDC'
+import { transferFromUsdcUserBank } from 'services/solana/WithdrawUSDC'
 import {
   getRootSolanaAccount,
   getSolanaConnection
@@ -82,7 +82,7 @@ function* doWithdrawUSDCCoinflow({
       destinationAccountKey
     )
 
-    const signature = yield* call(transferUserBankUSDC, {
+    const signature = yield* call(transferFromUsdcUserBank, {
       amount: amount / 100, // amount is given in cents, fn expects dollars
       ethWallet,
       destinationAccountKey,
@@ -240,7 +240,7 @@ function* doWithdrawUSDCManualTransfer({
       destinationAccountKey
     )
 
-    const signature = yield* call(transferUserBankUSDC, {
+    const signature = yield* call(transferFromUsdcUserBank, {
       amount: amount / 100, // amount is in cents, fn expects dollars
       ethWallet,
       destinationAccountKey,
