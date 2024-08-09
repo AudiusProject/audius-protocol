@@ -42,6 +42,7 @@ export * from './PlaylistTracksResponse';
 export * from './ProfilePicture';
 export * from './RelatedArtistResponse';
 export * from './RemixParent';
+export * from './RemixersResponse';
 export * from './ReplyComment';
 export * from './Reposts';
 export * from './SubscribersResponse';

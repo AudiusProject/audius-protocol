@@ -25,6 +25,7 @@ export * from './FullPlaylistResponse';
 export * from './FullPlaylistTracksResponse';
 export * from './FullRemix';
 export * from './FullRemixParent';
+export * from './FullRemixersResponse';
 export * from './FullReposts';
 export * from './FullSubscribersResponse';
 export * from './FullSupporter';
