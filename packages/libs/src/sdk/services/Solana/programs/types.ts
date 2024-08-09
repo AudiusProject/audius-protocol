@@ -5,6 +5,7 @@ import {
 } from '@solana/web3.js'
 import { z } from 'zod'
 
+import { LoggerService } from '../../Logger'
 import { PublicKeySchema } from '../types'
 
 export type BaseSolanaProgramConfigInternal = {
@@ -12,6 +13,7 @@ export type BaseSolanaProgramConfigInternal = {
   rpcEndpoint: string
   /** Configuration to use for the RPC connection. */
   rpcConfig?: ConnectionConfig
+  logger: LoggerService
 }
 
 export const PrioritySchema = z.enum([

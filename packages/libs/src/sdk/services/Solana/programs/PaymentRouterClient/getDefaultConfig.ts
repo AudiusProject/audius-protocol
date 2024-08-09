@@ -1,6 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 
 import { SdkServicesConfig } from '../../../../config/types'
+import { Logger } from '../../../Logger'
 
 import { PaymentRouterClientConfigInternal } from './types'
 
@@ -12,5 +13,6 @@ export const getDefaultPaymentRouterClientConfig = (
   mints: {
     USDC: new PublicKey(config.solana.usdcTokenMint),
     wAUDIO: new PublicKey(config.solana.wAudioTokenMint)
-  }
+  },
+  logger: new Logger()
 })
