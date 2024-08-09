@@ -14,8 +14,8 @@ import { MutableRefObject, useEffect, useRef } from 'react'
  */
 export const useClickOutside = (
   onClick: () => void,
-  ignoreClick: (target: EventTarget) => boolean = () => false,
   isVisible: boolean,
+  ignoreClick?: (target: EventTarget) => boolean,
   defaultRef?: MutableRefObject<any> | null
 ) => {
   const ref = useRef(defaultRef?.current ?? null)
