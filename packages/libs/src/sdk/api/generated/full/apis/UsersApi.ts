@@ -207,6 +207,7 @@ export interface GetRemixersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    trackId?: string;
 }
 
 export interface GetRemixersCountRequest {
@@ -1090,6 +1091,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.trackId !== undefined) {
+            queryParameters['track_id'] = params.trackId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

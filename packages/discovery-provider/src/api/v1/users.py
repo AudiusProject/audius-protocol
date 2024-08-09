@@ -2447,7 +2447,7 @@ class FullRemixersUsers(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(remixers_parser)
     @full_ns.marshal_with(full_remixers_reponse)
     @cache(ttl_sec=5)
     def get(self, id):
@@ -2462,7 +2462,7 @@ class RemixersUsers(FullRemixersUsers):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(pagination_with_current_user_parser)
+    @ns.expect(remixers_parser)
     @ns.marshal_with(remixers_reponse)
     def get(self, id):
         return super()._get_user_remixers(id)
