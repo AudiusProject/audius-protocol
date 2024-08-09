@@ -244,10 +244,7 @@ export const PayoutWalletModal = () => {
                       ataPubkey,
                       addressPubkey,
                       usdcMint
-                    ),
-                    ComputeBudgetProgram.setComputeUnitPrice({
-                      microLamports: 100000
-                    })
+                    )
                   ]
                 })
 
