@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetRelatedArtists } from '@audius/common/api'
+import { useGetCurrentUserId, useGetRelatedArtists } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { profilePageSelectors } from '@audius/common/store'
@@ -30,6 +30,7 @@ const messages = {
 export const RelatedArtists = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { isEnabled: isRelatedArtistsEnabled } = useFlag(
     FeatureFlags.RELATED_ARTISTS_ON_PROFILE_ENABLED
   )
@@ -37,7 +38,7 @@ export const RelatedArtists = () => {
   const artistId = profile?.user_id
 
   const { data: relatedArtists } = useGetRelatedArtists(
-    { artistId: artistId! },
+    { artistId: artistId!, currentUserId },
     { disabled: !artistId }
   )
 

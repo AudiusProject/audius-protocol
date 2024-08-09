@@ -2,9 +2,10 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { userMetadataListFromSDK } from '~/adapters/user'
+import { userMetadataFromSDK, userMetadataListFromSDK } from '~/adapters/user'
+import { transformAndCleanList } from '~/adapters/utils'
 import { Id } from '~/api'
-import { ID, UserMetadata } from '~/models'
+import { ID, OptionalId, UserMetadata } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
@@ -19,18 +20,22 @@ const getUserId = accountSelectors.getUserId
 
 export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  const currentUserId = yield* select(getUserId)
   if (relatedArtistsActions.fetchRelatedArtists.match(action)) {
     const artistId = action.payload.artistId
 
-    const relatedArtists = yield* call(
-      [apiClient, apiClient.getRelatedArtists],
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getRelatedUsers],
       {
-        userId: artistId,
-        limit: 50
+        id: Id.parse(artistId),
+        limit: 50,
+        userId: OptionalId.parse(currentUserId)
       }
     )
+
+    const relatedArtists = transformAndCleanList(data, userMetadataFromSDK)
 
     let showingTopArtists = false
     const filteredArtists = relatedArtists.filter(

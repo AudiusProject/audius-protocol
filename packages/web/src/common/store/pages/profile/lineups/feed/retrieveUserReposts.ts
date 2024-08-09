@@ -1,4 +1,7 @@
-import { repostActivityFromSDK } from '@audius/common/adapters'
+import {
+  repostActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import {
   ID,
   Track,
@@ -6,7 +9,6 @@ import {
   OptionalId,
   UserCollectionMetadata
 } from '@audius/common/models'
-import { transformAndCleanList } from '@audius/common/src/adapters/utils'
 import { getSDK } from '@audius/common/store'
 import { full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
