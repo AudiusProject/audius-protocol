@@ -165,7 +165,8 @@ export const transferUserBankUSDC = async ({
       await track(
         make({
           eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED,
-          ...analyticsFields
+          ...analyticsFields,
+          error: e instanceof Error ? e.message : e
         })
       )
     }

@@ -1,6 +1,5 @@
 import {
   Name,
-  ErrorLevel,
   Status,
   WithdrawUSDCTransferEventFields
 } from '@audius/common/models'
@@ -192,7 +191,6 @@ function* doWithdrawUSDCCoinflow({
     )
 
     reportToSentry({
-      level: ErrorLevel.Error,
       error: e as Error
     })
   }
@@ -278,7 +276,6 @@ function* doWithdrawUSDCManualTransfer({
     )
 
     reportToSentry({
-      level: ErrorLevel.Error,
       error: e as Error
     })
   }
