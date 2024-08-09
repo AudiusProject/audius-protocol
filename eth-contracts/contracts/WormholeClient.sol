@@ -99,6 +99,7 @@ contract WormholeClient is InitializableV2 {
         bytes32 r,
         bytes32 s
     ) public {
+        _requireIsInitialized();
         uint32 nonce = nonces[from]++;
 
         // solium-disable security/no-block-members
