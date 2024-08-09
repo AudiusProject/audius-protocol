@@ -318,8 +318,16 @@ function* purchaseTrackWithCoinflow(args: {
   userId: ID
   price: number
   extraAmount?: number
+  includeNetworkCut?: boolean
 }) {
-  const { sdk, userId, trackId, price, extraAmount = 0 } = args
+  const {
+    sdk,
+    userId,
+    trackId,
+    price,
+    extraAmount = 0,
+    includeNetworkCut = false
+  } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -329,7 +337,8 @@ function* purchaseTrackWithCoinflow(args: {
     extraAmount: args.extraAmount,
     trackId: encodeHashId(trackId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey
+    wallet: wallet.publicKey,
+    includeNetworkCut
   }
   const transaction = yield* call(
     [sdk.tracks, sdk.tracks.getPurchaseTrackTransaction],
@@ -382,8 +391,16 @@ function* purchaseAlbumWithCoinflow(args: {
   userId: ID
   price: number
   extraAmount?: number
+  includeNetworkCut?: boolean
 }) {
-  const { sdk, userId, albumId, price, extraAmount = 0 } = args
+  const {
+    sdk,
+    userId,
+    albumId,
+    price,
+    extraAmount = 0,
+    includeNetworkCut = false
+  } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -393,7 +410,8 @@ function* purchaseAlbumWithCoinflow(args: {
     extraAmount: args.extraAmount,
     albumId: encodeHashId(albumId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey
+    wallet: wallet.publicKey,
+    includeNetworkCut
   }
 
   const transaction = yield* call(
@@ -511,6 +529,12 @@ function* doStartPurchaseContentFlow({
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isNetworkCutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.NETWORK_CUT_ENABLED
+  )
+
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
     contentType
@@ -587,14 +611,16 @@ function* doStartPurchaseContentFlow({
             userId: encodeHashId(purchaserUserId),
             trackId: encodeHashId(contentId),
             price: price / 100.0,
-            extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+            extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+            includeNetworkCut: isNetworkCutEnabled
           })
         } else {
           yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
             userId: encodeHashId(purchaserUserId),
             albumId: encodeHashId(contentId),
             price: price / 100.0,
-            extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+            extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+            includeNetworkCut: isNetworkCutEnabled
           })
         }
         break
@@ -610,7 +636,8 @@ function* doStartPurchaseContentFlow({
                 trackId: contentId,
                 userId: purchaserUserId,
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                includeNetworkCut: isNetworkCutEnabled
               })
             } else {
               yield* call(purchaseAlbumWithCoinflow, {
@@ -618,7 +645,8 @@ function* doStartPurchaseContentFlow({
                 albumId: contentId,
                 userId: purchaserUserId,
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                includeNetworkCut: isNetworkCutEnabled
               })
             }
             break
@@ -630,14 +658,16 @@ function* doStartPurchaseContentFlow({
                 userId: encodeHashId(purchaserUserId),
                 trackId: encodeHashId(contentId),
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                includeNetworkCut: isNetworkCutEnabled
               })
             } else {
               yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
                 userId: encodeHashId(purchaserUserId),
                 albumId: encodeHashId(contentId),
                 price: price / 100.0,
-                extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+                extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                includeNetworkCut: isNetworkCutEnabled
               })
             }
             break

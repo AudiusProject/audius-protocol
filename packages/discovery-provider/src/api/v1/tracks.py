@@ -1842,10 +1842,11 @@ class GetTrackAccessInfo(Resource):
         description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
-    @ns.expect(current_user_parser)
+    @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
         args = current_user_parser.parse_args()
+        include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
         get_track_args: GetTrackArgs = {
@@ -1859,8 +1860,12 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(raw["stream_conditions"])
-        download_conditions = get_extended_purchase_gate(raw["download_conditions"])
+        stream_conditions = get_extended_purchase_gate(
+            gate=raw["stream_conditions"], include_network_cut=include_network_cut
+        )
+        download_conditions = get_extended_purchase_gate(
+            gate=raw["download_conditions"], include_network_cut=include_network_cut
+        )
         track = extend_track(raw)
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions
