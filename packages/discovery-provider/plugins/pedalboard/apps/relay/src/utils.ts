@@ -22,7 +22,7 @@ export const unknownToError = (e: unknown): Error => {
   return e instanceof Error ? e : new Error(String(e))
 }
 
-export const retryPromise = async <T>(task: () => Promise<T>, retries = 128): Promise<T> => {
+export const retryPromise = async <T>(task: () => Promise<T>, retries = 64): Promise<T> => {
   let tries = 0
   let error = undefined
   while (tries != retries) {
