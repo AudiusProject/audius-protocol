@@ -111,6 +111,7 @@ from src.queries.get_managed_users import (
     is_active_manager,
 )
 from src.queries.get_related_artists import get_related_artists
+from src.queries.get_remixers import GetRemixersArgs, get_remixers, get_remixers_count
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_saves import get_saves
 from src.queries.get_subscribers import (
@@ -2396,3 +2397,101 @@ class WithdrawalsDownload(Resource):
         response = Response(withdrawals, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=withdrawals.csv"
         return response
+
+
+remixers_parser = pagination_with_current_user_parser.copy()
+remixers_parser.add_argument(
+    "track_id",
+    required=False,
+    description="Filters for remixers who have remixed the given track ID",
+    type=str,
+)
+remixers_reponse = make_response(
+    "remixers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_remixers_reponse = make_full_response(
+    "full_remixers_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+remixers_count_response = make_full_response(
+    "purchases_count_response", full_ns, fields.Integer()
+)
+
+USER_REMIXERS_ROUTE = "/<string:id>/remixers"
+
+
+@full_ns.route(USER_REMIXERS_ROUTE)
+class FullRemixersUsers(Resource):
+    @log_duration(logger)
+    def _get_user_remixers(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = remixers_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        track_id = args.get("track_id")
+        decoded_track_id = decode_with_abort(track_id, full_ns) if track_id else None
+        args = GetRemixersArgs(
+            remixee_user_id=decoded_id,
+            current_user_id=current_user_id,
+            track_id=decoded_track_id,
+            limit=limit,
+            offset=offset,
+        )
+        remixers = get_remixers(args)
+        users = list(map(extend_user, remixers))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get remixers""",
+        description="Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(remixers_parser)
+    @full_ns.marshal_with(full_remixers_reponse)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        return self._get_user_remixers(id)
+
+
+@ns.route(USER_REMIXERS_ROUTE)
+class RemixersUsers(FullRemixersUsers):
+    @ns.doc(
+        id="""Get remixers""",
+        description="Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(remixers_parser)
+    @ns.marshal_with(remixers_reponse)
+    def get(self, id):
+        return super()._get_user_remixers(id)
+
+
+@full_ns.route("/<string:id>/remixers/count")
+class FullRemixersUsersCount(Resource):
+    @full_ns.doc(
+        id="Get remixers count",
+        description="Gets the count of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(remixers_parser)
+    @full_ns.marshal_with(remixers_count_response)
+    def get(self, id):
+        decoded_user_id = decode_with_abort(id, full_ns)
+        args = remixers_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        track_id = args.get("track_id")
+        decoded_track_id = decode_with_abort(track_id, full_ns) if track_id else None
+        args = GetRemixersArgs(
+            remixee_user_id=decoded_user_id,
+            current_user_id=current_user_id,
+            track_id=decoded_track_id,
+            limit=limit,
+            offset=offset,
+        )
+        count = get_remixers_count(args)
+        return success_response(count)
