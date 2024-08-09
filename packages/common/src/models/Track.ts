@@ -240,6 +240,7 @@ export type TrackMetadata = {
   parental_warning_type?: string | null
   bpm?: number | null
   is_custom_bpm?: boolean
+  is_custom_musical_key?: boolean
   musical_key?: string | null
   audio_analysis_error_count?: number
 
