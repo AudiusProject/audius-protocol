@@ -24,7 +24,7 @@ import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 
-type UserChatWithMessagesStatus = UserChat & {
+export type UserChatWithMessagesStatus = UserChat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }

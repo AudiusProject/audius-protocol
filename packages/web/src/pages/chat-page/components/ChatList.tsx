@@ -6,7 +6,9 @@ import {
 } from 'react'
 
 import { Status } from '@audius/common/models'
+import { UserChatWithMessagesStatus } from '@audius/common/src/store/pages/chat/slice'
 import { chatActions, chatSelectors } from '@audius/common/store'
+import { ChatBlastAudience, ChatBlastMessageRequest } from '@audius/sdk'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
@@ -15,6 +17,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './ChatList.module.css'
+import { ChatListBlastItem } from './ChatListBlastItem'
 import { ChatListItem } from './ChatListItem'
 import { SkeletonChatListItem } from './SkeletonChatListItem'
 
@@ -38,6 +41,17 @@ export const ChatList = (props: ChatListProps) => {
   const chats = useSelector(getChats)
   const status = useSelector(getChatsStatus)
   const hasMore = useSelector(getHasMoreChats)
+
+  const testFollowersBlast: ChatBlastMessageRequest = {
+    blastId: ChatBlastAudience.FOLLOWERS,
+    audience: ChatBlastAudience.FOLLOWERS,
+    message: 'This is a test blast message'
+  }
+
+  const chatsWithBlasts: (
+    | ChatBlastMessageRequest
+    | UserChatWithMessagesStatus
+  )[] = [testFollowersBlast, ...chats]
 
   const handleLoadMoreChats = useCallback(() => {
     dispatch(fetchMoreChats())
@@ -66,15 +80,24 @@ export const ChatList = (props: ChatListProps) => {
           ) : undefined
         }
       >
-        {chats?.length > 0 ? (
-          chats.map((chat) => (
-            <ChatListItem
-              key={chat.chat_id}
-              currentChatId={currentChatId}
-              chat={chat}
-              onChatClicked={onChatClicked}
-            />
-          ))
+        {chatsWithBlasts?.length > 0 ? (
+          chatsWithBlasts.map((chat) =>
+            'blastId' in chat ? (
+              <ChatListBlastItem
+                key={chat.blastId}
+                audience={chat.audience}
+                blastId={chat.blastId}
+                onChatClicked={onChatClicked}
+              />
+            ) : (
+              <ChatListItem
+                key={chat.chat_id}
+                currentChatId={currentChatId}
+                chat={chat}
+                onChatClicked={onChatClicked}
+              />
+            )
+          )
         ) : hasLoadedOnce ? (
           <div className={styles.empty}>
             <div className={styles.header}>{messages.nothingHere}</div>
