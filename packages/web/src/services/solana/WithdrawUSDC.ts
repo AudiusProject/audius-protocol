@@ -8,6 +8,7 @@ import {
   MEMO_PROGRAM_ID,
   PREPARE_WITHDRAWAL_MEMO_STRING
 } from '@audius/common/services'
+import { CommonStoreContext } from '@audius/common/src/store/storeContext'
 import {
   createCloseAccountInstruction,
   NATIVE_MINT,
@@ -56,7 +57,16 @@ export const transferUserBankUSDC = async ({
   make,
   analyticsFields,
   signer
-}: any) => {
+}: {
+  amount: number
+  ethWallet: string
+  destinationAccountKey: PublicKey
+  destinationTokenAccountKey: PublicKey
+  track: CommonStoreContext['analytics']['track']
+  make: CommonStoreContext['analytics']['make']
+  analyticsFields: any
+  signer?: Keypair
+}) => {
   const connection = getSolanaConnection()
   const sdk = await audiusSdk()
   let isCreatingTokenAccount = false
