@@ -1,5 +1,30 @@
 # @audius/sdk
 
+## 5.0.0
+
+### Major Changes
+
+- 1b494ff: Updates target, module, and lib to ES2022 to access new features such as Error.cause, updates @solana/web3.js, and updates SolanaRelay service to throw SendTransactionError on failure
+- 92d4d81: Change AntiAbuseAttestionError to AntiAbuseOracleAttestationError
+
+### Minor Changes
+
+- 5fe7681: Add read/write methods for Comments
+- 1c61e0b: fixes a number of model definitions used in /reposts
+
+### Patch Changes
+
+- f75b571: fix stale signatures when auth address changes
+- 9a50c42: Fix instanceof check for version mismatches of @solana/web3.js and skip preflight on evaluateAttestations
+- 17904fb: Add ComputeBudget unit price instructions (priority fees) to Solana transactions
+- c34cd83: Adds method to record downloads to entity manager
+- ffd2ad3: add filtering support for manager endpoints
+- 1ccfcd4: Allow purchase/sale filtering by track or album ID
+- 975b630: Improve error messages from Claimable Tokens program
+- Updated dependencies [9a50c42]
+- Updated dependencies [975b630]
+  - @audius/spl@1.0.1
+
 ## 4.2.0
 
 ### Minor Changes
