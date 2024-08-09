@@ -27,7 +27,7 @@ import {
   GenerateSpecifierSchema
 } from './types'
 
-const CHALLENGES_MINIMUM_MICRO_LAMPORTS = 100000
+const CHALLENGES_MINIMUM_MICRO_LAMPORTS = 150_000
 
 export class ChallengesApi extends BaseAPI {
   constructor(

@@ -343,7 +343,7 @@ export class UsersApi extends GeneratedUsersApi {
       instructions: [secp, transfer],
       priorityFee: {
         priority: 'VERY_HIGH',
-        minimumMicroLamports: 100000
+        minimumMicroLamports: 150_000
       }
     })
     return await this.claimableTokens.sendTransaction(transaction)

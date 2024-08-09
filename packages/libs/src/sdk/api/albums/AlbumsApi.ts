@@ -45,7 +45,7 @@ import {
   UploadAlbumRequest
 } from './types'
 
-const PURCHASE_MINIMUM_MICRO_LAMPORTS = 150000
+const PURCHASE_MINIMUM_MICRO_LAMPORTS = 150_000
 
 export class AlbumsApi {
   private readonly playlistsApi: PlaylistsApi
