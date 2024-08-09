@@ -25,7 +25,7 @@ class GetPurchaseInfoArgs(TypedDict):
 
 
 class Split(TypedDict):
-    user_id: Optional[int] # optional because staking bridge does not have user_id
+    user_id: Optional[int]  # optional because staking bridge does not have user_id
     percentage: float
 
 
@@ -41,7 +41,9 @@ class PurchaseGate(TypedDict):
 class ExtendedSplit(Split):
     amount: int
     payout_wallet: str
-    eth_wallet: Optional[str] # optional because staking bridge does not have eth_wallet
+    eth_wallet: Optional[
+        str
+    ]  # optional because staking bridge does not have eth_wallet
 
 
 class ExtendedUSDCPurchaseCondition(TypedDict):
@@ -95,9 +97,14 @@ cents_to_usdc_multiplier = 10**4
 # It is denoted in the config as a whole number, e.g. 10 for 10%
 network_take_rate = int(shared_config["solana"]["network_take_rate"])
 
-staking_bridge_usdc_payout_wallet = shared_config["solana"]["staking_bridge_usdc_payout_wallet"]
+staking_bridge_usdc_payout_wallet = shared_config["solana"][
+    "staking_bridge_usdc_payout_wallet"
+]
 
-def calculate_split_amounts(price: int | None, splits: List[Split], include_network_cut=False):
+
+def calculate_split_amounts(
+    price: int | None, splits: List[Split], include_network_cut=False
+):
     """
     Deterministically calculates the USDC amounts to pay to each person,
     adjusting for rounding errors and ensuring the total matches the price.
@@ -150,11 +157,13 @@ def calculate_split_amounts(price: int | None, splits: List[Split], include_netw
         del s["_amount_fractional"]
 
     if include_network_cut:
-        new_splits.append({
-            "percentage": network_take_rate,
-            "amount": network_cut,
-            "payout_wallet": staking_bridge_usdc_payout_wallet,
-        })
+        new_splits.append(
+            {
+                "percentage": network_take_rate,
+                "amount": network_cut,
+                "payout_wallet": staking_bridge_usdc_payout_wallet,
+            }
+        )
     return new_splits
 
 
@@ -221,7 +230,9 @@ def to_wallet_amount_map(splits: List[ExtendedSplit]):
     }
 
 
-def _get_extended_purchase_gate(session: Session, gate: PurchaseGate, include_network_cut=False):
+def _get_extended_purchase_gate(
+    session: Session, gate: PurchaseGate, include_network_cut=False
+):
     price = gate.get("usdc_purchase", {}).get("price", None)
     splits = gate.get("usdc_purchase", {}).get("splits", [])
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
