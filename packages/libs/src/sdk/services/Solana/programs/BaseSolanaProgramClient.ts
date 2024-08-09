@@ -106,7 +106,7 @@ export class BaseSolanaProgramClient {
       feePayer,
       recentBlockhash,
       addressLookupTables = [],
-      priorityFee
+      priorityFee = { priority: 'VERY_HIGH', minimumMicroLamports: 150_000 }
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {

@@ -361,11 +361,7 @@ export class ChallengesApi extends BaseAPI {
         amount
       })
     const transaction = await this.rewardManager.buildTransaction({
-      instructions: [instruction],
-      priorityFee: {
-        priority: 'VERY_HIGH',
-        minimumMicroLamports: CHALLENGES_MINIMUM_MICRO_LAMPORTS
-      }
+      instructions: [instruction]
     })
     // Skip preflight since we likely just submitted the attestations and
     // the chosen RPC's state might not yet reflect that
