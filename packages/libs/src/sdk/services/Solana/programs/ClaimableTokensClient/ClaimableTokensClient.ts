@@ -35,7 +35,7 @@ import {
 } from './types'
 
 export class ClaimableTokensError extends Error {
-  override name = 'RewardManagerError'
+  override name = 'ClaimableTokensError'
   public code: number
   public instructionName: string
   public customErrorName?: string
