@@ -39,16 +39,17 @@ def query_tracks(session: Session) -> List[Track]:
                 Track.track_id,
                 Track.track_cid,
                 Track.audio_upload_id,
-                Track.musical_key,
                 Track.bpm,
                 Track.is_custom_bpm,
+                Track.musical_key,
+                Track.is_custom_musical_key,
                 Track.audio_analysis_error_count,
             )
         )
         .filter(
             Track.is_current == True,
             or_(
-                Track.musical_key == None,
+                and_(Track.musical_key == None, Track.is_custom_musical_key == False),
                 and_(Track.bpm == None, Track.is_custom_bpm == False),
             ),
             Track.audio_analysis_error_count < 3,
@@ -112,7 +113,7 @@ def repair(session: Session, redis: Redis):
 
             # Fill in missing analysis results and err count if present
             track_updated = False
-            if key and not track.musical_key:
+            if key and not track.musical_key and not track.is_custom_musical_key:
                 if valid_musical_key(key):
                     track_updated = True
                     track.musical_key = key
