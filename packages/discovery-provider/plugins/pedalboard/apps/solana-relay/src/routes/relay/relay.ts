@@ -105,23 +105,23 @@ export const relay = async (
     const feePayerKey = decompiled.payerKey
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
 
-    try {
-      await assertRelayAllowedInstructions(decompiled.instructions, {
-        user: res.locals.signerUser,
-        feePayer: feePayerKey.toBase58()
-      })
-    } catch (e) {
-      if (e instanceof InvalidRelayInstructionError) {
-        throw new BadRequestError('Invalid relay instructions', { cause: e })
-      } else {
-        throw e
-      }
-    }
-
     if (feePayerKeyPair) {
       res.locals.logger.info(
         `Signing with fee payer '${feePayerKey.toBase58()}'`
       )
+      try {
+        // Only care about what the instructions are if signing/paying
+        await assertRelayAllowedInstructions(decompiled.instructions, {
+          user: res.locals.signerUser,
+          feePayer: feePayerKey.toBase58()
+        })
+      } catch (e) {
+        if (e instanceof InvalidRelayInstructionError) {
+          throw new BadRequestError('Invalid relay instructions', { cause: e })
+        } else {
+          throw e
+        }
+      }
       transaction.sign([feePayerKeyPair])
     } else if (verifySignatures(transaction)) {
       res.locals.logger.info(
