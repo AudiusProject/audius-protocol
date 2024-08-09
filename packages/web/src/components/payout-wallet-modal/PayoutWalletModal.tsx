@@ -25,7 +25,7 @@ import {
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
-import { ComputeBudgetProgram, PublicKey, SystemProgram } from '@solana/web3.js'
+import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
