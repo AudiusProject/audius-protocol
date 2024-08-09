@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Market as MarketSerum } from '@project-serum/serum'
 import { Liquidity, LiquidityAssociatedPoolKeys, Market as raydiumSerum, SPL_MINT_LAYOUT } from "@raydium-io/raydium-sdk"
+import { ammProgram } from "./constants";
 
 const { PublicKey } = anchor.web3
 
@@ -18,11 +19,15 @@ class Market extends MarketSerum {
   public vaultSignerNonce: Number | null = null
 
   static async load(connection, address, options: any = {}, programId) {
+    console.log({address, programId})
     const { owner, data } = throwIfNull(await connection.getAccountInfo(address), 'Market not found')
-    if (!owner.equals(programId)) {
+    console.log({owner})
+    if (!owner.equals(ammProgram)) {
       throw new Error('Address not owned by program: ' + owner.toBase58())
     }
+    console.log('layout', this.getLayout(programId))
     const decoded = this.getLayout(programId).decode(data)
+    console.log(decoded)
     if (!decoded.accountFlags.initialized || !decoded.accountFlags.market || !decoded.ownAddress.equals(address)) {
       throw new Error('Invalid market')
     }

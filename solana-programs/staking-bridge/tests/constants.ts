@@ -19,6 +19,6 @@ export const tokenBridgeId = new PublicKey(TOKEN_BRIDGE_ID)
 // https://docs.raydium.io/raydium/protocol/developers/addresses
 export const ammProgram = new PublicKey('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8')
 // https://github.com/project-serum/serum-dex/blob/master/README.md#program-deployments
-export const serumDexProgram = new PublicKey('9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin')
+export const serumDexProgram = new PublicKey('4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt')
 // USDC -> AUDIO Raydium market
-export const serumMarketPublicKey = new PublicKey('FxquLRmVMPXiS84FFSp8q5fbVExhLkX85yiXucyu7xSC')
+export const serumMarketPublicKey = new PublicKey('4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt')

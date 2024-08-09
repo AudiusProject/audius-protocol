@@ -7,7 +7,7 @@ pub const ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES: &str = "00000000000000000000000
 pub const RAYDIUM_AMM_PROGRAM: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
 
 // https://github.com/project-serum/serum-dex/blob/master/README.md#program-deployments
-pub const SERUM_DEX_PROGRAM: Pubkey = pubkey!("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+pub const SERUM_DEX_PROGRAM: Pubkey = pubkey!("4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt");
 
 // https://solscan.io/token/9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM
 pub const SOL_AUDIO_TOKEN: Pubkey = pubkey!("9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM");
@@ -16,7 +16,7 @@ pub const SOL_AUDIO_TOKEN: Pubkey = pubkey!("9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247
 pub const ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES: &str = "00000000000000000000000018aAA7115705e8be94bfFEBDE57Af9BFc265B998";
 
 // https://solscan.io/account/FxquLRmVMPXiS84FFSp8q5fbVExhLkX85yiXucyu7xSC
-pub const AUDIO_USDC_SERUM_MARKET: Pubkey = pubkey!("FxquLRmVMPXiS84FFSp8q5fbVExhLkX85yiXucyu7xSC");
+pub const AUDIO_USDC_SERUM_MARKET: Pubkey = pubkey!("4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt");
 
 // https://solscan.io/account/4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt
 pub const AUDIO_USDC_RAYDIUM_AMM: Pubkey = pubkey!("4EbdAfaShVDNeHm6GbXZX3xsKccRHdTbR5962Bvya8xt");
