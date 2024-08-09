@@ -80,6 +80,7 @@ from src.tasks.entity_manager.entities.tip_reactions import tip_reaction
 from src.tasks.entity_manager.entities.track import (
     create_track,
     delete_track,
+    download_track,
     update_track,
 )
 from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
@@ -256,6 +257,11 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
+                    elif (
+                        params.action == Action.DOWNLOAD
+                        and params.entity_type == EntityType.TRACK
+                    ):
+                        download_track(params)
                     elif params.action in create_social_action_types:
                         create_social_record(params)
                     elif params.action in delete_social_action_types:
@@ -383,6 +389,9 @@ def entity_manager_update(
                         block_hash,
                         txhash,
                         str(e),
+                    )
+                    logger.error(
+                        f"entity_manager.py | Indexing error {e}", exc_info=True
                     )
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session

@@ -14,7 +14,7 @@ export interface RequestContext {
   recoveredSigner: Users | DeveloperApps
   signerIsApp: boolean
   signerIsUser: boolean
-  createOrDeactivate: boolean
+  isAnonymousAllowed: boolean
   isSenderVerifier: boolean
   logger: pino.Logger
 }

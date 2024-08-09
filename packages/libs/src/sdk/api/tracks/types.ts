@@ -286,6 +286,17 @@ export const UnrepostTrackSchema = z
 
 export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
 
+export const RecordTrackDownloadSchema = z
+  .object({
+    userId: HashId.optional(),
+    trackId: HashId
+  })
+  .strict()
+
+export type RecordTrackDownloadRequest = z.input<
+  typeof RecordTrackDownloadSchema
+>
+
 const PurchaseTrackSchemaBase = z.object({
   /** The ID of the user purchasing the track. */
   userId: HashId,

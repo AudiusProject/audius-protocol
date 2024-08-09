@@ -48,7 +48,9 @@ import {
   PurchaseTrackRequest,
   PurchaseTrackSchema,
   GetPurchaseTrackTransactionRequest,
-  GetPurchaseTrackTransactionSchema
+  GetPurchaseTrackTransactionSchema,
+  RecordTrackDownloadRequest,
+  RecordTrackDownloadSchema
 } from './types'
 
 // Extend that new class
@@ -383,6 +385,29 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNREPOST,
+      auth: this.auth,
+      ...advancedOptions
+    })
+  }
+
+  /**
+   * @hidden
+   *
+   * Records that a track was downloaded.
+   */
+  public async recordTrackDownload(
+    params: RecordTrackDownloadRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { userId, trackId } = await parseParams(
+      'downloadTrack',
+      RecordTrackDownloadSchema
+    )(params)
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.DOWNLOAD,
       auth: this.auth,
       ...advancedOptions
     })
