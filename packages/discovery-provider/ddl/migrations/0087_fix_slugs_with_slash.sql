@@ -35,6 +35,6 @@ where
 	ur.playlist_id = pr.playlist_id and
 	ur.owner_id = pr.owner_id and
 	ur.slug = pr.slug and
-	ur.title_slug = pr.title_slug
+	ur.title_slug = pr.title_slug;
 
 commit;
