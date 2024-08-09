@@ -5,6 +5,7 @@ from typing import List
 import requests
 from redis import Redis
 from sqlalchemy import or_
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm.session import Session
 
 from src.models.tracks.track import Track
@@ -32,6 +33,16 @@ def valid_bpm(bpm):
 def query_tracks(session: Session) -> List[Track]:
     tracks = (
         session.query(Track)
+        .options(
+            # Eagerly load necessary attributes to avoid DetachedInstanceError
+            load_only(
+                Track.track_cid,
+                Track.audio_upload_id,
+                Track.musical_key,
+                Track.bpm,
+                Track.audio_analysis_error_count,
+            )
+        )
         .filter(
             Track.is_current == True,
             or_(Track.musical_key == None, Track.bpm == None),
