@@ -194,7 +194,7 @@ export class BaseSolanaProgramClient {
   protected async getInstructions(
     transaction: VersionedTransaction | Transaction
   ) {
-    if (!('instructions' in transaction)) {
+    if ('version' in transaction) {
       const lookupTableAccounts = await this.getLookupTableAccounts(
         transaction.message.addressTableLookups.map((k) => k.accountKey)
       )
