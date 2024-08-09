@@ -180,14 +180,17 @@ function* doWithdrawUSDCCoinflow({
       }
     }
   } catch (e: unknown) {
-    const error = e as Error
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
     yield* put(withdrawUSDCFailed({ error: e as Error }))
 
     yield* call(
       track,
-      make({ eventName: Name.WITHDRAW_USDC_FAILURE, ...analyticsFields, error })
+      make({
+        eventName: Name.WITHDRAW_USDC_FAILURE,
+        ...analyticsFields,
+        error: e instanceof Error ? e.message : e
+      })
     )
 
     reportToSentry({
