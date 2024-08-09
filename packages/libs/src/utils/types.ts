@@ -219,6 +219,7 @@ export type TrackMetadata = {
   bpm?: Nullable<number>
   is_custom_bpm?: boolean
   musical_key?: Nullable<string>
+  is_custom_musical_key?: boolean
   audio_analysis_error_count?: number
   field_visibility?: FieldVisibility
 }

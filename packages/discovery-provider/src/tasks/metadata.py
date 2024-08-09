@@ -136,6 +136,7 @@ class TrackMetadata(TypedDict):
     bpm: Optional[float]
     is_custom_bpm: Optional[bool]
     musical_key: Optional[str]
+    is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
 
 
@@ -192,6 +193,7 @@ track_metadata_format: TrackMetadata = {
     "bpm": None,
     "is_custom_bpm": False,
     "musical_key": None,
+    "is_custom_musical_key": False,
     "audio_analysis_error_count": 0,
 }
 
