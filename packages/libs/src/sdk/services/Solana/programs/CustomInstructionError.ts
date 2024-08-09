@@ -13,9 +13,6 @@ export class CustomInstructionError extends Error {
     )
   }
 
-  /**
-   * @throws if the error message isn't a custom error
-   */
   public static parseSendTransactionError(error: SendTransactionError) {
     try {
       const parsed = JSON.parse(
