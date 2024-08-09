@@ -14,6 +14,7 @@ import {
   broadcastTransaction,
   sendTransactionWithRetries
 } from '../../utils/transaction'
+import { verifySignatures } from '../../utils/verifySignatures'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
@@ -49,24 +50,6 @@ const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
       return res.value
     })
   )
-}
-
-/**
- * Checks that the transaction is signed
- *
- * TODO PAY-3106: Verify the signature is correct as well as non-empty.
- * @see {@link https://github.com/solana-labs/solana-web3.js/blob/9344bbfa5dd68f3e15918ff606284373ae18911f/packages/library-legacy/src/transaction/legacy.ts#L767 verifySignatures} for Transaction in @solana/web3.js
- * @param transaction the versioned transaction to check
- * @returns false if missing a signature, true if all signatures are present.
- */
-const verifySignatures = (transaction: VersionedTransaction) => {
-  for (const signature of transaction.signatures) {
-    if (signature === null || signature.every((b) => b === 0)) {
-      return false
-    }
-    // TODO PAY-3106: Use ed25519 to verify signature
-  }
-  return true
 }
 
 /**
