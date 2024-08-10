@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/joho/godotenv"
@@ -17,9 +19,13 @@ const (
 	Identity
 )
 
+const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost):.*`
+
+var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
+
 type Config struct {
 	/* Comet Config */
-	HomeDir         string
+	RootDir         string
 	RPCladdr        string
 	P2PLaddr        string
 	PSQLConn        string
@@ -50,7 +56,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	var cfg Config
 	// comet config
-	cfg.HomeDir = os.Getenv("homeDir")
+	cfg.RootDir = os.Getenv("audius_core_root_dir")
 	cfg.RPCladdr = os.Getenv("rpcLaddr")
 	cfg.P2PLaddr = os.Getenv("p2pLaddr")
 	cfg.PersistentPeers = os.Getenv("persistentPeers")
@@ -68,10 +74,15 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn = os.Getenv("dbUrl")
 	}
 
+	// Disable ssl for local postgres db connection
+	if !strings.HasSuffix(cfg.PSQLConn, "?sslmode=disable") && isLocalDbUrlRegex.MatchString(cfg.PSQLConn) {
+		cfg.PSQLConn += "?sslmode=disable"
+	}
+
 	// only allow down migration in dev env
 	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && cfg.Environment == "dev"
 
-	if err := InitComet(logger, cfg.Environment, cfg.DelegatePrivateKey, cfg.HomeDir); err != nil {
+	if err := InitComet(logger, cfg.Environment, cfg.DelegatePrivateKey, cfg.RootDir); err != nil {
 		return nil, fmt.Errorf("initializing comet %v", err)
 	}
 

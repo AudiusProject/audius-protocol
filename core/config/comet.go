@@ -13,7 +13,7 @@ import (
 
 // reads in or creates cometbft keys from the delegate private key
 // also creates validator keys and genesis file
-func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir string) error {
+func InitComet(logger *common.Logger, environment, delegatePrivateKey, rootDir string) error {
 	logger.Info("initializing comet config")
 
 	key, err := accounts.EthToCometKey(delegatePrivateKey)
@@ -21,20 +21,20 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, homeDir s
 		return fmt.Errorf("creating key %v", err)
 	}
 
-	if err := common.CreateDirIfNotExist(homeDir); err != nil {
-		logger.Error("error creating homeDir", "error", err)
+	if err := common.CreateDirIfNotExist(rootDir); err != nil {
+		logger.Error("error creating rootDir", "error", err)
 	}
 
-	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/config", homeDir)); err != nil {
+	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/config", rootDir)); err != nil {
 		logger.Error("error creating config dir", "error", err)
 	}
 
-	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/data", homeDir)); err != nil {
+	if err := common.CreateDirIfNotExist(fmt.Sprintf("%s/data", rootDir)); err != nil {
 		logger.Error("error creating data dir", "error", err)
 	}
 
 	config := config.DefaultConfig()
-	config.SetRoot(homeDir)
+	config.SetRoot(rootDir)
 
 	privValKeyFile := config.PrivValidatorKeyFile()
 	privValStateFile := config.PrivValidatorStateFile()
