@@ -40,11 +40,11 @@ export const PublicKeySchema = z.union([
   })
 ])
 
-export const MintNameSchema = z.enum(['wAUDIO', 'USDC'])
+export const TokenNameSchema = z.enum(['wAUDIO', 'USDC'])
 
-export type MintName = z.input<typeof MintNameSchema>
+export type TokenName = z.input<typeof TokenNameSchema>
 
-export const MintSchema = z.union([MintNameSchema, PublicKeySchema])
+export const MintSchema = z.union([TokenNameSchema, PublicKeySchema])
 
 export type Mint = z.input<typeof MintSchema>
 

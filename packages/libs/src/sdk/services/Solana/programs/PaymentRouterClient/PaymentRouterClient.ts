@@ -23,7 +23,7 @@ import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
 import { MEMO_V2_PROGRAM_ID } from '../../constants'
-import { MintName } from '../../types'
+import { TokenName } from '../../types'
 import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'
@@ -48,9 +48,9 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
   private readonly programAccount: PublicKey
   private readonly programAccountBumpSeed: number
 
-  private readonly mints: Prettify<Partial<Record<MintName, PublicKey>>>
+  private readonly mints: Prettify<Partial<Record<TokenName, PublicKey>>>
 
-  private existingTokenAccounts: Prettify<Partial<Record<MintName, Account>>>
+  private existingTokenAccounts: Prettify<Partial<Record<TokenName, Account>>>
 
   constructor(config: PaymentRouterClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(

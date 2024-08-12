@@ -11,7 +11,7 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
-import type { MintName } from '../../types'
+import type { TokenName } from '../../types'
 import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
@@ -37,9 +37,9 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
-  private readonly mints: Record<MintName, PublicKey>
+  private readonly mints: Record<TokenName, PublicKey>
   /** Map from token mint name to derived user bank authority. */
-  private readonly authorities: Record<MintName, PublicKey>
+  private readonly authorities: Record<TokenName, PublicKey>
 
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
