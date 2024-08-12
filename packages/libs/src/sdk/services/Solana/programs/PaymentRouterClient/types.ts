@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { HashId } from '../../../../types/HashId'
 import { Prettify } from '../../../../utils/prettify'
 import {
-  Mint,
+  MintName,
   MintSchema,
   PublicKeySchema,
   SolanaWalletAdapter
@@ -13,7 +13,7 @@ import { BaseSolanaProgramConfigInternal } from '../types'
 
 export type PaymentRouterClientConfigInternal = {
   programId: PublicKey
-  mints: Prettify<Partial<Record<Mint, PublicKey>>>
+  mints: Prettify<Partial<Record<MintName, PublicKey>>>
 } & BaseSolanaProgramConfigInternal
 
 export type PaymentRouterClientConfig =

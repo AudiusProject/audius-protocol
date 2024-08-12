@@ -9,8 +9,9 @@ import {
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
+import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
-import type { Mint } from '../../types'
+import type { MintName } from '../../types'
 import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
@@ -36,9 +37,9 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
-  private readonly mints: Record<Mint, PublicKey>
+  private readonly mints: Record<MintName, PublicKey>
   /** Map from token mint name to derived user bank authority. */
-  private readonly authorities: Record<Mint, PublicKey>
+  private readonly authorities: Record<MintName, PublicKey>
 
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -69,6 +70,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       GetOrCreateUserBankSchema
     )(params)
     const { ethWallet, mint, feePayer: feePayerOverride } = args
+    const { mintKey, mintName } = parseMintToken(mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const userBank = await this.deriveUserBank(args)
     const userBankAccount = await this.connection.getAccountInfo(userBank)
@@ -77,8 +79,8 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: ethWallet,
           payer: feePayer,
-          mint: this.mints[mint],
-          authority: this.authorities[mint],
+          mint: mintKey,
+          authority: this.authorities[mintName],
           userBank,
           programId: this.programId
         })
@@ -121,11 +123,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
+    const { mintName } = parseMintToken(mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mint],
+      authority: this.authorities[mintName],
       programId: this.programId
     })
     return ClaimableTokensProgram.createTransferInstruction({
@@ -134,7 +137,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       sourceUserBank: source,
       destination,
       nonceAccount: nonceKey,
-      authority: this.authorities[mint],
+      authority: this.authorities[mintName],
       programId: this.programId
     })
   }
@@ -152,10 +155,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         CreateSecpSchema
       )(params)
 
+    const { mintName } = parseMintToken(mint, this.mints)
+
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mint],
+      authority: this.authorities[mintName],
       programId: this.programId
     })
     const nonceAccount = await this.connection.getAccountInfo(nonceKey)
@@ -167,7 +172,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: mintFixedDecimalMap[mint](amount).value,
+      amount: mintFixedDecimalMap[mintName](amount).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)
@@ -190,9 +195,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'deriveUserBank',
       GetOrCreateUserBankSchema
     )(params)
+
+    const { mintName } = parseMintToken(mint, this.mints)
+
     return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
-      claimableTokensPDA: this.authorities[mint]
+      claimableTokensPDA: this.authorities[mintName]
     })
   }
 }

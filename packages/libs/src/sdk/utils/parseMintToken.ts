@@ -1,0 +1,23 @@
+import { PublicKey } from '@solana/web3.js'
+
+import { MintName } from '../services'
+
+export const parseMintToken = (
+  mint: PublicKey | MintName,
+  mints: Partial<Record<MintName, PublicKey>>
+) => {
+  const mintKey = mint instanceof PublicKey ? mint : mints[mint]
+  if (!mintKey) {
+    throw Error('Mint not configured')
+  }
+  const mintName =
+    mint instanceof PublicKey
+      ? (Object.entries(mints!)!.find(
+          (m) => !!m[1] && mintKey.equals(m[1])
+        )?.[0] as MintName)
+      : mint
+  if (!mintName) {
+    throw Error('Mint not configured')
+  }
+  return { mintKey, mintName }
+}

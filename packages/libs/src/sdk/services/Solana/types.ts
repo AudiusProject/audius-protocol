@@ -23,18 +23,30 @@ export type SolanaConfig = {
 
 export type SolanaRelayService = SolanaRelay
 
-export const MintSchema = z.enum(['wAUDIO', 'USDC']).default('wAUDIO')
-
-export type Mint = z.infer<typeof MintSchema>
-
 export const PublicKeySchema = z.union([
-  z.string().transform<PublicKey>((data) => {
-    return new PublicKey(data)
+  z.string().transform<PublicKey>((data, ctx) => {
+    try {
+      return new PublicKey(data)
+    } catch (e) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: e instanceof Error ? e.message : 'Invalid PublicKey input'
+      })
+    }
+    return z.NEVER
   }),
   z.custom<PublicKey>((data) => {
     return data instanceof PublicKey
   })
 ])
+
+export const MintNameSchema = z.enum(['wAUDIO', 'USDC']).default('wAUDIO')
+
+export type MintName = z.infer<typeof MintNameSchema>
+
+export const MintSchema = MintNameSchema.or(PublicKeySchema)
+
+export type Mint = z.infer<typeof MintSchema>
 
 export const RelaySchema = z
   .object({

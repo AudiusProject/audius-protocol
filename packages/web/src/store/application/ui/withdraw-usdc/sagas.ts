@@ -3,6 +3,7 @@ import {
   Status,
   WithdrawUSDCTransferEventFields
 } from '@audius/common/models'
+import { transferFromUserBank } from '@audius/common/src/services/audius-backend/solana'
 import {
   withdrawUSDCActions,
   WithdrawUSDCModalPages,
@@ -12,13 +13,11 @@ import {
   buyUSDCActions,
   accountSelectors
 } from '@audius/common/store'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { env } from 'services/env'
-import { transferFromUsdcUserBank } from 'services/solana/WithdrawUSDC'
 import {
   getRootSolanaAccount,
   getSolanaConnection
@@ -45,6 +44,8 @@ function* doWithdrawUSDCCoinflow({
   'amount' | 'currentBalance'
 >) {
   const { track, make } = yield* getContext('analytics')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(beginCoinflowWithdrawal())
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
@@ -73,20 +74,15 @@ function* doWithdrawUSDCCoinflow({
       throw new Error('User not logged in')
     }
     const ethWallet = user.wallet
+    const destinationWallet = new PublicKey(destinationAddress)
 
-    // Ensure the derived token account exists
-    const destinationAccountKey = new PublicKey(destinationAddress)
-    const destinationTokenAccountKey = yield* call(
-      getAssociatedTokenAddressSync,
+    const signature = yield* call(transferFromUserBank, {
+      sdk,
       mint,
-      destinationAccountKey
-    )
-
-    const signature = yield* call(transferFromUsdcUserBank, {
+      connection,
       amount: amount / 100, // amount is given in cents, fn expects dollars
       ethWallet,
-      destinationAccountKey,
-      destinationTokenAccountKey,
+      destinationWallet,
       track,
       make,
       analyticsFields,
@@ -109,7 +105,6 @@ function* doWithdrawUSDCCoinflow({
     )
 
     // Finalizes the transaction for our connection
-    // Should possibly be replaced by polling for balance?
     yield* call(
       [connection, connection.confirmTransaction],
       signature,
@@ -210,6 +205,9 @@ function* doWithdrawUSDCManualTransfer({
   const { track, make } = yield* getContext('analytics')
   const withdrawalAmountDollars = amount / 100
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  const connection = yield* call(getSolanaConnection)
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
     destinationAddress,
@@ -231,20 +229,15 @@ function* doWithdrawUSDCManualTransfer({
       throw new Error('User not logged in')
     }
     const ethWallet = user.wallet
+    const destinationWallet = new PublicKey(destinationAddress)
 
-    // Ensure the derived token account exists
-    const destinationAccountKey = new PublicKey(destinationAddress)
-    const destinationTokenAccountKey = yield* call(
-      getAssociatedTokenAddressSync,
+    const signature = yield* call(transferFromUserBank, {
+      connection,
+      sdk,
       mint,
-      destinationAccountKey
-    )
-
-    const signature = yield* call(transferFromUsdcUserBank, {
       amount: amount / 100, // amount is in cents, fn expects dollars
       ethWallet,
-      destinationAccountKey,
-      destinationTokenAccountKey,
+      destinationWallet,
       track,
       make,
       analyticsFields
