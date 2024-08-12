@@ -4,7 +4,7 @@ import { CSSObject } from '@emotion/react'
 
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
-import { PopupProps } from 'components/popup'
+import { MenuProps } from 'components/internal/Menu'
 
 export type FilterButtonSize = 'default' | 'small'
 
@@ -18,7 +18,6 @@ export type FilterButtonOptionType<Value extends string> = {
    * The label to display. If not provided, uses the value.
    */
   label?: string
-  helperText?: string
   icon?: IconComponent
   /**
    * A leading element to display before the option label. Useful for icons/emojis
@@ -132,6 +131,6 @@ export type FilterButtonProps<Value extends string = string> = {
    */
   optionsLabel?: string
 
-  popupProps?: Partial<PopupProps> & { css?: CSSObject }
+  menuProps?: Partial<MenuProps> & { css?: CSSObject }
   renderLabel?: (label: string) => ReactNode
 }

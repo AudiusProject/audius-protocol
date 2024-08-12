@@ -109,7 +109,7 @@ export const PaymentMethod = ({
               value={selectedVendor?.toString()}
               variant='replaceLabel'
               options={vendorOptions}
-              popupProps={{ zIndex: zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP }}
+              menuProps={{ zIndex: zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP }}
             />
           )
         ) : null

@@ -363,7 +363,7 @@ export const BpmFilter = () => {
       label={label}
       onChange={updateSearchParams}
       iconRight={IconCaretDown}
-      popupProps={{
+      menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' }
       }}

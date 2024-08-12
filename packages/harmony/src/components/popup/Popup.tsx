@@ -14,7 +14,7 @@ import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 
-import { PlainButton } from 'components/button'
+import { PlainButton } from 'components/button/PlainButton/PlainButton'
 import { IconClose } from 'icons'
 import { ModalState } from 'utils/modalState'
 
@@ -55,15 +55,17 @@ const getComputedOrigins = (
 
   let containerWidth, containerHeight
   if (containerRef && containerRef.current) {
-    const containerRect = containerRef.current.getBoundingClientRect()
     containerWidth =
-      containerRect.width + containerRect.x - CONTAINER_INSET_PADDING
+      containerRef.current.getBoundingClientRect().width -
+      CONTAINER_INSET_PADDING
     containerHeight =
-      containerRect.height + containerRect.y - CONTAINER_INSET_PADDING
+      containerRef.current.getBoundingClientRect().height -
+      CONTAINER_INSET_PADDING
   } else {
-    const portalRect = portal.getBoundingClientRect()
-    containerWidth = portalRect.width + portalRect.x - CONTAINER_INSET_PADDING
-    containerHeight = portalRect.height + portalRect.y - CONTAINER_INSET_PADDING
+    containerWidth =
+      portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
+    containerHeight =
+      portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
   }
 
   // Get new wrapper position

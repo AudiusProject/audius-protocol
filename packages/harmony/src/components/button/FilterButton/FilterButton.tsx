@@ -14,14 +14,14 @@ import { mergeRefs } from 'react-merge-refs'
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
 import { TextInput, TextInputSize } from 'components/input/TextInput'
-import { Flex, Paper, Box } from 'components/layout'
-import { Popup } from 'components/popup'
+import { Menu } from 'components/internal/Menu'
+import { MenuItem } from 'components/internal/MenuItem'
+import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
+import { Flex, Box } from 'components/layout'
 import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
-import { FilterButtonKeyHandler } from './FilterButtonKeyHandler'
-import { FilterButtonOption } from './FilterButtonOption'
 import { FilterButtonProps } from './types'
 
 const messages = {
@@ -44,7 +44,7 @@ export const FilterButton = forwardRef(function FilterButton<
     size = 'default',
     iconRight,
     leadingElement: leadingElementProp,
-    popupProps,
+    menuProps,
     options,
     showFilterInput,
     filterInputProps,
@@ -209,7 +209,7 @@ export const FilterButton = forwardRef(function FilterButton<
   )
 
   const optionElements = filteredOptions ? (
-    <FilterButtonKeyHandler
+    <OptionKeyHandler
       options={filteredOptions}
       disabled={!isOpen}
       onChange={handleChange}
@@ -218,20 +218,22 @@ export const FilterButton = forwardRef(function FilterButton<
     >
       {(activeValue) =>
         filteredOptions.map((option, index) => (
-          <FilterButtonOption
+          <MenuItem
+            variant='option'
             ref={(el) => {
               if (optionRefs && optionRefs.current && el) {
                 optionRefs.current[index] = el
               }
             }}
             key={option.value}
-            option={option}
+            label={option.value}
+            {...option}
             onChange={handleChange}
-            activeValue={activeValue}
+            isActive={option.value === activeValue}
           />
         ))
       }
-    </FilterButtonKeyHandler>
+    </OptionKeyHandler>
   ) : null
 
   return (
@@ -246,65 +248,55 @@ export const FilterButton = forwardRef(function FilterButton<
     >
       {leadingElement}
       {selectedLabel ? renderLabel(selectedLabel) : label}
-      <Popup
+      <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
         onClose={() => setIsOpen(false)}
-        {...popupProps}
+        aria-label={selectedLabel ?? label ?? props['aria-label']}
+        aria-activedescendant={selectedLabel}
+        scrollRef={scrollRef}
+        {...menuProps}
       >
-        <Paper mt='s' border='strong' shadow='far'>
-          {children ? (
-            children({ onChange: handleChange, options: optionElements })
-          ) : (
-            <Flex
-              direction='column'
-              p='s'
-              gap='s'
-              alignItems='flex-start'
-              role='listbox'
-              aria-label={selectedLabel ?? label ?? props['aria-label']}
-              aria-activedescendant={selectedLabel}
-              css={{ maxHeight: popupProps?.css?.maxHeight, overflowY: 'auto' }}
-              ref={scrollRef}
-            >
-              {showFilterInput && filterInputProps ? (
-                <TextInput
-                  ref={inputRef}
-                  size={TextInputSize.SMALL}
-                  startIcon={IconSearch}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                  onChange={(e) => {
-                    setFilterInputValue(e.target.value)
-                  }}
-                  autoComplete='off'
-                  {...filterInputProps}
-                />
-              ) : null}
-              {optionsLabel ? (
-                <Box pt='s' ph='m'>
-                  <Text variant='label' size='xs'>
-                    {optionsLabel}
-                  </Text>
-                </Box>
-              ) : null}
-
-              {filteredOptions && filteredOptions.length === 0 ? (
-                <Flex justifyContent='center'>
-                  <Text variant='body' color='subdued' size='s'>
-                    {messages.noMatches}
-                  </Text>
-                </Flex>
-              ) : (
-                <Flex direction='column' w='100%'>
-                  {optionElements}
-                </Flex>
-              )}
-            </Flex>
-          )}
-        </Paper>
-      </Popup>
+        {children ? (
+          children({ onChange: handleChange, options: optionElements })
+        ) : (
+          <>
+            {showFilterInput && filterInputProps ? (
+              <TextInput
+                ref={inputRef}
+                size={TextInputSize.SMALL}
+                startIcon={IconSearch}
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                onChange={(e) => {
+                  setFilterInputValue(e.target.value)
+                }}
+                autoComplete='off'
+                {...filterInputProps}
+              />
+            ) : null}
+            {optionsLabel ? (
+              <Box pt='s' ph='m'>
+                <Text variant='label' size='xs'>
+                  {optionsLabel}
+                </Text>
+              </Box>
+            ) : null}
+            {filteredOptions && filteredOptions.length === 0 ? (
+              <Flex justifyContent='center'>
+                <Text variant='body' color='subdued' size='s'>
+                  {messages.noMatches}
+                </Text>
+              </Flex>
+            ) : (
+              <Flex direction='column' w='100%'>
+                {optionElements}
+              </Flex>
+            )}
+          </>
+        )}
+      </Menu>
     </BaseButton>
   )
 })
