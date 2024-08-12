@@ -28,11 +28,15 @@ func TestChatBlast(t *testing.T) {
 	`)
 	assert.NoError(t, err)
 
+	// todo: test pre-blast existing DMs:
+	// 	user 100 starts a thread with 69 before first blast
+	// 	user 69 starts thread with 103 before first blast
+
 	// ----------------- a first message ------------------------
 	err = chatBlast(tx, 69, time.Now(), schema.ChatBlastRPCParams{
 		BlastID:  "b1",
 		Audience: schema.FollowerAudience,
-		Message:  "what fam",
+		Message:  "what up fam",
 	})
 	assert.NoError(t, err)
 
@@ -155,6 +159,26 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 2)
+		assert.Equal(t, "~happy wed", messages[0].Ciphertext)
+		assert.Equal(t, "~what up fam", messages[1].Ciphertext)
+
+		// user 101 reacts
+		{
+			heart := "heart"
+			chatReactMessage(tx, 101, messages[0].MessageID, &heart, time.Now())
+
+			// reaction shows up
+			messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
+				UserID: 69,
+				ChatID: chatId,
+				Limit:  10,
+				Before: time.Now().Add(time.Hour),
+				After:  time.Now().Add(time.Hour * -1),
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, "heart", messages[0].Reactions[0].Reaction)
+		}
+
 	}
 
 	err = tx.Rollback()

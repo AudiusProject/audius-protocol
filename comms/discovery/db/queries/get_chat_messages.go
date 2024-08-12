@@ -32,11 +32,12 @@ SELECT
 	chat_message.chat_id,
 	chat_message.user_id,
 	chat_message.created_at,
-	COALESCE(chat_message.ciphertext, chat_message.blast_id::text, '') as ciphertext, -- todo: separate out ciphertext + plaintext... make ciphertext nullable
-	COALESCE(jsonb_agg(reactions) FILTER (WHERE reactions.message_id IS NOT NULL), '[]') AS reactions
+	COALESCE(chat_message.ciphertext, '~' || chat_blast.plaintext) as ciphertext, -- todo: separate out ciphertext + plaintext... make ciphertext nullable
+
+	to_json(array(select row_to_json(r) from chat_message_reactions r where chat_message.message_id = r.message_id)) AS reactions
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
-LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
+LEFT JOIN chat_blast USING (blast_id)
 WHERE chat_member.user_id = $1
 	AND chat_message.chat_id = $2
 	AND chat_message.created_at < $4
@@ -44,7 +45,6 @@ WHERE chat_member.user_id = $1
 	AND (chat_member.cleared_history_at IS NULL
 		OR chat_message.created_at > chat_member.cleared_history_at
 	)
-GROUP BY chat_message.message_id
 ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
 `
