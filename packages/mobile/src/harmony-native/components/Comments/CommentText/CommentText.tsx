@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import type { CommentBodyProps } from '@audius/harmony/src/components/comments/CommentBody/types'
+import type { CommentTextProps } from '@audius/harmony/src/components/comments/CommentText/types'
 
 import { Flex, Text, TextLink } from '../..'
 
@@ -11,17 +11,17 @@ const messages = {
   seeLess: 'See Less'
 }
 
-export const CommentBody = ({ children }: CommentBodyProps) => {
-  const [isOverflown, setIsOverflown] = useState(false)
+export const CommentText = ({ children }: CommentTextProps) => {
+  const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
   const onTextLayout = useCallback(
     (e) => {
-      if (e.nativeEvent.lines.length > MAX_LINES && !isOverflown) {
-        setIsOverflown(true)
+      if (e.nativeEvent.lines.length > MAX_LINES && !isOverflowing) {
+        setIsOverflowing(true)
       }
     },
-    [isOverflown]
+    [isOverflowing]
   )
 
   return (
@@ -31,11 +31,11 @@ export const CommentBody = ({ children }: CommentBodyProps) => {
         size='s'
         color='default'
         onTextLayout={onTextLayout}
-        numberOfLines={isOverflown && !isExpanded ? MAX_LINES : undefined}
+        numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
       >
         {children}
       </Text>
-      {isOverflown ? (
+      {isOverflowing ? (
         <TextLink
           size='s'
           variant='visible'

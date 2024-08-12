@@ -6,20 +6,20 @@ import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 import { TextLink } from 'components/text-link'
 
-import { CommentBodyProps } from './types'
+import { CommentTextProps } from './types'
 
 const messages = {
   seeMore: 'See More',
   seeLess: 'See Less'
 }
 
-export const CommentBody = ({ children }: CommentBodyProps) => {
+export const CommentText = ({ children }: CommentTextProps) => {
   const textRef = useRef<HTMLElement>()
-  const [isOverflown, setIsOverflown] = useState(false)
+  const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
   useEffectOnce(() => {
-    setIsOverflown(
+    setIsOverflowing(
       (textRef.current &&
         textRef.current.offsetHeight < textRef.current.scrollHeight) ||
         false
@@ -38,7 +38,7 @@ export const CommentBody = ({ children }: CommentBodyProps) => {
       >
         {children}
       </Text>
-      {isOverflown ? (
+      {isOverflowing ? (
         <TextLink
           size='s'
           variant='visible'

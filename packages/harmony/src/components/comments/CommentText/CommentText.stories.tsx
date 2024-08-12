@@ -3,16 +3,16 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Divider, Paper } from 'components/layout'
 import { TextLink } from 'components/text-link'
 
-import { CommentBody } from './CommentBody'
+import { CommentText } from './CommentText'
 
-const meta: Meta<typeof CommentBody> = {
-  title: 'Components/Comments/CommentBody [beta]',
-  component: CommentBody
+const meta: Meta<typeof CommentText> = {
+  title: 'Components/Comments/CommentText [beta]',
+  component: CommentText
 }
 
 export default meta
 
-type Story = StoryObj<typeof CommentBody>
+type Story = StoryObj<typeof CommentText>
 
 export const Default: Story = {
   render: () => (
@@ -25,27 +25,27 @@ export const Default: Story = {
       shadow='flat'
       border='strong'
     >
-      <CommentBody>This is a test with some short text.</CommentBody>
+      <CommentText>This is a test with some short text.</CommentText>
       <Divider />
-      <CommentBody>
+      <CommentText>
         This is a test to see <TextLink variant='visible'>1:24</TextLink> how
         the new component for the comment body handles text of different sizes.
-      </CommentBody>
+      </CommentText>
       <Divider />
-      <CommentBody>
+      <CommentText>
         This is a test to see how the new component for the comment body handles
         text of different sizes. This is a test to see how the new component for
         the comment body handles text of different sizes.
-      </CommentBody>
+      </CommentText>
       <Divider />
-      <CommentBody>
+      <CommentText>
         This is a test to see how the new component for the comment body handles
         text of different sizes. This is a test to see how the new component for
         the comment body handles text of different sizes. This is a test to see
         how the new component for the comment body handles text of different
         sizes. This is a test to see how the new component for the comment body
         handles text of different sizes.
-      </CommentBody>
+      </CommentText>
     </Paper>
   )
 }
@@ -60,7 +60,7 @@ export const SingleLine: Story = {
       shadow='flat'
       border='strong'
     >
-      <CommentBody>This is a test with some short text.</CommentBody>
+      <CommentText>This is a test with some short text.</CommentText>
     </Paper>
   )
 }
@@ -75,10 +75,10 @@ export const MultiLine: Story = {
       shadow='flat'
       border='strong'
     >
-      <CommentBody>
+      <CommentText>
         This is a test to see <TextLink variant='visible'>1:24</TextLink> how
         the new component for the comment body handles text of different sizes.
-      </CommentBody>
+      </CommentText>
     </Paper>
   )
 }
@@ -93,7 +93,7 @@ export const Overflown: Story = {
       shadow='flat'
       border='strong'
     >
-      <CommentBody>
+      <CommentText>
         This is a test to see how the new component for the comment body handles
         text of different sizes. This is a test to see how the new component for
         the comment body handles text of different sizes. This is a test to see
@@ -103,7 +103,7 @@ export const Overflown: Story = {
         component for the comment body handles text of different sizes. This is
         a test to see how the new component for the comment body handles text of
         different sizes.
-      </CommentBody>
+      </CommentText>
     </Paper>
   )
 }
