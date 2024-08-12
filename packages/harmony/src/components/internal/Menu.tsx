@@ -12,8 +12,8 @@ import { PopupProps } from 'components/popup/types'
 export type MenuProps = Omit<PopupProps, 'children'> & {
   maxHeight?: CSSObject['maxHeight']
   children: ReactNode
-  PaperProps?: Partial<PaperProps>
-  MenuListProps?: Partial<FlexProps>
+  PaperProps?: Partial<PaperProps> & { css?: CSSObject }
+  MenuListProps?: Partial<FlexProps> & { css?: CSSObject }
   scrollRef: Ref<HTMLDivElement>
 }
 

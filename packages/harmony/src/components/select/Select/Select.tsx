@@ -46,6 +46,8 @@ export const Select = forwardRef(function Select<Value extends string>(
     menuProps,
     onChange,
     onClick,
+    clearable,
+    children,
     ...other
   } = props
 
@@ -88,9 +90,11 @@ export const Select = forwardRef(function Select<Value extends string>(
 
   const filteredOptions = useMemo(
     () =>
-      options.filter(({ value, label = value }) => {
+      options.filter(({ value, label }) => {
         return (
-          !inputValue || label?.toLowerCase().includes(inputValue.toLowerCase())
+          !inputValue ||
+          label?.toLowerCase().includes(inputValue.toLowerCase()) ||
+          value.toLowerCase().includes(inputValue.toLowerCase())
         )
       }),
     [options, inputValue]
@@ -108,7 +112,7 @@ export const Select = forwardRef(function Select<Value extends string>(
     (e: MouseEvent<SVGSVGElement>) => {
       e.stopPropagation()
       e.preventDefault()
-      if (value !== null) {
+      if (value !== null && clearable) {
         setValue(null)
         // @ts-ignore
         onChange?.(null)
@@ -116,10 +120,45 @@ export const Select = forwardRef(function Select<Value extends string>(
         setIsOpen((isOpen: boolean) => !isOpen)
       }
     },
-    [value, setIsOpen, setValue, onChange]
+    [value, clearable, setValue, onChange]
   )
 
-  const Icon = value !== null ? IconCloseAlt : IconCaretDown
+  const Icon = value !== null && clearable ? IconCloseAlt : IconCaretDown
+
+  const optionElements = (
+    <OptionKeyHandler
+      options={filteredOptions}
+      disabled={!isOpen}
+      optionRefs={optionRefs}
+      scrollRef={scrollRef}
+      onChange={handleChange}
+    >
+      {(activeValue) =>
+        filteredOptions.length === 0 ? (
+          <Flex justifyContent='center'>
+            <Text variant='body' color='subdued' size='s'>
+              {messages.noMatches}
+            </Text>
+          </Flex>
+        ) : (
+          filteredOptions?.map((option, index) => (
+            <MenuItem
+              ref={(el) => {
+                if (optionRefs && optionRefs.current && el) {
+                  optionRefs.current[index] = el
+                }
+              }}
+              key={option.value}
+              variant='option'
+              {...option}
+              onChange={handleChange}
+              isActive={option.value === activeValue}
+            />
+          ))
+        )
+      }
+    </OptionKeyHandler>
+  )
 
   return (
     <Flex ref={anchorRef}>
@@ -162,38 +201,9 @@ export const Select = forwardRef(function Select<Value extends string>(
         {...defaultMenuProps}
         {...menuProps}
       >
-        <OptionKeyHandler
-          options={filteredOptions}
-          disabled={!isOpen}
-          optionRefs={optionRefs}
-          scrollRef={scrollRef}
-          onChange={handleChange}
-        >
-          {(activeValue) =>
-            filteredOptions.length === 0 ? (
-              <Flex justifyContent='center' w='100%'>
-                <Text variant='body' color='subdued' size='s'>
-                  {messages.noMatches}
-                </Text>
-              </Flex>
-            ) : (
-              filteredOptions?.map((option, index) => (
-                <MenuItem
-                  ref={(el) => {
-                    if (optionRefs && optionRefs.current && el) {
-                      optionRefs.current[index] = el
-                    }
-                  }}
-                  key={option.value}
-                  variant='option'
-                  {...option}
-                  onChange={handleChange}
-                  isActive={option.value === activeValue}
-                />
-              ))
-            )
-          }
-        </OptionKeyHandler>
+        {children
+          ? children({ onChange: handleChange, options: optionElements })
+          : optionElements}
       </Menu>
     </Flex>
   )

@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
 import { MenuProps } from 'components/internal/Menu'
@@ -12,6 +14,14 @@ export type SelectOption<Value extends string> = {
   leadingElement?: JSX.Element
 }
 
+type ChildrenProps<Value> = {
+  /**
+   * A function to handle when the value is changed
+   */
+  onChange: (value: Value) => void
+  options: ReactNode
+}
+
 export type SelectProps<Value extends string = string> = {
   value: Value
   onChange?: (value: Value) => void
@@ -22,10 +32,13 @@ export type SelectProps<Value extends string = string> = {
    */
   options: SelectOption<Value>[]
 
+  children?: (props: ChildrenProps<Value>) => ReactNode
+
   /**
    * Label to display above options
    */
   optionsLabel?: string
   InputProps?: Partial<TextInputProps>
   menuProps?: Partial<MenuProps>
-} & Omit<TextInputProps, 'value' | 'onChange'>
+  clearable?: boolean
+} & Omit<TextInputProps, 'value' | 'onChange' | 'children'>
