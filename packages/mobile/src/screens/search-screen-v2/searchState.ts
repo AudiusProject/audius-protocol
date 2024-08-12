@@ -26,7 +26,6 @@ type SearchContextType = {
   setBpmType: Dispatch<SetStateAction<string>>
   autoFocus: boolean
   setAutoFocus: Dispatch<SetStateAction<boolean>>
-  active: boolean
 }
 
 export const SearchContext = createContext<SearchContextType>({
@@ -41,8 +40,7 @@ export const SearchContext = createContext<SearchContextType>({
   setBpmType: (_) => {},
   // Special state to determine if the search query input should be focused automatically
   autoFocus: false,
-  setAutoFocus: (_) => {},
-  active: false
+  setAutoFocus: (_) => {}
 })
 
 export const useIsEmptySearch = () => {

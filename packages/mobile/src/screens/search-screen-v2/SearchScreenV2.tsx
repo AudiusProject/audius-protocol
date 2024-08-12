@@ -7,6 +7,7 @@ import type {
 import { Kind } from '@audius/common/models'
 import { searchSelectors } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { TextInput } from 'react-native/types'
 import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
@@ -15,12 +16,20 @@ import { Flex } from '@audius/harmony-native'
 import { Screen } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+
 import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import { SearchResults } from './search-results/SearchResults'
-import { SearchContext } from './searchState'
+import {
+  SearchContext,
+  useSearchAutoFocus,
+  useSearchCategory,
+  useSearchFilters,
+  useSearchQuery
+} from './searchState'
 
 const { getV2SearchHistory } = searchSelectors
 
@@ -32,25 +41,11 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
   albums: Kind.COLLECTIONS
 }
 
-export const SearchScreenV2 = () => {
-  const { params } = useRoute<'Search'>()
-
-  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
-  const [query, setQuery] = useState(params?.query ?? '')
-  const [category, setCategory] = useState<SearchCategory>(
-    params?.category ?? 'all'
-  )
-  const [filters, setFilters] = useState<SearchFiltersType>(
-    params?.filters ?? {}
-  )
-  const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
-
-  useEffect(() => {
-    setQuery(params?.query ?? '')
-    setCategory(params?.category ?? 'all')
-    setFilters(params?.filters ?? {})
-    setAutoFocus(params?.autoFocus ?? false)
-  }, [params])
+const SearchScreenV2 = () => {
+  const [query] = useSearchQuery()
+  const [category] = useSearchCategory()
+  const [filters] = useSearchFilters()
+  const [autoFocus, setAutoFocus] = useSearchAutoFocus()
 
   const history = useSelector(getV2SearchHistory)
   const categoryKind: Kind | null = category
@@ -85,6 +80,57 @@ export const SearchScreenV2 = () => {
   )
 
   return (
+    <Screen
+      topbarRight={<SearchBarV2 ref={searchBarRef} autoFocus />}
+      headerTitle={null}
+      variant='white'
+    >
+      <SearchCategoriesAndFilters />
+      <Flex flex={1}>
+        {!showSearchResults ? (
+          <Flex direction='column' alignItems='center' gap='xl'>
+            {showRecentSearches ? (
+              <RecentSearches
+                ListHeaderComponent={<SearchCatalogTile />}
+                searchItems={filteredSearchItems}
+              />
+            ) : (
+              <SearchCatalogTile />
+            )}
+          </Flex>
+        ) : (
+          <SearchResults />
+        )}
+      </Flex>
+    </Screen>
+  )
+}
+
+const Stack = createNativeStackNavigator()
+
+export const SearchScreenStack = () => {
+  const { params } = useRoute<'Search'>()
+
+  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
+  const [query, setQuery] = useState(params?.query ?? '')
+  const [category, setCategory] = useState<SearchCategory>(
+    params?.category ?? 'all'
+  )
+  const [filters, setFilters] = useState<SearchFiltersType>(
+    params?.filters ?? {}
+  )
+  const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
+
+  useEffect(() => {
+    setQuery(params?.query ?? '')
+    setCategory(params?.category ?? 'all')
+    setFilters(params?.filters ?? {})
+    setAutoFocus(params?.autoFocus ?? false)
+  }, [params])
+
+  const screenOptions = useAppScreenOptions()
+
+  return (
     <SearchContext.Provider
       value={{
         autoFocus,
@@ -96,33 +142,12 @@ export const SearchScreenV2 = () => {
         filters,
         setFilters,
         bpmType,
-        setBpmType,
-        active: true
+        setBpmType
       }}
     >
-      <Screen
-        topbarRight={<SearchBarV2 ref={searchBarRef} autoFocus />}
-        headerTitle={null}
-        variant='white'
-      >
-        <SearchCategoriesAndFilters />
-        <Flex flex={1}>
-          {!showSearchResults ? (
-            <Flex direction='column' alignItems='center' gap='xl'>
-              {showRecentSearches ? (
-                <RecentSearches
-                  ListHeaderComponent={<SearchCatalogTile />}
-                  searchItems={filteredSearchItems}
-                />
-              ) : (
-                <SearchCatalogTile />
-              )}
-            </Flex>
-          ) : (
-            <SearchResults />
-          )}
-        </Flex>
-      </Screen>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen name='SearchResults' component={SearchScreenV2} />
+      </Stack.Navigator>
     </SearchContext.Provider>
   )
 }
