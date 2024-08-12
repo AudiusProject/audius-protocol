@@ -12,9 +12,9 @@ export const parseMintToken = (
   }
   const mintName =
     mint instanceof PublicKey
-      ? (Object.entries(mints!)!.find(
+      ? (Object.entries(mints).find(
           (m) => !!m[1] && mintKey.equals(m[1])
-        )?.[0] as MintName)
+        )?.[0] as MintName | undefined)
       : mint
   if (!mintName) {
     throw Error('Mint not configured')
