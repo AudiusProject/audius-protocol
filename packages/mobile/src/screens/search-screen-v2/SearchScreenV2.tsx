@@ -142,7 +142,8 @@ export const SearchScreenStack = () => {
         filters,
         setFilters,
         bpmType,
-        setBpmType
+        setBpmType,
+        active: true
       }}
     >
       <Stack.Navigator screenOptions={screenOptions}>
