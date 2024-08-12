@@ -1220,10 +1220,15 @@ export class DiscoveryProvider {
         response
       })) ?? response
 
-    if (response && response.status >= 200 && response.status < 300) {
-      return await response.json()
+    // Matches logic from SDK `request` method
+    if (!response || response.status < 200 || response.status >= 300) {
+      throw new ResponseError(
+        response,
+        'Response did not contain a successful status code'
+      )
     }
-    throw new ResponseError(response, 'Response returned an error code')
+
+    return await response.json()
   }
 
   /**
@@ -1651,6 +1656,14 @@ export class DiscoveryProvider {
         ...fetchParams,
         response
       })) ?? response
+
+    // Matches logic from SDK `request` method
+    if (!response || response.status < 200 || response.status >= 300) {
+      throw new ResponseError(
+        response,
+        'Response did not contain a successful status code'
+      )
+    }
 
     const responseBody: DiscoveryResponse<Response> = await response.json()
 
