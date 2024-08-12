@@ -9,7 +9,7 @@ import { range } from 'lodash'
 import { Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Box, Divider, Flex, Text } from '@audius/harmony-native'
+import { Divider, Flex, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import { make, track as record } from 'app/services/analytics'
 
