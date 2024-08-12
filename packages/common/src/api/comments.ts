@@ -77,19 +77,9 @@ const commentsApi = createApi({
             'getCommentsByTrackId',
             { entityId },
             (prevState) => {
-              if (comment.parentCommentId) {
-                // Comment is a reply in this case
-                // Append to existing comment reply array
+              if (!comment.parentCommentId) {
                 // TODO: how should we handle sorting here?
-                // TODO: do we even need to do this
-                prevState
-                  .find((c: Comment) => c.id === comment.parentCommentId)
-                  ?.replies.push(comment)
-                return prevState
-              } else {
-                // New top level comment, just add it into the mix
-                // TODO: how should we handle sorting here?
-                return [comment, ...prevState]
+                prevState?.unshift(comment) // add new comment to top of comment section
               }
             }
           )
@@ -162,7 +152,7 @@ const commentsApi = createApi({
       }
     },
     pinCommentById: {
-      async fetch({ id, userId }: { id: string; userId: ID }) {
+      async fetch({ id: _id, userId: _userId }: { id: string; userId: ID }) {
         // TODO: call sdk here
       },
       options: { type: 'mutation' },
