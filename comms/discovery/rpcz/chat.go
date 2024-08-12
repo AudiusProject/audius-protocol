@@ -21,6 +21,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 	// todo: should mark hidden for blaster
 	blasts, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
 		UserID: userId,
+		ChatID: params.ChatID, // ideally we'd just filter by chat ID which would get "both sides"... but the user id is required for the sql query... so maybe we make it so you can query by two user IDs or something...
 	})
 	if err != nil {
 		return err
@@ -73,17 +74,45 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 			($1, $2, $3, $4, $5)
 		on conflict do nothing
 		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, ts, blast.BlastID)
-
 		if err != nil {
 			return err
 		}
 	}
+
+	err = chatUpdateLatestFields(tx, params.ChatID)
 
 	return err
 }
 
 func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.Time) error {
 	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
+	return err
+}
+
+func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
+	// universal latest message thing
+	_, err := tx.Exec(`
+	with latest as (
+		select
+			m.chat_id,
+			m.created_at,
+			m.ciphertext,
+			m.blast_id,
+			b.plaintext
+		from
+			chat_message m
+			left join chat_blast b using (blast_id)
+		where m.chat_id = $1
+		order by m.created_at desc
+		limit 1
+	)
+	update chat c
+	set
+		last_message_at = latest.created_at,
+		last_message = coalesce(latest.ciphertext, '~' || latest.plaintext)
+	from latest
+	where c.chat_id = latest.chat_id;
+	`, chatId)
 	return err
 }
 
@@ -97,7 +126,7 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	}
 
 	// update chat's info on last message
-	_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", messageTimestamp, ciphertext, chatId)
+	err = chatUpdateLatestFields(tx, chatId)
 	if err != nil {
 		return err
 	}

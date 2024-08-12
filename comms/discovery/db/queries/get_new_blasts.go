@@ -32,6 +32,7 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 			and follows.created_at < b.created_at
 			-- and follows.is_delete = false
 	)
+	order by created_at
 	`
 
 	var items []BlastRow
@@ -58,17 +59,19 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 		existingChatIds[id] = true
 	}
 
-	// // todo: filter out blast rows where chatIds is taken
+	// filter out blast rows where chatIds is taken
 	filtered := make([]BlastRow, 0, len(items))
 	for _, item := range items {
 		if existingChatIds[item.PendingChatID] {
+			continue
+		}
+		// allow caller to filter to blasts for a given chat ID
+		if arg.ChatID != "" && item.PendingChatID != arg.ChatID {
 			continue
 		}
 		filtered = append(filtered, item)
 	}
 
 	return filtered, err
-
-	return items, nil
 
 }

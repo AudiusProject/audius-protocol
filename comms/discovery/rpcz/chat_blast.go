@@ -30,6 +30,8 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 
 	// add to existing threads
 	// todo: this only works for "follows" target atm
+	var existingChatIDs []string
+
 	fanOutSql := `
 	with targ as (
 		select
@@ -45,26 +47,33 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 
 		where followee_user_id = $2
 		  and is_delete = false
+	),
+	insert_message as (
+		insert into chat_message
+			(message_id, chat_id, user_id, created_at, blast_id)
+		select
+			targ.blast_id || targ.chat_id,
+			targ.chat_id,
+			targ.from_user_id,
+			$3,
+			targ.blast_id
+		from targ
+		on conflict do nothing
 	)
-	insert into chat_message
-		(message_id, chat_id, user_id, created_at, blast_id)
-	select
-		targ.blast_id || targ.chat_id,
-		targ.chat_id,
-		targ.from_user_id,
-		$3,
-		targ.blast_id
-	from targ
-	on conflict do nothing
+	select chat_id from targ;
 	;
 	`
 
-	_, err = tx.Exec(fanOutSql, params.BlastID, userId, ts)
+	err = tx.Select(&existingChatIDs, fanOutSql, params.BlastID, userId, ts)
 	if err != nil {
 		return err
 	}
 
+	for _, chatId := range existingChatIDs {
+		if err := chatUpdateLatestFields(tx, chatId); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
-
-// will need a RPC to upgrade a blast to a dm

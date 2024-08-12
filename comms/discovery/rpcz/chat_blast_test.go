@@ -104,9 +104,6 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 1)
-
-		// todo: new blasts should omit this one now
-
 	}
 
 	// after upgrade... user 101 has no pending blasts
@@ -116,6 +113,19 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, blasts, 0)
+	}
+
+	// after upgrade... user 101 has a chat
+	{
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 101,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour),
+			After:  time.Now().Add(time.Hour * -1),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, chats, 1)
+		_ = chats
 	}
 
 	// ----------------- a second message ------------------------
