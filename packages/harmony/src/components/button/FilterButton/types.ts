@@ -38,6 +38,8 @@ type ChildrenProps<Value> = {
 }
 
 export type FilterButtonProps<Value extends string = string> = {
+  value?: Value | null
+  onChange?: (value: Value) => void
   /**
    * Selection options
    * e.g. { label: 'Option A', icon: IconRadar }
@@ -62,11 +64,6 @@ export type FilterButtonProps<Value extends string = string> = {
   'aria-label'?: string
 
   /**
-   * The value
-   */
-  value?: Value | null
-
-  /**
    * The button size
    * @default FilterButtonSize.DEFAULT
    */
@@ -87,11 +84,6 @@ export type FilterButtonProps<Value extends string = string> = {
    * Optional icon element to include on the right side of the button
    */
   iconRight?: IconComponent | null
-
-  /**
-   * What to do when the value is changed
-   */
-  onChange?: (value: Value) => void
 
   /**
    * What to do when the filter button is opened

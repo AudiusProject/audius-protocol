@@ -32,6 +32,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
 ) {
   const { label, isActive, onClick, icon, leadingElement, variant, ...other } =
     props
+
   const { color, cornerRadius, spacing, typography } = useTheme()
 
   // Popup Styles
@@ -71,8 +72,12 @@ export const MenuItem = forwardRef(function <Value extends string>(
     (e) => {
       e.stopPropagation()
       onClick?.(e)
+
+      if (variant === 'option') {
+        props.onChange(props.value)
+      }
     },
-    [onClick]
+    [onClick, props, variant]
   )
 
   return (
@@ -89,9 +94,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
       onClick={handleClick}
       role={variant === 'option' ? 'option' : undefined}
       {...other}
-      onChange={
-        variant === 'option' ? () => props.onChange(props.value) : undefined
-      }
+      onChange={undefined}
     >
       {leadingElement ?? null}
       <Text
@@ -99,7 +102,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
         size={variant === 'option' ? 'l' : 'm'}
         strength={variant === 'button' ? 'strong' : 'default'}
       >
-        {label}
+        {variant === 'option' ? label ?? props.value : label}
       </Text>
     </BaseButton>
   )

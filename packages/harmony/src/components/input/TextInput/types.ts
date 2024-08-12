@@ -57,6 +57,8 @@ export type TextInputProps = Omit<
    * @default false
    */
   hideLabel?: boolean
+
+  hidePlaceholder?: boolean
   /**
    * Label Text. Required due to accessibility. If hideLabel is true, the label is set via aria-label
    */
@@ -108,4 +110,8 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
+  /**
+   * When `true` elevate the label. Useful for adding custom values. Reference `Select` component
+   */
+  elevateLabel?: boolean
 } & InternalProps

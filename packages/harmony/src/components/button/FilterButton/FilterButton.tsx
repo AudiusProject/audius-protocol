@@ -226,7 +226,6 @@ export const FilterButton = forwardRef(function FilterButton<
               }
             }}
             key={option.value}
-            label={option.value}
             {...option}
             onChange={handleChange}
             isActive={option.value === activeValue}
