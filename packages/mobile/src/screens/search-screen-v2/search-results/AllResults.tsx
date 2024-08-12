@@ -63,9 +63,7 @@ const AllResultsItem = ({
   }, [item, dispatch, query])
 
   return item.status === Status.LOADING ? (
-    <Box ph='m'>
-      <SearchItemSkeleton />
-    </Box>
+    <SearchItemSkeleton />
   ) : (
     <SearchItem searchItem={item} onPress={handlePress} />
   )
