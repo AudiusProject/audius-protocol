@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { ID, SquareSizes } from '@audius/common/models'
+import { useGetUserById } from '@audius/common/api'
+import { SquareSizes, Status } from '@audius/common/models'
 import {
   Avatar,
   Flex,
@@ -12,15 +13,15 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { Comment } from '@audius/sdk'
 import dayjs from 'dayjs'
+import { usePrevious } from 'react-use'
 
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import { decodeHashId } from 'utils/hashIds'
 
 import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
-import type { Comment } from './types'
 
 // TODO: move this somewhere else
 // Format the date using the largest possible unit (y>mo>d>h>min)
@@ -61,7 +62,7 @@ const formatTrackTimestamp = (timestamp_s: number) => {
 
 export type CommentBlockProps = {
   comment: Comment
-  parentCommentId?: ID
+  parentCommentId?: string
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
@@ -80,14 +81,29 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
 
   const {
-    handleEditComment,
-    handlePostComment,
-    handleDeleteComment,
-    handleReactComment,
-    handlePinComment
+    usePostComment,
+    useEditComment,
+    useDeleteComment,
+    useReactToComment,
+    usePinComment
   } = useCurrentCommentSection()
 
+  const [editComment] = useEditComment()
+  const [deleteComment] = useDeleteComment()
+  const [reactToComment] = useReactToComment()
+  const [pinComment] = usePinComment()
+  const [postComment, { status: commentPostStatus }] = usePostComment()
+  const prevPostStatus = usePrevious(commentPostStatus)
+  useEffect(() => {
+    if (
+      prevPostStatus !== commentPostStatus &&
+      commentPostStatus === Status.SUCCESS
+    ) {
+      setShowReplyInput(false)
+    }
+  }, [commentPostStatus, prevPostStatus])
   const userId = Number(userIdStr)
+  useGetUserById({ id: userId })
   const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
 
   const [showEditInput, setShowEditInput] = useState(false)
@@ -98,22 +114,25 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
   const handleCommentEdit = (commentMessage: string) => {
     setShowEditInput(false)
-    handleEditComment(commentId, commentMessage)
+    editComment(commentId, commentMessage)
   }
 
   const handleCommentReply = (commentMessage: string) => {
-    setShowReplyInput(false)
-    handlePostComment(commentMessage, parentCommentId)
+    postComment(commentMessage, parentCommentId)
   }
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
-    handleReactComment(commentId, !reactionState)
+    reactToComment(commentId, !reactionState)
   }
 
   const handleCommentDelete = () => {
     // TODO: what should UI be doing here
-    handleDeleteComment(commentId)
+    deleteComment(commentId)
+  }
+
+  const handleCommentPin = () => {
+    pinComment(commentId)
   }
 
   return (
@@ -140,7 +159,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         <Flex gap='s' alignItems='center'>
           <UserLink userId={userId} />
           {/* TODO: figure out date from created_at */}
-          <Flex gap='xs' alignItems='center'>
+          <Flex gap='xs' alignItems='center' h='100%'>
             {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
             <Text size='s'> {formatCommentDate(createdAt)} </Text>
             {timestampS !== undefined ? (
@@ -212,14 +231,17 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconMerch}
               size='s'
               color='subdued'
-              onClick={() => {
-                handlePinComment(commentId)
-              }}
+              onClick={handleCommentPin}
             />
           ) : null}
         </Flex>
 
-        {showReplyInput ? <CommentForm onSubmit={handleCommentReply} /> : null}
+        {showReplyInput ? (
+          <CommentForm
+            onSubmit={handleCommentReply}
+            isLoading={commentPostStatus === Status.LOADING}
+          />
+        ) : null}
       </Flex>
     </Flex>
   )

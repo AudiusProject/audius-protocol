@@ -1,3 +1,4 @@
+import { EntityType, Comment } from '@audius/sdk'
 import { CommentMetadata } from '@audius/sdk/dist/sdk/api/comments/CommentsAPI'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
@@ -5,12 +6,10 @@ import { createApi } from '~/audius-query'
 import { ID } from '~/models'
 import { decodeHashId, encodeHashId } from '~/utils'
 
-type Comment = any
-
 // Helper method to save on some copy-pasta
 const optimisticUpdateComment = (
-  id: ID,
-  updates: (prevState: Comment) => Comment,
+  id: string,
+  updateRecipe: (prevState: Comment | undefined) => Comment,
   dispatch: ThunkDispatch<any, any, any>
 ) => {
   dispatch(
@@ -19,7 +18,7 @@ const optimisticUpdateComment = (
       {
         id
       },
-      updates
+      updateRecipe
     )
   )
 }
@@ -37,17 +36,17 @@ const commentsApi = createApi({
         return commentsRes?.data
       },
       options: { type: 'query' },
-      async onQuerySuccess(comments, _args, { dispatch }) {
+      async onQuerySuccess(comments: Comment[], _args, { dispatch }) {
         comments.forEach((comment) => {
           optimisticUpdateComment(comment.id, () => comment, dispatch)
         })
       }
     },
     getCommentById: {
-      async fetch({ id }: { id: ID }, { audiusSdk }) {
+      async fetch({ id }: { id: string }, { audiusSdk }) {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getComment({
-          id: encodeHashId(id)
+          id
         })
         return commentsRes?.data
       },
@@ -67,32 +66,45 @@ const commentsApi = createApi({
         }
         const commentsRes = await sdk.comments.postComment({
           ...commentData,
-          parentCommentId: decodedParentCommentId
+          parentCommentId: decodedParentCommentId ?? undefined // undefined is allowed but null is not
         })
         return commentsRes
       },
       options: { type: 'mutation' },
-      async onQuerySuccess(comment, _args, { dispatch }) {
-        // TODO: update store with new comment
+      async onQuerySuccess({ data: comment }, { entityId }, { dispatch }) {
+        dispatch(
+          commentsApi.util.updateQueryData(
+            'getCommentsByTrackId',
+            { entityId },
+            // TODO: how should we handle sorting here?
+            (prevState) => [comment, ...prevState]
+          )
+        )
         optimisticUpdateComment(comment.id, () => comment, dispatch)
       }
     },
 
     // TODO: should this be optimistic or not?
     deleteCommentById: {
-      async fetch({ id, userId }: { id: ID; userId: ID }, { audiusSdk }) {
+      async fetch(
+        { id, userId, entityId }: { id: string; userId: ID; entityId: ID },
+        { audiusSdk }
+      ) {
+        const decodedId = decodeHashId(id.toString())
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to delete comment. Id ${id} could not be decoded`
+          )
+          return
+        }
         const commentData = {
           userId,
-          entityId: decodeHashId(id.toString())
+          entityId: decodedId
         }
         const sdk = await audiusSdk()
         await sdk.comments.deleteComment(commentData)
       },
-      options: { type: 'mutation' },
-      async onQueryStarted({ id }, { dispatch }) {
-        // TODO: How to delete?
-        // optimisticUpdateComment(id, (comment) => comment, dispatch)
-      }
+      options: { type: 'mutation' }
     },
     // Optimistic mutations
     editCommentById: {
@@ -100,19 +112,28 @@ const commentsApi = createApi({
         {
           id,
           userId,
-          newMessage
+          newMessage,
+          entityType = EntityType.TRACK // Comments only on tracks for now; likely to expand to collections in the future
         }: {
-          id: ID
+          id: string
           userId: ID
           newMessage: string
+          entityType?: EntityType
         },
         { audiusSdk }
       ) {
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to edit comment. Id ${id} could not be decoded`
+          )
+          return
+        }
         const commentData = {
           body: newMessage,
           userId,
-          entityId: decodeHashId(id.toString()),
-          entityType: 'TRACK' // Comments are only on tracks for now; likely expand to collections in the future
+          entityId: decodedId,
+          entityType
         }
         const sdk = await audiusSdk()
         await sdk.comments.editComment(commentData)
@@ -121,44 +142,49 @@ const commentsApi = createApi({
       async onQueryStarted({ id, newMessage }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...comment, message: newMessage }),
+          (comment) => ({ ...(comment as Comment), message: newMessage }),
           dispatch
         )
       }
     },
     pinCommentById: {
-      async fetch({ id, userId }: { id: ID; userId: ID }) {
+      async fetch({ id, userId }: { id: string; userId: ID }) {
         // TODO: call sdk here
       },
       options: { type: 'mutation' },
       async onQueryStarted({ id }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...comment, isPinned: !comment.isPinned }),
+          (comment) => ({
+            ...(comment as Comment),
+            isPinned: !comment?.isPinned
+          }),
           dispatch
         )
       }
     },
     reactToCommentById: {
       async fetch(
-        { id, userId, isLiked }: { id: ID; userId: ID; isLiked: boolean },
+        { id, userId, isLiked }: { id: string; userId: ID; isLiked: boolean },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
-        // TODO: react comment is not correct in the SDK
-        // await sdk.comments.reactComment(
-        //   userId,
-        //   decodeHashId(id.toString()),
-        //   isLiked
-        // )
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to react to comment. Id ${id} could not be decoded`
+          )
+          return
+        }
+        await sdk.comments.reactComment(userId, decodedId, isLiked)
       },
       options: { type: 'mutation' },
       async onQueryStarted({ id, isLiked }, { dispatch }) {
         optimisticUpdateComment(
           id,
           (comment) => ({
-            ...comment,
-            reactCount: comment.reactCount + isLiked ? 1 : -1
+            ...(comment as Comment),
+            reactCount: comment?.reactCount + isLiked ? 1 : -1
           }),
           dispatch
         )

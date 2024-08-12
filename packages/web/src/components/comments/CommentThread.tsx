@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { useGetCommentById } from '@audius/common/api'
-import { ID } from '@audius/common/models'
 import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
 
 import { CommentBlock } from './CommentBlock'
@@ -11,7 +10,7 @@ const messages = {
   showMoreReplies: 'Show More Replies'
 }
 
-export const CommentThread = ({ commentId }: { commentId: ID }) => {
+export const CommentThread = ({ commentId }: { commentId: string }) => {
   const { data: rootComment } = useGetCommentById({
     id: commentId
   })
@@ -21,11 +20,13 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
     [parentCommentId: number]: boolean
   }>({})
 
-  const toggleReplies = (commentId: ID) => {
+  const toggleReplies = (commentId: string) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
+
+  if (!rootComment) return null
 
   return (
     <Flex direction='column'>
