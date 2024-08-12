@@ -76,20 +76,20 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       'crateTransferInstruction',
       CreateTransferInstructionSchema
     )(params)
-    const { mintName, mintKey } = parseMintToken(args.mint, this.mints)
+    const { mint, token } = parseMintToken(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
-      mint: mintName
+      mint
     })
     const sourceWallet = args.sourceWallet
     const sourceTokenAccount = getAssociatedTokenAddressSync(
-      mintKey,
+      mint,
       sourceWallet,
       false
     )
-    const amount = mintFixedDecimalMap[mintName](args.total)
+    const amount = mintFixedDecimalMap[token](args.total)
     return createTransferCheckedInstruction(
       sourceTokenAccount,
-      mintKey,
+      mint,
       programTokenAccount.address,
       sourceWallet,
       amount.value,
@@ -102,9 +102,9 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       'createRouteInstruction',
       CreateRouteInstructionSchema
     )(params)
-    const { mintName } = parseMintToken(args.mint, this.mints)
+    const { mint, token } = parseMintToken(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
-      mint: mintName
+      mint
     })
     const recipients: PublicKey[] = []
     const amounts: bigint[] = []
@@ -112,7 +112,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       recipients.push(split.wallet)
       amounts.push(split.amount)
     }
-    const totalAmount = mintFixedDecimalMap[mintName](args.total).value
+    const totalAmount = mintFixedDecimalMap[token](args.total).value
     return PaymentRouterProgram.createRouteInstruction({
       sender: programTokenAccount.address,
       senderOwner: this.programAccount,
@@ -195,16 +195,16 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       GetOrCreateProgramTokenAccountSchema
     )(params)
 
-    const { mintKey, mintName } = parseMintToken(args.mint, this.mints)
+    const { mint, token } = parseMintToken(args.mint, this.mints)
 
     // Check for cached account
-    const existingTokenAccount = this.existingTokenAccounts[mintName]
+    const existingTokenAccount = this.existingTokenAccounts[token]
     if (existingTokenAccount) {
       return existingTokenAccount
     }
 
     const associatedTokenAdddress = getAssociatedTokenAddressSync(
-      mintKey,
+      mint,
       this.programAccount,
       true
     )
@@ -212,7 +212,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
     let account: Account | null = null
     try {
       account = await getAccount(this.connection, associatedTokenAdddress)
-      this.existingTokenAccounts[mintName] = account
+      this.existingTokenAccounts[token] = account
     } catch (error: unknown) {
       if (error instanceof TokenAccountNotFoundError) {
         // As this isn't atomic, it's possible others can create associated accounts meanwhile.
@@ -221,7 +221,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
             await this.getFeePayer(),
             associatedTokenAdddress,
             this.programAccount,
-            mintKey
+            mint
           )
           const { lastValidBlockHeight, blockhash } =
             await this.connection.getLatestBlockhash()
@@ -248,7 +248,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       }
     }
 
-    if (!account.mint.equals(mintKey)) throw new TokenInvalidMintError()
+    if (!account.mint.equals(mint)) throw new TokenInvalidMintError()
     if (!account.owner.equals(this.programAccount))
       throw new TokenInvalidOwnerError()
     return account

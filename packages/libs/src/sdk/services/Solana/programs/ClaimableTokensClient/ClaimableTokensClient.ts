@@ -69,8 +69,8 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'getOrCreateUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    const { ethWallet, mint, feePayer: feePayerOverride } = args
-    const { mintKey, mintName } = parseMintToken(mint, this.mints)
+    const { ethWallet, feePayer: feePayerOverride } = args
+    const { mint, token } = parseMintToken(args.mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const userBank = await this.deriveUserBank(args)
     const userBankAccount = await this.connection.getAccountInfo(userBank)
@@ -79,8 +79,8 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: ethWallet,
           payer: feePayer,
-          mint: mintKey,
-          authority: this.authorities[mintName],
+          mint,
+          authority: this.authorities[token],
           userBank,
           programId: this.programId
         })
@@ -123,12 +123,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
-    const { mintName } = parseMintToken(mint, this.mints)
+    const { token } = parseMintToken(mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mintName],
+      authority: this.authorities[token],
       programId: this.programId
     })
     return ClaimableTokensProgram.createTransferInstruction({
@@ -137,7 +137,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       sourceUserBank: source,
       destination,
       nonceAccount: nonceKey,
-      authority: this.authorities[mintName],
+      authority: this.authorities[token],
       programId: this.programId
     })
   }
@@ -155,12 +155,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         CreateSecpSchema
       )(params)
 
-    const { mintName } = parseMintToken(mint, this.mints)
+    const { token } = parseMintToken(mint, this.mints)
 
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mintName],
+      authority: this.authorities[token],
       programId: this.programId
     })
     const nonceAccount = await this.connection.getAccountInfo(nonceKey)
@@ -172,7 +172,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: mintFixedDecimalMap[mintName](amount).value,
+      amount: mintFixedDecimalMap[token](amount).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)
@@ -196,11 +196,11 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       GetOrCreateUserBankSchema
     )(params)
 
-    const { mintName } = parseMintToken(mint, this.mints)
+    const { token } = parseMintToken(mint, this.mints)
 
     return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
-      claimableTokensPDA: this.authorities[mintName]
+      claimableTokensPDA: this.authorities[token]
     })
   }
 }
