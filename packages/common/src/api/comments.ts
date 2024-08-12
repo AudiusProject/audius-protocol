@@ -76,8 +76,22 @@ const commentsApi = createApi({
           commentsApi.util.updateQueryData(
             'getCommentsByTrackId',
             { entityId },
-            // TODO: how should we handle sorting here?
-            (prevState) => [comment, ...prevState]
+            (prevState) => {
+              if (comment.parentCommentId) {
+                // Comment is a reply in this case
+                // Append to existing comment reply array
+                // TODO: how should we handle sorting here?
+                // TODO: do we even need to do this
+                prevState
+                  .find((c: Comment) => c.id === comment.parentCommentId)
+                  ?.replies.push(comment)
+                return prevState
+              } else {
+                // New top level comment, just add it into the mix
+                // TODO: how should we handle sorting here?
+                return [comment, ...prevState]
+              }
+            }
           )
         )
         optimisticUpdateComment(comment.id, () => comment, dispatch)
