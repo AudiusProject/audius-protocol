@@ -16,7 +16,8 @@ import {
   FetchError,
   Genre,
   Middleware,
-  Mood
+  Mood,
+  ResponseError
 } from '../../sdk'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
@@ -1219,7 +1220,10 @@ export class DiscoveryProvider {
         response
       })) ?? response
 
-    return await response.json()
+    if (response && response.status >= 200 && response.status < 300) {
+      return await response.json()
+    }
+    throw new ResponseError(response, 'Response returned an error code')
   }
 
   /**
