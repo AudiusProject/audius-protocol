@@ -282,7 +282,10 @@ const RenderForm = ({
     setPurchaseVendor(purchaseVendor)
   }, [purchaseVendor, setPurchaseVendor])
 
-  const { data: balance } = useUSDCBalance({ isPolling: true })
+  const { data: balance } = useUSDCBalance({
+    isPolling: true,
+    commitment: 'confirmed'
+  })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance

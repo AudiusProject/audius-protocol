@@ -27,11 +27,11 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier, requestId, validatedRelayRequest, logger } = response.locals.ctx
+  const { ip, recoveredSigner, signerIsApp, isAnonymousAllowed, isSenderVerifier, validatedRelayRequest, logger } = response.locals.ctx
 
   // no AAO to check and creates / deactivates should always be allowed
-  if (signerIsApp || createOrDeactivate || isSenderVerifier) {
-    logger.info({ createOrDeactivate, isSenderVerifier }, "antiabuse skipped")
+  if (signerIsApp || isAnonymousAllowed || isSenderVerifier) {
+    logger.info({ isAnonymousAllowed, isSenderVerifier }, "antiabuse skipped")
     next()
     return
   }

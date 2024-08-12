@@ -1,5 +1,6 @@
 import { config, wallets, web3 } from ".";
 import { internalError } from "./error";
+import { retryPromise } from "./utils";
 import { confirm } from "./web3";
 import {
   TransactionReceipt,
@@ -27,7 +28,7 @@ export const relayTransaction = async (
   let submit = undefined
   try {
     // gather some transaction params
-    nonce = await web3.getTransactionCount(address);
+    nonce = await retryPromise(() => web3.getTransactionCount(address));
 
     const to = contractAddress;
     const value = "0x00";
@@ -39,7 +40,7 @@ export const relayTransaction = async (
 
     logger.info({ senderWallet: address, nonce }, "submitting transaction")
 
-    submit = await senderWallet.sendTransaction(transaction);
+    submit = await retryPromise(() => senderWallet.sendTransaction(transaction));
 
     // query chain until tx is mined
     const receipt = await confirm(submit.hash);
@@ -47,7 +48,7 @@ export const relayTransaction = async (
     logger.info({ senderWallet: address, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
     res.send({ receipt });
   } catch (e) {
-    logger.error({ senderWallet: address, nonce, txHash: submit?.hash }, "transaction confirmation failed")
+    logger.error({ senderWallet: address, nonce, txHash: submit?.hash }, "transaction submission failed")
     internalError(next, e);
     return;
   }

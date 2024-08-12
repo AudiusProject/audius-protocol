@@ -4,7 +4,7 @@ import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
-import { isUserCreate, isUserDeactivate } from '../utils'
+import { isTrackDownload, isUserCreate, isUserDeactivate } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
 const MAX_ACDC_GAS_LIMIT = 10485760
@@ -73,7 +73,7 @@ export const validator = async (
 
   let signerIsApp = false
   let signerIsUser = false
-  let createOrDeactivate = false
+  let isAnonymousAllowed = false
   const isSenderVerifier = senderAddress === config.verifierAddress
 
   const user = await retrieveUser(
@@ -97,17 +97,22 @@ export const validator = async (
     const isDeactivated = (recoveredSigner as Users).is_deactivated
     if (isUserDeactivate(isDeactivated, encodedABI)) {
       logger.info("user deactivation")
-      createOrDeactivate = true
+      isAnonymousAllowed = true
     }
   }
 
   if (isUserCreate(encodedABI)) {
     logger.info("user create")
-    createOrDeactivate = true
+    isAnonymousAllowed = true
+  }
+
+  if (isTrackDownload(encodedABI)) {
+    logger.info("track download")
+    isAnonymousAllowed = true
   }
 
   // could not find user and is not create, find app
-  if (!signerIsUser && !createOrDeactivate && !isSenderVerifier) {
+  if (!signerIsUser && !isAnonymousAllowed && !isSenderVerifier) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
       logger.error("neither user nor developer app could be found for address")
@@ -133,7 +138,7 @@ export const validator = async (
     ...oldCtx,
     validatedRelayRequest,
     recoveredSigner,
-    createOrDeactivate,
+    isAnonymousAllowed,
     ip,
     signerIsApp,
     signerIsUser,

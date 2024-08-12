@@ -72,6 +72,7 @@ class Action(str, Enum):
     VIEW_PLAYLIST = "ViewPlaylist"
     APPROVE = "Approve"
     REJECT = "Reject"
+    DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
 

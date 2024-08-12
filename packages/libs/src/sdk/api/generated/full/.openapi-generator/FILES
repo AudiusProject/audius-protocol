@@ -34,6 +34,7 @@ models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
+models/FullRemixersResponse.ts
 models/FullReposts.ts
 models/FullSubscribersResponse.ts
 models/FullSupporter.ts

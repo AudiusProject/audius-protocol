@@ -173,6 +173,7 @@ export const createUploadTrackMetadataSchema = () =>
     bpm: z.optional(z.number().nullable()),
     isCustomBpm: z.optional(z.boolean()),
     musicalKey: z.optional(z.string().nullable()),
+    isCustomMusicalKey: z.optional(z.boolean()),
     audioAnalysisErrorCount: z.optional(z.number())
   })
 
@@ -285,6 +286,17 @@ export const UnrepostTrackSchema = z
   .strict()
 
 export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
+
+export const RecordTrackDownloadSchema = z
+  .object({
+    userId: HashId.optional(),
+    trackId: HashId
+  })
+  .strict()
+
+export type RecordTrackDownloadRequest = z.input<
+  typeof RecordTrackDownloadSchema
+>
 
 const PurchaseTrackSchemaBase = z.object({
   /** The ID of the user purchasing the track. */

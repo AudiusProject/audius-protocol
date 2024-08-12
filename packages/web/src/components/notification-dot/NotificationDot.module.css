@@ -5,8 +5,8 @@
 }
 
 .large {
-  width: var(--harmony-unit-3);
-  height: var(--harmony-unit-3);
+  width: 14px;
+  height: 14px;
 }
 
 .small {

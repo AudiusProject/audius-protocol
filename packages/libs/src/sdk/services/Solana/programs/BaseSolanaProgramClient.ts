@@ -3,12 +3,14 @@ import {
   ComputeBudgetProgram,
   Connection,
   PublicKey,
+  Transaction,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
 import { z } from 'zod'
 
 import { parseParams } from '../../../utils/parseParams'
+import { LoggerService } from '../../Logger'
 import type { SolanaWalletAdapter } from '../types'
 
 import {
@@ -39,11 +41,13 @@ const priorityToPercentileMap: Record<
 export class BaseSolanaProgramClient {
   /** The Solana RPC client. */
   public readonly connection: Connection
+  protected readonly logger: LoggerService
   constructor(
     config: BaseSolanaProgramConfigInternal,
     protected wallet: SolanaWalletAdapter
   ) {
     this.connection = new Connection(config.rpcEndpoint, config.rpcConfig)
+    this.logger = config.logger
   }
 
   /**
@@ -106,7 +110,7 @@ export class BaseSolanaProgramClient {
       feePayer,
       recentBlockhash,
       addressLookupTables = [],
-      priorityFee
+      priorityFee = { priority: 'VERY_HIGH', minimumMicroLamports: 150_000 }
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {
@@ -123,18 +127,21 @@ export class BaseSolanaProgramClient {
         )
       } else {
         const res = await this.connection.getRecentPrioritizationFees()
-        const orderedFees = res.map((r) => r.prioritizationFee).sort()
+        const orderedFees = res
+          .map((r) => r.prioritizationFee)
+          .sort((a, b) => a - b)
         const percentile =
           'percentile' in priorityFee
             ? priorityFee.percentile
             : priorityToPercentileMap[priorityFee.priority]
-        const microLamports =
-          orderedFees[
-            Math.max(
-              Math.round((percentile / 100.0) * orderedFees.length - 1),
-              0
-            )
-          ]
+        const percentileIndex = Math.max(
+          Math.round((percentile / 100.0) * orderedFees.length - 1),
+          0
+        )
+        const microLamports = Math.max(
+          orderedFees[percentileIndex] ?? 0,
+          priorityFee.minimumMicroLamports ?? 0
+        )
         if (microLamports !== undefined) {
           instructions.push(
             ComputeBudgetProgram.setComputeUnitPrice({
@@ -168,7 +175,10 @@ export class BaseSolanaProgramClient {
     return this.wallet.publicKey!
   }
 
-  private async getLookupTableAccounts(lookupTableKeys: PublicKey[]) {
+  /**
+   * Fetches the address look up tables for populating transaction objects
+   */
+  protected async getLookupTableAccounts(lookupTableKeys: PublicKey[]) {
     return await Promise.all(
       lookupTableKeys.map(async (accountKey) => {
         const res = await this.connection.getAddressLookupTable(accountKey)
@@ -178,5 +188,25 @@ export class BaseSolanaProgramClient {
         return res.value
       })
     )
+  }
+
+  /**
+   * Normalizes the instructions as TransactionInstruction whether from
+   * versioned transactions or legacy transactions.
+   */
+  protected async getInstructions(
+    transaction: VersionedTransaction | Transaction
+  ) {
+    if ('version' in transaction) {
+      const lookupTableAccounts = await this.getLookupTableAccounts(
+        transaction.message.addressTableLookups.map((k) => k.accountKey)
+      )
+      const decompiled = TransactionMessage.decompile(transaction.message, {
+        addressLookupTableAccounts: lookupTableAccounts
+      })
+      return decompiled.instructions
+    } else {
+      return transaction.instructions
+    }
   }
 }

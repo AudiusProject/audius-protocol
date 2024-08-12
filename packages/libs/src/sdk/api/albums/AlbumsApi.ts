@@ -356,10 +356,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ],
-        priorityFee: {
-          microLamports: 100000
-        }
+        ]
       })
       return transaction
     } else {
@@ -397,10 +394,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ],
-        priorityFee: {
-          microLamports: 100000
-        }
+        ]
       })
       return transaction
     }
