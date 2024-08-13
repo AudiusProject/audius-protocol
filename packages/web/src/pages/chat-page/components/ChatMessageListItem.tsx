@@ -19,6 +19,7 @@ import {
 } from '@audius/common/utils'
 import { IconError, IconPlus } from '@audius/harmony'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
 
@@ -195,7 +196,10 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             }
             // Push the anchor tag
             parts.push(
-              <a key={index} href={new URL(match).pathname}>
+              <a
+                key={index}
+                onClick={() => dispatch(pushRoute(new URL(match).pathname))}
+              >
                 {formatTrackName({ track })}
               </a>
             )
@@ -212,7 +216,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       setMessageBody(parts)
     }
     fn()
-  }, [message.message])
+  }, [message.message, dispatch])
 
   return (
     <div
