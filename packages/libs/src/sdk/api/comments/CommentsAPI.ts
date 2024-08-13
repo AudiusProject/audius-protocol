@@ -32,7 +32,7 @@ export class CommentsApi extends GeneratedCommentsApi {
   async postComment(metadata: CommentMetadata) {
     const { userId } = metadata
     const newCommentId = Math.floor(Math.random() * 10000000) // TODO: need to get an unclaimed id. SEE TrackUploadHelper.generateId
-    const response = await this.entityManager.manageEntity({
+    await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
       entityId: newCommentId,
@@ -44,7 +44,12 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
     this.logger.info('Successfully posted a comment')
-    return response
+
+    // After posting a comment, fetch the comment to get the full object
+    const newCommentResponse = await this.getComment({
+      id: newCommentId.toString()
+    })
+    return newCommentResponse
   }
 
   async editComment(metadata: CommentMetadata) {

@@ -37,6 +37,8 @@ type BottomButtonsProps = {
   streamConditions?: Nullable<AccessConditions>
   gatedTrackStatus?: GatedContentStatus
   isMatrixMode: boolean
+  contentId: number
+  contentType: string
 }
 
 const BottomButtons = (props: BottomButtonsProps) => {
@@ -75,6 +77,8 @@ const BottomButtons = (props: BottomButtonsProps) => {
             streamConditions={props.streamConditions}
             unlocking={props.gatedTrackStatus === 'UNLOCKING'}
             onClick={props.onClickGatedUnlockPill}
+            contentId={props.contentId}
+            contentType={props.contentType}
           />
         </Text>
         {props.readonly ? null : moreButton}

@@ -16,7 +16,8 @@ import {
   FetchError,
   Genre,
   Middleware,
-  Mood
+  Mood,
+  ResponseError
 } from '../../sdk'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
@@ -1218,6 +1219,14 @@ export class DiscoveryProvider {
         ...fetchParams,
         response
       })) ?? response
+
+    // Matches logic from SDK `request` method
+    if (!response || response.status < 200 || response.status >= 300) {
+      throw new ResponseError(
+        response,
+        'Response did not contain a successful status code'
+      )
+    }
 
     return await response.json()
   }

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import type {
   TrackForUpload,
@@ -21,15 +21,19 @@ export type CompleteTrackParams = TrackForUpload
 export const CompleteTrackScreen = () => {
   const { params } = useRoute<UploadRouteProp<'CompleteTrack'>>()
   const { metadata, file } = params
+  const [uploadAttempt, setUploadAttempt] = useState(1)
   const navigation = useNavigation<UploadParamList>()
 
   const handleSubmit = useCallback(
     (metadata: TrackMetadataForUpload) => {
       navigation.push('UploadingTracks', {
-        tracks: [{ file, preview: null, metadata }]
+        tracks: [{ file, preview: null, metadata }],
+        uploadAttempt
       })
+      // Increment attempt count in case we get sent back here after an error
+      setUploadAttempt(uploadAttempt + 1)
     },
-    [navigation, file]
+    [navigation, file, uploadAttempt]
   )
 
   return (

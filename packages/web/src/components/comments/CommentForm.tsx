@@ -1,5 +1,11 @@
 import { SquareSizes } from '@audius/common/models'
-import { Avatar, Flex, IconButton, IconSend } from '@audius/harmony'
+import {
+  Avatar,
+  Flex,
+  IconButton,
+  IconSend,
+  LoadingSpinner
+} from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 
 import { TextField } from 'components/form-fields'
@@ -15,12 +21,14 @@ type CommentFormProps = {
   onSubmit: (commentMessage: string) => void
   initialValue?: string
   hideAvatar?: boolean
+  isLoading?: boolean
 }
 
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  hideAvatar = false
+  hideAvatar = false,
+  isLoading
 }: CommentFormProps) => {
   const { userId } = useCurrentCommentSection()
   const profileImage = useProfilePicture(
@@ -49,13 +57,21 @@ export const CommentForm = ({
               css={{ width: 40, height: 40, flexShrink: 0 }}
             />
           ) : null}
-          <TextField name='commentMessage' label='Add a comment' />
-          <IconButton
-            aria-label='Post comment'
-            icon={IconSend}
-            color='accent'
-            type='submit'
+          <TextField
+            name='commentMessage'
+            label='Add a comment'
+            disabled={isLoading}
           />
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <IconButton
+              aria-label='Post comment'
+              icon={IconSend}
+              color='accent'
+              type='submit'
+            />
+          )}
         </Flex>
       </Form>
     </Formik>

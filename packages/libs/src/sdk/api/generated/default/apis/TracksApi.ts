@@ -116,6 +116,8 @@ export interface StreamTrackRequest {
 
 export interface TrackCommentsRequest {
     trackId: string;
+    offset?: number;
+    limit?: number;
 }
 
 /**
@@ -579,6 +581,14 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  Name,
   FollowSource,
   ModalSource,
   Chain,
@@ -46,6 +47,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
+import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
@@ -305,7 +307,16 @@ const LockedGatedContentSection = ({
         <Button
           variant='primary'
           color='lightGreen'
-          onClick={handlePurchase}
+          onClick={() => {
+            track(
+              make({
+                eventName: Name.PURCHASE_CONTENT_BUY_CLICKED,
+                contentId,
+                contentType
+              })
+            )
+            handlePurchase()
+          }}
           fullWidth
         >
           {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
