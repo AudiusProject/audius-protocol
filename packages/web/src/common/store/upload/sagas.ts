@@ -928,7 +928,7 @@ export function* uploadCollection(
         }
         // Handle error loses error details, so call reportToSentry explicitly
         yield* call(reportToSentry, {
-          name: `Upload: ${error.name}`,
+          name: 'Upload',
           error,
           additionalInfo: {
             trackIds,
