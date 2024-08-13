@@ -65,9 +65,6 @@ const ComposerText = ({
   color,
   children
 }: Pick<TextProps, 'color' | 'children'>) => {
-  if (children === '\n') {
-    return <br />
-  }
   return (
     <Text style={{ whiteSpace: 'pre-wrap' }} color={color}>
       {children}
@@ -107,7 +104,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
       const sdk = await audiusSdk()
       for (const match of matches) {
         if (!(match in linkToHuman)) {
-          const { data: track } = await sdk.resolve.resolve({ url: match })
+          const { data: track } = await sdk.resolve({ url: match })
           if (track && 'title' in track) {
             const human = formatTrackName({ track })
             linkToHuman[match] = human
@@ -120,8 +117,12 @@ export const ChatComposer = (props: ChatComposerProps) => {
         }
       }
 
+      // Sort here to make sure that we replace all content before
+      // replacing their substrings.
       let editedValue = originalValue
-      for (const [link, human] of Object.entries(linkToHuman)) {
+      for (const [link, human] of Object.entries(linkToHuman).sort(
+        (a, b) => b[0].length - a[0].length
+      )) {
         editedValue = editedValue.replaceAll(link, human)
       }
       setValue(editedValue)
@@ -179,7 +180,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
     }
   }, [ref, chatId, chatIdRef, setTrackId, setValue])
 
-  const renderChatDisplay = () => {
+  const renderChatDisplay = (value: string) => {
     const regexString = Object.keys(humanToTrack).join('|')
     const regex = regexString ? new RegExp(regexString, 'gi') : null
     if (!regex) {
@@ -252,8 +253,8 @@ export const ChatComposer = (props: ChatComposerProps) => {
           maxVisibleRows={10}
           maxLength={MAX_MESSAGE_LENGTH}
           showMaxLength={!!value && value.length > MAX_MESSAGE_LENGTH * 0.85}
+          renderDisplayElement={renderChatDisplay}
           grows
-          displayElement={renderChatDisplay()}
         >
           <ChatSendButton disabled={!value} />
         </TextAreaV2>

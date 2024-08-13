@@ -49,7 +49,7 @@ export type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   showMaxLength?: boolean
   error?: boolean
   helperText?: string
-  displayElement?: ReactNode
+  renderDisplayElement?: (value: string) => ReactNode
 }
 
 const CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT = 0.875
@@ -71,7 +71,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
       onBlur: onBlurProp,
       error,
       helperText,
-      displayElement,
+      renderDisplayElement,
       ...other
     } = props
 
@@ -134,7 +134,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
             <div className={styles.left}>
               <textarea
                 className={
-                  displayElement ? styles.transparentTextArea : undefined
+                  renderDisplayElement ? styles.transparentTextArea : undefined
                 }
                 ref={mergeRefs([textareaRef, forwardedRef])}
                 maxLength={maxLength ?? undefined}
@@ -143,9 +143,9 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
                 onBlur={handleBlur}
                 {...other}
               />
-              {displayElement ? (
+              {renderDisplayElement ? (
                 <div className={styles.displayElementContainer}>
-                  {displayElement}
+                  {renderDisplayElement(value?.toString() ?? '')}
                 </div>
               ) : null}
             </div>

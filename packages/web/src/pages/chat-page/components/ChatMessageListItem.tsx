@@ -189,7 +189,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       const parts = []
       let lastIndex = 0
       for (const match of matches) {
-        const { data: track } = await sdk.resolve.resolve({ url: match })
+        const { data: track } = await sdk.resolve({ url: match })
         if (track && 'title' in track) {
           const index = message.message.indexOf(match, lastIndex)
           if (index > -1) {
@@ -201,7 +201,11 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             parts.push(
               <a
                 key={index}
-                onClick={() => dispatch(pushRoute(new URL(match).pathname))}
+                onClick={(e) => {
+                  e.preventDefault()
+                  dispatch(pushRoute(new URL(match).pathname))
+                }}
+                href={match}
               >
                 {formatTrackName({ track })}
               </a>
