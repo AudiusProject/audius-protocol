@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useGetCommentById } from '@audius/common/api'
 import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
+import { ReplyComment } from '@audius/sdk/src/sdk/api/generated/default'
 
 import { CommentBlock } from './CommentBlock'
 import { useCurrentCommentSection } from './CommentSectionContext'
@@ -44,7 +45,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
         ) : null}
         {hiddenReplies[rootComment.id] ? null : (
           <Flex direction='column' gap='l'>
-            {rootComment?.replies?.map((reply) => (
+            {rootComment?.replies?.map((reply: ReplyComment) => (
               <Flex w='100%' key={reply.id}>
                 <CommentBlock
                   comment={reply}
