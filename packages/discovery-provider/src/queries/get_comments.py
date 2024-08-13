@@ -19,12 +19,14 @@ COMMENT_THREADS_LIMIT = 5
 COMMENT_REPLIES_LIMIT = 3
 
 
-def get_replies(session, parent_comment_id):
+def get_replies(session, parent_comment_id, offset=0, limit=COMMENT_REPLIES_LIMIT):
     replies = (
         session.query(Comment)
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .filter(CommentThread.parent_comment_id == parent_comment_id)
-        .limit(COMMENT_REPLIES_LIMIT)
+        .order_by(desc(Comment.created_at))
+        .offset(offset)
+        .limit(limit)
         .all()
     )
     return [
@@ -55,6 +57,15 @@ def get_reaction_count(session, parent_comment_id):
         .first()
     )
     return reaction_count[0]
+
+
+def get_comment_replies(args, comment_id):
+    offset, limit = format_offset(args), format_limit(args)
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        replies = get_replies(session, comment_id, offset, limit)
+
+    return replies
 
 
 def get_track_comments(args, track_id):
