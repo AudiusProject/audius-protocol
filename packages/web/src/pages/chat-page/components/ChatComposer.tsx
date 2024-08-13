@@ -9,11 +9,14 @@ import {
 } from 'react'
 
 import { chatActions } from '@audius/common/store'
-import { IconSend, IconButton } from '@audius/harmony'
+import { formatTrackName, matchAudiusLinks } from '@audius/common/utils'
+import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
+import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 
 import styles from './ChatComposer.module.css'
 
@@ -34,6 +37,16 @@ export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
 
 const MAX_MESSAGE_LENGTH = 10000
 
+/**
+ * Custom split function that splits on \n, removing empty results
+ * and keeping the \n in the returned array.
+ * @param s
+ * @returns array of parts
+ */
+const splitOnNewline = (s: string) => {
+  return s.split(/(\n)/).filter(Boolean)
+}
+
 type ChatSendButtonProps = { disabled: boolean }
 
 export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
@@ -45,37 +58,85 @@ export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
       type='submit'
       size='m'
       icon={IconSend}
-      color='staticWhite'
-      iconCss={{ position: 'relative', left: -1 }}
+      color='active'
     />
+  )
+}
+
+const ComposerText = ({
+  color,
+  children
+}: Pick<TextProps, 'color' | 'children'>) => {
+  if (children === '\n') {
+    return <br />
+  }
+  return (
+    <Text style={{ whiteSpace: 'pre-wrap' }} color={color}>
+      {children}
+    </Text>
   )
 }
 
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId, presetMessage, onMessageSent } = props
   const dispatch = useDispatch()
+
   const [value, setValue] = useState(presetMessage ?? '')
+
+  // Maintain bidirectional maps of audius links to human readable format
+  const { current: linkToHuman } = useRef<{ [key: string]: string }>({})
+  const { current: humanToLink } = useRef<{ [key: string]: string }>({})
+
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
 
   const handleChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value)
+    async (e: ChangeEvent<HTMLTextAreaElement>) => {
+      const originalValue = e.target.value
+      setValue(originalValue)
+
+      const { matches } = matchAudiusLinks({
+        text: originalValue,
+        hostname: env.PUBLIC_HOSTNAME
+      })
+
+      const sdk = await audiusSdk()
+      for (const match of matches) {
+        if (!(match in linkToHuman)) {
+          const { data: track } = await sdk.resolve.resolve({ url: match })
+          if (track && 'title' in track) {
+            const human = formatTrackName({ track })
+            linkToHuman[match] = human
+            humanToLink[human] = match
+          }
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 500))
+        }
+      }
+
+      let editedValue = originalValue
+      for (const [link, human] of Object.entries(linkToHuman)) {
+        editedValue = editedValue.replaceAll(link, human)
+      }
+      setValue(editedValue)
     },
-    [setValue]
+    [setValue, linkToHuman, humanToLink]
   )
 
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault()
       if (chatId && value) {
-        const message = value
-        dispatch(sendMessage({ chatId, message }))
+        let editedValue = value
+        for (const [human, link] of Object.entries(humanToLink)) {
+          editedValue = value.replaceAll(human, link)
+        }
+        dispatch(sendMessage({ chatId, message: editedValue }))
         setValue('')
         onMessageSent()
       }
     },
-    [chatId, value, setValue, dispatch, onMessageSent]
+    [chatId, value, setValue, humanToLink, dispatch, onMessageSent]
   )
 
   // Submit when pressing enter while not holding shift
@@ -98,12 +159,65 @@ export const ChatComposer = (props: ChatComposerProps) => {
       setValue('')
       chatIdRef.current = chatId
     }
-  }, [ref, chatId, chatIdRef])
+  }, [ref, chatId, chatIdRef, setValue])
+
+  const renderChatDisplay = () => {
+    const regexString = Object.keys(humanToLink).join('|')
+    const regex = regexString ? new RegExp(regexString, 'gi') : null
+    if (!regex) {
+      const text = splitOnNewline(value)
+      return text.map((t, i) => (
+        <ComposerText key={i} color='default'>
+          {t}
+        </ComposerText>
+      ))
+    }
+    const parts = []
+    let lastIndex = 0
+    const matches = value.matchAll(regex)
+    for (const match of matches) {
+      const { index } = match
+      if (index > lastIndex) {
+        // Add text before the match
+        const text = splitOnNewline(value.slice(lastIndex, index))
+        parts.push(
+          ...text.map((t, i) => (
+            <ComposerText color='default' key={`${lastIndex}${i}`}>
+              {t}
+            </ComposerText>
+          ))
+        )
+      }
+      // Add the matched word with accent color
+      parts.push(
+        <Text color='accent' key={index}>
+          {match[0]}
+        </Text>
+      )
+      // Update lastIndex to the end of the current match
+      lastIndex = index + match[0].length
+    }
+
+    // Add remaining text after the last match
+    if (lastIndex < value.length) {
+      const text = splitOnNewline(value.slice(lastIndex))
+      parts.push(
+        ...text.map((t, i) => (
+          <ComposerText color='default' key={`${lastIndex}${i}`}>
+            {t}
+          </ComposerText>
+        ))
+      )
+    }
+
+    return parts
+  }
 
   return (
     <div className={cn(styles.root, props.className)}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <TextAreaV2
+          className={styles.textArea}
           ref={ref}
           rows={1}
           placeholder={messages.sendMessagePlaceholder}
@@ -114,7 +228,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
           maxLength={MAX_MESSAGE_LENGTH}
           showMaxLength={!!value && value.length > MAX_MESSAGE_LENGTH * 0.85}
           grows
-          resize
+          displayElement={renderChatDisplay()}
         >
           <ChatSendButton disabled={!value} />
         </TextAreaV2>

@@ -1,4 +1,4 @@
-import type { ChatMessage } from '@audius/sdk'
+import type { ChatMessage, Track } from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
@@ -61,4 +61,39 @@ export const chatCanFetchMoreMessages = (
   prevCount?: number
 ) => {
   return !!messagesStatus && messagesStatus !== Status.LOADING && !!prevCount
+}
+
+/**
+ * Replaces audius links with Track Title - Display Name inline.
+ * @param text input text
+ * @param hostname the hostname of the site, e.g. audius.co
+ */
+export const matchAudiusLinks = ({
+  text,
+  hostname
+}: {
+  text: string
+  hostname: string
+}) => {
+  const linkRegex = new RegExp(
+    `https://${hostname.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    )}/[^/\\s]+/[^/\\s]+(?=\\s|$)`,
+    'g'
+  )
+  const matches: string[] = text.match(linkRegex) ?? []
+
+  return {
+    matches
+  }
+}
+
+/**
+ * Formats a track name for human readability.
+ * @param track
+ * @returns string of "title - display name"
+ */
+export const formatTrackName = ({ track }: { track: Track }) => {
+  return `${track.title} - ${track.user.name}`
 }
