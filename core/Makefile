@@ -34,4 +34,3 @@ dev-content-3:
 .PHONY: sandbox
 sandbox:
 	@go run ./scripts/sandbox.go
-

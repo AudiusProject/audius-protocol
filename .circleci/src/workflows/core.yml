@@ -28,8 +28,7 @@ jobs:
       name: deploy-core-staging
       requires:
         - push-core
-        # uncomment when 
-        # - test-core
+        - test-core
         # uncomment when arm builds are stable
         # - push-core-arm
       filters:
