@@ -458,6 +458,7 @@ export enum Name {
   STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
+  PURCHASE_CONTENT_BUY_CLICKED = 'Purchase Content: Buy Clicked',
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
@@ -2211,6 +2212,12 @@ type ContentPurchaseMetadata = {
   isVerifiedArtist: boolean
 }
 
+type PurchaseContentBuyClicked = {
+  eventName: Name.PURCHASE_CONTENT_BUY_CLICKED
+  contentId: number
+  contentType: string
+}
+
 type PurchaseContentStarted = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_STARTED
 }
@@ -2715,6 +2722,7 @@ export type AllTrackingEvents =
   | StripeFulfillmentComplete
   | StripeError
   | StripeRejected
+  | PurchaseContentBuyClicked
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure

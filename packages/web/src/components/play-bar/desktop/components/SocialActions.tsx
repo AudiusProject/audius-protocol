@@ -82,6 +82,8 @@ export const SocialActions = ({
           streamConditions={track.stream_conditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickPill}
+          contentId={track.track_id}
+          contentType={'track'}
         />
       ) : (
         <>

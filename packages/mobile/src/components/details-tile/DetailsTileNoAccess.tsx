@@ -39,8 +39,10 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { EventNames } from 'app/types/analytics'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -215,6 +217,14 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   }, [tippedUser, navigation, dispatch, source, trackId])
 
   const handlePurchasePress = useCallback(() => {
+    track(
+      make({
+        eventName: EventNames.PURCHASE_CONTENT_BUY_CLICKED,
+        contentId: trackId,
+        contentType
+      })
+    )
+
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType },
       {
