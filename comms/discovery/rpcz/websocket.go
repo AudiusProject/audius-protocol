@@ -1,10 +1,13 @@
 package rpcz
 
 import (
+	"encoding/json"
 	"net"
 	"sync"
 	"time"
 
+	"comms.audius.co/discovery/misc"
+	"comms.audius.co/discovery/schema"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"golang.org/x/exp/slog"
@@ -95,4 +98,35 @@ func websocketPush(userId int32, payload []byte) {
 		}
 	}
 
+}
+
+func websocketPushAll(rpcJson json.RawMessage, timestamp time.Time) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	for _, s := range websockets {
+		encodedUserId, _ := misc.EncodeHashId(int(s.userId))
+
+		data := struct {
+			RPC      json.RawMessage `json:"rpc"`
+			Metadata schema.Metadata `json:"metadata"`
+		}{
+			rpcJson,
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+		}
+
+		payload, err := json.Marshal(data)
+		if err != nil {
+			logger.Warn("invalid websocket json " + err.Error())
+			return
+		}
+
+		err = wsutil.WriteServerMessage(s.conn, ws.OpText, payload)
+		if err != nil {
+			logger.Info("websocket push failed: " + err.Error())
+			removeWebsocket(s)
+		} else {
+			logger.Debug("websocket push all", "payload", string(payload))
+		}
+	}
 }

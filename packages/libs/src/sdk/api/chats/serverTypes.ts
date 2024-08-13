@@ -170,6 +170,16 @@ export type ChatInvite = {
   invite_code: string
 }
 
+export type ChatBlast = {
+  chat_id: string
+  pending_chat_id: string
+  from_user_id: number
+  plaintext: string
+  created_at: string
+  audience: ChatBlastAudience
+  audience_track_id?: number
+}
+
 export type ValidatedChatPermissions = {
   user_id: string
   permits: ChatPermission

@@ -462,6 +462,8 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 			websocketPush(subscribedUserId, j)
 		}
 
+	} else if gjson.GetBytes(rpcJson, "method").String() == "chat.blast" {
+		websocketPushAll(rpcJson, timestamp)
 	}
 }
 
