@@ -133,15 +133,15 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
           >
             <div className={styles.left}>
               <textarea
+                className={
+                  displayElement ? styles.transparentTextArea : undefined
+                }
                 ref={mergeRefs([textareaRef, forwardedRef])}
                 maxLength={maxLength ?? undefined}
                 value={value}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 {...other}
-                className={
-                  displayElement ? styles.transparentTextArea : undefined
-                }
               />
               {displayElement ? (
                 <div className={styles.displayElementContainer}>

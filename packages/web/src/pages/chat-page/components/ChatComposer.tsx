@@ -13,7 +13,8 @@ import { chatActions } from '@audius/common/store'
 import {
   decodeHashId,
   formatTrackName,
-  matchAudiusLinks
+  matchAudiusLinks,
+  splitOnNewline
 } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
 import { Track } from '@audius/sdk'
@@ -43,18 +44,6 @@ export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
 }
 
 const MAX_MESSAGE_LENGTH = 10000
-
-/**
- * Custom split function that splits on \n, removing empty results
- * and keeping the \n in the returned array.
- * - hello\nworld becomes ['hello', '\n', 'world']
- * - hello\n becomes ['hello', '\n']
- * @param s
- * @returns array of parts
- */
-const splitOnNewline = (s: string) => {
-  return s.split(/(\n)/).filter(Boolean)
-}
 
 type ChatSendButtonProps = { disabled: boolean }
 
@@ -154,6 +143,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
     async (e?: FormEvent) => {
       e?.preventDefault()
       if (chatId && value) {
+        // On submit, actually send audius links rather than the human readable format
         let editedValue = value
         for (const [human, { link }] of Object.entries(humanToTrack)) {
           editedValue = value.replaceAll(human, link)

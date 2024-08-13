@@ -176,6 +176,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const [messageBody, setMessageBody] = useState<(string | JSX.Element)[]>([
     message.message
   ])
+
+  // Update audius links in to Title - Display Name, but make sure they are still
+  // clickable in the message body.
   useEffect(() => {
     const fn = async () => {
       const { matches } = matchAudiusLinks({

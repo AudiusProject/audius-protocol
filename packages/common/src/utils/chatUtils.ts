@@ -64,7 +64,7 @@ export const chatCanFetchMoreMessages = (
 }
 
 /**
- * Replaces audius links with Track Title - Display Name inline.
+ * Matches audius links with a specific hostname in the provided text
  * @param text input text
  * @param hostname the hostname of the site, e.g. audius.co
  */
@@ -96,4 +96,16 @@ export const matchAudiusLinks = ({
  */
 export const formatTrackName = ({ track }: { track: Track }) => {
   return `${track.title} - ${track.user.name}`
+}
+
+/**
+ * Custom split function that splits on \n, removing empty results
+ * and keeping the \n in the returned array.
+ * - hello\nworld becomes ['hello', '\n', 'world']
+ * - hello\n becomes ['hello', '\n']
+ * @param s
+ * @returns array of parts
+ */
+export const splitOnNewline = (s: string) => {
+  return s.split(/(\n)/).filter(Boolean)
 }

@@ -38,11 +38,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
           <Text variant='body' strength='strong'>
             {user.name}
           </Text>
-          <UserBadges
-            // className={styles.iconVerified}
-            userId={user.user_id}
-            badgeSize={14}
-          />
+          <UserBadges userId={user.user_id} badgeSize={14} />
         </Flex>
       </Flex>
     </Flex>
