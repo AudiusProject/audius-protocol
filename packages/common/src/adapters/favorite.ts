@@ -5,6 +5,8 @@ import snakecaseKeys from 'snakecase-keys'
 import { Favorite, FavoriteType } from '~/models/Favorite'
 import { decodeHashId } from '~/utils'
 
+import { userTrackMetadataFromSDK } from './track'
+
 export const favoriteFromSDK = (input: full.Favorite): Favorite | undefined => {
   const decodedSaveItemId = decodeHashId(input.favoriteItemId)
   const decodedUserId = decodeHashId(input.userId)
@@ -19,4 +21,11 @@ export const favoriteFromSDK = (input: full.Favorite): Favorite | undefined => {
     save_type: input.favoriteType as FavoriteType,
     user_id: decodedUserId
   }
+}
+
+export const trackFavoriteActivityFromSDK = (
+  input: full.TrackActivityFull
+): Favorite | undefined => {
+  const track = userTrackMetadataFromSDK(input.item)
+  if (!track) return undefined
 }
