@@ -31,11 +31,13 @@ type CommentSectionContextType = CommentSectionContextProps & {
     parentCommentId?: ID,
     parentCommentIndex?: number
   ) => void
-  handleReactComment: (commentId: ID) => void
+  handleReactComment: (commentId: ID, isLiked: boolean) => void
   handlePinComment: (commentId: ID) => void
   handleEditComment: (commentId: ID, newMessage: string) => void
   handleDeleteComment: (commentId: ID) => void
   handleReportComment: (commentId: ID) => void
+  handleLoadMoreRootComments: () => void
+  handleLoadMoreReplies: (commentId: ID) => void
   fetchComments: () => void
 }
 
@@ -52,6 +54,8 @@ const initialContextValues: CommentSectionContextType = {
   handleEditComment: emptyFn,
   handleDeleteComment: emptyFn,
   handleReportComment: emptyFn,
+  handleLoadMoreRootComments: emptyFn,
+  handleLoadMoreReplies: emptyFn,
   fetchComments: emptyFn
 }
 
@@ -121,20 +125,54 @@ export const CommentSectionProvider = ({
   }
 
   // TODO: these are all empty for now
-  const handleReactComment = (commentId: ID) => {
-    console.log('Clicked react for ', commentId)
+  const handleReactComment = async (commentId: number, isLiked: boolean) => {
+    const sdk = await audiusSdk()
+    if (userId) {
+      await sdk.comments.reactComment(userId, commentId, isLiked)
+    }
   }
   const handlePinComment = (commentId: ID) => {
     console.log('Clicked pin for ', commentId)
   }
-  const handleEditComment = (commentId: ID, newMessage: string) => {
-    console.log(`Edited comment ${commentId} to ${newMessage}`)
+  const handleEditComment = async (commentId: ID, newMessage: string) => {
+    if (userId && entityId) {
+      try {
+        const commentData = {
+          body: newMessage,
+          userId,
+          entityId: commentId,
+          entityType: EntityType.TRACK // Comments are only on tracks for now; likely expand to collections in the future
+        }
+        const sdk = await audiusSdk()
+        await sdk.comments.editComment(commentData)
+      } catch (e) {
+        console.log('COMMENTS DEBUG: Error posting comment', e)
+      }
+    }
   }
-  const handleDeleteComment = (commentId: ID) => {
-    console.log('Clicked delete for ', commentId)
+  const handleDeleteComment = async (commentId?: ID) => {
+    if (userId && commentId) {
+      try {
+        const commentData = {
+          userId,
+          entityId: commentId
+        }
+        const sdk = await audiusSdk()
+        await sdk.comments.deleteComment(commentData)
+      } catch (e) {
+        console.log('COMMENTS DEBUG: Error posting comment', e)
+      }
+    }
   }
+
   const handleReportComment = (commentId: ID) => {
     console.log('Clicked report for ', commentId)
+  }
+  const handleLoadMoreRootComments = () => {
+    console.log('Loading more root comments')
+  }
+  const handleLoadMoreReplies = (commentId: ID) => {
+    console.log('Loading more replies for', commentId)
   }
 
   // TODO: move this to audius-query
@@ -178,7 +216,9 @@ export const CommentSectionProvider = ({
         handleEditComment,
         handleDeleteComment,
         handleReportComment,
-        fetchComments
+        handleLoadMoreReplies,
+        handleLoadMoreRootComments,
+        fetchComments // todo: temporary - remove later
       }}
     >
       {children}

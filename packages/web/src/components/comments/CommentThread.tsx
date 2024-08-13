@@ -15,11 +15,13 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 
 const messages = {
   noCommentsTitle: 'Nothing here yet',
-  noCommentsSubtitle: 'Be the first to comment on this track' // TODO: make this derive from entity type
+  noCommentsSubtitle: 'Be the first to comment on this track', // TODO: make this derive from entity type
+  showMoreReplies: 'Show More Replies'
 }
 
 export const CommentThread = () => {
-  const { comments, fetchComments } = useCurrentCommentSection()
+  const { comments, fetchComments, handleLoadMoreReplies } =
+    useCurrentCommentSection()
   // TODO: this feels sub-optimal? Maybe fine
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
@@ -61,20 +63,25 @@ export const CommentThread = () => {
                 {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
               </TextLink>
             ) : null}
+            {hiddenReplies[rootComment.id] ||
+            (rootComment?.replies?.length ?? 0) === 0 ? null : (
+              <Flex direction='column' mt='l' gap='l'>
+                {rootComment?.replies?.map((reply) => (
+                  <Flex w='100%' key={reply.id}>
+                    <CommentBlock
+                      comment={reply}
+                      parentCommentId={rootComment.id}
+                      parentCommentIndex={i}
+                    />
+                  </Flex>
+                ))}
+              </Flex>
+            )}
+            {/* TODO: need a way to hide this when no more to load */}
+            <TextLink onClick={() => handleLoadMoreReplies(rootComment.id)}>
+              {messages.showMoreReplies}
+            </TextLink>
           </Flex>
-          {hiddenReplies[rootComment.id] ? null : (
-            <Flex ml='56px' direction='column' mt='l' gap='l'>
-              {rootComment?.replies?.map((reply) => (
-                <Flex w='100%' key={reply.id}>
-                  <CommentBlock
-                    comment={reply}
-                    parentCommentId={rootComment.id}
-                    parentCommentIndex={i}
-                  />
-                </Flex>
-              ))}
-            </Flex>
-          )}
         </Flex>
       ))}
     </Flex>

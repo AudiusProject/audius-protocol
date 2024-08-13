@@ -1,4 +1,4 @@
-import { Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
@@ -6,8 +6,13 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 
 export const CommentSectionDesktop = () => {
-  const { userId, isLoading, comments, handlePostComment } =
-    useCurrentCommentSection()
+  const {
+    userId,
+    isLoading,
+    comments,
+    handlePostComment,
+    handleLoadMoreRootComments
+  } = useCurrentCommentSection()
   const commentPostAllowed = userId !== null
 
   // Loading state
@@ -50,6 +55,16 @@ export const CommentSectionDesktop = () => {
         ) : null}
         <Flex gap='s' p='xl' w='100%' direction='column'>
           <CommentThread />
+          {/* TODO: this button is temporary; will be replaced with endless scroll */}
+          <Button
+            onClick={() => {
+              handleLoadMoreRootComments()
+            }}
+            size='small'
+            css={{ width: 'max-content', marginTop: '16px' }}
+          >
+            Load more comments
+          </Button>
         </Flex>
       </Paper>
     </Flex>

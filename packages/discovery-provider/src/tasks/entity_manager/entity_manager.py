@@ -11,6 +11,8 @@ from web3.types import TxReceipt
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
+from src.models.comments.comment import Comment
+from src.models.comments.comment_reaction import CommentReaction
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -35,7 +37,13 @@ from src.queries.get_skipped_transactions import (
     save_and_get_skip_tx_hash,
     set_indexing_error,
 )
-from src.tasks.entity_manager.entities.comment import create_comment
+from src.tasks.entity_manager.entities.comment import (
+    create_comment,
+    delete_comment,
+    react_comment,
+    unreact_comment,
+    update_comment,
+)
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
     create_dashboard_wallet_user,
     delete_dashboard_wallet_user,
@@ -72,6 +80,7 @@ from src.tasks.entity_manager.entities.tip_reactions import tip_reaction
 from src.tasks.entity_manager.entities.track import (
     create_track,
     delete_track,
+    download_track,
     update_track,
 )
 from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
@@ -116,6 +125,8 @@ entity_type_table_mapping = {
     "DashboardWalletUser": DashboardWalletUser.__tablename__,
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
+    "Comment": Comment.__tablename__,
+    "CommentReaction": CommentReaction.__tablename__,
 }
 
 
@@ -246,6 +257,11 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
+                    elif (
+                        params.action == Action.DOWNLOAD
+                        and params.entity_type == EntityType.TRACK
+                    ):
+                        download_track(params)
                     elif params.action in create_social_action_types:
                         create_social_record(params)
                     elif params.action in delete_social_action_types:
@@ -341,6 +357,27 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         create_comment(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        update_comment(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        delete_comment(params)
+                    elif (
+                        params.action == Action.REACT
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        react_comment(params)
+                    elif (
+                        params.action == Action.UNREACT
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        unreact_comment(params)
+
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
@@ -352,6 +389,9 @@ def entity_manager_update(
                         block_hash,
                         txhash,
                         str(e),
+                    )
+                    logger.error(
+                        f"entity_manager.py | Indexing error {e}", exc_info=True
                     )
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
@@ -498,6 +538,12 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
+            if entity_type == EntityType.COMMENT:
+                entities_to_fetch[EntityType.COMMENT].add(entity_id)
+                if action == Action.REACT or action == Action.UNREACT:
+                    entities_to_fetch[EntityType.COMMENT_REACTION].add(
+                        (user_id, entity_id)
+                    )
             if (
                 entity_type == EntityType.NOTIFICATION
                 and action == Action.VIEW_PLAYLIST
@@ -1039,6 +1085,52 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.DASHBOARD_WALLET_USER] = {
             dashboard_wallet_json["wallet"].lower(): dashboard_wallet_json
             for _, dashboard_wallet_json in dashboard_wallets
+        }
+
+    if entities_to_fetch["Comment"]:
+        comments: List[Tuple[Comment, dict]] = (
+            session.query(
+                Comment,
+                literal_column(f"row_to_json({Comment.__tablename__})"),
+            )
+            .filter(Comment.comment_id.in_(entities_to_fetch["Comment"]))
+            .all()
+        )
+        existing_entities[EntityType.COMMENT] = {
+            comment.comment_id: comment for comment, _ in comments
+        }
+        existing_entities_in_json[EntityType.COMMENT] = {
+            comment_json["comment_id"]: comment_json for _, comment_json in comments
+        }
+    if entities_to_fetch[EntityType.COMMENT_REACTION.value]:
+        comment_reaction_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.COMMENT_REACTION.value
+        ]
+        or_queries = []
+        for comment_reaction in comment_reaction_to_fetch:
+            user_id, comment_id = comment_reaction
+            or_queries.append(
+                or_(
+                    CommentReaction.user_id == user_id,
+                    CommentReaction.comment_id == comment_id,
+                )
+            )
+
+        comment_reactions: List[Tuple[CommentReaction, dict]] = (
+            session.query(
+                CommentReaction,
+                literal_column(f"row_to_json({CommentReaction.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.COMMENT_REACTION] = {
+            (comment_reaction.user_id, comment_reaction.comment_id): comment_reaction
+            for comment_reaction, _ in comment_reactions
+        }
+        existing_entities_in_json[EntityType.COMMENT_REACTION] = {
+            (comment_json["user_id"], comment_json["comment_id"]): comment_json
+            for _, comment_json in comment_reactions
         }
 
     return existing_entities, existing_entities_in_json

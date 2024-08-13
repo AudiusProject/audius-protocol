@@ -193,8 +193,9 @@ export const FilterButton = forwardRef(function FilterButton<
     (value: Value) => {
       setValue(value)
       onChange?.(value)
+      setIsOpen(false)
     },
-    [onChange, setValue]
+    [onChange, setValue, setIsOpen]
   )
 
   const filteredOptions = useMemo(
@@ -226,7 +227,7 @@ export const FilterButton = forwardRef(function FilterButton<
             key={option.value}
             option={option}
             onChange={handleChange}
-            activeValue={value || activeValue}
+            activeValue={activeValue}
           />
         ))
       }
@@ -247,11 +248,9 @@ export const FilterButton = forwardRef(function FilterButton<
       {selectedLabel ? renderLabel(selectedLabel) : label}
       <Popup
         anchorRef={anchorRef}
-        ref={scrollRef}
         isVisible={isOpen}
         onClose={() => setIsOpen(false)}
         {...popupProps}
-        css={[{ overflowY: 'auto' }, popupProps?.css]}
       >
         <Paper mt='s' border='strong' shadow='far'>
           {children ? (
@@ -265,6 +264,8 @@ export const FilterButton = forwardRef(function FilterButton<
               role='listbox'
               aria-label={selectedLabel ?? label ?? props['aria-label']}
               aria-activedescendant={selectedLabel}
+              css={{ maxHeight: popupProps?.css?.maxHeight, overflowY: 'auto' }}
+              ref={scrollRef}
             >
               {showFilterInput && filterInputProps ? (
                 <TextInput
@@ -296,7 +297,9 @@ export const FilterButton = forwardRef(function FilterButton<
                   </Text>
                 </Flex>
               ) : (
-                <Flex direction='column'>{optionElements}</Flex>
+                <Flex direction='column' w='100%'>
+                  {optionElements}
+                </Flex>
               )}
             </Flex>
           )}

@@ -1,9 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
-import { modalsActions } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
+import {
+  useEarlyReleaseConfirmationModal,
+  useHideContentConfirmationModal,
+  usePublishConfirmationModal
+} from '@audius/common/store'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -28,7 +31,6 @@ import { makeStyles } from 'app/styles'
 import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer } from './components'
-import { ConfirmPublishTrackDrawer } from './components/ConfirmPublishDrawer'
 import {
   SelectGenreField,
   DescriptionField,
@@ -87,8 +89,12 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
-  const [confirmDrawerType, setConfirmDrawerType] =
-    useState<Nullable<'release' | 'early_release' | 'hidden'>>(null)
+
+  const { onOpen: openHideContentConfirmation } =
+    useHideContentConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
@@ -106,30 +112,30 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   const handleSubmit = useCallback(() => {
     Keyboard.dismiss()
-    const showConfirmDrawer = usersMayLoseAccess || isToBePublished
-    if (showConfirmDrawer) {
-      if (usersMayLoseAccess) {
-        setConfirmDrawerType('hidden')
-      } else if (isInitiallyScheduled) {
-        setConfirmDrawerType('early_release')
-      } else {
-        setConfirmDrawerType('release')
-      }
-      dispatch(
-        modalsActions.setVisibility({
-          modal: 'EditAccessConfirmation',
-          visible: true
-        })
-      )
+
+    if (usersMayLoseAccess) {
+      openHideContentConfirmation({ confirmCallback: handleSubmitProp })
+    } else if (isToBePublished && isInitiallyScheduled) {
+      openEarlyReleaseConfirmation({
+        contentType: 'track',
+        confirmCallback: handleSubmitProp
+      })
+    } else if (isToBePublished) {
+      openPublishConfirmation({
+        contentType: 'track',
+        confirmCallback: handleSubmitProp
+      })
     } else {
       handleSubmitProp()
     }
   }, [
     usersMayLoseAccess,
     isToBePublished,
-    dispatch,
     isInitiallyScheduled,
-    handleSubmitProp
+    handleSubmitProp,
+    openHideContentConfirmation,
+    openEarlyReleaseConfirmation,
+    openPublishConfirmation
   ])
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
@@ -198,12 +204,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         </>
       </FormScreen>
       <CancelEditTrackDrawer />
-      {!isUpload && confirmDrawerType ? (
-        <ConfirmPublishTrackDrawer
-          type={confirmDrawerType}
-          onConfirm={handleSubmitProp}
-        />
-      ) : null}
     </>
   )
 }

@@ -17,18 +17,20 @@ import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
+import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
 import { EditAccessConfirmationModal } from 'components/edit-access-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
+import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
-import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
+import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -84,7 +86,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   EditAccessConfirmation: EditAccessConfirmationModal,
-  PublishTrackConfirmation: PublishTrackConfirmationModal,
+  EarlyReleaseConfirmation: EarlyReleaseConfirmationModal,
+  PublishConfirmation: PublishConfirmationModal,
+  HideContentConfirmation: HideContentConfirmationModal,
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,

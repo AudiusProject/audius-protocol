@@ -19,6 +19,7 @@ export type BaseTextProps<TextComponentType extends ElementType = 'p'> = {
   asChild?: boolean
   textAlign?: CSSProperties['textAlign']
   ellipses?: boolean
+  maxLines?: number
   textTransform?: CSSProperties['textTransform']
 }
 

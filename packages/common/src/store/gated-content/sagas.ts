@@ -328,7 +328,6 @@ function* updateGatedContentAccess(
     | ReturnType<typeof updateUserEthCollectibles>
     | ReturnType<typeof updateUserSolCollectibles>
     | ReturnType<typeof cacheActions.addSucceeded>
-    | ReturnType<typeof cacheActions.update>
 ) {
   const account = yield* select(getAccountUser)
 
@@ -702,7 +701,6 @@ function* watchGatedTracks() {
   yield* takeEvery(
     [
       cacheActions.ADD_SUCCEEDED,
-      cacheActions.UPDATE,
       updateUserEthCollectibles.type,
       updateUserSolCollectibles.type
     ],

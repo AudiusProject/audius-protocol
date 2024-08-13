@@ -31,7 +31,6 @@ import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumContentPurchaseDrawer } from 'app/components/premium-content-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
-import { PublishContentDrawer } from 'app/components/publish-content-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
@@ -42,6 +41,8 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
+import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
+import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
@@ -115,7 +116,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
-  PublishContentModal: PublishContentDrawer,
   // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
@@ -127,6 +127,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer,
   WaitForDownloadModal: WaitForDownloadDrawer,
+  PublishConfirmation: PublishConfirmationDrawer,
+  EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
   ArtistPick: ArtistPickConfirmationDrawer
 }
 

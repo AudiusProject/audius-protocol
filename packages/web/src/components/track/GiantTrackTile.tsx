@@ -10,9 +10,10 @@ import {
 } from '@audius/common/models'
 import {
   cacheTracksSelectors,
-  publishTrackConfirmationModalUIActions,
   CommonState,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useEarlyReleaseConfirmationModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import {
   Genre,
@@ -38,7 +39,7 @@ import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -66,8 +67,6 @@ const DownloadSection = lazy(() =>
   }))
 )
 
-const { requestOpen: openPublishTrackConfirmationModal } =
-  publishTrackConfirmationModalUIActions
 const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
@@ -191,7 +190,6 @@ export const GiantTrackTile = ({
   userId,
   ddexApp
 }: GiantTrackTileProps) => {
-  const dispatch = useDispatch()
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -243,11 +241,16 @@ export const GiantTrackTile = ({
     ) : null
   }
 
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
+
   const renderMakePublicButton = () => {
     let text = messages.isPublishing
     if (isUnlisted && !isPublishing) {
       text = isScheduledRelease ? messages.releaseNow : messages.makePublic
     }
+
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
@@ -257,13 +260,21 @@ export const GiantTrackTile = ({
           iconLeft={IconRocket}
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
           onClick={() => {
-            dispatch(
-              openPublishTrackConfirmationModal({
+            if (isScheduledRelease) {
+              openEarlyReleaseConfirmation({
+                contentType: 'track',
                 confirmCallback: () => {
                   onMakePublic(trackId)
                 }
               })
-            )
+            } else {
+              openPublishConfirmation({
+                contentType: 'track',
+                confirmCallback: () => {
+                  onMakePublic(trackId)
+                }
+              })
+            }
           }}
         >
           {text}

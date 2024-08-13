@@ -483,11 +483,13 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
+    @ns.expect(pagination_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
+        args = pagination_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(decoded_id)
+        track_comments = get_track_comments(args, decoded_id)
         return success_response(track_comments)
 
 
@@ -1823,6 +1825,14 @@ class GetUnclaimedTrackId(Resource):
 
 access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
+)
+
+access_info_parser = current_user_parser.copy()
+access_info_parser.add_argument(
+    "include_network_cut",
+    required=False,
+    type=bool,
+    description="Whether to include the staking system as a recipient",
 )
 
 
