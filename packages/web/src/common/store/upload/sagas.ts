@@ -624,7 +624,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: `Upload Worker Failed: ${e.name}`,
+      name: 'Upload Worker Failed',
       error: e,
       additionalInfo: {
         trackId,
