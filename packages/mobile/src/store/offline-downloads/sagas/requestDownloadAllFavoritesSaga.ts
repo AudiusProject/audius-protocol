@@ -1,8 +1,12 @@
+import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
+import { Id } from '@audius/common/models'
 import {
   accountSelectors,
   savedPageSelectors,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
+import { compareSDKResponse } from '@audius/common/utils'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
@@ -58,10 +62,20 @@ function* downloadAllFavorites() {
 
   // Add favorited tracks from api
   const apiClient = yield* getContext('apiClient')
-  const allFavoritedTracks = yield* call([apiClient, apiClient.getFavorites], {
+  const sdk = yield* getSDK()
+  const legacy = yield* call([apiClient, apiClient.getFavorites], {
     currentUserId,
     limit: 10000
   })
+
+  const { data } = yield* call([sdk.users, sdk.users.getFavorites], {
+    id: Id.parse(currentUserId)
+  })
+  const allFavoritedTracks = transformAndCleanList(data, favoriteFromSDK)
+  compareSDKResponse(
+    { legacy: legacy ?? [], migrated: allFavoritedTracks },
+    'getFavorites'
+  )
 
   if (allFavoritedTracks) {
     for (const favoritedTrack of allFavoritedTracks) {
