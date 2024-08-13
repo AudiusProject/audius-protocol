@@ -60,13 +60,11 @@ const commentsApi = createApi({
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
-        let decodedParentCommentId
-        if (parentCommentId) {
-          decodedParentCommentId = decodeHashId(parentCommentId?.toString())
-        }
+        const decodedParentCommentId =
+          decodeHashId(parentCommentId?.toString()) ?? undefined // undefined is allowed but null is not
         const commentsRes = await sdk.comments.postComment({
           ...commentData,
-          parentCommentId: decodedParentCommentId ?? undefined // undefined is allowed but null is not
+          parentCommentId: decodedParentCommentId
         })
         return commentsRes
       },
@@ -77,10 +75,8 @@ const commentsApi = createApi({
             'getCommentsByTrackId',
             { entityId },
             (prevState) => {
-              if (!comment.parentCommentId) {
-                // TODO: how should we handle sorting here?
-                prevState?.unshift(comment) // add new comment to top of comment section
-              }
+              // TODO: how should we handle sorting here?
+              prevState?.unshift(comment) // add new comment to top of comment section
             }
           )
         )

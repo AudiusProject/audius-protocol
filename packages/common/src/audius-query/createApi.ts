@@ -127,10 +127,10 @@ export const createApi = <
       (endpointName, fetchArgs, updateRecipe) =>
       (dispatch: Dispatch, getState: () => any) => {
         const key = getKeyFromFetchArgs(fetchArgs)
-        let endpointState = getState().api[reducerPath][endpointName][key]
-        if (!endpointState) {
-          endpointState = { status: Status.SUCCESS, normalizedData: {} }
-        }
+        // New endpoint state is used whenever updateQueryData is called before the endpoint being updated has had a chance to be called
+        const newEndpointState = { status: Status.SUCCESS, normalizedData: {} }
+        const endpointState =
+          getState().api[reducerPath][endpointName][key] || newEndpointState
         const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]
