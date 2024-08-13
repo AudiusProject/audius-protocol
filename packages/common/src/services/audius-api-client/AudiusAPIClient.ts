@@ -25,7 +25,6 @@ import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
 import {
   APIBlockConfirmation,
-  APIFavorite,
   APIPlaylist,
   APIResponse,
   APISearch,
@@ -102,7 +101,6 @@ const ENDPOINT_MAP = {
   associatedWallets: '/users/associated_wallets',
   associatedWalletUserId: '/users/id',
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
-  userFavorites: (userId: OpaqueID) => `/users/${userId}/favorites`,
   userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
   undisbursedUserChallenges: `/challenges/undisbursed`
 }
@@ -196,11 +194,6 @@ type GetUserAiTracksByHandleArgs = {
 type GetPremiumTracksArgs = {
   currentUserId: Nullable<ID>
   offset?: number
-  limit?: number
-}
-
-type GetFavoritesArgs = {
-  currentUserId: ID
   limit?: number
 }
 
@@ -895,21 +888,6 @@ export class AudiusAPIClient {
 
     const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
     return adapted
-  }
-
-  async getFavorites({ currentUserId, limit }: GetFavoritesArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = { user_id: encodedUserId, limit }
-    const response = await this._getResponse<APIResponse<APIFavorite[]>>(
-      ENDPOINT_MAP.userFavorites(encodedUserId),
-      params,
-      true,
-      PathType.VersionPath
-    )
-    if (!response) return null
-    const { data } = response
-    return data.map(adapter.makeFavorite).filter(removeNullable)
   }
 
   async getCollectionMetadata({
