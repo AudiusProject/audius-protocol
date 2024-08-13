@@ -61,7 +61,7 @@ const commentsApi = createApi({
       ) {
         const sdk = await audiusSdk()
         const decodedParentCommentId =
-          decodeHashId(parentCommentId?.toString()) ?? undefined // undefined is allowed but null is not
+          decodeHashId(parentCommentId?.toString() ?? '') ?? undefined // undefined is allowed but null is not
         const commentsRes = await sdk.comments.postComment({
           ...commentData,
           parentCommentId: decodedParentCommentId
