@@ -11,7 +11,7 @@ import (
 
 type BlastRow struct {
 	PendingChatID   string        `db:"-" json:"pending_chat_id"`
-	BlastID         string        `db:"blast_id" json:"chat_id"`
+	BlastID         string        `db:"blast_id" json:"blast_id"`
 	FromUserID      int32         `db:"from_user_id" json:"from_user_id"`
 	Audience        string        `db:"audience" json:"audience"`
 	AudienceTrackID sql.NullInt32 `db:"audience_track_id" json:"audience_track_id"`
@@ -30,7 +30,7 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 		from follows
 		where follower_user_id = $1
 			and follows.created_at < b.created_at
-			-- and follows.is_delete = false
+			and follows.is_delete = false
 	)
 	order by created_at
 	`
@@ -47,11 +47,9 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 	}
 
 	var existingChatIdList []string
-	err = q.SelectContext(ctx, &existingChatIdList, `
-		select chat_id from chat_member where user_id = $1
-	`, arg.UserID)
+	err = q.SelectContext(ctx, &existingChatIdList, `select chat_id from chat_member where user_id = $1`, arg.UserID)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	existingChatIds := map[string]bool{}
