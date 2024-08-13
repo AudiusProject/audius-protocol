@@ -98,7 +98,6 @@ const FULL_ENDPOINT_MAP = {
 }
 
 const ENDPOINT_MAP = {
-  associatedWallets: '/users/associated_wallets',
   associatedWalletUserId: '/users/id',
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
   userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
@@ -281,10 +280,6 @@ type GetTrendingPlaylistsArgs = {
   limit: number
   offset: number
   time: 'week' | 'month' | 'year'
-}
-
-type GetAssociatedWalletsArgs = {
-  userID: number
 }
 
 export type AssociatedWalletsResponse = {
@@ -1105,22 +1100,6 @@ export class AudiusAPIClient {
       .map(adapter.makePlaylist)
       .filter(removeNullable)
     return adapted
-  }
-
-  async getAssociatedWallets({ userID }: GetAssociatedWalletsArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    const params = { id: encodedCurrentUserId }
-    const associatedWallets: Nullable<APIResponse<AssociatedWalletsResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.associatedWallets,
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!associatedWallets) return null
-    return associatedWallets.data
   }
 
   async getAssociatedWalletUserId({ address }: GetAssociatedWalletUserIDArgs) {

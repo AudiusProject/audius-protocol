@@ -1,6 +1,8 @@
+import { AudiusSdk } from '@audius/sdk'
 import BN from 'bn.js'
 
-import { ID } from '~/models/Identifiers'
+import { userWalletsFromSDK } from '~/adapters'
+import { ID, Id } from '~/models/Identifiers'
 import {
   BNWei,
   SolanaWalletAddress,
@@ -25,15 +27,18 @@ export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
 type WalletClientConfig = {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
+  audiusSdk: () => Promise<AudiusSdk>
 }
 
 export class WalletClient {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
+  audiusSdk: () => Promise<AudiusSdk>
 
   constructor(config: WalletClientConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
     this.apiClient = config.apiClient
+    this.audiusSdk = config.audiusSdk
   }
 
   /** Get user's current ETH Audio balance. Returns null on failure. */
@@ -105,13 +110,15 @@ export class WalletClient {
     bustCache = false
   ): Promise<BNWei | null> {
     try {
-      const associatedWallets = await this.apiClient.getAssociatedWallets({
-        userID
+      const sdk = await this.audiusSdk()
+      const { data } = await sdk.users.getConnectedWallets({
+        id: Id.parse(userID)
       })
 
-      if (associatedWallets === null) {
+      if (!data) {
         throw new Error('Unable to fetch associated wallets')
       }
+      const associatedWallets = userWalletsFromSDK(data)
       const balances = await Promise.all([
         ...associatedWallets.wallets.map((wallet) =>
           this.audiusBackendInstance.getAddressTotalStakedBalance(
