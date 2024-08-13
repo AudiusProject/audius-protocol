@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
 import {
   Avatar,
@@ -22,7 +23,6 @@ import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { CommentForm } from './CommentForm'
-import { useCurrentCommentSection } from './CommentSectionContext'
 
 // TODO: move this somewhere else
 // Format the date using the largest possible unit (y>mo>d>h>min)
