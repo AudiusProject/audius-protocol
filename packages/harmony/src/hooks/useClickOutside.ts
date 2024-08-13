@@ -26,7 +26,7 @@ export const useClickOutside = (
         if (
           !ref.current ||
           (ref.current && ref.current.contains(e.target)) ||
-          ignoreClick(e.target)
+          ignoreClick?.(e.target)
         ) {
           return
         }

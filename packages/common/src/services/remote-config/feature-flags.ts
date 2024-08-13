@@ -59,7 +59,8 @@ export enum FeatureFlags {
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
   PAID_SCHEDULED = 'paid_scheduled',
-  ONE_TO_MANY_DMS = 'one_to_many_dms'
+  ONE_TO_MANY_DMS = 'one_to_many_dms',
+  SOCIAL_SIGNUP = 'social_signup'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -134,5 +135,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
   [FeatureFlags.PAID_SCHEDULED]: false,
-  [FeatureFlags.ONE_TO_MANY_DMS]: false
+  [FeatureFlags.ONE_TO_MANY_DMS]: false,
+  [FeatureFlags.SOCIAL_SIGNUP]: false
 }
