@@ -1,4 +1,4 @@
-//go:generate go run ../scripts/generate_options.go Sdk sdk_options.go
+//go:generate go run ../scripts/generate_options/main.go Sdk sdk_options.go
 
 package sdk
 
