@@ -18,7 +18,6 @@ gen: $(SQL_SRCS)
 		&& false \
 	)
 	go generate ./...
-	cd db && sqlc generate
 
 .PHONY: dev hotreload
 dev:

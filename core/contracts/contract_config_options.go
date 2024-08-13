@@ -16,3 +16,69 @@ func NewContractsConfig(opts ...ContractsConfigOption) (*ContractsConfig, error)
 	}
 	return s, nil
 }
+func WithAcdcendpoint(AcdcEndpoint string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.AcdcEndpoint = AcdcEndpoint
+	}
+}
+
+func WithEthendpoint(EthEndpoint string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.EthEndpoint = EthEndpoint
+	}
+}
+
+func WithRegistryaddress(RegistryAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.RegistryAddress = RegistryAddress
+	}
+}
+
+func WithGovernanceaddress(GovernanceAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.GovernanceAddress = GovernanceAddress
+	}
+}
+
+func WithStakingaddress(StakingAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.StakingAddress = StakingAddress
+	}
+}
+
+func WithServiceproviderfactoryaddress(ServiceProviderFactoryAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.ServiceProviderFactoryAddress = ServiceProviderFactoryAddress
+	}
+}
+
+func WithServicetypemanageraddress(ServiceTypeManagerAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.ServiceTypeManagerAddress = ServiceTypeManagerAddress
+	}
+}
+
+func WithClaimsmanageraddress(ClaimsManagerAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.ClaimsManagerAddress = ClaimsManagerAddress
+	}
+}
+
+func WithDelegatemanageraddress(DelegateManagerAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.DelegateManagerAddress = DelegateManagerAddress
+	}
+}
+
+func WithAudiotokenaddress(AudioTokenAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.AudioTokenAddress = AudioTokenAddress
+	}
+}
+
+func WithRewardsmanageraddress(RewardsManagerAddress string) ContractsConfigOption {
+	return func(s *ContractsConfig) {
+		s.RewardsManagerAddress = RewardsManagerAddress
+	}
+}
+
