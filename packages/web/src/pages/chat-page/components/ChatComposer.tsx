@@ -205,6 +205,10 @@ export const ChatComposer = (props: ChatComposerProps) => {
     let lastIndex = 0
     for (const match of matches) {
       const { index } = match
+      if (index === undefined) {
+        continue
+      }
+
       if (index > lastIndex) {
         // Add text before the match
         const text = splitOnNewline(value.slice(lastIndex, index))
