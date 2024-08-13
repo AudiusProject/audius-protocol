@@ -136,8 +136,13 @@ function* doFetchLatestChats() {
     let hasMoreChats = true
     let data: UserChat[] = []
     let firstResponse: TypedCommsResponse<UserChat[]> | undefined
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      throw new Error('User not found')
+    }
     while (hasMoreChats) {
       const response = yield* call([sdk.chats, sdk.chats.getAll], {
+        userId: currentUserId,
         before,
         after: summary?.next_cursor,
         limit: CHAT_PAGE_SIZE
@@ -173,7 +178,12 @@ function* doFetchMoreChats() {
     const sdk = yield* call(audiusSdk)
     const summary = yield* select(getChatsSummary)
     const before = summary?.prev_cursor
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      throw new Error('User not found')
+    }
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
+      userId: encodeHashId(currentUserId)!,
       before,
       limit: CHAT_PAGE_SIZE
     })

@@ -18,7 +18,7 @@ export const ChatListenRequestSchema = z.optional(
 export type ChatListenRequest = z.infer<typeof ChatListenRequestSchema>
 
 export const ChatGetAllRequestSchema = z.object({
-  currentUserId: z.optional(z.string()),
+  userId: z.string(),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())
