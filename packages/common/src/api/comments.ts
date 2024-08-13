@@ -10,7 +10,7 @@ import { decodeHashId, encodeHashId } from '~/utils'
 // Updates the array of all comments
 const optimisticUpdateCommentList = (
   entityId: number,
-  updateRecipe: (prevState: Comment[] | undefined) => Comment | void,
+  updateRecipe: (prevState: Comment[] | undefined) => Comment[] | void,
   dispatch: ThunkDispatch<any, any, any>
 ) => {
   dispatch(
