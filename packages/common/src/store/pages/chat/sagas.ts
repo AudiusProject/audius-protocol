@@ -543,7 +543,7 @@ function* doSendTargetedMessage(
 ) {
   const { message } = action.payload
   // const { blastId, audience, audienceTrackId, message } = action.payload
-  // TODO: analytics
+  // TODO: analytics PAY-3347
   // const { track, make } = yield* getContext('analytics')
   const messageIdToUse = ulid()
   const userId = yield* select(getUserId)
