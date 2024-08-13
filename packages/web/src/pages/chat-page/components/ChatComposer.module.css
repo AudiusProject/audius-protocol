@@ -3,7 +3,14 @@
 }
 
 .form {
-  margin: var(--harmony-unit-4);
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-spacing-l);
   position: relative;
+}
+
+.textArea {
+  padding: var(--harmony-unit-2) 0;
+}
+
+.textArea.focused {
+  border: 1px solid var(--harmony-secondary);
 }

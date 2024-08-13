@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useProxySelector, useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
@@ -13,7 +13,9 @@ import {
   decodeHashId,
   encodeHashId,
   isCollectionUrl,
-  isTrackUrl
+  isTrackUrl,
+  matchAudiusLinks,
+  formatTrackName
 } from '@audius/common/utils'
 import { IconError, IconPlus } from '@audius/harmony'
 import cn from 'classnames'
@@ -23,6 +25,8 @@ import { useDispatch } from 'react-redux'
 import { useSelector } from 'common/hooks/useSelector'
 import { reactionMap } from 'components/notification/Notification/components/Reaction'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 
 import ChatTail from '../../../assets/img/ChatTail.svg'
 
@@ -168,6 +172,48 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     )
   }
 
+  const [messageBody, setMessageBody] = useState<(string | JSX.Element)[]>([
+    message.message
+  ])
+  useEffect(() => {
+    const fn = async () => {
+      const { matches } = matchAudiusLinks({
+        text: message.message,
+        hostname: env.PUBLIC_HOSTNAME
+      })
+      const sdk = await audiusSdk()
+      const parts = []
+      let lastIndex = 0
+      for (const match of matches) {
+        const { data: track } = await sdk.resolve.resolve({ url: match })
+        if (track && 'title' in track) {
+          const index = message.message.indexOf(match, lastIndex)
+          if (index > -1) {
+            // Push text before the match
+            if (lastIndex < index) {
+              parts.push(message.message.slice(lastIndex, index))
+            }
+            // Push the anchor tag
+            parts.push(
+              <a key={index} href={new URL(match).pathname}>
+                {formatTrackName({ track })}
+              </a>
+            )
+            lastIndex = index + match.length
+          }
+        }
+      }
+
+      // Push the remaining text after the last match
+      if (lastIndex < message.message.length) {
+        parts.push(message.message.slice(lastIndex))
+      }
+
+      setMessageBody(parts)
+    }
+    fn()
+  }, [message.message])
+
   return (
     <div
       className={cn(styles.root, {
@@ -211,7 +257,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
               className={styles.text}
               color={isAuthor ? 'staticWhite' : 'default'}
             >
-              {message.message}
+              {messageBody}
             </UserGeneratedText>
           ) : null}
         </div>
