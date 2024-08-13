@@ -8,6 +8,7 @@ export const getStems = (state: CommonState) => state.upload.stems
 export const getUploadProgress = (state: CommonState) =>
   state.upload.uploadProgress
 export const getUploadSuccess = (state: CommonState) => state.upload.success
+export const getUploadError = (state: CommonState) => state.upload.error
 export const getTracks = (state: CommonState) => state.upload.tracks
 export const getIsUploading = (state: CommonState) => state.upload.uploading
 export const getShouldReset = (state: CommonState) => state.upload.shouldReset

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { ID, SquareSizes } from '@audius/common/models'
+import { useGetUserById } from '@audius/common/api'
+import { SquareSizes, Status } from '@audius/common/models'
 import {
   Avatar,
   Flex,
@@ -12,15 +13,15 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { Comment } from '@audius/sdk'
 import dayjs from 'dayjs'
+import { usePrevious } from 'react-use'
 
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import { decodeHashId } from 'utils/hashIds'
 
 import { CommentForm } from './CommentForm'
 import { useCurrentCommentSection } from './CommentSectionContext'
-import type { Comment } from './types'
 
 // TODO: move this somewhere else
 // Format the date using the largest possible unit (y>mo>d>h>min)
@@ -61,15 +62,13 @@ const formatTrackTimestamp = (timestamp_s: number) => {
 
 export type CommentBlockProps = {
   comment: Comment
-  parentCommentId?: ID
-  parentCommentIndex?: number
+  parentCommentId?: string
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
   const {
     comment,
-    parentCommentId, // Parent comment ID & index will only exist on replies
-    parentCommentIndex // Parent comment index helps quickly look up the parent comment
+    parentCommentId // Parent comment ID will only exist on replies
   } = props
   const {
     isPinned,
@@ -78,70 +77,64 @@ export const CommentBlock = (props: CommentBlockProps) => {
     timestampS,
     id: commentId,
     createdAt,
-    userId: id
+    userId: userIdStr
   } = comment
-  const userId = Number(id)
-
-  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
 
   const {
-    handleEditComment,
-    handlePostComment,
-    handleDeleteComment,
-    handleReactComment,
-    handlePinComment
+    usePostComment,
+    useEditComment,
+    useDeleteComment,
+    useReactToComment,
+    usePinComment
   } = useCurrentCommentSection()
 
+  const [editComment] = useEditComment()
+  const [deleteComment] = useDeleteComment()
+  const [reactToComment] = useReactToComment()
+  const [pinComment] = usePinComment()
+  const [postComment, { status: commentPostStatus }] = usePostComment()
+  const prevPostStatus = usePrevious(commentPostStatus)
+  useEffect(() => {
+    if (
+      prevPostStatus !== commentPostStatus &&
+      commentPostStatus === Status.SUCCESS
+    ) {
+      setShowReplyInput(false)
+    }
+  }, [commentPostStatus, prevPostStatus])
+  const userId = Number(userIdStr)
+  useGetUserById({ id: userId })
+  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+
   const [showEditInput, setShowEditInput] = useState(false)
-  const [reactionState, setReactionState] = useState(false)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
+  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
+  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
 
   const handleCommentEdit = (commentMessage: string) => {
     setShowEditInput(false)
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      handleEditComment(decodedCommentId, commentMessage)
-    }
+    editComment(commentId, commentMessage)
   }
 
   const handleCommentReply = (commentMessage: string) => {
-    setShowReplyInput(false)
-    let decodedParentCommentId
-    if (parentCommentId) {
-      decodedParentCommentId = decodeHashId(parentCommentId?.toString())
-    }
-
-    handlePostComment(
-      commentMessage,
-      decodedParentCommentId ?? undefined, // omitting null from the value type
-      parentCommentIndex
-    )
+    postComment(commentMessage, parentCommentId)
   }
+
   const handleCommentReact = () => {
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      setReactionState(!reactionState)
-      handleReactComment(decodedCommentId, !reactionState)
-    }
+    setReactionState(!reactionState)
+    reactToComment(commentId, !reactionState)
   }
 
   const handleCommentDelete = () => {
-    let decodedCommentId
-    if (commentId) {
-      decodedCommentId = decodeHashId(commentId.toString())
-    }
-    if (decodedCommentId) {
-      handleDeleteComment(decodedCommentId)
-    }
+    // TODO: what should UI be doing here
+    deleteComment(commentId)
   }
+
+  const handleCommentPin = () => {
+    pinComment(commentId)
+  }
+
   return (
     <Flex w='100%' gap='l'>
       <Avatar
@@ -166,7 +159,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         <Flex gap='s' alignItems='center'>
           <UserLink userId={userId} />
           {/* TODO: figure out date from created_at */}
-          <Flex gap='xs' alignItems='center'>
+          <Flex gap='xs' alignItems='center' h='100%'>
             {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
             <Text size='s'> {formatCommentDate(createdAt)} </Text>
             {timestampS !== undefined ? (
@@ -197,9 +190,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconHeart}
               color={reactionState ? 'active' : 'subdued'}
               aria-label='Heart comment'
-              onClick={() => {
-                handleCommentReact()
-              }}
+              onClick={handleCommentReact}
             />
             <Text color='default'> {reactCount}</Text>
           </Flex>
@@ -231,9 +222,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconTrash}
               size='s'
               color='subdued'
-              onClick={() => {
-                handleCommentDelete()
-              }}
+              onClick={handleCommentDelete}
             />
           ) : null}
           {isOwner ? (
@@ -242,14 +231,17 @@ export const CommentBlock = (props: CommentBlockProps) => {
               icon={IconMerch}
               size='s'
               color='subdued'
-              onClick={() => {
-                handlePinComment(commentId)
-              }}
+              onClick={handleCommentPin}
             />
           ) : null}
         </Flex>
 
-        {showReplyInput ? <CommentForm onSubmit={handleCommentReply} /> : null}
+        {showReplyInput ? (
+          <CommentForm
+            onSubmit={handleCommentReply}
+            isLoading={commentPostStatus === Status.LOADING}
+          />
+        ) : null}
       </Flex>
     </Flex>
   )

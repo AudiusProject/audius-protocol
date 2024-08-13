@@ -1,38 +1,54 @@
-import { Comment } from './types'
+import { Comment, ReplyComment } from '@audius/sdk'
 
-export const MOCK_COMMENT_DATA: Comment[] = [
+// These are all things that need to be added to the API spec.
+// May change over time but good enough to stub UI out
+type UnimplementedFeatures = {
+  isLikedByCurrentUser?: boolean
+  isLikedByArtist?: boolean
+  isTipSupporter?: boolean
+  isTopSupporter?: boolean
+  notifsDisabledByCurrentUser?: boolean
+}
+
+type CommentWithUnimplementedFeatures = Comment &
+  UnimplementedFeatures & { replies?: (ReplyComment & UnimplementedFeatures)[] }
+
+export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
   {
-    id: 456,
+    id: '456',
     userId: '345',
     message: 'This is the first comment!!',
     isPinned: true,
     timestampS: 12,
     reactCount: 28,
+    isLikedByCurrentUser: true,
+    isLikedByArtist: true,
     replies: [
       {
-        id: 7890,
+        id: '7890',
         userId: '123',
         message: 'This is a comment reply',
         timestampS: 220,
+        isPinned: false, // TODO; remove is pinned from replies?
         reactCount: 3, // if using simple reactions
-        isPinned: false,
-        replies: null, // prefer null over empty array but either is fine
         createdAt: '2021-01-01T00:00:00Z',
-        updatedAt: null
+        updatedAt: undefined,
+        isTopSupporter: true
       }
     ],
     createdAt: '2021-01-01T00:00:00Z',
-    updatedAt: null
+    updatedAt: undefined
   },
   {
-    id: 678,
+    id: '678',
     userId: '3459',
     message: 'This is the second comment',
     isPinned: false,
+    isLikedByCurrentUser: false,
     timestampS: undefined,
     reactCount: 8,
-    replies: null,
+    replies: undefined,
     createdAt: '2021-01-01T00:00:00Z',
-    updatedAt: null
+    updatedAt: undefined
   }
 ]

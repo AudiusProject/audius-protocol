@@ -1,4 +1,8 @@
 import {
+  userMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import {
   Name,
   FavoriteSource,
   ID,
@@ -26,7 +30,8 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import {
   Genre,
@@ -177,15 +182,19 @@ function* fetchAllFollowArtist() {
 function* fetchFollowArtistGenre(
   followArtistCategory: SelectableArtistCategory
 ) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const genres = followArtistCategoryGenreMappings[followArtistCategory]
   const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
   try {
-    const users = yield* call([apiClient, apiClient.getTopArtistGenres], {
-      genres,
-      limit: 31,
-      offset: 0
-    })
+    const { data: sdkUsers } = yield* call(
+      [sdk.full.users, sdk.full.users.getTopUsersInGenre],
+      {
+        genre: genres,
+        limit: 31,
+        offset: 0
+      }
+    )
+    const users = transformAndCleanList(sdkUsers, userMetadataFromSDK)
     const userOptions = users
       .filter((user) => !defaultFollowUserIds.has(user.user_id))
       .slice(0, 30)

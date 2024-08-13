@@ -313,6 +313,18 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
+
+		case schema.RPCMethodChatBlast:
+			var params schema.ChatBlastRPCParams
+			err = json.Unmarshal(rawRpc.Params, &params)
+			if err != nil {
+				return err
+			}
+
+			err = chatBlast(tx, userId, messageTs, params)
+			if err != nil {
+				return err
+			}
 		default:
 			logger.Warn("no handler for ", rawRpc.Method)
 		}
