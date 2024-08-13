@@ -92,7 +92,7 @@ require (
 )
 
 require (
-	github.com/cometbft/cometbft v1.0.0-rc1
+	github.com/cometbft/cometbft v1.0.0-rc1.0.20240813044839-065bda127f8b
 	github.com/cometbft/cometbft-load-test v0.1.0
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect

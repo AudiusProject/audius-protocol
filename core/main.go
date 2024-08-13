@@ -20,6 +20,8 @@ import (
 func main() {
 	logger := common.NewLogger(nil)
 
+	logger.Info("good morning!")
+
 	// core config
 	config, err := config.ReadConfig(logger)
 	if err != nil {
