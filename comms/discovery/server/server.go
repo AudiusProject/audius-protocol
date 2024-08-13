@@ -73,6 +73,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/chats/unread", s.getUnreadChatCount)
 	g.POST("/mutate", s.mutate)
 
+	g.GET("/blasts", s.getNewBlasts)
+
 	g.GET("/chats/permissions", s.getChatPermissions)
 	g.GET("/chats/blockees", s.getChatBlockees)
 	g.GET("/chats/blockers", s.getChatBlockers)
@@ -306,6 +308,25 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 
 	rpcz.RegisterWebsocket(userId, conn)
 	return nil
+}
+
+func (s *ChatServer) getNewBlasts(c echo.Context) error {
+	ctx := c.Request().Context()
+	userId, err := userIdForSignedGet(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	blasts, err := queries.GetNewBlasts(db.Conn, ctx, queries.ChatMembershipParams{
+		UserID: userId,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   blasts,
+	})
 }
 
 func (s *ChatServer) getChats(c echo.Context) error {

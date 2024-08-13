@@ -37,8 +37,8 @@ func ChatLastMessageAt(q db.Queryable, ctx context.Context, chatId string) (time
 const userChat = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
-	chat.last_message,
+  chat.created_at,
+  chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
   chat_member.last_active_at,
@@ -59,8 +59,8 @@ func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (Us
 const userChats = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
-	chat.last_message,
+  chat.created_at,
+  chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
   chat_member.last_active_at,
