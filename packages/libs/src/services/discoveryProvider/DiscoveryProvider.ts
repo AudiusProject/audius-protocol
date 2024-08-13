@@ -1657,14 +1657,6 @@ export class DiscoveryProvider {
         response
       })) ?? response
 
-    // Matches logic from SDK `request` method
-    if (!response || response.status < 200 || response.status >= 300) {
-      throw new ResponseError(
-        response,
-        'Response did not contain a successful status code'
-      )
-    }
-
     const responseBody: DiscoveryResponse<Response> = await response.json()
 
     if (blockNumber && responseBody.latest_indexed_block < blockNumber) {
