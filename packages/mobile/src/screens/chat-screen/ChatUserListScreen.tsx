@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -21,7 +22,7 @@ import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import { IconCompose, IconSearch } from '@audius/harmony-native'
+import { Box, IconCompose, IconSearch } from '@audius/harmony-native'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
 import {
   Screen,
@@ -35,6 +36,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ChatUserListItem } from './ChatUserListItem'
+import { TargetedMessageCTA } from './TargetedMessageCTA'
 
 const { getAccountUser } = accountSelectors
 const { searchUsers } = searchUsersModalActions
@@ -206,6 +208,9 @@ export const ChatUserListScreen = () => {
   const defaultUserList = useDefaultUserList(defaultUserListType)
   const queryUserList = useQueryUserList(query)
 
+  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
   const hasQuery = query.length > 0
 
   const { hasMore, loadMore, status, userIds } = hasQuery
@@ -263,6 +268,8 @@ export const ChatUserListScreen = () => {
     >
       <ScreenContent>
         <HeaderShadow />
+        <TargetedMessageCTA onClick={() => {}} />
+
         <View style={styles.rootContainer}>
           <View
             style={[
@@ -314,6 +321,7 @@ export const ChatUserListScreen = () => {
           )}
         </View>
       </ScreenContent>
+      <Text>Test</Text>
     </Screen>
   )
 }
