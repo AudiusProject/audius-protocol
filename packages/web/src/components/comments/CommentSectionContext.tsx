@@ -15,7 +15,7 @@ import {
 } from '@audius/common/audius-query'
 import { ID, Status } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { EntityType, Comment, CommentResponse } from '@audius/sdk'
+import { EntityType, Comment } from '@audius/sdk'
 
 /**
  * Context object to avoid prop drilling and share a common API with web/native code
@@ -40,7 +40,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
   comments: Comment[]
   usePostComment: WrappedMutationHook<
     (message: string, parentCommentId?: string) => void,
-    CommentResponse
+    number
   >
   useReactToComment: WrappedMutationHook<
     (commentId: string, isLiked: boolean) => void,

@@ -10,6 +10,7 @@ import {
   IconMerch,
   IconPencil,
   IconTrash,
+  LoadingSpinner,
   Text,
   TextLink
 } from '@audius/harmony'
@@ -66,10 +67,7 @@ export type CommentBlockProps = {
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
-  const {
-    comment,
-    parentCommentId // Parent comment ID will only exist on replies
-  } = props
+  const { comment, parentCommentId } = props
   const {
     isPinned,
     message,
@@ -89,11 +87,14 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = useCurrentCommentSection()
 
   const [editComment] = useEditComment()
-  const [deleteComment] = useDeleteComment()
+  const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
+  const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
+  // Note: comment post status is shared across all inputs they may have open
   const [postComment, { status: commentPostStatus }] = usePostComment()
   const prevPostStatus = usePrevious(commentPostStatus)
+  const [isDeleting, setIsDeleting] = useState(false)
   useEffect(() => {
     if (
       prevPostStatus !== commentPostStatus &&
@@ -112,13 +113,24 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
 
+  useEffect(() => {
+    if (
+      isDeleting &&
+      (deleteCommentStatus === Status.SUCCESS ||
+        deleteCommentStatus === Status.ERROR) &&
+      prevDeleteCommentStatus !== deleteCommentStatus
+    ) {
+      setIsDeleting(false)
+    }
+  }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
+
   const handleCommentEdit = (commentMessage: string) => {
     setShowEditInput(false)
     editComment(commentId, commentMessage)
   }
 
   const handleCommentReply = (commentMessage: string) => {
-    postComment(commentMessage, parentCommentId)
+    postComment(commentMessage, parentCommentId ?? comment.id)
   }
 
   const handleCommentReact = () => {
@@ -127,7 +139,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
   }
 
   const handleCommentDelete = () => {
-    // TODO: what should UI be doing here
+    setIsDeleting(true)
     deleteComment(commentId)
   }
 
@@ -217,13 +229,17 @@ export const CommentBlock = (props: CommentBlockProps) => {
           ) : null}
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
           {isOwner ? (
-            <IconButton
-              aria-label='delete comment'
-              icon={IconTrash}
-              size='s'
-              color='subdued'
-              onClick={handleCommentDelete}
-            />
+            isDeleting ? (
+              <LoadingSpinner css={{ width: 16, height: 16 }} />
+            ) : (
+              <IconButton
+                aria-label='delete comment'
+                icon={IconTrash}
+                size='s'
+                color='subdued'
+                onClick={handleCommentDelete}
+              />
+            )
           ) : null}
           {isOwner ? (
             <IconButton
