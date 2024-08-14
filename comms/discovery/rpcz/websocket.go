@@ -112,7 +112,9 @@ func websocketPushAll(rpcJson json.RawMessage, timestamp time.Time) {
 			Metadata schema.Metadata `json:"metadata"`
 		}{
 			rpcJson,
-			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano),
+				// Note this is the userId of the user receiving the message
+				UserID: encodedUserId},
 		}
 
 		payload, err := json.Marshal(data)

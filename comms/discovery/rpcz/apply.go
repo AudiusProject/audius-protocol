@@ -449,7 +449,9 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 			Metadata schema.Metadata `json:"metadata"`
 		}{
 			rpcJson,
-			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano),
+				// Note this is the userId of the user sending the message
+				UserID: encodedUserId},
 		}
 
 		j, err := json.Marshal(data)
