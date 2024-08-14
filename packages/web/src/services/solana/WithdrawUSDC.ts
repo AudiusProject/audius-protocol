@@ -5,7 +5,6 @@ import {
   BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS,
   FeatureFlags
 } from '@audius/common/services'
-import { MintName } from '@audius/sdk'
 import {
   createCloseAccountInstruction,
   NATIVE_MINT,
@@ -13,20 +12,20 @@ import {
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
+  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   TransactionInstruction,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 
 import {
   JupiterSingleton,
   parseInstruction
 } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { getLibs } from 'services/audius-libs'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
@@ -45,44 +44,45 @@ export const getFundDestinationTokenAccountFees = async (
 /**
  * Creates instructions to swap from a user bank token into the given wallet as SOL.
  * These instructions are allowed in relay because every created token account is closed in the same transaction.
+ * @deprecated not necessary anymore as we allow users to fund one token account
  */
-export const createSwapUserbankToSolInstructions = async ({
-  mint,
+export const swapUserBankUSDCToSol = async ({
   outSolAmount,
   wallet,
-  feePayer
+  ethWallet
 }: {
-  mint: MintName
   outSolAmount: number
-  feePayer: PublicKey
-  wallet: PublicKey
+  wallet: Keypair
+  ethWallet: string
 }) => {
-  const libs = await getLibs()
+  const sdk = await audiusSdk()
+  const claimableTokensClient = sdk.services.claimableTokensClient
+  const authService = sdk.services.auth
+  const mintName = 'USDC'
+  const mint = new PublicKey(env.USDC_MINT_ADDRESS)
+  const feePayer = await sdk.services.solanaRelay.getFeePayer()
   const slippageBps =
     remoteConfigInstance.getRemoteVar(
       IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS
     ) ?? BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
 
-  const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
-    mint
-  })
   const walletTokenAccount = getAssociatedTokenAddressSync(
-    libs.solanaWeb3Manager!.mints[mint],
-    wallet
+    mint,
+    wallet.publicKey
   )
   const walletSolTokenAccount = getAssociatedTokenAddressSync(
     NATIVE_MINT,
-    wallet
+    wallet.publicKey
   )
-  const tokenSymbol = mint.toUpperCase()
+  const tokenSymbol = mintName
 
   // 1. Create a temporary token account on the wallet
   const createTemporaryTokenAccountInstruction =
     createAssociatedTokenAccountIdempotentInstruction(
       feePayer, // fee payer
       walletTokenAccount, // account to create
-      wallet, // owner
-      libs.solanaWeb3Manager!.mints[mint] // mint
+      wallet.publicKey, // owner
+      mint // mint
     )
 
   // 2-3. Transfer the tokens from the userbank to the wallet
@@ -98,14 +98,20 @@ export const createSwapUserbankToSolInstructions = async ({
   // Use the otherAmountThreshold which will account for max slippage.
   // We will end up with potentially extra SOL in the root account.
   const usdcNeededAmount = quoteRoute.otherAmountThreshold.amount
-  const transferToTemporaryTokenAccountInstructions =
-    await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
-      amount: new BN(usdcNeededAmount),
-      feePayerKey: feePayer,
-      senderSolanaAddress: usdcUserBank,
-      recipientSolanaAddress: walletTokenAccount.toString(),
-      instructionIndex: 1,
-      mint
+  const secpTransferInstruction =
+    await claimableTokensClient.createTransferSecpInstruction({
+      auth: authService,
+      amount: BigInt(usdcNeededAmount),
+      ethWallet,
+      mint: mintName,
+      destination: walletTokenAccount,
+      instructionIndex: 1
+    })
+  const transferInstruction =
+    await claimableTokensClient.createTransferInstruction({
+      ethWallet,
+      mint: mintName,
+      destination: walletTokenAccount
     })
 
   // 4. Create a temporary wSOL account on the wallet
@@ -113,7 +119,7 @@ export const createSwapUserbankToSolInstructions = async ({
     createAssociatedTokenAccountIdempotentInstruction(
       feePayer, // fee payer
       walletSolTokenAccount, // account to create
-      wallet, // owner
+      wallet.publicKey, // owner
       NATIVE_MINT // mint
     )
 
@@ -137,23 +143,23 @@ export const createSwapUserbankToSolInstructions = async ({
     lookupTableAddresses
   } = await JupiterSingleton.getSwapInstructions({
     quote: swapQuote.quote,
-    userPublicKey: wallet,
+    userPublicKey: wallet.publicKey,
     destinationTokenAccount: walletSolTokenAccount
   })
 
   // 6. Convert wSOL to SOL by closing the wSOL token account and setting the destination wallet
   const closeWSOLInstruction = createCloseAccountInstruction(
     walletSolTokenAccount, //  account to close
-    wallet, // fee destination
-    wallet //  owner
+    wallet.publicKey, // fee destination
+    wallet.publicKey //  owner
   )
 
   // 7. Recreate the wSOL account using the wallet so we can return the rent to the feepayer
   const createWSOLInstructionAgain =
     createAssociatedTokenAccountIdempotentInstruction(
-      wallet, // fee payer
+      wallet.publicKey, // fee payer
       walletSolTokenAccount, // account to create
-      wallet, // owner
+      wallet.publicKey, // owner
       NATIVE_MINT // mint
     )
 
@@ -161,20 +167,21 @@ export const createSwapUserbankToSolInstructions = async ({
   const closeWSOLInstructionAgain = createCloseAccountInstruction(
     walletSolTokenAccount, //  account to close
     feePayer, // fee destination
-    wallet //  owner
+    wallet.publicKey //  owner
   )
 
   // 9. Close the temporary token account on the wallet and return the rent to the feepayer
   const closeTemporaryTokenAccountInstruction = createCloseAccountInstruction(
     walletTokenAccount, //  account to close
     feePayer, // fee destination
-    wallet //  owner
+    wallet.publicKey //  owner
   )
 
-  return {
+  const transaction = await claimableTokensClient.buildTransaction({
     instructions: [
       createTemporaryTokenAccountInstruction,
-      ...transferToTemporaryTokenAccountInstructions,
+      secpTransferInstruction,
+      transferInstruction,
       createWSOLInstruction,
       parseInstruction(swapInstruction),
       closeWSOLInstruction,
@@ -182,7 +189,19 @@ export const createSwapUserbankToSolInstructions = async ({
       closeWSOLInstructionAgain,
       closeTemporaryTokenAccountInstruction
     ],
-    lookupTableAddresses,
+    addressLookupTables: lookupTableAddresses.map(
+      (address) => new PublicKey(address)
+    )
+  })
+
+  transaction.sign([wallet])
+
+  const signature = await claimableTokensClient.sendTransaction(transaction, {
+    skipPreflight: true
+  })
+
+  return {
+    signature,
     usdcNeededAmount
   }
 }

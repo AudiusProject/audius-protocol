@@ -1,10 +1,11 @@
+import { useCurrentCommentSection } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
-import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
+import { NoComments } from './NoComments'
 
 export const CommentSectionDesktop = () => {
   const {
@@ -63,6 +64,7 @@ export const CommentSectionDesktop = () => {
         ) : null}
         <Flex gap='s' p='xl' w='100%' direction='column'>
           <Flex direction='column' gap='m'>
+            {comments.length === 0 ? <NoComments /> : null}
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />
             ))}

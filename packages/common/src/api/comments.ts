@@ -7,9 +7,26 @@ import { ID } from '~/models'
 import { decodeHashId, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
+// Updates the array of all comments
+const optimisticUpdateCommentList = (
+  entityId: number,
+  updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
+  dispatch: ThunkDispatch<any, any, any>
+) => {
+  dispatch(
+    commentsApi.util.updateQueryData(
+      'getCommentsByTrackId',
+      { entityId },
+      updateRecipe
+    )
+  )
+}
+
+// Helper method to save on some copy-pasta
+// Updates a specific comment
 const optimisticUpdateComment = (
   id: string,
-  updateRecipe: (prevState: Comment | undefined) => Comment,
+  updateRecipe: (prevState: Comment | undefined) => Comment | void,
   dispatch: ThunkDispatch<any, any, any>
 ) => {
   dispatch(
@@ -52,8 +69,7 @@ const commentsApi = createApi({
       },
       options: { type: 'query' }
     },
-
-    // Non-optimistic mutations
+    // Non-optimistically updated mutations (updates after confirmation)
     postComment: {
       async fetch(
         { parentCommentId, ...commentData }: CommentMetadata,
@@ -69,22 +85,57 @@ const commentsApi = createApi({
         return commentsRes
       },
       options: { type: 'mutation' },
-      async onQuerySuccess({ data: comment }, { entityId }, { dispatch }) {
-        dispatch(
-          commentsApi.util.updateQueryData(
-            'getCommentsByTrackId',
-            { entityId },
-            (prevState) => {
-              // TODO: how should we handle sorting here?
-              prevState?.unshift(comment) // add new comment to top of comment section
+      async onQuerySuccess(
+        { data: newId },
+        { entityId, body, userId, timestampS, parentCommentId },
+        { dispatch }
+      ) {
+        const newComment: Comment = {
+          id: newId,
+          userId,
+          message: body,
+          isPinned: false,
+          timestampS,
+          reactCount: 0,
+          replies: undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: undefined
+        }
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            if (prevState) {
+              if (parentCommentId) {
+                const parentCommentIndex = prevState?.findIndex(
+                  (comment) => comment.id === parentCommentId
+                )
+                if (parentCommentIndex && parentCommentIndex >= 0) {
+                  const parentComment = prevState[parentCommentIndex]
+                  parentComment.replies = parentComment.replies || []
+                  parentComment.replies.push(newComment)
+                }
+              } else {
+                prevState.unshift(newComment) // add new comment to top of comment section
+              }
             }
-          )
+          },
+          dispatch
         )
-        optimisticUpdateComment(comment.id, () => comment, dispatch)
+        optimisticUpdateComment(
+          parentCommentId ?? newId,
+          (parentComment) => {
+            if (parentCommentId && parentComment) {
+              parentComment.replies = parentComment.replies || []
+              parentComment.replies.push(newComment)
+              return parentComment
+            } else {
+              return newComment
+            }
+          },
+          dispatch
+        )
       }
     },
-
-    // TODO: should this be optimistic or not?
     deleteCommentById: {
       async fetch(
         { id, userId, entityId }: { id: string; userId: ID; entityId: ID },
@@ -104,9 +155,23 @@ const commentsApi = createApi({
         const sdk = await audiusSdk()
         await sdk.comments.deleteComment(commentData)
       },
-      options: { type: 'mutation' }
+      options: { type: 'mutation' },
+      onQuerySuccess(_res, { id, entityId }, { dispatch }) {
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            const indexToRemove = prevState?.findIndex(
+              (comment: Comment) => comment.id === id
+            )
+            if (indexToRemove && indexToRemove >= 0) {
+              prevState?.splice(indexToRemove, 1)
+            }
+          },
+          dispatch
+        )
+      }
     },
-    // Optimistic mutations
+    // Optimistically updated mutations
     editCommentById: {
       async fetch(
         {
