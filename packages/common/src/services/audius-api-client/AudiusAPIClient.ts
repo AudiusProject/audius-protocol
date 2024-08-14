@@ -4,10 +4,8 @@ import {
   ID,
   TimeRange,
   StemTrackMetadata,
-  CollectionMetadata,
-  UserChallenge
+  CollectionMetadata
 } from '../../models'
-import { UndisbursedUserChallenge } from '../../store'
 import {
   SearchKind,
   SearchSortMethod
@@ -95,11 +93,6 @@ const FULL_ENDPOINT_MAP = {
   getNFTGatedTrackSignatures: (userId: OpaqueID) =>
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
-}
-
-const ENDPOINT_MAP = {
-  userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
-  undisbursedUserChallenges: `/challenges/undisbursed`
 }
 
 const TRENDING_LIMIT = 100
@@ -284,41 +277,6 @@ export type AssociatedWalletsResponse = {
   wallets: string[]
   sol_wallets: string[]
 }
-
-type GetUserChallengesArgs = {
-  userID: number
-}
-
-type UserChallengesResponse = [
-  {
-    challenge_id: string
-    user_id: string
-    specifier: string
-    is_complete: boolean
-    is_active: boolean
-    is_disbursed: boolean
-    current_step_count: number
-    max_steps: number
-    challenge_type: string
-    amount: string
-    disbursed_amount: number
-    metadata: object
-    cooldown_days: number
-  }
-]
-
-type UndisbursedUserChallengesResponse = [
-  {
-    challenge_id: string
-    user_id: string
-    specifier: string
-    amount: string
-    completed_blocknumber: number
-    handle: string
-    wallet: string
-    created_at: string
-  }
-]
 
 export type GetSocialFeedArgs = QueryParams & {
   filter: string
@@ -1090,59 +1048,6 @@ export class AudiusAPIClient {
       .map(adapter.makePlaylist)
       .filter(removeNullable)
     return adapted
-  }
-
-  getUserChallenges = async ({ userID }: GetUserChallengesArgs) => {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    if (encodedCurrentUserId === null) return null // throw error
-
-    const params = { id: encodedCurrentUserId }
-
-    const userChallenges: Nullable<APIResponse<UserChallengesResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.userChallenges(encodedCurrentUserId),
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!userChallenges) return null
-    // DN may have amount as a string
-    const challenges = userChallenges.data.map((challenge) => {
-      return {
-        ...challenge,
-        amount: Number(challenge.amount)
-      }
-    })
-    return challenges as UserChallenge[]
-  }
-
-  getUndisbursedUserChallenges = async ({ userID }: { userID: ID }) => {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    if (encodedCurrentUserId === null) return null // throw error
-
-    const params = { user_id: encodedCurrentUserId }
-
-    const undisbursedUserChallenges: Nullable<
-      APIResponse<UndisbursedUserChallengesResponse>
-    > = await this._getResponse(
-      ENDPOINT_MAP.undisbursedUserChallenges,
-      params,
-      true /* retry */,
-      PathType.VersionPath
-    )
-
-    if (!undisbursedUserChallenges) return null
-    // DN may have amount as a string
-    const challenges = undisbursedUserChallenges.data.map((challenge) => {
-      return {
-        ...challenge,
-        amount: Number(challenge.amount)
-      }
-    })
-    return challenges as UndisbursedUserChallenge[]
   }
 
   async getBlockConfirmation(

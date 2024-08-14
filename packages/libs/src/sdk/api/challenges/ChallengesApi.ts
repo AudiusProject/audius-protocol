@@ -10,9 +10,12 @@ import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import { AntiAbuseOracleAttestationError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
-import { BaseAPI, Configuration } from '../generated/default'
 import {
   ChallengesApi as GeneratedChallengesApi,
+  Configuration
+} from '../generated/default'
+import {
+  ChallengesApi as GeneratedChallengesApiFull,
   Configuration as ConfigurationFull
 } from '../generated/full'
 import type { UsersApi } from '../users/UsersApi'
@@ -27,7 +30,7 @@ import {
   GenerateSpecifierSchema
 } from './types'
 
-export class ChallengesApi extends BaseAPI {
+export class ChallengesApi extends GeneratedChallengesApi {
   constructor(
     config: Configuration,
     private readonly usersApi: UsersApi,
@@ -285,7 +288,7 @@ export class ChallengesApi extends BaseAPI {
     })
     const discoveryAttestations = await Promise.all(
       discoveryNodes.map((endpoint) =>
-        new GeneratedChallengesApi(
+        new GeneratedChallengesApiFull(
           new ConfigurationFull({ basePath: `${endpoint}/v1/full` })
         ).getChallengeAttestation({
           userId,

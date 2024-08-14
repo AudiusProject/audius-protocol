@@ -1,8 +1,4 @@
-import {
-  UserChallenge,
-  ChallengeRewardID,
-  SpecifierWithAmount
-} from '../../../models'
+import { ChallengeRewardID, SpecifierWithAmount } from '../../../models'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID
@@ -21,18 +17,6 @@ export type AudioRewardsClaim = {
   challengeId: ChallengeRewardID
   specifiers: SpecifierWithAmount[]
   amount: number
-}
-
-export type UndisbursedUserChallenge = Pick<
-  UserChallenge,
-  'challenge_id' | 'amount' | 'specifier' | 'user_id'
-> & {
-  completed_blocknumber: number
-  handle: string
-  wallet: string
-  created_at: string
-  completed_at: string
-  cooldown_days?: number
 }
 
 export enum HCaptchaStatus {

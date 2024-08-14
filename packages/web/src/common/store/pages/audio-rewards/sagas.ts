@@ -1,9 +1,14 @@
 import {
+  undisbursedUserChallengeFromSDK,
+  userChallengeFromSDK
+} from '@audius/common/adapters'
+import {
   UserChallenge,
   ChallengeRewardID,
   StringWei,
   SpecifierWithAmount,
-  Name
+  Name,
+  Id
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -22,7 +27,8 @@ import {
   modalsActions,
   getContext,
   musicConfettiActions,
-  CommonStoreContext
+  CommonStoreContext,
+  getSDK
 } from '@audius/common/store'
 import { encodeHashId, waitForValue } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
@@ -499,25 +505,30 @@ function* watchClaimAllChallengeRewards() {
 
 function* fetchUserChallengesAsync() {
   yield* call(waitForRead)
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
   try {
-    const userChallenges: UserChallenge[] | null = yield* call(
-      apiClient.getUserChallenges,
+    const { data: challengesData = [] } = yield* call(
+      [sdk.users, sdk.users.getUserChallenges],
       {
-        userID: currentUserId
+        id: Id.parse(currentUserId)
       }
     )
-    const undisbursedChallenges = yield* call(
-      [apiClient, apiClient.getUndisbursedUserChallenges],
+
+    const userChallenges = challengesData.map(userChallengeFromSDK)
+
+    const { data = [] } = yield* call(
+      [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
       {
-        userID: currentUserId
+        userId: Id.parse(currentUserId)
       }
     )
+    const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)
+
     yield* put(fetchUserChallengesSucceeded({ userChallenges }))
-    yield* put(setUndisbursedChallenges(undisbursedChallenges ?? []))
+    yield* put(setUndisbursedChallenges(undisbursedChallenges))
   } catch (e) {
     console.error(e)
     yield* put(fetchUserChallengesFailed())

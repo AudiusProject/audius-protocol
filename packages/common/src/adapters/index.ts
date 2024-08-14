@@ -1,6 +1,7 @@
 export * from './access'
 export * from './activity'
 export * from './attribution'
+export * from './challenge'
 export * from './collection'
 export * from './favorite'
 export * from './grant'
