@@ -19,7 +19,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
     userId: '345',
     message: 'This is the first comment!!',
     isPinned: true,
-    timestampS: 12,
+    trackTimestampMs: 12,
     reactCount: 28,
     isLikedByCurrentUser: true,
     isLikedByArtist: true,
@@ -28,7 +28,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
         id: '7890',
         userId: '123',
         message: 'This is a comment reply',
-        timestampS: 220,
+        trackTimestampMs: 220,
         isPinned: false, // TODO; remove is pinned from replies?
         reactCount: 3, // if using simple reactions
         createdAt: '2021-01-01T00:00:00Z',
@@ -45,7 +45,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
     message: 'This is the second comment',
     isPinned: false,
     isLikedByCurrentUser: false,
-    timestampS: undefined,
+    trackTimestampMs: undefined,
     reactCount: 8,
     replies: undefined,
     createdAt: '2021-01-01T00:00:00Z',

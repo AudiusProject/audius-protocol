@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -13,53 +13,17 @@ import {
   IconTrash,
   LoadingSpinner,
   Text,
-  TextLink
+  TextLink,
+  Timestamp
 } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
-import dayjs from 'dayjs'
 import { usePrevious } from 'react-use'
 
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { CommentForm } from './CommentForm'
-
-// TODO: move this somewhere else
-// Format the date using the largest possible unit (y>mo>d>h>min)
-const formatCommentDate = (dateStr: string) => {
-  const now = dayjs()
-  const commentDate = dayjs(dateStr)
-  const diffInMinutes = Math.min(now.diff(commentDate, 'minute'), 1)
-  const diffInHours = now.diff(commentDate, 'hour')
-  const diffInDays = now.diff(commentDate, 'day')
-  const diffInMonths = now.diff(commentDate, 'month')
-  const diffInYears = now.diff(commentDate, 'year')
-
-  if (diffInYears > 0) {
-    return `${diffInYears}y`
-  } else if (diffInMonths > 0) {
-    return `${diffInMonths}mo`
-  } else if (diffInDays > 0) {
-    return `${diffInDays}d`
-  } else if (diffInHours > 0) {
-    return `${diffInHours}h`
-  } else {
-    return `${diffInMinutes}min`
-  }
-}
-
-// TODO: move this somewhere else
-// TODO: do we need hours?
-const formatTrackTimestamp = (timestamp_s: number) => {
-  const hours = Math.floor(timestamp_s / (60 * 60))
-  const minutes = Math.floor(timestamp_s / 60)
-  const seconds = `${timestamp_s % 60}`.padStart(2, '0')
-  if (hours > 0) {
-    return `${hours}:${minutes}:${seconds}`
-  } else {
-    return `${minutes}:${seconds}`
-  }
-}
+import { TimestampLink } from './TimestampLink'
 
 export type CommentBlockProps = {
   comment: Comment
@@ -72,11 +36,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
     isPinned,
     message,
     reactCount = 0,
-    timestampS,
+    trackTimestampMs,
     id: commentId,
     createdAt,
     userId: userIdStr
   } = comment
+  const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const {
     usePostComment,
@@ -91,10 +56,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
-  // Note: comment post status is shared across all inputs they may have open
-  const [postComment, { status: commentPostStatus }] = usePostComment()
+  const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
   const prevPostStatus = usePrevious(commentPostStatus)
   const [isDeleting, setIsDeleting] = useState(false)
+  // wait for the comment to be posted before hiding the input
   useEffect(() => {
     if (
       prevPostStatus !== commentPostStatus &&
@@ -124,13 +89,13 @@ export const CommentBlock = (props: CommentBlockProps) => {
     }
   }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
 
-  const handleCommentEdit = (commentMessage: string) => {
+  const handleCommentEdit = ({
+    commentMessage
+  }: {
+    commentMessage: string
+  }) => {
     setShowEditInput(false)
     editComment(commentId, commentMessage)
-  }
-
-  const handleCommentReply = (commentMessage: string) => {
-    postComment(commentMessage, parentCommentId ?? comment.id)
   }
 
   const handleCommentReact = () => {
@@ -173,23 +138,21 @@ export const CommentBlock = (props: CommentBlockProps) => {
           {/* TODO: figure out date from created_at */}
           <Flex gap='xs' alignItems='center' h='100%'>
             {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
-            <Text size='s'> {formatCommentDate(createdAt)} </Text>
-            {timestampS !== undefined ? (
+            <Timestamp time={createdAtDate} />
+            {trackTimestampMs !== undefined ? (
               <>
                 <Text color='subdued' size='xs'>
                   •
                 </Text>
 
-                <TextLink size='s' variant='active'>
-                  {formatTrackTimestamp(timestampS)}
-                </TextLink>
+                <TimestampLink timestampMS={trackTimestampMs} />
               </>
             ) : null}
           </Flex>
         </Flex>
         {showEditInput ? (
           <CommentForm
-            onSubmit={handleCommentEdit}
+            handleSubmit={handleCommentEdit}
             initialValue={message}
             hideAvatar
           />
@@ -253,10 +216,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         </Flex>
 
         {showReplyInput ? (
-          <CommentForm
-            onSubmit={handleCommentReply}
-            isLoading={commentPostStatus === Status.LOADING}
-          />
+          <CommentForm parentCommentId={parentCommentId ?? comment.id} />
         ) : null}
       </Flex>
     </Flex>

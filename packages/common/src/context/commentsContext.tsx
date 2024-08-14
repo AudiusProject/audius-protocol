@@ -24,6 +24,7 @@ type CommentSectionContextProps = {
   userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
+  playTrack: () => void
 }
 
 // Helper type to rewrap our mutation hooks with data from this context
@@ -37,7 +38,11 @@ type CommentSectionContextType = CommentSectionContextProps & {
   commentSectionLoading: boolean
   comments: Comment[]
   usePostComment: WrappedMutationHook<
-    (message: string, parentCommentId?: string) => void,
+    (
+      message: string,
+      parentCommentId?: string,
+      trackTimestampMs?: number
+    ) => void,
     number
   >
   useReactToComment: WrappedMutationHook<
@@ -63,7 +68,8 @@ export const CommentSectionProvider = ({
   userId,
   entityId,
   entityType = EntityType.TRACK,
-  children
+  children,
+  playTrack
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const {
     data: comments = [],
@@ -91,7 +97,8 @@ export const CommentSectionProvider = ({
   const usePostComment: CommentSectionContextType['usePostComment'] = () => {
     const wrappedHandler = async (
       message: string,
-      parentCommentId?: string
+      parentCommentId?: string,
+      trackTimestampMs?: number
     ) => {
       if (userId) {
         postComment({
@@ -100,7 +107,8 @@ export const CommentSectionProvider = ({
           entityType,
           body: message,
           // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
-          parentCommentId
+          parentCommentId,
+          trackTimestampMs
         })
       }
     }
@@ -166,6 +174,7 @@ export const CommentSectionProvider = ({
         entityType,
         comments,
         commentSectionLoading,
+        playTrack,
         usePostComment,
         useDeleteComment,
         useEditComment,

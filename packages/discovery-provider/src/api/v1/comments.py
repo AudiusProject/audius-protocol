@@ -28,7 +28,7 @@ class User(Resource):
             "id": id,
             "message": "This is a mock data comment",
             "is_pinned": False,
-            "timestamp_s": 123,
+            "track_timestamp_ms": 123,
             "react_count": 0,
             "created_at": "2021-01-01T00:00:00Z",
             "updated_at": None,

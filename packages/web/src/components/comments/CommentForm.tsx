@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
-import { SquareSizes } from '@audius/common/models'
+import { SquareSizes, Status } from '@audius/common/models'
+import { getTrackId } from '@audius/common/src/store/player/selectors'
 import {
   Avatar,
   Flex,
@@ -10,19 +11,22 @@ import {
   LoadingSpinner
 } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
+import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { TextField } from 'components/form-fields'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string) => void
+  handleSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
+  parentCommentId?: string
   isLoading?: boolean
 }
 
@@ -43,24 +47,40 @@ const FormResetHandler = ({
 }
 
 export const CommentForm = ({
-  onSubmit,
+  handleSubmit: handleSubmitProps,
   initialValue = '',
-  hideAvatar = false,
-  isLoading
+  parentCommentId,
+  hideAvatar = false
 }: CommentFormProps) => {
-  const { userId } = useCurrentCommentSection()
+  const { userId, entityId, usePostComment } = useCurrentCommentSection()
+  const currentlyPlayingTrackId = useSelector(getTrackId)
+  const [postComment, { status: postCommentStatus }] = usePostComment()
+
+  const handlePostComment = (message: string) => {
+    const trackPosition = audioPlayer
+      ? Math.floor(audioPlayer.getPosition()) * 1000
+      : undefined
+    const trackTimestampMs =
+      currentlyPlayingTrackId === entityId ? trackPosition : undefined
+
+    postComment(message, parentCommentId, trackTimestampMs)
+  }
   const profileImage = useProfilePicture(
     userId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
 
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    onSubmit?.(commentMessage)
+    handlePostComment(commentMessage)
   }
+  const isLoading = postCommentStatus === Status.LOADING
 
   const formInitialValues: CommentFormValues = { commentMessage: initialValue }
   return (
-    <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={formInitialValues}
+      onSubmit={handleSubmitProps ?? handleSubmit}
+    >
       <Form style={{ width: '100%' }}>
         <FormResetHandler isLoading={isLoading} />
         <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>

@@ -255,6 +255,9 @@ const TrackPage = ({
               <CommentSectionProvider
                 userId={userId}
                 entityId={defaults.trackId}
+                playTrack={() => {
+                  play(currentQueueItem.uid ?? undefined)
+                }}
               >
                 <CommentSectionDesktop />
               </CommentSectionProvider>

@@ -1,5 +1,4 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { Status } from '@audius/common/models'
 import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
@@ -12,13 +11,9 @@ export const CommentSectionDesktop = () => {
     userId,
     comments,
     commentSectionLoading,
-    usePostComment,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
-  }
+
   const commentPostAllowed = userId !== null
 
   // Loading state
@@ -53,10 +48,7 @@ export const CommentSectionDesktop = () => {
         {commentPostAllowed !== null ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm
-                onSubmit={handlePostComment}
-                isLoading={postCommentStatus === Status.LOADING}
-              />
+              <CommentForm />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />

@@ -43,7 +43,7 @@ export interface ReplyComment {
      * @type {number}
      * @memberof ReplyComment
      */
-    timestampS?: number;
+    trackTimestampMs?: number;
     /**
      * 
      * @type {number}
@@ -98,7 +98,7 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'id': json['id'],
         'userId': json['user_id'],
         'message': json['message'],
-        'timestampS': !exists(json, 'timestamp_s') ? undefined : json['timestamp_s'],
+        'trackTimestampMs': !exists(json, 'track_timestamp_ms') ? undefined : json['track_timestamp_ms'],
         'reactCount': json['react_count'],
         'isPinned': json['is_pinned'],
         'createdAt': json['created_at'],
@@ -118,7 +118,7 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
-        'timestamp_s': value.timestampS,
+        'track_timestamp_ms': value.trackTimestampMs,
         'react_count': value.reactCount,
         'is_pinned': value.isPinned,
         'created_at': value.createdAt,
