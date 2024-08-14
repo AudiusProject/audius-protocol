@@ -12,7 +12,6 @@ export type SolanaClientConfigInternal = {
   rpcEndpoints: string[]
   /** Configuration to use for the RPC connection. */
   rpcConfig?: ConnectionConfig
-  logger: LoggerService
 }
 
 export type SolanaClientConfig = Partial<SolanaClientConfigInternal> & {

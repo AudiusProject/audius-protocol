@@ -17,6 +17,8 @@ import {
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
+import type { LoggerService } from '../../../Logger'
+import { CustomInstructionError } from '../CustomInstructionError'
 import { SolanaClient } from '../SolanaClient'
 
 import { getDefaultRewardManagerClentConfig } from './getDefaultConfig'
@@ -72,6 +74,7 @@ export class RewardManagerClient {
   private readonly rewardManagerStateAccount: PublicKey
   private readonly authority: PublicKey
   private rewardManagerState: RewardManagerStateData | null = null
+  private readonly logger: LoggerService
 
   constructor(config: RewardManagerClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -85,6 +88,7 @@ export class RewardManagerClient {
       programId: configWithDefaults.programId,
       rewardManagerState: configWithDefaults.rewardManagerState
     })
+    this.logger = configWithDefaults.logger
   }
 
   public async createSenderInstruction(params: CreateSenderInstructionRequest) {
@@ -299,7 +303,7 @@ export class RewardManagerClient {
         try {
           const error = CustomInstructionError.parseSendTransactionError(e)
           if (error) {
-            const instructions = await this.getInstructions(transaction)
+            const instructions = await this.client.getInstructions(transaction)
             const instruction = instructions[error.instructionIndex]
             if (instruction && instruction.programId.equals(this.programId)) {
               const decodedInstruction =

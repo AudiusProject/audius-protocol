@@ -12,7 +12,6 @@ import { z } from 'zod'
 import { productionConfig } from '../../../config/production'
 import { mergeConfigWithDefaults } from '../../../utils/mergeConfigs'
 import { parseParams } from '../../../utils/parseParams'
-import { LoggerService } from '../../Logger'
 import type { SolanaWalletAdapter } from '../types'
 
 import { getDefaultSolanaClientConfig } from './getDefaultConfig'
@@ -191,25 +190,10 @@ export class SolanaClient {
   }
 
   /**
-   * Fetches the address look up tables for populating transaction objects
-   */
-  protected async getLookupTableAccounts(lookupTableKeys: PublicKey[]) {
-    return await Promise.all(
-      lookupTableKeys.map(async (accountKey) => {
-        const res = await this.connection.getAddressLookupTable(accountKey)
-        if (res.value === null) {
-          throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
-        }
-        return res.value
-      })
-    )
-  }
-
-  /**
    * Normalizes the instructions as TransactionInstruction whether from
    * versioned transactions or legacy transactions.
    */
-  protected async getInstructions(
+  public async getInstructions(
     transaction: VersionedTransaction | Transaction
   ) {
     if ('version' in transaction) {
@@ -223,5 +207,20 @@ export class SolanaClient {
     } else {
       return transaction.instructions
     }
+  }
+
+  /**
+   * Fetches the address look up tables for populating transaction objects
+   */
+  public async getLookupTableAccounts(lookupTableKeys: PublicKey[]) {
+    return await Promise.all(
+      lookupTableKeys.map(async (accountKey) => {
+        const res = await this.connection.getAddressLookupTable(accountKey)
+        if (res.value === null) {
+          throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
+        }
+        return res.value
+      })
+    )
   }
 }

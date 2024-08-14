@@ -19,7 +19,9 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
+import type { LoggerService } from '../../../Logger'
 import type { TokenName } from '../../types'
+import { CustomInstructionError } from '../CustomInstructionError'
 import { SolanaClient } from '../SolanaClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
@@ -74,6 +76,7 @@ export class ClaimableTokensClient {
   private readonly mints: Record<TokenName, PublicKey>
   /** Map from token mint name to derived user bank authority. */
   private readonly authorities: Record<TokenName, PublicKey>
+  private readonly logger: LoggerService
 
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -93,6 +96,7 @@ export class ClaimableTokensClient {
         mint: configWithDefaults.mints.USDC
       })
     }
+    this.logger = configWithDefaults.logger
   }
 
   /**
@@ -241,18 +245,18 @@ export class ClaimableTokensClient {
    * Override the sendTransaction method to provide some more friendly errors
    * back to the consumer for ClaimableTokens instructions
    */
-  public override async sendTransaction(
+  public async sendTransaction(
     transaction: Transaction | VersionedTransaction,
     sendOptions?: SendTransactionOptions | undefined
   ): Promise<string> {
     try {
-      return await super.sendTransaction(transaction, sendOptions)
+      return await this.client.sendTransaction(transaction, sendOptions)
     } catch (e) {
       if (e instanceof SendTransactionError) {
         try {
           const error = CustomInstructionError.parseSendTransactionError(e)
           if (error) {
-            const instructions = await this.getInstructions(transaction)
+            const instructions = await this.client.getInstructions(transaction)
             const instruction = instructions[error.instructionIndex]
             if (instruction && instruction.programId.equals(this.programId)) {
               const decodedInstruction =

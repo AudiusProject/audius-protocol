@@ -1,7 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 
 import { SdkServicesConfig } from '../../../../config/types'
-import { Logger } from '../../../Logger'
 
 import { PaymentRouterClientConfigInternal } from './types'
 

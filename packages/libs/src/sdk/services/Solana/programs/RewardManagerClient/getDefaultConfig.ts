@@ -9,5 +9,6 @@ export const getDefaultRewardManagerClentConfig = (
   config: SdkServicesConfig
 ): RewardManagerClientConfigInternal => ({
   programId: new PublicKey(config.solana.rewardManagerProgramAddress),
-  rewardManagerState: new PublicKey(config.solana.rewardManagerStateAddress)
+  rewardManagerState: new PublicKey(config.solana.rewardManagerStateAddress),
+  logger: new Logger()
 })
