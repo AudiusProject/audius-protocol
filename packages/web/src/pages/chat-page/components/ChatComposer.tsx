@@ -36,6 +36,7 @@ const messages = {
 }
 
 const ENTER_KEY = 'Enter'
+const BACKSPACE_KEY = 'Backspace'
 
 export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
@@ -160,12 +161,30 @@ export const ChatComposer = (props: ChatComposerProps) => {
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Submit on enter
       if (e.key === ENTER_KEY && !e.shiftKey) {
         e.preventDefault()
         handleSubmit()
       }
+      // Delete any matched values with a single backspace
+      if (e.key === BACKSPACE_KEY) {
+        const textarea = e.target as HTMLTextAreaElement
+        const cursorPosition = textarea.selectionStart
+        const textBeforeCursor = textarea.value.slice(0, cursorPosition)
+        const matched = Object.keys(humanToTrack).find((i) =>
+          textBeforeCursor.endsWith(i)
+        )
+        if (matched) {
+          e.preventDefault()
+          setValue(
+            (value) =>
+              value.slice(0, cursorPosition - matched.length) +
+              value.slice(cursorPosition)
+          )
+        }
+      }
     },
-    [handleSubmit]
+    [handleSubmit, setValue, humanToTrack]
   )
 
   // Set focus and clear on new chat selected
