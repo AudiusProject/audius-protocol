@@ -98,7 +98,6 @@ const FULL_ENDPOINT_MAP = {
 }
 
 const ENDPOINT_MAP = {
-  associatedWalletUserId: '/users/id',
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
   userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
   undisbursedUserChallenges: `/challenges/undisbursed`
@@ -285,14 +284,6 @@ type GetTrendingPlaylistsArgs = {
 export type AssociatedWalletsResponse = {
   wallets: string[]
   sol_wallets: string[]
-}
-
-type GetAssociatedWalletUserIDArgs = {
-  address: string
-}
-
-type AssociatedWalletUserIdResponse = {
-  user_id: Nullable<ID>
 }
 
 type GetUserChallengesArgs = {
@@ -1100,23 +1091,6 @@ export class AudiusAPIClient {
       .map(adapter.makePlaylist)
       .filter(removeNullable)
     return adapted
-  }
-
-  async getAssociatedWalletUserId({ address }: GetAssociatedWalletUserIDArgs) {
-    this._assertInitialized()
-    const params = { associated_wallet: address }
-
-    const userID: Nullable<APIResponse<AssociatedWalletUserIdResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.associatedWalletUserId,
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!userID) return null
-    const encodedUserId = userID.data.user_id
-    return encodedUserId ? decodeHashId(encodedUserId.toString()) : null
   }
 
   getUserChallenges = async ({ userID }: GetUserChallengesArgs) => {
