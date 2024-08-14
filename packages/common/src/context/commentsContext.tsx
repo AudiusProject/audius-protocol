@@ -19,11 +19,12 @@ import {
  * Context object to avoid prop drilling and share a common API with web/native code
  */
 
-// Props passed in from above
+// Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
   userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
+  isEntityOwner: boolean
 }
 
 // Helper type to rewrap our mutation hooks with data from this context
@@ -53,6 +54,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
+  handleMuteEntityNotifications: () => void
 }
 
 export const CommentSectionContext = createContext<
@@ -62,6 +64,7 @@ export const CommentSectionContext = createContext<
 export const CommentSectionProvider = ({
   userId,
   entityId,
+  isEntityOwner,
   entityType = EntityType.TRACK,
   children
 }: PropsWithChildren<CommentSectionContextProps>) => {
@@ -157,6 +160,9 @@ export const CommentSectionProvider = ({
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
   }
+  const handleMuteEntityNotifications = () => {
+    console.log('Muting all notifs for ', entityId)
+  }
 
   return (
     <CommentSectionContext.Provider
@@ -166,6 +172,7 @@ export const CommentSectionProvider = ({
         entityType,
         comments,
         commentSectionLoading,
+        isEntityOwner,
         usePostComment,
         useDeleteComment,
         useEditComment,
@@ -173,7 +180,8 @@ export const CommentSectionProvider = ({
         useReactToComment,
         useReportComment,
         handleLoadMoreReplies,
-        handleLoadMoreRootComments
+        handleLoadMoreRootComments,
+        handleMuteEntityNotifications
       }}
     >
       {children}

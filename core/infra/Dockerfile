@@ -15,6 +15,7 @@ FROM alpine:latest AS final
 
 RUN --mount=type=cache,target=/var/cache/apk \
   apk --update add \
+  curl \
   ca-certificates \
   tzdata \
   && \
