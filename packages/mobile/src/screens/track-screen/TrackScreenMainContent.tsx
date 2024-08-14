@@ -14,7 +14,7 @@ import { View } from 'react-native'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
-import { CommentSectionProvider } from 'app/components/comments/CommentSectionProvider'
+import { CommentSectionProvider } from 'app/components/comments/CommentSectionContext'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
