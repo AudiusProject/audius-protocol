@@ -1,12 +1,14 @@
 import type { PublicKey } from '@solana/web3.js'
 import { z } from 'zod'
 
+import type { LoggerService } from '../../../Logger'
 import { PublicKeySchema } from '../../types'
 import type { SolanaClient } from '../SolanaClient'
 
 export type RewardManagerClientConfigInternal = {
   programId: PublicKey
   rewardManagerState: PublicKey
+  logger: LoggerService
 }
 
 export type RewardManagerClientConfig =

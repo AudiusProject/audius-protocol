@@ -12,6 +12,5 @@ export const getDefaultPaymentRouterClientConfig = (
   mints: {
     USDC: new PublicKey(config.solana.usdcTokenMint),
     wAUDIO: new PublicKey(config.solana.wAudioTokenMint)
-  },
-  logger: new Logger()
+  }
 })
