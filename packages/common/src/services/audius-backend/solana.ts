@@ -823,11 +823,8 @@ export const transferFromUserBank = async ({
     } catch (e) {
       // Throws if token account doesn't exist or account isn't a token account
       isCreatingTokenAccount = true
-      console.debug(e)
       console.debug(
-        'Associated token account',
-        destination.toBase58(),
-        'does not exist. Creating w/ transfer...'
+        `Associated token account ${destination.toBase58()} does not exist. Creating w/ transfer...`
       )
 
       // Historically, the token account was created in a separate transaction
