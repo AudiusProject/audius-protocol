@@ -2,8 +2,14 @@ import { useState } from 'react'
 
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
-import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
-import { ReplyComment } from '@audius/sdk'
+import type { ReplyComment } from '@audius/sdk'
+
+import {
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  TextLink
+} from '@audius/harmony-native'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -34,7 +40,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
       <CommentBlock comment={rootComment} />
       <Flex ml='56px' direction='column' mt='l' gap='l'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onClick={() => toggleReplies(rootComment.id)}>
+          <TextLink onPress={() => toggleReplies(rootComment.id)}>
             {hiddenReplies[rootComment.id] ? (
               <IconCaretUp color='subdued' size='m' />
             ) : (
@@ -57,7 +63,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
         )}
         {/* TODO: need a way to hide this when no more to load */}
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onClick={() => handleLoadMoreReplies(rootComment.id)}>
+          <TextLink onPress={() => handleLoadMoreReplies(rootComment.id)}>
             {messages.showMoreReplies}
           </TextLink>
         ) : null}

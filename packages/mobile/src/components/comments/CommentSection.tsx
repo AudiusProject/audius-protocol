@@ -3,6 +3,7 @@ import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
 import { Flex, IconCaretRight, Paper, Text } from '@audius/harmony-native'
+import { useDrawer } from 'app/hooks/useDrawer'
 
 import Skeleton from '../skeleton'
 
@@ -14,8 +15,18 @@ const messages = {
 }
 
 const CommentSectionHeader = () => {
-  const { commentSectionLoading: isLoading, comments } =
-    useCurrentCommentSection()
+  const {
+    userId,
+    entityId,
+    commentSectionLoading: isLoading,
+    comments
+  } = useCurrentCommentSection()
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  const handlePressViewAll = () => {
+    openDrawer({ userId, entityId })
+  }
+
   return (
     <Flex direction='row' w='100%' justifyContent='space-between'>
       <Text variant='title' size='l'>
@@ -24,14 +35,16 @@ const CommentSectionHeader = () => {
           <Text color='subdued'>&nbsp;{comments.length}</Text>
         ) : null}
       </Text>
-      <TouchableOpacity onPress={() => console.log('pressed')}>
-        <Flex direction='row' alignItems='center' gap='xs'>
-          <Text variant='title' color='subdued'>
-            View All
-          </Text>
-          <IconCaretRight color='subdued' height={16} width={16} />
-        </Flex>
-      </TouchableOpacity>
+      {!isLoading ? (
+        <TouchableOpacity onPress={handlePressViewAll}>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            <Text variant='title' color='subdued'>
+              View All
+            </Text>
+            <IconCaretRight color='subdued' height={16} width={16} />
+          </Flex>
+        </TouchableOpacity>
+      ) : null}
     </Flex>
   )
 }
