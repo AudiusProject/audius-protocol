@@ -5,7 +5,7 @@ import {
 import { FlatList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Box, Flex, Text } from '@audius/harmony-native'
+import { Box, Divider, Flex, Text } from '@audius/harmony-native'
 import { FULL_DRAWER_HEIGHT, NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 
@@ -19,15 +19,16 @@ const CommentDrawerHeader = () => {
     useCurrentCommentSection()
 
   return (
-    <Flex p='l'>
-      <Flex direction='row' w='100%' justifyContent='space-between'>
-        <Text variant='title' size='l'>
+    <Flex>
+      <Flex direction='row' w='100%' justifyContent='space-between' p='l'>
+        <Text variant='body' size='m'>
           Comments
           {!isLoading && comments?.length ? (
-            <Text>&nbsp;{comments.length}</Text>
+            <Text color='subdued'>&nbsp;({comments.length})</Text>
           ) : null}
         </Text>
       </Flex>
+      <Divider orientation='horizontal' />
     </Flex>
   )
 }
@@ -63,7 +64,7 @@ const CommentDrawerContent = () => {
       <FlatList
         data={comments}
         renderItem={({ item }) => (
-          <Box p='l'>
+          <Box ph='l'>
             <CommentThread commentId={item.id} />
           </Box>
         )}
@@ -76,7 +77,7 @@ const CommentDrawerContent = () => {
 export const CommentDrawer = () => {
   const insets = useSafeAreaInsets()
   const {
-    data: { userId, entityId }
+    data: { userId, entityId, isEntityOwner }
   } = useDrawer('Comment')
   return (
     <NativeDrawer drawerName='Comment'>
@@ -85,7 +86,11 @@ export const CommentDrawer = () => {
           height: FULL_DRAWER_HEIGHT - insets.top - insets.bottom
         }}
       >
-        <CommentSectionProvider userId={userId} entityId={entityId}>
+        <CommentSectionProvider
+          userId={userId}
+          entityId={entityId}
+          isEntityOwner={isEntityOwner}
+        >
           <Flex direction='column' gap='m' mt='2xl'>
             <CommentDrawerHeader />
             <CommentDrawerContent />

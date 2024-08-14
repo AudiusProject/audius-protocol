@@ -19,12 +19,13 @@ const CommentSectionHeader = () => {
     userId,
     entityId,
     commentSectionLoading: isLoading,
-    comments
+    comments,
+    isEntityOwner
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
 
   const handlePressViewAll = () => {
-    openDrawer({ userId, entityId })
+    openDrawer({ userId, entityId, isEntityOwner })
   }
 
   return (
@@ -32,7 +33,7 @@ const CommentSectionHeader = () => {
       <Text variant='title' size='l'>
         Comments
         {!isLoading && comments?.length ? (
-          <Text color='subdued'>&nbsp;{comments.length}</Text>
+          <Text color='subdued'>&nbsp;({comments.length})</Text>
         ) : null}
       </Text>
       {!isLoading ? (

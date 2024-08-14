@@ -70,7 +70,7 @@ export type DrawerData = {
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   Welcome: undefined
   ManagerMode: undefined
-  Comment: { userId: ID; entityId: ID }
+  Comment: { userId: ID; entityId: ID; isEntityOwner: boolean }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {

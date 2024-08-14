@@ -81,6 +81,7 @@ export const TrackScreenMainContent = ({
             <CommentSectionProvider
               userId={user.user_id}
               entityId={track.track_id}
+              isEntityOwner={user.user_id === track.owner_id}
             >
               <CommentSection />
             </CommentSectionProvider>
