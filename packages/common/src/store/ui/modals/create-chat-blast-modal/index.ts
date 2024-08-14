@@ -12,6 +12,6 @@ const ChatBlastModal = createModal<ChatBlastModalState>({
 
 export const {
   hook: useChatBlastModal,
-  actions: ChatBlastModalActions,
-  reducer: ChatBlastModalReducer
+  actions: chatBlastModalActions,
+  reducer: chatBlastModalReducer
 } = ChatBlastModal

@@ -23,8 +23,8 @@ import { useSelector } from 'common/hooks/useSelector'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
-import { CreateChatEmptyResults } from './CreateChatEmptyResults'
 import { ChatBlastCTA } from './ChatBlastCTA'
+import { CreateChatEmptyResults } from './CreateChatEmptyResults'
 
 const messages = {
   title: 'New Message'
