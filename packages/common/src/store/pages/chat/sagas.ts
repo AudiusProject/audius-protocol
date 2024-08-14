@@ -1,8 +1,9 @@
-import type {
-  ChatMessage,
-  TypedCommsResponse,
-  UserChat,
-  ValidatedChatPermissions
+import {
+  ChatBlastAudience,
+  type ChatMessage,
+  type TypedCommsResponse,
+  type UserChat,
+  type ValidatedChatPermissions
 } from '@audius/sdk'
 import {
   call,
@@ -61,6 +62,7 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
+  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,
@@ -546,6 +548,61 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   }
 }
 
+function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
+  const { message } = action.payload
+  // const { blastId, audience, audienceTrackId, message } = action.payload
+  // TODO: analytics PAY-3347
+  // const { track, make } = yield* getContext('analytics')
+  const messageIdToUse = ulid()
+  const userId = yield* select(getUserId)
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const currentUserId = encodeHashId(userId)
+    if (!currentUserId) {
+      return
+    }
+
+    // TODO: optimistic add
+    // Optimistically add the message
+    // yield* put(
+    //   addMessage({
+    //     chatId,
+    //     message: {
+    //       sender_user_id: currentUserId,
+    //       message_id: messageIdToUse,
+    //       message,
+    //       reactions: [],
+    //       created_at: dayjs().toISOString()
+    //     },
+    //     status: Status.LOADING,
+    //     isSelfMessage: true
+    //   })
+    // )
+
+    yield* call([sdk.chats, sdk.chats.messageBlast], {
+      audience: ChatBlastAudience.FOLLOWERS,
+      blastId: messageIdToUse,
+      message
+    })
+    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
+  } catch (e) {
+    console.error('sendMessageBlastFailed', e)
+    // yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
+
+    // const reportToSentry = yield* getContext('reportToSentry')
+    // reportToSentry({
+    //   level: ErrorLevel.Error,
+    //   error: e as Error,
+    //   additionalInfo: {
+    //     chatId,
+    //     messageId: messageIdToUse
+    //   }
+    // })
+    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
+  }
+}
+
 function* doFetchChat({ chatId }: { chatId: string }) {
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
@@ -783,6 +840,10 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
+function* watchSendChatBlast() {
+  yield takeEvery(sendChatBlast, doSendChatBlast)
+}
+
 function* watchFetchLatestChats() {
   yield takeLatest(fetchLatestChats, doFetchLatestChats)
 }
@@ -855,6 +916,7 @@ export const sagas = () => {
     watchCreateChat,
     watchMarkChatAsRead,
     watchSendMessage,
+    watchSendChatBlast,
     watchAddMessage,
     watchFetchBlockees,
     watchFetchBlockers,

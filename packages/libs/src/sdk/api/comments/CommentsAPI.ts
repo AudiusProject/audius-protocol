@@ -44,12 +44,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
     this.logger.info('Successfully posted a comment')
-
-    // After posting a comment, fetch the comment to get the full object
-    const newCommentResponse = await this.getComment({
-      id: newCommentId.toString()
-    })
-    return newCommentResponse
+    return newCommentId
   }
 
   async editComment(metadata: CommentMetadata) {
