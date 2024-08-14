@@ -1,3 +1,4 @@
+import { useCurrentCommentSection } from '@audius/common/context'
 import type { FormikHelpers } from 'formik'
 import { Formik } from 'formik'
 
@@ -5,16 +6,12 @@ import {
   Box,
   Flex,
   IconButton,
-  IconPaperAirplane,
-  IconSend,
-  TextInput,
-  TextInputSize
+  IconPaperAirplane
 } from '@audius/harmony-native'
 
 import { ProfilePicture } from '../core'
-import { HarmonyTextField, TextField } from '../fields'
-
-import { useCurrentCommentSection } from './CommentSectionContext'
+import { HarmonyTextField } from '../fields'
+import LoadingSpinner from '../loading-spinner'
 
 type CommentFormValues = {
   commentMessage: string
@@ -24,6 +21,7 @@ type CommentFormProps = {
   onSubmit: (commentMessage: string) => void
   initialValue?: string
   hideAvatar?: boolean
+  isLoading?: boolean
 }
 
 const messages = {
@@ -33,7 +31,8 @@ const messages = {
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  hideAvatar = false
+  hideAvatar = false,
+  isLoading
 }: CommentFormProps) => {
   const { userId } = useCurrentCommentSection()
 
@@ -49,7 +48,7 @@ export const CommentForm = ({
   return (
     <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
       <Flex direction='row' gap='m' alignItems='center'>
-        {!hideAvatar ? (
+        {!hideAvatar && userId ? (
           <ProfilePicture
             userId={userId}
             style={{ width: 40, height: 40, flexShrink: 0 }}
@@ -61,13 +60,16 @@ export const CommentForm = ({
             label='Add a comment'
             hideLabel
             placeholder={messages.beFirstComment}
-            size={TextInputSize.MEDIUM}
             endAdornment={
-              <IconButton
-                aria-label='Post comment'
-                icon={IconPaperAirplane}
-                color='accent'
-              />
+              isLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <IconButton
+                  aria-label='Post comment'
+                  icon={IconPaperAirplane}
+                  color='accent'
+                />
+              )
             }
           />
         </Box>
