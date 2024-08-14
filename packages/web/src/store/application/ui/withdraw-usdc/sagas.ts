@@ -71,7 +71,7 @@ function* doWithdrawUSDCCoinflow({
 
     const user = yield* select(accountSelectors.getAccountUser)
     if (!user?.wallet) {
-      throw new Error('User not logged in')
+      throw new Error('Unable to find wallet. Is the user signed in?')
     }
     const ethWallet = user.wallet
     const destinationWallet = new PublicKey(destinationAddress)
@@ -225,7 +225,7 @@ function* doWithdrawUSDCManualTransfer({
 
     const user = yield* select(accountSelectors.getAccountUser)
     if (!user?.wallet) {
-      throw new Error('User not logged in')
+      throw new Error('Unable to find wallet. Is the user signed in?')
     }
     const ethWallet = user.wallet
     const destinationWallet = new PublicKey(destinationAddress)
