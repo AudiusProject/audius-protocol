@@ -11,7 +11,8 @@ import {
   WithdrawMethod,
   getContext,
   buyUSDCActions,
-  accountSelectors
+  accountSelectors,
+  getSDK
 } from '@audius/common/store'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
@@ -44,8 +45,7 @@ function* doWithdrawUSDCCoinflow({
   'amount' | 'currentBalance'
 >) {
   const { track, make } = yield* getContext('analytics')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   yield* put(beginCoinflowWithdrawal())
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
@@ -205,8 +205,7 @@ function* doWithdrawUSDCManualTransfer({
   const { track, make } = yield* getContext('analytics')
   const withdrawalAmountDollars = amount / 100
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   const connection = yield* call(getSolanaConnection)
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
