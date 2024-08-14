@@ -266,7 +266,8 @@ const initializeApis = ({
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
-    services.solanaRelay
+    services.solanaRelay,
+    services.solanaClient
   )
   const users = new UsersApi(
     generatedApiClientConfig,
@@ -274,7 +275,8 @@ const initializeApis = ({
     services.entityManager,
     services.auth,
     services.logger,
-    services.claimableTokensClient
+    services.claimableTokensClient,
+    services.solanaClient
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -284,7 +286,8 @@ const initializeApis = ({
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
-    services.solanaRelay
+    services.solanaRelay,
+    services.solanaClient
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
@@ -337,7 +340,8 @@ const initializeApis = ({
     services.rewardManagerClient,
     services.claimableTokensClient,
     services.antiAbuseOracle,
-    services.logger
+    services.logger,
+    services.solanaClient
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
