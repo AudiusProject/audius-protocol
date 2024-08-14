@@ -8,7 +8,7 @@ import bs58 from 'bs58'
 import { Request, Response, NextFunction } from 'express'
 
 import { config } from '../../config'
-import { BadRequestError } from '../../errors'
+import { BadRequestError, UnauthorizedError } from '../../errors'
 import { connections, getConnection } from '../../utils/connections'
 import {
   broadcastTransaction,
@@ -106,14 +106,16 @@ export const relay = async (
         }
       }
       transaction.sign([feePayerKeyPair])
-    } else if (verifySignatures(transaction)) {
+    } else if (res.locals.signerUser && verifySignatures(transaction)) {
       res.locals.logger.info(
         `Transaction already signed by '${feePayerKey.toBase58()}'`
       )
-    } else {
+    } else if (res.locals.signerUser) {
       throw new BadRequestError(
         `No fee payer for address '${feePayerKey?.toBase58()}' and signature missing or invalid`
       )
+    } else {
+      throw new UnauthorizedError()
     }
     const signature = bs58.encode(transaction.signatures[0])
 
