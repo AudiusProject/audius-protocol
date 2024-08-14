@@ -69,7 +69,7 @@ export const ChatList = (props: ChatListProps) => {
       >
         {chats?.length > 0 ? (
           chats.map((chat) =>
-            'is_blast' in chat && chat.is_blast ? (
+            chat.is_blast ? (
               <ChatListBlastItem
                 key={chat.chat_id}
                 chat={chat}
@@ -79,7 +79,6 @@ export const ChatList = (props: ChatListProps) => {
               <ChatListItem
                 key={chat.chat_id}
                 currentChatId={currentChatId}
-                // TODO: need type guard to fix this
                 chat={chat}
                 onChatClicked={onChatClicked}
               />

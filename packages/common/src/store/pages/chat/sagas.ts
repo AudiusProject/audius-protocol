@@ -448,14 +448,13 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
     skipNavigation
   } = action.payload
 
+  const { track, make } = yield* getContext('analytics')
   try {
-    // const audiusSdk = yield* getContext('audiusSdk')
-    // const sdk = yield* call(audiusSdk)
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
-    // Try to get existing chat:
+
     const chatId = `${audience}${contentType ? `:${contentType}` : ''}${
       contentId ? `:${contentId}` : ''
     }`
@@ -484,7 +483,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
           chat: newBlast
         })
       )
-      // yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
+      yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
     }
   } catch (e) {
     console.error('createChatFailed', e)
@@ -494,15 +493,17 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         content: 'Something went wrong. Failed to create chat.'
       })
     )
-    // const reportToSentry = yield* getContext('reportToSentry')
-    // reportToSentry({
-    //   level: ErrorLevel.Error,
-    //   error: e as Error,
-    //   additionalInfo: {
-    //     userIds
-    //   }
-    // })
-    // yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error,
+      additionalInfo: {
+        audience,
+        contentId,
+        contentType
+      }
+    })
+    yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
   }
 }
 

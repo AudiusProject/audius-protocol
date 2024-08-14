@@ -33,8 +33,7 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
 
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
-  // const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
-  const userMeetsRequirements = true
+  const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
 
   const handleClick = useCallback(() => {
     onClick()

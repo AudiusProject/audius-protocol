@@ -67,7 +67,7 @@ import type {
   ValidatedChatPermissions
 } from './serverTypes'
 
-const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
+const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
 
 export class ChatsApi
   extends BaseAPI
