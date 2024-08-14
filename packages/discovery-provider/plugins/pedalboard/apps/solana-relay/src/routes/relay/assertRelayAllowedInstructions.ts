@@ -144,7 +144,10 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
             instr.keys.destination.pubkey
           )
       )
-    if (wallet) {
+    if (
+      wallet &&
+      matchingCreateInstructions.length !== matchingCloseInstructions.length
+    ) {
       try {
         await rateLimitTokenAccountCreation(wallet, !!isVerified)
       } catch (e) {
