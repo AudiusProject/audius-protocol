@@ -1,17 +1,17 @@
 import type { PublicKey } from '@solana/web3.js'
 import { z } from 'zod'
 
-import { PublicKeySchema, SolanaWalletAdapter } from '../../types'
-import type { BaseSolanaProgramConfigInternal } from '../types'
+import { PublicKeySchema } from '../../types'
+import type { SolanaClient } from '../SolanaClient'
 
 export type RewardManagerClientConfigInternal = {
   programId: PublicKey
   rewardManagerState: PublicKey
-} & BaseSolanaProgramConfigInternal
+}
 
 export type RewardManagerClientConfig =
   Partial<RewardManagerClientConfigInternal> & {
-    solanaWalletAdapter: SolanaWalletAdapter
+    solanaClient: SolanaClient
   }
 
 export const CreateSenderInstructionSchema = z.object({

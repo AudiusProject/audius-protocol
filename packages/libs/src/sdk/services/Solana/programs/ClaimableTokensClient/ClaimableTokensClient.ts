@@ -20,8 +20,7 @@ import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
 import type { TokenName } from '../../types'
-import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
-import { CustomInstructionError } from '../CustomInstructionError'
+import { SolanaClient } from '../SolanaClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
@@ -67,7 +66,8 @@ export class ClaimableTokensError extends Error {
  * associated token accounts that are permissioned to users by their Ethereum
  * hedgehog wallet private keys.
  */
-export class ClaimableTokensClient extends BaseSolanaProgramClient {
+export class ClaimableTokensClient {
+  private readonly client: SolanaClient
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
@@ -80,7 +80,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       config,
       getDefaultClaimableTokensConfig(productionConfig)
     )
-    super(configWithDefaults, config.solanaWalletAdapter)
+    this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.mints = configWithDefaults.mints
     this.authorities = {
@@ -105,9 +105,11 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
     )(params)
     const { ethWallet, feePayer: feePayerOverride } = args
     const { mint, token } = parseMintToken(args.mint, this.mints)
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
-    const userBankAccount = await this.connection.getAccountInfo(userBank)
+    const userBankAccount = await this.client.connection.getAccountInfo(
+      userBank
+    )
     if (!userBankAccount) {
       const createUserBankInstruction =
         ClaimableTokensProgram.createAccountInstruction({
@@ -119,16 +121,16 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
           programId: this.programId
         })
       const confirmationStrategyArgs =
-        await this.connection.getLatestBlockhash()
+        await this.client.connection.getLatestBlockhash()
       const message = new TransactionMessage({
         payerKey: feePayer,
         recentBlockhash: confirmationStrategyArgs.blockhash,
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      const signature = await this.sendTransaction(transaction)
+      const signature = await this.client.sendTransaction(transaction)
       const confirmationStrategy = { ...confirmationStrategyArgs, signature }
-      await this.connection.confirmTransaction(
+      await this.client.connection.confirmTransaction(
         confirmationStrategy,
         'finalized'
       )
@@ -155,7 +157,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       CreateTransferSchema
     )(params)
     const { token } = parseMintToken(mint, this.mints)
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
@@ -194,7 +196,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       authority: this.authorities[token],
       programId: this.programId
     })
-    const nonceAccount = await this.connection.getAccountInfo(nonceKey)
+    const nonceAccount = await this.client.connection.getAccountInfo(nonceKey)
     const encodedNonceData = nonceAccount?.data
     if (encodedNonceData) {
       const nonceData =

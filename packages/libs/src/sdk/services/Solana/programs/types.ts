@@ -5,15 +5,18 @@ import {
 } from '@solana/web3.js'
 import { z } from 'zod'
 
-import { LoggerService } from '../../Logger'
-import { PublicKeySchema } from '../types'
+import { PublicKeySchema, type SolanaWalletAdapter } from '../types'
 
-export type BaseSolanaProgramConfigInternal = {
+export type SolanaClientConfigInternal = {
   /** Connection to interact with the Solana RPC */
-  rpcEndpoint: string
+  rpcEndpoints: string[]
   /** Configuration to use for the RPC connection. */
   rpcConfig?: ConnectionConfig
   logger: LoggerService
+}
+
+export type SolanaClientConfig = Partial<SolanaClientConfigInternal> & {
+  solanaWalletAdapter: SolanaWalletAdapter
 }
 
 export const PrioritySchema = z.enum([

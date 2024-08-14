@@ -9,15 +9,18 @@ import {
 } from '@solana/web3.js'
 import { z } from 'zod'
 
+import { productionConfig } from '../../../config/production'
+import { mergeConfigWithDefaults } from '../../../utils/mergeConfigs'
 import { parseParams } from '../../../utils/parseParams'
 import { LoggerService } from '../../Logger'
 import type { SolanaWalletAdapter } from '../types'
 
+import { getDefaultSolanaClientConfig } from './getDefaultConfig'
 import {
   BuildTransactionRequest,
   BuildTransactionSchema,
   PrioritySchema,
-  type BaseSolanaProgramConfigInternal
+  type SolanaClientConfig
 } from './types'
 
 const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
@@ -36,66 +39,30 @@ const priorityToPercentileMap: Record<
 }
 
 /**
- * Abstract class for initializing individual program clients.
+ * This service is the main interaction source with Solana. It includes the
+ * RPC client connection and the wallet adapter.
+ *
+ * The service contains helpful primitives for helping build, send, and confirm
+ * transactions.
  */
-export class BaseSolanaProgramClient {
+export class SolanaClient {
   /** The Solana RPC client. */
   public readonly connection: Connection
-  protected readonly logger: LoggerService
-  constructor(
-    config: BaseSolanaProgramConfigInternal,
-    protected wallet: SolanaWalletAdapter
-  ) {
-    this.connection = new Connection(config.rpcEndpoint, config.rpcConfig)
-    this.logger = config.logger
-  }
-
-  /**
-   * Sends a transaction using the connected wallet adapter and the connection.
-   * @param transaction The transaction to send.
-   * @param sendOptions The options to send it with.
-   */
-  public async sendTransaction(
-    transaction: Parameters<SolanaWalletAdapter['sendTransaction']>[0],
-    sendOptions?: Parameters<SolanaWalletAdapter['sendTransaction']>[2]
-  ) {
-    return await this.wallet.sendTransaction(
-      transaction,
-      this.connection,
-      sendOptions
+  private readonly wallet: SolanaWalletAdapter
+  constructor(config: SolanaClientConfig) {
+    const configWithDefaults = mergeConfigWithDefaults(
+      config,
+      getDefaultSolanaClientConfig(productionConfig)
     )
-  }
-
-  /**
-   * Confirms all the transactions provided
-   */
-  public async confirmAllTransactions(
-    signatures: string[],
-    commitment: Commitment = 'confirmed'
-  ) {
-    const { blockhash, lastValidBlockHeight } =
-      await this.connection.getLatestBlockhash()
-    const results = await Promise.all(
-      signatures.map(async (signature) => {
-        const res = await this.connection.confirmTransaction(
-          {
-            signature,
-            blockhash,
-            lastValidBlockHeight
-          },
-          commitment
-        )
-        return { signature, err: res.value.err }
-      })
-    )
-    const errors = results.filter((r) => !!r.err)
-    if (errors.length > 0) {
-      throw new Error(
-        `Failed to confirm transactions: ${errors
-          .map((e) => `${e.signature}: ${e.err}`)
-          .join(', ')}`
-      )
+    if (!configWithDefaults.rpcEndpoints[0]) {
+      throw new Error('RPC Endpoints not configured')
     }
+    this.connection = new Connection(
+      // Only supports one RPC endpoint right now
+      configWithDefaults.rpcEndpoints[0],
+      configWithDefaults.rpcConfig
+    )
+    this.wallet = config.solanaWalletAdapter
   }
 
   /**
@@ -166,9 +133,57 @@ export class BaseSolanaProgramClient {
   }
 
   /**
+   * Sends a transaction using the connected wallet adapter and the connection.
+   * @param transaction The transaction to send.
+   * @param sendOptions The options to send it with.
+   */
+  public async sendTransaction(
+    transaction: Parameters<SolanaWalletAdapter['sendTransaction']>[0],
+    sendOptions?: Parameters<SolanaWalletAdapter['sendTransaction']>[2]
+  ) {
+    return await this.wallet.sendTransaction(
+      transaction,
+      this.connection,
+      sendOptions
+    )
+  }
+
+  /**
+   * Confirms all the transactions provided
+   */
+  public async confirmAllTransactions(
+    signatures: string[],
+    commitment: Commitment = 'confirmed'
+  ) {
+    const { blockhash, lastValidBlockHeight } =
+      await this.connection.getLatestBlockhash()
+    const results = await Promise.all(
+      signatures.map(async (signature) => {
+        const res = await this.connection.confirmTransaction(
+          {
+            signature,
+            blockhash,
+            lastValidBlockHeight
+          },
+          commitment
+        )
+        return { signature, err: res.value.err }
+      })
+    )
+    const errors = results.filter((r) => !!r.err)
+    if (errors.length > 0) {
+      throw new Error(
+        `Failed to confirm transactions: ${errors
+          .map((e) => `${e.signature}: ${e.err}`)
+          .join(', ')}`
+      )
+    }
+  }
+
+  /**
    * Gets the fee payer from the connected wallet.
    */
-  protected async getFeePayer() {
+  public async getFeePayer() {
     if (!this.wallet.connected) {
       await this.wallet.connect()
     }

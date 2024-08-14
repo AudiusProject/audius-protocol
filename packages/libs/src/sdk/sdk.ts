@@ -59,6 +59,8 @@ import {
   RewardManagerClient,
   getDefaultRewardManagerClentConfig
 } from './services/Solana/programs/RewardManagerClient'
+import { SolanaClient } from './services/Solana/programs/SolanaClient'
+import { getDefaultSolanaClientConfig } from './services/Solana/programs/getDefaultConfig'
 import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
 import {
   StorageNodeSelector,
@@ -189,28 +191,32 @@ const initializeServices = (config: SdkConfig) => {
       solanaRelay
     })
 
+  const solanaClient =
+    config.services?.solanaClient ??
+    new SolanaClient({
+      ...getDefaultSolanaClientConfig(servicesConfig),
+      solanaWalletAdapter
+    })
+
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
-      solanaWalletAdapter,
-      logger
+      solanaClient
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
       ...getDefaultRewardManagerClentConfig(servicesConfig),
-      solanaWalletAdapter,
-      logger
+      solanaClient
     })
 
   const paymentRouterClient =
     config.services?.paymentRouterClient ??
     new PaymentRouterClient({
       ...getDefaultPaymentRouterClientConfig(servicesConfig),
-      solanaWalletAdapter,
-      logger
+      solanaClient
     })
 
   const services: ServicesContainer = {
@@ -223,6 +229,7 @@ const initializeServices = (config: SdkConfig) => {
     claimableTokensClient,
     rewardManagerClient,
     paymentRouterClient,
+    solanaClient,
     solanaWalletAdapter,
     solanaRelay,
     antiAbuseOracle,
