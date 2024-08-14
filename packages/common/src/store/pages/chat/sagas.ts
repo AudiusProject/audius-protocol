@@ -62,7 +62,7 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendTargetedMessage,
+  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,
@@ -538,9 +538,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   }
 }
 
-function* doSendTargetedMessage(
-  action: ReturnType<typeof sendTargetedMessage>
-) {
+function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
   const { message } = action.payload
   // const { blastId, audience, audienceTrackId, message } = action.payload
   // TODO: analytics PAY-3347
@@ -832,8 +830,8 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
-function* watchSendTargetedMessage() {
-  yield takeEvery(sendTargetedMessage, doSendTargetedMessage)
+function* watchSendChatBlast() {
+  yield takeEvery(sendChatBlast, doSendChatBlast)
 }
 
 function* watchFetchLatestChats() {
@@ -908,7 +906,7 @@ export const sagas = () => {
     watchCreateChat,
     watchMarkChatAsRead,
     watchSendMessage,
-    watchSendTargetedMessage,
+    watchSendChatBlast,
     watchAddMessage,
     watchFetchBlockees,
     watchFetchBlockers,

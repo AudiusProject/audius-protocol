@@ -431,7 +431,7 @@ const slice = createSlice({
         })
       }
     },
-    sendTargetedMessage: (
+    sendChatBlast: (
       _state,
       _action: PayloadAction<{
         blastId: string
