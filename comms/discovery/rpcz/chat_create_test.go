@@ -79,5 +79,5 @@ func TestChatCreate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, count)
 
-	tx.Commit()
+	tx.Rollback()
 }

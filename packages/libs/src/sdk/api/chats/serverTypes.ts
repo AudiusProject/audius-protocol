@@ -122,6 +122,7 @@ export type UserChat = {
   chat_id: string
   last_message: string
   last_message_at: string
+  last_message_is_plaintext: boolean
   chat_members: Array<{ user_id: string }>
   recheck_permissions: boolean
 
@@ -151,6 +152,7 @@ export type ChatMessage = {
   sender_user_id: string
   created_at: string
   message: string
+  is_plaintext: boolean
   reactions: ChatMessageReaction[]
 }
 
