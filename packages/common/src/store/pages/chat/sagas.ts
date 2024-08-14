@@ -144,7 +144,7 @@ function* doFetchLatestChats() {
     }
     while (hasMoreChats) {
       const response = yield* call([sdk.chats, sdk.chats.getAll], {
-        userId: currentUserId,
+        userId: encodeHashId(currentUserId)!,
         before,
         after: summary?.next_cursor,
         limit: CHAT_PAGE_SIZE
