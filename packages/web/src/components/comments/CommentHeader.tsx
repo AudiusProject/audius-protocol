@@ -9,7 +9,7 @@ import {
   PopupMenuItem,
   Text
 } from '@audius/harmony'
-import { css } from '@emotion/react'
+import { css, useTheme } from '@emotion/react'
 
 const messages = {
   turnOffNotifs: 'Turn off notifications'
@@ -27,6 +27,7 @@ export const CommentHeader = ({
   const { handleMuteEntityNotifications, isEntityOwner } = useContext(
     CommentSectionContext
   )!
+  const { motion } = useTheme()
   const popupMenuItems: PopupMenuItem[] = [
     { onClick: handleMuteEntityNotifications, text: messages.turnOffNotifs }
   ]
@@ -58,7 +59,7 @@ export const CommentHeader = ({
               css={{
                 cursor: 'pointer',
                 opacity: isPopupOpen ? 1 : 0, // keep icon visible when popup is open
-                transition: 'ease all 0.3s'
+                transition: motion.hover
               }}
               onClick={() => {
                 setIsPopupOpen(true)
