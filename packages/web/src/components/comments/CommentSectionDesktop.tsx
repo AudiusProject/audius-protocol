@@ -1,9 +1,10 @@
 import { useCurrentCommentSection } from '@audius/common/context'
 import { Status } from '@audius/common/models'
-import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+import { Button, Divider, Flex, Paper } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
+import { CommentSkeletons } from './CommentSkeletons'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
@@ -21,30 +22,9 @@ export const CommentSectionDesktop = () => {
   }
   const commentPostAllowed = userId !== null
 
-  // Loading state
-  if (commentSectionLoading)
-    return (
-      <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-        <CommentHeader isLoading />
-        <Paper p='xl' w='100%' direction='column' gap='xl'>
-          <Flex
-            gap='s'
-            w='100%'
-            h='60px'
-            alignItems='center'
-            justifyContent='center'
-          >
-            <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-            <Skeleton w='100%' h='60px' />
-          </Flex>
-          <Divider color='default' orientation='horizontal' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-        </Paper>
-      </Flex>
-    )
+  if (commentSectionLoading) {
+    return <CommentSkeletons />
+  }
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
