@@ -87,10 +87,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
 	}
 
-	logger.Infof("peers %v", cfg.PersistentPeers)
-
-	cfg.PersistentPeers = os.Getenv("persistentPeers")
-
 	// Disable ssl for local postgres db connection
 	if !strings.HasSuffix(cfg.PSQLConn, "?sslmode=disable") && isLocalDbUrlRegex.MatchString(cfg.PSQLConn) {
 		cfg.PSQLConn += "?sslmode=disable"
