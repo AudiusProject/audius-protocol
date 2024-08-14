@@ -2,12 +2,7 @@ import { useCurrentCommentSection } from '@audius/common/context'
 import type { FormikHelpers } from 'formik'
 import { Formik } from 'formik'
 
-import {
-  Box,
-  Flex,
-  IconButton,
-  IconPaperAirplane
-} from '@audius/harmony-native'
+import { Box, Flex, IconButton, IconSend } from '@audius/harmony-native'
 
 import { ProfilePicture } from '../core'
 import { HarmonyTextField } from '../fields'
@@ -66,7 +61,7 @@ export const CommentForm = ({
               ) : (
                 <IconButton
                   aria-label='Post comment'
-                  icon={IconPaperAirplane}
+                  icon={IconSend}
                   color='accent'
                 />
               )
