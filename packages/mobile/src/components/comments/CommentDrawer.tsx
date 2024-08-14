@@ -50,6 +50,7 @@ const CommentDrawerContent = () => {
     )
   }
 
+  // Empty state
   if (!comments || !comments.length) {
     return (
       <Flex p='l'>
