@@ -405,13 +405,13 @@ function* sendTipAsync() {
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,
-        error: e.message,
+        error: 'transactionMessage' in e ? e.transactionMessage : e.message,
         device,
         source
       })
     )
     yield* call(reportToSentry, {
-      name: `SendTip: ${e.name}`,
+      name: 'SendTip',
       error: e,
       additionalInfo: {
         senderUserId,

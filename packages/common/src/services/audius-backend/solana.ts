@@ -1,15 +1,20 @@
-import { AudiusLibs } from '@audius/sdk'
+import { AudiusLibs, AudiusSdk } from '@audius/sdk'
 import { u8 } from '@solana/buffer-layout'
 import {
   Account,
   TOKEN_PROGRAM_ID,
   TokenInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   createTransferCheckedInstruction,
-  decodeTransferCheckedInstruction
+  decodeTransferCheckedInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  Commitment,
   ComputeBudgetProgram,
+  Connection,
   Keypair,
   PublicKey,
   Transaction,
@@ -18,6 +23,8 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
+
+import { CommonStoreContext } from '~/store/storeContext'
 
 import {
   AnalyticsEvent,
@@ -101,16 +108,22 @@ export const getRecentBlockhash = async (
 export const getTokenAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   {
+    tokenAccount,
     mint = DEFAULT_MINT,
-    tokenAccount
+    commitment = 'processed'
   }: {
-    mint?: MintName
     tokenAccount: PublicKey
+    mint?: MintName
+    commitment?: Commitment
   }
 ): Promise<Account | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), mint)
+  ).solanaWeb3Manager!.getTokenAccountInfo(
+    tokenAccount.toString(),
+    mint,
+    commitment
+  )
 }
 
 export const deriveUserBankPubkey = async (
@@ -174,7 +187,8 @@ function isCreateUserBankIfNeededError(
  */
 export const getUserbankAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
-  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
+  commitment?: Commitment
 ): Promise<Account | null> => {
   const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
   const ethAddress =
@@ -193,7 +207,8 @@ export const getUserbankAccountInfo = async (
 
   return getTokenAccountInfo(audiusBackendInstance, {
     tokenAccount,
-    mint
+    mint,
+    commitment
   })
 }
 
@@ -383,56 +398,6 @@ export const findAssociatedTokenAddress = async (
   return (
     await audiusBackendInstance.getAudiusLibsTyped()
   ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
-}
-
-export const createRootWalletRecoveryTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    userBank,
-    wallet,
-    amount,
-    feePayer
-  }: {
-    userBank: PublicKey
-    wallet: Keypair
-    amount: bigint
-    feePayer?: PublicKey
-    usePaymentRouter?: boolean
-  }
-) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const solanaWeb3Manager = libs.solanaWeb3Manager!
-
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: wallet.publicKey,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(RECOVERY_MEMO_STRING)
-  })
-
-  const [transferInstruction, routeInstruction] =
-    // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
-      id: 0, // ignored
-      type: 'track', // ignored
-      blocknumber: 0, // ignored
-      splits: { [userBank.toString()]: new BN(amount.toString()) },
-      purchaserUserId: 0, // ignored
-      senderAccount: wallet.publicKey,
-      purchaseAccess: PurchaseAccess.STREAM // ignored
-    })
-
-  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
-
-  const tx = new Transaction({ recentBlockhash, feePayer })
-  tx.add(memoInstruction, transferInstruction, routeInstruction)
-  return tx
 }
 
 /** Converts a Coinflow transaction which transfers directly from root wallet USDC
@@ -755,5 +720,221 @@ export const createVersionedTransaction = async (
   return {
     transaction: new VersionedTransaction(message),
     addressLookupTableAccounts
+  }
+}
+
+// NOTE: The above all need to be updated to use SDK. The below is fresh.
+
+/**
+ * In the case of a failed Coinflow withdrawal, transfers the USDC back out of
+ * the root Solana account and into the user's user bank account.
+ *
+ * Note that this uses payment router to do the transfer, so that indexing sees
+ * this transfer and handles it appropriately.
+ */
+type RecoverUsdcFromRootWalletParams = {
+  sdk: AudiusSdk
+  /** The root wallet key pair */
+  sender: Keypair
+  /** The ethereum wallet address of the user, used to derive user bank */
+  receiverEthWallet: string
+  /** The amount of USDC to recover */
+  amount: bigint
+}
+export const recoverUsdcFromRootWallet = async ({
+  sdk,
+  sender,
+  receiverEthWallet,
+  amount
+}: RecoverUsdcFromRootWalletParams) => {
+  const { userBank } =
+    await sdk.services.claimableTokensClient.getOrCreateUserBank({
+      ethWallet: receiverEthWallet,
+      mint: 'USDC'
+    })
+
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: sender.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(RECOVERY_MEMO_STRING)
+  })
+  const transferInstruction =
+    await sdk.services.paymentRouterClient.createTransferInstruction({
+      total: amount,
+      sourceWallet: sender.publicKey,
+      mint: 'USDC'
+    })
+  const routeInstruction =
+    await sdk.services.paymentRouterClient.createRouteInstruction({
+      total: amount,
+      splits: [
+        {
+          amount,
+          wallet: userBank
+        }
+      ],
+      mint: 'USDC'
+    })
+  const transaction = await sdk.services.claimableTokensClient.buildTransaction(
+    { instructions: [memoInstruction, transferInstruction, routeInstruction] }
+  )
+  transaction.sign([sender])
+  const signature = await sdk.services.paymentRouterClient.sendTransaction(
+    transaction,
+    { skipPreflight: true }
+  )
+  return signature
+}
+
+/**
+ * Transfers tokens out of a user bank.
+ * Notes:
+ * - Including a signer will mark this transfer as a "withdrawal preparation"
+ *   by signing a memo indicating such. This prevents the transfer from showing
+ *   as a withdrawal on the withdrawal history page.
+ * - Users have restrictions on creating token accounts via relay, so if the
+ *   destination token account doesn't exist this might fail.
+ */
+type TransferFromUserBankParams = {
+  sdk: AudiusSdk
+  /** The token mint address */
+  mint: PublicKey
+  connection: Connection
+  /** Amount, in decimal token amounts (eg dollars for USDC) */
+  amount: number
+  /** The eth address of the sender (for deriving user bank) */
+  ethWallet: string
+  /** The destination wallet (not token account but Solana wallet) */
+  destinationWallet: PublicKey
+  track: CommonStoreContext['analytics']['track']
+  make: CommonStoreContext['analytics']['make']
+  /** Any extra data to include for analytics */
+  analyticsFields: any
+  /** If included, will attach a signed memo indicating a recovery transaction.  */
+  signer?: Keypair
+}
+
+export const transferFromUserBank = async ({
+  sdk,
+  mint,
+  connection,
+  amount,
+  ethWallet,
+  destinationWallet,
+  track,
+  make,
+  analyticsFields,
+  signer
+}: TransferFromUserBankParams) => {
+  let isCreatingTokenAccount = false
+  try {
+    const instructions: TransactionInstruction[] = []
+
+    const destination = getAssociatedTokenAddressSync(mint, destinationWallet)
+
+    try {
+      await getAccount(connection, destination)
+    } catch (e) {
+      // Throws if token account doesn't exist or account isn't a token account
+      isCreatingTokenAccount = true
+      console.debug(
+        `Associated token account ${destination.toBase58()} does not exist. Creating w/ transfer...`
+      )
+
+      // Historically, the token account was created in a separate transaction
+      // after swapping USDC to SOL via Jupiter and funded via the root wallet.
+      // This is no longer the case. Reusing the same Amplitude events anyway.
+      await track(
+        make({
+          eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
+          ...analyticsFields
+        })
+      )
+      const payerKey = await sdk.services.solanaRelay.getFeePayer()
+      const createAtaInstruction =
+        createAssociatedTokenAccountIdempotentInstruction(
+          payerKey,
+          destination,
+          destinationWallet,
+          mint
+        )
+      instructions.push(createAtaInstruction)
+    }
+
+    const secpTransferInstruction =
+      await sdk.services.claimableTokensClient.createTransferSecpInstruction({
+        auth: sdk.services.auth,
+        amount,
+        ethWallet,
+        mint,
+        destination,
+        instructionIndex: instructions.length
+      })
+    instructions.push(secpTransferInstruction)
+
+    const transferInstruction =
+      await sdk.services.claimableTokensClient.createTransferInstruction({
+        ethWallet,
+        mint,
+        destination
+      })
+    instructions.push(transferInstruction)
+
+    if (signer) {
+      const memoInstruction = new TransactionInstruction({
+        keys: [
+          {
+            pubkey: signer.publicKey,
+            isSigner: true,
+            isWritable: true
+          }
+        ],
+        programId: MEMO_PROGRAM_ID,
+        data: Buffer.from(PREPARE_WITHDRAWAL_MEMO_STRING)
+      })
+      instructions.push(memoInstruction)
+    }
+
+    const transaction =
+      await sdk.services.claimableTokensClient.buildTransaction({
+        instructions
+      })
+
+    if (signer) {
+      transaction.sign([signer])
+    }
+
+    const signature = await sdk.services.claimableTokensClient.sendTransaction(
+      transaction
+    )
+
+    if (isCreatingTokenAccount) {
+      await track(
+        make({
+          eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_SUCCESS,
+          ...analyticsFields
+        })
+      )
+    }
+
+    return signature
+  } catch (e) {
+    if (isCreatingTokenAccount) {
+      await track(
+        make({
+          eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_FAILED,
+          ...analyticsFields,
+          error: e instanceof Error ? e.message : e
+        })
+      )
+    }
+    throw e
   }
 }

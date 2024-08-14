@@ -409,11 +409,15 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(solanaAddress: string) {
+  async getTokenAccountInfo(
+    solanaAddress: string,
+    commitment?: solanaWeb3.Commitment
+  ) {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
-        connection: this.getConnection()
+        connection: this.getConnection(),
+        commitment
       })
       return res
     } catch (e) {

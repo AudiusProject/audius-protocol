@@ -41,7 +41,8 @@ export const USDCBalanceRow = ({
   const styles = useStyles()
   const { data: usdcBalance } = useUSDCBalance({
     isPolling: true,
-    pollingInterval
+    pollingInterval,
+    commitment: 'confirmed'
   })
   const isUsdcBalanceLoading = usdcBalance === null
   const balanceCents = formatUSDCWeiToFloorCentsNumber(

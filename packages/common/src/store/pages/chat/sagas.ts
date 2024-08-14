@@ -62,7 +62,7 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendTargetedMessage,
+  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,
@@ -538,10 +538,10 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   }
 }
 
-function* doSendTargetedMessage(
-  action: ReturnType<typeof sendTargetedMessage>
-) {
-  const { blastId, audience, audienceTrackId, message } = action.payload
+function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
+  const { message } = action.payload
+  // const { blastId, audience, audienceTrackId, message } = action.payload
+  // TODO: analytics PAY-3347
   // const { track, make } = yield* getContext('analytics')
   const messageIdToUse = ulid()
   const userId = yield* select(getUserId)
@@ -553,6 +553,7 @@ function* doSendTargetedMessage(
       return
     }
 
+    // TODO: optimistic add
     // Optimistically add the message
     // yield* put(
     //   addMessage({
@@ -570,12 +571,9 @@ function* doSendTargetedMessage(
     // )
 
     yield* call([sdk.chats, sdk.chats.messageBlast], {
-      audience,
-      // TODO: use blastId if it's already set?
+      audience: ChatBlastAudience.FOLLOWERS,
       blastId: messageIdToUse,
-      message,
-      currentUserId,
-      audienceTrackId
+      message
     })
     // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
   } catch (e) {
@@ -832,8 +830,8 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
-function* watchSendTargetedMessage() {
-  yield takeEvery(sendTargetedMessage, doSendTargetedMessage)
+function* watchSendChatBlast() {
+  yield takeEvery(sendChatBlast, doSendChatBlast)
 }
 
 function* watchFetchLatestChats() {
@@ -908,7 +906,7 @@ export const sagas = () => {
     watchCreateChat,
     watchMarkChatAsRead,
     watchSendMessage,
-    watchSendTargetedMessage,
+    watchSendChatBlast,
     watchAddMessage,
     watchFetchBlockees,
     watchFetchBlockers,

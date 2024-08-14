@@ -18,7 +18,7 @@ import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 
 import styles from './ChatComposer.module.css'
 
-const { sendMessage, sendTargetedMessage } = chatActions
+const { sendMessage, sendChatBlast } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
@@ -72,12 +72,14 @@ export const ChatComposer = (props: ChatComposerProps) => {
       e?.preventDefault()
       if (isBlast) {
         dispatch(
-          sendTargetedMessage({
-            blastId: ChatBlastAudience.FOLLOWERS,
+          sendChatBlast({
+            blastId: chatId,
             audience: ChatBlastAudience.FOLLOWERS,
             message: value
           })
         )
+        setValue('')
+        onMessageSent()
       } else if (chatId && value) {
         const message = value
         dispatch(sendMessage({ chatId, message }))

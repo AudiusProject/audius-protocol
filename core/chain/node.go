@@ -15,10 +15,10 @@ import (
 )
 
 func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.Node, error) {
-	homeDir := c.HomeDir
+	rootDir := c.RootDir
 
 	config := cfg.DefaultConfig()
-	config.SetRoot(homeDir)
+	config.SetRoot(rootDir)
 
 	// postgres indexer config
 	config.TxIndex.Indexer = "psql"

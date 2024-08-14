@@ -11,8 +11,8 @@ export type ChatBlastRPC = {
   method: 'chat.blast'
   params: {
     blast_id: string
+    audience_track_id?: string // if targeting customers / remixers of a specific track
     audience: ChatBlastAudience
-    audience_track_id?: number // if targeting customers / remixers of a specific track
     message: string
   }
 }
@@ -104,6 +104,7 @@ export type RPCPayloadRequest =
   | ChatBlockRPC
   | ChatUnblockRPC
   | ChatPermitRPC
+  | ChatBlastRPC
   | ValidateCanChatRPC
 
 export type RPCPayload = RPCPayloadRequest & {

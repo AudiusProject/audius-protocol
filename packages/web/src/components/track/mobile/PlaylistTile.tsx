@@ -195,6 +195,7 @@ type LockedOrPlaysContentProps = Pick<
   | 'isStreamGated'
   | 'streamConditions'
   | 'variant'
+  | 'id'
 > & {
   lockedContentType: 'premium' | 'gated'
   gatedTrackStatus?: GatedContentStatus
@@ -202,6 +203,7 @@ type LockedOrPlaysContentProps = Pick<
 }
 
 const renderLockedContent = ({
+  id,
   hasStreamAccess,
   isOwner,
   isStreamGated,
@@ -223,6 +225,8 @@ const renderLockedContent = ({
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickGatedUnlockPill}
           buttonSize='small'
+          contentId={id}
+          contentType={lockedContentType}
         />
       )
     }
@@ -477,6 +481,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               className={cn(styles.bottomRight, fadeIn)}
             >
               {renderLockedContent({
+                id,
                 hasStreamAccess,
                 isOwner,
                 isStreamGated,
@@ -515,6 +520,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               hasStreamAccess={props.hasStreamAccess}
               streamConditions={props.streamConditions}
               isUnlisted={isUnlisted}
+              contentId={id}
+              contentType='playlist'
             />
           </div>
         ) : null}

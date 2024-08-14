@@ -24,6 +24,7 @@ export enum Action {
   VIEW_PLAYLIST = 'ViewPlaylist',
   APPROVE = 'Approve',
   REJECT = 'Reject',
+  DOWNLOAD = 'Download',
   REACT = 'React',
   UNREACT = 'Unreact'
 }

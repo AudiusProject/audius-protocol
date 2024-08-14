@@ -2,10 +2,13 @@ import type { MouseEvent } from 'react'
 
 import {
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  Name
 } from '@audius/common/models'
 import { formatPrice } from '@audius/common/utils'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
+
+import { make, track } from 'services/analytics'
 
 const messages = {
   unlocking: 'Unlocking',
@@ -18,7 +21,9 @@ export const GatedConditionsPill = ({
   unlocking,
   onClick,
   showIcon = true,
-  buttonSize = 'small'
+  buttonSize = 'small',
+  contentId,
+  contentType
 }: {
   streamConditions: AccessConditions
   unlocking: boolean
@@ -26,6 +31,8 @@ export const GatedConditionsPill = ({
   showIcon?: boolean
   className?: string
   buttonSize?: ButtonSize
+  contentId: number
+  contentType: string
 }) => {
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
@@ -43,7 +50,17 @@ export const GatedConditionsPill = ({
     <Button
       className={className}
       size={buttonSize}
-      onClick={onClick}
+      onClick={(e) => {
+        track(
+          make({
+            eventName: Name.PURCHASE_CONTENT_BUY_CLICKED,
+            contentId,
+            contentType
+          })
+        )
+
+        onClick?.(e)
+      }}
       color={isPurchase ? 'lightGreen' : 'blue'}
       isLoading={unlocking}
       iconLeft={showIcon ? IconLock : undefined}

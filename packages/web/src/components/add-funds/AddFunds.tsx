@@ -44,7 +44,10 @@ export const AddFunds = ({
   >(undefined)
 
   const isMobile = useIsMobile()
-  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const { data: balanceBN } = useUSDCBalance({
+    isPolling: true,
+    commitment: 'confirmed'
+  })
   const balance = USDC(balanceBN ?? new BN(0)).value
 
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)

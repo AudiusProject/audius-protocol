@@ -193,21 +193,24 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaWalletAdapter,
+      logger
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
       ...getDefaultRewardManagerClentConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaWalletAdapter,
+      logger
     })
 
   const paymentRouterClient =
     config.services?.paymentRouterClient ??
     new PaymentRouterClient({
       ...getDefaultPaymentRouterClientConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaWalletAdapter,
+      logger
     })
 
   const services: ServicesContainer = {
