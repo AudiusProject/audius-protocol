@@ -840,7 +840,9 @@ export class ChatsApi
               }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,
-              reactions: []
+              reactions: [],
+              // TODO: need to set this for blast chats
+              is_plaintext: false
             }
           })
         } else if (data.rpc.method === 'chat.react') {
