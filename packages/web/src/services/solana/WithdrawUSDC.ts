@@ -44,6 +44,7 @@ export const getFundDestinationTokenAccountFees = async (
 /**
  * Creates instructions to swap from a user bank token into the given wallet as SOL.
  * These instructions are allowed in relay because every created token account is closed in the same transaction.
+ * @deprecated not necessary anymore as we allow users to fund one token account
  */
 export const swapUserBankUSDCToSol = async ({
   outSolAmount,
