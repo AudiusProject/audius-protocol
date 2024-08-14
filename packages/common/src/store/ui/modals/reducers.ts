@@ -6,7 +6,7 @@ import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
-import { targetedMessageModalReducer } from './create-targeted-message-modal'
+import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
@@ -39,7 +39,7 @@ const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
 const combinedReducers = combineReducers({
   ...noOpReducers,
   CreateChatModal: createChatModalReducer,
-  TargetedMessageModal: targetedMessageModalReducer,
+  ChatBlastModal: chatBlastModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
   LeavingAudiusModal: leavingAudiusModalReducer,
   WithdrawUSDCModal: withdrawUSDCModalReducer,

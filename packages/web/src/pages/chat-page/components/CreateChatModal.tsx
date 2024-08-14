@@ -24,7 +24,7 @@ import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
-import { TargetedMessageCTA } from './TargetedMessageCTA'
+import { ChatBlastCTA } from './ChatBlastCTA'
 
 const messages = {
   title: 'New Message'
@@ -36,7 +36,7 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
-  const { isEnabled: isTargetedMessagesEnabled } = useFeatureFlag(
+  const { isEnabled: isChatBlastsEnabled } = useFeatureFlag(
     FeatureFlags.ONE_TO_MANY_DMS
   )
 
@@ -116,9 +116,7 @@ export const CreateChatModal = () => {
         onClosed={onClosed}
         onCancel={handleCancel}
         footer={
-          isTargetedMessagesEnabled ? (
-            <TargetedMessageCTA onClick={onClose} />
-          ) : undefined
+          isChatBlastsEnabled ? <ChatBlastCTA onClick={onClose} /> : undefined
         }
       />
     </>
