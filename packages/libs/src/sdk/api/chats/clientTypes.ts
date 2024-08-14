@@ -4,7 +4,8 @@ import {
   CommsResponse,
   ChatPermission,
   ChatMessage,
-  ChatMessageNullableReaction
+  ChatMessageNullableReaction,
+  ChatBlastAudience
 } from './serverTypes'
 
 // REQUEST PARAMETERS
@@ -90,6 +91,18 @@ export const ChatMessageRequestSchema = z.object({
 })
 
 export type ChatMessageRequest = z.infer<typeof ChatMessageRequestSchema>
+
+export const ChatBlastMessageRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
+  blastId: z.string(),
+  message: z.string(),
+  audience: z.nativeEnum(ChatBlastAudience),
+  audienceTrackId: z.optional(z.string())
+})
+
+export type ChatBlastMessageRequest = z.infer<
+  typeof ChatBlastMessageRequestSchema
+>
 
 export const ChatReactRequestSchema = z.object({
   currentUserId: z.optional(z.string()),

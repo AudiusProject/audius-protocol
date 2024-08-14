@@ -10,6 +10,7 @@ import {
 
 import { chatActions } from '@audius/common/store'
 import { IconSend, IconButton } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +18,7 @@ import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 
 import styles from './ChatComposer.module.css'
 
-const { sendMessage } = chatActions
+const { sendMessage, sendChatBlast } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
@@ -57,6 +58,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const [value, setValue] = useState(presetMessage ?? '')
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
+  const isBlast = chatId === ChatBlastAudience.FOLLOWERS
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -68,14 +70,24 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault()
-      if (chatId && value) {
+      if (isBlast) {
+        dispatch(
+          sendChatBlast({
+            blastId: chatId,
+            audience: ChatBlastAudience.FOLLOWERS,
+            message: value
+          })
+        )
+        setValue('')
+        onMessageSent()
+      } else if (chatId && value) {
         const message = value
         dispatch(sendMessage({ chatId, message }))
         setValue('')
         onMessageSent()
       }
     },
-    [chatId, value, setValue, dispatch, onMessageSent]
+    [isBlast, chatId, value, dispatch, onMessageSent]
   )
 
   // Submit when pressing enter while not holding shift
