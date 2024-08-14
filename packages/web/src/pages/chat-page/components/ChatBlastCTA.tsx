@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
+import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
 import {
   Box,
   Flex,
