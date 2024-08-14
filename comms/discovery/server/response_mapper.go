@@ -78,6 +78,7 @@ func ToMessageResponse(message queries.ChatMessageAndReactionsRow) schema.ChatMe
 		MessageID:    message.MessageID,
 		SenderUserID: encodedSenderId,
 		Message:      message.Ciphertext,
+		IsPlaintext:  message.IsPlaintext,
 		CreatedAt:    message.CreatedAt.Format(time.RFC3339Nano),
 		Reactions:    ToReactionsResponse(message.Reactions),
 	}

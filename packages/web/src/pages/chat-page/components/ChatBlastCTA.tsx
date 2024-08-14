@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
+import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
 import {
   Box,
   Flex,
@@ -21,15 +21,15 @@ const messages = {
   or: 'or'
 }
 
-type TargetedMessageCTAProps = {
+type ChatBlastCTAProps = {
   onClick: () => void
 }
 
-export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
+export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { onClick } = props
   const { color } = useTheme()
 
-  const { onOpen: openTargetedMessageModal } = useTargetedMessageModal()
+  const { onOpen: openChatBlastModal } = useChatBlastModal()
 
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
@@ -37,12 +37,12 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
 
   const handleClick = useCallback(() => {
     onClick()
-    openTargetedMessageModal()
-  }, [onClick, openTargetedMessageModal])
+    openChatBlastModal()
+  }, [onClick, openChatBlastModal])
 
   // DEBUG
   if (!userMeetsRequirements) {
-    return <TargetedMessageDisabled />
+    return <ChatBlastDisabled />
   }
 
   return (
@@ -72,7 +72,7 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
   )
 }
 
-const TargetedMessageDisabled = () => {
+const ChatBlastDisabled = () => {
   const { spacing } = useTheme()
 
   return (

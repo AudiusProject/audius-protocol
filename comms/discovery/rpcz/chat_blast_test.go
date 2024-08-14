@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -13,6 +14,13 @@ import (
 )
 
 func TestChatBlast(t *testing.T) {
+
+	t0 := time.Now().Add(time.Second * -100).UTC()
+	t1 := time.Now().Add(time.Second * -90).UTC()
+	t2 := time.Now().Add(time.Second * -80).UTC()
+	t3 := time.Now().Add(time.Second * -70).UTC()
+	t4 := time.Now().Add(time.Second * -60).UTC()
+	t5 := time.Now().Add(time.Second * -50).UTC()
 
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
@@ -39,11 +47,11 @@ func TestChatBlast(t *testing.T) {
 	_, err := tx.Exec(`insert into follows
 		(follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
 	values
-		(100, 69, true, false, now(), ''),
-		(101, 69, true, false, now(), ''),
-		(102, 69, true, false, now(), ''),
-		(103, 69, true, false, now(), '')
-	`)
+		(100, 69, true, false, $1, ''),
+		(101, 69, true, false, $1, ''),
+		(102, 69, true, false, $1, ''),
+		(103, 69, true, false, $1, '')
+	`, t0)
 	assert.NoError(t, err)
 
 	// ----------------- some threads already exist -------------
@@ -51,7 +59,7 @@ func TestChatBlast(t *testing.T) {
 	chatId_100_69 := misc.ChatID(100, 69)
 	chatId_69_103 := misc.ChatID(69, 103)
 	{
-		err := chatCreate(tx, 100, time.Now(), schema.ChatCreateRPCParams{
+		err := chatCreate(tx, 100, t1, schema.ChatCreateRPCParams{
 			ChatID: chatId_100_69,
 			Invites: []schema.PurpleInvite{
 				{UserID: misc.MustEncodeHashID(100), InviteCode: "x"},
@@ -61,19 +69,27 @@ func TestChatBlast(t *testing.T) {
 		assert.NoError(t, err)
 
 		// send a message in chat
-		err = chatSendMessage(tx, 100, chatId_100_69, "pre1", time.Now(), "100 here sending 69 a message")
+		err = chatSendMessage(tx, 100, chatId_100_69, "pre1", t1, "100 here sending 69 a message")
 		assert.NoError(t, err)
 
 		messages = mustGetMessagesAndReactions(100, chatId_100_69)
 		assert.Len(t, messages, 1)
+		assert.False(t, messages[0].IsPlaintext)
 
 		messages = mustGetMessagesAndReactions(69, chatId_100_69)
 		assert.Len(t, messages, 1)
+
+		ch, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: chatId_100_69,
+		})
+		assert.NoError(t, err)
+		assert.False(t, ch.LastMessageIsPlaintext)
 	}
 
 	// user 69 starts empty thread with 103 before first blast
 	{
-		err := chatCreate(tx, 69, time.Now(), schema.ChatCreateRPCParams{
+		err := chatCreate(tx, 69, t1, schema.ChatCreateRPCParams{
 			ChatID: chatId_69_103,
 			Invites: []schema.PurpleInvite{
 				{UserID: misc.MustEncodeHashID(69), InviteCode: "x"},
@@ -86,7 +102,7 @@ func TestChatBlast(t *testing.T) {
 	// ----------------- a first blast ------------------------
 	chatId_101_69 := misc.ChatID(101, 69)
 
-	err = chatBlast(tx, 69, time.Now(), schema.ChatBlastRPCParams{
+	err = chatBlast(tx, 69, t2, schema.ChatBlastRPCParams{
 		BlastID:  "b1",
 		Audience: schema.FollowerAudience,
 		Message:  "what up fam",
@@ -155,7 +171,7 @@ func TestChatBlast(t *testing.T) {
 
 	// user 101 upgrades it to a real DM
 	{
-		err = chatCreate(tx, 101, time.Now(), schema.ChatCreateRPCParams{
+		err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
 			ChatID: chatId_101_69,
 			Invites: []schema.PurpleInvite{
 				{UserID: misc.MustEncodeHashID(101), InviteCode: "earlier"},
@@ -205,7 +221,7 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ----------------- a second message ------------------------
-	err = chatBlast(tx, 69, time.Now(), schema.ChatBlastRPCParams{
+	err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
 		Message:  "happy wed",
@@ -225,17 +241,36 @@ func TestChatBlast(t *testing.T) {
 		messages = mustGetMessagesAndReactions(69, chatId)
 		assert.Len(t, messages, 2)
 
-		assert.Equal(t, "~what up fam", messages[0].Ciphertext)
-		assert.Equal(t, "~happy wed", messages[1].Ciphertext)
+		assert.Equal(t, "happy wed", messages[0].Ciphertext)
+		assert.True(t, messages[0].IsPlaintext)
+		assert.Equal(t, "what up fam", messages[1].Ciphertext)
+		assert.True(t, messages[1].IsPlaintext)
+		assert.Greater(t, messages[0].CreatedAt, messages[1].CreatedAt)
+
+		ch, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: chatId,
+		})
+		assert.NoError(t, err)
+		assert.True(t, ch.LastMessageIsPlaintext)
+		assert.Equal(t, "happy wed", ch.LastMessage.String)
 
 		// user 101 reacts
 		{
 			heart := "heart"
-			chatReactMessage(tx, 101, messages[0].MessageID, &heart, time.Now())
+			chatReactMessage(tx, 101, messages[0].MessageID, &heart, t5)
 
 			// reaction shows up
 			messages = mustGetMessagesAndReactions(69, chatId)
 			assert.Equal(t, "heart", messages[0].Reactions[0].Reaction)
+		}
+
+		if false {
+			var debugRows []string
+			tx.Select(&debugRows, `select row_to_json(c) from chat c;`)
+			for _, d := range debugRows {
+				fmt.Println("CHAT:", d)
+			}
 		}
 
 	}

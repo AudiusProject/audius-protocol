@@ -145,15 +145,16 @@ type TentacledInvite struct {
 }
 
 type UserChat struct {
-	ChatID             string       `json:"chat_id"`
-	ChatMembers        []ChatMember `json:"chat_members"`
-	ClearedHistoryAt   string       `json:"cleared_history_at"`
-	InviteCode         string       `json:"invite_code"`
-	LastMessage        string       `json:"last_message"`
-	LastMessageAt      string       `json:"last_message_at"`
-	LastReadAt         string       `json:"last_read_at"`
-	RecheckPermissions bool         `json:"recheck_permissions"`
-	UnreadMessageCount float64      `json:"unread_message_count"`
+	ChatID                 string       `json:"chat_id"`
+	ChatMembers            []ChatMember `json:"chat_members"`
+	ClearedHistoryAt       string       `json:"cleared_history_at"`
+	InviteCode             string       `json:"invite_code"`
+	LastMessage            string       `json:"last_message"`
+	LastMessageAt          string       `json:"last_message_at"`
+	LastMessageIsPlaintext bool         `json:"last_message_is_plaintext"`
+	LastReadAt             string       `json:"last_read_at"`
+	RecheckPermissions     bool         `json:"recheck_permissions"`
+	UnreadMessageCount     float64      `json:"unread_message_count"`
 }
 
 type ChatMember struct {
@@ -174,6 +175,7 @@ type ChatMessageNullableReaction struct {
 
 type ChatMessage struct {
 	CreatedAt    string     `json:"created_at"`
+	IsPlaintext  bool       `json:"is_plaintext"`
 	Message      string     `json:"message"`
 	MessageID    string     `json:"message_id"`
 	Reactions    []Reaction `json:"reactions"`
@@ -253,88 +255,102 @@ type StickyInvite struct {
 }
 
 type ValidateCanChatRPCMethod string
+
 const (
 	MethodUserValidateCanChat ValidateCanChatRPCMethod = "user.validate_can_chat"
 )
 
 type ChatBlastRPCMethod string
+
 const (
 	MethodChatBlast ChatBlastRPCMethod = "chat.blast"
 )
 
 type Audience string
+
 const (
 	CustomerAudience Audience = "customer_audience"
 	FollowerAudience Audience = "follower_audience"
-	RemixerAudience Audience = "remixer_audience"
-	TipperAudience Audience = "tipper_audience"
+	RemixerAudience  Audience = "remixer_audience"
+	TipperAudience   Audience = "tipper_audience"
 )
 
 type ChatCreateRPCMethod string
+
 const (
 	MethodChatCreate ChatCreateRPCMethod = "chat.create"
 )
 
 type ChatDeleteRPCMethod string
+
 const (
 	MethodChatDelete ChatDeleteRPCMethod = "chat.delete"
 )
 
 type ChatInviteRPCMethod string
+
 const (
 	MethodChatInvite ChatInviteRPCMethod = "chat.invite"
 )
 
 type ChatMessageRPCMethod string
+
 const (
 	MethodChatMessage ChatMessageRPCMethod = "chat.message"
 )
 
 type ChatReactRPCMethod string
+
 const (
 	MethodChatReact ChatReactRPCMethod = "chat.react"
 )
 
 type ChatReadRPCMethod string
+
 const (
 	MethodChatRead ChatReadRPCMethod = "chat.read"
 )
 
 type ChatBlockRPCMethod string
+
 const (
 	MethodChatBlock ChatBlockRPCMethod = "chat.block"
 )
 
 type ChatUnblockRPCMethod string
+
 const (
 	MethodChatUnblock ChatUnblockRPCMethod = "chat.unblock"
 )
 
 type ChatPermitRPCMethod string
+
 const (
 	MethodChatPermit ChatPermitRPCMethod = "chat.permit"
 )
 
 // Defines who the user allows to message them
 type ChatPermission string
+
 const (
-	All ChatPermission = "all"
+	All       ChatPermission = "all"
 	Followees ChatPermission = "followees"
-	None ChatPermission = "none"
-	Tippers ChatPermission = "tippers"
+	None      ChatPermission = "none"
+	Tippers   ChatPermission = "tippers"
 )
 
 type RPCMethod string
+
 const (
-	RPCMethodChatBlast RPCMethod = "chat.blast"
-	RPCMethodChatBlock RPCMethod = "chat.block"
-	RPCMethodChatCreate RPCMethod = "chat.create"
-	RPCMethodChatDelete RPCMethod = "chat.delete"
-	RPCMethodChatInvite RPCMethod = "chat.invite"
-	RPCMethodChatMessage RPCMethod = "chat.message"
-	RPCMethodChatPermit RPCMethod = "chat.permit"
-	RPCMethodChatReact RPCMethod = "chat.react"
-	RPCMethodChatRead RPCMethod = "chat.read"
-	RPCMethodChatUnblock RPCMethod = "chat.unblock"
+	RPCMethodChatBlast           RPCMethod = "chat.blast"
+	RPCMethodChatBlock           RPCMethod = "chat.block"
+	RPCMethodChatCreate          RPCMethod = "chat.create"
+	RPCMethodChatDelete          RPCMethod = "chat.delete"
+	RPCMethodChatInvite          RPCMethod = "chat.invite"
+	RPCMethodChatMessage         RPCMethod = "chat.message"
+	RPCMethodChatPermit          RPCMethod = "chat.permit"
+	RPCMethodChatReact           RPCMethod = "chat.react"
+	RPCMethodChatRead            RPCMethod = "chat.read"
+	RPCMethodChatUnblock         RPCMethod = "chat.unblock"
 	RPCMethodUserValidateCanChat RPCMethod = "user.validate_can_chat"
 )

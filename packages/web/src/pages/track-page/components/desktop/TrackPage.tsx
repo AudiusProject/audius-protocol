@@ -255,6 +255,7 @@ const TrackPage = ({
               <CommentSectionProvider
                 userId={userId}
                 entityId={defaults.trackId}
+                isEntityOwner={isOwner}
               >
                 <CommentSectionDesktop />
               </CommentSectionProvider>
