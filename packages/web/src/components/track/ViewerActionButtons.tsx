@@ -168,6 +168,8 @@ const BaseViewerActionButtons = ({
             streamConditions={streamConditions}
             unlocking={gatedStatus === 'UNLOCKING'}
             onClick={onClickGatedUnlockPill}
+            contentId={contentId}
+            contentType={'track'}
           />
         </Text>
         <Flex>{rightActions}</Flex>

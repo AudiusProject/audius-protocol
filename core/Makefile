@@ -7,6 +7,7 @@ deps:
 	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go mod tidy
 
 gen: $(SQL_SRCS)
@@ -18,20 +19,13 @@ gen: $(SQL_SRCS)
 	go generate ./...
 	cd db && sqlc generate
 
-.PHONY: dev-discovery-1 dev-content-1 dev-content-2 dev-content-3
-dev-discovery-1:
-	@go run main.go -env-file=./infra/dev_config/discovery-one.env
+.PHONY: dev hotreload
+dev:
+	audius-compose up db core core-content-1 core-content-2 core-content-3
 
-dev-content-1:
-	@go run main.go -env-file=./infra/dev_config/content-one.env
-
-dev-content-2:
-	@go run main.go -env-file=./infra/dev_config/content-two.env
-
-dev-content-3:
-	@go run main.go -env-file=./infra/dev_config/content-three.env
+hotreload:
+	modd
 
 .PHONY: sandbox
 sandbox:
 	@go run ./scripts/sandbox.go
-

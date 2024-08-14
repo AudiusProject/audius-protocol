@@ -1,18 +1,24 @@
 /* eslint-disable no-console */
-import { PropsWithChildren, createContext, useContext, useState } from 'react'
+import { PropsWithChildren, createContext, useContext } from 'react'
 
-import { ID } from '@audius/common/models'
-import { Nullable, encodeHashId } from '@audius/common/utils'
-import { EntityType } from '@audius/sdk'
-import { useAsync } from 'react-use'
-
-import { audiusSdk } from 'services/audius-sdk'
-
-import { MOCK_COMMENT_DATA } from './mock-data'
-import { Comment, CommentReply } from './types'
+import {
+  useDeleteCommentById,
+  useEditCommentById,
+  useGetCommentsByTrackId,
+  usePinCommentById,
+  usePostComment as useAQueryPostComment,
+  useReactToCommentById
+} from '@audius/common/api'
+import {
+  MutationHookResponse,
+  usePaginatedQuery
+} from '@audius/common/audius-query'
+import { ID, Status } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import { EntityType, Comment } from '@audius/sdk'
 
 /**
- * Context object to avoid prop drilling, make data access easy, and avoid Redux 😉
+ * Context object to avoid prop drilling and share a common API with web/native code
  */
 
 // Props passed in from above
@@ -22,45 +28,38 @@ type CommentSectionContextProps = {
   entityType?: EntityType.TRACK
 }
 
+// Helper type to rewrap our mutation hooks with data from this context
+type WrappedMutationHook<MutationWrapper, ReturnDataType> = () => [
+  MutationWrapper,
+  MutationHookResponse<ReturnDataType>
+]
+
 // Props sent down to context (some are handled inside the context component)
 type CommentSectionContextType = CommentSectionContextProps & {
-  isLoading: boolean
+  commentSectionLoading: boolean
   comments: Comment[]
-  handlePostComment: (
-    message: string,
-    parentCommentId?: ID,
-    parentCommentIndex?: number
-  ) => void
-  handleReactComment: (commentId: ID, isLiked: boolean) => void
-  handlePinComment: (commentId: ID) => void
-  handleEditComment: (commentId: ID, newMessage: string) => void
-  handleDeleteComment: (commentId: ID) => void
-  handleReportComment: (commentId: ID) => void
+  usePostComment: WrappedMutationHook<
+    (message: string, parentCommentId?: string) => void,
+    number
+  >
+  useReactToComment: WrappedMutationHook<
+    (commentId: string, isLiked: boolean) => void,
+    void
+  >
+  usePinComment: WrappedMutationHook<(commentId: string) => void, void>
+  useEditComment: WrappedMutationHook<
+    (commentId: string, newMessage: string) => void,
+    void
+  >
+  useDeleteComment: WrappedMutationHook<(commentId: string) => void, void>
+  useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
-  handleLoadMoreReplies: (commentId: ID) => void
-  fetchComments: () => void
+  handleLoadMoreReplies: (commentId: string) => void
 }
 
-const emptyFn = () => {}
-const initialContextValues: CommentSectionContextType = {
-  userId: null,
-  entityId: -1,
-  entityType: EntityType.TRACK,
-  isLoading: true,
-  comments: [],
-  handlePostComment: emptyFn,
-  handleReactComment: emptyFn,
-  handlePinComment: emptyFn,
-  handleEditComment: emptyFn,
-  handleDeleteComment: emptyFn,
-  handleReportComment: emptyFn,
-  handleLoadMoreRootComments: emptyFn,
-  handleLoadMoreReplies: emptyFn,
-  fetchComments: emptyFn
-}
-
-export const CommentSectionContext =
-  createContext<CommentSectionContextType>(initialContextValues)
+export const CommentSectionContext = createContext<
+  CommentSectionContextType | undefined
+>(undefined)
 
 export const CommentSectionProvider = ({
   userId,
@@ -68,139 +67,98 @@ export const CommentSectionProvider = ({
   entityType = EntityType.TRACK,
   children
 }: PropsWithChildren<CommentSectionContextProps>) => {
-  const [comments, setComments] = useState(initialContextValues.comments)
+  const {
+    data: comments = [],
+    status,
+    loadMore
+  } = usePaginatedQuery(
+    // @ts-ignore - TODO: theres something wrong here in the audius-query types
+    useGetCommentsByTrackId,
+    { entityId },
+    {
+      pageSize: 5,
+      force: true,
+      disabled: entityId === 0
+    }
+  )
+  const [editComment, editCommentResponse] = useEditCommentById()
+  const [postComment, postCommentResponse] = useAQueryPostComment()
+  const [reactToComment, reactToCommentResponse] = useReactToCommentById()
+  const [pinComment, pinCommentResponse] = usePinCommentById()
+  const [deleteComment, deleteCommentResponse] = useDeleteCommentById()
 
-  // TODO: temporarily including state management here to optimistic update and avoid constantly needing to refresh
-  const addComment = (comment: Comment) => {
-    const newComments = [comment, ...comments]
-    setComments(newComments)
-  }
+  const commentSectionLoading =
+    status === Status.LOADING || status === Status.IDLE
 
-  const addReply = (comment: CommentReply, parentCommentIndex: number) => {
-    const newComments = [...comments]
-    const parentComment = newComments[parentCommentIndex]
-    parentComment.replies = [...(parentComment.replies || []), comment]
-    setComments(newComments)
-  }
-
-  const [isLoading, setIsLoading] = useState(initialContextValues.isLoading)
-
-  const handlePostComment = async (
-    message: string,
-    parentCommentId?: ID,
-    parentCommentIndex?: number
-  ) => {
-    if (userId && entityId) {
-      try {
-        const sdk = await audiusSdk()
-        const commentData = {
-          body: message,
+  const usePostComment: CommentSectionContextType['usePostComment'] = () => {
+    const wrappedHandler = async (
+      message: string,
+      parentCommentId?: string
+    ) => {
+      if (userId) {
+        postComment({
           userId,
           entityId,
-          entityType: EntityType.TRACK, // Comments are only on tracks for now; likely expand to collections in the future
-          parentCommentId // aka reply
-        }
-
-        // TEMPORARY optimistic update for now
-        const optimisticCommentData = {
-          id: null, // idk
-          userId,
-          message,
-          react_count: 0,
-          is_pinned: false,
-          created_at: new Date(),
-          replies: null
-        } as unknown as CommentReply
-        if (parentCommentIndex !== undefined) {
-          addReply(optimisticCommentData, parentCommentIndex)
-        } else {
-          addComment(optimisticCommentData)
-        }
-        // API call
-        await sdk.comments.postComment(commentData)
-      } catch (e) {
-        console.log('COMMENTS DEBUG: Error posting comment', e)
+          entityType,
+          body: message,
+          // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
+          parentCommentId
+        })
       }
     }
+    return [wrappedHandler, postCommentResponse]
   }
 
-  // TODO: these are all empty for now
-  const handleReactComment = async (commentId: number, isLiked: boolean) => {
-    const sdk = await audiusSdk()
-    if (userId) {
-      await sdk.comments.reactComment(userId, commentId, isLiked)
-    }
-  }
-  const handlePinComment = (commentId: ID) => {
-    console.log('Clicked pin for ', commentId)
-  }
-  const handleEditComment = async (commentId: ID, newMessage: string) => {
-    if (userId && entityId) {
-      try {
-        const commentData = {
-          body: newMessage,
-          userId,
-          entityId: commentId,
-          entityType: EntityType.TRACK // Comments are only on tracks for now; likely expand to collections in the future
+  const useReactToComment: CommentSectionContextType['useReactToComment'] =
+    () => {
+      const wrappedHandler = async (commentId: string, isLiked: boolean) => {
+        if (userId) {
+          reactToComment({ id: commentId, userId, isLiked })
         }
-        const sdk = await audiusSdk()
-        await sdk.comments.editComment(commentData)
-      } catch (e) {
-        console.log('COMMENTS DEBUG: Error posting comment', e)
+        // TODO: trigger auth flow here
+      }
+      return [wrappedHandler, reactToCommentResponse]
+    }
+  const useEditComment: CommentSectionContextType['useEditComment'] = () => {
+    const wrappedHandler = async (commentId: string, newMessage: string) => {
+      if (userId) {
+        editComment({ id: commentId, newMessage, userId })
       }
     }
-  }
-  const handleDeleteComment = async (commentId?: ID) => {
-    if (userId && commentId) {
-      try {
-        const commentData = {
-          userId,
-          entityId: commentId
-        }
-        const sdk = await audiusSdk()
-        await sdk.comments.deleteComment(commentData)
-      } catch (e) {
-        console.log('COMMENTS DEBUG: Error posting comment', e)
-      }
-    }
+    return [wrappedHandler, editCommentResponse]
   }
 
-  const handleReportComment = (commentId: ID) => {
-    console.log('Clicked report for ', commentId)
+  const useDeleteComment: CommentSectionContextType['useDeleteComment'] =
+    () => {
+      const wrappedHandler = async (commentId: string) => {
+        if (userId) {
+          deleteComment({ id: commentId, userId, entityId })
+        }
+      }
+      return [wrappedHandler, deleteCommentResponse]
+    }
+
+  const usePinComment: CommentSectionContextType['usePinComment'] = () => {
+    const wrappedHandler = (commentId: string) => {
+      if (userId) {
+        pinComment({ id: commentId, userId })
+      }
+    }
+    return [wrappedHandler, pinCommentResponse]
   }
+
+  const useReportComment: CommentSectionContextType['useReportComment'] =
+    () => {
+      const wrappedHandler = (commentId: string) => {}
+      return [wrappedHandler, pinCommentResponse]
+    }
+
   const handleLoadMoreRootComments = () => {
-    console.log('Loading more root comments')
+    loadMore()
   }
-  const handleLoadMoreReplies = (commentId: ID) => {
+  const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
   }
-
-  // TODO: move this to audius-query
-  // load comments logic
-  const fetchComments = async () => {
-    if (entityId) {
-      try {
-        setIsLoading(true)
-        const sdk = await audiusSdk()
-        const commentsRes = await sdk.tracks.trackComments({
-          trackId: encodeHashId(entityId)
-        })
-        if (commentsRes?.data) {
-          // TODO: Shouldn't need to cast; need to figure out how to work with SDK types
-          setComments(commentsRes.data as unknown as Comment[])
-        }
-        setIsLoading(false)
-      } catch (e) {
-        setComments(MOCK_COMMENT_DATA) // TODO: eventually remove, this is backup mock data for UI testing
-        setIsLoading(false)
-        console.log('COMMENTS DEBUG: Error fetching comments', e)
-      }
-    }
-  }
-
-  useAsync(async () => {
-    fetchComments()
-  }, [entityId])
 
   return (
     <CommentSectionContext.Provider
@@ -209,16 +167,15 @@ export const CommentSectionProvider = ({
         entityId,
         entityType,
         comments,
-        isLoading,
-        handlePostComment,
-        handleReactComment,
-        handlePinComment,
-        handleEditComment,
-        handleDeleteComment,
-        handleReportComment,
+        commentSectionLoading,
+        usePostComment,
+        useDeleteComment,
+        useEditComment,
+        usePinComment,
+        useReactToComment,
+        useReportComment,
         handleLoadMoreReplies,
-        handleLoadMoreRootComments,
-        fetchComments // todo: temporary - remove later
+        handleLoadMoreRootComments
       }}
     >
       {children}

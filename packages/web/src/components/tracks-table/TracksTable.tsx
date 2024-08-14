@@ -553,6 +553,8 @@ export const TracksTable = ({
           }}
           buttonSize='small'
           showIcon={false}
+          contentId={track.track_id}
+          contentType='track'
         />
       )
     },

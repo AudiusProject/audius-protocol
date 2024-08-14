@@ -411,7 +411,7 @@ function* sendTipAsync() {
       })
     )
     yield* call(reportToSentry, {
-      name: `SendTip: ${e.name}`,
+      name: 'SendTip',
       error: e,
       additionalInfo: {
         senderUserId,

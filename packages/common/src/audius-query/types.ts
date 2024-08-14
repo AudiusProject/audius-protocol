@@ -154,11 +154,13 @@ export type QueryHookResults<Data> = {
   forceRefresh: () => void
 }
 
+export type MutationHookResponse<Data> = {
+  data: Data
+  status: Status
+  errorMessage?: string
+}
+
 export type MutationHookResults<Args, Data> = [
   (fetchArgs: Args, options?: QueryHookOptions) => void,
-  {
-    data: Data
-    status: Status
-    errorMessage?: string
-  }
+  MutationHookResponse<Data>
 ]

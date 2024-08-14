@@ -26,11 +26,12 @@ class User(Resource):
     def get(self, id):
         mock_data = {
             "id": id,
-            "message": "This is a special comment",
-            "is_pinned": True,
+            "message": "This is a mock data comment",
+            "is_pinned": False,
             "timestamp_s": 123,
-            "react_count": 1234,
+            "react_count": 0,
             "created_at": "2021-01-01T00:00:00Z",
             "updated_at": None,
+            "replies": None,
         }
         return success_response(mock_data)
