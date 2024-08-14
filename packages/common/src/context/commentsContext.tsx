@@ -1,6 +1,11 @@
 /* eslint-disable no-console */
 import { PropsWithChildren, createContext, useContext } from 'react'
 
+import { EntityType, Comment } from '@audius/sdk'
+
+import { MutationHookResponse, usePaginatedQuery } from '..//audius-query'
+import { ID, Status } from '..//models'
+import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -8,14 +13,7 @@ import {
   usePinCommentById,
   usePostComment as useAQueryPostComment,
   useReactToCommentById
-} from '@audius/common/api'
-import {
-  MutationHookResponse,
-  usePaginatedQuery
-} from '@audius/common/audius-query'
-import { ID, Status } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
-import { EntityType, Comment } from '@audius/sdk'
+} from '../api'
 
 /**
  * Context object to avoid prop drilling and share a common API with web/native code
