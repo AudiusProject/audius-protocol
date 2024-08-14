@@ -16,7 +16,7 @@ export const TRANSACTION_FEE_FALLBACK = 10000
 
 export const getSolanaConnection = async () => {
   const sdk = await audiusSdk()
-  return sdk.services.claimableTokensClient.connection
+  return sdk.services.solanaClient.connection
 }
 
 /**
