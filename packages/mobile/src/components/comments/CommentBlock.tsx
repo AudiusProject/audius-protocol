@@ -42,23 +42,14 @@ export const CommentBlock = (props: CommentBlockProps) => {
     userId: userIdStr
   } = comment
 
-  const {
-    usePostComment,
-    useEditComment,
-    useDeleteComment,
-    useReactToComment,
-    usePinComment
-  } = useCurrentCommentSection()
+  const { usePostComment, useEditComment, useReactToComment } =
+    useCurrentCommentSection()
 
   const [editComment] = useEditComment()
-  const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
-  const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
   const [reactToComment] = useReactToComment()
-  const [pinComment] = usePinComment()
   // Note: comment post status is shared across all inputs they may have open
   const [postComment, { status: commentPostStatus }] = usePostComment()
   const prevPostStatus = usePrevious(commentPostStatus)
-  const [isDeleting, setIsDeleting] = useState(false)
   useEffect(() => {
     if (
       prevPostStatus !== commentPostStatus &&
@@ -76,17 +67,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
 
-  useEffect(() => {
-    if (
-      isDeleting &&
-      (deleteCommentStatus === Status.SUCCESS ||
-        deleteCommentStatus === Status.ERROR) &&
-      prevDeleteCommentStatus !== deleteCommentStatus
-    ) {
-      setIsDeleting(false)
-    }
-  }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
-
   const handleCommentEdit = (commentMessage: string) => {
     setShowEditInput(false)
     editComment(commentId, commentMessage)
@@ -99,15 +79,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const handleCommentReact = () => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
-  }
-
-  const handleCommentDelete = () => {
-    setIsDeleting(true)
-    deleteComment(commentId)
-  }
-
-  const handleCommentPin = () => {
-    pinComment(commentId)
   }
 
   return (
