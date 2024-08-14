@@ -32,7 +32,7 @@ const { sendMessage } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
-  sendMessagePlaceholder: 'Start a New Message'
+  sendMessagePlaceholder: 'Start typing...'
 }
 
 const ENTER_KEY = 'Enter'
@@ -51,12 +51,13 @@ type ChatSendButtonProps = { disabled: boolean }
 export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
   return (
     <IconButton
-      className={styles.sendButton}
       disabled={disabled}
       aria-label={messages.sendMessage}
       type='submit'
       size='m'
       icon={IconSend}
+      height={24}
+      width={24}
       color='active'
     />
   )

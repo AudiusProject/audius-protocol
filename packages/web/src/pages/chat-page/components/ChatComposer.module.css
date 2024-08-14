@@ -8,7 +8,7 @@
 }
 
 .textArea {
-  padding: var(--harmony-unit-2) 0;
+  padding: 6px 0;
 }
 
 .textArea.focused {
