@@ -99,7 +99,6 @@ const FULL_ENDPOINT_MAP = {
 
 const ENDPOINT_MAP = {
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
-  userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
   undisbursedUserChallenges: `/challenges/undisbursed`
 }
 
@@ -1117,16 +1116,6 @@ export class AudiusAPIClient {
       }
     })
     return challenges as UserChallenge[]
-  }
-
-  getUserTags = async ({ userId }: { userId: ID }) => {
-    const encodedUserId = encodeHashId(userId)
-    return await this._getResponse<APIResponse<string[]>>(
-      ENDPOINT_MAP.userTags(encodedUserId),
-      undefined,
-      false,
-      PathType.VersionPath
-    )
   }
 
   getUndisbursedUserChallenges = async ({ userID }: { userID: ID }) => {
