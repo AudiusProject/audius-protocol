@@ -23,6 +23,7 @@ import {
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
+import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { getReaction } from '../../utils/reactionsMap'
@@ -76,9 +77,12 @@ const storageNodeSelector = new StorageNodeSelector({
   logger
 })
 const solanaRelay = new SolanaRelay()
+const solanaClient = new SolanaClient({
+  solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+})
 const claimableTokens = new ClaimableTokensClient({
   ...getDefaultClaimableTokensConfig(developmentConfig),
-  solanaWalletAdapter: new SolanaRelayWalletAdapter({ solanaRelay })
+  solanaClient
 })
 
 describe('UsersApi', () => {
@@ -89,7 +93,8 @@ describe('UsersApi', () => {
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       new Logger(),
-      claimableTokens
+      claimableTokens,
+      solanaClient
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
