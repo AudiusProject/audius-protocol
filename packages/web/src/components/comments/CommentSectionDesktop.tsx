@@ -1,9 +1,9 @@
+import { useCurrentCommentSection } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
-import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 

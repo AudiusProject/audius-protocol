@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { useCurrentCommentSection } from '@audius/common/context'
 import { SquareSizes } from '@audius/common/models'
 import {
   Avatar,
@@ -13,8 +14,6 @@ import { usePrevious } from 'react-use'
 
 import { TextField } from 'components/form-fields'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-
-import { useCurrentCommentSection } from './CommentSectionContext'
 
 type CommentFormValues = {
   commentMessage: string
