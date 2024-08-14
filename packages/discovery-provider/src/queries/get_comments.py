@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import desc, func
+from sqlalchemy import asc, func
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -24,7 +24,7 @@ def get_replies(session, parent_comment_id, offset=0, limit=COMMENT_REPLIES_LIMI
         session.query(Comment)
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .filter(CommentThread.parent_comment_id == parent_comment_id)
-        .order_by(desc(Comment.created_at))
+        .order_by(asc(Comment.created_at))
         .offset(offset)
         .limit(limit)
         .all()
@@ -90,7 +90,7 @@ def get_track_comments(args, track_id):
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
             )
-            .order_by(desc(Comment.created_at))
+            .order_by(asc(Comment.created_at))
             .offset(offset)
             .limit(limit)
             .all()
