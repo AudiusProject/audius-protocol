@@ -13,15 +13,26 @@ import { chatActions } from '@audius/common/store'
 import {
   decodeHashId,
   formatTrackName,
+  getPathFromAudiusUrl,
+  isAudiusUrl,
   matchAudiusLinks,
   splitOnNewline
 } from '@audius/common/utils'
-import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
+import {
+  IconSend,
+  IconButton,
+  Text,
+  TextProps,
+  TextLink
+} from '@audius/harmony'
 import { Track } from '@audius/sdk'
 import cn from 'classnames'
+import Linkify from 'linkify-react'
+import { IntermediateRepresentation, Opts } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
+import { ExternalTextLink } from 'components/link'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
@@ -72,6 +83,50 @@ const ComposerText = ({
   )
 }
 
+const RenderLink = ({ attributes, content }: IntermediateRepresentation) => {
+  const { href, humanToTrack, setValue, ...props } = attributes
+  const [unfurledContent, setUnfurledContent] = useState<string>()
+  console.log({ humanToTrack })
+
+  useEffect(() => {
+    if (isAudiusUrl(href) && !unfurledContent) {
+      const fn = async () => {
+        const sdk = await audiusSdk()
+        const { data } = await sdk.resolve({ url: href })
+        if (data && 'title' in data) {
+          const human = formatTrackName({ track: data })
+          setUnfurledContent(human)
+          humanToTrack[human] = { link: href, track: data }
+        }
+      }
+      fn()
+    }
+  }, [href, unfurledContent, setUnfurledContent, humanToTrack])
+
+  console.log({ href })
+
+  useEffect(() => {
+    if (unfurledContent) {
+      setValue((value: string) => value.replaceAll(href, unfurledContent))
+    }
+  }, [unfurledContent, setValue, href])
+
+  if (unfurledContent) {
+    return (
+      <Text color='accent'>{unfurledContent}</Text>
+      // <TextLink
+      //   showUnderline
+      //   to={getPathFromAudiusUrl(href) as string}
+      //   variant='secondary'
+      //   {...props}
+      // >
+      //   {unfurledContent}
+      // </TextLink>
+    )
+  }
+  return <>{content}</>
+}
+
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId, presetMessage, onMessageSent } = props
   const dispatch = useDispatch()
@@ -96,36 +151,36 @@ export const ChatComposer = (props: ChatComposerProps) => {
       const originalValue = e.target.value
       setValue(originalValue)
 
-      const { matches } = matchAudiusLinks({
-        text: originalValue,
-        hostname: env.PUBLIC_HOSTNAME
-      })
+      // const { matches } = matchAudiusLinks({
+      //   text: originalValue,
+      //   hostname: env.PUBLIC_HOSTNAME
+      // })
 
-      const sdk = await audiusSdk()
-      for (const match of matches) {
-        if (!(match in linkToHuman)) {
-          const { data: track } = await sdk.resolve({ url: match })
-          if (track && 'title' in track) {
-            const human = formatTrackName({ track })
-            linkToHuman[match] = human
-            humanToTrack[human] = { link: match, track }
-          }
-        } else {
-          // If we already loaded the track, delay showing by 500ms
-          // to give the user some sense of what is happening.
-          await new Promise((resolve) => setTimeout(resolve, 500))
-        }
-      }
+      // const sdk = await audiusSdk()
+      // for (const match of matches) {
+      //   if (!(match in linkToHuman)) {
+      //     const { data: track } = await sdk.resolve({ url: match })
+      //     if (track && 'title' in track) {
+      //       const human = formatTrackName({ track })
+      //       linkToHuman[match] = human
+      //       humanToTrack[human] = { link: match, track }
+      //     }
+      //   } else {
+      //     // If we already loaded the track, delay showing by 500ms
+      //     // to give the user some sense of what is happening.
+      //     await new Promise((resolve) => setTimeout(resolve, 500))
+      //   }
+      // }
 
-      // Sort here to make sure that we replace all content before
-      // replacing their substrings.
-      let editedValue = originalValue
-      for (const [link, human] of Object.entries(linkToHuman).sort(
-        (a, b) => b[0].length - a[0].length
-      )) {
-        editedValue = editedValue.replaceAll(link, human)
-      }
-      setValue(editedValue)
+      // // Sort here to make sure that we replace all content before
+      // // replacing their substrings.
+      // let editedValue = originalValue
+      // for (const [link, human] of Object.entries(linkToHuman).sort(
+      //   (a, b) => b[0].length - a[0].length
+      // )) {
+      //   editedValue = editedValue.replaceAll(link, human)
+      // }
+      // setValue(editedValue)
     },
     [setValue, linkToHuman, humanToTrack]
   )
@@ -181,60 +236,76 @@ export const ChatComposer = (props: ChatComposerProps) => {
   }, [ref, chatId, chatIdRef, setTrackId, setValue])
 
   const renderChatDisplay = (value: string) => {
-    const regexString = Object.keys(humanToTrack).join('|')
-    const regex = regexString ? new RegExp(regexString, 'gi') : null
-    if (!regex) {
-      const text = splitOnNewline(value)
-      return text.map((t, i) => (
-        <ComposerText key={i} color='default'>
-          {t}
-        </ComposerText>
-      ))
-    }
-    const matches = value.matchAll(regex)
-    const parts = []
-    let lastIndex = 0
-    for (const match of matches) {
-      const { index } = match
-      if (index === undefined) {
-        continue
+    const options = {
+      render: RenderLink,
+      attributes: {
+        value,
+        setValue,
+        humanToTrack
       }
-
-      if (index > lastIndex) {
-        // Add text before the match
-        const text = splitOnNewline(value.slice(lastIndex, index))
-        parts.push(
-          ...text.map((t, i) => (
-            <ComposerText color='default' key={`${lastIndex}${i}`}>
-              {t}
-            </ComposerText>
-          ))
-        )
-      }
-      // Add the matched word with accent color
-      parts.push(
-        <Text color='accent' key={index}>
-          {match[0]}
-        </Text>
-      )
-      // Update lastIndex to the end of the current match
-      lastIndex = index + match[0].length
     }
 
-    // Add remaining text after the last match
-    if (lastIndex < value.length) {
-      const text = splitOnNewline(value.slice(lastIndex))
-      parts.push(
-        ...text.map((t, i) => (
-          <ComposerText color='default' key={`${lastIndex}${i}`}>
-            {t}
-          </ComposerText>
-        ))
-      )
-    }
-
-    return parts
+    return (
+      <Linkify options={options} as={Text} css={{ whiteSpace: 'pre-wrap' }}>
+        {value}
+      </Linkify>
+    )
   }
+  // const renderChatDisplay = (value: string) => {
+  //   const regexString = Object.keys(humanToTrack).join('|')
+  //   const regex = regexString ? new RegExp(regexString, 'gi') : null
+  //   if (!regex) {
+  //     const text = splitOnNewline(value)
+  //     return text.map((t, i) => (
+  //       <ComposerText key={i} color='default'>
+  //         {t}
+  //       </ComposerText>
+  //     ))
+  //   }
+  //   const matches = value.matchAll(regex)
+  //   const parts = []
+  //   let lastIndex = 0
+  //   for (const match of matches) {
+  //     const { index } = match
+  //     if (index === undefined) {
+  //       continue
+  //     }
+
+  //     if (index > lastIndex) {
+  //       // Add text before the match
+  //       const text = splitOnNewline(value.slice(lastIndex, index))
+  //       parts.push(
+  //         ...text.map((t, i) => (
+  //           <ComposerText color='default' key={`${lastIndex}${i}`}>
+  //             {t}
+  //           </ComposerText>
+  //         ))
+  //       )
+  //     }
+  //     // Add the matched word with accent color
+  //     parts.push(
+  //       <Text color='accent' key={index}>
+  //         {match[0]}
+  //       </Text>
+  //     )
+  //     // Update lastIndex to the end of the current match
+  //     lastIndex = index + match[0].length
+  //   }
+
+  //   // Add remaining text after the last match
+  //   if (lastIndex < value.length) {
+  //     const text = splitOnNewline(value.slice(lastIndex))
+  //     parts.push(
+  //       ...text.map((t, i) => (
+  //         <ComposerText color='default' key={`${lastIndex}${i}`}>
+  //           {t}
+  //         </ComposerText>
+  //       ))
+  //     )
+  //   }
+
+  //   return parts
+  // }
 
   return (
     <div className={cn(styles.root, props.className)}>
