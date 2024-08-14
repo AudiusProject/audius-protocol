@@ -566,7 +566,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           message_id: messageIdToUse,
           message,
           reactions: [],
-          created_at: dayjs().toISOString()
+          created_at: dayjs().toISOString(),
+          is_plaintext: false
         },
         status: Status.LOADING,
         isSelfMessage: true

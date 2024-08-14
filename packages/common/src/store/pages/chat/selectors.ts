@@ -1,4 +1,4 @@
-import { ChatPermission } from '@audius/sdk'
+import { ChatPermission, UserChat } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
 import { ID } from '~/models/Identifiers'
@@ -180,7 +180,7 @@ export const getUserList = createSelector(
       .filter((c) => !c.is_blast)
       .map(
         (c) =>
-          c.chat_members
+          (c as UserChat).chat_members
             .filter((u) => decodeHashId(u.user_id) !== currentUserId)
             .map((u) => decodeHashId(u.user_id))[0]
       )

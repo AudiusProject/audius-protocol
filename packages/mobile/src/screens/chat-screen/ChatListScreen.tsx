@@ -105,7 +105,7 @@ export const ChatListScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<AppTabScreenParamList>()
   const chats = useSelector(getChats)
-  const nonEmptyChats = chats.filter((chat) => !!chat.last_message)
+  const nonEmptyChats = chats.filter((chat) => !!chat.last_message_at)
   const chatsStatus = useSelector(getChatsStatus)
   const hasMore = useSelector(getHasMoreChats)
 
