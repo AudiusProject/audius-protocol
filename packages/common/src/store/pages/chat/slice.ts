@@ -6,7 +6,8 @@ import type {
   ChatMessageNullableReaction,
   UnfurlResponse,
   ValidatedChatPermissions,
-  ChatBlastAudience
+  ChatBlastAudience,
+  ChatBlast
 } from '@audius/sdk'
 import {
   Action,
@@ -24,7 +25,9 @@ import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 
-export type UserChatWithMessagesStatus = UserChat & {
+export type Chat = UserChat | ChatBlast
+
+export type UserChatWithMessagesStatus = Chat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }
@@ -64,7 +67,7 @@ type SetMessageReactionPayload = {
   reaction: string | null
 }
 
-const chatSortComparator = (a: UserChat, b: UserChat) =>
+const chatSortComparator = (a: Chat, b: Chat) =>
   dayjs(a.last_message_at).isBefore(dayjs(b.last_message_at)) ? 1 : -1
 
 export const chatsAdapter = createEntityAdapter<UserChatWithMessagesStatus>({
@@ -140,7 +143,20 @@ const slice = createSlice({
     ) => {
       // triggers saga
     },
-    createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
+    createChatBlast: (
+      _state,
+      _action: PayloadAction<{
+        audience: ChatBlastAudience
+        contentId?: ID
+        contentType?: 'track' | 'album'
+        skipNavigation?: boolean
+        presetMessage?: string
+        replaceNavigation?: boolean
+      }>
+    ) => {
+      // triggers saga
+    },
+    createChatSucceeded: (state, action: PayloadAction<{ chat: Chat }>) => {
       const { chat } = action.payload
       chatsAdapter.upsertOne(state.chats, {
         ...chat,
@@ -373,7 +389,7 @@ const slice = createSlice({
       // Optimistically mark as read
       const { chatId } = action.payload
       const existingChat = getChat(state, chatId)
-      if (existingChat) {
+      if (existingChat && !existingChat.is_blast) {
         state.optimisticChatRead[chatId] = {
           last_read_at: existingChat.last_message_at,
           unread_message_count: 0
@@ -396,6 +412,7 @@ const slice = createSlice({
       delete state.optimisticChatRead[chatId]
       delete state.optimisticUnreadMessagesCount
       const existingChat = getChat(state, chatId)
+      if (!existingChat || existingChat.is_blast) return
       state.unreadMessagesCount -= existingChat?.unread_message_count ?? 0
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
@@ -489,6 +506,7 @@ const slice = createSlice({
 
       // Handle unread counts
       const existingChat = getChat(state, chatId)
+      if (!existingChat || existingChat.is_blast) return
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
         ? optimisticRead.unread_message_count

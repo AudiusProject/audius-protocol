@@ -6,9 +6,7 @@ import {
 } from 'react'
 
 import { Status } from '@audius/common/models'
-import { UserChatWithMessagesStatus } from '@audius/common/src/store/pages/chat/slice'
 import { chatActions, chatSelectors } from '@audius/common/store'
-import { ChatBlastAudience, ChatBlastMessageRequest } from '@audius/sdk'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch } from 'react-redux'
@@ -42,17 +40,6 @@ export const ChatList = (props: ChatListProps) => {
   const status = useSelector(getChatsStatus)
   const hasMore = useSelector(getHasMoreChats)
 
-  const testFollowersBlast: ChatBlastMessageRequest = {
-    blastId: ChatBlastAudience.FOLLOWERS,
-    audience: ChatBlastAudience.FOLLOWERS,
-    message: 'This is a test blast message'
-  }
-
-  const chatsWithBlasts: (
-    | ChatBlastMessageRequest
-    | UserChatWithMessagesStatus
-  )[] = [testFollowersBlast, ...chats]
-
   const handleLoadMoreChats = useCallback(() => {
     dispatch(fetchMoreChats())
   }, [dispatch])
@@ -80,19 +67,19 @@ export const ChatList = (props: ChatListProps) => {
           ) : undefined
         }
       >
-        {chatsWithBlasts?.length > 0 ? (
-          chatsWithBlasts.map((chat) =>
-            'blastId' in chat ? (
+        {chats?.length > 0 ? (
+          chats.map((chat) =>
+            'is_blast' in chat && chat.is_blast ? (
               <ChatListBlastItem
-                key={chat.blastId}
-                audience={chat.audience}
-                blastId={chat.blastId}
+                key={chat.chat_id}
+                chat={chat}
                 onChatClicked={onChatClicked}
               />
             ) : (
               <ChatListItem
                 key={chat.chat_id}
                 currentChatId={currentChatId}
+                // TODO: need type guard to fix this
                 chat={chat}
                 onChatClicked={onChatClicked}
               />

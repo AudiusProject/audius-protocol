@@ -1,4 +1,5 @@
 import {
+  ChatBlast,
   ChatBlastAudience,
   type ChatMessage,
   type TypedCommsResponse,
@@ -39,6 +40,7 @@ if (typeof window !== 'undefined') {
 
 const {
   createChat,
+  createChatBlast,
   createChatSucceeded,
   fetchUnreadMessagesCount,
   fetchUnreadMessagesCountSucceeded,
@@ -436,6 +438,74 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
   }
 }
 
+function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
+  const {
+    audience,
+    contentId,
+    contentType,
+    presetMessage,
+    replaceNavigation,
+    skipNavigation
+  } = action.payload
+
+  try {
+    // const audiusSdk = yield* getContext('audiusSdk')
+    // const sdk = yield* call(audiusSdk)
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      throw new Error('User not found')
+    }
+    // Try to get existing chat:
+    const chatId = `${audience}${contentType ? `:${contentType}` : ''}${
+      contentId ? `:${contentId}` : ''
+    }`
+
+    // Optimistically go to the chat. If we fail to create it, we'll toast
+    if (!skipNavigation) {
+      yield* put(goToChat({ chatId, presetMessage, replaceNavigation }))
+    }
+
+    // TODO: fetch chat history
+    // try {
+    //   yield* call(doFetchChatIfNecessary, { chatId })
+    // } catch {}
+    const existingChat = yield* select((state) => getChat(state, chatId))
+    if (!existingChat) {
+      const newBlast: ChatBlast = {
+        chat_id: chatId,
+        is_blast: true,
+        last_message_at: dayjs().toISOString(),
+        audience,
+        content_type: contentType,
+        content_id: contentId?.toString()
+      }
+      yield* put(
+        createChatSucceeded({
+          chat: newBlast
+        })
+      )
+      // yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
+    }
+  } catch (e) {
+    console.error('createChatFailed', e)
+    yield* put(
+      toast({
+        type: 'error',
+        content: 'Something went wrong. Failed to create chat.'
+      })
+    )
+    // const reportToSentry = yield* getContext('reportToSentry')
+    // reportToSentry({
+    //   level: ErrorLevel.Error,
+    //   error: e as Error,
+    //   additionalInfo: {
+    //     userIds
+    //   }
+    // })
+    // yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
+  }
+}
+
 function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
   const { chatId } = action.payload
   try {
@@ -446,8 +516,9 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     const chat = yield* select((state) => getNonOptimisticChat(state, chatId))
     if (
       !chat ||
-      !chat?.last_read_at ||
-      dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)
+      (!chat.is_blast &&
+        (!chat?.last_read_at ||
+          dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)))
     ) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
       yield* put(markChatAsReadSucceeded({ chatId }))
@@ -858,6 +929,10 @@ function* watchCreateChat() {
   yield takeEvery(createChat, doCreateChat)
 }
 
+function* watchCreateChatBlast() {
+  yield takeEvery(createChatBlast, doCreateChatBlast)
+}
+
 function* watchMarkChatAsRead() {
   yield takeEvery(markChatAsRead, doMarkChatAsRead)
 }
@@ -904,6 +979,7 @@ export const sagas = () => {
     watchFetchMoreMessages,
     watchSetMessageReaction,
     watchCreateChat,
+    watchCreateChatBlast,
     watchMarkChatAsRead,
     watchSendMessage,
     watchSendChatBlast,

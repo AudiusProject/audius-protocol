@@ -1,4 +1,4 @@
-import { ChatPermission, UserChat } from '@audius/sdk'
+import { ChatPermission } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
 import { ID } from '~/models/Identifiers'
@@ -10,7 +10,7 @@ import { CommonState } from '~/store/reducers'
 import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 import { Maybe, removeNullable } from '~/utils/typeUtils'
 
-import { chatMessagesAdapter, chatsAdapter } from './slice'
+import { Chat, chatMessagesAdapter, chatsAdapter } from './slice'
 import { ChatPermissionAction } from './types'
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
@@ -128,6 +128,9 @@ export const getHasUnreadMessages = (state: CommonState) => {
   // This really shouldn't be necessary since the above should be kept in sync
   const chats = getChats(state)
   for (const chat of chats) {
+    if (chat.is_blast) {
+      return false
+    }
     if (chat.unread_message_count > 0) {
       return true
     }
@@ -135,11 +138,8 @@ export const getHasUnreadMessages = (state: CommonState) => {
   return false
 }
 
-export const getOtherChatUsersFromChat = (
-  state: CommonState,
-  chat?: UserChat
-) => {
-  if (!chat) {
+export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
+  if (!chat || chat.is_blast) {
     return []
   }
   const currentUserId = getUserId(state)
@@ -177,6 +177,7 @@ export const getUserList = createSelector(
   [getUserId, getChats, getHasMoreChats, getChatsStatus],
   (currentUserId, chats, hasMore, chatsStatus) => {
     const chatUserListIds = chats
+      .filter((c) => !c.is_blast)
       .map(
         (c) =>
           c.chat_members
@@ -286,8 +287,9 @@ export const getCanCreateChat = createSelector(
     // Note: this only works if the respective chat has been fetched already, like in chatsUserList
     const encodedUserId = encodeHashId(user.user_id)
     const hasExistingChat = () =>
-      !!chats.find((c) =>
-        c.chat_members.find((u) => u.user_id === encodedUserId)
+      !!chats.find(
+        (c) =>
+          !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
       )
 
     const userPermissions = chatPermissions[user.user_id]
@@ -324,8 +326,10 @@ export const getCanSendMessage = createSelector(
     getBlockers,
     getCanCreateChat,
     (_state: CommonState, { userId }: { userId: Maybe<ID> }) => userId,
-    (state: CommonState, { chatId }: { chatId: Maybe<string> }) =>
-      chatId ? getChat(state, chatId)?.recheck_permissions : false
+    (state: CommonState, { chatId }: { chatId: Maybe<string> }) => {
+      const chat = chatId ? getChat(state, chatId) : undefined
+      return chat?.is_blast ? true : !!chat?.recheck_permissions
+    }
   ],
   (
     blockees,

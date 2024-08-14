@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { useGetCurrentUser, useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUser } from '@audius/common/api'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
-import { ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 
 const messages = {
   audience: 'AUDIENCE',
@@ -23,13 +23,13 @@ const messages = {
 }
 
 type ChatListBlastItemProps = {
-  audience: ChatBlastAudience
-  blastId: string
+  chat: ChatBlast
   onChatClicked: (chatId: string) => void
 }
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
-  const { audience, blastId, onChatClicked } = props
+  const { chat, onChatClicked } = props
+  const { chat_id: chatId, audience } = chat
 
   const { data: user } = useGetCurrentUser()
   const audienceCount = user?.follower_count ?? 0
@@ -41,7 +41,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       direction='column'
       gap='s'
       borderBottom='default'
-      onClick={() => onChatClicked(blastId)}
+      onClick={() => onChatClicked(chatId)}
     >
       <Flex gap='s'>
         <IconTowerBroadcast size='l' color='default' />

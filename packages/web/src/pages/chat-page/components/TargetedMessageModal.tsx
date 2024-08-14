@@ -22,7 +22,7 @@ import {
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, FormikValues, useField } from 'formik'
 import { useDispatch } from 'react-redux'
-const { goToChat } = chatActions
+const { createChatBlast } = chatActions
 
 const messages = {
   title: 'Target Audience',
@@ -71,7 +71,7 @@ export const TargetedMessageModal = () => {
   const handleSubmit = (values: FormikValues) => {
     switch (values.target_audience) {
       case 'followers':
-        dispatch(goToChat({ chatId: ChatBlastAudience.FOLLOWERS }))
+        dispatch(createChatBlast({ audience: ChatBlastAudience.FOLLOWERS }))
         break
       case 'supporters':
         // do something
