@@ -328,7 +328,7 @@ export const getCanSendMessage = createSelector(
     (_state: CommonState, { userId }: { userId: Maybe<ID> }) => userId,
     (state: CommonState, { chatId }: { chatId: Maybe<string> }) => {
       const chat = chatId ? getChat(state, chatId) : undefined
-      return chat?.is_blast ? true : !!chat?.recheck_permissions
+      return chat?.is_blast || !!chat?.recheck_permissions
     }
   ],
   (

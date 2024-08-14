@@ -21,15 +21,15 @@ const messages = {
   or: 'or'
 }
 
-type TargetedMessageCTAProps = {
+type ChatBlastCTAProps = {
   onClick: () => void
 }
 
-export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
+export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { onClick } = props
   const { color } = useTheme()
 
-  const { onOpen: openTargetedMessageModal } = useChatBlastModal()
+  const { onOpen: openChatBlastModal } = useChatBlastModal()
 
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
@@ -37,11 +37,11 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
 
   const handleClick = useCallback(() => {
     onClick()
-    openTargetedMessageModal()
-  }, [onClick, openTargetedMessageModal])
+    openChatBlastModal()
+  }, [onClick, openChatBlastModal])
 
   if (!userMeetsRequirements) {
-    return <TargetedMessageDisabled />
+    return <ChatBlastDisabled />
   }
 
   return (
@@ -71,7 +71,7 @@ export const TargetedMessageCTA = (props: TargetedMessageCTAProps) => {
   )
 }
 
-const TargetedMessageDisabled = () => {
+const ChatBlastDisabled = () => {
   const { spacing } = useTheme()
 
   return (

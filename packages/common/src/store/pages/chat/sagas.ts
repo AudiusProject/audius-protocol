@@ -486,11 +486,11 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
     }
   } catch (e) {
-    console.error('createChatFailed', e)
+    console.error('createChatBlastFailed', e)
     yield* put(
       toast({
         type: 'error',
-        content: 'Something went wrong. Failed to create chat.'
+        content: 'Something went wrong. Failed to create chat blast.'
       })
     )
     const reportToSentry = yield* getContext('reportToSentry')
@@ -515,11 +515,13 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     // Use non-optimistic chat here so that the calculation of whether to mark
     // the chat as read or not are consistent with values in backend
     const chat = yield* select((state) => getNonOptimisticChat(state, chatId))
+    if (chat?.is_blast) {
+      return
+    }
     if (
       !chat ||
-      (!chat.is_blast &&
-        (!chat?.last_read_at ||
-          dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)))
+      !chat?.last_read_at ||
+      dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)
     ) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
       yield* put(markChatAsReadSucceeded({ chatId }))
