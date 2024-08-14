@@ -723,17 +723,21 @@ export const createVersionedTransaction = async (
  * Note that this uses payment router to do the transfer, so that indexing sees
  * this transfer and handles it appropriately.
  */
+type RecoverUsdcFromRootWalletParams = {
+  sdk: AudiusSdk
+  /** The root wallet key pair */
+  sender: Keypair
+  /** The ethereum wallet address of the user, used to derive user bank */
+  receiverEthWallet: string
+  /** The amount of USDC to recover */
+  amount: bigint
+}
 export const recoverUsdcFromRootWallet = async ({
   sdk,
   sender,
   receiverEthWallet,
   amount
-}: {
-  sdk: AudiusSdk
-  sender: Keypair
-  receiverEthWallet: string
-  amount: bigint
-}) => {
+}: RecoverUsdcFromRootWalletParams) => {
   const { userBank } =
     await sdk.services.claimableTokensClient.getOrCreateUserBank({
       ethWallet: receiverEthWallet,
@@ -789,6 +793,25 @@ export const recoverUsdcFromRootWallet = async ({
  * - Users have restrictions on creating token accounts via relay, so if the
  *   destination token account doesn't exist this might fail.
  */
+type TransferFromUserBankParams = {
+  sdk: AudiusSdk
+  /** The token mint address */
+  mint: PublicKey
+  connection: Connection
+  /** Amount, in decimal token amounts (eg dollars for USDC) */
+  amount: number
+  /** The eth address of the sender (for deriving user bank) */
+  ethWallet: string
+  /** The destination wallet (not token account but Solana wallet) */
+  destinationWallet: PublicKey
+  track: CommonStoreContext['analytics']['track']
+  make: CommonStoreContext['analytics']['make']
+  /** Any extra data to include for analytics */
+  analyticsFields: any
+  /** If included, will attach a signed memo indicating a recovery transaction.  */
+  signer?: Keypair
+}
+
 export const transferFromUserBank = async ({
   sdk,
   mint,
@@ -800,18 +823,7 @@ export const transferFromUserBank = async ({
   make,
   analyticsFields,
   signer
-}: {
-  sdk: AudiusSdk
-  mint: PublicKey
-  connection: Connection
-  amount: number
-  ethWallet: string
-  destinationWallet: PublicKey
-  track: CommonStoreContext['analytics']['track']
-  make: CommonStoreContext['analytics']['make']
-  analyticsFields: any
-  signer?: Keypair
-}) => {
+}: TransferFromUserBankParams) => {
   let isCreatingTokenAccount = false
   try {
     const instructions: TransactionInstruction[] = []
