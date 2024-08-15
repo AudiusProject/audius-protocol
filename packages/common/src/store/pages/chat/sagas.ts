@@ -514,8 +514,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       error: e as Error,
       additionalInfo: {
         audience,
-        contentId,
-        contentType
+        audienceContentId,
+        audienceContentType
       }
     })
     yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
