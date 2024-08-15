@@ -24,7 +24,11 @@ import {
   musicConfettiActions,
   CommonStoreContext
 } from '@audius/common/store'
-import { encodeHashId, waitForValue } from '@audius/common/utils'
+import {
+  encodeHashId,
+  isResponseError,
+  waitForValue
+} from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk, ChallengeId, Errors, RewardManagerError } from '@audius/sdk'
 import {
@@ -40,7 +44,7 @@ import {
   all
 } from 'typed-redux-saga'
 
-import { isResponseError, reportToSentry } from 'store/errors/reportToSentry'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
