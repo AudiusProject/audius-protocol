@@ -97,7 +97,8 @@ export const ChatBlastMessageRequestSchema = z.object({
   blastId: z.string(),
   message: z.string(),
   audience: z.nativeEnum(ChatBlastAudience),
-  audienceTrackId: z.optional(z.string())
+  audienceContentId: z.optional(z.string()),
+  audienceContentType: z.optional(z.enum(['track', 'album']))
 })
 
 export type ChatBlastMessageRequest = z.infer<
