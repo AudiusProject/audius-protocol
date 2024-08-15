@@ -128,6 +128,18 @@ export type UserChat = {
   unread_message_count: number
   last_read_at: string
   cleared_history_at: string
+
+  // User chats are not blasts
+  is_blast: false
+}
+
+export type ChatBlast = {
+  chat_id: string
+  audience: ChatBlastAudience
+  content_id?: string
+  content_type?: 'track' | 'album'
+  is_blast: true
+  last_message_at: string
 }
 
 export type ChatMessageReaction = {

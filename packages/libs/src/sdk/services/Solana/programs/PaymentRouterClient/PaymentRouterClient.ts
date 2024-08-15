@@ -24,7 +24,7 @@ import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
 import { MEMO_V2_PROGRAM_ID } from '../../constants'
 import { TokenName } from '../../types'
-import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
+import type { SolanaClient } from '../SolanaClient'
 
 import { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'
 import {
@@ -41,7 +41,8 @@ import {
   PaymentRouterClientConfig
 } from './types'
 
-export class PaymentRouterClient extends BaseSolanaProgramClient {
+export class PaymentRouterClient {
+  private readonly client: SolanaClient
   private readonly programId: PublicKey
 
   /** The intermediate account where funds are sent to and routed from. */
@@ -57,7 +58,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       config,
       getDefaultPaymentRouterClientConfig(productionConfig)
     )
-    super(configWithDefaults, config.solanaWalletAdapter)
+    this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     const [pda, bump] = PublicKey.findProgramAddressSync(
       [new TextEncoder().encode('payment_router')],
@@ -211,28 +212,31 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
 
     let account: Account | null = null
     try {
-      account = await getAccount(this.connection, associatedTokenAdddress)
+      account = await getAccount(
+        this.client.connection,
+        associatedTokenAdddress
+      )
       this.existingTokenAccounts[token] = account
     } catch (error: unknown) {
       if (error instanceof TokenAccountNotFoundError) {
         // As this isn't atomic, it's possible others can create associated accounts meanwhile.
         try {
           const instruction = createAssociatedTokenAccountIdempotentInstruction(
-            await this.getFeePayer(),
+            await this.client.getFeePayer(),
             associatedTokenAdddress,
             this.programAccount,
             mint
           )
           const { lastValidBlockHeight, blockhash } =
-            await this.connection.getLatestBlockhash()
+            await this.client.connection.getLatestBlockhash()
           const msg = new TransactionMessage({
-            payerKey: await this.getFeePayer(),
+            payerKey: await this.client.getFeePayer(),
             recentBlockhash: blockhash,
             instructions: [instruction]
           })
           const transaction = new VersionedTransaction(msg.compileToV0Message())
-          const signature = await this.sendTransaction(transaction)
-          await this.connection.confirmTransaction(
+          const signature = await this.client.sendTransaction(transaction)
+          await this.client.connection.confirmTransaction(
             { signature, blockhash, lastValidBlockHeight },
             'finalized'
           )
@@ -242,7 +246,10 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
         }
 
         // Now this should always succeed
-        account = await getAccount(this.connection, associatedTokenAdddress)
+        account = await getAccount(
+          this.client.connection,
+          associatedTokenAdddress
+        )
       } else {
         throw error
       }
