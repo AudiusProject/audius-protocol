@@ -223,8 +223,9 @@ type ChatWebsocketEventData struct {
 }
 
 type Metadata struct {
-	Timestamp string `json:"timestamp"`
-	UserID    string `json:"userId"`
+	Timestamp      string `json:"timestamp"`
+	SenderUserID   string `json:"userId"`
+	ReceiverUserID string `json:"userId"`
 }
 
 type RPCPayload struct {

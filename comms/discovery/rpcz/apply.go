@@ -438,30 +438,9 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 			return
 		}
 
-		encodedUserId, _ := misc.EncodeHashId(int(userId))
-
-		// this struct should match ChatWebsocketEventData
-		// but we create a matching anon struct here
-		// so we can simply pass thru the RPC as a json.RawMessage
-		// which is simpler than satisfying the quicktype generated schema.RPC struct
-		data := struct {
-			RPC      json.RawMessage `json:"rpc"`
-			Metadata schema.Metadata `json:"metadata"`
-		}{
-			rpcJson,
-			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+		for _, receiverUserId := range userIds {
+			websocketPush(userId, receiverUserId, rpcJson, timestamp)
 		}
-
-		j, err := json.Marshal(data)
-		if err != nil {
-			logger.Warn("invalid websocket json " + err.Error())
-			return
-		}
-
-		for _, subscribedUserId := range userIds {
-			websocketPush(subscribedUserId, j)
-		}
-
 	}
 }
 

@@ -840,7 +840,7 @@ export class ChatsApi
                 )
                 return GENERIC_MESSAGE_ERROR
               }),
-              sender_user_id: data.metadata.userId,
+              sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
               // TODO: need to set this for blast chats
@@ -853,7 +853,7 @@ export class ChatsApi
             messageId: data.rpc.params.message_id,
             reaction: {
               reaction: data.rpc.params.reaction,
-              user_id: data.metadata.userId,
+              user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp
             }
           })
