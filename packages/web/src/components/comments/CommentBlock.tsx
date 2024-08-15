@@ -117,12 +117,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
             {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
           </Flex>
         ) : null}
-        {/* TODO: this will be a user link but wont work with mock data */}
         <Flex gap='s' alignItems='center'>
           <UserLink userId={userId} />
-          {/* TODO: figure out date from created_at */}
           <Flex gap='xs' alignItems='center' h='100%'>
-            {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
               <>

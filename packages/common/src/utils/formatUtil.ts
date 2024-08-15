@@ -309,4 +309,3 @@ export const getHash = (str: string) =>
       return a & a
     }, 0)
   ).toString(36)
-
