@@ -1,11 +1,11 @@
 import { partition, sum } from 'lodash'
 import { useSelector } from 'react-redux'
 
-import { ChallengeRewardID } from '~/models/AudioRewards'
 import {
-  UndisbursedUserChallenge,
-  audioRewardsPageSelectors
-} from '~/store/pages'
+  ChallengeRewardID,
+  UndisbursedUserChallenge
+} from '~/models/AudioRewards'
+import { audioRewardsPageSelectors } from '~/store/pages'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import dayjs, { Dayjs } from '~/utils/dayjs'
 import { utcToLocalTime } from '~/utils/timeUtil'

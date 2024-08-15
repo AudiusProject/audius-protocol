@@ -250,7 +250,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
   }
 
   const handleSubmit = useCallback(
-    (values: FormValues) => {
+    (values: FormValues, { setSubmitting }) => {
       const {
         licenseType: ignoredLicenseType,
         trackArtwork: ignoredTrackArtwork,
@@ -328,6 +328,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
       // submit the metadata
       onSubmit(metadata)
+      setSubmitting(false)
     },
     [initialValuesProp, onSubmit]
   )

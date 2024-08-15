@@ -133,7 +133,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route(undisbursed_route, doc=False)
+@ns.route(undisbursed_route)
 class GetUndisbursedChallenges(Resource):
     @ns.doc(
         id="""Get Undisbursed Challenges""",

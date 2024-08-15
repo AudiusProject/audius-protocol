@@ -195,7 +195,7 @@ export const PayoutWalletModal = () => {
 
         const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
         const addressPubkey = new PublicKey(address)
-        const connection = sdk.services.claimableTokensClient.connection
+        const connection = sdk.services.solanaClient.connection
         const info = await connection.getAccountInfo(addressPubkey)
 
         let usdcAta: string | null = null
@@ -236,7 +236,7 @@ export const PayoutWalletModal = () => {
               const payer = await sdk.services.solanaRelay.getFeePayer()
               const res = await connection.getLatestBlockhash()
               const transaction =
-                await sdk.services.claimableTokensClient.buildTransaction({
+                await sdk.services.solanaClient.buildTransaction({
                   recentBlockhash: res.blockhash,
                   instructions: [
                     createAssociatedTokenAccountIdempotentInstruction(

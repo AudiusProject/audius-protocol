@@ -26,6 +26,7 @@ export const Text = forwardRef(
       textAlign,
       textTransform,
       ellipses,
+      maxLines,
       ...other
     } = props
 
@@ -70,6 +71,13 @@ export const Text = forwardRef(
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap'
+      }),
+      ...(maxLines && {
+        overflow: 'hidden',
+        display: '-webkit-box',
+        lineClamp: `${maxLines}`,
+        '-webkit-line-clamp': `${maxLines}`,
+        '-webkit-box-orient': 'vertical'
       })
     }
 

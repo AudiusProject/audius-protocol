@@ -483,11 +483,13 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
+    @ns.expect(pagination_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
+        args = pagination_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(decoded_id)
+        track_comments = get_track_comments(args, decoded_id)
         return success_response(track_comments)
 
 

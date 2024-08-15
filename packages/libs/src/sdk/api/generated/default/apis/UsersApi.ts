@@ -22,9 +22,11 @@ import type {
   FavoritesResponse,
   FollowersResponse,
   FollowingResponse,
+  GetChallenges,
   GetSupportedUsers,
   GetSupporters,
   RelatedArtistResponse,
+  RemixersResponse,
   Reposts,
   SubscribersResponse,
   TagsResponse,
@@ -48,12 +50,16 @@ import {
     FollowersResponseToJSON,
     FollowingResponseFromJSON,
     FollowingResponseToJSON,
+    GetChallengesFromJSON,
+    GetChallengesToJSON,
     GetSupportedUsersFromJSON,
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
     RelatedArtistResponseFromJSON,
     RelatedArtistResponseToJSON,
+    RemixersResponseFromJSON,
+    RemixersResponseToJSON,
     RepostsFromJSON,
     RepostsToJSON,
     SubscribersResponseFromJSON,
@@ -151,6 +157,14 @@ export interface GetRelatedUsersRequest {
     userId?: string;
 }
 
+export interface GetRemixersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    trackId?: string;
+}
+
 export interface GetRepostsRequest {
     id: string;
     offset?: number;
@@ -204,6 +218,11 @@ export interface GetUserRequest {
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
+}
+
+export interface GetUserChallengesRequest {
+    id: string;
+    showHistorical?: boolean;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -713,6 +732,53 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
+     */
+    async getRemixersRaw(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getRemixers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.trackId !== undefined) {
+            queryParameters['track_id'] = params.trackId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/remixers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RemixersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
+     */
+    async getRemixers(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixersResponse> {
+        const response = await this.getRemixersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the given user\'s reposts
      */
     async getRepostsRaw(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Reposts>> {
@@ -1050,6 +1116,41 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
         const response = await this.getUserByHandleRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets all challenges for the given user
+     */
+    async getUserChallengesRaw(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetChallenges>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserChallenges.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.showHistorical !== undefined) {
+            queryParameters['show_historical'] = params.showHistorical;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/challenges`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetChallengesFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets all challenges for the given user
+     */
+    async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
+        const response = await this.getUserChallengesRaw(params, initOverrides);
         return await response.value();
     }
 

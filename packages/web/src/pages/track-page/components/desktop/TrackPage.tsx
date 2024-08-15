@@ -1,10 +1,10 @@
+import { CommentSectionProvider } from '@audius/common/context'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
-import { CommentSectionProvider } from 'components/comments/CommentSectionContext'
 import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
@@ -255,6 +255,7 @@ const TrackPage = ({
               <CommentSectionProvider
                 userId={userId}
                 entityId={defaults.trackId}
+                isEntityOwner={isOwner}
               >
                 <CommentSectionDesktop />
               </CommentSectionProvider>

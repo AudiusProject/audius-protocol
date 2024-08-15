@@ -68,6 +68,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         color: variantColors[variant],
         textDecoration: 'none',
         transition: `color ${motion.hover}`,
+        cursor: 'pointer',
         pointerEvents: disabled ? 'none' : undefined,
         ':hover': hoverStyles,
         ...(isActive && { ...hoverStyles, textDecoration: 'none' }),

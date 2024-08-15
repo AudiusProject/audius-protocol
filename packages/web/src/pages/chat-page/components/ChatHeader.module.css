@@ -52,4 +52,7 @@
   .left {
     width: 96px;
   }
+  .left .options {
+    gap: var(--harmony-unit-1);
+  }
 }
