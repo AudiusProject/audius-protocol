@@ -18,7 +18,7 @@ export const userChallengeFromSDK = (
     challenge_type: input.challengeType as ChallengeType,
     cooldown_days: input.cooldownDays ?? 0,
     current_step_count: input.currentStepCount ?? 0,
-    max_steps: input.maxSteps ?? 0,
+    max_steps: input.maxSteps ?? null,
     specifier: input.specifier ?? ''
   }
 }
