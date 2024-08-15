@@ -19,6 +19,8 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+const INVALID_USER_ID = -1
+
 type RPCProcessor struct {
 	sync.Mutex
 	validator *Validator
@@ -439,8 +441,10 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 		}
 
 		for _, receiverUserId := range userIds {
-			websocketPush(userId, receiverUserId, rpcJson, timestamp)
+			websocketPush(userId, receiverUserId, rpcJson, timestamp, false)
 		}
+	} else if gjson.GetBytes(rpcJson, "method").String() == "chat.blast" {
+		websocketPush(userId, INVALID_USER_ID, rpcJson, timestamp, true)
 	}
 }
 
