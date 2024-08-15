@@ -140,7 +140,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
             onSubmit={() => {
               setShowEditInput(false)
             }}
+            commentId={commentId}
             initialValue={message}
+            isEdit
             hideAvatar
           />
         ) : (
