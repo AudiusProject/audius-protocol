@@ -3,22 +3,17 @@ import { z } from 'zod'
 
 import { HashId } from '../../../../types/HashId'
 import { Prettify } from '../../../../utils/prettify'
-import {
-  TokenName,
-  MintSchema,
-  PublicKeySchema,
-  SolanaWalletAdapter
-} from '../../types'
-import { BaseSolanaProgramConfigInternal } from '../types'
+import { TokenName, MintSchema, PublicKeySchema } from '../../types'
+import type { SolanaClient } from '../SolanaClient'
 
 export type PaymentRouterClientConfigInternal = {
   programId: PublicKey
   mints: Prettify<Partial<Record<TokenName, PublicKey>>>
-} & BaseSolanaProgramConfigInternal
+}
 
 export type PaymentRouterClientConfig =
   Partial<PaymentRouterClientConfigInternal> & {
-    solanaWalletAdapter: SolanaWalletAdapter
+    solanaClient: SolanaClient
   }
 
 export const CreateTransferInstructionSchema = z.object({
