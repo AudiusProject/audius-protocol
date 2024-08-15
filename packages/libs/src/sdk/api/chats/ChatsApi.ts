@@ -66,7 +66,6 @@ import type {
   ChatWebsocketEventData,
   RPCPayloadRequest,
   ValidatedChatPermissions,
-  ChatBlast,
   ChatCreateRPC,
   UpgradableChatBlast
 } from './serverTypes'
