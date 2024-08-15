@@ -13,7 +13,9 @@ import { chatActions } from '@audius/common/store'
 import {
   decodeHashId,
   formatTrackName,
+  isChatBlast,
   matchAudiusLinks,
+  parseBlastChatId,
   splitOnNewline
 } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
@@ -92,7 +94,9 @@ export const ChatComposer = (props: ChatComposerProps) => {
 
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
-  const isBlast = chatId === ChatBlastAudience.FOLLOWERS
+  const isBlast = isChatBlast(chatId)
+  const { audience, audienceContentType, audienceContentId } =
+    parseBlastChatId(chatId)
 
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -156,7 +160,10 @@ export const ChatComposer = (props: ChatComposerProps) => {
           dispatch(
             sendChatBlast({
               chatId,
-              message: editedValue
+              message: editedValue,
+              audience,
+              audienceContentId,
+              audienceContentType
             })
           )
         } else {

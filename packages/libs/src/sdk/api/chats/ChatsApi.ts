@@ -528,8 +528,14 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async messageBlast(params: ChatBlastMessageRequest) {
-    const { currentUserId, blastId, message, audience, audienceTrackId } =
-      await parseParams('messageBlast', ChatBlastMessageRequestSchema)(params)
+    const {
+      currentUserId,
+      blastId,
+      message,
+      audience,
+      audienceContentId,
+      audienceContentType
+    } = await parseParams('messageBlast', ChatBlastMessageRequestSchema)(params)
 
     return await this.sendRpc({
       current_user_id: currentUserId,
@@ -537,7 +543,8 @@ export class ChatsApi
       params: {
         blast_id: blastId ?? ulid(),
         audience,
-        audience_track_id: audienceTrackId,
+        audience_content_id: audienceContentId,
+        audience_content_type: audienceContentType,
         message
       }
     })
@@ -730,6 +737,7 @@ export class ChatsApi
   }
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
+    if (!c.last_message_is_plaintext) return c
     let lastMessage = ''
     try {
       const sharedSecret = await this.getChatSecret(c.chat_id)

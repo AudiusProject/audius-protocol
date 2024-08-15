@@ -454,6 +454,9 @@ const slice = createSlice({
         chatId: string
         message: string
         resendMessageId?: string
+        audience: ChatBlastAudience
+        audienceContentId?: string
+        audienceContentType?: 'track' | 'album'
       }>
     ) => {
       // triggers saga

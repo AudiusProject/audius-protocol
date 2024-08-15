@@ -1,4 +1,4 @@
-import type { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
+import { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
@@ -123,5 +123,23 @@ export const makeBlastChatId = ({
     `${audience}` +
     (audienceContentType ? `:${audienceContentType}` : '') +
     (audienceContentId ? `:${audienceContentId}` : '')
+  )
+}
+
+export const parseBlastChatId = (chatId?: string) => {
+  if (!chatId) return {}
+  const [audience, audienceContentType, audienceContentId] = chatId.split(':')
+  return {
+    audience: audience as ChatBlastAudience,
+    audienceContentType,
+    audienceContentId
+  }
+}
+
+export const isChatBlast = (chatId?: string) => {
+  if (!chatId) return false
+  const { audience } = parseBlastChatId(chatId)
+  return Object.values(ChatBlastAudience).includes(
+    audience as ChatBlastAudience
   )
 }

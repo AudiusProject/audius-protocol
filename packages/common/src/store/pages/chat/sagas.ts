@@ -629,7 +629,14 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
 }
 
 function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
-  const { chatId, message, resendMessageId } = action.payload
+  const {
+    chatId,
+    message,
+    resendMessageId,
+    audience,
+    audienceContentType,
+    audienceContentId
+  } = action.payload
   const messageIdToUse = resendMessageId ?? ulid()
   // TODO: analytics PAY-3347
   // const { track, make } = yield* getContext('analytics')
@@ -660,7 +667,9 @@ function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
     )
 
     yield* call([sdk.chats, sdk.chats.messageBlast], {
-      audience: ChatBlastAudience.FOLLOWERS,
+      audience,
+      audienceContentType,
+      audienceContentId,
       blastId: messageIdToUse,
       message
     })
