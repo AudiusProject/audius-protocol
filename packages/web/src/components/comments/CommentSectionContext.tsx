@@ -24,6 +24,7 @@ import { EntityType, Comment } from '@audius/sdk'
 // Props passed in from above
 type CommentSectionContextProps = {
   userId: Nullable<ID>
+  artistId: ID
   entityId: ID
   entityType?: EntityType.TRACK
 }
@@ -65,6 +66,7 @@ export const CommentSectionProvider = ({
   userId,
   entityId,
   entityType = EntityType.TRACK,
+  artistId,
   children
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const {
@@ -165,6 +167,7 @@ export const CommentSectionProvider = ({
       value={{
         userId,
         entityId,
+        artistId,
         entityType,
         comments,
         commentSectionLoading,

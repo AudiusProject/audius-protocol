@@ -1,5 +1,8 @@
 import { Status } from '@audius/common/models'
+import { chatSelectors } from '@audius/common/store'
 import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+
+import { useSelector } from 'utils/reducer'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
@@ -7,9 +10,11 @@ import { useCurrentCommentSection } from './CommentSectionContext'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
+const { getCanCreateChat } = chatSelectors
+
 export const CommentSectionDesktop = () => {
   const {
-    userId,
+    artistId,
     comments,
     commentSectionLoading,
     usePostComment,
@@ -19,7 +24,10 @@ export const CommentSectionDesktop = () => {
   const handlePostComment = (message: string) => {
     postComment(message, undefined)
   }
-  const commentPostAllowed = userId !== null
+
+  const { canCreateChat: commentPostAllowed } = useSelector((state) =>
+    getCanCreateChat(state, { userId: artistId })
+  )
 
   // Loading state
   if (commentSectionLoading)
@@ -50,7 +58,7 @@ export const CommentSectionDesktop = () => {
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
       <CommentHeader commentCount={comments.length} />
       <Paper w='100%' direction='column'>
-        {commentPostAllowed !== null ? (
+        {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
               <CommentForm
