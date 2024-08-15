@@ -66,12 +66,12 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	if isDiscovery {
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
-		cfg.PSQLConn = os.Getenv("audius_db_url")
+		cfg.PSQLConn = getEnvString("audius_db_url", DefaultDiscoveryPostgresConnectionString)
 	} else {
 		// isContent
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = os.Getenv("dbUrl")
+		cfg.PSQLConn = getEnvString("dbUrl", DefaultContentPostgresConnectionString)
 	}
 
 	if cfg.Environment == "" {

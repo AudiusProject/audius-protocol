@@ -8,24 +8,35 @@ import {
   useEffect
 } from 'react'
 
+import { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
-import { IconSend, IconButton } from '@audius/harmony'
-import { ChatBlastAudience } from '@audius/sdk'
+import {
+  decodeHashId,
+  formatTrackName,
+  matchAudiusLinks,
+  splitOnNewline
+} from '@audius/common/utils'
+import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
+import { Track, ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
+import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 
 import styles from './ChatComposer.module.css'
+import { ComposerTrackInfo } from './ComposeTrackInfo'
 
 const { sendMessage, sendChatBlast } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
-  sendMessagePlaceholder: 'Start a New Message'
+  sendMessagePlaceholder: 'Start typing...'
 }
 
 const ENTER_KEY = 'Enter'
+const BACKSPACE_KEY = 'Backspace'
 
 export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
@@ -40,65 +51,151 @@ type ChatSendButtonProps = { disabled: boolean }
 export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
   return (
     <IconButton
-      className={styles.sendButton}
       disabled={disabled}
       aria-label={messages.sendMessage}
       type='submit'
       size='m'
       icon={IconSend}
-      color='staticWhite'
-      iconCss={{ position: 'relative', left: -1 }}
+      height={24}
+      width={24}
+      color='active'
     />
+  )
+}
+
+const ComposerText = ({
+  color,
+  children
+}: Pick<TextProps, 'color' | 'children'>) => {
+  return (
+    <Text style={{ whiteSpace: 'pre-wrap' }} color={color}>
+      {children}
+    </Text>
   )
 }
 
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId, presetMessage, onMessageSent } = props
   const dispatch = useDispatch()
+
   const [value, setValue] = useState(presetMessage ?? '')
+  const [focused, setFocused] = useState(false)
+
+  // Maintain bidirectional maps of audius links to human readable format
+  const linkToHuman = useRef<{ [key: string]: string }>({}).current
+  const humanToTrack = useRef<{
+    [key: string]: { link: string; track: Track }
+  }>({}).current
+
+  // The track id used to render the composer preview
+  const [trackId, setTrackId] = useState<ID | null>(null)
+
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
   const isBlast = chatId === ChatBlastAudience.FOLLOWERS
 
   const handleChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value)
+    async (e: ChangeEvent<HTMLTextAreaElement>) => {
+      const originalValue = e.target.value
+      setValue(originalValue)
+
+      const { matches } = matchAudiusLinks({
+        text: originalValue,
+        hostname: env.PUBLIC_HOSTNAME
+      })
+
+      const sdk = await audiusSdk()
+      for (const match of matches) {
+        if (!(match in linkToHuman)) {
+          const { data: track } = await sdk.resolve({ url: match })
+          if (track && 'title' in track) {
+            const human = formatTrackName({ track })
+            linkToHuman[match] = human
+            humanToTrack[human] = { link: match, track }
+          }
+        } else {
+          // If we already loaded the track, delay showing by 500ms
+          // to give the user some sense of what is happening.
+          await new Promise((resolve) => setTimeout(resolve, 500))
+        }
+      }
+
+      // Sort here to make sure that we replace all content before
+      // replacing their substrings.
+      let editedValue = originalValue
+      for (const [link, human] of Object.entries(linkToHuman).sort(
+        (a, b) => b[0].length - a[0].length
+      )) {
+        editedValue = editedValue.replaceAll(link, human)
+      }
+      setValue(editedValue)
     },
-    [setValue]
+    [setValue, linkToHuman, humanToTrack]
   )
+
+  useEffect(() => {
+    for (const [human, { track }] of Object.entries(humanToTrack)) {
+      if (value.includes(human)) {
+        setTrackId(decodeHashId(track.id))
+        return
+      }
+    }
+    setTrackId(null)
+  }, [trackId, humanToTrack, value])
 
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault()
-      if (isBlast) {
-        dispatch(
-          sendChatBlast({
-            blastId: chatId,
-            audience: ChatBlastAudience.FOLLOWERS,
-            message: value
-          })
-        )
-        setValue('')
-        onMessageSent()
-      } else if (chatId && value) {
-        const message = value
-        dispatch(sendMessage({ chatId, message }))
+      if (chatId && value) {
+        // On submit, actually send audius links rather than the human readable format
+        let editedValue = value
+        for (const [human, { link }] of Object.entries(humanToTrack)) {
+          editedValue = editedValue.replaceAll(human, link)
+        }
+        if (isBlast) {
+          dispatch(
+            sendChatBlast({
+              chatId,
+              message: editedValue
+            })
+          )
+        } else {
+          dispatch(sendMessage({ chatId, message: editedValue }))
+        }
         setValue('')
         onMessageSent()
       }
     },
-    [isBlast, chatId, value, dispatch, onMessageSent]
+    [isBlast, chatId, value, setValue, humanToTrack, dispatch, onMessageSent]
   )
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Submit on enter
       if (e.key === ENTER_KEY && !e.shiftKey) {
         e.preventDefault()
         handleSubmit()
       }
+      // Delete any matched values with a single backspace
+      if (e.key === BACKSPACE_KEY) {
+        const textarea = e.target as HTMLTextAreaElement
+        const cursorPosition = textarea.selectionStart
+        const textBeforeCursor = textarea.value.slice(0, cursorPosition)
+        const matched = Object.keys(humanToTrack).find((i) =>
+          textBeforeCursor.endsWith(i)
+        )
+        if (matched) {
+          e.preventDefault()
+          setValue(
+            (value) =>
+              value.slice(0, cursorPosition - matched.length) +
+              value.slice(cursorPosition)
+          )
+        }
+      }
     },
-    [handleSubmit]
+    [handleSubmit, setValue, humanToTrack]
   )
 
   // Set focus and clear on new chat selected
@@ -108,25 +205,86 @@ export const ChatComposer = (props: ChatComposerProps) => {
     }
     if (chatId !== chatIdRef.current) {
       setValue('')
+      setTrackId(null)
       chatIdRef.current = chatId
     }
-  }, [ref, chatId, chatIdRef])
+  }, [ref, chatId, chatIdRef, setTrackId, setValue])
+
+  const renderChatDisplay = (value: string) => {
+    const regexString = Object.keys(humanToTrack).join('|')
+    const regex = regexString ? new RegExp(regexString, 'gi') : null
+    if (!regex) {
+      const text = splitOnNewline(value)
+      return text.map((t, i) => (
+        <ComposerText key={i} color='default'>
+          {t}
+        </ComposerText>
+      ))
+    }
+    const matches = value.matchAll(regex)
+    const parts = []
+    let lastIndex = 0
+    for (const match of matches) {
+      const { index } = match
+      if (index === undefined) {
+        continue
+      }
+
+      if (index > lastIndex) {
+        // Add text before the match
+        const text = splitOnNewline(value.slice(lastIndex, index))
+        parts.push(
+          ...text.map((t, i) => (
+            <ComposerText color='default' key={`${lastIndex}${i}`}>
+              {t}
+            </ComposerText>
+          ))
+        )
+      }
+      // Add the matched word with accent color
+      parts.push(
+        <Text color='accent' key={index}>
+          {match[0]}
+        </Text>
+      )
+      // Update lastIndex to the end of the current match
+      lastIndex = index + match[0].length
+    }
+
+    // Add remaining text after the last match
+    if (lastIndex < value.length) {
+      const text = splitOnNewline(value.slice(lastIndex))
+      parts.push(
+        ...text.map((t, i) => (
+          <ComposerText color='default' key={`${lastIndex}${i}`}>
+            {t}
+          </ComposerText>
+        ))
+      )
+    }
+
+    return parts
+  }
 
   return (
     <div className={cn(styles.root, props.className)}>
+      {trackId ? <ComposerTrackInfo trackId={trackId} /> : null}
       <form className={styles.form} onSubmit={handleSubmit}>
         <TextAreaV2
+          className={cn(styles.textArea, { [styles.focused]: focused })}
           ref={ref}
           rows={1}
           placeholder={messages.sendMessagePlaceholder}
           onKeyDown={handleKeyDown}
           onChange={handleChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           value={value}
           maxVisibleRows={10}
           maxLength={MAX_MESSAGE_LENGTH}
           showMaxLength={!!value && value.length > MAX_MESSAGE_LENGTH * 0.85}
+          renderDisplayElement={renderChatDisplay}
           grows
-          resize
         >
           <ChatSendButton disabled={!value} />
         </TextAreaV2>

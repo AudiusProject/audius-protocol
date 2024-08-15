@@ -303,7 +303,8 @@ const initializeApis = ({
     services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
-  const { resolve } = new ResolveApi(generatedApiClientConfig)
+  const resolveApi = new ResolveApi(generatedApiClientConfig)
+  const resolve = resolveApi.resolve.bind(resolveApi)
   const chats = new ChatsApi(
     new Configuration({
       fetchApi: fetch,

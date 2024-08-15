@@ -1,8 +1,11 @@
+import { favoriteFromSDK, transformAndCleanList } from '@audius/common/adapters'
 import type { ID, DownloadReason } from '@audius/common/models'
+import { Id } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { difference } from 'lodash'
 import moment from 'moment'
@@ -81,14 +84,15 @@ function* syncCollectionAsync(collectionId: CollectionId) {
 
 function* syncFavoritesCollection() {
   const currentUserId = yield* select(getUserId)
-  const apiClient = yield* getContext('apiClient')
   if (!currentUserId) return CollectionSyncStatus.ERROR
+  const sdk = yield* getSDK()
   const offlineTrackMetadata = yield* select(getOfflineTrackMetadata)
 
-  const latestFavoritedTracks = yield* call(
-    [apiClient, apiClient.getFavorites],
-    { currentUserId, limit: 10000 }
-  )
+  const { data } = yield* call([sdk.users, sdk.users.getFavorites], {
+    id: Id.parse(currentUserId)
+  })
+
+  const latestFavoritedTracks = transformAndCleanList(data, favoriteFromSDK)
 
   if (!latestFavoritedTracks) return CollectionSyncStatus.ERROR
 
