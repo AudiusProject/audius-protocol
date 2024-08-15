@@ -23,11 +23,12 @@ type CommentFormValues = {
 }
 
 type CommentFormProps = {
-  handleSubmit?: ({ commentMessage }: { commentMessage: string }) => void
+  onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
+  commentId?: string
   parentCommentId?: string
-  isLoading?: boolean
+  isEdit?: boolean
 }
 
 // This is annoying af to have to make a component for; but necessary so that can use the resetForm method from context
@@ -47,12 +48,17 @@ const FormResetHandler = ({
 }
 
 export const CommentForm = ({
-  handleSubmit: handleSubmitProps,
+  onSubmit,
   initialValue = '',
+  commentId,
   parentCommentId,
+  isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { userId, entityId, usePostComment } = useCurrentCommentSection()
+  const { userId, entityId, usePostComment, useEditComment } =
+    useCurrentCommentSection()
+
+  const [editComment] = useEditComment()
   const currentlyPlayingTrackId = useSelector(getTrackId)
   const [postComment, { status: postCommentStatus }] = usePostComment()
 
@@ -65,22 +71,31 @@ export const CommentForm = ({
 
     postComment(message, parentCommentId, trackTimestampS)
   }
+
+  const handleCommentEdit = (commentMessage: string) => {
+    if (commentId) {
+      editComment(commentId, commentMessage)
+    }
+  }
+
   const profileImage = useProfilePicture(
     userId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
 
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    handlePostComment(commentMessage)
+    if (isEdit) {
+      handleCommentEdit(commentMessage)
+    } else {
+      handlePostComment(commentMessage)
+    }
+    onSubmit?.({ commentMessage })
   }
   const isLoading = postCommentStatus === Status.LOADING
 
   const formInitialValues: CommentFormValues = { commentMessage: initialValue }
   return (
-    <Formik
-      initialValues={formInitialValues}
-      onSubmit={handleSubmitProps ?? handleSubmit}
-    >
+    <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
       <Form style={{ width: '100%' }}>
         <FormResetHandler isLoading={isLoading} />
         <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>

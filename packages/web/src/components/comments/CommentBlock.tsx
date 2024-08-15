@@ -43,15 +43,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const {
-    usePostComment,
-    useEditComment,
-    useDeleteComment,
-    useReactToComment,
-    usePinComment
-  } = useCurrentCommentSection()
+  const { usePostComment, useDeleteComment, useReactToComment, usePinComment } =
+    useCurrentCommentSection()
 
-  const [editComment] = useEditComment()
   const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
   const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
   const [reactToComment] = useReactToComment()
@@ -88,15 +82,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
       setIsDeleting(false)
     }
   }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
-
-  const handleCommentEdit = ({
-    commentMessage
-  }: {
-    commentMessage: string
-  }) => {
-    setShowEditInput(false)
-    editComment(commentId, commentMessage)
-  }
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -152,7 +137,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
         </Flex>
         {showEditInput ? (
           <CommentForm
-            handleSubmit={handleCommentEdit}
+            onSubmit={() => {
+              setShowEditInput(false)
+            }}
             initialValue={message}
             hideAvatar
           />
