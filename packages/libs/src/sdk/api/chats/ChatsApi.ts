@@ -892,7 +892,6 @@ export class ChatsApi
               sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
-              // TODO: need to set this for blast chats
               is_plaintext: false
             }
           })
