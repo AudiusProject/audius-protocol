@@ -425,6 +425,7 @@ function* fetchProfileAsync(action) {
     const isReachable = yield select(getIsReachable)
     if (isReachable && isResponseError(err) && err.response.status === 404) {
       yield put(pushRoute(NOT_FOUND_PAGE))
+      return
     }
     if (!isReachable) return
     throw err
