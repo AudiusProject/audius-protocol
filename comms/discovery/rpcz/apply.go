@@ -441,10 +441,10 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 		}
 
 		for _, receiverUserId := range userIds {
-			websocketPush(userId, receiverUserId, rpcJson, timestamp, false)
+			websocketPush(userId, receiverUserId, rpcJson, timestamp)
 		}
 	} else if gjson.GetBytes(rpcJson, "method").String() == "chat.blast" {
-		websocketPush(userId, INVALID_USER_ID, rpcJson, timestamp, true)
+		websocketPushAll(userId, rpcJson, timestamp)
 	}
 }
 

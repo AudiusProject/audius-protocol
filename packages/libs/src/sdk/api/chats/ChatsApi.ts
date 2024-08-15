@@ -906,7 +906,7 @@ export class ChatsApi
             }
           })
         } else if (data.rpc.method === 'chat.blast') {
-          const userId = data.metadata.userId
+          const userId = data.metadata.receiverUserId
           await this.upgradeBlasts(userId)
         }
       }
