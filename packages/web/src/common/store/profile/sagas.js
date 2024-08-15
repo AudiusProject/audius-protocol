@@ -24,7 +24,8 @@ import {
   dataURLtoFile,
   MAX_PROFILE_TOP_SUPPORTERS,
   MAX_PROFILE_SUPPORTING_TILES,
-  SUPPORTING_PAGINATION_SIZE
+  SUPPORTING_PAGINATION_SIZE,
+  isResponseError
 } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { merge } from 'lodash'
@@ -422,6 +423,9 @@ function* fetchProfileAsync(action) {
   } catch (err) {
     console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
+    if (isReachable && isResponseError(err) && err.response.status === 404) {
+      yield put(pushRoute(NOT_FOUND_PAGE))
+    }
     if (!isReachable) return
     throw err
   }

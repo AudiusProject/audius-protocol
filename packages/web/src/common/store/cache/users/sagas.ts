@@ -18,7 +18,6 @@ import {
   getSDK
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
-import { ResponseError } from '@audius/sdk'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -68,21 +67,14 @@ function* retrieveUserByHandle(handle: string, retry: boolean) {
     handle = handle[0]
   }
 
-  try {
-    const { data: users = [] } = yield* call(
-      [sdk.full.users, sdk.full.users.getUserByHandle],
-      {
-        handle,
-        userId: OptionalId.parse(userId)
-      }
-    )
-    return userMetadataListFromSDK(users)
-  } catch (e) {
-    if (((e as Error).cause as Response)?.status === 404) {
-      return []
+  const { data: users = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getUserByHandle],
+    {
+      handle,
+      userId: OptionalId.parse(userId)
     }
-    throw e
-  }
+  )
+  return userMetadataListFromSDK(users)
 }
 
 export function* fetchUserByHandle(

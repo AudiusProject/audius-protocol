@@ -244,7 +244,7 @@ function isString(value: any): value is string {
 export class ResponseError extends Error {
     override name: "ResponseError" = "ResponseError";
     constructor(public response: Response, msg?: string) {
-        super(msg, { cause: response });
+        super(msg);
     }
 }
 
