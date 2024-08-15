@@ -258,6 +258,7 @@ const TrackPage = ({
                 playTrack={() => {
                   play(currentQueueItem.uid ?? undefined)
                 }}
+                isEntityOwner={isOwner}
               >
                 <CommentSectionDesktop />
               </CommentSectionProvider>

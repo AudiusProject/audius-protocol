@@ -119,6 +119,7 @@ export type UserChat = {
   chat_id: string
   last_message: string
   last_message_at: string
+  last_message_is_plaintext: boolean
   chat_members: Array<{ user_id: string }>
   recheck_permissions: boolean
 
@@ -127,6 +128,18 @@ export type UserChat = {
   unread_message_count: number
   last_read_at: string
   cleared_history_at: string
+
+  // User chats are not blasts
+  is_blast: false
+}
+
+export type ChatBlast = {
+  chat_id: string
+  audience: ChatBlastAudience
+  content_id?: string
+  content_type?: 'track' | 'album'
+  is_blast: true
+  last_message_at: string
 }
 
 export type ChatMessageReaction = {
@@ -148,6 +161,7 @@ export type ChatMessage = {
   sender_user_id: string
   created_at: string
   message: string
+  is_plaintext: boolean
   reactions: ChatMessageReaction[]
 }
 

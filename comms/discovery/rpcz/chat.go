@@ -109,7 +109,8 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 	update chat c
 	set
 		last_message_at = latest.created_at,
-		last_message = coalesce(latest.ciphertext, '~' || latest.plaintext)
+		last_message = coalesce(latest.ciphertext, latest.plaintext),
+		last_message_is_plaintext = latest.blast_id is not null
 	from latest
 	where c.chat_id = latest.chat_id;
 	`, chatId)

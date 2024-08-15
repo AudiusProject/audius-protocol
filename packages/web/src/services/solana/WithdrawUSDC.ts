@@ -177,7 +177,7 @@ export const swapUserBankUSDCToSol = async ({
     wallet.publicKey //  owner
   )
 
-  const transaction = await claimableTokensClient.buildTransaction({
+  const transaction = await sdk.services.solanaClient.buildTransaction({
     instructions: [
       createTemporaryTokenAccountInstruction,
       secpTransferInstruction,

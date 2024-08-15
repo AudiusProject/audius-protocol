@@ -263,17 +263,19 @@ export class ChatsApi
     const decrypted = await Promise.all(
       json.data.map(async (m) => ({
         ...m,
-        message: await this.decryptString(
-          sharedSecret,
-          base64.decode(m.message)
-        ).catch((e) => {
-          this.logger.error(
-            "[audius-sdk]: Error: Couldn't decrypt chat message",
-            m,
-            e
-          )
-          return GENERIC_MESSAGE_ERROR
-        })
+        message: m.is_plaintext
+          ? m.message
+          : await this.decryptString(
+              sharedSecret,
+              base64.decode(m.message)
+            ).catch((e) => {
+              this.logger.error(
+                "[audius-sdk]: Error: Couldn't decrypt chat message",
+                m,
+                e
+              )
+              return GENERIC_MESSAGE_ERROR
+            })
       }))
     )
     return {
@@ -840,7 +842,9 @@ export class ChatsApi
               }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,
-              reactions: []
+              reactions: [],
+              // TODO: need to set this for blast chats
+              is_plaintext: false
             }
           })
         } else if (data.rpc.method === 'chat.react') {

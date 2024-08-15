@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
+import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
 import {
   Flex,
   IconTowerBroadcast,
@@ -48,16 +48,16 @@ const messages = {
 
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
-type TargetedMessageFormValues = {
+type ChatBlastFormValues = {
   target_audience: 'followers' | 'supporters' | 'purchasers' | 'remix_creators'
   purchased_track_id?: string
   remixed_track_id?: string
 }
 
-export const TargetedMessageModal = () => {
-  const { isOpen, onClose } = useTargetedMessageModal()
+export const ChatBlastModal = () => {
+  const { isOpen, onClose } = useChatBlastModal()
 
-  const initialValues: TargetedMessageFormValues = {
+  const initialValues: ChatBlastFormValues = {
     target_audience: 'followers',
     purchased_track_id: undefined,
     remixed_track_id: undefined
@@ -85,7 +85,7 @@ export const TargetedMessageModal = () => {
 
   return (
     <Modal size='small' isOpen={isOpen} onClose={onClose}>
-      <Formik<TargetedMessageFormValues>
+      <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
       >
@@ -98,7 +98,7 @@ export const TargetedMessageModal = () => {
               />
             </ModalHeader>
             <ModalContent>
-              <TargetedMessagesFields />
+              <ChatBlastsFields />
             </ModalContent>
             <ModalFooter>
               <Flex w='100%' gap='s'>
@@ -127,7 +127,7 @@ export const TargetedMessageModal = () => {
   )
 }
 
-const TargetedMessagesFields = () => {
+const ChatBlastsFields = () => {
   const [field] = useField(TARGET_AUDIENCE_FIELD)
 
   return (
