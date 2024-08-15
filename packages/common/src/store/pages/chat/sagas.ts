@@ -622,11 +622,10 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
 }
 
 function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
-  const { message } = action.payload
-  // const { blastId, audience, audienceTrackId, message } = action.payload
+  const { chatId, message, resendMessageId } = action.payload
+  const messageIdToUse = resendMessageId ?? ulid()
   // TODO: analytics PAY-3347
   // const { track, make } = yield* getContext('analytics')
-  const messageIdToUse = ulid()
   const userId = yield* select(getUserId)
   try {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -636,22 +635,22 @@ function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
       return
     }
 
-    // TODO: optimistic add
     // Optimistically add the message
-    // yield* put(
-    //   addMessage({
-    //     chatId,
-    //     message: {
-    //       sender_user_id: currentUserId,
-    //       message_id: messageIdToUse,
-    //       message,
-    //       reactions: [],
-    //       created_at: dayjs().toISOString()
-    //     },
-    //     status: Status.LOADING,
-    //     isSelfMessage: true
-    //   })
-    // )
+    yield* put(
+      addMessage({
+        chatId,
+        message: {
+          sender_user_id: currentUserId,
+          message_id: messageIdToUse,
+          message,
+          reactions: [],
+          created_at: dayjs().toISOString(),
+          is_plaintext: true
+        },
+        status: Status.LOADING,
+        isSelfMessage: true
+      })
+    )
 
     yield* call([sdk.chats, sdk.chats.messageBlast], {
       audience: ChatBlastAudience.FOLLOWERS,
@@ -661,7 +660,7 @@ function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
     // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
   } catch (e) {
     console.error('sendMessageBlastFailed', e)
-    // yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
+    yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
 
     // const reportToSentry = yield* getContext('reportToSentry')
     // reportToSentry({

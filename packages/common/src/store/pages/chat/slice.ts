@@ -451,10 +451,9 @@ const slice = createSlice({
     sendChatBlast: (
       _state,
       _action: PayloadAction<{
-        blastId: string
+        chatId: string
         message: string
-        audience: ChatBlastAudience
-        audienceTrackId?: ID
+        resendMessageId?: string
       }>
     ) => {
       // triggers saga
