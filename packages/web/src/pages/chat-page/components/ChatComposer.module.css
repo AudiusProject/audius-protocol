@@ -3,32 +3,14 @@
 }
 
 .form {
-  margin: var(--harmony-unit-4);
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-spacing-l);
+  position: relative;
 }
 
-button.sendButton {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: var(--harmony-unit-8);
-  width: var(--harmony-unit-8);
-  border-radius: var(--harmony-unit-4);
-  background-color: var(--harmony-primary);
-  transform: scale(1);
-  transition: all var(--harmony-quick);
+.textArea {
+  padding: 6px 0;
 }
 
-button.sendButton:not(:disabled):hover {
-  transform: scale(1.05);
-  background-color: var(--harmony-p-100);
-}
-
-button.sendButton:not(:disabled):active {
-  background-color: var(--harmony-p-500);
-  transform: scale(0.95);
-}
-
-button.sendButton:disabled {
-  opacity: 0.5;
+.textArea.focused {
+  border: 1px solid var(--harmony-secondary);
 }

@@ -106,7 +106,7 @@ export const ChatPage = ({
                 className={styles.messageList}
                 chatId={currentChatId}
               />
-              {canSendMessage && chat ? (
+              {chat?.is_blast || (canSendMessage && chat) ? (
                 <ChatComposer
                   chatId={currentChatId}
                   onMessageSent={handleMessageSent}

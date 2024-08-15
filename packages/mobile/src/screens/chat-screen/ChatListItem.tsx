@@ -93,7 +93,9 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
     (state) => getSingleOtherChatUser(state, chatId),
     [chatId]
   )
-  const lastMessage = useRemoveLeadingWhitespace(chat?.last_message ?? '')
+  const lastMessage = useRemoveLeadingWhitespace(
+    (!chat?.is_blast && chat?.last_message) || ''
+  )
 
   const handlePress = useCallback(() => {
     navigation.push('Chat', { chatId })

@@ -8,6 +8,7 @@ import type {
 } from '../../services'
 import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
+import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { AntiAbuseOracleAttestationError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
 import {
@@ -38,7 +39,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
     private readonly rewardManager: RewardManagerClient,
     private readonly claimableTokens: ClaimableTokensClient,
     private readonly antiAbuseOracle: AntiAbuseOracleService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
+    private readonly solanaClient: SolanaClient
   ) {
     super(config)
     this.logger = logger.createPrefixedLogger('[challenges-api]')
@@ -180,7 +182,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       })
 
     logger.debug('Confirming all attestation submissions...')
-    await this.rewardManager.confirmAllTransactions(
+    await this.solanaClient.confirmAllTransactions(
       attestationTransactionSignatures
     )
 
@@ -245,7 +247,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
         specifier,
         senderEthAddress: antiAbuseOracleEthAddress
       })
-    const submitAAOTransaction = await this.rewardManager.buildTransaction({
+    const submitAAOTransaction = await this.solanaClient.buildTransaction({
       instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
     })
     return {
@@ -319,7 +321,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
           specifier,
           senderEthAddress
         })
-      const submitTransaction = await this.rewardManager.buildTransaction({
+      const submitTransaction = await this.solanaClient.buildTransaction({
         instructions: [secpInstruction, submitInstruction]
       })
       transactions.push(submitTransaction)
@@ -353,7 +355,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
         antiAbuseOracleEthAddress,
         amount
       })
-    const transaction = await this.rewardManager.buildTransaction({
+    const transaction = await this.solanaClient.buildTransaction({
       instructions: [instruction]
     })
     // Skip preflight since we likely just submitted the attestations and

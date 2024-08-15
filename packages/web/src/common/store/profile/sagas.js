@@ -28,8 +28,10 @@ import {
   dataURLtoFile,
   MAX_PROFILE_TOP_SUPPORTERS,
   MAX_PROFILE_SUPPORTING_TILES,
-  SUPPORTING_PAGINATION_SIZE
+  SUPPORTING_PAGINATION_SIZE,
+  isResponseError
 } from '@audius/common/utils'
+import { push as pushRoute } from 'connected-react-router'
 import { merge } from 'lodash'
 import {
   all,
@@ -53,6 +55,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
+import { NOT_FOUND_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
@@ -368,6 +371,7 @@ function* fetchProfileAsync(action) {
       const isReachable = yield select(getIsReachable)
       if (isReachable) {
         yield put(profileActions.fetchProfileFailed())
+        yield put(pushRoute(NOT_FOUND_PAGE))
       }
       return
     }
@@ -433,7 +437,11 @@ function* fetchProfileAsync(action) {
       )
     }
   } catch (err) {
+    console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
+    if (isReachable && isResponseError(err) && err.response.status === 404) {
+      yield put(pushRoute(NOT_FOUND_PAGE))
+    }
     if (!isReachable) return
     throw err
   }

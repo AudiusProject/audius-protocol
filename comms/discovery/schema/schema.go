@@ -9,6 +9,18 @@ type ValidateCanChatRPCParams struct {
 	ReceiverUserIDS []string `json:"receiver_user_ids"`
 }
 
+type ChatBlastRPC struct {
+	Method ChatBlastRPCMethod `json:"method"`
+	Params ChatBlastRPCParams `json:"params"`
+}
+
+type ChatBlastRPCParams struct {
+	Audience        Audience `json:"audience"`
+	AudienceTrackID *string  `json:"audience_track_id,omitempty"`
+	BlastID         string   `json:"blast_id"`
+	Message         string   `json:"message"`
+}
+
 type ChatCreateRPC struct {
 	Method ChatCreateRPCMethod `json:"method"`
 	Params ChatCreateRPCParams `json:"params"`
@@ -114,9 +126,12 @@ type RPCPayloadRequest struct {
 
 type RPCPayloadRequestParams struct {
 	ReceiverUserIDS []string          `json:"receiver_user_ids,omitempty"`
+	Audience        *Audience         `json:"audience,omitempty"`
+	AudienceTrackID *string           `json:"audience_track_id,omitempty"`
+	BlastID         *string           `json:"blast_id,omitempty"`
+	Message         *string           `json:"message,omitempty"`
 	ChatID          *string           `json:"chat_id,omitempty"`
 	Invites         []TentacledInvite `json:"invites,omitempty"`
-	Message         *string           `json:"message,omitempty"`
 	MessageID       *string           `json:"message_id,omitempty"`
 	ParentMessageID *string           `json:"parent_message_id,omitempty"`
 	Reaction        *string           `json:"reaction"`
@@ -130,15 +145,16 @@ type TentacledInvite struct {
 }
 
 type UserChat struct {
-	ChatID             string       `json:"chat_id"`
-	ChatMembers        []ChatMember `json:"chat_members"`
-	ClearedHistoryAt   string       `json:"cleared_history_at"`
-	InviteCode         string       `json:"invite_code"`
-	LastMessage        string       `json:"last_message"`
-	LastMessageAt      string       `json:"last_message_at"`
-	LastReadAt         string       `json:"last_read_at"`
-	RecheckPermissions bool         `json:"recheck_permissions"`
-	UnreadMessageCount float64      `json:"unread_message_count"`
+	ChatID                 string       `json:"chat_id"`
+	ChatMembers            []ChatMember `json:"chat_members"`
+	ClearedHistoryAt       string       `json:"cleared_history_at"`
+	InviteCode             string       `json:"invite_code"`
+	LastMessage            string       `json:"last_message"`
+	LastMessageAt          string       `json:"last_message_at"`
+	LastMessageIsPlaintext bool         `json:"last_message_is_plaintext"`
+	LastReadAt             string       `json:"last_read_at"`
+	RecheckPermissions     bool         `json:"recheck_permissions"`
+	UnreadMessageCount     float64      `json:"unread_message_count"`
 }
 
 type ChatMember struct {
@@ -159,6 +175,7 @@ type ChatMessageNullableReaction struct {
 
 type ChatMessage struct {
 	CreatedAt    string     `json:"created_at"`
+	IsPlaintext  bool       `json:"is_plaintext"`
 	Message      string     `json:"message"`
 	MessageID    string     `json:"message_id"`
 	Reactions    []Reaction `json:"reactions"`
@@ -219,9 +236,12 @@ type RPCPayload struct {
 
 type RPCPayloadParams struct {
 	ReceiverUserIDS []string        `json:"receiver_user_ids,omitempty"`
+	Audience        *Audience       `json:"audience,omitempty"`
+	AudienceTrackID *string         `json:"audience_track_id,omitempty"`
+	BlastID         *string         `json:"blast_id,omitempty"`
+	Message         *string         `json:"message,omitempty"`
 	ChatID          *string         `json:"chat_id,omitempty"`
 	Invites         []StickyInvite  `json:"invites,omitempty"`
-	Message         *string         `json:"message,omitempty"`
 	MessageID       *string         `json:"message_id,omitempty"`
 	ParentMessageID *string         `json:"parent_message_id,omitempty"`
 	Reaction        *string         `json:"reaction"`
@@ -238,6 +258,21 @@ type ValidateCanChatRPCMethod string
 
 const (
 	MethodUserValidateCanChat ValidateCanChatRPCMethod = "user.validate_can_chat"
+)
+
+type ChatBlastRPCMethod string
+
+const (
+	MethodChatBlast ChatBlastRPCMethod = "chat.blast"
+)
+
+type Audience string
+
+const (
+	CustomerAudience Audience = "customer_audience"
+	FollowerAudience Audience = "follower_audience"
+	RemixerAudience  Audience = "remixer_audience"
+	TipperAudience   Audience = "tipper_audience"
 )
 
 type ChatCreateRPCMethod string
@@ -307,6 +342,7 @@ const (
 type RPCMethod string
 
 const (
+	RPCMethodChatBlast           RPCMethod = "chat.blast"
 	RPCMethodChatBlock           RPCMethod = "chat.block"
 	RPCMethodChatCreate          RPCMethod = "chat.create"
 	RPCMethodChatDelete          RPCMethod = "chat.delete"

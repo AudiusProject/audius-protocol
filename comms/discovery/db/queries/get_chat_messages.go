@@ -27,18 +27,25 @@ func ChatMessage(q db.Queryable, ctx context.Context, arg ChatMessageParams) (db
 
 // Get chat messages and reactions
 const chatMessagesAndReactions = `
-SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat_message.created_at, chat_message.ciphertext, COALESCE(jsonb_agg(reactions) FILTER (WHERE reactions.message_id IS NOT NULL), '[]') AS reactions
+SELECT
+	chat_message.message_id,
+	chat_message.chat_id,
+	chat_message.user_id,
+	chat_message.created_at,
+	COALESCE(chat_message.ciphertext, chat_blast.plaintext) as ciphertext,
+	chat_blast.plaintext is not null as is_plaintext,
+
+	to_json(array(select row_to_json(r) from chat_message_reactions r where chat_message.message_id = r.message_id)) AS reactions
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
-LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
+LEFT JOIN chat_blast USING (blast_id)
 WHERE chat_member.user_id = $1
 	AND chat_message.chat_id = $2
-	AND chat_message.created_at < $4 
-	AND chat_message.created_at > $5 
-	AND (chat_member.cleared_history_at IS NULL 
+	AND chat_message.created_at < $4
+	AND chat_message.created_at > $5
+	AND (chat_member.cleared_history_at IS NULL
 		OR chat_message.created_at > chat_member.cleared_history_at
 	)
-GROUP BY chat_message.message_id
 ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
 `
@@ -52,12 +59,13 @@ type ChatMessagesAndReactionsParams struct {
 }
 
 type ChatMessageAndReactionsRow struct {
-	MessageID  string    `db:"message_id" json:"message_id"`
-	ChatID     string    `db:"chat_id" json:"chat_id"`
-	UserID     int32     `db:"user_id" json:"user_id"`
-	CreatedAt  time.Time `db:"created_at" json:"created_at"`
-	Ciphertext string    `db:"ciphertext" json:"ciphertext"`
-	Reactions  Reactions `json:"reactions"`
+	MessageID   string    `db:"message_id" json:"message_id"`
+	ChatID      string    `db:"chat_id" json:"chat_id"`
+	UserID      int32     `db:"user_id" json:"user_id"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	Ciphertext  string    `db:"ciphertext" json:"ciphertext"`
+	IsPlaintext bool      `db:"is_plaintext" json:"is_plaintext"`
+	Reactions   Reactions `json:"reactions"`
 }
 
 type JSONTime struct {

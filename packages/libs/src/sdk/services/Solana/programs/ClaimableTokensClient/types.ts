@@ -3,25 +3,22 @@ import { z } from 'zod'
 
 import type { Prettify } from '../../../../utils/prettify'
 import type { AuthService } from '../../../Auth'
-import {
-  Mint,
-  MintSchema,
-  PublicKeySchema,
-  SolanaWalletAdapter
-} from '../../types'
-import type { BaseSolanaProgramConfigInternal } from '../types'
+import type { LoggerService } from '../../../Logger'
+import { TokenName, MintSchema, PublicKeySchema } from '../../types'
+import type { SolanaClient } from '../SolanaClient'
 
 export type ClaimableTokensConfigInternal = {
   /** The program ID of the ClaimableTokensProgram instance. */
   programId: PublicKey
   /** Map from token mint name to public key address. */
-  mints: Record<Mint, PublicKey>
-} & BaseSolanaProgramConfigInternal
+  mints: Record<TokenName, PublicKey>
+  logger: LoggerService
+}
 
 export type ClaimableTokensConfig = Prettify<
   Partial<Omit<ClaimableTokensConfigInternal, 'mints'>> & {
-    mints?: Prettify<Partial<Record<Mint, PublicKey>>>
-    solanaWalletAdapter: SolanaWalletAdapter
+    solanaClient: SolanaClient
+    mints?: Prettify<Partial<Record<TokenName, PublicKey>>>
   }
 >
 

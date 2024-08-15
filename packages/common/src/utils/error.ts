@@ -1,3 +1,5 @@
+import { ResponseError } from '@audius/sdk'
+
 type ErrorWithMessage = {
   name: string
   message: string
@@ -27,3 +29,6 @@ export function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message
 }
+
+export const isResponseError = (error: unknown): error is ResponseError =>
+  error instanceof Error && error.name === 'ResponseError'
