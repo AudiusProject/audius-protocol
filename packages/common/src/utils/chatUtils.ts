@@ -4,6 +4,7 @@ import { Status } from '~/models/Status'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'
+import { ChatBlastAudience } from './serverTypes'
 
 export const CHAT_BLOG_POST_URL =
   'http://support.audius.co/help/How-to-Send-Messages-on-Audius'
@@ -108,4 +109,20 @@ export const formatTrackName = ({ track }: { track: Track }) => {
  */
 export const splitOnNewline = (s: string) => {
   return s.split(/(\n)/).filter(Boolean)
+}
+
+export const makeBlastChatId = ({
+  audience,
+  audienceContentType,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentType?: 'track' | 'album'
+  audienceContentId?: string
+}) => {
+  return (
+    `${audience}` +
+    (audienceContentType ? `:${audienceContentType}` : '') +
+    (audienceContentId ? `:${audienceContentId}` : '')
+  )
 }

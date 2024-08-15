@@ -24,7 +24,12 @@ import { getAccountUser, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
-import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
+import {
+  decodeHashId,
+  encodeHashId,
+  makeBlastChatId,
+  removeNullable
+} from '../../../utils'
 import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
@@ -451,8 +456,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
 function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
   const {
     audience,
-    contentId,
-    contentType,
+    audienceContentId,
+    audienceContentType,
     presetMessage,
     replaceNavigation,
     skipNavigation
@@ -465,9 +470,11 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
-    const chatId = `${audience}${contentType ? `:${contentType}` : ''}${
-      contentId ? `:${contentId}` : ''
-    }`
+    const chatId = makeBlastChatId({
+      audience,
+      audienceContentId,
+      audienceContentType
+    })
 
     // Optimistically go to the chat. If we fail to create it, we'll toast
     if (!skipNavigation) {
