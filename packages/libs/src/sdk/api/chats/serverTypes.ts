@@ -11,8 +11,9 @@ export type ChatBlastRPC = {
   method: 'chat.blast'
   params: {
     blast_id: string
-    audience_track_id?: string // if targeting customers / remixers of a specific track
     audience: ChatBlastAudience
+    audience_content_type?: string // if targeting buyers / remixers of a specific track or album
+    audience_content_id?: string // if targeting buyers / remixers of a specific track or album
     message: string
   }
 }

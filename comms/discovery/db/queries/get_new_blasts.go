@@ -10,13 +10,14 @@ import (
 )
 
 type BlastRow struct {
-	PendingChatID   string        `db:"-" json:"pending_chat_id"`
-	BlastID         string        `db:"blast_id" json:"blast_id"`
-	FromUserID      int32         `db:"from_user_id" json:"from_user_id"`
-	Audience        string        `db:"audience" json:"audience"`
-	AudienceTrackID sql.NullInt32 `db:"audience_track_id" json:"audience_track_id"`
-	Plaintext       string        `db:"plaintext" json:"plaintext"`
-	CreatedAt       time.Time     `db:"created_at" json:"created_at"`
+	PendingChatID       string         `db:"-" json:"pending_chat_id"`
+	BlastID             string         `db:"blast_id" json:"blast_id"`
+	FromUserID          int32          `db:"from_user_id" json:"from_user_id"`
+	Audience            string         `db:"audience" json:"audience"`
+	AudienceContentType sql.NullString `db:"audience_content_type" json:"audience_content_type"`
+	AudienceContentID   sql.NullInt32  `db:"audience_content_id" json:"audience_content_id"`
+	Plaintext           string         `db:"plaintext" json:"plaintext"`
+	CreatedAt           time.Time      `db:"created_at" json:"created_at"`
 }
 
 func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams) ([]BlastRow, error) {
