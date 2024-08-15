@@ -810,7 +810,8 @@ export class ChatsApi
               message: blast.plaintext,
               sender_user_id: encodedSenderId,
               created_at: blast.created_at,
-              reactions: []
+              reactions: [],
+              is_plaintext: true
             }
           })
         }

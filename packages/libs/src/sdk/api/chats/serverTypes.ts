@@ -104,7 +104,6 @@ export type RPCPayloadRequest =
   | ChatBlockRPC
   | ChatUnblockRPC
   | ChatPermitRPC
-  | ChatBlastRPC
   | ValidateCanChatRPC
 
 export type RPCPayload = RPCPayloadRequest & {
@@ -131,15 +130,6 @@ export type UserChat = {
 
   // User chats are not blasts
   is_blast: false
-}
-
-export type ChatBlast = {
-  chat_id: string
-  audience: ChatBlastAudience
-  content_id?: string
-  content_type?: 'track' | 'album'
-  is_blast: true
-  last_message_at: string
 }
 
 export type ChatMessageReaction = {
