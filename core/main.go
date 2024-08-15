@@ -60,7 +60,7 @@ func main() {
 
 	e := echo.New()
 
-	_, err = console.NewConsole(config, e, rpc)
+	_, err = console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
 		logger.Errorf("console init error: %v", err)
 		return

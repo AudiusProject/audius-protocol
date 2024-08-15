@@ -6,23 +6,30 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console/components"
+	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
 type Console struct {
 	config *config.Config
 	rpc    *local.Local
+	db     *db.Queries
 	e      *echo.Echo
+	logger *common.Logger
 }
 
-func NewConsole(config *config.Config, e *echo.Echo, rpc *local.Local) (*Console, error) {
+func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc *local.Local, pool *pgxpool.Pool) (*Console, error) {
 	c := &Console{
-		config,
-		rpc,
-		e,
+		config: config,
+		rpc:    rpc,
+		e:      e,
+		logger: logger,
+		db:     db.New(pool),
 	}
 
 	g := e.Group("/console")

@@ -22,6 +22,7 @@ gen: $(SQL_SRCS)
 
 .PHONY: dev hotreload
 dev:
+	make gen
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
 hotreload:

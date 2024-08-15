@@ -6,19 +6,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// curl -s 'localhost:26657/broadcast_tx_commit?tx="cometbft=rocks"'
+
 func (cs *Console) txPage(c echo.Context) error {
 	ctx := c.Request().Context()
 	txhash := c.Param("tx")
 
-	rpc := cs.rpc
-	tx, err := rpc.Tx(ctx, []byte(txhash), false)
+	tx, err := cs.db.GetTx(ctx, txhash)
 	if err != nil {
+		cs.logger.Errorf("err getting tx")
 		return err
 	}
 
 	comp := components.TxPage(components.TxPageProps{
 		Hash:   txhash,
-		Height: tx.Height,
+		Height: tx.BlockID,
 	})
 	return utils.Render(c, comp)
 }
