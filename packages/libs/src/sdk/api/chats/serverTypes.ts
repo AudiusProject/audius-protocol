@@ -161,8 +161,8 @@ export type ChatInvite = {
 }
 
 export type ChatBlast = {
-  chat_id: string
-  pending_chat_id: string
+  chat_id: string // maps to blast_id on the backend
+  pending_chat_id: string // chat_id to be created when upgrading to UserChat
   from_user_id: number
   plaintext: string
   created_at: string
