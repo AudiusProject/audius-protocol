@@ -4,6 +4,7 @@ import { Status } from '~/models/Status'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'
+import { ChatBlastAudience } from './serverTypes'
 
 export const CHAT_BLOG_POST_URL =
   'http://support.audius.co/help/How-to-Send-Messages-on-Audius'
