@@ -17,7 +17,8 @@ import {
   relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -127,8 +128,7 @@ export function* fetchEthereumCollectiblesWithCollections(collectibles) {
 }
 
 export function* fetchEthereumCollectibles(user) {
-  const getSDK = yield getContext('audiusSdk')
-  const sdk = yield getSDK()
+  const sdk = yield* getSDK()
   const { data } = yield call([sdk.users, sdk.users.getConnectedWallets], {
     id: Id.parse(user.user_id)
   })
@@ -198,8 +198,7 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 }
 
 export function* fetchSolanaCollectibles(user) {
-  const getSDK = yield getContext('audiusSdk')
-  const sdk = yield getSDK()
+  const sdk = yield* getSDK()
   const nftClient = yield getContext('nftClient')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
@@ -564,8 +563,7 @@ export function* updateProfileAsync(action) {
 
 function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
-  const getSDK = yield getContext('audiusSdk')
-  const sdk = yield getSDK()
+  const sdk = yield* getSDK()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
