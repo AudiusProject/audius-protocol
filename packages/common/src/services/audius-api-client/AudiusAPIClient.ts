@@ -55,8 +55,6 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  trending: (experiment: string | null) =>
-    experiment ? `/tracks/trending/${experiment}` : '/tracks/trending',
   trendingIds: (experiment: string | null) =>
     experiment ? `/tracks/trending/ids/${experiment}` : '/tracks/trending/ids',
   trendingUnderground: (experiment: string | null) =>
@@ -131,14 +129,6 @@ type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
   currentUserId: Nullable<ID>
-}
-
-type GetTrendingArgs = {
-  timeRange?: TimeRange
-  offset?: number
-  limit?: number
-  currentUserId: Nullable<ID>
-  genre: Nullable<string>
 }
 
 type GetTrendingUndergroundArgs = {
@@ -401,38 +391,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrending({
-    timeRange = TimeRange.WEEK,
-    limit = TRENDING_LIMIT,
-    offset = 0,
-    currentUserId,
-    genre
-  }: GetTrendingArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      time: timeRange,
-      limit,
-      offset,
-      user_id: encodedCurrentUserId || undefined,
-      genre: genre || undefined
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.TRENDING_EXPERIMENT
-    )
-    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.trending(experiment),
-      params
-    )
-
-    if (!trendingResponse) return []
-
-    const adapted = trendingResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getTrendingUnderground({
