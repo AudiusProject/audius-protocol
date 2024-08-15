@@ -153,7 +153,7 @@ const commentsApi = createApi({
           entityId: decodedId
         }
         const sdk = await audiusSdk()
-        await sdk.comments.deleteComment(commentData)
+        return await sdk.comments.deleteComment(commentData)
       },
       options: { type: 'mutation' },
       onQuerySuccess(_res, { id, entityId }, { dispatch }) {
@@ -163,9 +163,10 @@ const commentsApi = createApi({
             const indexToRemove = prevState?.findIndex(
               (comment: Comment) => comment.id === id
             )
-            if (indexToRemove && indexToRemove >= 0) {
+            if (indexToRemove !== undefined && indexToRemove >= 0) {
               prevState?.splice(indexToRemove, 1)
             }
+            return prevState
           },
           dispatch
         )
