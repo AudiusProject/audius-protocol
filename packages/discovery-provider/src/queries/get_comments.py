@@ -32,7 +32,7 @@ def get_replies(session, parent_comment_id):
             "id": encode_int_id(reply.comment_id),
             "userId": reply.user_id,  # Assuming user_id is an attribute of Comment
             "message": reply.text,
-            "track_timestamp_ms": reply.track_timestamp_ms,
+            "track_timestamp_s": reply.track_timestamp_s,
             "react_count": (
                 reply.react_count if hasattr(reply, "react_count") else 0
             ),  # Adjust as needed
@@ -91,7 +91,7 @@ def get_track_comments(args, track_id):
                 "user_id": track_comment.user_id,
                 "message": track_comment.text,
                 "is_pinned": track_comment.is_pinned,
-                "track_timestamp_ms": track_comment.track_timestamp_ms,
+                "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": get_reaction_count(session, track_comment.comment_id),
                 "replies": get_replies(session, track_comment.comment_id),
                 "created_at": str(track_comment.created_at),

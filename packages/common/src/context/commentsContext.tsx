@@ -42,7 +42,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (
       message: string,
       parentCommentId?: string,
-      trackTimestampMs?: number
+      trackTimestampS?: number
     ) => void,
     number
   >
@@ -101,7 +101,7 @@ export const CommentSectionProvider = ({
     const wrappedHandler = async (
       message: string,
       parentCommentId?: string,
-      trackTimestampMs?: number
+      trackTimestampS?: number
     ) => {
       if (userId) {
         postComment({
@@ -111,7 +111,7 @@ export const CommentSectionProvider = ({
           body: message,
           // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
           parentCommentId,
-          trackTimestampMs
+          trackTimestampS
         })
       }
     }

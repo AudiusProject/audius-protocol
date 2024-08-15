@@ -58,12 +58,12 @@ export const CommentForm = ({
 
   const handlePostComment = (message: string) => {
     const trackPosition = audioPlayer
-      ? Math.floor(audioPlayer.getPosition()) * 1000
+      ? Math.floor(audioPlayer.getPosition())
       : undefined
-    const trackTimestampMs =
+    const trackTimestampS =
       currentlyPlayingTrackId === entityId ? trackPosition : undefined
 
-    postComment(message, parentCommentId, trackTimestampMs)
+    postComment(message, parentCommentId, trackTimestampS)
   }
   const profileImage = useProfilePicture(
     userId ?? null,

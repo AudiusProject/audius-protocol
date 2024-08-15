@@ -22,7 +22,7 @@ def create_comment(params: ManageEntityParameters):
         text=params.metadata["body"],
         entity_type=params.metadata["entity_type"],
         entity_id=params.metadata["entity_id"],
-        track_timestamp_ms=params.metadata["track_timestamp_ms"],
+        track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,

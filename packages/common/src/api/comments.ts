@@ -87,7 +87,7 @@ const commentsApi = createApi({
       options: { type: 'mutation' },
       async onQuerySuccess(
         { data: newId },
-        { entityId, body, userId, trackTimestampMs, parentCommentId },
+        { entityId, body, userId, trackTimestampS, parentCommentId },
         { dispatch }
       ) {
         const newComment: Comment = {
@@ -95,7 +95,7 @@ const commentsApi = createApi({
           userId,
           message: body,
           isPinned: false,
-          trackTimestampMs,
+          trackTimestampS,
           reactCount: 0,
           replies: undefined,
           createdAt: new Date().toISOString(),

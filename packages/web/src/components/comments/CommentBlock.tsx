@@ -36,7 +36,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
     isPinned,
     message,
     reactCount = 0,
-    trackTimestampMs,
+    trackTimestampS,
     id: commentId,
     createdAt,
     userId: userIdStr
@@ -139,13 +139,13 @@ export const CommentBlock = (props: CommentBlockProps) => {
           <Flex gap='xs' alignItems='center' h='100%'>
             {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
             <Timestamp time={createdAtDate} />
-            {trackTimestampMs !== undefined ? (
+            {trackTimestampS !== undefined ? (
               <>
                 <Text color='subdued' size='xs'>
                   •
                 </Text>
 
-                <TimestampLink timestampMS={trackTimestampMs} />
+                <TimestampLink trackTimestampS={trackTimestampS} />
               </>
             ) : null}
           </Flex>
