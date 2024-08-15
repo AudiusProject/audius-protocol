@@ -253,7 +253,7 @@ const TrackPage = ({
           {isCommentingEnabled ? (
             <Flex flex='3'>
               <CommentSectionProvider
-                userId={userId}
+                currentUserId={userId}
                 entityId={defaults.trackId}
                 isEntityOwner={isOwner}
               >

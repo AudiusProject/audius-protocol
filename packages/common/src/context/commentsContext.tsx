@@ -21,7 +21,7 @@ import {
 
 // Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
-  userId: Nullable<ID>
+  currentUserId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
   isEntityOwner: boolean
@@ -62,7 +62,7 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
-  userId,
+  currentUserId,
   entityId,
   isEntityOwner,
   entityType = EntityType.TRACK,
@@ -96,9 +96,9 @@ export const CommentSectionProvider = ({
       message: string,
       parentCommentId?: string
     ) => {
-      if (userId) {
+      if (currentUserId) {
         postComment({
-          userId,
+          userId: currentUserId,
           entityId,
           entityType,
           body: message,
@@ -113,8 +113,8 @@ export const CommentSectionProvider = ({
   const useReactToComment: CommentSectionContextType['useReactToComment'] =
     () => {
       const wrappedHandler = async (commentId: string, isLiked: boolean) => {
-        if (userId) {
-          reactToComment({ id: commentId, userId, isLiked })
+        if (currentUserId) {
+          reactToComment({ id: commentId, userId: currentUserId, isLiked })
         }
         // TODO: trigger auth flow here
       }
@@ -122,8 +122,8 @@ export const CommentSectionProvider = ({
     }
   const useEditComment: CommentSectionContextType['useEditComment'] = () => {
     const wrappedHandler = async (commentId: string, newMessage: string) => {
-      if (userId) {
-        editComment({ id: commentId, newMessage, userId })
+      if (currentUserId) {
+        editComment({ id: commentId, newMessage, userId: currentUserId })
       }
     }
     return [wrappedHandler, editCommentResponse]
@@ -132,8 +132,8 @@ export const CommentSectionProvider = ({
   const useDeleteComment: CommentSectionContextType['useDeleteComment'] =
     () => {
       const wrappedHandler = async (commentId: string) => {
-        if (userId) {
-          deleteComment({ id: commentId, userId, entityId })
+        if (currentUserId) {
+          deleteComment({ id: commentId, userId: currentUserId, entityId })
         }
       }
       return [wrappedHandler, deleteCommentResponse]
@@ -141,8 +141,8 @@ export const CommentSectionProvider = ({
 
   const usePinComment: CommentSectionContextType['usePinComment'] = () => {
     const wrappedHandler = (commentId: string) => {
-      if (userId) {
-        pinComment({ id: commentId, userId })
+      if (currentUserId) {
+        pinComment({ id: commentId, userId: currentUserId })
       }
     }
     return [wrappedHandler, pinCommentResponse]
@@ -167,7 +167,7 @@ export const CommentSectionProvider = ({
   return (
     <CommentSectionContext.Provider
       value={{
-        userId,
+        currentUserId,
         entityId,
         entityType,
         comments,
