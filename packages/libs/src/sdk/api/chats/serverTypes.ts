@@ -234,7 +234,8 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
-    userId: string
+    senderUserId: string
+    receiverUserId: string
     timestamp: string
   }
 }

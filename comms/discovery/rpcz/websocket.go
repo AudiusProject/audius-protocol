@@ -57,32 +57,52 @@ func removeWebsocket(userId int32, toRemove net.Conn) {
 	websockets[userId] = keep
 }
 
-func websocketPush(userId int32, payload []byte) {
+func websocketPush(senderUserId int32, receiverUserId int32, rpcJson json.RawMessage, timestamp time.Time) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// filter out expired messages and append new one
-	recent2 := []*recentMessage{}
-	for _, r := range recentMessages {
-		if time.Since(r.sentAt) < time.Second*10 {
-			recent2 = append(recent2, r)
-		}
-	}
-	recent2 = append(recent2, &recentMessage{
-		userId:  userId,
-		sentAt:  time.Now(),
-		payload: payload,
-	})
-	recentMessages = recent2
+	for _, s := range websockets[receiverUserId] {
+		encodedSenderUserId, _ := misc.EncodeHashId(int(senderUserId))
+		encodedReceiverUserId, _ := misc.EncodeHashId(int(receiverUserId))
 
-	for _, s := range websockets[userId] {
-		err := wsutil.WriteServerMessage(s, ws.OpText, payload)
+		// this struct should match ChatWebsocketEventData
+		// but we create a matching anon struct here
+		// so we can simply pass thru the RPC as a json.RawMessage
+		// which is simpler than satisfying the quicktype generated schema.RPC struct
+		data := struct {
+			RPC      json.RawMessage `json:"rpc"`
+			Metadata schema.Metadata `json:"metadata"`
+		}{
+			rpcJson,
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), SenderUserID: encodedSenderUserId, ReceiverUserID: encodedReceiverUserId},
+		}
+
+		payload, err := json.Marshal(data)
+		if err != nil {
+			logger.Warn("invalid websocket json " + err.Error())
+			return
+		}
+		err = wsutil.WriteServerMessage(s, ws.OpText, payload)
 		if err != nil {
 			logger.Info("websocket push failed: " + err.Error())
-			removeWebsocket(userId, s)
+			removeWebsocket(receiverUserId, s)
 		} else {
-			logger.Debug("websocket push", "userId", userId, "payload", string(payload))
+			logger.Debug("websocket push", "userId", receiverUserId, "payload", string(payload))
 		}
+
+		// filter out expired messages and append new one
+		recent2 := []*recentMessage{}
+		for _, r := range recentMessages {
+			if time.Since(r.sentAt) < time.Second*10 {
+				recent2 = append(recent2, r)
+			}
+		}
+		recent2 = append(recent2, &recentMessage{
+			userId:  receiverUserId,
+			sentAt:  time.Now(),
+			payload: payload,
+		})
+		recentMessages = recent2
 	}
 
 }
