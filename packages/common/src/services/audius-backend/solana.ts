@@ -786,7 +786,7 @@ export const recoverUsdcFromRootWallet = async ({
     instructions: [memoInstruction, transferInstruction, routeInstruction]
   })
   transaction.sign([sender])
-  const signature = await sdk.services.claimableTokensClient.sendTransaction(
+  const signature = await sdk.services.solanaClient.sendTransaction(
     transaction,
     { skipPreflight: true }
   )
