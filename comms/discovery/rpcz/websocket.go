@@ -12,7 +12,7 @@ import (
 
 var (
 	mu             sync.Mutex
-	websockets     = []userWebsocket{}
+	websockets     = make(map[int32][]net.Conn)
 	recentMessages = []*recentMessage{}
 	logger         = slog.Default()
 )
@@ -23,13 +23,7 @@ type recentMessage struct {
 	payload []byte
 }
 
-type userWebsocket struct {
-	userId int32
-	conn   net.Conn
-}
-
 func RegisterWebsocket(userId int32, conn net.Conn) {
-
 	var pushErr error
 	for _, r := range recentMessages {
 		if time.Since(r.sentAt) < time.Second*10 && r.userId == userId {
@@ -43,24 +37,21 @@ func RegisterWebsocket(userId int32, conn net.Conn) {
 
 	if pushErr == nil {
 		mu.Lock()
-		websockets = append(websockets, userWebsocket{
-			userId,
-			conn,
-		})
+		websockets[userId] = append(websockets[userId], conn)
 		mu.Unlock()
 	}
 }
 
-func removeWebsocket(toRemove userWebsocket) {
-	keep := make([]userWebsocket, 0, len(websockets))
-	for _, s := range websockets {
+func removeWebsocket(userId int32, toRemove net.Conn) {
+	keep := make([]net.Conn, 0, len(websockets[userId]))
+	for _, s := range websockets[userId] {
 		if s == toRemove {
-			s.conn.Close()
+			s.Close()
 		} else {
 			keep = append(keep, s)
 		}
 	}
-	websockets = keep
+	websockets[userId] = keep
 }
 
 func websocketPush(userId int32, payload []byte) {
@@ -81,15 +72,11 @@ func websocketPush(userId int32, payload []byte) {
 	})
 	recentMessages = recent2
 
-	for _, s := range websockets {
-		if s.userId != userId {
-			continue
-		}
-
-		err := wsutil.WriteServerMessage(s.conn, ws.OpText, payload)
+	for _, s := range websockets[userId] {
+		err := wsutil.WriteServerMessage(s, ws.OpText, payload)
 		if err != nil {
 			logger.Info("websocket push failed: " + err.Error())
-			removeWebsocket(s)
+			removeWebsocket(userId, s)
 		} else {
 			logger.Debug("websocket push", "userId", userId, "payload", string(payload))
 		}
