@@ -3,7 +3,6 @@ import {
   getUserChallenges,
   getUserChallengesOverrides
 } from '~/store/pages/audio-rewards/selectors'
-import { UndisbursedUserChallenge } from '~/store/pages/audio-rewards/types'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import { removeNullable } from '~/utils/typeUtils'
 
@@ -11,6 +10,7 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   SpecifierWithAmount,
+  UndisbursedUserChallenge,
   UserChallenge,
   UserChallengeState
 } from '../../../models/AudioRewards'

@@ -1,5 +1,8 @@
-type ChallengeType = 'boolean' | 'numeric' | 'aggregate' | 'trending'
+export type ChallengeType = 'boolean' | 'numeric' | 'aggregate' | 'trending'
 
+// TODO: Fix the types here so they are consistent with API
+// and update SDK adapters to match.
+// https://linear.app/audius/issue/PAY-3350/separate-types-used-for-challenges-and-undisbursed-challenges
 export type UserChallenge = {
   challenge_id: ChallengeRewardID
   challenge_type: ChallengeType
@@ -13,6 +16,18 @@ export type UserChallenge = {
   amount: number
   disbursed_amount: number
   cooldown_days: number
+}
+
+export type UndisbursedUserChallenge = Pick<
+  UserChallenge,
+  'challenge_id' | 'amount' | 'specifier' | 'user_id'
+> & {
+  completed_blocknumber: number
+  handle: string
+  wallet: string
+  created_at: string
+  completed_at: string
+  cooldown_days?: number
 }
 
 export type Specifier = string
