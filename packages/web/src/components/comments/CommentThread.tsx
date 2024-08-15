@@ -16,7 +16,6 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     id: commentId
   })
   const { handleLoadMoreReplies } = useCurrentCommentSection()
-  // TODO: this feels sub-optimal? Maybe fine
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})

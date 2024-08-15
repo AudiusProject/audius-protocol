@@ -28,15 +28,17 @@ const CommentSectionHeader = () => {
     openDrawer({ userId, entityId, isEntityOwner })
   }
 
+  const isShowingComments = !isLoading && comments?.length
+
   return (
     <Flex direction='row' w='100%' justifyContent='space-between'>
       <Text variant='title' size='l'>
         Comments
-        {!isLoading && comments?.length ? (
+        {isShowingComments ? (
           <Text color='subdued'>&nbsp;({comments.length})</Text>
         ) : null}
       </Text>
-      {!isLoading ? (
+      {isShowingComments ? (
         <TouchableOpacity onPress={handlePressViewAll}>
           <Flex direction='row' alignItems='center' gap='xs'>
             <Text variant='title' color='subdued'>

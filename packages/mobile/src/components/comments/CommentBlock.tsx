@@ -12,12 +12,10 @@ import {
   IconHeart,
   IconPencil,
   Text,
-  TextLink
+  TextLink,
+  Timestamp
 } from '@audius/harmony-native'
-import {
-  formatCommentDate,
-  formatCommentTrackTimestamp
-} from 'app/utils/comments'
+import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
@@ -101,13 +99,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
             {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
           </Flex>
         ) : null}
-        {/* TODO: this will be a user link but wont work with mock data */}
         <Flex direction='row' gap='s' alignItems='center'>
           <UserLink userId={userId} />
-          {/* TODO: figure out date from created_at */}
           <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-            {/* TODO: do we want this comment date changing on rerender? Or is that weird */}
-            <Text size='s'> {formatCommentDate(createdAt)} </Text>
+            <Timestamp time={new Date(createdAt)} />
             {timestampS !== undefined ? (
               <>
                 <Text color='subdued' size='xs'>
@@ -151,8 +146,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
               >
                 Reply
               </TextLink>
-              {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
-              {/* TODO: this needs to convert to a text input to work */}
               {isOwner ? (
                 <IconButton
                   aria-label='edit comment'
