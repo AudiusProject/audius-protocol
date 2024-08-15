@@ -12,7 +12,7 @@ types-pytz==2021.1.2
 types-freezegun==1.1.10
 types-Flask==1.1.6
 
-web3==6.6.1
+web3==6.20.2
 hexbytes==0.3.1
 Flask==1.0.4
 # pin itsdangerous and markupsafe https://github.com/pallets/flask/issues/4455
