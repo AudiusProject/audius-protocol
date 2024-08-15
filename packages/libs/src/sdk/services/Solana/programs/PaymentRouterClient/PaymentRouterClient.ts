@@ -19,11 +19,12 @@ import {
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
+import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
 import { MEMO_V2_PROGRAM_ID } from '../../constants'
-import { Mint } from '../../types'
-import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
+import { TokenName } from '../../types'
+import type { SolanaClient } from '../SolanaClient'
 
 import { getDefaultPaymentRouterClientConfig } from './getDefaultConfig'
 import {
@@ -40,23 +41,24 @@ import {
   PaymentRouterClientConfig
 } from './types'
 
-export class PaymentRouterClient extends BaseSolanaProgramClient {
+export class PaymentRouterClient {
+  private readonly client: SolanaClient
   private readonly programId: PublicKey
 
   /** The intermediate account where funds are sent to and routed from. */
   private readonly programAccount: PublicKey
   private readonly programAccountBumpSeed: number
 
-  private readonly mints: Prettify<Partial<Record<Mint, PublicKey>>>
+  private readonly mints: Prettify<Partial<Record<TokenName, PublicKey>>>
 
-  private existingTokenAccounts: Prettify<Partial<Record<Mint, Account>>>
+  private existingTokenAccounts: Prettify<Partial<Record<TokenName, Account>>>
 
   constructor(config: PaymentRouterClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       getDefaultPaymentRouterClientConfig(productionConfig)
     )
-    super(configWithDefaults, config.solanaWalletAdapter)
+    this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     const [pda, bump] = PublicKey.findProgramAddressSync(
       [new TextEncoder().encode('payment_router')],
@@ -75,12 +77,9 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       'crateTransferInstruction',
       CreateTransferInstructionSchema
     )(params)
-    const mint = this.mints[args.mint]
-    if (!mint) {
-      throw Error('Mint not configured')
-    }
+    const { mint, token } = parseMintToken(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
-      mint: args.mint
+      mint
     })
     const sourceWallet = args.sourceWallet
     const sourceTokenAccount = getAssociatedTokenAddressSync(
@@ -88,7 +87,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       sourceWallet,
       false
     )
-    const amount = mintFixedDecimalMap[args.mint](args.total)
+    const amount = mintFixedDecimalMap[token](args.total)
     return createTransferCheckedInstruction(
       sourceTokenAccount,
       mint,
@@ -104,8 +103,9 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       'createRouteInstruction',
       CreateRouteInstructionSchema
     )(params)
+    const { mint, token } = parseMintToken(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
-      mint: args.mint
+      mint
     })
     const recipients: PublicKey[] = []
     const amounts: bigint[] = []
@@ -113,7 +113,7 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       recipients.push(split.wallet)
       amounts.push(split.amount)
     }
-    const totalAmount = mintFixedDecimalMap[args.mint](args.total).value
+    const totalAmount = mintFixedDecimalMap[token](args.total).value
     return PaymentRouterProgram.createRouteInstruction({
       sender: programTokenAccount.address,
       senderOwner: this.programAccount,
@@ -196,16 +196,14 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
       GetOrCreateProgramTokenAccountSchema
     )(params)
 
+    const { mint, token } = parseMintToken(args.mint, this.mints)
+
     // Check for cached account
-    const existingTokenAccount = this.existingTokenAccounts[args.mint]
+    const existingTokenAccount = this.existingTokenAccounts[token]
     if (existingTokenAccount) {
       return existingTokenAccount
     }
 
-    const mint = this.mints[args.mint]
-    if (!mint) {
-      throw new Error(`Mint ${args.mint} not configured`)
-    }
     const associatedTokenAdddress = getAssociatedTokenAddressSync(
       mint,
       this.programAccount,
@@ -214,28 +212,31 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
 
     let account: Account | null = null
     try {
-      account = await getAccount(this.connection, associatedTokenAdddress)
-      this.existingTokenAccounts[args.mint] = account
+      account = await getAccount(
+        this.client.connection,
+        associatedTokenAdddress
+      )
+      this.existingTokenAccounts[token] = account
     } catch (error: unknown) {
       if (error instanceof TokenAccountNotFoundError) {
         // As this isn't atomic, it's possible others can create associated accounts meanwhile.
         try {
           const instruction = createAssociatedTokenAccountIdempotentInstruction(
-            await this.getFeePayer(),
+            await this.client.getFeePayer(),
             associatedTokenAdddress,
             this.programAccount,
             mint
           )
           const { lastValidBlockHeight, blockhash } =
-            await this.connection.getLatestBlockhash()
+            await this.client.connection.getLatestBlockhash()
           const msg = new TransactionMessage({
-            payerKey: await this.getFeePayer(),
+            payerKey: await this.client.getFeePayer(),
             recentBlockhash: blockhash,
             instructions: [instruction]
           })
           const transaction = new VersionedTransaction(msg.compileToV0Message())
-          const signature = await this.sendTransaction(transaction)
-          await this.connection.confirmTransaction(
+          const signature = await this.client.sendTransaction(transaction)
+          await this.client.connection.confirmTransaction(
             { signature, blockhash, lastValidBlockHeight },
             'finalized'
           )
@@ -245,7 +246,10 @@ export class PaymentRouterClient extends BaseSolanaProgramClient {
         }
 
         // Now this should always succeed
-        account = await getAccount(this.connection, associatedTokenAdddress)
+        account = await getAccount(
+          this.client.connection,
+          associatedTokenAdddress
+        )
       } else {
         throw error
       }

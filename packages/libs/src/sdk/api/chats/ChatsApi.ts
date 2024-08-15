@@ -20,6 +20,8 @@ import {
 } from '../generated/default'
 
 import {
+  ChatBlastMessageRequest,
+  ChatBlastMessageRequestSchema,
   ChatBlockRequest,
   ChatBlockRequestSchema,
   ChatCreateRequest,
@@ -491,6 +493,31 @@ export class ChatsApi
   }
 
   /**
+   * Sends a blast message to a set of users
+   * @param params.message the message
+   * @param params.blastId the id of the message
+   * @param params.audience the audience to send the message to
+   * @param params.audienceTrackId for targeting remixers/purchasers of a specific track
+   * @param params.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
+  public async messageBlast(params: ChatBlastMessageRequest) {
+    const { currentUserId, blastId, message, audience, audienceTrackId } =
+      await parseParams('messageBlast', ChatBlastMessageRequestSchema)(params)
+
+    return await this.sendRpc({
+      current_user_id: currentUserId,
+      method: 'chat.blast',
+      params: {
+        blast_id: blastId ?? ulid(),
+        audience,
+        audience_track_id: audienceTrackId,
+        message
+      }
+    })
+  }
+
+  /**
    * Reacts to a message
    * @param params.reaction the reaction
    * @param params.chatId the chat to send a reaction in
@@ -813,7 +840,9 @@ export class ChatsApi
               }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,
-              reactions: []
+              reactions: [],
+              // TODO: need to set this for blast chats
+              is_plaintext: false
             }
           })
         } else if (data.rpc.method === 'chat.react') {

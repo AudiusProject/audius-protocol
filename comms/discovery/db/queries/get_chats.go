@@ -10,14 +10,15 @@ import (
 )
 
 type UserChatRow struct {
-	ChatID           string         `db:"chat_id" json:"chat_id"`
-	CreatedAt        time.Time      `db:"created_at" json:"created_at"`
-	LastMessage      sql.NullString `db:"last_message" json:"last_message"`
-	LastMessageAt    time.Time      `db:"last_message_at" json:"last_message_at"`
-	InviteCode       string         `db:"invite_code" json:"invite_code"`
-	LastActiveAt     sql.NullTime   `db:"last_active_at" json:"last_active_at"`
-	UnreadCount      int32          `db:"unread_count" json:"unread_count"`
-	ClearedHistoryAt sql.NullTime   `db:"cleared_history_at" json:"cleared_history_at"`
+	ChatID                 string         `db:"chat_id" json:"chat_id"`
+	CreatedAt              time.Time      `db:"created_at" json:"created_at"`
+	LastMessage            sql.NullString `db:"last_message" json:"last_message"`
+	LastMessageAt          time.Time      `db:"last_message_at" json:"last_message_at"`
+	LastMessageIsPlaintext bool           `db:"last_message_is_plaintext" json:"last_message_is_plaintext"`
+	InviteCode             string         `db:"invite_code" json:"invite_code"`
+	LastActiveAt           sql.NullTime   `db:"last_active_at" json:"last_active_at"`
+	UnreadCount            int32          `db:"unread_count" json:"unread_count"`
+	ClearedHistoryAt       sql.NullTime   `db:"cleared_history_at" json:"cleared_history_at"`
 }
 
 // Get a chat's last_message_at
@@ -37,9 +38,10 @@ func ChatLastMessageAt(q db.Queryable, ctx context.Context, chatId string) (time
 const userChat = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
-	chat.last_message,
+  chat.created_at,
+  chat.last_message,
   chat.last_message_at,
+  chat.last_message_is_plaintext,
   chat_member.invite_code,
   chat_member.last_active_at,
   chat_member.unread_count,
@@ -59,9 +61,10 @@ func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (Us
 const userChats = `
 SELECT
   chat.chat_id,
-  chat.created_at, 
-	chat.last_message,
+  chat.created_at,
+  chat.last_message,
   chat.last_message_at,
+  chat.last_message_is_plaintext,
   chat_member.invite_code,
   chat_member.last_active_at,
   chat_member.unread_count,

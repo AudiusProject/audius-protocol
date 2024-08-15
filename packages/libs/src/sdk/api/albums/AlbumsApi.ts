@@ -12,6 +12,7 @@ import type {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
+import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { parseParams } from '../../utils/parseParams'
 import { prepareSplits } from '../../utils/preparePaymentSplits'
 import {
@@ -55,7 +56,8 @@ export class AlbumsApi {
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
     private paymentRouterClient: PaymentRouterClient,
-    private solanaRelay: SolanaRelayService
+    private solanaRelay: SolanaRelayService,
+    private solanaClient: SolanaClient
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
@@ -349,7 +351,7 @@ export class AlbumsApi {
           total,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+      const transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -387,7 +389,7 @@ export class AlbumsApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+      const transaction = await this.solanaClient.buildTransaction({
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -416,9 +418,9 @@ export class AlbumsApi {
       }
       return await params.walletAdapter.sendTransaction(
         transaction,
-        this.paymentRouterClient.connection
+        this.solanaClient.connection
       )
     }
-    return this.paymentRouterClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction)
   }
 }

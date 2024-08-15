@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import {
   setLinkedSocialOnFirstPage,
   setValueField,
@@ -56,6 +58,10 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   }, [queryContext])
 
   useTrackScreen('CreateEmail')
+
+  const { isEnabled: isSocialSignupEnabled } = useFeatureFlag(
+    FeatureFlags.SOCIAL_SIGNUP
+  )
 
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
@@ -113,18 +119,22 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                 label={createEmailPageMessages.emailLabel}
                 onChangeScreen={onChangeScreen}
               />
-              <Divider>
-                <Text variant='body' size='s' color='subdued'>
-                  {createEmailPageMessages.socialsDividerText}
-                </Text>
-              </Divider>
-              <SocialMediaSignUpButtons
-                onError={handleErrorSocialMediaLogin}
-                onStart={handleStartSocialMediaLogin}
-                onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
-                onClose={handleCloseSocialMediaLogin}
-                page='create-email'
-              />
+              {isSocialSignupEnabled ? (
+                <>
+                  <Divider>
+                    <Text variant='body' size='s' color='subdued'>
+                      {createEmailPageMessages.socialsDividerText}
+                    </Text>
+                  </Divider>
+                  <SocialMediaSignUpButtons
+                    onError={handleErrorSocialMediaLogin}
+                    onStart={handleStartSocialMediaLogin}
+                    onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
+                    onClose={handleCloseSocialMediaLogin}
+                    page='create-email'
+                  />
+                </>
+              ) : null}
             </Flex>
             <Flex direction='column' gap='l'>
               <Button

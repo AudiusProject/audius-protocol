@@ -375,7 +375,7 @@ function* claimSingleChallengeRewardAsync(
       } else {
         yield* call(reportToSentry, {
           error,
-          name: `ClaimRewards: ${error.name}`,
+          name: 'ClaimRewards',
           additionalInfo: {
             challengeId,
             specifier: res.specifier,

@@ -50,7 +50,7 @@ export const initialState: BasicModalsState = {
   AiAttributionSettings: { isOpen: false },
   PremiumContentPurchaseModal: { isOpen: false },
   CreateChatModal: { isOpen: false },
-  TargetedMessageModal: { isOpen: false },
+  ChatBlastModal: { isOpen: false },
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
