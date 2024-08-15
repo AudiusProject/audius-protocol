@@ -46,6 +46,9 @@ func RegisterWebsocket(userId int32, conn net.Conn) {
 }
 
 func removeWebsocket(userId int32, toRemove net.Conn) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	keep := make([]net.Conn, 0, len(websockets[userId]))
 	for _, s := range websockets[userId] {
 		if s == toRemove {
