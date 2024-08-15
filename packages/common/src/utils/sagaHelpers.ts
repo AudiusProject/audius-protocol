@@ -161,7 +161,6 @@ export function* sagaWithErrorHandler(saga: () => Generator<any, void, any>) {
     } catch (e) {
       yield* put(toast({ content: messages.somethingWrong }))
       console.error(`Saga ${saga.name} failed, restarting...`, e)
-      yield* call(waitForAccount)
 
       // Force typing of reportToSentry. We're not able to pull it in
       // from getContext in ~common as that would require the store.
