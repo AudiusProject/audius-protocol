@@ -10,10 +10,12 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -56,7 +58,19 @@ func main() {
 		return
 	}
 
+	e := echo.New()
+
+	_, err = console.NewConsole(config, e, rpc)
+	if err != nil {
+		logger.Errorf("console init error: %v", err)
+		return
+	}
+
 	eg, ctx := errgroup.WithContext(context.Background())
+
+	eg.Go(func() error {
+		return e.Start("0.0.0.0:26659")
+	})
 
 	eg.Go(func() error {
 		nodeStarted := make(chan struct{})
