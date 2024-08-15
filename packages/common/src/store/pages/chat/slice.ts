@@ -147,8 +147,8 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<{
         audience: ChatBlastAudience
-        contentId?: ID
-        contentType?: 'track' | 'album'
+        audienceContentId?: string
+        audienceContentType?: 'track' | 'album'
         skipNavigation?: boolean
         presetMessage?: string
         replaceNavigation?: boolean
@@ -451,10 +451,9 @@ const slice = createSlice({
     sendChatBlast: (
       _state,
       _action: PayloadAction<{
-        blastId: string
+        chatId: string
         message: string
-        audience: ChatBlastAudience
-        audienceTrackId?: ID
+        resendMessageId?: string
       }>
     ) => {
       // triggers saga

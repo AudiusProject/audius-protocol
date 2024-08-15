@@ -1,4 +1,4 @@
-import type { ChatMessage, Track } from '@audius/sdk'
+import type { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
@@ -108,4 +108,20 @@ export const formatTrackName = ({ track }: { track: Track }) => {
  */
 export const splitOnNewline = (s: string) => {
   return s.split(/(\n)/).filter(Boolean)
+}
+
+export const makeBlastChatId = ({
+  audience,
+  audienceContentType,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentType?: 'track' | 'album'
+  audienceContentId?: string
+}) => {
+  return (
+    `${audience}` +
+    (audienceContentType ? `:${audienceContentType}` : '') +
+    (audienceContentId ? `:${audienceContentId}` : '')
+  )
 }

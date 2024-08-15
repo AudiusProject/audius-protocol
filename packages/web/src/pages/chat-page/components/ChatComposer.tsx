@@ -155,18 +155,15 @@ export const ChatComposer = (props: ChatComposerProps) => {
         if (isBlast) {
           dispatch(
             sendChatBlast({
-              blastId: chatId,
-              audience: ChatBlastAudience.FOLLOWERS,
+              chatId,
               message: editedValue
             })
           )
-          setValue('')
-          onMessageSent()
         } else {
           dispatch(sendMessage({ chatId, message: editedValue }))
-          setValue('')
-          onMessageSent()
         }
+        setValue('')
+        onMessageSent()
       }
     },
     [isBlast, chatId, value, setValue, humanToTrack, dispatch, onMessageSent]
