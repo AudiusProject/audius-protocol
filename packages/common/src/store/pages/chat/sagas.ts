@@ -1,6 +1,5 @@
 import {
   ChatBlast,
-  ChatBlastAudience,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
