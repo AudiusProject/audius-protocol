@@ -150,7 +150,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
         // On submit, actually send audius links rather than the human readable format
         let editedValue = value
         for (const [human, { link }] of Object.entries(humanToTrack)) {
-          editedValue = value.replaceAll(human, link)
+          editedValue = editedValue.replaceAll(human, link)
         }
         if (isBlast) {
           dispatch(
