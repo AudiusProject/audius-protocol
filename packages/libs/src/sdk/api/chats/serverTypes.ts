@@ -166,8 +166,11 @@ export type ChatBlast = {
   from_user_id: number
   plaintext: string
   created_at: string
+  last_message_at: string
   audience: ChatBlastAudience
-  audience_track_id?: number
+  content_id?: number
+  content_type?: 'track' | 'album'
+  is_blast: true
 }
 
 export type ValidatedChatPermissions = {
