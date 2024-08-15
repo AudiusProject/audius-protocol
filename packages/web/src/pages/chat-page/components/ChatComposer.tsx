@@ -13,13 +13,12 @@ import { chatActions } from '@audius/common/store'
 import {
   decodeHashId,
   formatTrackName,
-  isChatBlast,
   matchAudiusLinks,
-  parseBlastChatId,
+  parseChatBlastId,
   splitOnNewline
 } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
-import { Track, ChatBlastAudience } from '@audius/sdk'
+import { Track } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -94,9 +93,8 @@ export const ChatComposer = (props: ChatComposerProps) => {
 
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
-  const isBlast = isChatBlast(chatId)
-  const { audience, audienceContentType, audienceContentId } =
-    parseBlastChatId(chatId)
+  const { audience, audienceContentType, audienceContentId, isBlast } =
+    parseChatBlastId(chatId)
 
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -173,7 +171,17 @@ export const ChatComposer = (props: ChatComposerProps) => {
         onMessageSent()
       }
     },
-    [isBlast, chatId, value, setValue, humanToTrack, dispatch, onMessageSent]
+    [
+      chatId,
+      value,
+      isBlast,
+      onMessageSent,
+      humanToTrack,
+      dispatch,
+      audience,
+      audienceContentId,
+      audienceContentType
+    ]
   )
 
   // Submit when pressing enter while not holding shift
