@@ -67,7 +67,8 @@ import type {
   RPCPayloadRequest,
   ValidatedChatPermissions,
   ChatBlast,
-  ChatCreateRPC
+  ChatCreateRPC,
+  UpgradableChatBlast
 } from './serverTypes'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
@@ -295,7 +296,7 @@ export class ChatsApi
    * Gets a list of chat blasts for which chats haven't been created yet
    * @returns the blast messages list response
    */
-  public async getBlasts(): Promise<TypedCommsResponse<ChatBlast[]>> {
+  public async getBlasts() {
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
@@ -305,7 +306,7 @@ export class ChatsApi
       headers: {},
       query
     })
-    return (await res.json()) as TypedCommsResponse<ChatBlast[]>
+    return (await res.json()) as TypedCommsResponse<UpgradableChatBlast[]>
   }
 
   /**

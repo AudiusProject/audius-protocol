@@ -160,17 +160,25 @@ export type ChatInvite = {
   invite_code: string
 }
 
-export type ChatBlast = {
+type ChatBlastBase = {
   chat_id: string // maps to blast_id on the backend
+  audience: ChatBlastAudience
+  audience_content_id?: string
+  audience_content_type?: 'track' | 'album'
+}
+
+// Return type of getNewBlasts
+export type UpgradableChatBlast = ChatBlastBase & {
   pending_chat_id: string // chat_id to be created when upgrading to UserChat
   from_user_id: number
   plaintext: string
   created_at: string
-  last_message_at: string
-  audience: ChatBlastAudience
-  content_id?: number
-  content_type?: 'track' | 'album'
+}
+
+// Client-side chat blast
+export type ChatBlast = ChatBlastBase & {
   is_blast: true
+  last_message_at: string
 }
 
 export type ValidatedChatPermissions = {

@@ -484,9 +484,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         chat_id: chatId,
         is_blast: true,
         last_message_at: dayjs().toISOString(),
-        audience,
-        content_type: contentType,
-        content_id: contentId?.toString()
+        audience
       }
       yield* put(
         createChatSucceeded({
