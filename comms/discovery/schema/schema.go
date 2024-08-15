@@ -15,10 +15,11 @@ type ChatBlastRPC struct {
 }
 
 type ChatBlastRPCParams struct {
-	Audience        Audience `json:"audience"`
-	AudienceTrackID *string  `json:"audience_track_id,omitempty"`
-	BlastID         string   `json:"blast_id"`
-	Message         string   `json:"message"`
+	Audience            ChatBlastAudience `json:"audience"`
+	AudienceContentID   *string           `json:"audience_content_id,omitempty"`
+	AudienceContentType *string           `json:"audience_content_type,omitempty"`
+	BlastID             string            `json:"blast_id"`
+	Message             string            `json:"message"`
 }
 
 type ChatCreateRPC struct {
@@ -125,18 +126,19 @@ type RPCPayloadRequest struct {
 }
 
 type RPCPayloadRequestParams struct {
-	ReceiverUserIDS []string          `json:"receiver_user_ids,omitempty"`
-	Audience        *Audience         `json:"audience,omitempty"`
-	AudienceTrackID *string           `json:"audience_track_id,omitempty"`
-	BlastID         *string           `json:"blast_id,omitempty"`
-	Message         *string           `json:"message,omitempty"`
-	ChatID          *string           `json:"chat_id,omitempty"`
-	Invites         []TentacledInvite `json:"invites,omitempty"`
-	MessageID       *string           `json:"message_id,omitempty"`
-	ParentMessageID *string           `json:"parent_message_id,omitempty"`
-	Reaction        *string           `json:"reaction"`
-	UserID          *string           `json:"user_id,omitempty"`
-	Permit          *ChatPermission   `json:"permit,omitempty"`
+	ReceiverUserIDS     []string           `json:"receiver_user_ids,omitempty"`
+	Audience            *ChatBlastAudience `json:"audience,omitempty"`
+	AudienceContentID   *string            `json:"audience_content_id,omitempty"`
+	AudienceContentType *string            `json:"audience_content_type,omitempty"`
+	BlastID             *string            `json:"blast_id,omitempty"`
+	Message             *string            `json:"message,omitempty"`
+	ChatID              *string            `json:"chat_id,omitempty"`
+	Invites             []TentacledInvite  `json:"invites,omitempty"`
+	MessageID           *string            `json:"message_id,omitempty"`
+	ParentMessageID     *string            `json:"parent_message_id,omitempty"`
+	Reaction            *string            `json:"reaction"`
+	UserID              *string            `json:"user_id,omitempty"`
+	Permit              *ChatPermission    `json:"permit,omitempty"`
 }
 
 type TentacledInvite struct {
@@ -223,8 +225,9 @@ type ChatWebsocketEventData struct {
 }
 
 type Metadata struct {
-	Timestamp string `json:"timestamp"`
-	UserID    string `json:"userId"`
+	Timestamp      string `json:"timestamp"`
+	SenderUserID   string `json:"senderUserId"`
+	ReceiverUserID string `json:"receiverUserId"`
 }
 
 type RPCPayload struct {
@@ -235,18 +238,19 @@ type RPCPayload struct {
 }
 
 type RPCPayloadParams struct {
-	ReceiverUserIDS []string        `json:"receiver_user_ids,omitempty"`
-	Audience        *Audience       `json:"audience,omitempty"`
-	AudienceTrackID *string         `json:"audience_track_id,omitempty"`
-	BlastID         *string         `json:"blast_id,omitempty"`
-	Message         *string         `json:"message,omitempty"`
-	ChatID          *string         `json:"chat_id,omitempty"`
-	Invites         []StickyInvite  `json:"invites,omitempty"`
-	MessageID       *string         `json:"message_id,omitempty"`
-	ParentMessageID *string         `json:"parent_message_id,omitempty"`
-	Reaction        *string         `json:"reaction"`
-	UserID          *string         `json:"user_id,omitempty"`
-	Permit          *ChatPermission `json:"permit,omitempty"`
+	ReceiverUserIDS     []string           `json:"receiver_user_ids,omitempty"`
+	Audience            *ChatBlastAudience `json:"audience,omitempty"`
+	AudienceContentID   *string            `json:"audience_content_id,omitempty"`
+	AudienceContentType *string            `json:"audience_content_type,omitempty"`
+	BlastID             *string            `json:"blast_id,omitempty"`
+	Message             *string            `json:"message,omitempty"`
+	ChatID              *string            `json:"chat_id,omitempty"`
+	Invites             []StickyInvite     `json:"invites,omitempty"`
+	MessageID           *string            `json:"message_id,omitempty"`
+	ParentMessageID     *string            `json:"parent_message_id,omitempty"`
+	Reaction            *string            `json:"reaction"`
+	UserID              *string            `json:"user_id,omitempty"`
+	Permit              *ChatPermission    `json:"permit,omitempty"`
 }
 
 type StickyInvite struct {
@@ -266,13 +270,13 @@ const (
 	MethodChatBlast ChatBlastRPCMethod = "chat.blast"
 )
 
-type Audience string
+type ChatBlastAudience string
 
 const (
-	CustomerAudience Audience = "customer_audience"
-	FollowerAudience Audience = "follower_audience"
-	RemixerAudience  Audience = "remixer_audience"
-	TipperAudience   Audience = "tipper_audience"
+	CustomerAudience ChatBlastAudience = "customer_audience"
+	FollowerAudience ChatBlastAudience = "follower_audience"
+	RemixerAudience  ChatBlastAudience = "remixer_audience"
+	TipperAudience   ChatBlastAudience = "tipper_audience"
 )
 
 type ChatCreateRPCMethod string

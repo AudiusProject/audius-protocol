@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
   UserChallenge,
+  UndisbursedUserChallenge,
   ChallengeRewardID,
   Specifier,
   SpecifierWithAmount
@@ -13,8 +14,7 @@ import {
   ClaimState,
   ClaimStatus,
   HCaptchaStatus,
-  TrendingRewardsModalType,
-  UndisbursedUserChallenge
+  TrendingRewardsModalType
 } from './types'
 
 type UserChallengesPayload = {

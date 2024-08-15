@@ -1,8 +1,7 @@
-import { UndisbursedUserChallenge } from '~/store/pages'
-
 import {
   ChallengeRewardID,
   UserChallenge,
+  UndisbursedUserChallenge,
   OptimisticUserChallenge,
   ChallengeName,
   SpecifierWithAmount
