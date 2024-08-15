@@ -19,8 +19,6 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-const INVALID_USER_ID = -1
-
 type RPCProcessor struct {
 	sync.Mutex
 	validator *Validator
