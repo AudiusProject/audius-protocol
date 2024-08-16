@@ -189,12 +189,17 @@ export const PayoutWalletModal = () => {
       setIsSubmitting(true)
       const sdk = await audiusSdk()
       try {
+        if (!user) {
+          throw new Error('No user found')
+        }
+
         const updatedUser = { ...user }
+
         if (option === 'default') {
           updatedUser.spl_usdc_payout_wallet = null
         } else {
-          if (!address || !user) {
-            throw new Error('No user or address')
+          if (!address) {
+            throw new Error('No address set')
           }
 
           const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
