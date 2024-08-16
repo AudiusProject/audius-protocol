@@ -71,7 +71,7 @@ export const CommentSectionContext = createContext<
 
 export const CommentSectionProvider = ({
   currentUserId,
-                                         artistId,
+  artistId,
   entityId,
   isEntityOwner,
   entityType = EntityType.TRACK,
