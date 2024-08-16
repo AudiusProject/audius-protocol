@@ -4,7 +4,9 @@ import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
 import {
+  ArtistPick,
   Avatar,
+  Box,
   Flex,
   IconButton,
   IconHeart,
@@ -22,6 +24,7 @@ import { usePrevious } from 'react-use'
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
+import { CommentBadges } from './CommentBadges'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
 
@@ -39,12 +42,18 @@ export const CommentBlock = (props: CommentBlockProps) => {
     trackTimestampS,
     id: commentId,
     createdAt,
-    userId: userIdStr
+    userId: commentUserIdStr
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const { usePostComment, useDeleteComment, useReactToComment, usePinComment } =
-    useCurrentCommentSection()
+  const {
+    userId: currentUserId,
+    artistId,
+    usePostComment,
+    useDeleteComment,
+    useReactToComment,
+    usePinComment
+  } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
   const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
@@ -62,15 +71,21 @@ export const CommentBlock = (props: CommentBlockProps) => {
       setShowReplyInput(false)
     }
   }, [commentPostStatus, prevPostStatus])
-  const userId = Number(userIdStr)
-  useGetUserById({ id: userId })
-  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+  const commentUserId = Number(commentUserIdStr)
+  // fetch user profile info
+  useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
+  const profileImage = useProfilePicture(
+    commentUserId,
+    SquareSizes.SIZE_150_BY_150
+  )
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
+  const isCommentOwner = commentUserId === currentUserId
+  const isCommentByArtist = commentUserId === artistId
+
+  const isLikedByArtist = false // TODO: need to add this to backend metadata
 
   useEffect(() => {
     if (
@@ -104,21 +119,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
         src={profileImage}
       />
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
-        {isPinned || hasBadges ? (
+        <Box css={{ position: 'absolute', top: 0, right: 0 }}>
+          <CommentBadges
+            isArtist={isCommentByArtist}
+            commentUserId={commentUserId}
+          />
+        </Box>
+        {isPinned || isLikedByArtist ? (
           <Flex justifyContent='space-between' w='100%'>
-            {isPinned ? (
-              <Flex gap='xs'>
-                <IconPencil color='subdued' size='xs' />
-                <Text color='subdued' size='xs'>
-                  Pinned by artist
-                </Text>
-              </Flex>
-            ) : null}
-            {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
+            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
-          <UserLink userId={userId} />
+          <UserLink userId={commentUserId} />
           <Flex gap='xs' alignItems='center' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
@@ -165,7 +178,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
           </TextLink>
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
           {/* TODO: this needs to convert to a text input to work */}
-          {isOwner ? (
+          {isCommentOwner ? (
             <IconButton
               aria-label='edit comment'
               icon={IconPencil}
@@ -177,7 +190,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
             />
           ) : null}
           {/* TODO: rework this - this is a temporary design: just to have buttons for triggering stuff */}
-          {isOwner ? (
+          {isCommentOwner ? (
             isDeleting ? (
               <LoadingSpinner css={{ width: 16, height: 16 }} />
             ) : (
@@ -190,7 +203,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               />
             )
           ) : null}
-          {isOwner ? (
+          {isCommentOwner ? (
             <IconButton
               aria-label='pin comment'
               icon={IconMerch}

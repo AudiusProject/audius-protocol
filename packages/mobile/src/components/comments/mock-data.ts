@@ -5,8 +5,6 @@ import type { Comment, ReplyComment } from '@audius/sdk'
 type UnimplementedFeatures = {
   isLikedByCurrentUser?: boolean
   isLikedByArtist?: boolean
-  isTipSupporter?: boolean
-  isTopSupporter?: boolean
   notifsDisabledByCurrentUser?: boolean
 }
 
@@ -32,8 +30,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
         isPinned: false, // TODO; remove is pinned from replies?
         reactCount: 3, // if using simple reactions
         createdAt: '2021-01-01T00:00:00Z',
-        updatedAt: undefined,
-        isTopSupporter: true
+        updatedAt: undefined
       }
     ],
     createdAt: '2021-01-01T00:00:00Z',

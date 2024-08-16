@@ -21,6 +21,7 @@ import {
 
 // Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
+  artistId: ID
   userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
@@ -67,6 +68,7 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
+  artistId,
   userId,
   entityId,
   isEntityOwner,
@@ -175,6 +177,7 @@ export const CommentSectionProvider = ({
   return (
     <CommentSectionContext.Provider
       value={{
+        artistId,
         userId,
         entityId,
         entityType,
