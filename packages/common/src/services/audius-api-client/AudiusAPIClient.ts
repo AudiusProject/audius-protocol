@@ -57,10 +57,6 @@ const ROOT_ENDPOINT_MAP = {
 const FULL_ENDPOINT_MAP = {
   trendingIds: (experiment: string | null) =>
     experiment ? `/tracks/trending/ids/${experiment}` : '/tracks/trending/ids',
-  trendingUnderground: (experiment: string | null) =>
-    experiment
-      ? `/tracks/trending/underground/${experiment}`
-      : '/tracks/trending/underground',
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   recommended: '/tracks/recommended',
@@ -92,8 +88,6 @@ const FULL_ENDPOINT_MAP = {
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
 }
-
-const TRENDING_LIMIT = 100
 
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
@@ -128,12 +122,6 @@ type GetTracksArgs = {
 type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
-  currentUserId: Nullable<ID>
-}
-
-type GetTrendingUndergroundArgs = {
-  offset?: number
-  limit?: number
   currentUserId: Nullable<ID>
 }
 
@@ -391,34 +379,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrendingUnderground({
-    limit = TRENDING_LIMIT,
-    offset = 0,
-    currentUserId
-  }: GetTrendingUndergroundArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      limit,
-      offset,
-      user_id: encodedCurrentUserId
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
-    )
-    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.trendingUnderground(experiment),
-      params
-    )
-
-    if (!trendingResponse) return []
-
-    const adapted = trendingResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getTrendingIds({ genre, limit }: GetTrendingIdsArgs) {
