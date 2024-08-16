@@ -2,9 +2,6 @@
 import { PropsWithChildren, createContext, useContext } from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
-import { useSelector } from 'react-redux'
-
-import { getSupporters } from '~/store/tipping/selectors'
 
 import { MutationHookResponse, usePaginatedQuery } from '..//audius-query'
 import { ID, Status } from '..//models'
