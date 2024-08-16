@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import type {
   TextInputProps as RNTextInputProps,
+  TextInput as RNTextInput,
   ViewStyle
 } from 'react-native'
 
@@ -111,4 +112,6 @@ export type TextInputProps = RNTextInputProps & {
    * Styles to apply to the inner flex container that wraps the input, label, and adornments
    */
   innerContainerStyle?: ViewStyle
+
+  TextInputComponent?: ComponentType<RNTextInput>
 } & InternalProps

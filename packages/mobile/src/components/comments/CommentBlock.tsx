@@ -98,7 +98,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
           </Flex>
         ) : null}
         <Flex direction='row' gap='s' alignItems='center'>
-          <UserLink size='s' userId={userId} />
+          <UserLink size='s' userId={userId} strength='strong' />
           <Flex direction='row' gap='xs' alignItems='center' h='100%'>
             <Timestamp time={new Date(createdAt)} />
             {timestampS !== undefined ? (

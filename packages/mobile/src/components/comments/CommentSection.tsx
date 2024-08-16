@@ -32,7 +32,7 @@ const CommentSectionHeader = () => {
 
   return (
     <Flex direction='row' w='100%' justifyContent='space-between'>
-      <Text variant='title' size='l'>
+      <Text variant='title' size='m'>
         Comments
         {isShowingComments ? (
           <Text color='subdued'>&nbsp;({comments.length})</Text>
@@ -41,7 +41,7 @@ const CommentSectionHeader = () => {
       {isShowingComments ? (
         <TouchableOpacity onPress={handlePressViewAll}>
           <Flex direction='row' alignItems='center' gap='xs'>
-            <Text variant='title' color='subdued'>
+            <Text variant='title' color='subdued' size='m'>
               View All
             </Text>
             <IconCaretRight color='subdued' height={16} width={16} />
@@ -96,7 +96,7 @@ const CommentSectionContent = () => {
 
 export const CommentSection = () => {
   return (
-    <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
+    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
       <CommentSectionHeader />
       <Paper w='100%' direction='column' gap='s' p='l'>
         <CommentSectionContent />

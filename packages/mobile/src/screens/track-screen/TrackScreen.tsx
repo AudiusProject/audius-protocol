@@ -101,7 +101,7 @@ export const TrackScreen = () => {
     !remixParentTrack.user?.is_deactivated
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
-    <Text variant='title' size='l'>
+    <Text variant='title' size='m'>
       {`${messages.moreBy} ${user?.name}`}
     </Text>
   ) : null

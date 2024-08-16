@@ -6,11 +6,11 @@ import {
 } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import {
-  BottomSheetModal,
-  BottomSheetView,
   BottomSheetFlatList,
   BottomSheetBackdrop,
-  BottomSheetFooter
+  BottomSheetFooter,
+  BottomSheetTextInput,
+  BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -76,6 +76,7 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
       data={comments}
       keyExtractor={({ id }) => id}
       ListHeaderComponent={<Box h='l' />}
+      enableFooterMarginAdjustment
       renderItem={({ item }) => (
         <Box ph='l'>
           <CommentThread commentId={item.id} />
@@ -92,7 +93,6 @@ const useFormStyles = makeStyles(({ palette }) => ({
 }))
 
 const CommentDrawerForm = () => {
-  const insets = useSafeAreaInsets()
   const styles = useFormStyles()
   const { usePostComment } = useCurrentCommentSection()
 
@@ -102,18 +102,17 @@ const CommentDrawerForm = () => {
     postComment(message, undefined)
   }
 
-  // TODO: This needs to use BottomSheetTextInput so keyboard is handled
   return (
     <Box
       style={{
-        ...styles.form,
-        paddingBottom: insets.bottom
+        ...styles.form
       }}
     >
       <Box p='l'>
         <CommentForm
           onSubmit={handlePostComment}
           isLoading={postCommentStatus === Status.LOADING}
+          TextInputComponent={BottomSheetTextInput as any}
         />
       </Box>
     </Box>
@@ -125,14 +124,18 @@ const BORDER_RADIUS = 40
 const useStyles = makeStyles(({ palette }) => ({
   drawer: {
     backgroundColor: palette.white,
-    position: 'absolute',
-    top: 0,
-    left: 0,
     width: '100%',
     shadowRadius: 15,
     borderTopRightRadius: BORDER_RADIUS,
     borderTopLeftRadius: BORDER_RADIUS,
     overflow: 'hidden'
+  },
+  chin: {
+    backgroundColor: palette.white,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    zIndex: 5
   }
 }))
 
@@ -157,40 +160,48 @@ export const CommentDrawer = () => {
   }, [onClosed])
 
   return (
-    <BottomSheetModal
-      snapPoints={['66%', '100%']}
-      topInset={insets.top}
-      style={styles.drawer}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior='close'
-        />
-      )}
-      footerComponent={(props) => (
-        <BottomSheetFooter {...props}>
-          <CommentSectionProvider
-            userId={userId}
-            entityId={entityId}
-            isEntityOwner={isEntityOwner}
-          >
-            <CommentDrawerForm />
-          </CommentSectionProvider>
-        </BottomSheetFooter>
-      )}
-      ref={bottomSheetModalRef}
-      onDismiss={handleClose}
-    >
-      <CommentSectionProvider
-        userId={userId}
-        entityId={entityId}
-        isEntityOwner={isEntityOwner}
+    <>
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        snapPoints={['66%', '100%']}
+        topInset={insets.top}
+        style={styles.drawer}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            pressBehavior='close'
+          />
+        )}
+        footerComponent={(props) => (
+          <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+            <CommentSectionProvider
+              userId={userId}
+              entityId={entityId}
+              isEntityOwner={isEntityOwner}
+            >
+              <CommentDrawerForm />
+            </CommentSectionProvider>
+          </BottomSheetFooter>
+        )}
+        onDismiss={handleClose}
       >
-        <CommentDrawerHeader />
-        <CommentDrawerContent />
-      </CommentSectionProvider>
-    </BottomSheetModal>
+        <CommentSectionProvider
+          userId={userId}
+          entityId={entityId}
+          isEntityOwner={isEntityOwner}
+        >
+          <CommentDrawerHeader />
+          <CommentDrawerContent />
+        </CommentSectionProvider>
+      </BottomSheetModal>
+      <Box
+        style={{
+          ...styles.chin,
+          height: insets.bottom
+        }}
+      />
+    </>
   )
 }

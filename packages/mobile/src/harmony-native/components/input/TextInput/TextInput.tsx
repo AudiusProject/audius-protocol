@@ -73,6 +73,7 @@ export const TextInput = forwardRef(
       _disablePointerEvents,
       style,
       innerContainerStyle,
+      TextInputComponent = RNTextInput,
       ...other
     } = props
 
@@ -317,7 +318,7 @@ export const TextInput = forwardRef(
                         {startAdornmentText}
                       </Text>
                     ) : null}
-                    <RNTextInput
+                    <TextInputComponent
                       ref={mergeRefs([innerInputRef, ref])}
                       value={value}
                       accessibilityLabel={
