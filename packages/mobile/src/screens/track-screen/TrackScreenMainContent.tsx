@@ -79,6 +79,7 @@ export const TrackScreenMainContent = ({
         {isCommentingEnabled ? (
           <Flex flex={3}>
             <CommentSectionProvider
+              artistId={track.owner_id}
               currentUserId={user.user_id}
               entityId={track.track_id}
               isEntityOwner={user.user_id === track.owner_id}

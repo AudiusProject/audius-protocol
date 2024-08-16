@@ -6,7 +6,7 @@ import {
   useDeleteComment
 } from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
-import { Avatar, Flex, IconPin, Text, Timestamp } from '@audius/harmony'
+import { ArtistPick, Avatar, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
 import { usePrevious } from 'react-use'
 
@@ -14,6 +14,7 @@ import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { CommentActionBar } from './CommentActionBar'
+import { CommentBadges } from './CommentBadges'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
 
@@ -30,11 +31,11 @@ export const CommentBlock = (props: CommentBlockProps) => {
     id: commentId,
     trackTimestampS,
     createdAt,
-    userId: userIdStr
+    userId: commentUserIdStr
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const { usePostComment } = useCurrentCommentSection()
+  const { currentUserId, artistId, usePostComment } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
 
@@ -50,13 +51,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
       setShowReplyInput(false)
     }
   }, [commentPostStatus, prevPostStatus])
-  const userId = Number(userIdStr)
-  useGetUserById({ id: userId })
-  const profileImage = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+  const commentUserId = Number(commentUserIdStr)
+  // fetch user profile info
+  useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
+  const profileImage = useProfilePicture(
+    commentUserId,
+    SquareSizes.SIZE_150_BY_150
+  )
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
+  const isCommentByArtist = commentUserId === artistId
+
+  const isLikedByArtist = false // TODO: need to add this to backend metadata
 
   return (
     <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
@@ -65,21 +72,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
         src={profileImage}
       />
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
-        {isPinned || hasBadges ? (
+        <Box css={{ position: 'absolute', top: 0, right: 0 }}>
+          <CommentBadges
+            isArtist={isCommentByArtist}
+            commentUserId={commentUserId}
+          />
+        </Box>
+        {isPinned || isLikedByArtist ? (
           <Flex justifyContent='space-between' w='100%'>
-            {isPinned ? (
-              <Flex gap='xs'>
-                <IconPin color='subdued' size='xs' />
-                <Text color='subdued' size='xs'>
-                  Pinned by artist
-                </Text>
-              </Flex>
-            ) : null}
-            {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
+            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
-          <UserLink userId={userId} disabled={isDeleting} />
+          <UserLink userId={commentUserId} disabled={isDeleting} />
           <Flex gap='xs' alignItems='center' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (

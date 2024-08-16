@@ -256,7 +256,8 @@ export class AlbumsApi {
       albumId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet
+      wallet,
+      includeNetworkCut
     } = await parseParams(
       'getPurchaseAlbumTransaction',
       GetPurchaseAlbumTransactionSchema
@@ -269,7 +270,8 @@ export class AlbumsApi {
     this.logger.debug('Fetching album...', { albumId })
     const { data: album } = await this.playlistsApi.getPlaylistAccessInfo({
       userId: params.userId, // use hashed userId
-      playlistId: params.albumId // use hashed albumId
+      playlistId: params.albumId, // use hashed albumId
+      includeNetworkCut
     })
 
     // Validate purchase attempt
