@@ -1,6 +1,5 @@
 import {
   ChatBlast,
-  ChatBlastAudience,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -69,7 +68,6 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,
@@ -564,6 +562,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { track, make } = yield* getContext('analytics')
   const messageIdToUse = resendMessageId ?? ulid()
   const userId = yield* select(getUserId)
+  const chat = yield* select((state) => getChat(state, chatId))
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
@@ -582,18 +581,28 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           message,
           reactions: [],
           created_at: dayjs().toISOString(),
-          is_plaintext: false
+          is_plaintext: !!chat?.is_blast
         },
         status: Status.LOADING,
         isSelfMessage: true
       })
     )
 
-    yield* call([sdk.chats, sdk.chats.message], {
-      chatId,
-      messageId: messageIdToUse,
-      message
-    })
+    if (chat?.is_blast) {
+      yield* call([sdk.chats, sdk.chats.messageBlast], {
+        audience: chat.audience,
+        audienceContentType: chat.audience_content_type,
+        audienceContentId: chat.audience_content_id,
+        blastId: messageIdToUse,
+        message
+      })
+    } else {
+      yield* call([sdk.chats, sdk.chats.message], {
+        chatId,
+        messageId: messageIdToUse,
+        message
+      })
+    }
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
   } catch (e) {
     console.error('sendMessageFailed', e)
@@ -625,60 +634,6 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
       }
     })
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
-  }
-}
-
-function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
-  const { chatId, message, resendMessageId } = action.payload
-  const messageIdToUse = resendMessageId ?? ulid()
-  // TODO: analytics PAY-3347
-  // const { track, make } = yield* getContext('analytics')
-  const userId = yield* select(getUserId)
-  try {
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
-    const currentUserId = encodeHashId(userId)
-    if (!currentUserId) {
-      return
-    }
-
-    // Optimistically add the message
-    yield* put(
-      addMessage({
-        chatId,
-        message: {
-          sender_user_id: currentUserId,
-          message_id: messageIdToUse,
-          message,
-          reactions: [],
-          created_at: dayjs().toISOString(),
-          is_plaintext: true
-        },
-        status: Status.LOADING,
-        isSelfMessage: true
-      })
-    )
-
-    yield* call([sdk.chats, sdk.chats.messageBlast], {
-      audience: ChatBlastAudience.FOLLOWERS,
-      blastId: messageIdToUse,
-      message
-    })
-    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
-  } catch (e) {
-    console.error('sendMessageBlastFailed', e)
-    yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
-
-    // const reportToSentry = yield* getContext('reportToSentry')
-    // reportToSentry({
-    //   level: ErrorLevel.Error,
-    //   error: e as Error,
-    //   additionalInfo: {
-    //     chatId,
-    //     messageId: messageIdToUse
-    //   }
-    // })
-    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
   }
 }
 
@@ -919,10 +874,6 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
-function* watchSendChatBlast() {
-  yield takeEvery(sendChatBlast, doSendChatBlast)
-}
-
 function* watchFetchLatestChats() {
   yield takeLatest(fetchLatestChats, doFetchLatestChats)
 }
@@ -1000,7 +951,6 @@ export const sagas = () => {
     watchCreateChatBlast,
     watchMarkChatAsRead,
     watchSendMessage,
-    watchSendChatBlast,
     watchAddMessage,
     watchFetchBlockees,
     watchFetchBlockers,

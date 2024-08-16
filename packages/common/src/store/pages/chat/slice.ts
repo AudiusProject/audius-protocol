@@ -448,16 +448,6 @@ const slice = createSlice({
         })
       }
     },
-    sendChatBlast: (
-      _state,
-      _action: PayloadAction<{
-        chatId: string
-        message: string
-        resendMessageId?: string
-      }>
-    ) => {
-      // triggers saga
-    },
     addMessage: (
       state,
       action: PayloadAction<{

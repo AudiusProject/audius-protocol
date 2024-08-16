@@ -1,4 +1,4 @@
-import type { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
+import { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
