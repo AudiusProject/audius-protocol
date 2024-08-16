@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import desc, func
+from sqlalchemy import asc, func
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -19,12 +19,14 @@ COMMENT_THREADS_LIMIT = 5
 COMMENT_REPLIES_LIMIT = 3
 
 
-def get_replies(session, parent_comment_id):
+def get_replies(session, parent_comment_id, offset=0, limit=COMMENT_REPLIES_LIMIT):
     replies = (
         session.query(Comment)
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .filter(CommentThread.parent_comment_id == parent_comment_id)
-        .limit(COMMENT_REPLIES_LIMIT)
+        .order_by(asc(Comment.created_at))
+        .offset(offset)
+        .limit(limit)
         .all()
     )
     return [
@@ -32,7 +34,7 @@ def get_replies(session, parent_comment_id):
             "id": encode_int_id(reply.comment_id),
             "userId": reply.user_id,  # Assuming user_id is an attribute of Comment
             "message": reply.text,
-            "timestamp_s": reply.track_timestamp_ms,
+            "track_timestamp_s": reply.track_timestamp_s,
             "react_count": (
                 reply.react_count if hasattr(reply, "react_count") else 0
             ),  # Adjust as needed
@@ -57,6 +59,15 @@ def get_reaction_count(session, parent_comment_id):
     return reaction_count[0]
 
 
+def get_comment_replies(args, comment_id):
+    offset, limit = format_offset(args), format_limit(args)
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        replies = get_replies(session, comment_id, offset, limit)
+
+    return replies
+
+
 def get_track_comments(args, track_id):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
 
@@ -79,7 +90,7 @@ def get_track_comments(args, track_id):
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
             )
-            .order_by(desc(Comment.created_at))
+            .order_by(asc(Comment.created_at))
             .offset(offset)
             .limit(limit)
             .all()
@@ -91,7 +102,7 @@ def get_track_comments(args, track_id):
                 "user_id": track_comment.user_id,
                 "message": track_comment.text,
                 "is_pinned": track_comment.is_pinned,
-                "timestamp_s": track_comment.track_timestamp_ms,
+                "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": get_reaction_count(session, track_comment.comment_id),
                 "replies": get_replies(session, track_comment.comment_id),
                 "created_at": str(track_comment.created_at),

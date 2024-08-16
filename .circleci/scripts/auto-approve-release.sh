@@ -2,10 +2,20 @@
 set -e
 
 function send_slack_message() {
-  json_content="{ \"blocks\": ["
-  json_content+="\"type\": \"section\","
-  json_content+="\"text\": { \"type\": \"mrkdwn\", \"text\": \"$1\" }"
-  json_content+="}]}"
+  json_content="$(cat <<EOF
+{ 
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "$1"
+      }
+    }
+  ]
+}
+EOF
+  )"
 
   curl -f -X POST -H 'Content-type: application/json' \
     --data "$json_content" \
@@ -96,7 +106,7 @@ workflow_id=$(curl --request GET \
 # Fetch the appropriate deployment job
 job_id=$(curl --request GET \
   "https://circleci.com/api/v2/workflow/$workflow_id/job" \
-  --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=='"$job_name"' and .status=="on_hold") | .id')
+  --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=='"\"$job_name\""' and .status=="on_hold") | .id')
 
 # If we found the job, approve it automatically
 if [ -n "$job_id" ]; then

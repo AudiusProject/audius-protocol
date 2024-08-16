@@ -84,7 +84,11 @@ const toOptimisticChallenge = (
 
   // The client is more up to date than Discovery Nodes, so override whenever possible.
   // Don't override if the challenge is already marked as completed on Discovery.
-  if (!challenge.is_complete && currentStepCountOverride !== undefined) {
+  if (
+    !challenge.is_complete &&
+    currentStepCountOverride !== undefined &&
+    challengeOverridden.max_steps !== null
+  ) {
     challengeOverridden.current_step_count = currentStepCountOverride
     challengeOverridden.is_complete =
       currentStepCountOverride >= challengeOverridden.max_steps
@@ -102,7 +106,7 @@ const toOptimisticChallenge = (
   // you'd get when completing every step of the challenge
   // -- i.e. for referrals, show 1 audio x 5 steps = 5 audio
   const totalAmount =
-    challenge.challenge_type === 'aggregate'
+    challenge.challenge_type === 'aggregate' && challenge.max_steps !== null
       ? challenge.amount * challenge.max_steps
       : challenge.amount
 
