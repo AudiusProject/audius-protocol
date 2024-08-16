@@ -29,11 +29,12 @@ func ToChatMemberResponse(member db.ChatMember) schema.ChatMember {
 
 func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.UserChat {
 	chatData := schema.UserChat{
-		ChatID:             chat.ChatID,
-		LastMessageAt:      chat.LastMessageAt.Format(time.RFC3339Nano),
-		InviteCode:         chat.InviteCode,
-		UnreadMessageCount: float64(chat.UnreadCount),
-		ChatMembers:        Map(members, ToChatMemberResponse),
+		ChatID:                 chat.ChatID,
+		LastMessageAt:          chat.LastMessageAt.Format(time.RFC3339Nano),
+		InviteCode:             chat.InviteCode,
+		UnreadMessageCount:     float64(chat.UnreadCount),
+		ChatMembers:            Map(members, ToChatMemberResponse),
+		LastMessageIsPlaintext: chat.LastMessageIsPlaintext,
 	}
 	chatData.RecheckPermissions = rpcz.RecheckPermissionsRequired(chat.LastMessageAt, members)
 	if chat.LastMessage.Valid {

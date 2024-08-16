@@ -55,7 +55,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (commentId: string, newMessage: string) => void,
     void
   >
-  useDeleteComment: WrappedMutationHook<(commentId: string) => void, void>
+  useDeleteComment: WrappedMutationHook<(commentId: string) => void, any>
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void

@@ -29,6 +29,7 @@ export const CommentText = ({ children }: CommentTextProps) => {
   return (
     <Flex direction='column' alignItems='flex-start' gap='xs'>
       <Text
+        // Issue with the HTMLElement ref here and the ref type for Text component
         // @ts-ignore
         ref={textRef}
         variant='body'

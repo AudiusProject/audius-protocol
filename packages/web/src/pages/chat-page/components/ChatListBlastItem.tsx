@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useGetCurrentUser } from '@audius/common/api'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
