@@ -38,7 +38,7 @@ export const prepareSplits = async ({
   // Check for user banks as needed
   amountSplits = await Promise.all(
     amountSplits.map(async (split) => {
-      if (!split.payoutWallet) {
+      if (!split.payoutWallet && split.ethWallet) {
         logger.debug('Deriving user bank for user...', {
           userId: split.userId
         })
