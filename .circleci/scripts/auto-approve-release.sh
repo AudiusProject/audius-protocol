@@ -2,10 +2,20 @@
 set -e
 
 function send_slack_message() {
-  json_content="{ \"blocks\": ["
-  json_content+="\"type\": \"section\","
-  json_content+="\"text\": { \"type\": \"mrkdwn\", \"text\": \"$1\" }"
-  json_content+="}]}"
+  json_content="$(cat <<EOF
+{ 
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "$1"
+      }
+    }
+  ]
+}
+EOF
+  )"
 
   curl -f -X POST -H 'Content-type: application/json' \
     --data "$json_content" \

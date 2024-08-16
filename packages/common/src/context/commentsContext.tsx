@@ -21,10 +21,12 @@ import {
 
 // Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
+  artistId: ID
   userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
   isEntityOwner: boolean
+  playTrack: () => void
 }
 
 // Helper type to rewrap our mutation hooks with data from this context
@@ -38,7 +40,11 @@ type CommentSectionContextType = CommentSectionContextProps & {
   commentSectionLoading: boolean
   comments: Comment[]
   usePostComment: WrappedMutationHook<
-    (message: string, parentCommentId?: string) => void,
+    (
+      message: string,
+      parentCommentId?: string,
+      trackTimestampS?: number
+    ) => void,
     number
   >
   useReactToComment: WrappedMutationHook<
@@ -50,7 +56,7 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (commentId: string, newMessage: string) => void,
     void
   >
-  useDeleteComment: WrappedMutationHook<(commentId: string) => void, void>
+  useDeleteComment: WrappedMutationHook<(commentId: string) => void, any>
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
@@ -62,11 +68,13 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
+  artistId,
   userId,
   entityId,
   isEntityOwner,
   entityType = EntityType.TRACK,
-  children
+  children,
+  playTrack
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const {
     data: comments = [],
@@ -94,7 +102,8 @@ export const CommentSectionProvider = ({
   const usePostComment: CommentSectionContextType['usePostComment'] = () => {
     const wrappedHandler = async (
       message: string,
-      parentCommentId?: string
+      parentCommentId?: string,
+      trackTimestampS?: number
     ) => {
       if (userId) {
         postComment({
@@ -103,7 +112,8 @@ export const CommentSectionProvider = ({
           entityType,
           body: message,
           // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
-          parentCommentId
+          parentCommentId,
+          trackTimestampS
         })
       }
     }
@@ -167,11 +177,13 @@ export const CommentSectionProvider = ({
   return (
     <CommentSectionContext.Provider
       value={{
+        artistId,
         userId,
         entityId,
         entityType,
         comments,
         commentSectionLoading,
+        playTrack,
         isEntityOwner,
         usePostComment,
         useDeleteComment,

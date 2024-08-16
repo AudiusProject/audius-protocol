@@ -250,12 +250,16 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled ? (
+          {isCommentingEnabled && heroTrack?.owner_id ? (
             <Flex flex='3'>
               <CommentSectionProvider
                 userId={userId}
                 entityId={defaults.trackId}
+                playTrack={() => {
+                  play(currentQueueItem.uid ?? undefined)
+                }}
                 isEntityOwner={isOwner}
+                artistId={heroTrack.owner_id}
               >
                 <CommentSectionDesktop />
               </CommentSectionProvider>

@@ -133,6 +133,7 @@ const RewardPanel = ({
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const shouldShowProgressBar =
     challenge &&
+    challenge.max_steps &&
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate' &&
     !hasDisbursed
@@ -188,7 +189,7 @@ const RewardPanel = ({
         <div className={wm(styles.rewardProgress)}>
           {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
           <p className={styles.rewardProgressLabel}>{formattedProgressLabel}</p>
-          {shouldShowProgressBar && (
+          {shouldShowProgressBar && challenge.max_steps && (
             <ProgressBar
               className={styles.rewardProgressBar}
               value={challenge?.current_step_count ?? 0}

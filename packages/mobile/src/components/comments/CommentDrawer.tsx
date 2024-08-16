@@ -144,7 +144,7 @@ export const CommentDrawer = () => {
   const insets = useSafeAreaInsets()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
-    data: { userId, entityId, isEntityOwner },
+    data: { userId, entityId, isEntityOwner, artistId },
     isOpen,
     onClosed
   } = useDrawer('Comment')
@@ -178,8 +178,10 @@ export const CommentDrawer = () => {
           <BottomSheetFooter {...props} bottomInset={insets.bottom}>
             <CommentSectionProvider
               userId={userId}
+              artistId={artistId}
               entityId={entityId}
               isEntityOwner={isEntityOwner}
+              playTrack={() => {}} // TODO
             >
               <CommentDrawerForm />
             </CommentSectionProvider>
@@ -188,9 +190,11 @@ export const CommentDrawer = () => {
         onDismiss={handleClose}
       >
         <CommentSectionProvider
+          artistId={artistId}
           userId={userId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
+          playTrack={() => {}} // TODO
         >
           <CommentDrawerHeader />
           <CommentDrawerContent />
