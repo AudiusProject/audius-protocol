@@ -63,7 +63,7 @@ const commentsApi = createApi({
       async fetch({ id }: { id: string }, { audiusSdk }) {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getComment({
-          id
+          commentId: id
         })
         return commentsRes?.data
       },
@@ -87,7 +87,7 @@ const commentsApi = createApi({
       options: { type: 'mutation' },
       async onQuerySuccess(
         { data: newId },
-        { entityId, body, userId, timestampS, parentCommentId },
+        { entityId, body, userId, trackTimestampS, parentCommentId },
         { dispatch }
       ) {
         const newComment: Comment = {
@@ -95,7 +95,7 @@ const commentsApi = createApi({
           userId,
           message: body,
           isPinned: false,
-          timestampS,
+          trackTimestampS,
           reactCount: 0,
           replies: undefined,
           createdAt: new Date().toISOString(),
@@ -231,7 +231,9 @@ const commentsApi = createApi({
         optimisticUpdateComment(
           id,
           (comment) => {
-            comment.isPinned = isPinned
+            if (comment) {
+              comment.isPinned = isPinned
+            }
           },
           dispatch
         )

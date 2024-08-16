@@ -88,9 +88,10 @@ export const CommentDrawer = () => {
         }}
       >
         <CommentSectionProvider
-          userId={userId}
+          currentUserId={userId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
+          playTrack={() => {}} // TODO
         >
           <Flex direction='column' gap='m' mt='2xl'>
             <CommentDrawerHeader />
