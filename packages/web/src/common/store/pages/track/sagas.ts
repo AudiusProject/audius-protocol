@@ -49,7 +49,7 @@ function* watchFetchTrackBadge() {
           remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
         )
         const version = remoteConfigInstance.getRemoteVar(
-          StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
+          StringKeys.TRENDING_EXPERIMENT
         )
         let trendingTrackRanks: TrackPageState['trendingTrackRanks'] | null =
           yield* select(getTrendingTrackRanks)
