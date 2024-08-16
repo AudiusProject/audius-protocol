@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"comms.audius.co/discovery/db"
+	"comms.audius.co/discovery/schema"
 )
 
 // Get a chat message
@@ -34,7 +36,6 @@ SELECT
 	chat_message.created_at,
 	COALESCE(chat_message.ciphertext, chat_blast.plaintext) as ciphertext,
 	chat_blast.plaintext is not null as is_plaintext,
-
 	to_json(array(select row_to_json(r) from chat_message_reactions r where chat_message.message_id = r.message_id)) AS reactions
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
@@ -109,6 +110,47 @@ func (t *JSONTime) UnmarshalJSON(b []byte) error {
 
 func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessagesAndReactionsParams) ([]ChatMessageAndReactionsRow, error) {
 	var rows []ChatMessageAndReactionsRow
+
+	// special case to handle outgoing blasts...
+	if strings.HasPrefix(arg.ChatID, "blast:") {
+		parts := strings.Split(arg.ChatID, ":")
+		if len(parts) < 3 {
+			return nil, errors.New("bad request: invalid blast id")
+		}
+		// encodedUserID := parts[1]
+		audience := parts[2]
+
+		if schema.ChatBlastAudience(audience) == schema.FollowerAudience {
+			const outgoingBlastMessages = `
+			SELECT
+				b.blast_id as message_id,
+				$2 as chat_id,
+				b.from_user_id as user_id,
+				b.created_at,
+				b.plaintext as ciphertext,
+				true as is_plaintext,
+				'[]'::json AS reactions
+			FROM chat_blast b
+			WHERE b.from_user_id = $1
+			  AND b.audience = $3
+			  AND b.created_at < $4
+			  AND b.created_at > $5
+			ORDER BY b.created_at DESC
+			`
+
+			err := q.SelectContext(ctx, &rows, outgoingBlastMessages,
+				arg.UserID,
+				arg.ChatID,
+				audience,
+				arg.Before,
+				arg.After,
+			)
+			return rows, err
+		} else {
+			return nil, errors.New("bad request: unsupported audience " + audience)
+		}
+	}
+
 	err := q.SelectContext(ctx, &rows, chatMessagesAndReactions,
 		arg.UserID,
 		arg.ChatID,

@@ -34,8 +34,8 @@ func TestChatBlast(t *testing.T) {
 			UserID: userID,
 			ChatID: chatID,
 			Limit:  10,
-			Before: time.Now().Add(time.Hour * 12),
-			After:  time.Now().Add(time.Hour * -12),
+			Before: time.Now().Add(time.Hour * 2).UTC(),
+			After:  time.Now().Add(time.Hour * -2).UTC(),
 		})
 		if err != nil {
 			panic(err)
@@ -273,6 +273,18 @@ func TestChatBlast(t *testing.T) {
 			}
 		}
 
+	}
+
+	// ------ sender can get blasts in a given thread ----------
+	{
+		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
+			UserID: 69,
+			ChatID: "blast:asdf:follower_audience",
+			Before: time.Now().Add(time.Hour * 2).UTC(),
+			After:  time.Now().Add(time.Hour * -2).UTC(),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, messages, 2)
 	}
 
 	err = tx.Rollback()
