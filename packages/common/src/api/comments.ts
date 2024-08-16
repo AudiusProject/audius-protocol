@@ -63,7 +63,7 @@ const commentsApi = createApi({
       async fetch({ id }: { id: string }, { audiusSdk }) {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getComment({
-          id
+          commentId: id
         })
         return commentsRes?.data
       },
