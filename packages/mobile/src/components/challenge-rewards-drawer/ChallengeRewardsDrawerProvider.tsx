@@ -215,7 +215,7 @@ export const ChallengeRewardsDrawerProvider = () => {
           isCooldownChallenge={challenge && challenge.cooldown_days > 0}
           challengeState={challenge.state}
           currentStep={challenge.current_step_count}
-          stepCount={challenge.max_steps}
+          stepCount={challenge.max_steps ?? undefined}
           claimableAmount={audioToClaim}
           claimedAmount={audioClaimedSoFar}
           claimStatus={claimStatus}
@@ -223,7 +223,9 @@ export const ChallengeRewardsDrawerProvider = () => {
           onClaim={hasConfig ? onClaim : undefined}
           isVerifiedChallenge={!!config.isVerifiedChallenge}
           showProgressBar={
-            challenge.challenge_type !== 'aggregate' && challenge.max_steps > 1
+            challenge.challenge_type !== 'aggregate' &&
+            challenge.max_steps !== null &&
+            challenge.max_steps > 1
           }
         >
           {contents}

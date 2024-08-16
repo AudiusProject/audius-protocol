@@ -12,7 +12,7 @@ class Comment(Base, RepresentableMixin):
     user_id = Column(Integer, nullable=False)
     entity_id = Column(Integer, nullable=False)
     entity_type = Column(Text, nullable=False)
-    track_timestamp_ms = Column(Integer)
+    track_timestamp_s = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     is_delete = Column(Boolean, default=False)

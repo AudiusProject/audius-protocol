@@ -224,7 +224,7 @@ export const Slider = ({
   useEffect(() => {
     setPercent(elapsedSeconds / totalSeconds)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playbackRate])
+  }, [playbackRate, elapsedSeconds, totalSeconds])
 
   // When the key changes, reset the animation
   useEffect(() => {

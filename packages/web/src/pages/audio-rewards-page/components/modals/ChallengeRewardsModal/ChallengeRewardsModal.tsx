@@ -295,6 +295,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const showProgressBar =
     challenge &&
+    challenge.max_steps &&
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate'
 
@@ -435,7 +436,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const renderProgressBar = () => {
-    if (showProgressBar) {
+    if (showProgressBar && challenge.max_steps) {
       return (
         <div className={wm(styles.progressBarSection)}>
           {isMobile ? (
