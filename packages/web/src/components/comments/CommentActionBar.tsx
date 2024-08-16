@@ -13,8 +13,6 @@ import {
   IconShieldCheck,
   IconTrash,
   IconUserUnfollow,
-  IconVisibilityHidden,
-  IconVolumeLevel0,
   PopupMenu,
   PopupMenuItem,
   Text,
@@ -24,60 +22,64 @@ import { Comment } from '@audius/sdk'
 import { usePrevious } from 'react-use'
 
 const messages = {
-  pin: 'Pin Comment',
+  pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
   edit: 'Edit Comment',
   delete: 'Delete Comment',
   report: 'Report Comment',
   block: 'Mute User',
-  muteNotifs: 'Mute Notifications'
+  muteNotifs: (isMuted: boolean) =>
+    isMuted ? 'Unmute Notifications' : 'Mute Notifications'
 }
 
-type CommentActionsProps = {
+type CommentActionBarProps = {
   comment: Comment
   isDisabled: boolean
   onClickEdit: () => void
   onClickReply: () => void
   onClickDelete: () => void
 }
-export const CommentActions = ({
+export const CommentActionBar = ({
   comment,
   isDisabled,
   onClickEdit,
   onClickReply,
   onClickDelete
-}: CommentActionsProps) => {
-  const { reactCount, id: commentId } = comment
+}: CommentActionBarProps) => {
+  // comment from props
+  const { reactCount, id: commentId, isPinned } = comment
 
+  // context actions & values
   const {
     currentUserId,
+    isEntityOwner,
     useDeleteComment,
     useReactToComment,
-    usePinComment,
-    isEntityOwner
+    usePinComment
   } = useCurrentCommentSection()
-
-  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
-  const [isDeleting, setIsDeleting] = useState(false)
 
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
   const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
 
+  // component state
+  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from backend metadata
+  const [isDeleting, setIsDeleting] = useState(false)
   const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
 
+  // Check for loading status changes from the delete comment hook
   useEffect(() => {
     if (
       isDeleting &&
-      (deleteCommentStatus === Status.SUCCESS ||
-        deleteCommentStatus === Status.ERROR) &&
-      prevDeleteCommentStatus !== deleteCommentStatus
+      prevDeleteCommentStatus !== deleteCommentStatus &&
+      prevDeleteCommentStatus === Status.LOADING
     ) {
       setIsDeleting(false)
     }
   }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
 
-  const isCommentOwner = Number(comment.userId) === currentUserId // TODO: need to check against current user (not really feasible with modck data)
+  const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
+  const notificationsMuted = false // TODO: Need to set up API to provide this
 
   const handleCommentReact = useCallback(() => {
     setReactionState(!reactionState)
@@ -91,28 +93,32 @@ export const CommentActions = ({
   }, [commentId, deleteComment, onClickDelete])
 
   const handleCommentPin = useCallback(() => {
-    pinComment(commentId)
-  }, [commentId, pinComment])
+    pinComment(commentId, !isPinned)
+  }, [commentId, isPinned, pinComment])
 
   const popupMenuItems = useMemo(() => {
     let items: PopupMenuItem[] = []
     const entityOwnerMenuItems: PopupMenuItem[] = [
-      { onClick: handleCommentPin, text: messages.pin, icon: <IconPin /> }
+      {
+        onClick: handleCommentPin,
+        text: messages.pin(isPinned),
+        icon: <IconPin />
+      }
     ]
     const commentOwnerMenuItems: PopupMenuItem[] = [
       { onClick: onClickEdit, text: messages.edit, icon: <IconPencil /> }
     ]
     const nonCommentOwnerItems: PopupMenuItem[] = [
       {
-        onClick: () => {}, // TODO - nothing implemented yet here
+        onClick: () => {}, // TODO - nothing implemented yet
         text: messages.report,
-        icon: <IconShieldCheck />
-      }, // TODO: temporary icon
-      { onClick: () => {}, text: messages.block, icon: <IconUserUnfollow /> } // TODO - nothing implemented yet here
+        icon: <IconShieldCheck /> // TODO: temporary icon
+      },
+      { onClick: () => {}, text: messages.block, icon: <IconUserUnfollow /> } // TODO - nothing implemented yet
     ]
     const muteNotifs: PopupMenuItem = {
       onClick: () => {}, // TODO - nothing implemented yet here
-      text: messages.muteNotifs,
+      text: messages.muteNotifs(notificationsMuted),
       icon: <IconNotificationOff />
     }
     const deleteComment: PopupMenuItem = {
@@ -138,12 +144,14 @@ export const CommentActions = ({
     }
     return items
   }, [
-    handleCommentDelete,
-    handleCommentPin,
     isCommentOwner,
     isEntityOwner,
+    isPinned,
     isUserGettingNotifs,
-    onClickEdit
+    notificationsMuted,
+    onClickEdit,
+    handleCommentDelete,
+    handleCommentPin
   ])
 
   return (

@@ -213,17 +213,25 @@ const commentsApi = createApi({
       }
     },
     pinCommentById: {
-      async fetch({ id: _id, userId: _userId }: { id: string; userId: ID }) {
+      async fetch({
+        id: _id,
+        userId: _userId,
+        isPinned
+      }: {
+        id: string
+        userId: ID
+        isPinned: boolean
+      }) {
         // TODO: call sdk here
+        // return null
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id }, { dispatch }) {
+      onQueryStarted({ id, isPinned }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({
-            ...(comment as Comment),
-            isPinned: !comment?.isPinned
-          }),
+          (comment) => {
+            comment.isPinned = isPinned
+          },
           dispatch
         )
       }

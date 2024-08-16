@@ -11,7 +11,7 @@ import { usePrevious } from 'react-use'
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
-import { CommentActions } from './CommentActions'
+import { CommentActionBar } from './CommentActionBar'
 import { CommentForm } from './CommentForm'
 
 // TODO: move this somewhere else
@@ -157,7 +157,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         ) : (
           <Text color='default'>{message}</Text>
         )}
-        <CommentActions
+        <CommentActionBar
           comment={comment}
           onClickReply={() => setShowReplyInput((prev) => !prev)}
           onClickEdit={() => setShowEditInput((prev) => !prev)}

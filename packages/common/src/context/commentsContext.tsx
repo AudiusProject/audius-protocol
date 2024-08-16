@@ -45,7 +45,10 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (commentId: string, isLiked: boolean) => void,
     void
   >
-  usePinComment: WrappedMutationHook<(commentId: string) => void, void>
+  usePinComment: WrappedMutationHook<
+    (commentId: string, isPinned: boolean) => void,
+    void
+  >
   useEditComment: WrappedMutationHook<
     (commentId: string, newMessage: string) => void,
     void
@@ -140,9 +143,9 @@ export const CommentSectionProvider = ({
     }
 
   const usePinComment: CommentSectionContextType['usePinComment'] = () => {
-    const wrappedHandler = (commentId: string) => {
+    const wrappedHandler = (commentId: string, isPinned: boolean) => {
       if (currentUserId) {
-        pinComment({ id: commentId, userId: currentUserId })
+        pinComment({ id: commentId, userId: currentUserId, isPinned })
       }
     }
     return [wrappedHandler, pinCommentResponse]
