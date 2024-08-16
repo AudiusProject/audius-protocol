@@ -1,9 +1,24 @@
 package components
 
+import "github.com/AudiusProject/audius-protocol/core/console/styles"
+
 type TxPageProps struct {
 	Hash   string
-	Height int64
+	Height string
 }
 
 templ TxPage(props TxPageProps) {
+	@Base() {
+		<div class={ styles.ContainerClass }>
+			<h1>
+				Transaction Page
+			</h1>
+			<div>
+				Hash: { props.Hash }
+			</div>
+			<div>
+				Height: { props.Height }
+			</div>
+		</div>
+	}
 }

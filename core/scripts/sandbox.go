@@ -10,8 +10,9 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	sdk, _ := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
-	res, err := sdk.GetEvent(context.Background(), &proto.GetEventRequest{Txhash: "E23871FA5C351D201AD9C72A8D0FAC55DF05813E9A3D0C22774A4C0ED4E593A8"})
+	res, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{Key: "liquid", Value: "death"})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,5 +24,5 @@ func main() {
 		DisableCapacities:       true,
 	}
 
-	spewConfig.Dump(res.Event.Body)
+	spewConfig.Dump(res)
 }
