@@ -3,9 +3,11 @@ module github.com/AudiusProject/audius-protocol/core
 go 1.22.5
 
 require (
+	github.com/a-h/templ v0.2.747
 	github.com/cosmos/gogoproto v1.6.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/jackc/pgx/v5 v5.6.0
+	github.com/labstack/echo/v4 v4.12.0
 	github.com/onsi/ginkgo/v2 v2.19.0
 	golang.org/x/sync v0.8.0
 	google.golang.org/grpc v1.65.0
@@ -15,7 +17,6 @@ require (
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/a-h/templ v0.2.747 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -56,7 +57,6 @@ require (
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/labstack/echo/v4 v4.12.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/linxGnu/grocksdb v1.8.14 // indirect
