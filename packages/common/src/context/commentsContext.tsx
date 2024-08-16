@@ -58,7 +58,6 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (commentId: string, newMessage: string) => void,
     void
   >
-  useDeleteComment: WrappedMutationHook<(commentId: string) => void, any>
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
@@ -95,7 +94,6 @@ export const CommentSectionProvider = ({
   const [postComment, postCommentResponse] = useAQueryPostComment()
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const [pinComment, pinCommentResponse] = usePinCommentById()
-  const [deleteComment, deleteCommentResponse] = useDeleteCommentById()
 
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
@@ -140,16 +138,6 @@ export const CommentSectionProvider = ({
     return [wrappedHandler, editCommentResponse]
   }
 
-  const useDeleteComment: CommentSectionContextType['useDeleteComment'] =
-    () => {
-      const wrappedHandler = async (commentId: string) => {
-        if (currentUserId) {
-          deleteComment({ id: commentId, userId: currentUserId, entityId })
-        }
-      }
-      return [wrappedHandler, deleteCommentResponse]
-    }
-
   const usePinComment: CommentSectionContextType['usePinComment'] = () => {
     const wrappedHandler = (commentId: string, isPinned: boolean) => {
       if (currentUserId) {
@@ -186,7 +174,6 @@ export const CommentSectionProvider = ({
         playTrack,
         isEntityOwner,
         usePostComment,
-        useDeleteComment,
         useEditComment,
         usePinComment,
         useReactToComment,
@@ -211,4 +198,16 @@ export const useCurrentCommentSection = () => {
   }
 
   return context
+}
+
+export const useDeleteComment = () => {
+  const { currentUserId, entityId } = useCurrentCommentSection()
+  const [deleteComment, response] = useDeleteCommentById()
+
+  const wrappedHandler = (commentId: string) => {
+    if (currentUserId) {
+      deleteComment({ id: commentId, userId: currentUserId, entityId })
+    }
+  }
+  return [wrappedHandler, response] as const // as const is needed to return a tuple
 }

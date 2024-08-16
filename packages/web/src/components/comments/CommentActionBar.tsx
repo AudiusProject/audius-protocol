@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
-import { Status } from '@audius/common/models'
 import {
   Flex,
   IconButton,
@@ -19,7 +18,6 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
-import { usePrevious } from 'react-use'
 
 const messages = {
   pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
@@ -49,33 +47,14 @@ export const CommentActionBar = ({
   const { reactCount, id: commentId, isPinned } = comment
 
   // context actions & values
-  const {
-    currentUserId,
-    isEntityOwner,
-    useDeleteComment,
-    useReactToComment,
-    usePinComment
-  } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, useReactToComment, usePinComment } =
+    useCurrentCommentSection()
 
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
-  const [deleteComment, { status: deleteCommentStatus }] = useDeleteComment()
 
   // component state
-  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from backend metadata
-  const [isDeleting, setIsDeleting] = useState(false)
-  const prevDeleteCommentStatus = usePrevious(deleteCommentStatus)
-
-  // Check for loading status changes from the delete comment hook
-  useEffect(() => {
-    if (
-      isDeleting &&
-      prevDeleteCommentStatus !== deleteCommentStatus &&
-      prevDeleteCommentStatus === Status.LOADING
-    ) {
-      setIsDeleting(false)
-    }
-  }, [isDeleting, deleteCommentStatus, prevDeleteCommentStatus])
+  const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
 
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
@@ -88,9 +67,7 @@ export const CommentActionBar = ({
 
   const handleCommentDelete = useCallback(() => {
     onClickDelete()
-    setIsDeleting(true)
-    deleteComment(commentId)
-  }, [commentId, deleteComment, onClickDelete])
+  }, [onClickDelete])
 
   const handleCommentPin = useCallback(() => {
     pinComment(commentId, !isPinned)

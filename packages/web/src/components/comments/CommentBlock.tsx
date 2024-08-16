@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  useDeleteComment
+} from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
 import { Avatar, Flex, IconPin, Text, Timestamp } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
@@ -31,19 +34,13 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const { usePostComment, useDeleteComment } = useCurrentCommentSection()
+  const { usePostComment } = useCurrentCommentSection()
 
-  const [, { status: deleteStatus }] = useDeleteComment()
-  const prevDeleteStatus = usePrevious(deleteStatus)
-  useEffect(() => {
-    if (prevDeleteStatus !== deleteStatus && deleteStatus !== Status.LOADING) {
-      setIsDeleting(false)
-    }
-  }, [deleteStatus, prevDeleteStatus])
+  const [deleteComment, { status: deleteStatus }] = useDeleteComment()
 
   const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
   const prevPostStatus = usePrevious(commentPostStatus)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const isDeleting = deleteStatus === Status.LOADING
   // wait for the comment to be posted before hiding the input
   useEffect(() => {
     if (
@@ -113,7 +110,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
           comment={comment}
           onClickReply={() => setShowReplyInput((prev) => !prev)}
           onClickEdit={() => setShowEditInput((prev) => !prev)}
-          onClickDelete={() => setIsDeleting(true)}
+          onClickDelete={() => deleteComment(commentId)}
           isDisabled={isDeleting}
         />
 
