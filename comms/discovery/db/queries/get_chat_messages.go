@@ -136,6 +136,7 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 			  AND b.created_at < $4
 			  AND b.created_at > $5
 			ORDER BY b.created_at DESC
+			LIMIT $6
 			`
 
 			err := q.SelectContext(ctx, &rows, outgoingBlastMessages,
@@ -144,6 +145,7 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 				audience,
 				arg.Before,
 				arg.After,
+				arg.Limit,
 			)
 			return rows, err
 		} else {

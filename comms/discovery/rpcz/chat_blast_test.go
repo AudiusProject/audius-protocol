@@ -324,9 +324,10 @@ func TestChatBlast(t *testing.T) {
 	{
 		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
 			UserID: 69,
-			ChatID: "blast:asdf:follower_audience",
+			ChatID: "blast:69:follower_audience",
 			Before: time.Now().Add(time.Hour * 2).UTC(),
 			After:  time.Now().Add(time.Hour * -2).UTC(),
+			Limit:  10,
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 2)
