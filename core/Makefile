@@ -20,10 +20,19 @@ gen: $(SQL_SRCS)
 	go generate ./...
 	cd db && sqlc generate
 
-.PHONY: dev hotreload
+.PHONY: dev solo hotreload
 dev:
 	make gen
 	audius-compose up db core core-content-1 core-content-2 core-content-3
+
+solo:
+	rm -rf ./tmp/soloNodeHome
+	@echo "starting single node cluster"
+	audius-compose up db
+	go run main.go -env-file=./infra/dev_config/solo.env
+
+seed:
+	curl -s '0.0.0.0:6611/broadcast_tx_commit?tx="cometbft=rocks"'
 
 hotreload:
 	modd

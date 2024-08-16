@@ -7,6 +7,9 @@ import (
 	"github.com/cometbft/cometbft/types"
 )
 
+//go:embed solo.json
+var soloGenesis embed.FS
+
 //go:embed dev.json
 var devGenesis embed.FS
 
@@ -36,6 +39,16 @@ func Read(environment string) (*types.GenesisDoc, error) {
 		genDoc, err := types.GenesisDocFromJSON(data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal stage.json into genesis: %v", err)
+		}
+		return genDoc, nil
+	case "local", "solo":
+		data, err := soloGenesis.ReadFile("solo.json")
+		if err != nil {
+			return nil, fmt.Errorf("failed to read embedded file: %v", err)
+		}
+		genDoc, err := types.GenesisDocFromJSON(data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal local.json into genesis: %v", err)
 		}
 		return genDoc, nil
 	default:
