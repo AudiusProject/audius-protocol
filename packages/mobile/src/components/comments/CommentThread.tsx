@@ -67,7 +67,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             ))}
           </Flex>
         )}
-        {/* {(rootComment?.replies?.length ?? 0) > 0 ? (
+        {(rootComment?.replies?.length ?? 0) > 0 ? (
           <TouchableOpacity
             onPress={() => handleLoadMoreReplies(rootComment.id)}
           >
@@ -75,7 +75,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
               {messages.showMoreReplies}
             </Text>
           </TouchableOpacity>
-        ) : null} */}
+        ) : null}
       </Flex>
     </>
   )

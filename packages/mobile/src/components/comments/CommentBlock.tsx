@@ -34,7 +34,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
     isPinned,
     message,
     reactCount = 0,
-    trackTimestampMS,
+    trackTimestampS,
     id: commentId,
     createdAt,
     userId: userIdStr
@@ -101,14 +101,14 @@ export const CommentBlock = (props: CommentBlockProps) => {
           <UserLink size='s' userId={userId} strength='strong' />
           <Flex direction='row' gap='xs' alignItems='center' h='100%'>
             <Timestamp time={new Date(createdAt)} />
-            {trackTimestampMS !== undefined ? (
+            {trackTimestampS !== undefined ? (
               <>
                 <Text color='subdued' size='xs'>
                   •
                 </Text>
 
                 <TextLink size='xs' variant='active'>
-                  {formatCommentTrackTimestamp(trackTimestampMS)}
+                  {formatCommentTrackTimestamp(trackTimestampS)}
                 </TextLink>
               </>
             ) : null}
