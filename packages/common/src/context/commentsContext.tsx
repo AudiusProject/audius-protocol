@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PropsWithChildren, createContext, useContext } from 'react'
+import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
 
@@ -35,10 +35,18 @@ type WrappedMutationHook<MutationWrapper, ReturnDataType> = () => [
   MutationHookResponse<ReturnDataType>
 ]
 
+export enum CommentSortMethod {
+  top = 'top',
+  newest = 'newest',
+  timestamp = 'timestamp'
+}
+
 // Props sent down to context (some are handled inside the context component)
 type CommentSectionContextType = CommentSectionContextProps & {
   commentSectionLoading: boolean
   comments: Comment[]
+  currentSort: CommentSortMethod
+  setCurrentSort: (sort: CommentSortMethod) => void
   usePostComment: WrappedMutationHook<
     (
       message: string,
@@ -95,6 +103,9 @@ export const CommentSectionProvider = ({
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const [pinComment, pinCommentResponse] = usePinCommentById()
   const [deleteComment, deleteCommentResponse] = useDeleteCommentById()
+  const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
+    CommentSortMethod.top
+  )
 
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
@@ -183,8 +194,10 @@ export const CommentSectionProvider = ({
         entityType,
         comments,
         commentSectionLoading,
-        playTrack,
         isEntityOwner,
+        currentSort,
+        setCurrentSort,
+        playTrack,
         usePostComment,
         useDeleteComment,
         useEditComment,

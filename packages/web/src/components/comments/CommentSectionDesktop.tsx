@@ -4,6 +4,7 @@ import { Button, Divider, Flex, Paper } from '@audius/harmony'
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
 import { CommentSkeletons } from './CommentSkeletons'
+import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
@@ -34,8 +35,9 @@ export const CommentSectionDesktop = () => {
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
-        <Flex gap='s' p='xl' w='100%' direction='column'>
-          <Flex direction='column' gap='m'>
+        <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
+          <CommentSortBar />
+          <Flex direction='column' gap='m' pt='m'>
             {comments.length === 0 ? <NoComments /> : null}
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />
