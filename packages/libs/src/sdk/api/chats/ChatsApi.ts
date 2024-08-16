@@ -737,7 +737,6 @@ export class ChatsApi
   }
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
-    if (c.last_message_is_plaintext) return c
     let lastMessage = ''
     try {
       const sharedSecret = await this.getChatSecret(c.chat_id)
