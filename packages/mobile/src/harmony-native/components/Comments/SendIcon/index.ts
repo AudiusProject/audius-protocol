@@ -1,0 +1,1 @@
+export { SendIcon } from './SendIcon'

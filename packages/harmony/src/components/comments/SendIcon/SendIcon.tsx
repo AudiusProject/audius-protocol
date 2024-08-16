@@ -1,1 +1,31 @@
-export const SendIcon = () => {}
+import { useTheme } from '@emotion/react'
+
+import { IconPaperAirplane } from 'icons'
+
+import { SendIconProps } from './types'
+
+export const SendIcon = ({ disabled = false, onClick }: SendIconProps) => {
+  const { color, motion } = useTheme()
+
+  return (
+    <IconPaperAirplane
+      size='2xl'
+      onClick={onClick}
+      css={{
+        cursor: 'pointer',
+        pointerEvents: disabled ? 'none' : 'all',
+        opacity: disabled ? 0.5 : 1,
+        path: {
+          fill: color.primary.primary,
+          transition: motion.quick
+        },
+        ':hover path': {
+          fill: color.primary.p100
+        },
+        ':active path': {
+          fill: color.primary.p500
+        }
+      }}
+    />
+  )
+}
