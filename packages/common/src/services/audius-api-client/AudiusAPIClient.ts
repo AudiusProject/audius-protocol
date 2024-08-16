@@ -12,7 +12,7 @@ import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
-import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
+import { StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -52,7 +52,6 @@ const ROOT_ENDPOINT_MAP = {
 const FULL_ENDPOINT_MAP = {
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
-  recommended: '/tracks/recommended',
   remixables: '/tracks/remixables',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
@@ -115,12 +114,6 @@ type GetTracksArgs = {
 type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
-  currentUserId: Nullable<ID>
-}
-
-type GetRecommendedArgs = {
-  genre: Nullable<string>
-  exclusionList: number[]
   currentUserId: Nullable<ID>
 }
 
@@ -353,33 +346,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getRecommended({
-    genre,
-    exclusionList,
-    currentUserId
-  }: GetRecommendedArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      genre,
-      limit:
-        this.remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
-      exclusion_list:
-        exclusionList.length > 0 ? exclusionList.map(String) : undefined,
-      user_id: encodedCurrentUserId || undefined
-    }
-    const recommendedResponse = await this._getResponse<
-      APIResponse<APITrack[]>
-    >(FULL_ENDPOINT_MAP.recommended, params)
-
-    if (!recommendedResponse) return []
-
-    const adapted = recommendedResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getRemixables({ limit = 25, currentUserId }: GetRemixablesArgs) {

@@ -76,8 +76,9 @@ export const compareSDKResponse = <T extends object | undefined | null>(
         legacy,
         migrated
       })
+    } else {
+      console.debug(`SDK Migration succeeded (object diff) for ${endpointName}`)
     }
-    console.debug(`SDK Migration succeeded (object diff) for ${endpointName}`)
     return
   }
   // Not object like, perform strict equals
@@ -86,7 +87,7 @@ export const compareSDKResponse = <T extends object | undefined | null>(
       legacy,
       migrated
     })
-    return
+  } else {
+    console.debug(`SDK Migration succeeded (===) for ${endpointName}`)
   }
-  console.debug(`SDK Migration succeeded (===) for ${endpointName}`)
 }
