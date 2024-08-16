@@ -189,102 +189,106 @@ export const PayoutWalletModal = () => {
       setIsSubmitting(true)
       const sdk = await audiusSdk()
       try {
-        if (!address || !user) {
-          throw new Error('No user or address')
+        if (!user) {
+          throw new Error('No user found')
         }
 
-        const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
-        const addressPubkey = new PublicKey(address)
-        const connection = sdk.services.solanaClient.connection
-        const info = await connection.getAccountInfo(addressPubkey)
+        const updatedUser = { ...user }
 
-        let usdcAta: string | null = null
-
-        const isRootWallet =
-          (!info || info?.owner.equals(SystemProgram.programId)) &&
-          PublicKey.isOnCurve(addressPubkey)
-
-        if (!isRootWallet) {
-          // If not a root wallet, maybe it's a USDC account
-          try {
-            const unpacked = unpackAccount(
-              addressPubkey,
-              info,
-              TOKEN_PROGRAM_ID
-            )
-            if (unpacked.mint.equals(usdcMint)) {
-              usdcAta = address
-            }
-          } catch (e) {
-            console.debug(`Account ${address} is not a token account`, e)
-            // fall through
-          }
+        if (option === 'default') {
+          updatedUser.spl_usdc_payout_wallet = null
         } else {
-          // It's a root wallet - check for USDC mint ATA
-          const ataPubkey = getAssociatedTokenAddressSync(
-            usdcMint,
-            addressPubkey
-          )
-          try {
-            const account = await getAccount(connection, ataPubkey)
-            if (account.mint.equals(usdcMint)) {
-              usdcAta = ataPubkey.toBase58()
-            }
-          } catch (e) {
-            // No USDC mint ATA. Make one if possible.
-            if (e instanceof TokenAccountNotFoundError) {
-              const payer = await sdk.services.solanaRelay.getFeePayer()
-              const res = await connection.getLatestBlockhash()
-              const transaction =
-                await sdk.services.solanaClient.buildTransaction({
-                  recentBlockhash: res.blockhash,
-                  instructions: [
-                    createAssociatedTokenAccountIdempotentInstruction(
-                      payer,
-                      ataPubkey,
-                      addressPubkey,
-                      usdcMint
-                    )
-                  ]
-                })
+          if (!address) {
+            throw new Error('No address set')
+          }
 
-              const { signature } = await sdk.services.solanaRelay.relay({
-                transaction
-              })
-              usdcAta = ataPubkey.toBase58()
-              await connection.confirmTransaction({
-                signature,
-                blockhash: res.blockhash,
-                lastValidBlockHeight: res.lastValidBlockHeight
-              })
-              let owner = null
-              let retryCount = 0
-              // Obscene max retry count is intentional
-              while (owner === null && retryCount < 10000) {
-                try {
-                  owner = await getAssociatedTokenAccountOwner(
-                    usdcAta as SolanaWalletAddress
-                  )
-                } catch (e) {
-                  console.debug(
-                    'Retry getAssociatedTokenAccountOwner...',
-                    retryCount++
-                  )
-                  await new Promise((resolve) => setTimeout(resolve, 500))
+          const usdcMint = new PublicKey(env.USDC_MINT_ADDRESS)
+          const addressPubkey = new PublicKey(address)
+          const connection = sdk.services.solanaClient.connection
+          const info = await connection.getAccountInfo(addressPubkey)
+
+          let usdcAta: string | null = null
+
+          const isRootWallet =
+            (!info || info?.owner.equals(SystemProgram.programId)) &&
+            PublicKey.isOnCurve(addressPubkey)
+
+          if (!isRootWallet) {
+            // If not a root wallet, maybe it's a USDC account
+            try {
+              const unpacked = unpackAccount(
+                addressPubkey,
+                info,
+                TOKEN_PROGRAM_ID
+              )
+              if (unpacked.mint.equals(usdcMint)) {
+                usdcAta = address
+              }
+            } catch (e) {
+              console.debug(`Account ${address} is not a token account`, e)
+              // fall through
+            }
+          } else {
+            // It's a root wallet - check for USDC mint ATA
+            const ataPubkey = getAssociatedTokenAddressSync(
+              usdcMint,
+              addressPubkey
+            )
+            try {
+              const account = await getAccount(connection, ataPubkey)
+              if (account.mint.equals(usdcMint)) {
+                usdcAta = ataPubkey.toBase58()
+              }
+            } catch (e) {
+              // No USDC mint ATA. Make one if possible.
+              if (e instanceof TokenAccountNotFoundError) {
+                const payer = await sdk.services.solanaRelay.getFeePayer()
+                const res = await connection.getLatestBlockhash()
+                const transaction =
+                  await sdk.services.solanaClient.buildTransaction({
+                    recentBlockhash: res.blockhash,
+                    instructions: [
+                      createAssociatedTokenAccountIdempotentInstruction(
+                        payer,
+                        ataPubkey,
+                        addressPubkey,
+                        usdcMint
+                      )
+                    ]
+                  })
+
+                const { signature } = await sdk.services.solanaRelay.relay({
+                  transaction
+                })
+                usdcAta = ataPubkey.toBase58()
+                await connection.confirmTransaction({
+                  signature,
+                  blockhash: res.blockhash,
+                  lastValidBlockHeight: res.lastValidBlockHeight
+                })
+                let owner = null
+                let retryCount = 0
+                // Obscene max retry count is intentional
+                while (owner === null && retryCount < 10000) {
+                  try {
+                    owner = await getAssociatedTokenAccountOwner(
+                      usdcAta as SolanaWalletAddress
+                    )
+                  } catch (e) {
+                    console.debug(
+                      'Retry getAssociatedTokenAccountOwner...',
+                      retryCount++
+                    )
+                    await new Promise((resolve) => setTimeout(resolve, 500))
+                  }
                 }
               }
             }
           }
-        }
 
-        if (!usdcAta) {
-          throw new Error('Cannot create USDC token account')
-        }
-
-        const updatedUser = { ...user }
-        if (option === 'default') {
-          updatedUser.spl_usdc_payout_wallet = null
-        } else {
+          if (!usdcAta) {
+            throw new Error('Cannot create USDC token account')
+          }
           updatedUser.spl_usdc_payout_wallet = usdcAta as SolanaWalletAddress
         }
         dispatch(profilePageActions.updateProfile(updatedUser))
