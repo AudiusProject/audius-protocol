@@ -1,11 +1,6 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import {
-  ID,
-  TimeRange,
-  StemTrackMetadata,
-  CollectionMetadata
-} from '../../models'
+import { ID, StemTrackMetadata, CollectionMetadata } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
@@ -55,8 +50,6 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  trendingIds: (experiment: string | null) =>
-    experiment ? `/tracks/trending/ids/${experiment}` : '/tracks/trending/ids',
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   recommended: '/tracks/recommended',
@@ -123,11 +116,6 @@ type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
   currentUserId: Nullable<ID>
-}
-
-type GetTrendingIdsArgs = {
-  limit?: number
-  genre?: Nullable<string>
 }
 
 type GetRecommendedArgs = {
@@ -228,20 +216,6 @@ type GetSearchArgs = {
   hasDownloads?: boolean
   isPremium?: boolean
   sortMethod?: SearchSortMethod
-}
-
-type TrendingIdsResponse = {
-  week: { id: string }[]
-  month: { id: string }[]
-  year: { id: string }[]
-  allTime: { id: string }[]
-}
-
-export type TrendingIds = {
-  week: ID[]
-  month: ID[]
-  year: ID[]
-  allTime: ID[]
 }
 
 type GetTrendingPlaylistsArgs = {
@@ -379,45 +353,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrendingIds({ genre, limit }: GetTrendingIdsArgs) {
-    this._assertInitialized()
-    const params = {
-      limit,
-      genre: genre || undefined
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.TRENDING_EXPERIMENT
-    )
-    const trendingIdsResponse = await this._getResponse<
-      APIResponse<TrendingIdsResponse>
-    >(FULL_ENDPOINT_MAP.trendingIds(experiment), params)
-    if (!trendingIdsResponse) {
-      return {
-        week: [],
-        month: [],
-        year: [],
-        allTime: []
-      }
-    }
-
-    const timeRanges = Object.keys(trendingIdsResponse.data) as TimeRange[]
-    const res = timeRanges.reduce(
-      (acc: TrendingIds, timeRange: TimeRange) => {
-        acc[timeRange] = trendingIdsResponse.data[timeRange]
-          .map(adapter.makeTrackId)
-          .filter(Boolean) as ID[]
-        return acc
-      },
-      {
-        week: [],
-        month: [],
-        year: [],
-        allTime: []
-      }
-    )
-    return res
   }
 
   async getRecommended({
