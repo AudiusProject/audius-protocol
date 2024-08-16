@@ -10,7 +10,7 @@ import { NoComments } from './NoComments'
 
 export const CommentSectionDesktop = () => {
   const {
-    userId,
+    currentUserId,
     comments,
     commentSectionLoading,
     usePostComment,
@@ -20,7 +20,7 @@ export const CommentSectionDesktop = () => {
   const handlePostComment = (message: string) => {
     postComment(message, undefined)
   }
-  const commentPostAllowed = userId !== null
+  const commentPostAllowed = currentUserId !== null
 
   if (commentSectionLoading) {
     return <CommentSkeletons />
