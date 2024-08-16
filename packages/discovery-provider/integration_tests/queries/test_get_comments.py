@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_comments import get_track_comments
+from src.queries.get_comments import get_comment_replies, get_track_comments
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -74,3 +74,12 @@ def test_get_comments_page(app):
 
         for comment in comments:
             assert decode_string_id(comment["id"]) <= 5
+
+
+def test_get_comments_replies(app):
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, test_entities)
+        comments = get_comment_replies({"limit": 2, "offset": 2}, 10)
+        for comment in comments:
+            assert 106 <= decode_string_id(comment["id"]) <= 108
