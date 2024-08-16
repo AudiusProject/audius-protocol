@@ -3,6 +3,7 @@ package rpcz
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -85,6 +86,16 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.False(t, ch.LastMessageIsPlaintext)
+
+		// user 69 now has 1 (real) chats
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 69,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour * 2).UTC(),
+			After:  time.Now().Add(time.Hour * -2).UTC(),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, chats, 1)
 	}
 
 	// user 69 starts empty thread with 103 before first blast
@@ -97,6 +108,17 @@ func TestChatBlast(t *testing.T) {
 			},
 		})
 		assert.NoError(t, err)
+
+		// user 69 still has 1 (real) chats
+		// because this is empty
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 69,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour * 2).UTC(),
+			After:  time.Now().Add(time.Hour * -2).UTC(),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, chats, 1)
 	}
 
 	// ----------------- a first blast ------------------------
@@ -120,6 +142,29 @@ func TestChatBlast(t *testing.T) {
 
 	tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId_101_69).Scan(&count)
 	assert.Equal(t, 0, count)
+
+	// user 69 gets chat list... it has
+	{
+		// user 69 now has 3 chats
+		// one is a `blast:`
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 69,
+			Limit:  10,
+			Before: time.Now().Add(time.Hour * 2).UTC(),
+			After:  time.Now().Add(time.Hour * -2).UTC(),
+		})
+		assert.NoError(t, err)
+		assert.Len(t, chats, 3)
+
+		blastCount := 0
+		for _, c := range chats {
+			if strings.HasPrefix(c.ChatID, "blast:") {
+				blastCount++
+			}
+		}
+		assert.Equal(t, "blast:69:follower_audience", chats[0].ChatID)
+		assert.Equal(t, 1, blastCount)
+	}
 
 	// user 100 (pre-existing) has a new message, but no new blasts
 	{
