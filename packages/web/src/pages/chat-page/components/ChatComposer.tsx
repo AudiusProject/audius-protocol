@@ -14,7 +14,6 @@ import {
   decodeHashId,
   formatTrackName,
   matchAudiusLinks,
-  parseChatBlastId,
   splitOnNewline
 } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
@@ -29,7 +28,7 @@ import { env } from 'services/env'
 import styles from './ChatComposer.module.css'
 import { ComposerTrackInfo } from './ComposeTrackInfo'
 
-const { sendMessage, sendChatBlast } = chatActions
+const { sendMessage } = chatActions
 
 const messages = {
   sendMessage: 'Send Message',
@@ -93,8 +92,6 @@ export const ChatComposer = (props: ChatComposerProps) => {
 
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
-  const { audience, audienceContentType, audienceContentId, isBlast } =
-    parseChatBlastId(chatId)
 
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -154,34 +151,12 @@ export const ChatComposer = (props: ChatComposerProps) => {
         for (const [human, { link }] of Object.entries(humanToTrack)) {
           editedValue = editedValue.replaceAll(human, link)
         }
-        if (isBlast) {
-          dispatch(
-            sendChatBlast({
-              chatId,
-              message: editedValue,
-              audience,
-              audienceContentId,
-              audienceContentType
-            })
-          )
-        } else {
-          dispatch(sendMessage({ chatId, message: editedValue }))
-        }
+        dispatch(sendMessage({ chatId, message: editedValue }))
         setValue('')
         onMessageSent()
       }
     },
-    [
-      chatId,
-      value,
-      isBlast,
-      onMessageSent,
-      humanToTrack,
-      dispatch,
-      audience,
-      audienceContentId,
-      audienceContentType
-    ]
+    [chatId, value, onMessageSent, humanToTrack, dispatch]
   )
 
   // Submit when pressing enter while not holding shift

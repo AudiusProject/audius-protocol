@@ -125,16 +125,3 @@ export const makeBlastChatId = ({
     (audienceContentId ? `:${audienceContentId}` : '')
   )
 }
-
-export const parseChatBlastId = (chatId?: string) => {
-  if (!chatId) return {}
-  const [audience, audienceContentType, audienceContentId] = chatId.split(':')
-  return {
-    audience: audience as ChatBlastAudience,
-    audienceContentType: audienceContentType as 'track' | 'album',
-    audienceContentId,
-    isBlast: Object.values(ChatBlastAudience).includes(
-      audience as ChatBlastAudience
-    )
-  }
-}
