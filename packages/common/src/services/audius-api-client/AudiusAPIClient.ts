@@ -52,7 +52,6 @@ const ROOT_ENDPOINT_MAP = {
 const FULL_ENDPOINT_MAP = {
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
-  remixables: '/tracks/remixables',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
@@ -114,11 +113,6 @@ type GetTracksArgs = {
 type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
-  currentUserId: Nullable<ID>
-}
-
-type GetRemixablesArgs = {
-  limit?: number
   currentUserId: Nullable<ID>
 }
 
@@ -346,28 +340,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getRemixables({ limit = 25, currentUserId }: GetRemixablesArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      limit,
-      user_id: encodedCurrentUserId || undefined,
-      with_users: true
-    }
-    const remixablesResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.remixables,
-      params
-    )
-
-    if (!remixablesResponse) return []
-
-    const adapted = remixablesResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-
-    return adapted
   }
 
   async getTrack(
