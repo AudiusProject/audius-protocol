@@ -522,7 +522,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   return (
-    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
+    <Paper>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text

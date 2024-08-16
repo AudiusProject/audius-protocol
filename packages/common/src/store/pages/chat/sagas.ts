@@ -1,6 +1,5 @@
 import {
   ChatBlast,
-  ChatBlastAudience,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -24,7 +23,12 @@ import { getAccountUser, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
-import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
+import {
+  decodeHashId,
+  encodeHashId,
+  makeBlastChatId,
+  removeNullable
+} from '../../../utils'
 import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
@@ -64,7 +68,6 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,
@@ -140,8 +143,13 @@ function* doFetchLatestChats() {
     let hasMoreChats = true
     let data: UserChat[] = []
     let firstResponse: TypedCommsResponse<UserChat[]> | undefined
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      throw new Error('User not found')
+    }
     while (hasMoreChats) {
       const response = yield* call([sdk.chats, sdk.chats.getAll], {
+        userId: encodeHashId(currentUserId)!,
         before,
         after: summary?.next_cursor,
         limit: CHAT_PAGE_SIZE
@@ -177,7 +185,12 @@ function* doFetchMoreChats() {
     const sdk = yield* call(audiusSdk)
     const summary = yield* select(getChatsSummary)
     const before = summary?.prev_cursor
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      throw new Error('User not found')
+    }
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
+      userId: encodeHashId(currentUserId)!,
       before,
       limit: CHAT_PAGE_SIZE
     })
@@ -441,8 +454,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
 function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
   const {
     audience,
-    contentId,
-    contentType,
+    audienceContentId,
+    audienceContentType,
     presetMessage,
     replaceNavigation,
     skipNavigation
@@ -455,9 +468,11 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
-    const chatId = `${audience}${contentType ? `:${contentType}` : ''}${
-      contentId ? `:${contentId}` : ''
-    }`
+    const chatId = makeBlastChatId({
+      audience,
+      audienceContentId,
+      audienceContentType
+    })
 
     // Optimistically go to the chat. If we fail to create it, we'll toast
     if (!skipNavigation) {
@@ -474,9 +489,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         chat_id: chatId,
         is_blast: true,
         last_message_at: dayjs().toISOString(),
-        audience,
-        content_type: contentType,
-        content_id: contentId?.toString()
+        audience
       }
       yield* put(
         createChatSucceeded({
@@ -499,8 +512,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       error: e as Error,
       additionalInfo: {
         audience,
-        contentId,
-        contentType
+        audienceContentId,
+        audienceContentType
       }
     })
     yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
@@ -549,6 +562,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { track, make } = yield* getContext('analytics')
   const messageIdToUse = resendMessageId ?? ulid()
   const userId = yield* select(getUserId)
+  const chat = yield* select((state) => getChat(state, chatId))
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
@@ -567,18 +581,28 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           message,
           reactions: [],
           created_at: dayjs().toISOString(),
-          is_plaintext: false
+          is_plaintext: !!chat?.is_blast
         },
         status: Status.LOADING,
         isSelfMessage: true
       })
     )
 
-    yield* call([sdk.chats, sdk.chats.message], {
-      chatId,
-      messageId: messageIdToUse,
-      message
-    })
+    if (chat?.is_blast) {
+      yield* call([sdk.chats, sdk.chats.messageBlast], {
+        audience: chat.audience,
+        audienceContentType: chat.audience_content_type,
+        audienceContentId: chat.audience_content_id,
+        blastId: messageIdToUse,
+        message
+      })
+    } else {
+      yield* call([sdk.chats, sdk.chats.message], {
+        chatId,
+        messageId: messageIdToUse,
+        message
+      })
+    }
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
   } catch (e) {
     console.error('sendMessageFailed', e)
@@ -610,61 +634,6 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
       }
     })
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
-  }
-}
-
-function* doSendChatBlast(action: ReturnType<typeof sendChatBlast>) {
-  const { message } = action.payload
-  // const { blastId, audience, audienceTrackId, message } = action.payload
-  // TODO: analytics PAY-3347
-  // const { track, make } = yield* getContext('analytics')
-  const messageIdToUse = ulid()
-  const userId = yield* select(getUserId)
-  try {
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
-    const currentUserId = encodeHashId(userId)
-    if (!currentUserId) {
-      return
-    }
-
-    // TODO: optimistic add
-    // Optimistically add the message
-    // yield* put(
-    //   addMessage({
-    //     chatId,
-    //     message: {
-    //       sender_user_id: currentUserId,
-    //       message_id: messageIdToUse,
-    //       message,
-    //       reactions: [],
-    //       created_at: dayjs().toISOString()
-    //     },
-    //     status: Status.LOADING,
-    //     isSelfMessage: true
-    //   })
-    // )
-
-    yield* call([sdk.chats, sdk.chats.messageBlast], {
-      audience: ChatBlastAudience.FOLLOWERS,
-      blastId: messageIdToUse,
-      message
-    })
-    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_SUCCESS }))
-  } catch (e) {
-    console.error('sendMessageBlastFailed', e)
-    // yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
-
-    // const reportToSentry = yield* getContext('reportToSentry')
-    // reportToSentry({
-    //   level: ErrorLevel.Error,
-    //   error: e as Error,
-    //   additionalInfo: {
-    //     chatId,
-    //     messageId: messageIdToUse
-    //   }
-    // })
-    // yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
   }
 }
 
@@ -905,10 +874,6 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
-function* watchSendChatBlast() {
-  yield takeEvery(sendChatBlast, doSendChatBlast)
-}
-
 function* watchFetchLatestChats() {
   yield takeLatest(fetchLatestChats, doFetchLatestChats)
 }
@@ -986,7 +951,6 @@ export const sagas = () => {
     watchCreateChatBlast,
     watchMarkChatAsRead,
     watchSendMessage,
-    watchSendChatBlast,
     watchAddMessage,
     watchFetchBlockees,
     watchFetchBlockers,

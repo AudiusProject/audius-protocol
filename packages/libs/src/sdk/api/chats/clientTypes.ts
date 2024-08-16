@@ -19,7 +19,7 @@ export const ChatListenRequestSchema = z.optional(
 export type ChatListenRequest = z.infer<typeof ChatListenRequestSchema>
 
 export const ChatGetAllRequestSchema = z.object({
-  currentUserId: z.optional(z.string()),
+  userId: z.string(),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())
@@ -97,7 +97,8 @@ export const ChatBlastMessageRequestSchema = z.object({
   blastId: z.string(),
   message: z.string(),
   audience: z.nativeEnum(ChatBlastAudience),
-  audienceTrackId: z.optional(z.string())
+  audienceContentId: z.optional(z.string()),
+  audienceContentType: z.optional(z.enum(['track', 'album']))
 })
 
 export type ChatBlastMessageRequest = z.infer<

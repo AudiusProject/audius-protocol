@@ -10,13 +10,15 @@ import (
 )
 
 type BlastRow struct {
-	PendingChatID   string        `db:"-" json:"pending_chat_id"`
-	BlastID         string        `db:"blast_id" json:"blast_id"`
-	FromUserID      int32         `db:"from_user_id" json:"from_user_id"`
-	Audience        string        `db:"audience" json:"audience"`
-	AudienceTrackID sql.NullInt32 `db:"audience_track_id" json:"audience_track_id"`
-	Plaintext       string        `db:"plaintext" json:"plaintext"`
-	CreatedAt       time.Time     `db:"created_at" json:"created_at"`
+	PendingChatID            string         `db:"-" json:"pending_chat_id"`
+	BlastID                  string         `db:"blast_id" json:"blast_id"`
+	FromUserID               int32          `db:"from_user_id" json:"from_user_id"`
+	Audience                 string         `db:"audience" json:"audience"`
+	AudienceContentType      sql.NullString `db:"audience_content_type" json:"audience_content_type"`
+	AudienceContentID        sql.NullInt32  `db:"audience_content_id" json:"-"`
+	AudienceContentIDEncoded sql.NullString `db:"-" json:"audience_content_id"`
+	Plaintext                string         `db:"plaintext" json:"plaintext"`
+	CreatedAt                time.Time      `db:"created_at" json:"created_at"`
 }
 
 func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams) ([]BlastRow, error) {
@@ -41,9 +43,17 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 		return nil, err
 	}
 
-	for idx, row := range items {
-		chatId := misc.ChatID(int(arg.UserID), int(row.FromUserID))
+	for idx, blastRow := range items {
+		chatId := misc.ChatID(int(arg.UserID), int(blastRow.FromUserID))
 		items[idx].PendingChatID = chatId
+
+		if blastRow.AudienceContentID.Valid {
+			encoded, _ := misc.EncodeHashId(int(blastRow.AudienceContentID.Int32))
+			items[idx].AudienceContentIDEncoded = sql.NullString{
+				String: encoded,
+				Valid:  true,
+			}
+		}
 	}
 
 	var existingChatIdList []string

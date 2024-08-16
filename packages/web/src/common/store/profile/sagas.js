@@ -1,4 +1,7 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
+import {
+  userMetadataListFromSDK,
+  userWalletsFromSDK
+} from '@audius/common/adapters'
 import { DefaultSizes, Kind, Id } from '@audius/common/models'
 import { DoubleKeys } from '@audius/common/services'
 import {
@@ -14,7 +17,8 @@ import {
   relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -127,61 +131,66 @@ export function* fetchEthereumCollectiblesWithCollections(collectibles) {
 }
 
 export function* fetchEthereumCollectibles(user) {
-  const apiClient = yield getContext('apiClient')
-  const associatedWallets = yield apiClient.getAssociatedWallets({
-    userID: user.user_id
+  const sdk = yield* getSDK()
+  const { data } = yield call([sdk.users, sdk.users.getConnectedWallets], {
+    id: Id.parse(user.user_id)
   })
-  if (associatedWallets) {
-    const { wallets } = associatedWallets
-    const collectiblesMap = yield call(fetchEthereumCollectiblesForWallets, [
-      user.wallet,
-      ...wallets
-    ])
+  const associatedWallets = data ? userWalletsFromSDK(data) : null
 
-    const collectibleList = Object.values(collectiblesMap).flat()
-    if (!collectibleList.length) {
-      console.info('profile has no assets in OpenSea')
-    }
-
-    yield put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: user.user_id,
-          metadata: {
-            collectibleList
-          }
-        }
-      ])
-    )
-    yield put(
-      updateUserEthCollectibles({
-        userId: user.user_id,
-        userCollectibles: collectibleList
-      })
-    )
-
-    // Fetch collections and update state
-    const collectiblesWithCollections = yield call(
-      fetchEthereumCollectiblesWithCollections,
-      collectibleList
-    )
-    yield put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: user.user_id,
-          metadata: {
-            collectibleList: collectiblesWithCollections
-          }
-        }
-      ])
-    )
-    yield put(
-      updateUserEthCollectibles({
-        userId: user.user_id,
-        userCollectibles: collectiblesWithCollections
-      })
-    )
+  if (!associatedWallets) {
+    console.debug('No associated wallets found')
+    return
   }
+
+  const { wallets } = associatedWallets
+  const collectiblesMap = yield call(fetchEthereumCollectiblesForWallets, [
+    user.wallet,
+    ...wallets
+  ])
+
+  const collectibleList = Object.values(collectiblesMap).flat()
+  if (!collectibleList.length) {
+    console.info('profile has no assets in OpenSea')
+  }
+
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: {
+          collectibleList
+        }
+      }
+    ])
+  )
+  yield put(
+    updateUserEthCollectibles({
+      userId: user.user_id,
+      userCollectibles: collectibleList
+    })
+  )
+
+  // Fetch collections and update state
+  const collectiblesWithCollections = yield call(
+    fetchEthereumCollectiblesWithCollections,
+    collectibleList
+  )
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: {
+          collectibleList: collectiblesWithCollections
+        }
+      }
+    ])
+  )
+  yield put(
+    updateUserEthCollectibles({
+      userId: user.user_id,
+      userCollectibles: collectiblesWithCollections
+    })
+  )
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
@@ -192,13 +201,20 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 }
 
 export function* fetchSolanaCollectibles(user) {
-  const apiClient = yield getContext('apiClient')
+  const sdk = yield* getSDK()
   const nftClient = yield getContext('nftClient')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
-  const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
-    userID: user.user_id
+  const { data } = yield call([sdk.users, sdk.users.getConnectedWallets], {
+    id: Id.parse(user.user_id)
   })
+  const associatedWallets = data ? userWalletsFromSDK(data) : null
+  if (!associatedWallets) {
+    console.debug('No associated wallets found')
+    return
+  }
+
+  const { sol_wallets: solWallets } = associatedWallets
   const collectiblesMap = yield call(
     fetchSolanaCollectiblesForWallets,
     solWallets
@@ -425,6 +441,7 @@ function* fetchProfileAsync(action) {
     const isReachable = yield select(getIsReachable)
     if (isReachable && isResponseError(err) && err.response.status === 404) {
       yield put(pushRoute(NOT_FOUND_PAGE))
+      return
     }
     if (!isReachable) return
     throw err
@@ -555,8 +572,7 @@ export function* updateProfileAsync(action) {
 
 function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
-  const getSDK = yield getContext('audiusSdk')
-  const sdk = yield getSDK()
+  const sdk = yield* getSDK()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(

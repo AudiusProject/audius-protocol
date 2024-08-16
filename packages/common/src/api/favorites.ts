@@ -1,20 +1,26 @@
+import { transformAndCleanList } from '~/adapters'
+import { favoriteFromSDK } from '~/adapters/favorite'
 import { createApi } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
+import { ID, Id } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 type GetFavoritedTrackListArgs = {
   currentUserId: Nullable<ID>
-  limit?: number
 }
 
 const favoritesApi = createApi({
   reducerPath: 'favoritesApi',
   endpoints: {
     getFavoritedTrackList: {
-      fetch: async (args: GetFavoritedTrackListArgs, { apiClient }) => {
-        const { currentUserId, limit = 10000 } = args
+      fetch: async (args: GetFavoritedTrackListArgs, { audiusSdk }) => {
+        const { currentUserId } = args
         if (!currentUserId) return null
-        return await apiClient.getFavorites({ currentUserId, limit })
+
+        const sdk = await audiusSdk()
+        const { data } = await sdk.users.getFavorites({
+          id: Id.parse(currentUserId)
+        })
+        return transformAndCleanList(data, favoriteFromSDK)
       },
       options: {}
     }

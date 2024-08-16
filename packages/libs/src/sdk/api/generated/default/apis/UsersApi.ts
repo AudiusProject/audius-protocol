@@ -22,6 +22,7 @@ import type {
   FavoritesResponse,
   FollowersResponse,
   FollowingResponse,
+  GetChallenges,
   GetSupportedUsers,
   GetSupporters,
   RelatedArtistResponse,
@@ -49,6 +50,8 @@ import {
     FollowersResponseToJSON,
     FollowingResponseFromJSON,
     FollowingResponseToJSON,
+    GetChallengesFromJSON,
+    GetChallengesToJSON,
     GetSupportedUsersFromJSON,
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
@@ -215,6 +218,11 @@ export interface GetUserRequest {
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
+}
+
+export interface GetUserChallengesRequest {
+    id: string;
+    showHistorical?: boolean;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -1108,6 +1116,41 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
         const response = await this.getUserByHandleRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets all challenges for the given user
+     */
+    async getUserChallengesRaw(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetChallenges>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserChallenges.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.showHistorical !== undefined) {
+            queryParameters['show_historical'] = params.showHistorical;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/challenges`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetChallengesFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets all challenges for the given user
+     */
+    async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
+        const response = await this.getUserChallengesRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -11,8 +11,9 @@ export type ChatBlastRPC = {
   method: 'chat.blast'
   params: {
     blast_id: string
-    audience_track_id?: string // if targeting customers / remixers of a specific track
     audience: ChatBlastAudience
+    audience_content_type?: string // if targeting buyers / remixers of a specific track or album
+    audience_content_id?: string // if targeting buyers / remixers of a specific track or album
     message: string
   }
 }
@@ -104,7 +105,6 @@ export type RPCPayloadRequest =
   | ChatBlockRPC
   | ChatUnblockRPC
   | ChatPermitRPC
-  | ChatBlastRPC
   | ValidateCanChatRPC
 
 export type RPCPayload = RPCPayloadRequest & {
@@ -133,15 +133,6 @@ export type UserChat = {
   is_blast: false
 }
 
-export type ChatBlast = {
-  chat_id: string
-  audience: ChatBlastAudience
-  content_id?: string
-  content_type?: 'track' | 'album'
-  is_blast: true
-  last_message_at: string
-}
-
 export type ChatMessageReaction = {
   user_id: string
   created_at: string
@@ -168,6 +159,27 @@ export type ChatMessage = {
 export type ChatInvite = {
   user_id: string
   invite_code: string
+}
+
+type ChatBlastBase = {
+  chat_id: string // maps to blast_id on the backend
+  audience: ChatBlastAudience
+  audience_content_id?: string
+  audience_content_type?: 'track' | 'album'
+}
+
+// Return type of getNewBlasts
+export type UpgradableChatBlast = ChatBlastBase & {
+  pending_chat_id: string // chat_id to be created when upgrading to UserChat
+  from_user_id: number
+  plaintext: string
+  created_at: string
+}
+
+// Client-side chat blast
+export type ChatBlast = ChatBlastBase & {
+  is_blast: true
+  last_message_at: string
 }
 
 export type ValidatedChatPermissions = {
@@ -224,7 +236,8 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
-    userId: string
+    senderUserId: string
+    receiverUserId: string
     timestamp: string
   }
 }
