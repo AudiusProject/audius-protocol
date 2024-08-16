@@ -78,7 +78,7 @@ const CommentDrawerContent = () => {
 export const CommentDrawer = () => {
   const insets = useSafeAreaInsets()
   const {
-    data: { userId, entityId, isEntityOwner }
+    data: { userId, entityId, isEntityOwner, artistId }
   } = useDrawer('Comment')
   return (
     <NativeDrawer drawerName='Comment'>
@@ -88,6 +88,7 @@ export const CommentDrawer = () => {
         }}
       >
         <CommentSectionProvider
+          artistId={artistId}
           userId={userId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
