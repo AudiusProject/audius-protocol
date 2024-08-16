@@ -35,7 +35,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const { currentUserId, artistId, usePostComment } = useCurrentCommentSection()
+  const { artistId, usePostComment } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
 
