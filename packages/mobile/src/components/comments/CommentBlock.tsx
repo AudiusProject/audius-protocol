@@ -119,7 +119,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>
-              <Flex direction='row' alignItems='center'>
+              <Flex direction='row' alignItems='center' gap='xs'>
                 <IconButton
                   size='m'
                   icon={IconHeart}
@@ -128,7 +128,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
                   onPress={handleCommentReact}
                 />
                 <Text color='default' size='s'>
-                  {' '}
                   {reactCount}
                 </Text>
               </Flex>
