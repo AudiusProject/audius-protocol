@@ -321,9 +321,17 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 				return err
 			}
 
-			err = chatBlast(tx, userId, messageTs, params)
+			outgoingMessages, err := chatBlast(tx, userId, messageTs, params)
 			if err != nil {
 				return err
+			}
+			// Send chat message websocket event to all recipients who have existing chats
+			for _, outgoingMessage := range outgoingMessages {
+				j, err := json.Marshal(outgoingMessage.ChatMessageRPC)
+				if err != nil {
+					slog.Error("err: invalid json", "err", err)
+				}
+				websocketNotify(json.RawMessage(j), userId, messageTs.Round(time.Microsecond))
 			}
 		default:
 			logger.Warn("no handler for ", rawRpc.Method)
