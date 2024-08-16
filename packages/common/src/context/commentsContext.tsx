@@ -2,6 +2,9 @@
 import { PropsWithChildren, createContext, useContext } from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
+import { useSelector } from 'react-redux'
+
+import { getSupporters } from '~/store/tipping/selectors'
 
 import { MutationHookResponse, usePaginatedQuery } from '..//audius-query'
 import { ID, Status } from '..//models'
@@ -21,6 +24,7 @@ import {
 
 // Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
+  artistId: ID
   userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
@@ -67,6 +71,7 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
+  artistId,
   userId,
   entityId,
   isEntityOwner,
@@ -175,6 +180,7 @@ export const CommentSectionProvider = ({
   return (
     <CommentSectionContext.Provider
       value={{
+        artistId,
         userId,
         entityId,
         entityType,
