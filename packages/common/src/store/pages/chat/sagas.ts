@@ -68,7 +68,6 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendChatBlast,
   sendMessageFailed,
   addMessage,
   fetchBlockees,

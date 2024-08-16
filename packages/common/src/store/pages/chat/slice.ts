@@ -448,19 +448,6 @@ const slice = createSlice({
         })
       }
     },
-    sendChatBlast: (
-      _state,
-      _action: PayloadAction<{
-        chatId: string
-        message: string
-        resendMessageId?: string
-        audience: ChatBlastAudience
-        audienceContentId?: string
-        audienceContentType?: 'track' | 'album'
-      }>
-    ) => {
-      // triggers saga
-    },
     addMessage: (
       state,
       action: PayloadAction<{
