@@ -253,7 +253,7 @@ const TrackPage = ({
           {isCommentingEnabled && heroTrack?.owner_id ? (
             <Flex flex='3'>
               <CommentSectionProvider
-                userId={userId}
+                currentUserId={userId}
                 entityId={defaults.trackId}
                 playTrack={() => {
                   play(currentQueueItem.uid ?? undefined)

@@ -24,7 +24,9 @@ const messages: Record<BadgeType, string> = {
   tipSupporter: 'Tip Supporter'
 }
 
-const CommentBadge = ({ type }: { type: BadgeType }) => {
+const CommentBadge = ({ type }: { type: BadgeType | null }) => {
+  if (type === null) return null
+
   const Icon = iconMap[type]
   return (
     <Flex gap='xs'>
@@ -57,6 +59,5 @@ export const CommentBadges = ({
     : isTipSupporter
     ? 'tipSupporter'
     : null
-  if (badgeType === null) return null
-  else return <CommentBadge type={badgeType} />
+  return <CommentBadge type={badgeType} />
 }

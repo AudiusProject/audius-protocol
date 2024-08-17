@@ -29,7 +29,7 @@ export const CommentForm = ({
   hideAvatar = false,
   isLoading
 }: CommentFormProps) => {
-  const { userId } = useCurrentCommentSection()
+  const { currentUserId } = useCurrentCommentSection()
 
   const handleSubmit = (
     { commentMessage }: CommentFormValues,
@@ -43,9 +43,9 @@ export const CommentForm = ({
   return (
     <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
       <Flex direction='row' gap='m' alignItems='center'>
-        {!hideAvatar && userId ? (
+        {!hideAvatar && currentUserId ? (
           <ProfilePicture
-            userId={userId}
+            userId={currentUserId}
             style={{ width: 40, height: 40, flexShrink: 0 }}
           />
         ) : null}

@@ -88,8 +88,8 @@ export const CommentDrawer = () => {
         }}
       >
         <CommentSectionProvider
+          currentUserId={userId}
           artistId={artistId}
-          userId={userId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
           playTrack={() => {}} // TODO

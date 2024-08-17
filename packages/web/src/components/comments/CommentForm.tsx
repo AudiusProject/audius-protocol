@@ -55,7 +55,7 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { userId, entityId, usePostComment, useEditComment } =
+  const { currentUserId, entityId, usePostComment, useEditComment } =
     useCurrentCommentSection()
 
   const [editComment] = useEditComment()
@@ -79,7 +79,7 @@ export const CommentForm = ({
   }
 
   const profileImage = useProfilePicture(
-    userId ?? null,
+    currentUserId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
 
