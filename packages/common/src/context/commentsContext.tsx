@@ -21,8 +21,8 @@ import {
 
 // Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
+  currentUserId: Nullable<ID>
   artistId: ID
-  userId: Nullable<ID>
   entityId: ID
   entityType?: EntityType.TRACK
   isEntityOwner: boolean
@@ -51,12 +51,14 @@ type CommentSectionContextType = CommentSectionContextProps & {
     (commentId: string, isLiked: boolean) => void,
     void
   >
-  usePinComment: WrappedMutationHook<(commentId: string) => void, void>
+  usePinComment: WrappedMutationHook<
+    (commentId: string, isPinned: boolean) => void,
+    void
+  >
   useEditComment: WrappedMutationHook<
     (commentId: string, newMessage: string) => void,
     void
   >
-  useDeleteComment: WrappedMutationHook<(commentId: string) => void, any>
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
@@ -68,8 +70,8 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
+  currentUserId,
   artistId,
-  userId,
   entityId,
   isEntityOwner,
   entityType = EntityType.TRACK,
@@ -94,7 +96,6 @@ export const CommentSectionProvider = ({
   const [postComment, postCommentResponse] = useAQueryPostComment()
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const [pinComment, pinCommentResponse] = usePinCommentById()
-  const [deleteComment, deleteCommentResponse] = useDeleteCommentById()
 
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
@@ -105,9 +106,9 @@ export const CommentSectionProvider = ({
       parentCommentId?: string,
       trackTimestampS?: number
     ) => {
-      if (userId) {
+      if (currentUserId) {
         postComment({
-          userId,
+          userId: currentUserId,
           entityId,
           entityType,
           body: message,
@@ -123,8 +124,8 @@ export const CommentSectionProvider = ({
   const useReactToComment: CommentSectionContextType['useReactToComment'] =
     () => {
       const wrappedHandler = async (commentId: string, isLiked: boolean) => {
-        if (userId) {
-          reactToComment({ id: commentId, userId, isLiked })
+        if (currentUserId) {
+          reactToComment({ id: commentId, userId: currentUserId, isLiked })
         }
         // TODO: trigger auth flow here
       }
@@ -132,27 +133,17 @@ export const CommentSectionProvider = ({
     }
   const useEditComment: CommentSectionContextType['useEditComment'] = () => {
     const wrappedHandler = async (commentId: string, newMessage: string) => {
-      if (userId) {
-        editComment({ id: commentId, newMessage, userId })
+      if (currentUserId) {
+        editComment({ id: commentId, newMessage, userId: currentUserId })
       }
     }
     return [wrappedHandler, editCommentResponse]
   }
 
-  const useDeleteComment: CommentSectionContextType['useDeleteComment'] =
-    () => {
-      const wrappedHandler = async (commentId: string) => {
-        if (userId) {
-          deleteComment({ id: commentId, userId, entityId })
-        }
-      }
-      return [wrappedHandler, deleteCommentResponse]
-    }
-
   const usePinComment: CommentSectionContextType['usePinComment'] = () => {
-    const wrappedHandler = (commentId: string) => {
-      if (userId) {
-        pinComment({ id: commentId, userId })
+    const wrappedHandler = (commentId: string, isPinned: boolean) => {
+      if (currentUserId) {
+        pinComment({ id: commentId, userId: currentUserId, isPinned })
       }
     }
     return [wrappedHandler, pinCommentResponse]
@@ -177,8 +168,8 @@ export const CommentSectionProvider = ({
   return (
     <CommentSectionContext.Provider
       value={{
+        currentUserId,
         artistId,
-        userId,
         entityId,
         entityType,
         comments,
@@ -186,7 +177,6 @@ export const CommentSectionProvider = ({
         playTrack,
         isEntityOwner,
         usePostComment,
-        useDeleteComment,
         useEditComment,
         usePinComment,
         useReactToComment,
@@ -211,4 +201,16 @@ export const useCurrentCommentSection = () => {
   }
 
   return context
+}
+
+export const useDeleteComment = () => {
+  const { currentUserId, entityId } = useCurrentCommentSection()
+  const [deleteComment, response] = useDeleteCommentById()
+
+  const wrappedHandler = (commentId: string) => {
+    if (currentUserId) {
+      deleteComment({ id: commentId, userId: currentUserId, entityId })
+    }
+  }
+  return [wrappedHandler, response] as const // as const is needed to return a tuple
 }

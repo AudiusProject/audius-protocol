@@ -9,13 +9,13 @@ import { NoComments } from './NoComments'
 
 export const CommentSectionDesktop = () => {
   const {
-    userId,
+    currentUserId,
     comments,
     commentSectionLoading,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
 
-  const commentPostAllowed = userId !== null
+  const commentPostAllowed = currentUserId !== null
 
   if (commentSectionLoading) {
     return <CommentSkeletons />
