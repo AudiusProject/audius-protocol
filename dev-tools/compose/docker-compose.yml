@@ -66,7 +66,7 @@ services:
     <<: *common
 
   # Core
-  
+
   # service name intentionally left as "core" despite being core-discovery-1
   # for compatibility with audius-compose CI tooling
   core:
@@ -332,10 +332,10 @@ services:
     container_name: ddex-s3
     <<: *common
     ports:
-      - "127.0.0.1:4566:4566"
+      - '127.0.0.1:4566:4566'
     volumes:
-      - "ddex-s3:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - 'ddex-s3:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
     profiles:
       - ddex
       - ddex-deps
@@ -393,15 +393,8 @@ services:
       service: solana-test-validator
     <<: *common
 
-  solana-test-validator-build:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: solana-test-validator-build
-    <<: *common
-
 networks:
   ddex-network:
-
 
 volumes:
   poa-contracts-abis:
