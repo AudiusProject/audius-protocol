@@ -21,8 +21,6 @@ import { toast } from '~/store/ui/toast/slice'
 
 import { Status } from '../models/Status'
 
-import { isResponseError } from './error'
-
 const messages = {
   somethingWrong: 'Something went wrong'
 }
@@ -169,10 +167,7 @@ export function* sagaWithErrorHandler(saga: () => Generator<any, void, any>) {
 
       yield* call(reportToSentry, {
         level: ErrorLevel.Error,
-        error: e as Error,
-        additionalInfo: {
-          response: isResponseError(e) ? e.response : undefined
-        }
+        error: e as Error
       })
     }
   }

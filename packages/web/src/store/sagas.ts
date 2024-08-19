@@ -23,7 +23,7 @@ import {
   confirmerSagas
 } from '@audius/common/store'
 import { sagaWithErrorHandler } from '@audius/common/utils'
-import { all, spawn } from 'redux-saga/effects'
+import { all, spawn } from 'typed-redux-saga'
 
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
@@ -228,5 +228,5 @@ export default function* rootSaga() {
     // Version refresh
     reloadSagas()
   )
-  yield all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
+  yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
 }
