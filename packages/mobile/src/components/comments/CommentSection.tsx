@@ -1,4 +1,7 @@
-import { useCurrentCommentSection } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  usePostComment
+} from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
@@ -54,11 +57,8 @@ const CommentSectionHeader = () => {
 }
 
 const CommentSectionContent = () => {
-  const {
-    commentSectionLoading: isLoading,
-    comments,
-    usePostComment
-  } = useCurrentCommentSection()
+  const { commentSectionLoading: isLoading, comments } =
+    useCurrentCommentSection()
 
   const [postComment, { status: postCommentStatus }] = usePostComment()
 

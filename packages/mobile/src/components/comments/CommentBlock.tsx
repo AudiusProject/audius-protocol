@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
+import { useReactToComment } from '@audius/common/context'
 import type { Comment } from '@audius/sdk'
 
 import {
@@ -37,8 +37,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
     createdAt,
     userId: userIdStr
   } = comment
-
-  const { useReactToComment } = useCurrentCommentSection()
 
   //   const [editComment] = useEditComment()
   const [reactToComment] = useReactToComment()

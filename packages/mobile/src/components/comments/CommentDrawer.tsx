@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useRef } from 'react'
 
 import {
   CommentSectionProvider,
-  useCurrentCommentSection
+  useCurrentCommentSection,
+  usePostComment
 } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import {
@@ -94,8 +95,6 @@ const useFormStyles = makeStyles(({ palette }) => ({
 
 const CommentDrawerForm = () => {
   const styles = useFormStyles()
-  const { usePostComment } = useCurrentCommentSection()
-
   const [postComment, { status: postCommentStatus }] = usePostComment()
 
   const handlePostComment = (message: string) => {
@@ -177,7 +176,7 @@ export const CommentDrawer = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props} bottomInset={insets.bottom}>
             <CommentSectionProvider
-              userId={userId}
+              currentUserId={userId}
               artistId={artistId}
               entityId={entityId}
               isEntityOwner={isEntityOwner}

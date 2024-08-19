@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
-  useDeleteComment
+  useDeleteComment,
+  usePostComment
 } from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
 import { ArtistPick, Avatar, Box, Flex, Text, Timestamp } from '@audius/harmony'
@@ -35,7 +36,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const { artistId, usePostComment } = useCurrentCommentSection()
+  const { artistId } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
 
