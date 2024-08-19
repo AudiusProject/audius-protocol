@@ -88,7 +88,9 @@ export class RewardManagerClient {
       programId: configWithDefaults.programId,
       rewardManagerState: configWithDefaults.rewardManagerState
     })
-    this.logger = configWithDefaults.logger
+    this.logger = configWithDefaults.logger.createPrefixedLogger(
+      '[reward-manager-client]'
+    )
   }
 
   public async createSenderInstruction(params: CreateSenderInstructionRequest) {
@@ -319,8 +321,10 @@ export class RewardManagerClient {
             }
           }
         } catch (e) {
-          // If failed to provide user friendly error, surface original error
-          this.logger.warn('Failed to parse RewardManagerError error', e)
+          if (!(e instanceof RewardManagerError)) {
+            // If failed to provide user friendly error, surface original error
+            this.logger.warn('Failed to parse RewardManagerError error', e)
+          }
         }
       }
       throw e
