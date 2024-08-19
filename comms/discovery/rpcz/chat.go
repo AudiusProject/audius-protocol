@@ -114,6 +114,27 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 	from latest
 	where c.chat_id = latest.chat_id;
 	`, chatId)
+	if err != nil {
+		return err
+	}
+
+	// set chat_member.is_hidden to false
+	// if there are any non-blast messages
+	// or any blasts from the other party
+	_, err = tx.Exec(`
+	UPDATE chat_member member
+	SET is_hidden = NOT EXISTS(
+		SELECT *
+		FROM chat_message msg
+		LEFT JOIN chat_blast b USING (blast_id)
+		WHERE msg.chat_id = member.chat_id
+		AND (
+			msg.blast_id IS NULL OR
+			b.from_user_id != member.user_id
+		)
+	)
+	WHERE member.chat_id = $1
+	`, chatId)
 	return err
 }
 

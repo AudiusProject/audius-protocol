@@ -72,6 +72,7 @@ SELECT
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1
+  AND chat_member.is_hidden = false
   AND chat.last_message IS NOT NULL
 	AND chat.last_message_at < $3
 	AND chat.last_message_at > $4
