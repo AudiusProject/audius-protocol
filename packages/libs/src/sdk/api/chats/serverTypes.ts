@@ -54,6 +54,7 @@ export type ChatMessageRPC = {
     message_id: string
     message: string
     parent_message_id?: string
+    is_plaintext?: boolean
   }
 }
 

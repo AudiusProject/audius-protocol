@@ -66,12 +66,12 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	if isDiscovery {
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
-		cfg.PSQLConn = os.Getenv("audius_db_url")
+		cfg.PSQLConn = getEnvString("audius_db_url", DefaultDiscoveryPostgresConnectionString)
 	} else {
 		// isContent
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = os.Getenv("dbUrl")
+		cfg.PSQLConn = getEnvString("dbUrl", DefaultContentPostgresConnectionString)
 	}
 
 	if cfg.Environment == "" {
@@ -93,7 +93,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	}
 
 	// only allow down migration in dev env
-	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && cfg.Environment == "dev"
+	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && (cfg.Environment == "dev" || cfg.Environment == "sandbox")
 
 	if err := InitComet(logger, cfg.Environment, cfg.DelegatePrivateKey, cfg.RootDir); err != nil {
 		return nil, fmt.Errorf("initializing comet %v", err)

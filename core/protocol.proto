@@ -67,4 +67,5 @@ message GetKeyValueRequest {
 message KeyValueResponse {
   string key = 1;
   string value = 2;
+  string txhash = 3;
 }

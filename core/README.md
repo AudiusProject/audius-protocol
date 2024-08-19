@@ -24,6 +24,10 @@ graph TD
 Whether running as an independent image or embedded, core requires some environment variables to run.
 
 ### local cluster
+```
+make deps
+modd
+```
 
 ### running in production
 

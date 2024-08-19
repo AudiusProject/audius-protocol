@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
+import { chatActions } from '@audius/common/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -18,7 +19,11 @@ import {
   ModalContent,
   Select
 } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, FormikValues, useField } from 'formik'
+import { useDispatch } from 'react-redux'
+
+const { createChatBlast } = chatActions
 
 const messages = {
   title: 'Target Audience',
@@ -55,6 +60,7 @@ type ChatBlastFormValues = {
 }
 
 export const ChatBlastModal = () => {
+  const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
 
   const initialValues: ChatBlastFormValues = {
@@ -64,10 +70,14 @@ export const ChatBlastModal = () => {
   }
 
   const handleSubmit = (values: FormikValues) => {
-    window.alert(JSON.stringify(values))
+    onClose()
     switch (values.target_audience) {
       case 'followers':
-        // do something
+        dispatch(
+          createChatBlast({
+            audience: ChatBlastAudience.FOLLOWERS
+          })
+        )
         break
       case 'supporters':
         // do something

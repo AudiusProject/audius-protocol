@@ -92,7 +92,7 @@ extended_payment_split = ns.clone(
     "extended_payment_split",
     payment_split,
     {
-        "eth_wallet": fields.String(required=True),
+        "eth_wallet": fields.String(),
         "payout_wallet": fields.String(required=True),
         "amount": fields.Integer(required=True),
     },

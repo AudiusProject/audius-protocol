@@ -1,3 +1,5 @@
+import { Nullable } from '~/utils/typeUtils'
+
 export type ChallengeType = 'boolean' | 'numeric' | 'aggregate' | 'trending'
 
 // TODO: Fix the types here so they are consistent with API
@@ -10,7 +12,7 @@ export type UserChallenge = {
   is_active: boolean
   is_complete: boolean
   is_disbursed: boolean
-  max_steps: number
+  max_steps: Nullable<number>
   specifier: Specifier
   user_id: string
   amount: number
