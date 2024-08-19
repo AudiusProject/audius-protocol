@@ -36,6 +36,7 @@ type ChildrenProps<Value> = {
    */
   onChange: (value: Value) => void
   options: ReactNode
+  setIsOpen: (isOpen: boolean) => void
 }
 
 export type FilterButtonProps<Value extends string = string> = {
