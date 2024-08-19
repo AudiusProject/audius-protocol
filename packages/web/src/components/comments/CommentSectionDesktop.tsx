@@ -1,12 +1,13 @@
-import { Status } from '@audius/common/models'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { chatSelectors } from '@audius/common/store'
-import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+import { Button, Divider, Flex, Paper } from '@audius/harmony'
 
 import { useSelector } from 'utils/reducer'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
-import { useCurrentCommentSection } from './CommentSectionContext'
+import { CommentSkeletons } from './CommentSkeletons'
+import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
@@ -17,42 +18,16 @@ export const CommentSectionDesktop = () => {
     artistId,
     comments,
     commentSectionLoading,
-    usePostComment,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
-  }
 
   const { canCreateChat: commentPostAllowed } = useSelector((state) =>
     getCanCreateChat(state, { userId: artistId })
   )
 
-  // Loading state
-  if (commentSectionLoading)
-    return (
-      <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-        <CommentHeader isLoading />
-        <Paper p='xl' w='100%' direction='column' gap='xl'>
-          <Flex
-            gap='s'
-            w='100%'
-            h='60px'
-            alignItems='center'
-            justifyContent='center'
-          >
-            <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-            <Skeleton w='100%' h='60px' />
-          </Flex>
-          <Divider color='default' orientation='horizontal' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-        </Paper>
-      </Flex>
-    )
+  if (commentSectionLoading) {
+    return <CommentSkeletons />
+  }
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
@@ -61,17 +36,15 @@ export const CommentSectionDesktop = () => {
         {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm
-                onSubmit={handlePostComment}
-                isLoading={postCommentStatus === Status.LOADING}
-              />
+              <CommentForm />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
-        <Flex gap='s' p='xl' w='100%' direction='column'>
-          <Flex direction='column' gap='m'>
+        <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
+          <CommentSortBar />
+          <Flex direction='column' gap='m' pt='m'>
             {comments.length === 0 ? <NoComments /> : null}
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />

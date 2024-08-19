@@ -1687,7 +1687,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route("/<string:id>/challenges", doc=False)
+@ns.route("/<string:id>/challenges")
 class GetChallenges(Resource):
     @ns.doc(
         id="""Get User Challenges""",

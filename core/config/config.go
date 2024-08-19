@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -57,21 +58,33 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	var cfg Config
 	// comet config
 	cfg.RootDir = os.Getenv("audius_core_root_dir")
-	cfg.RPCladdr = os.Getenv("rpcLaddr")
-	cfg.P2PLaddr = os.Getenv("p2pLaddr")
-	cfg.PersistentPeers = os.Getenv("persistentPeers")
+	cfg.RPCladdr = getEnvString("rpcLaddr", DefaultRPCAddress)
+	cfg.P2PLaddr = getEnvString("p2pLaddr", DefaultP2PAddress)
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
 	if isDiscovery {
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
-		cfg.PSQLConn = os.Getenv("audius_db_url")
+		cfg.PSQLConn = getEnvString("audius_db_url", DefaultDiscoveryPostgresConnectionString)
 	} else {
 		// isContent
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = os.Getenv("dbUrl")
+		cfg.PSQLConn = getEnvString("dbUrl", DefaultContentPostgresConnectionString)
+	}
+
+	if cfg.Environment == "" {
+		return nil, errors.New("no environment set")
+	}
+
+	switch cfg.Environment {
+	case "prod", "production", "mainnet":
+		cfg.PersistentPeers = os.Getenv("persistentPeers")
+	case "stage", "staging", "testnet":
+		cfg.PersistentPeers = getEnvString("persistentPeers", DefaultTestnetPersistentPeers)
+	case "dev", "development", "devnet", "local":
+		cfg.PersistentPeers = os.Getenv("persistentPeers")
 	}
 
 	// Disable ssl for local postgres db connection

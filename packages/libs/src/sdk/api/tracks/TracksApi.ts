@@ -15,6 +15,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
+import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import type { StorageService } from '../../services/Storage'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
@@ -66,7 +67,8 @@ export class TracksApi extends GeneratedTracksApi {
     private readonly logger: LoggerService,
     private readonly claimableTokensClient: ClaimableTokensClient,
     private readonly paymentRouterClient: PaymentRouterClient,
-    private readonly solanaRelay: SolanaRelayService
+    private readonly solanaRelay: SolanaRelayService,
+    private readonly solanaClient: SolanaClient
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
@@ -426,7 +428,8 @@ export class TracksApi extends GeneratedTracksApi {
       trackId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet
+      wallet,
+      includeNetworkCut
     } = await parseParams(
       'getPurchaseTrackTransaction',
       GetPurchaseTrackTransactionSchema
@@ -439,7 +442,8 @@ export class TracksApi extends GeneratedTracksApi {
     this.logger.debug('Fetching track purchase info...', { trackId })
     const { data: track } = await this.getTrackAccessInfo({
       trackId: params.trackId, // use hashed trackId
-      userId: params.userId // use hashed userId
+      userId: params.userId, // use hashed userId
+      includeNetworkCut
     })
 
     // Validate purchase attempt
@@ -530,7 +534,7 @@ export class TracksApi extends GeneratedTracksApi {
           total,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+      const transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -568,7 +572,7 @@ export class TracksApi extends GeneratedTracksApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+      const transaction = await this.solanaClient.buildTransaction({
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -597,9 +601,9 @@ export class TracksApi extends GeneratedTracksApi {
       }
       return await params.walletAdapter.sendTransaction(
         transaction,
-        this.paymentRouterClient.connection
+        this.solanaClient.connection
       )
     }
-    return this.paymentRouterClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction)
   }
 }

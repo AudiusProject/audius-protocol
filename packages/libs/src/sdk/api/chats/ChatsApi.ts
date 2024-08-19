@@ -11,6 +11,7 @@ import type { AuthService } from '../../services/Auth'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { LoggerService } from '../../services/Logger'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import {
   BaseAPI,
@@ -20,6 +21,8 @@ import {
 } from '../generated/default'
 
 import {
+  ChatBlastMessageRequest,
+  ChatBlastMessageRequestSchema,
   ChatBlockRequest,
   ChatBlockRequestSchema,
   ChatCreateRequest,
@@ -62,10 +65,12 @@ import type {
   ChatMessage,
   ChatWebsocketEventData,
   RPCPayloadRequest,
-  ValidatedChatPermissions
+  ValidatedChatPermissions,
+  ChatCreateRPC,
+  UpgradableChatBlast
 } from './serverTypes'
 
-const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
+const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
 
 export class ChatsApi
   extends BaseAPI
@@ -171,14 +176,18 @@ export class ChatsApi
    * @param params.limit the max number of chats to get
    * @param params.before a timestamp cursor for pagination
    * @param params.after a timestamp cursor for pagination
-   * @param params.currentUserId the user to act on behalf of
+   * @param params.userId the user to act on behalf of
    * @returns the chat list response
    */
   public async getAll(params?: ChatGetAllRequest) {
-    const { currentUserId, limit, before, after } = await parseParams(
+    const { userId, limit, before, after } = await parseParams(
       'getAll',
       ChatGetAllRequestSchema
     )(params)
+
+    // Get new blasts and upgrade them to chats
+    this.upgradeBlasts(userId)
+
     const path = `/comms/chats`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
@@ -192,8 +201,8 @@ export class ChatsApi
     if (after) {
       query.after = after
     }
-    if (currentUserId) {
-      query.current_user_id = currentUserId
+    if (userId) {
+      query.current_user_id = userId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -261,23 +270,42 @@ export class ChatsApi
     const decrypted = await Promise.all(
       json.data.map(async (m) => ({
         ...m,
-        message: await this.decryptString(
-          sharedSecret,
-          base64.decode(m.message)
-        ).catch((e) => {
-          this.logger.error(
-            "[audius-sdk]: Error: Couldn't decrypt chat message",
-            m,
-            e
-          )
-          return GENERIC_MESSAGE_ERROR
-        })
+        message: m.is_plaintext
+          ? m.message
+          : await this.decryptString(
+              sharedSecret,
+              base64.decode(m.message)
+            ).catch((e) => {
+              this.logger.error(
+                "[audius-sdk]: Error: Couldn't decrypt chat message",
+                m,
+                e
+              )
+              return GENERIC_MESSAGE_ERROR
+            })
       }))
     )
     return {
       ...json,
       data: decrypted
     }
+  }
+
+  /**
+   * Gets a list of chat blasts for which chats haven't been created yet
+   * @returns the blast messages list response
+   */
+  public async getBlasts() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const res = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/blasts`,
+      headers: {},
+      query
+    })
+    return (await res.json()) as TypedCommsResponse<UpgradableChatBlast[]>
   }
 
   /**
@@ -416,7 +444,7 @@ export class ChatsApi
    * @param params.currentUserId the user to act on behalf of
    * @returns the rpc object
    */
-  public async create(params: ChatCreateRequest) {
+  public async create(params: ChatCreateRequest): Promise<ChatCreateRPC> {
     const { currentUserId, userId, invitedUserIds } = await parseParams(
       'create',
       ChatCreateRequestSchema
@@ -426,14 +454,14 @@ export class ChatsApi
     const chatSecret = secp.utils.randomPrivateKey()
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
-    return await this.sendRpc({
+    return (await this.sendRpc({
       current_user_id: currentUserId,
       method: 'chat.create',
       params: {
         chat_id: chatId,
         invites
       }
-    })
+    })) as ChatCreateRPC
   }
 
   /**
@@ -486,6 +514,38 @@ export class ChatsApi
         chat_id: chatId,
         message_id: messageId ?? ulid(),
         message: encodedMessage
+      }
+    })
+  }
+
+  /**
+   * Sends a blast message to a set of users
+   * @param params.message the message
+   * @param params.blastId the id of the message
+   * @param params.audience the audience to send the message to
+   * @param params.audienceTrackId for targeting remixers/purchasers of a specific track
+   * @param params.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
+  public async messageBlast(params: ChatBlastMessageRequest) {
+    const {
+      currentUserId,
+      blastId,
+      message,
+      audience,
+      audienceContentId,
+      audienceContentType
+    } = await parseParams('messageBlast', ChatBlastMessageRequestSchema)(params)
+
+    return await this.sendRpc({
+      current_user_id: currentUserId,
+      method: 'chat.blast',
+      params: {
+        blast_id: blastId ?? ulid(),
+        audience,
+        audience_content_id: audienceContentId,
+        audience_content_type: audienceContentType,
+        message
       }
     })
   }
@@ -677,6 +737,7 @@ export class ChatsApi
   }
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
+    if (c.last_message_is_plaintext) return c
     let lastMessage = ''
     try {
       const sharedSecret = await this.getChatSecret(c.chat_id)
@@ -738,6 +799,32 @@ export class ChatsApi
     })
     const json = await response.json()
     return base64.decode(json.data)
+  }
+
+  private async upgradeBlasts(userId: string) {
+    const blasts = await this.getBlasts()
+    Promise.all(
+      blasts.data.map(async (blast) => {
+        const encodedSenderId = encodeHashId(blast.from_user_id)
+        if (encodedSenderId) {
+          await this.create({
+            userId,
+            invitedUserIds: [encodedSenderId]
+          })
+          this.eventEmitter.emit('message', {
+            chatId: blast.pending_chat_id,
+            message: {
+              message_id: blast.pending_chat_id + blast.chat_id,
+              message: blast.plaintext,
+              sender_user_id: encodedSenderId,
+              created_at: blast.created_at,
+              reactions: [],
+              is_plaintext: true
+            }
+          })
+        }
+      })
+    )
   }
 
   private async getSignatureHeader(payload: string) {
@@ -811,9 +898,10 @@ export class ChatsApi
                 )
                 return GENERIC_MESSAGE_ERROR
               }),
-              sender_user_id: data.metadata.userId,
+              sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
-              reactions: []
+              reactions: [],
+              is_plaintext: false
             }
           })
         } else if (data.rpc.method === 'chat.react') {
@@ -822,10 +910,13 @@ export class ChatsApi
             messageId: data.rpc.params.message_id,
             reaction: {
               reaction: data.rpc.params.reaction,
-              user_id: data.metadata.userId,
+              user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp
             }
           })
+        } else if (data.rpc.method === 'chat.blast') {
+          const userId = data.metadata.receiverUserId
+          await this.upgradeBlasts(userId)
         }
       }
       handleAsync()

@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 
-import { SquareSizes } from '@audius/common/models'
+import { useCurrentCommentSection } from '@audius/common/context'
+import { SquareSizes, Status } from '@audius/common/models'
+import { getTrackId } from '@audius/common/src/store/player/selectors'
 import {
   Avatar,
   Flex,
@@ -9,22 +11,24 @@ import {
   LoadingSpinner
 } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
+import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { TextField } from 'components/form-fields'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-
-import { useCurrentCommentSection } from './CommentSectionContext'
+import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string) => void
+  onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
-  isLoading?: boolean
+  commentId?: string
+  parentCommentId?: string
+  isEdit?: boolean
 }
 
 // This is annoying af to have to make a component for; but necessary so that can use the resetForm method from context
@@ -46,18 +50,48 @@ const FormResetHandler = ({
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  hideAvatar = false,
-  isLoading
+  commentId,
+  parentCommentId,
+  isEdit,
+  hideAvatar = false
 }: CommentFormProps) => {
-  const { userId } = useCurrentCommentSection()
+  const { currentUserId, entityId, usePostComment, useEditComment } =
+    useCurrentCommentSection()
+
+  const [editComment] = useEditComment()
+  const currentlyPlayingTrackId = useSelector(getTrackId)
+  const [postComment, { status: postCommentStatus }] = usePostComment()
+
+  const handlePostComment = (message: string) => {
+    const trackPosition = audioPlayer
+      ? Math.floor(audioPlayer.getPosition())
+      : undefined
+    const trackTimestampS =
+      currentlyPlayingTrackId === entityId ? trackPosition : undefined
+
+    postComment(message, parentCommentId, trackTimestampS)
+  }
+
+  const handleCommentEdit = (commentMessage: string) => {
+    if (commentId) {
+      editComment(commentId, commentMessage)
+    }
+  }
+
   const profileImage = useProfilePicture(
-    userId ?? null,
+    currentUserId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
 
   const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    onSubmit?.(commentMessage)
+    if (isEdit) {
+      handleCommentEdit(commentMessage)
+    } else {
+      handlePostComment(commentMessage)
+    }
+    onSubmit?.({ commentMessage })
   }
+  const isLoading = postCommentStatus === Status.LOADING
 
   const formInitialValues: CommentFormValues = { commentMessage: initialValue }
   return (

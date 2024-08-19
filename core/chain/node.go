@@ -30,10 +30,13 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 
 	config.P2P.PexReactor = true
 
+	// peering
 	if c.PersistentPeers != "" {
 		config.P2P.PersistentPeers = c.PersistentPeers
+		config.P2P.Seeds = c.PersistentPeers
 	}
 
+	// connection settings
 	if c.RPCladdr != "" {
 		config.RPC.ListenAddress = c.RPCladdr
 	}

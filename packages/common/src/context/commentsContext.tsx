@@ -1,6 +1,11 @@
 /* eslint-disable no-console */
-import { PropsWithChildren, createContext, useContext } from 'react'
+import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
+import { EntityType, Comment } from '@audius/sdk'
+
+import { MutationHookResponse, usePaginatedQuery } from '..//audius-query'
+import { ID, Status } from '..//models'
+import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -8,25 +13,20 @@ import {
   usePinCommentById,
   usePostComment as useAQueryPostComment,
   useReactToCommentById
-} from '@audius/common/api'
-import {
-  MutationHookResponse,
-  usePaginatedQuery
-} from '@audius/common/audius-query'
-import { ID, Status } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
-import { EntityType, Comment } from '@audius/sdk'
+} from '../api'
 
 /**
  * Context object to avoid prop drilling and share a common API with web/native code
  */
 
-// Props passed in from above
+// Props passed in from above (also get forwarded thru)
 type CommentSectionContextProps = {
-  userId: Nullable<ID>
+  currentUserId: Nullable<ID>
   artistId: ID
   entityId: ID
   entityType?: EntityType.TRACK
+  isEntityOwner: boolean
+  playTrack: () => void
 }
 
 // Helper type to rewrap our mutation hooks with data from this context
@@ -35,27 +35,42 @@ type WrappedMutationHook<MutationWrapper, ReturnDataType> = () => [
   MutationHookResponse<ReturnDataType>
 ]
 
+export enum CommentSortMethod {
+  top = 'top',
+  newest = 'newest',
+  timestamp = 'timestamp'
+}
+
 // Props sent down to context (some are handled inside the context component)
 type CommentSectionContextType = CommentSectionContextProps & {
   commentSectionLoading: boolean
   comments: Comment[]
+  currentSort: CommentSortMethod
+  setCurrentSort: (sort: CommentSortMethod) => void
   usePostComment: WrappedMutationHook<
-    (message: string, parentCommentId?: string) => void,
+    (
+      message: string,
+      parentCommentId?: string,
+      trackTimestampS?: number
+    ) => void,
     number
   >
   useReactToComment: WrappedMutationHook<
     (commentId: string, isLiked: boolean) => void,
     void
   >
-  usePinComment: WrappedMutationHook<(commentId: string) => void, void>
+  usePinComment: WrappedMutationHook<
+    (commentId: string, isPinned: boolean) => void,
+    void
+  >
   useEditComment: WrappedMutationHook<
     (commentId: string, newMessage: string) => void,
     void
   >
-  useDeleteComment: WrappedMutationHook<(commentId: string) => void, void>
   useReportComment: WrappedMutationHook<(commentId: string) => void, void>
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
+  handleMuteEntityNotifications: () => void
 }
 
 export const CommentSectionContext = createContext<
@@ -63,11 +78,13 @@ export const CommentSectionContext = createContext<
 >(undefined)
 
 export const CommentSectionProvider = ({
-  userId,
-  entityId,
-  entityType = EntityType.TRACK,
+  currentUserId,
   artistId,
-  children
+  entityId,
+  isEntityOwner,
+  entityType = EntityType.TRACK,
+  children,
+  playTrack
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const {
     data: comments = [],
@@ -87,7 +104,9 @@ export const CommentSectionProvider = ({
   const [postComment, postCommentResponse] = useAQueryPostComment()
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const [pinComment, pinCommentResponse] = usePinCommentById()
-  const [deleteComment, deleteCommentResponse] = useDeleteCommentById()
+  const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
+    CommentSortMethod.top
+  )
 
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
@@ -95,16 +114,18 @@ export const CommentSectionProvider = ({
   const usePostComment: CommentSectionContextType['usePostComment'] = () => {
     const wrappedHandler = async (
       message: string,
-      parentCommentId?: string
+      parentCommentId?: string,
+      trackTimestampS?: number
     ) => {
-      if (userId) {
+      if (currentUserId) {
         postComment({
-          userId,
+          userId: currentUserId,
           entityId,
           entityType,
           body: message,
           // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
-          parentCommentId
+          parentCommentId,
+          trackTimestampS
         })
       }
     }
@@ -114,8 +135,8 @@ export const CommentSectionProvider = ({
   const useReactToComment: CommentSectionContextType['useReactToComment'] =
     () => {
       const wrappedHandler = async (commentId: string, isLiked: boolean) => {
-        if (userId) {
-          reactToComment({ id: commentId, userId, isLiked })
+        if (currentUserId) {
+          reactToComment({ id: commentId, userId: currentUserId, isLiked })
         }
         // TODO: trigger auth flow here
       }
@@ -123,27 +144,17 @@ export const CommentSectionProvider = ({
     }
   const useEditComment: CommentSectionContextType['useEditComment'] = () => {
     const wrappedHandler = async (commentId: string, newMessage: string) => {
-      if (userId) {
-        editComment({ id: commentId, newMessage, userId })
+      if (currentUserId) {
+        editComment({ id: commentId, newMessage, userId: currentUserId })
       }
     }
     return [wrappedHandler, editCommentResponse]
   }
 
-  const useDeleteComment: CommentSectionContextType['useDeleteComment'] =
-    () => {
-      const wrappedHandler = async (commentId: string) => {
-        if (userId) {
-          deleteComment({ id: commentId, userId, entityId })
-        }
-      }
-      return [wrappedHandler, deleteCommentResponse]
-    }
-
   const usePinComment: CommentSectionContextType['usePinComment'] = () => {
-    const wrappedHandler = (commentId: string) => {
-      if (userId) {
-        pinComment({ id: commentId, userId })
+    const wrappedHandler = (commentId: string, isPinned: boolean) => {
+      if (currentUserId) {
+        pinComment({ id: commentId, userId: currentUserId, isPinned })
       }
     }
     return [wrappedHandler, pinCommentResponse]
@@ -161,24 +172,32 @@ export const CommentSectionProvider = ({
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
   }
+  const handleMuteEntityNotifications = () => {
+    console.log('Muting all notifs for ', entityId)
+  }
 
   return (
     <CommentSectionContext.Provider
       value={{
-        userId,
+        currentUserId,
+        artistId,
         entityId,
         artistId,
         entityType,
         comments,
         commentSectionLoading,
+        isEntityOwner,
+        currentSort,
+        setCurrentSort,
+        playTrack,
         usePostComment,
-        useDeleteComment,
         useEditComment,
         usePinComment,
         useReactToComment,
         useReportComment,
         handleLoadMoreReplies,
-        handleLoadMoreRootComments
+        handleLoadMoreRootComments,
+        handleMuteEntityNotifications
       }}
     >
       {children}
@@ -196,4 +215,16 @@ export const useCurrentCommentSection = () => {
   }
 
   return context
+}
+
+export const useDeleteComment = () => {
+  const { currentUserId, entityId } = useCurrentCommentSection()
+  const [deleteComment, response] = useDeleteCommentById()
+
+  const wrappedHandler = (commentId: string) => {
+    if (currentUserId) {
+      deleteComment({ id: commentId, userId: currentUserId, entityId })
+    }
+  }
+  return [wrappedHandler, response] as const // as const is needed to return a tuple
 }

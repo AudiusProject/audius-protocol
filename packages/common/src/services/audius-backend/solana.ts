@@ -782,11 +782,11 @@ export const recoverUsdcFromRootWallet = async ({
       ],
       mint: 'USDC'
     })
-  const transaction = await sdk.services.claimableTokensClient.buildTransaction(
-    { instructions: [memoInstruction, transferInstruction, routeInstruction] }
-  )
+  const transaction = await sdk.services.solanaClient.buildTransaction({
+    instructions: [memoInstruction, transferInstruction, routeInstruction]
+  })
   transaction.sign([sender])
-  const signature = await sdk.services.paymentRouterClient.sendTransaction(
+  const signature = await sdk.services.solanaClient.sendTransaction(
     transaction,
     { skipPreflight: true }
   )
@@ -902,10 +902,9 @@ export const transferFromUserBank = async ({
       instructions.push(memoInstruction)
     }
 
-    const transaction =
-      await sdk.services.claimableTokensClient.buildTransaction({
-        instructions
-      })
+    const transaction = await sdk.services.solanaClient.buildTransaction({
+      instructions
+    })
 
     if (signer) {
       transaction.sign([signer])

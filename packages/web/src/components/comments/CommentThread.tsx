@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
 import { useGetCommentById } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
-import { ReplyComment } from '@audius/sdk/src/sdk/api/generated/default'
+import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
-import { useCurrentCommentSection } from './CommentSectionContext'
 
 const messages = {
   showMoreReplies: 'Show More Replies'
@@ -16,7 +16,6 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     id: commentId
   })
   const { handleLoadMoreReplies } = useCurrentCommentSection()
-  // TODO: this feels sub-optimal? Maybe fine
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})

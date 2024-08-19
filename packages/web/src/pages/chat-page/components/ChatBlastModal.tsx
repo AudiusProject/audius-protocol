@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { useTargetedMessageModal } from '@audius/common/src/store/ui/modals/create-targeted-message-modal'
+import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
+import { chatActions } from '@audius/common/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -18,7 +19,11 @@ import {
   ModalContent,
   Select
 } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, FormikValues, useField } from 'formik'
+import { useDispatch } from 'react-redux'
+
+const { createChatBlast } = chatActions
 
 const messages = {
   title: 'Target Audience',
@@ -48,26 +53,31 @@ const messages = {
 
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
-type TargetedMessageFormValues = {
+type ChatBlastFormValues = {
   target_audience: 'followers' | 'supporters' | 'purchasers' | 'remix_creators'
   purchased_track_id?: string
   remixed_track_id?: string
 }
 
-export const TargetedMessageModal = () => {
-  const { isOpen, onClose } = useTargetedMessageModal()
+export const ChatBlastModal = () => {
+  const dispatch = useDispatch()
+  const { isOpen, onClose } = useChatBlastModal()
 
-  const initialValues: TargetedMessageFormValues = {
+  const initialValues: ChatBlastFormValues = {
     target_audience: 'followers',
     purchased_track_id: undefined,
     remixed_track_id: undefined
   }
 
   const handleSubmit = (values: FormikValues) => {
-    window.alert(JSON.stringify(values))
+    onClose()
     switch (values.target_audience) {
       case 'followers':
-        // do something
+        dispatch(
+          createChatBlast({
+            audience: ChatBlastAudience.FOLLOWERS
+          })
+        )
         break
       case 'supporters':
         // do something
@@ -85,7 +95,7 @@ export const TargetedMessageModal = () => {
 
   return (
     <Modal size='small' isOpen={isOpen} onClose={onClose}>
-      <Formik<TargetedMessageFormValues>
+      <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
       >
@@ -98,7 +108,7 @@ export const TargetedMessageModal = () => {
               />
             </ModalHeader>
             <ModalContent>
-              <TargetedMessagesFields />
+              <ChatBlastsFields />
             </ModalContent>
             <ModalFooter>
               <Flex w='100%' gap='s'>
@@ -127,7 +137,7 @@ export const TargetedMessageModal = () => {
   )
 }
 
-const TargetedMessagesFields = () => {
+const ChatBlastsFields = () => {
   const [field] = useField(TARGET_AUDIENCE_FIELD)
 
   return (
