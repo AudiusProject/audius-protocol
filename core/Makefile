@@ -18,13 +18,22 @@ gen: $(SQL_SRCS)
 	)
 	go generate ./...
 	cd db && sqlc generate
+	go mod tidy
 
-.PHONY: dev hotreload
+build-native:
+	@go build -o ./tmp/core
+
+build-amd64:
+	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
+
+.PHONY: dev
 dev:
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
-hotreload:
-	modd
+.PHONY: sandbox-node
+sandbox-node:
+	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml up --build
 
 .PHONY: sandbox
 sandbox:
