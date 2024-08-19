@@ -51,7 +51,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
     DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS,
   [IntKeys.COINFLOW_MAXIMUM_CENTS]: 11000,
   [IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS]: 500,
-  [IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS]: BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
+  [IntKeys.BUY_SOL_WITH_TOKEN_SLIPPAGE_BPS]: BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS,
+  [IntKeys.CHAT_BLAST_TIER_REQUIREMENT]: 1
 }
 
 export const remoteConfigStringDefaults: {
