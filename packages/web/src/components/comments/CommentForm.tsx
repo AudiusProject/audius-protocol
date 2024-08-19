@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 
-import { useCurrentCommentSection } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  useEditComment,
+  usePostComment
+} from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import {
@@ -55,8 +59,7 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, usePostComment, useEditComment } =
-    useCurrentCommentSection()
+  const { currentUserId, entityId } = useCurrentCommentSection()
 
   const [editComment] = useEditComment()
   const currentlyPlayingTrackId = useSelector(getTrackId)

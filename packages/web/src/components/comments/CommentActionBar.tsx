@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useCurrentCommentSection } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  usePinComment,
+  useReactToComment
+} from '@audius/common/context'
 import {
   Flex,
   IconButton,
@@ -47,8 +51,7 @@ export const CommentActionBar = ({
   const { reactCount, id: commentId, isPinned } = comment
 
   // context actions & values
-  const { currentUserId, isEntityOwner, useReactToComment, usePinComment } =
-    useCurrentCommentSection()
+  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
 
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
