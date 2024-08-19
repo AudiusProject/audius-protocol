@@ -1,5 +1,3 @@
-import type { ComponentType } from 'react'
-
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { FormikHelpers } from 'formik'
 import { Formik } from 'formik'
@@ -20,7 +18,7 @@ type CommentFormProps = {
   initialValue?: string
   hideAvatar?: boolean
   isLoading?: boolean
-  TextInputComponent?: ComponentType<RNTextInput>
+  TextInputComponent?: typeof RNTextInput
 }
 
 const messages = {
