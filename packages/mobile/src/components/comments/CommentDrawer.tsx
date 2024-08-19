@@ -78,7 +78,7 @@ const CommentDrawerContent = () => {
 export const CommentDrawer = () => {
   const insets = useSafeAreaInsets()
   const {
-    data: { userId, entityId, isEntityOwner }
+    data: { userId, entityId, isEntityOwner, artistId }
   } = useDrawer('Comment')
   return (
     <NativeDrawer drawerName='Comment'>
@@ -88,9 +88,11 @@ export const CommentDrawer = () => {
         }}
       >
         <CommentSectionProvider
-          userId={userId}
+          currentUserId={userId}
+          artistId={artistId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
+          playTrack={() => {}} // TODO
         >
           <Flex direction='column' gap='m' mt='2xl'>
             <CommentDrawerHeader />

@@ -71,6 +71,7 @@ type ChatMessageRPCParams struct {
 	Message         string  `json:"message"`
 	MessageID       string  `json:"message_id"`
 	ParentMessageID *string `json:"parent_message_id,omitempty"`
+	IsPlaintext     bool    `json:"is_plaintext"`
 }
 
 type ChatReactRPC struct {

@@ -28,11 +28,11 @@ func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
 }
 
 const getTx = `-- name: GetTx :one
-select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results where tx_hash = $1 limit 1
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results where lower(tx_hash) = lower($1) limit 1
 `
 
-func (q *Queries) GetTx(ctx context.Context, txHash string) (CoreTxResult, error) {
-	row := q.db.QueryRow(ctx, getTx, txHash)
+func (q *Queries) GetTx(ctx context.Context, lower string) (CoreTxResult, error) {
+	row := q.db.QueryRow(ctx, getTx, lower)
 	var i CoreTxResult
 	err := row.Scan(
 		&i.Rowid,

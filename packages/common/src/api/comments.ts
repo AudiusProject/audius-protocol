@@ -63,7 +63,7 @@ const commentsApi = createApi({
       async fetch({ id }: { id: string }, { audiusSdk }) {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getComment({
-          id
+          commentId: id
         })
         return commentsRes?.data
       },
@@ -86,8 +86,8 @@ const commentsApi = createApi({
       },
       options: { type: 'mutation' },
       async onQuerySuccess(
-        { data: newId },
-        { entityId, body, userId, timestampS, parentCommentId },
+        newId,
+        { entityId, body, userId, trackTimestampS, parentCommentId },
         { dispatch }
       ) {
         const newComment: Comment = {
@@ -95,7 +95,7 @@ const commentsApi = createApi({
           userId,
           message: body,
           isPinned: false,
-          timestampS,
+          trackTimestampS,
           reactCount: 0,
           replies: undefined,
           createdAt: new Date().toISOString(),
@@ -214,17 +214,27 @@ const commentsApi = createApi({
       }
     },
     pinCommentById: {
-      async fetch({ id: _id, userId: _userId }: { id: string; userId: ID }) {
+      async fetch({
+        id: _id,
+        userId: _userId,
+        isPinned
+      }: {
+        id: string
+        userId: ID
+        isPinned: boolean
+      }) {
         // TODO: call sdk here
+        // return null
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id }, { dispatch }) {
+      onQueryStarted({ id, isPinned }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({
-            ...(comment as Comment),
-            isPinned: !comment?.isPinned
-          }),
+          (comment) => {
+            if (comment) {
+              comment.isPinned = isPinned
+            }
+          },
           dispatch
         )
       }

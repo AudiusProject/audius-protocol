@@ -63,6 +63,7 @@ export interface GetTrackRequest {
 export interface GetTrackAccessInfoRequest {
     trackId: string;
     userId?: string;
+    includeNetworkCut?: boolean;
 }
 
 export interface GetTrackTopListenersRequest {
@@ -260,6 +261,10 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.includeNetworkCut !== undefined) {
+            queryParameters['include_network_cut'] = params.includeNetworkCut;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

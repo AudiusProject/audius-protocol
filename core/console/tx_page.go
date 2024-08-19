@@ -16,7 +16,7 @@ func (cs *Console) txPage(c echo.Context) error {
 
 	tx, err := cs.db.GetTx(ctx, txhash)
 	if err != nil {
-		cs.logger.Errorf("err getting tx")
+		cs.logger.Errorf("err getting tx: %v", err)
 		return err
 	}
 

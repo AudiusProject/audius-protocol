@@ -6,23 +6,29 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"github.com/davecgh/go-spew/spew"
 )
+
+func checkErr(e error) {
+	if e != nil {
+		log.Fatal(e)
+	}
+}
 
 func main() {
 	ctx := context.Background()
-	sdk, _ := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
-	res, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{Key: "liquid", Value: "death"})
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	spewConfig := spew.ConfigState{
-		Indent:                  "  ",
-		DisableMethods:          true,
-		DisablePointerAddresses: true,
-		DisableCapacities:       true,
-	}
+	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
+	checkErr(err)
 
-	spewConfig.Dump(res)
+	_, err = sdk.Ping(ctx, &proto.PingRequest{})
+	checkErr(err)
+
+	_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+		Key:   "batman",
+		Value: "bruce wayne",
+	})
+	checkErr(err)
+
+	_, err = sdk.GetKeyValue(ctx, &proto.GetKeyValueRequest{Key: "batman"})
+	checkErr(err)
 }

@@ -19,23 +19,23 @@ gen: $(SQL_SRCS)
 	)
 	go generate ./...
 	cd db && sqlc generate
+	go mod tidy
 
-.PHONY: dev solo hotreload
+build-native:
+	@go build -o ./tmp/core
+
+build-amd64:
+	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
+
+.PHONY: dev
 dev:
 	make gen
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
-solo:
-	rm -rf ./tmp/soloNodeHome
-	@echo "starting single node cluster"
-	audius-compose up db
-	go run main.go -env-file=./infra/dev_config/solo.env
-
-seed:
-	curl -s '0.0.0.0:6611/broadcast_tx_commit?tx="cometbft=rocks"'
-
-hotreload:
-	modd
+.PHONY: sandbox-node
+sandbox-node:
+	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml up --build
 
 .PHONY: sandbox
 sandbox:

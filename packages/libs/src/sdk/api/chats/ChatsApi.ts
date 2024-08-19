@@ -887,21 +887,23 @@ export class ChatsApi
             chatId: data.rpc.params.chat_id,
             message: {
               message_id: data.rpc.params.message_id,
-              message: await this.decryptString(
-                sharedSecret,
-                base64.decode(data.rpc.params.message)
-              ).catch((e) => {
-                this.logger.error(
-                  "[audius-sdk]: Error: Couldn't decrypt websocket chat message",
-                  data,
-                  e
-                )
-                return GENERIC_MESSAGE_ERROR
-              }),
+              message: data.rpc.params.is_plaintext
+                ? data.rpc.params.message
+                : await this.decryptString(
+                    sharedSecret,
+                    base64.decode(data.rpc.params.message)
+                  ).catch((e) => {
+                    this.logger.error(
+                      "[audius-sdk]: Error: Couldn't decrypt websocket chat message",
+                      data,
+                      e
+                    )
+                    return GENERIC_MESSAGE_ERROR
+                  }),
               sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
-              is_plaintext: false
+              is_plaintext: !!data.rpc.params.is_plaintext
             }
           })
         } else if (data.rpc.method === 'chat.react') {

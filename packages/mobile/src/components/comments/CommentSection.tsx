@@ -16,7 +16,8 @@ const messages = {
 
 const CommentSectionHeader = () => {
   const {
-    userId,
+    artistId,
+    currentUserId,
     entityId,
     commentSectionLoading: isLoading,
     comments,
@@ -25,7 +26,7 @@ const CommentSectionHeader = () => {
   const { onOpen: openDrawer } = useDrawer('Comment')
 
   const handlePressViewAll = () => {
-    openDrawer({ userId, entityId, isEntityOwner })
+    openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
   }
 
   const isShowingComments = !isLoading && comments?.length
