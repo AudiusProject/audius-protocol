@@ -59,7 +59,7 @@ replace_address claimable-tokens/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/
 generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json "$SOLANA_REWARD_MANAGER_SECRET_KEY"
 replace_address reward-manager/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json
 
-generate_key ${CARGO_TARGET_DIR:-target}/deploy/payment_router-keypair.json "$PAYMENT_ROUTER_PRIVATE_KEY"
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/payment_router-keypair.json "$SOLANA_PAYMENT_ROUTER_SECRET_KEY"
 replace_address \
     payment-router/programs/payment-router/src/lib.rs \
     payment-router/Anchor.toml \
