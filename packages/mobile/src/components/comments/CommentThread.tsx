@@ -5,13 +5,7 @@ import { useCurrentCommentSection } from '@audius/common/context'
 import type { ReplyComment } from '@audius/sdk'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import {
-  Flex,
-  IconCaretDown,
-  IconCaretUp,
-  TextLink,
-  Text
-} from '@audius/harmony-native'
+import { Flex, IconCaretDown, IconCaretUp, Text } from '@audius/harmony-native'
 
 import { CommentBlock } from './CommentBlock'
 

@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import type {
   TextInputProps as RNTextInputProps,
@@ -113,5 +113,5 @@ export type TextInputProps = RNTextInputProps & {
    */
   innerContainerStyle?: ViewStyle
 
-  TextInputComponent?: ComponentType<RNTextInput>
+  TextInputComponent?: typeof RNTextInput
 } & InternalProps

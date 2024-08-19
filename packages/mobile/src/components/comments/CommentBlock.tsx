@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
-import { Status } from '@audius/common/models'
 import type { Comment } from '@audius/sdk'
-import { usePrevious } from 'react-use'
 
 import {
   CommentText,
@@ -29,7 +27,7 @@ export type CommentBlockProps = {
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { comment, parentCommentId, hideActions } = props
+  const { comment, hideActions } = props
   const {
     isPinned,
     message,
@@ -40,37 +38,36 @@ export const CommentBlock = (props: CommentBlockProps) => {
     userId: userIdStr
   } = comment
 
-  const { usePostComment, useEditComment, useReactToComment } =
-    useCurrentCommentSection()
+  const { useReactToComment } = useCurrentCommentSection()
 
-  const [editComment] = useEditComment()
+  //   const [editComment] = useEditComment()
   const [reactToComment] = useReactToComment()
   // Note: comment post status is shared across all inputs they may have open
-  const [postComment, { status: commentPostStatus }] = usePostComment()
-  const prevPostStatus = usePrevious(commentPostStatus)
-  useEffect(() => {
-    if (
-      prevPostStatus !== commentPostStatus &&
-      commentPostStatus === Status.SUCCESS
-    ) {
-      setShowReplyInput(false)
-    }
-  }, [commentPostStatus, prevPostStatus])
+  //   const [postComment, { status: commentPostStatus }] = usePostComment()
+  //   const prevPostStatus = usePrevious(commentPostStatus)
+  //   useEffect(() => {
+  //     if (
+  //       prevPostStatus !== commentPostStatus &&
+  //       commentPostStatus === Status.SUCCESS
+  //     ) {
+  //       setShowReplyInput(false)
+  //     }
+  //   }, [commentPostStatus, prevPostStatus])
   const userId = Number(userIdStr)
   useGetUserById({ id: userId })
 
   const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
+  //   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
 
-  const handleCommentEdit = (commentMessage: string) => {
-    editComment(commentId, commentMessage)
-  }
+  //   const handleCommentEdit = (commentMessage: string) => {
+  //     editComment(commentId, commentMessage)
+  //   }
 
-  const handleCommentReply = (commentMessage: string) => {
-    postComment(commentMessage, parentCommentId ?? comment.id)
-  }
+  //   const handleCommentReply = (commentMessage: string) => {
+  //     postComment(commentMessage, parentCommentId ?? comment.id)
+  //   }
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
