@@ -13,7 +13,9 @@ import (
 
 // Get a chat message
 const chatMessage = `
-select message_id, chat_id, user_id, created_at, ciphertext from chat_message where chat_id = $1 and message_id = $2
+SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat_message.created_at, 
+COALESCE(chat_message.ciphertext, chat_blast.plaintext) AS ciphertext
+FROM chat_message chat_message LEFT JOIN chat_blast chat_blast USING (blast_id) WHERE chat_message.chat_id = $1 AND chat_message.message_id = $2;
 `
 
 type ChatMessageParams struct {
