@@ -102,13 +102,8 @@ solana airdrop 100 "$owner_keypair"
 echo
 
 echo "Airdropping to feepayer account"
-solana airdrop 100 "$feepayer_keypair"
+solana --commitment finalized airdrop 100 "$feepayer_keypair"
 echo
-echo "Checking balance: $(solana --commitment finalized balance -k "$feepayer_keypair")"
-while [[ "$(solana --commitment finalized balance -k "$feepayer_keypair" | awk '{print $1}')" < "100" ]]; do
-    echo "Waiting for balance update..."
-    sleep 1
-done
 
 echo "------------- Deploying tokens ----------------"
 
@@ -127,10 +122,10 @@ echo "Creating a signer group..."
 echo
 
 echo "Creating a valid signer..."
-echo "$valid_signer_eth_address"
+echo "$ETH_VALID_SIGNER_ADDRESS"
 ./target/debug/audius-eth-registry-cli create-valid-signer \
     "$(solana address -k "$signer_group_keypair")" \
-    "$(echo $valid_signer_eth_address | tail -c+3)" \
+    "$(echo $ETH_VALID_SIGNER_ADDRESS | tail -c+3)" \
     "$valid_signer_keypair"
 echo
 
@@ -166,8 +161,12 @@ echo "Fake USDC token mint:"
 solana account --output json-compact --output-file ./fixtures/usdc.json "$(solana address -k "$fake_usdc_token_keypair")"
 echo
 
-echo "Eth Registry Signer Group account:"
+echo "Eth Registry signer group account:"
 solana account --output json-compact --output-file ./fixtures/eth-registry-signer-group.json "$(solana address -k "$signer_group_keypair")"
+echo
+
+echo "Eth Registry valid signer account:"
+solana account --output json-compact --output-file ./fixtures/eth-registry-valid-signer.json "$(solana address -k "$valid_signer_keypair")"
 echo
 
 echo "Reward Manager State account:"
