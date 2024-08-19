@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
-import { usePostComment, useReactToComment } from '@audius/common/context'
+import { useReactToComment } from '@audius/common/context'
 import type { Comment } from '@audius/sdk'
 
 import {
