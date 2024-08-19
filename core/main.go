@@ -47,7 +47,6 @@ func main() {
 		logger.Errorf("node init error: %v", err)
 		return
 	}
-	defer node.Listeners()
 
 	rpc := local.New(node)
 
@@ -88,7 +87,6 @@ func main() {
 	})
 
 	eg.Go(func() error {
-		logger.Info("starting grpc server")
 		lis, err := net.Listen("tcp", "0.0.0.0:50051")
 		if err != nil {
 			return err

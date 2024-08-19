@@ -8,7 +8,6 @@ deps:
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/cortesi/modd/cmd/modd@latest
-	@go install github.com/air-verse/air@latest
 	@go mod tidy
 
 gen: $(SQL_SRCS)
@@ -31,7 +30,7 @@ build-amd64:
 dev:
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
-.PHONY: sandbox
+.PHONY: sandbox-node
 sandbox-node:
 	@docker compose -f ./infra/docker-compose.yml down
 	@docker compose -f ./infra/docker-compose.yml up --build
