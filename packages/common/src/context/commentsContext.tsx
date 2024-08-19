@@ -182,7 +182,6 @@ export const CommentSectionProvider = ({
         currentUserId,
         artistId,
         entityId,
-        artistId,
         entityType,
         comments,
         commentSectionLoading,
