@@ -114,6 +114,7 @@ services:
 
   solana-test-validator:
     env_file: .env
+    image: audius/solana-test-validator:latest
     build:
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
@@ -130,6 +131,10 @@ services:
         SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
         SOLANA_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
         SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     profiles:
       - solana
     ports:
