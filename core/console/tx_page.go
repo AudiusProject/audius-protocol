@@ -8,8 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// curl -s '0.0.0.0:6611/broadcast_tx_commit?tx="cometbft=rocks"'
-
 func (cs *Console) txPage(c echo.Context) error {
 	ctx := c.Request().Context()
 	txhash := c.Param("tx")

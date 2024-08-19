@@ -1,0 +1,17 @@
+package components
+
+type HomePageProps struct {
+}
+
+templ HomePage(props HomePageProps) {
+	@HeaderBar() {
+		<div class="flex h-full">
+			<div class="w-1/2 bg-white shadow-md rounded-lg p-4 m-3">
+				recent blocks...
+			</div>
+			<div class="w-1/2 bg-white shadow-md rounded-lg p-4 m-3">
+				recent transactions...
+			</div>
+		</div>
+	}
+}

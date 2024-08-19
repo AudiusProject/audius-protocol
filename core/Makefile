@@ -40,3 +40,8 @@ sandbox-node:
 .PHONY: sandbox
 sandbox:
 	@go run ./scripts/sandbox.go
+
+
+.PHONY: livereload
+livereload:
+	modd

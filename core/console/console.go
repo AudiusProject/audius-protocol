@@ -3,12 +3,8 @@
 package console
 
 import (
-	"context"
-	"net/http"
-
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/components"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -34,17 +30,11 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 
 	g := e.Group("/console")
 
-	g.GET("/hello/:name", func(c echo.Context) error {
-		name := c.Param("name")
-		t := components.Hello(name)
-		err := t.Render(context.Background(), c.Response().Writer)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to render response template")
-		}
-		return nil
-	})
-
+	g.GET("", c.homePage)
 	g.GET("/tx/:tx", c.txPage)
+	g.GET("/block/:block", c.blockPage)
+	g.GET("/net", c.networkPage)
+	g.GET("/net/:node", c.nodePage)
 
 	return c, nil
 }
