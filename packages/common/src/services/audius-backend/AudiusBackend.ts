@@ -1739,6 +1739,7 @@ export const audiusBackend = ({
         type: NotificationType.ChallengeReward,
         challengeId,
         entityType: Entity.User,
+        amount: data.amount as StringWei,
         ...formatBaseNotification(notification)
       }
     } else if (notification.type === 'claimable_reward') {
