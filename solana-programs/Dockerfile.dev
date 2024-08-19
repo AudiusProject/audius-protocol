@@ -57,6 +57,7 @@ ARG SOLANA_PAYMENT_ROUTER_PUBLIC_KEY
 # Account addresses
 ARG SOLANA_SIGNER_GROUP_PUBLIC_KEY
 ARG SOLANA_FEEPAYER_PUBLIC_KEY
+ARG SOLANA_OWNER_PUBLIC_KEY
 ARG SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY
 ARG SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY
 ARG SOLANA_TOKEN_MINT_PUBLIC_KEY
@@ -72,7 +73,9 @@ CMD solana-test-validator --ledger /usr/db \
     --bpf-program ${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY} payment_router.so \
     --account ${SOLANA_SIGNER_GROUP_PUBLIC_KEY} ./fixtures/eth-registry-signer-group.json \
     --account ${SOLANA_FEEPAYER_PUBLIC_KEY} ./fixtures/fee-payer.json \
+    --account ${SOLANA_OWNER_PUBLIC_KEY} ./fixtures/owner.json \
     --account ${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY} ./fixtures/reward-manager-state.json \
     --account ${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY} ./fixtures/reward-manager-tokens.json \
     --account ${SOLANA_TOKEN_MINT_PUBLIC_KEY} ./fixtures/waudio.json \
-    --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json
+    --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json \
+    --reset
