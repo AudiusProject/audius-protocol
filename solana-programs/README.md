@@ -21,7 +21,7 @@ the fixtures set up in the `./fixtures/` folder.
 
 ```bash
 cd ../dev-tools/compose
-docker buildx bake -f docker-compose.yml solana-test-validator --push
+docker buildx bake -f docker-compose.yml solana-test-validator-build --push
 ```
 
 ## Regenerating Fixtures

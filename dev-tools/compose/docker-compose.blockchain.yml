@@ -115,6 +115,16 @@ services:
   solana-test-validator:
     env_file: .env
     image: audius/solana-test-validator:latest
+    profiles:
+      - solana
+    ports:
+      - '8899:8899'
+      # RPC port
+      - '8900:8900'
+
+  solana-test-validator-build:
+    env_file: .env
+    image: audius/solana-test-validator:latest
     build:
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
@@ -136,7 +146,7 @@ services:
           - linux/amd64
           - linux/arm64
     profiles:
-      - solana
+      - solana-build
     ports:
       - '8899:8899'
       # RPC port
