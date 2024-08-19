@@ -49,6 +49,7 @@ echo
 cd payment-router/
 anchor keys sync
 anchor build
+cd -
 echo
 
 # Prevent any git diff
