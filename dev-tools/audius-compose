@@ -432,8 +432,8 @@ def pull(ctx):
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
             f"--project-name={protocol_dir.name}",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-            "pull",
-            "--ignore-buildable",
+            "--profile=solana",
+            "pull"
         ],
     )
 
