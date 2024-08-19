@@ -32,7 +32,8 @@ function allowGlobalHotkeyPress() {
     (document.activeElement === document.body ||
       document.activeElement.nodeName === 'A' /* <a> */ ||
       document.activeElement.nodeName === 'BUTTON' /* <button> */ ||
-      document.activeElement.getAttribute('role') === 'button')
+      document.activeElement.getAttribute('role') === 'button' ||
+      document.activeElement.getAttribute('role') === 'main')
   ) /* Lottie button */
 }
 
