@@ -19,7 +19,7 @@ class CommentReaction(Base, RepresentableMixin):
     user_id = Column(Integer)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    is_delete = Column(Boolean)
+    is_delete = Column(Boolean, nullable=False)
     txhash = Column(Text, nullable=False)
     blockhash = Column(Text, nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)

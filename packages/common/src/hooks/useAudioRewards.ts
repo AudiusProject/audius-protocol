@@ -32,7 +32,10 @@ export const useFormattedProgressLabel = ({
       label = messages.readyToClaim
     } else if (pending) {
       label = messages.pendingRewards
-    } else if (challenge?.challenge_type === 'aggregate') {
+    } else if (
+      challenge?.challenge_type === 'aggregate' &&
+      challenge?.max_steps !== null
+    ) {
       // Count down
       label = fillString(
         remainingLabel ?? '',
@@ -49,7 +52,10 @@ export const useFormattedProgressLabel = ({
         formatNumberCommas(challenge?.max_steps?.toString() ?? '')
       )
     }
-  } else if (challenge?.challenge_type === 'aggregate') {
+  } else if (
+    challenge?.challenge_type === 'aggregate' &&
+    challenge?.max_steps !== null
+  ) {
     // Count down
     label = fillString(
       remainingLabel ?? '',

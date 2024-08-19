@@ -656,6 +656,7 @@ export class Track extends Base {
       bpm,
       is_custom_bpm,
       musical_key,
+      is_custom_musical_key,
       audio_analysis_error_count,
       field_visibility,
       ...other
@@ -715,6 +716,7 @@ export class Track extends Base {
       bpm,
       is_custom_bpm,
       musical_key,
+      is_custom_musical_key,
       audio_analysis_error_count,
       field_visibility
     }

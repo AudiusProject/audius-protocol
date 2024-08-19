@@ -1,3 +1,4 @@
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
@@ -84,15 +85,17 @@ const App = () => {
                       <PortalProvider>
                         <ErrorBoundary>
                           <NavigationContainer>
-                            <Toasts />
-                            <Airplay />
-                            <RootScreen />
-                            <Drawers />
-                            <Modals />
-                            <OAuthWebView />
-                            <NotificationReminder />
-                            <RateCtaReminder />
-                            <PortalHost name='ChatReactionsPortal' />
+                            <BottomSheetModalProvider>
+                              <Toasts />
+                              <Airplay />
+                              <RootScreen />
+                              <Drawers />
+                              <Modals />
+                              <OAuthWebView />
+                              <NotificationReminder />
+                              <RateCtaReminder />
+                              <PortalHost name='ChatReactionsPortal' />
+                            </BottomSheetModalProvider>
                           </NavigationContainer>
                         </ErrorBoundary>
                       </PortalProvider>

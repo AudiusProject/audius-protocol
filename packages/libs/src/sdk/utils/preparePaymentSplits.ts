@@ -7,7 +7,7 @@ import { ClaimableTokensClient } from '../services/Solana/programs/ClaimableToke
 /**
  * 1. Converts amounts to bigints
  * 2. Spreads the extraAmount to each split
- * 3. Creates user banks for receipients as necessary
+ * 3. Creates user banks for recipients as necessary
  * 4. Returns a simplified splits structure, a list of account/amount pairs
  */
 export const prepareSplits = async ({
@@ -18,6 +18,7 @@ export const prepareSplits = async ({
 }: {
   splits: ExtendedPaymentSplit[]
   extraAmount: bigint
+  includeNetworkCut?: boolean
   claimableTokensClient: ClaimableTokensClient
   logger: LoggerService
 }) => {
@@ -37,7 +38,7 @@ export const prepareSplits = async ({
   // Check for user banks as needed
   amountSplits = await Promise.all(
     amountSplits.map(async (split) => {
-      if (!split.payoutWallet) {
+      if (!split.payoutWallet && split.ethWallet) {
         logger.debug('Deriving user bank for user...', {
           userId: split.userId
         })

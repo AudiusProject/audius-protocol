@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { TrackForUpload } from '@audius/common/store'
 import {
@@ -15,13 +15,19 @@ import { useEffectOnce } from 'react-use'
 import { IconCloudUpload } from '@audius/harmony-native'
 import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { UploadingTrackTile } from '../components'
 import type { UploadRouteProp } from '../types'
-const { uploadTracks } = uploadActions
-const { getUploadSuccess, getCombinedUploadPercentage } = uploadSelectors
+const { uploadTracks, reset } = uploadActions
+const {
+  getIsUploading,
+  getUploadSuccess,
+  getUploadError,
+  getCombinedUploadPercentage
+} = uploadSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: { marginHorizontal: spacing(3) },
@@ -48,12 +54,16 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 const messages = {
   uploading: 'Uploading',
+  uploadError: 'Something went wrong with your upload.',
   uploadTitle: 'Upload in Progress',
   uploadDescription:
     'Please make sure the screen stays on and keep the app open until the upload is complete.'
 }
 
-export type UploadingTracksParams = { tracks: TrackForUpload[] }
+export type UploadingTracksParams = {
+  tracks: TrackForUpload[]
+  uploadAttempt?: number
+}
 
 export const UploadingTracksScreen = () => {
   useKeepAwake()
@@ -63,6 +73,11 @@ export const UploadingTracksScreen = () => {
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  // Upload error is reset asynchronously after this component mounts.
+  // This is used for logic below to detect that we got an error *after*
+  // this upload attempt started
+  const [uploadStarted, setUploadStarted] = useState(false)
+  const { toast } = useToast()
 
   useEffectOnce(() => {
     dispatch(uploadTracks({ tracks, uploadType: UploadType.INDIVIDUAL_TRACK }))
@@ -70,6 +85,8 @@ export const UploadingTracksScreen = () => {
 
   const trackUploadProgress = useSelector(getCombinedUploadPercentage)
   const uploadSuccess = useSelector(getUploadSuccess)
+  const uploadError = useSelector(getUploadError)
+  const isUploading = useSelector(getIsUploading)
 
   useEffect(() => {
     if (!uploadSuccess) {
@@ -80,6 +97,16 @@ export const UploadingTracksScreen = () => {
       navigation.navigate('UploadComplete')
     }
   }, [uploadSuccess, navigation])
+
+  useEffect(() => {
+    if (isUploading) {
+      setUploadStarted(true)
+    } else if (uploadError) {
+      toast({ content: messages.uploadError, type: 'error' })
+      dispatch(reset())
+      navigation.pop()
+    }
+  }, [isUploading, uploadError, uploadStarted, dispatch, toast, navigation])
 
   return (
     <Screen

@@ -173,6 +173,7 @@ export const createUploadTrackMetadataSchema = () =>
     bpm: z.optional(z.number().nullable()),
     isCustomBpm: z.optional(z.boolean()),
     musicalKey: z.optional(z.string().nullable()),
+    isCustomMusicalKey: z.optional(z.boolean()),
     audioAnalysisErrorCount: z.optional(z.number())
   })
 
@@ -311,7 +312,9 @@ const PurchaseTrackSchemaBase = z.object({
   /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
   extraAmount: z
     .union([z.number().min(0), z.bigint().min(BigInt(0))])
-    .optional()
+    .optional(),
+  /** Whether to include the staking system as a recipient */
+  includeNetworkCut: z.boolean().optional()
 })
 
 export const GetPurchaseTrackTransactionSchema = z

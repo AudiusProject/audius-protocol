@@ -4,10 +4,8 @@ import {
   ID,
   TimeRange,
   StemTrackMetadata,
-  CollectionMetadata,
-  UserChallenge
+  CollectionMetadata
 } from '../../models'
-import { UndisbursedUserChallenge } from '../../store'
 import {
   SearchKind,
   SearchSortMethod
@@ -25,14 +23,12 @@ import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
 import {
   APIBlockConfirmation,
-  APIFavorite,
   APIPlaylist,
   APIResponse,
   APISearch,
   APISearchAutocomplete,
   APIStem,
   APITrack,
-  APIUser,
   GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID
@@ -76,13 +72,10 @@ const FULL_ENDPOINT_MAP = {
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
-  userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
-  getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
-  topGenreUsers: '/users/genre/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
@@ -100,15 +93,6 @@ const FULL_ENDPOINT_MAP = {
   getNFTGatedTrackSignatures: (userId: OpaqueID) =>
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
-}
-
-const ENDPOINT_MAP = {
-  associatedWallets: '/users/associated_wallets',
-  associatedWalletUserId: '/users/id',
-  userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
-  userFavorites: (userId: OpaqueID) => `/users/${userId}/favorites`,
-  userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
-  undisbursedUserChallenges: `/challenges/undisbursed`
 }
 
 const TRENDING_LIMIT = 100
@@ -147,11 +131,6 @@ type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
   currentUserId: Nullable<ID>
-}
-
-type PaginationArgs = {
-  limit?: number
-  offset?: number
 }
 
 type GetTrendingArgs = {
@@ -206,21 +185,6 @@ type GetPremiumTracksArgs = {
   currentUserId: Nullable<ID>
   offset?: number
   limit?: number
-}
-
-type GetRelatedArtistsArgs = PaginationArgs & {
-  userId: ID
-}
-
-type GetFavoritesArgs = {
-  currentUserId: ID
-  limit?: number
-}
-
-type GetTopArtistGenresArgs = {
-  genres?: string[]
-  limit?: number
-  offset?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -309,57 +273,10 @@ type GetTrendingPlaylistsArgs = {
   time: 'week' | 'month' | 'year'
 }
 
-type GetAssociatedWalletsArgs = {
-  userID: number
-}
-
 export type AssociatedWalletsResponse = {
   wallets: string[]
   sol_wallets: string[]
 }
-
-type GetAssociatedWalletUserIDArgs = {
-  address: string
-}
-
-type AssociatedWalletUserIdResponse = {
-  user_id: Nullable<ID>
-}
-
-type GetUserChallengesArgs = {
-  userID: number
-}
-
-type UserChallengesResponse = [
-  {
-    challenge_id: string
-    user_id: string
-    specifier: string
-    is_complete: boolean
-    is_active: boolean
-    is_disbursed: boolean
-    current_step_count: number
-    max_steps: number
-    challenge_type: string
-    amount: string
-    disbursed_amount: number
-    metadata: object
-    cooldown_days: number
-  }
-]
-
-type UndisbursedUserChallengesResponse = [
-  {
-    challenge_id: string
-    user_id: string
-    specifier: string
-    amount: string
-    completed_blocknumber: number
-    handle: string
-    wallet: string
-    created_at: string
-  }
-]
 
 export type GetSocialFeedArgs = QueryParams & {
   filter: string
@@ -916,54 +833,6 @@ export class AudiusAPIClient {
     return adapted
   }
 
-  async getFavorites({ currentUserId, limit }: GetFavoritesArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = { user_id: encodedUserId, limit }
-    const response = await this._getResponse<APIResponse<APIFavorite[]>>(
-      ENDPOINT_MAP.userFavorites(encodedUserId),
-      params,
-      true,
-      PathType.VersionPath
-    )
-    if (!response) return null
-    const { data } = response
-    return data.map(adapter.makeFavorite).filter(removeNullable)
-  }
-
-  async getRelatedArtists({ userId, offset, limit }: GetRelatedArtistsArgs) {
-    this._assertInitialized()
-    const encodedUserId = this._encodeOrThrow(userId)
-    const response = await this._getResponse<APIResponse<APIUser[]>>(
-      FULL_ENDPOINT_MAP.getRelatedArtists(encodedUserId),
-      { offset, limit }
-    )
-    if (!response) return []
-    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
-    return adapted
-  }
-
-  async getTopArtistGenres({ genres, limit, offset }: GetTopArtistGenresArgs) {
-    this._assertInitialized()
-
-    const params = {
-      genre: genres,
-      limit,
-      offset
-    }
-
-    const favoritedTrackResponse = await this._getResponse<
-      APIResponse<APIUser[]>
-    >(FULL_ENDPOINT_MAP.topGenreUsers, params)
-
-    if (!favoritedTrackResponse) return []
-
-    const adapted = favoritedTrackResponse.data
-      .map(adapter.makeUser)
-      .filter(removeNullable)
-    return adapted
-  }
-
   async getCollectionMetadata({
     collectionId,
     currentUserId,
@@ -1179,102 +1048,6 @@ export class AudiusAPIClient {
       .map(adapter.makePlaylist)
       .filter(removeNullable)
     return adapted
-  }
-
-  async getAssociatedWallets({ userID }: GetAssociatedWalletsArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    const params = { id: encodedCurrentUserId }
-    const associatedWallets: Nullable<APIResponse<AssociatedWalletsResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.associatedWallets,
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!associatedWallets) return null
-    return associatedWallets.data
-  }
-
-  async getAssociatedWalletUserId({ address }: GetAssociatedWalletUserIDArgs) {
-    this._assertInitialized()
-    const params = { associated_wallet: address }
-
-    const userID: Nullable<APIResponse<AssociatedWalletUserIdResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.associatedWalletUserId,
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!userID) return null
-    const encodedUserId = userID.data.user_id
-    return encodedUserId ? decodeHashId(encodedUserId.toString()) : null
-  }
-
-  getUserChallenges = async ({ userID }: GetUserChallengesArgs) => {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    if (encodedCurrentUserId === null) return null // throw error
-
-    const params = { id: encodedCurrentUserId }
-
-    const userChallenges: Nullable<APIResponse<UserChallengesResponse>> =
-      await this._getResponse(
-        ENDPOINT_MAP.userChallenges(encodedCurrentUserId),
-        params,
-        true,
-        PathType.VersionPath
-      )
-
-    if (!userChallenges) return null
-    // DN may have amount as a string
-    const challenges = userChallenges.data.map((challenge) => {
-      return {
-        ...challenge,
-        amount: Number(challenge.amount)
-      }
-    })
-    return challenges as UserChallenge[]
-  }
-
-  getUserTags = async ({ userId }: { userId: ID }) => {
-    const encodedUserId = encodeHashId(userId)
-    return await this._getResponse<APIResponse<string[]>>(
-      ENDPOINT_MAP.userTags(encodedUserId),
-      undefined,
-      false,
-      PathType.VersionPath
-    )
-  }
-
-  getUndisbursedUserChallenges = async ({ userID }: { userID: ID }) => {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(userID)
-    if (encodedCurrentUserId === null) return null // throw error
-
-    const params = { user_id: encodedCurrentUserId }
-
-    const undisbursedUserChallenges: Nullable<
-      APIResponse<UndisbursedUserChallengesResponse>
-    > = await this._getResponse(
-      ENDPOINT_MAP.undisbursedUserChallenges,
-      params,
-      true /* retry */,
-      PathType.VersionPath
-    )
-
-    if (!undisbursedUserChallenges) return null
-    // DN may have amount as a string
-    const challenges = undisbursedUserChallenges.data.map((challenge) => {
-      return {
-        ...challenge,
-        amount: Number(challenge.amount)
-      }
-    })
-    return challenges as UndisbursedUserChallenge[]
   }
 
   async getBlockConfirmation(

@@ -1,60 +1,55 @@
-import { Button, Divider, Flex, Paper, Skeleton } from '@audius/harmony'
+import { useCurrentCommentSection } from '@audius/common/context'
+import { chatSelectors } from '@audius/common/store'
+import { Button, Divider, Flex, Paper } from '@audius/harmony'
+
+import { useSelector } from 'utils/reducer'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
-import { useCurrentCommentSection } from './CommentSectionContext'
+import { CommentSkeletons } from './CommentSkeletons'
+import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
+import { NoComments } from './NoComments'
+
+const { getCanCreateChat } = chatSelectors
 
 export const CommentSectionDesktop = () => {
   const {
-    userId,
-    isLoading,
+    artistId,
     comments,
-    handlePostComment,
+    commentSectionLoading,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
-  const commentPostAllowed = userId !== null
 
-  // Loading state
-  if (isLoading)
-    return (
-      <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-        <CommentHeader isLoading />
-        <Paper p='xl' w='100%' direction='column' gap='xl'>
-          <Flex
-            gap='s'
-            w='100%'
-            h='60px'
-            alignItems='center'
-            justifyContent='center'
-          >
-            <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-            <Skeleton w='100%' h='60px' />
-          </Flex>
-          <Divider color='default' orientation='horizontal' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-          <Skeleton w='100%' h='120px' />
-        </Paper>
-      </Flex>
-    )
+  const { canCreateChat: commentPostAllowed } = useSelector((state) =>
+    getCanCreateChat(state, { userId: artistId })
+  )
+
+  if (commentSectionLoading) {
+    return <CommentSkeletons />
+  }
 
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
       <CommentHeader commentCount={comments.length} />
       <Paper w='100%' direction='column'>
-        {commentPostAllowed !== null ? (
+        {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm onSubmit={handlePostComment} />
+              <CommentForm />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
-        <Flex gap='s' p='xl' w='100%' direction='column'>
-          <CommentThread />
+        <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
+          <CommentSortBar />
+          <Flex direction='column' gap='m' pt='m'>
+            {comments.length === 0 ? <NoComments /> : null}
+            {comments.map(({ id }) => (
+              <CommentThread commentId={id} key={id} />
+            ))}
+          </Flex>
           {/* TODO: this button is temporary; will be replaced with endless scroll */}
           <Button
             onClick={() => {

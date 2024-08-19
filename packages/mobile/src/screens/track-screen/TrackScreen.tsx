@@ -8,10 +8,10 @@ import {
   reachabilitySelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight, Button } from '@audius/harmony-native'
+import { IconArrowRight, Button, Text } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -32,13 +32,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  lineupHeader: {
-    width: '100%',
-    textAlign: 'center',
-    ...typography.h3,
-    color: palette.neutralLight3,
-    textTransform: 'uppercase'
-  },
   buttonContainer: {
     padding: spacing(6)
   }
@@ -108,13 +101,15 @@ export const TrackScreen = () => {
     !remixParentTrack.user?.is_deactivated
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
-    <Text
-      style={styles.lineupHeader}
-    >{`${messages.moreBy} ${user?.name}`}</Text>
+    <Text variant='title' size='m'>
+      {`${messages.moreBy} ${user?.name}`}
+    </Text>
   ) : null
 
   const originalTrackTitle = (
-    <Text style={styles.lineupHeader}>{messages.originalTrack}</Text>
+    <Text variant='title' size='l'>
+      {messages.originalTrack}
+    </Text>
   )
 
   return (

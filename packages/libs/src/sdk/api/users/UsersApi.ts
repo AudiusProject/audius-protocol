@@ -9,6 +9,7 @@ import {
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
+import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -44,7 +45,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
     private readonly logger: LoggerService,
-    private readonly claimableTokens: ClaimableTokensClient
+    private readonly claimableTokens: ClaimableTokensClient,
+    private readonly solanaClient: SolanaClient
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -339,7 +341,7 @@ export class UsersApi extends GeneratedUsersApi {
       mint: 'wAUDIO'
     })
 
-    const transaction = await this.claimableTokens.buildTransaction({
+    const transaction = await this.solanaClient.buildTransaction({
       instructions: [secp, transfer]
     })
     return await this.claimableTokens.sendTransaction(transaction)

@@ -37,7 +37,7 @@ export interface ExtendedPaymentSplit {
      * @type {string}
      * @memberof ExtendedPaymentSplit
      */
-    ethWallet: string;
+    ethWallet?: string;
     /**
      * 
      * @type {string}
@@ -59,7 +59,6 @@ export function instanceOfExtendedPaymentSplit(value: object): value is Extended
     let isInstance = true;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "percentage" in value && value["percentage"] !== undefined;
-    isInstance = isInstance && "ethWallet" in value && value["ethWallet"] !== undefined;
     isInstance = isInstance && "payoutWallet" in value && value["payoutWallet"] !== undefined;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
 
@@ -78,7 +77,7 @@ export function ExtendedPaymentSplitFromJSONTyped(json: any, ignoreDiscriminator
         
         'userId': json['user_id'],
         'percentage': json['percentage'],
-        'ethWallet': json['eth_wallet'],
+        'ethWallet': !exists(json, 'eth_wallet') ? undefined : json['eth_wallet'],
         'payoutWallet': json['payout_wallet'],
         'amount': json['amount'],
     };

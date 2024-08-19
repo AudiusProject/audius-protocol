@@ -18,6 +18,7 @@ import {
   PaymentRouterClient,
   getDefaultPaymentRouterClientConfig
 } from '../../services/Solana/programs/PaymentRouterClient'
+import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Genre } from '../../types/Genre'
@@ -133,6 +134,9 @@ describe('AlbumsApi', () => {
         })
       )
     })
+    const solanaClient = new SolanaClient({
+      solanaWalletAdapter
+    })
     albums = new AlbumsApi(
       new Configuration(),
       new Storage({ storageNodeSelector, logger: new Logger() }),
@@ -141,17 +145,18 @@ describe('AlbumsApi', () => {
       logger,
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
-        solanaWalletAdapter
+        solanaClient
       }),
       new PaymentRouterClient({
         ...getDefaultPaymentRouterClientConfig(developmentConfig),
-        solanaWalletAdapter
+        solanaClient
       }),
       new SolanaRelay(
         new Configuration({
           middleware: [discoveryNodeSelector.createMiddleware()]
         })
-      )
+      ),
+      solanaClient
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

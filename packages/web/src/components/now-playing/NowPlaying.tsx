@@ -562,6 +562,8 @@ const NowPlaying = g(
               onClick={onClickPill}
               className={styles.premiumPill}
               buttonSize='large'
+              contentId={track_id as ID}
+              contentType='track'
             />
           ) : null}
           <ActionsBar

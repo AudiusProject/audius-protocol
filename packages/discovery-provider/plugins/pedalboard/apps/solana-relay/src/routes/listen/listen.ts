@@ -10,6 +10,12 @@ import { recover } from 'web3-eth-accounts'
 import { keccak256 } from 'web3-utils'
 import { z } from 'zod'
 
+import {
+  LISTENS_RATE_LIMIT_IP_PREFIX,
+  LISTENS_RATE_LIMIT_TRACK_PREFIX,
+  config
+} from '../../config'
+import { RateLimiter } from '../../middleware/rateLimiter'
 import { getCachedContentNodes } from '../../redis'
 import { getConnection } from '../../utils/connections'
 import { getIP, getIpData } from '../../utils/ipData'
@@ -23,8 +29,6 @@ import {
   createTrackListenInstructions,
   getFeePayerKeyPair
 } from './trackListenInstructions'
-import { RateLimiter } from '../../middleware/rateLimiter'
-import { LISTENS_RATE_LIMIT_IP_PREFIX, LISTENS_RATE_LIMIT_TRACK_PREFIX, config } from '../../config'
 
 export type LocationData = {
   city: string
@@ -65,9 +69,18 @@ export type RecordListenResponse = {
   solTxSignature: string | null
 }
 
-export const listensIpRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_IP_PREFIX, hourlyLimit: config.listensIpHourlyRateLimit, dailyLimit: config.listensIpDailyRateLimit, weeklyLimit: config.listensIpWeeklyRateLimit })
-export const listensIpTrackRateLimiter = new RateLimiter({ prefix: LISTENS_RATE_LIMIT_TRACK_PREFIX, hourlyLimit: config.listensTrackHourlyRateLimit, dailyLimit: config.listensTrackDailyRateLimit, weeklyLimit: config.listensTrackWeeklyRateLimit })
-
+export const listensIpRateLimiter = new RateLimiter({
+  prefix: LISTENS_RATE_LIMIT_IP_PREFIX,
+  hourlyLimit: config.listensIpHourlyRateLimit,
+  dailyLimit: config.listensIpDailyRateLimit,
+  weeklyLimit: config.listensIpWeeklyRateLimit
+})
+export const listensIpTrackRateLimiter = new RateLimiter({
+  prefix: LISTENS_RATE_LIMIT_TRACK_PREFIX,
+  hourlyLimit: config.listensTrackHourlyRateLimit,
+  dailyLimit: config.listensTrackDailyRateLimit,
+  weeklyLimit: config.listensTrackWeeklyRateLimit
+})
 
 export const recordListen = async (
   params: RecordListenParams
@@ -162,25 +175,35 @@ export const validateListenSignature = async (
 }
 
 // rate limiter for after request validation
-export const listenRouteRateLimiter = async (params: { ip: string, trackId: string, logger?: Logger }): Promise<{ allowed: boolean }> => {
+export const listenRouteRateLimiter = async (params: {
+  ip: string
+  trackId: string
+  logger?: Logger
+}): Promise<{ allowed: boolean }> => {
   const { ip, trackId, logger } = params
   const ipTrackConcatKey = `${ip}:${trackId}`
 
   // consume and check rate limits
   const ipLimit = await listensIpRateLimiter.checkLimit(ip)
-  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
+  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(
+    ipTrackConcatKey
+  )
 
   // merge limits and check if both allow passage
   const allowed = ipLimit.allowed && ipTrackLimit.allowed
 
   if (!allowed) {
-    logger?.info({ ipLimit, ipTrackLimit, ip }, "rate limit hit")
+    logger?.info({ ipLimit, ipTrackLimit, ip }, 'rate limit hit')
   }
 
   return { allowed }
 }
 
-export const listen = async (req: Request, res: Response, next: NextFunction) => {
+export const listen = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   let logger
   try {
     // validation
@@ -207,7 +230,7 @@ export const listen = async (req: Request, res: Response, next: NextFunction) =>
     // check rate limit on forwarded IP and track
     const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
     if (!allowed) {
-      res.send(429).json({ message: "Too Many Requests" })
+      res.send(429).json({ message: 'Too Many Requests' })
       next()
       return
     }
@@ -217,7 +240,7 @@ export const listen = async (req: Request, res: Response, next: NextFunction) =>
     return res.status(200).json(record)
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {
-      logger?.error({ error: String(e) }, "validation error")
+      logger?.error({ error: String(e) }, 'validation error')
       return res
         .status(400)
         .json({ message: 'Validation Error', errors: e.errors })
@@ -234,6 +257,5 @@ export const listen = async (req: Request, res: Response, next: NextFunction) =>
     }
     res.status(500).json({ message: 'Internal Server Error' })
     next(e)
-    return
   }
 }

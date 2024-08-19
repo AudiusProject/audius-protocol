@@ -1,9 +1,19 @@
+import logging
+
 from flask_restx import Namespace, Resource, fields
 
-from src.api.v1.helpers import make_response, success_response
+from src.api.v1.helpers import (
+    decode_with_abort,
+    make_response,
+    pagination_parser,
+    success_response,
+)
 from src.api.v1.models.comments import base_comment_model
+from src.queries.get_comments import get_comment_replies
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
+
+logger = logging.getLogger(__name__)
 
 ns = Namespace("comments", description="Comment related operations")
 
@@ -12,25 +22,20 @@ comment_response = make_response(
 )
 
 
-@ns.route("/<string:id>")
-class User(Resource):
+@ns.route("/<string:comment_id>/replies")
+class CommentReplies(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Comment""",
-        description="Gets a single comment by its ID",
-        params={"id": "A Comment ID"},
+        description="Gets replies to a parent comment",
+        params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(pagination_parser)
     @ns.marshal_with(comment_response)
     @cache(ttl_sec=5)
-    def get(self, id):
-        mock_data = {
-            "id": id,
-            "message": "This is a special comment",
-            "is_pinned": True,
-            "timestamp_s": 123,
-            "react_count": 1234,
-            "created_at": "2021-01-01T00:00:00Z",
-            "updated_at": None,
-        }
-        return success_response(mock_data)
+    def get(self, comment_id):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(comment_id, ns)
+        comment_replies = get_comment_replies(args, decoded_id)
+        return success_response(comment_replies)
