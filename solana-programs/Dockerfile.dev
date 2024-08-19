@@ -30,7 +30,7 @@ ENV PATH="/root/solana-release/bin:${PATH}"
 
 # Ensures the test validator is running
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
-    CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1
+    CMD curl -f http://localhost:8899/health || exit 1
 
 # Copy old school bpf programs from the build step
 COPY target/deploy/claimable_tokens.so \
