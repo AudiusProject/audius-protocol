@@ -102,7 +102,7 @@ func TestChatBlast(t *testing.T) {
 	// ----------------- a first blast ------------------------
 	chatId_101_69 := misc.ChatID(101, 69)
 
-	err = chatBlast(tx, 69, t2, schema.ChatBlastRPCParams{
+	_, err = chatBlast(tx, 69, t2, schema.ChatBlastRPCParams{
 		BlastID:  "b1",
 		Audience: schema.FollowerAudience,
 		Message:  "what up fam",
@@ -221,7 +221,7 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ----------------- a second message ------------------------
-	err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
+	_, err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
 		Message:  "happy wed",
