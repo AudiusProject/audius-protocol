@@ -1,6 +1,7 @@
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { FormikHelpers } from 'formik'
 import { Formik } from 'formik'
+import type { TextInput as RNTextInput } from 'react-native'
 
 import { Box, Flex, IconButton, IconSend } from '@audius/harmony-native'
 
@@ -17,6 +18,7 @@ type CommentFormProps = {
   initialValue?: string
   hideAvatar?: boolean
   isLoading?: boolean
+  TextInputComponent?: typeof RNTextInput
 }
 
 const messages = {
@@ -27,7 +29,8 @@ export const CommentForm = ({
   onSubmit,
   initialValue = '',
   hideAvatar = false,
-  isLoading
+  isLoading,
+  TextInputComponent
 }: CommentFormProps) => {
   const { currentUserId } = useCurrentCommentSection()
 
@@ -66,6 +69,7 @@ export const CommentForm = ({
                 />
               )
             }
+            TextInputComponent={TextInputComponent}
           />
         </Box>
       </Flex>

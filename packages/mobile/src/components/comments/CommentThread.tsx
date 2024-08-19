@@ -3,13 +3,9 @@ import { useState } from 'react'
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { ReplyComment } from '@audius/sdk'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import {
-  Flex,
-  IconCaretDown,
-  IconCaretUp,
-  TextLink
-} from '@audius/harmony-native'
+import { Flex, IconCaretDown, IconCaretUp, Text } from '@audius/harmony-native'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -36,18 +32,22 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   if (!rootComment) return null
 
   return (
-    <Flex direction='column'>
+    <>
       <CommentBlock comment={rootComment} />
-      <Flex ml='56px' direction='column' mt='l' gap='l'>
+      <Flex pl={40} direction='column' mv='s' gap='s'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onPress={() => toggleReplies(rootComment.id)}>
-            {hiddenReplies[rootComment.id] ? (
-              <IconCaretUp color='subdued' size='m' />
-            ) : (
-              <IconCaretDown color='subdued' size='m' />
-            )}
-            {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
-          </TextLink>
+          <TouchableOpacity onPress={() => toggleReplies(rootComment.id)}>
+            <Flex direction='row' gap='s' alignItems='center'>
+              {hiddenReplies[rootComment.id] ? (
+                <IconCaretUp color='subdued' size='s' />
+              ) : (
+                <IconCaretDown color='subdued' size='s' />
+              )}
+              <Text variant='title' size='s' color='subdued'>
+                {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
+              </Text>
+            </Flex>
+          </TouchableOpacity>
         ) : null}
         {hiddenReplies[rootComment.id] ? null : (
           <Flex direction='column' gap='l'>
@@ -61,13 +61,16 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             ))}
           </Flex>
         )}
-        {/* TODO: need a way to hide this when no more to load */}
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onPress={() => handleLoadMoreReplies(rootComment.id)}>
-            {messages.showMoreReplies}
-          </TextLink>
+          <TouchableOpacity
+            onPress={() => handleLoadMoreReplies(rootComment.id)}
+          >
+            <Text variant='title' size='s' color='subdued'>
+              {messages.showMoreReplies}
+            </Text>
+          </TouchableOpacity>
         ) : null}
       </Flex>
-    </Flex>
+    </>
   )
 }
