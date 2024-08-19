@@ -95,62 +95,64 @@ fi
 solana address -k "$reward_manager_token_pda_keypair"
 echo
 
-# echo "---------------- Airdrop solana -----------------"
+echo "---------------- Airdrop solana -----------------"
 
-# echo "Airdropping to owner account"
-# solana airdrop 100 "$owner_keypair"
-# echo
+echo "Airdropping to owner account"
+solana airdrop 100 "$owner_keypair"
+echo
 
-# echo "Airdropping to feepayer account"
-# solana airdrop 100 "$feepayer_keypair"
-# echo
-# echo "Checking balance: $(solana --commitment finalized balance -k "$feepayer_keypair")"
-# while [[ "$(solana --commitment finalized balance -k "$feepayer_keypair" | awk '{print $1}')" < "100" ]]; do
-#     echo "Waiting for balance update..."
-#     sleep 1
-# done
+echo "Airdropping to feepayer account"
+solana airdrop 100 "$feepayer_keypair"
+echo
+echo "Checking balance: $(solana --commitment finalized balance -k "$feepayer_keypair")"
+while [[ "$(solana --commitment finalized balance -k "$feepayer_keypair" | awk '{print $1}')" < "100" ]]; do
+    echo "Waiting for balance update..."
+    sleep 1
+done
 
-# echo "------------- Deploying tokens ----------------"
+echo "------------- Deploying tokens ----------------"
 
-# echo "Deploying wAUDIO token..."
-# spl-token create-token --decimals 8 -- "$token_keypair"
-# echo
+echo "Deploying wAUDIO token..."
+spl-token create-token --decimals 8 -- "$token_keypair"
+echo
 
-# echo "Deploying fake UDSC token..."
-# spl-token create-token --decimals 6 -- "$fake_usdc_token_keypair"
-# echo
+echo "Deploying fake UDSC token..."
+spl-token create-token --decimals 6 -- "$fake_usdc_token_keypair"
+echo
 
-# echo "------------- Initialize programs ---------------"
+echo "------------- Initialize programs ---------------"
 
-# echo "Creating a signer group..."
-# ./target/debug/audius-eth-registry-cli create-signer-group "$signer_group_keypair"
-# echo
+echo "Creating a signer group..."
+./target/debug/audius-eth-registry-cli create-signer-group "$signer_group_keypair"
+echo
 
-# if [[ "$valid_signer_eth_address" != "" ]]; then
-#     echo "Creating a valid signer..."
-#     echo "$valid_signer_eth_address"
-#     ./target/debug/audius-eth-registry-cli create-valid-signer \
-#         "$(solana address -k "$signer_group_keypair")" \
-#         "$(echo $valid_signer_eth_address | tail -c+3)" \
-#         "$valid_signer_keypair"
-#     echo
-# fi
+echo "Creating a valid signer..."
+echo "$valid_signer_eth_address"
+./target/debug/audius-eth-registry-cli create-valid-signer \
+    "$(solana address -k "$signer_group_keypair")" \
+    "$(echo $valid_signer_eth_address | tail -c+3)" \
+    "$valid_signer_keypair"
+echo
 
-# echo "Initalizing reward manager..."
-# ./target/debug/audius-reward-manager-cli init \
-#     --keypair "$reward_manager_pda_keypair" \
-#     --token-keypair "$reward_manager_token_pda_keypair" \
-#     --min-votes 3 \
-#     --token-mint "$(solana address -k $token_keypair)"
-# echo
+echo "Initalizing reward manager..."
+./target/debug/audius-reward-manager-cli init \
+    --keypair "$reward_manager_pda_keypair" \
+    --token-keypair "$reward_manager_token_pda_keypair" \
+    --min-votes 3 \
+    --token-mint "$(solana address -k $token_keypair)"
+echo
 
-# echo "Minting 100000000 wAUDIO to reward manager..."
-# spl-token mint "$(solana address -k "$token_keypair")" 100000000 -- "$(solana address -k "$reward_manager_token_pda_keypair")"
-# echo
+echo "Minting 100000000 wAUDIO to reward manager..."
+spl-token mint "$(solana address -k "$token_keypair")" 100000000 -- "$(solana address -k "$reward_manager_token_pda_keypair")"
+echo
 
 echo "------------- Creating fixtures  ---------------"
 
 mkdir -p ./fixtures
+
+echo "Owner account:"
+solana account --output json-compact --output-file ./fixtures/owner.json "$(solana address -k "$owner_keypair")"
+echo
 
 echo "Fee payer account:"
 solana account --output json-compact --output-file ./fixtures/fee-payer.json "$(solana address -k "$feepayer_keypair")"
