@@ -77,7 +77,31 @@ WHERE chat_member.user_id = $1
 	AND chat.last_message_at > $4
   AND (chat_member.cleared_history_at IS NULL
 	  OR chat.last_message_at > chat_member.cleared_history_at)
-ORDER BY chat.last_message_at DESC, chat.chat_id
+
+
+union all (
+
+  SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
+    concat_ws(':', 'blast', from_user_id, audience, audience_content_type, audience_content_id) as chat_id,
+    min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
+    plaintext as last_message,
+    created_at as last_message_at,
+    true as last_message_is_plaintext,
+    '' as invite_code,
+    created_at as last_active_at,
+    0 as unread_count,
+    null as cleared_history_at
+  FROM chat_blast b
+  WHERE from_user_id = $1
+  ORDER BY
+    audience,
+    audience_content_type,
+    audience_content_id,
+    created_at DESC
+
+)
+
+ORDER BY last_message_at DESC, chat_id
 LIMIT $2
 `
 
