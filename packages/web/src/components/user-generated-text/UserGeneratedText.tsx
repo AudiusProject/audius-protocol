@@ -9,7 +9,11 @@ import {
   useState
 } from 'react'
 
-import { formatTrackName } from '@audius/common/utils'
+import {
+  formatCollectionName,
+  formatTrackName,
+  formatUserName
+} from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
@@ -54,6 +58,14 @@ const RenderLink = ({ attributes, content }: IntermediateRepresentation) => {
         const { data } = await sdk.resolve({ url: href })
         if (data && 'title' in data) {
           setUnfurledContent(formatTrackName({ track: data }))
+        } else if (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          'playlistName' in data[0]
+        ) {
+          setUnfurledContent(formatCollectionName({ collection: data[0] }))
+        } else if (data && 'name' in data) {
+          setUnfurledContent(formatUserName({ user: data }))
         }
       }
       fn()

@@ -6,8 +6,6 @@ import {
   ResolveRequest
 } from './generated/default'
 import {
-  instanceOfPlaylistResponse,
-  instanceOfTrackResponse,
   PlaylistResponseFromJSON,
   TrackResponseFromJSON,
   UserResponseFromJSON
@@ -41,9 +39,14 @@ export class ResolveApi extends BaseAPI {
       query: queryParameters
     })
     return new JSONApiResponse(response, (json) => {
-      if (instanceOfTrackResponse(json)) {
+      const data = json?.data ?? {}
+      if ('title' in data) {
         return TrackResponseFromJSON(json)
-      } else if (instanceOfPlaylistResponse(json)) {
+      } else if (
+        Array.isArray(data) &&
+        data.length > 0 &&
+        'playlist_name' in data[0]
+      ) {
         return PlaylistResponseFromJSON(json)
       } else {
         return UserResponseFromJSON(json)
