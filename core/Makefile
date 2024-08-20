@@ -8,6 +8,7 @@ deps:
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/cortesi/modd/cmd/modd@latest
+	@go install github.com/a-h/templ/cmd/templ@latest
 	@go mod tidy
 
 gen: $(SQL_SRCS)
@@ -28,6 +29,7 @@ build-amd64:
 
 .PHONY: dev
 dev:
+	make gen
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
 .PHONY: sandbox-node
@@ -38,3 +40,8 @@ sandbox-node:
 .PHONY: sandbox
 sandbox:
 	@go run ./scripts/sandbox.go
+
+
+.PHONY: livereload
+livereload:
+	modd

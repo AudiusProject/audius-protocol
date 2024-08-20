@@ -1393,6 +1393,10 @@ track_remixables_route_parser.add_argument(
     description="Boolean to include user info with tracks",
 )
 
+track_remixables_response = make_full_response(
+    "remixables_response", full_ns, fields.List(fields.Nested(track_full))
+)
+
 
 @full_ns.route("/remixables")
 class FullRemixableTracks(Resource):
@@ -1403,7 +1407,7 @@ class FullRemixableTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(track_remixables_route_parser)
-    @full_ns.marshal_with(full_track_response)
+    @full_ns.marshal_with(track_remixables_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()

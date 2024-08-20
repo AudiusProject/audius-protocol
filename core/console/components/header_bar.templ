@@ -1,0 +1,17 @@
+package components
+
+import "github.com/AudiusProject/audius-protocol/core/console/assets"
+
+templ HeaderBar() {
+	@Base() {
+		<div class="flex flex-col h-screen bg-white shadow-md">
+			<a href="/console" class="h-[10vh] w-full flex items-center rounded-lg p-3">
+				<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-full object-contain"/>
+				<h1 class="p-3">Console</h1>
+			</a>
+			<div class="w-full flex-1 bg-gray-100 overflow-auto p-5">
+				{ children... }
+			</div>
+		</div>
+	}
+}

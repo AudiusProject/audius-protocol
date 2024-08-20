@@ -96,7 +96,9 @@ export class ClaimableTokensClient {
         mint: configWithDefaults.mints.USDC
       })
     }
-    this.logger = configWithDefaults.logger
+    this.logger = configWithDefaults.logger.createPrefixedLogger(
+      '[claimable-tokens-client]'
+    )
   }
 
   /**
@@ -115,6 +117,7 @@ export class ClaimableTokensClient {
       userBank
     )
     if (!userBankAccount) {
+      this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
       const createUserBankInstruction =
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: ethWallet,
@@ -132,7 +135,7 @@ export class ClaimableTokensClient {
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      const signature = await this.client.sendTransaction(transaction)
+      const signature = await this.sendTransaction(transaction)
       const confirmationStrategy = { ...confirmationStrategyArgs, signature }
       await this.client.connection.confirmTransaction(
         confirmationStrategy,
@@ -140,6 +143,7 @@ export class ClaimableTokensClient {
       )
       return { userBank, didExist: false }
     }
+    this.logger.debug(`User bank ${userBank} already exists.`)
     return { userBank, didExist: true }
   }
 
@@ -272,8 +276,10 @@ export class ClaimableTokensClient {
             }
           }
         } catch (e) {
-          // If failed to provide user friendly error, surface original error
-          this.logger.warn('Failed to parse ClaimableTokensError error', e)
+          if (!(e instanceof ClaimableTokensError)) {
+            // If failed to provide user friendly error, surface original error
+            this.logger.warn('Failed to parse ClaimableTokensError error', e)
+          }
         }
       }
       throw e

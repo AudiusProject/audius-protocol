@@ -1,9 +1,12 @@
 import { AudiusSdk } from '@audius/sdk'
 
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
+
 import {
   Collection,
   FeedFilter,
   ID,
+  OptionalId,
   UserCollectionMetadata,
   UserTrack,
   UserTrackMetadata
@@ -132,10 +135,14 @@ export class Explore {
 
   async getRemixables(currentUserId: ID, limit = 25) {
     try {
-      const tracks = await this.apiClient.getRemixables({
+      const sdk = await this.audiusSdk()
+      const { data = [] } = await sdk.full.tracks.getRemixableTracks({
         limit,
-        currentUserId
+        withUsers: true,
+        userId: OptionalId.parse(currentUserId)
       })
+
+      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
       return tracks
     } catch (e) {

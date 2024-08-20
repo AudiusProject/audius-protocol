@@ -114,7 +114,7 @@ export const ArtistContentSection = () => {
             value={isTracks ? selectedTrackFilter : selectedAlbumFilter}
             label={messages.allReleases}
             options={filterButtonOptions}
-            popupProps={{
+            menuProps={{
               anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
               transformOrigin: { vertical: 'top', horizontal: 'left' }
             }}

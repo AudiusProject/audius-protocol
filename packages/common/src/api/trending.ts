@@ -1,7 +1,9 @@
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
+import { ID, OptionalId } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { TimeRange } from '~/models/TimeRange'
+import { StringKeys } from '~/services/remote-config'
 import { Genre } from '~/utils/genres'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -17,8 +19,29 @@ const trendingApi = createApi({
   reducerPath: 'trendingApi',
   endpoints: {
     getTrending: {
-      fetch: async (args: GetTrendingArgs, { apiClient }) => {
-        return await apiClient.getTrending(args)
+      fetch: async (
+        { currentUserId, genre, limit, offset, timeRange }: GetTrendingArgs,
+        { audiusSdk, remoteConfigInstance }
+      ) => {
+        const version = remoteConfigInstance.getRemoteVar(
+          StringKeys.TRENDING_EXPERIMENT
+        )
+        const sdk = await audiusSdk()
+
+        const args = {
+          limit,
+          offset,
+          time: timeRange,
+          genre: genre ?? undefined,
+          userId: OptionalId.parse(currentUserId)
+        }
+        const { data = [] } = version
+          ? await sdk.full.tracks.getTrendingTracksWithVersion({
+              ...args,
+              version
+            })
+          : await sdk.full.tracks.getTrendingTracks(args)
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         kind: Kind.TRACKS,

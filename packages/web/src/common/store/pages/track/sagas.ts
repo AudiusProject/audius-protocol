@@ -1,3 +1,4 @@
+import { trendingIdsFromSDK } from '@audius/common/adapters'
 import { ID, Kind, LineupEntry, Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -9,7 +10,8 @@ import {
   getContext,
   trackPageSelectors,
   reachabilitySelectors,
-  TrackPageState
+  TrackPageState,
+  getSDK
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
@@ -35,7 +37,7 @@ const { NOT_FOUND_PAGE } = route
 export const TRENDING_BADGE_LIMIT = 10
 
 function* watchFetchTrackBadge() {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   yield* takeEvery(
@@ -47,15 +49,25 @@ function* watchFetchTrackBadge() {
         const TF = new Set(
           remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
         )
+        const version = remoteConfigInstance.getRemoteVar(
+          StringKeys.TRENDING_EXPERIMENT
+        )
         let trendingTrackRanks: TrackPageState['trendingTrackRanks'] | null =
           yield* select(getTrendingTrackRanks)
         if (!trendingTrackRanks) {
-          const trendingRanks = yield* call(
-            [apiClient, apiClient.getTrendingIds],
-            {
-              limit: TRENDING_BADGE_LIMIT
-            }
-          )
+          const { data } = version
+            ? yield* call(
+                [
+                  sdk.full.tracks,
+                  sdk.full.tracks.getTrendingTracksIDsWithVersion
+                ],
+                { version }
+              )
+            : yield* call(
+                [sdk.full.tracks, sdk.full.tracks.getTrendingTrackIDs],
+                {}
+              )
+          const trendingRanks = trendingIdsFromSDK(data)
           if (TF.size > 0) {
             trendingRanks.week = trendingRanks.week.filter((i) => {
               const shaId = keccak_256(i.toString())

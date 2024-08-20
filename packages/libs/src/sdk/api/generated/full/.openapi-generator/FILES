@@ -65,6 +65,7 @@ models/PurchaseGate.ts
 models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
 models/RelatedArtistResponseFull.ts
+models/RemixablesResponse.ts
 models/RemixesResponse.ts
 models/RemixesResponseFull.ts
 models/RemixingResponse.ts

@@ -19,6 +19,7 @@ import type {
   FullTopListener,
   FullTrackResponse,
   FullTracksResponse,
+  RemixablesResponse,
   RemixesResponseFull,
   RemixingResponse,
   StemsResponse,
@@ -33,6 +34,8 @@ import {
     FullTrackResponseToJSON,
     FullTracksResponseFromJSON,
     FullTracksResponseToJSON,
+    RemixablesResponseFromJSON,
+    RemixablesResponseToJSON,
     RemixesResponseFullFromJSON,
     RemixesResponseFullToJSON,
     RemixingResponseFromJSON,
@@ -497,7 +500,7 @@ export class TracksApi extends runtime.BaseAPI {
      * @hidden
      * Gets a list of tracks that have stems available for remixing
      */
-    async getRemixableTracksRaw(params: GetRemixableTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
+    async getRemixableTracksRaw(params: GetRemixableTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixablesResponse>> {
         const queryParameters: any = {};
 
         if (params.limit !== undefined) {
@@ -521,13 +524,13 @@ export class TracksApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullTrackResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RemixablesResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets a list of tracks that have stems available for remixing
      */
-    async getRemixableTracks(params: GetRemixableTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
+    async getRemixableTracks(params: GetRemixableTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixablesResponse> {
         const response = await this.getRemixableTracksRaw(params, initOverrides);
         return await response.value();
     }

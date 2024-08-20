@@ -1,11 +1,6 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import {
-  ID,
-  TimeRange,
-  StemTrackMetadata,
-  CollectionMetadata
-} from '../../models'
+import { ID, StemTrackMetadata, CollectionMetadata } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
@@ -17,7 +12,7 @@ import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
-import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
+import { StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -55,18 +50,8 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  trending: (experiment: string | null) =>
-    experiment ? `/tracks/trending/${experiment}` : '/tracks/trending',
-  trendingIds: (experiment: string | null) =>
-    experiment ? `/tracks/trending/ids/${experiment}` : '/tracks/trending/ids',
-  trendingUnderground: (experiment: string | null) =>
-    experiment
-      ? `/tracks/trending/underground/${experiment}`
-      : '/tracks/trending/underground',
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
-  recommended: '/tracks/recommended',
-  remixables: '/tracks/remixables',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
@@ -94,8 +79,6 @@ const FULL_ENDPOINT_MAP = {
     `/tracks/${userId}/nft-gated-signatures`,
   getPremiumTracks: '/tracks/usdc-purchase'
 }
-
-const TRENDING_LIMIT = 100
 
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
@@ -130,36 +113,6 @@ type GetTracksArgs = {
 type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
-  currentUserId: Nullable<ID>
-}
-
-type GetTrendingArgs = {
-  timeRange?: TimeRange
-  offset?: number
-  limit?: number
-  currentUserId: Nullable<ID>
-  genre: Nullable<string>
-}
-
-type GetTrendingUndergroundArgs = {
-  offset?: number
-  limit?: number
-  currentUserId: Nullable<ID>
-}
-
-type GetTrendingIdsArgs = {
-  limit?: number
-  genre?: Nullable<string>
-}
-
-type GetRecommendedArgs = {
-  genre: Nullable<string>
-  exclusionList: number[]
-  currentUserId: Nullable<ID>
-}
-
-type GetRemixablesArgs = {
-  limit?: number
   currentUserId: Nullable<ID>
 }
 
@@ -250,20 +203,6 @@ type GetSearchArgs = {
   hasDownloads?: boolean
   isPremium?: boolean
   sortMethod?: SearchSortMethod
-}
-
-type TrendingIdsResponse = {
-  week: { id: string }[]
-  month: { id: string }[]
-  year: { id: string }[]
-  allTime: { id: string }[]
-}
-
-export type TrendingIds = {
-  week: ID[]
-  month: ID[]
-  year: ID[]
-  allTime: ID[]
 }
 
 type GetTrendingPlaylistsArgs = {
@@ -401,154 +340,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrending({
-    timeRange = TimeRange.WEEK,
-    limit = TRENDING_LIMIT,
-    offset = 0,
-    currentUserId,
-    genre
-  }: GetTrendingArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      time: timeRange,
-      limit,
-      offset,
-      user_id: encodedCurrentUserId || undefined,
-      genre: genre || undefined
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.TRENDING_EXPERIMENT
-    )
-    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.trending(experiment),
-      params
-    )
-
-    if (!trendingResponse) return []
-
-    const adapted = trendingResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getTrendingUnderground({
-    limit = TRENDING_LIMIT,
-    offset = 0,
-    currentUserId
-  }: GetTrendingUndergroundArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      limit,
-      offset,
-      user_id: encodedCurrentUserId
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
-    )
-    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.trendingUnderground(experiment),
-      params
-    )
-
-    if (!trendingResponse) return []
-
-    const adapted = trendingResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getTrendingIds({ genre, limit }: GetTrendingIdsArgs) {
-    this._assertInitialized()
-    const params = {
-      limit,
-      genre: genre || undefined
-    }
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.TRENDING_EXPERIMENT
-    )
-    const trendingIdsResponse = await this._getResponse<
-      APIResponse<TrendingIdsResponse>
-    >(FULL_ENDPOINT_MAP.trendingIds(experiment), params)
-    if (!trendingIdsResponse) {
-      return {
-        week: [],
-        month: [],
-        year: [],
-        allTime: []
-      }
-    }
-
-    const timeRanges = Object.keys(trendingIdsResponse.data) as TimeRange[]
-    const res = timeRanges.reduce(
-      (acc: TrendingIds, timeRange: TimeRange) => {
-        acc[timeRange] = trendingIdsResponse.data[timeRange]
-          .map(adapter.makeTrackId)
-          .filter(Boolean) as ID[]
-        return acc
-      },
-      {
-        week: [],
-        month: [],
-        year: [],
-        allTime: []
-      }
-    )
-    return res
-  }
-
-  async getRecommended({
-    genre,
-    exclusionList,
-    currentUserId
-  }: GetRecommendedArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      genre,
-      limit:
-        this.remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
-      exclusion_list:
-        exclusionList.length > 0 ? exclusionList.map(String) : undefined,
-      user_id: encodedCurrentUserId || undefined
-    }
-    const recommendedResponse = await this._getResponse<
-      APIResponse<APITrack[]>
-    >(FULL_ENDPOINT_MAP.recommended, params)
-
-    if (!recommendedResponse) return []
-
-    const adapted = recommendedResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getRemixables({ limit = 25, currentUserId }: GetRemixablesArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      limit,
-      user_id: encodedCurrentUserId || undefined,
-      with_users: true
-    }
-    const remixablesResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.remixables,
-      params
-    )
-
-    if (!remixablesResponse) return []
-
-    const adapted = remixablesResponse.data
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-
-    return adapted
   }
 
   async getTrack(
