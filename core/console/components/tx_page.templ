@@ -9,11 +9,8 @@ templ TxPage(props TxPageProps) {
 	@HeaderBar() {
 		<div class="bg-white shadow-md rounded-lg p-4 h-full">
 			<h1>
-				Transaction Page
+				Transaction: { props.Hash }
 			</h1>
-			<div>
-				Hash: { props.Hash }
-			</div>
 			<div>
 				Height: { props.Height }
 			</div>

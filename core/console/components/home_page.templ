@@ -22,12 +22,12 @@ templ HomePage(props HomePageProps) {
 	@HeaderBar() {
 		<div class="flex h-full gap-x-4">
 			<div class="w-1/2 bg-white shadow-md rounded-lg h-full flex flex-col">
-				<div class="px-4 py-8 p font-bold text-l">
+				<div class="px-4 py-8 p font-bold text-l border-b border-gray-500">
 					Recent Blocks
 				</div>
 				<div class="flex-grow overflow-y-auto">
 					for _, block := range props.Blocks {
-						<div class="border-t border-gray-500 text-sm">
+						<div class="border-b border-gray-500 text-sm">
 							<div class="p-6">
 								<div>Block Hash: { block.BlockID.Hash.String() }</div>
 								<div>Block Number: { fmt.Sprint(block.Header.Height) }</div>
@@ -39,14 +39,16 @@ templ HomePage(props HomePageProps) {
 				</div>
 			</div>
 			<div class="w-1/2 bg-white shadow-md rounded-lg h-full flex flex-col">
-				<div class="px-4 py-8 p font-bold text-l">
+				<div class="px-4 py-8 p font-bold text-l border-b border-gray-500">
 					Recent Transactions
 				</div>
 				<div class="flex-grow overflow-y-auto">
 					for _, tx := range props.Txs {
-						<div class="border-t border-gray-500 text-sm">
+						<div class="border-b border-gray-500 text-sm">
 							<div class="p-6">
-								<div>Tx: { tx.Hash } </div>
+								<div>
+									<a href={ templ.URL(fmt.Sprintf("/console/tx/%s", tx.Hash)) }>Hash: { tx.Hash }</a>
+								</div>
 								<div>Gas Used: { fmt.Sprint(tx.GasUsed) }</div>
 								<div>Block: { fmt.Sprint(tx.Block) }</div>
 								<div>Secs ago: { fmt.Sprint(int(time.Since(tx.Timestamp).Seconds())) } </div>

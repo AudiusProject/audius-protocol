@@ -40,7 +40,7 @@ func HeaderBar() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col h-screen bg-white shadow-md\"><div class=\"h-[10vh] w-full flex items-center rounded-lg p-3\"><img src=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col h-screen bg-white shadow-md\"><a href=\"/console\" class=\"h-[10vh] w-full flex items-center rounded-lg p-3\"><img src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -53,7 +53,7 @@ func HeaderBar() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-full object-contain\"><h1 class=\"p-3\">Console</h1></div><div class=\"w-full flex-1 bg-gray-100 overflow-auto p-5\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-full object-contain\"><h1 class=\"p-3\">Console</h1></a><div class=\"w-full flex-1 bg-gray-100 overflow-auto p-5\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
