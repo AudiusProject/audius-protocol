@@ -74,7 +74,7 @@ func websocketPush(senderUserId int32, receiverUserId int32, rpcJson json.RawMes
 			Metadata schema.Metadata `json:"metadata"`
 		}{
 			rpcJson,
-			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), SenderUserID: encodedSenderUserId, ReceiverUserID: encodedReceiverUserId},
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), SenderUserID: encodedSenderUserId, ReceiverUserID: encodedReceiverUserId, UserID: encodedSenderUserId},
 		}
 
 		payload, err := json.Marshal(data)
