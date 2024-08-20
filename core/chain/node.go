@@ -15,10 +15,10 @@ import (
 )
 
 func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.Node, error) {
-	homeDir := c.HomeDir
+	rootDir := c.RootDir
 
 	config := cfg.DefaultConfig()
-	config.SetRoot(homeDir)
+	config.SetRoot(rootDir)
 
 	// postgres indexer config
 	config.TxIndex.Indexer = "psql"
@@ -28,12 +28,17 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 	config.TxIndex.TableEvents = "core_events"
 	config.TxIndex.TableAttributes = "core_attributes"
 
-	config.P2P.PexReactor = true
+	// db and state config
+	config.Consensus.CreateEmptyBlocks = false
 
+	// peering
+	config.P2P.PexReactor = true
 	if c.PersistentPeers != "" {
 		config.P2P.PersistentPeers = c.PersistentPeers
+		config.P2P.Seeds = c.PersistentPeers
 	}
 
+	// connection settings
 	if c.RPCladdr != "" {
 		config.RPC.ListenAddress = c.RPCladdr
 	}

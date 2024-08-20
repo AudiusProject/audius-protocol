@@ -154,7 +154,7 @@ export const FilterButton = forwardRef(function FilterButton<
     } else {
       setIsOpen((isOpen: boolean) => !isOpen)
     }
-  }, [setIsOpen, onClick])
+  }, [onClick])
 
   const hasOptions = options && options.length > 0
 
@@ -193,9 +193,16 @@ export const FilterButton = forwardRef(function FilterButton<
     (value: Value) => {
       setValue(value)
       onChange?.(value)
+    },
+    [onChange, setValue]
+  )
+
+  const handleOptionSelected = useCallback(
+    (value: Value) => {
+      handleChange(value)
       setIsOpen(false)
     },
-    [onChange, setValue, setIsOpen]
+    [handleChange]
   )
 
   const filteredOptions = useMemo(
@@ -212,7 +219,7 @@ export const FilterButton = forwardRef(function FilterButton<
     <OptionKeyHandler
       options={filteredOptions}
       disabled={!isOpen}
-      onChange={handleChange}
+      onChange={handleOptionSelected}
       optionRefs={optionRefs}
       scrollRef={scrollRef}
     >
@@ -257,7 +264,11 @@ export const FilterButton = forwardRef(function FilterButton<
         {...menuProps}
       >
         {children ? (
-          children({ onChange: handleChange, options: optionElements })
+          children({
+            onChange: handleChange,
+            options: optionElements,
+            setIsOpen
+          })
         ) : (
           <>
             {showFilterInput && filterInputProps ? (

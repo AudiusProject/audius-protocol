@@ -112,48 +112,47 @@ services:
     profiles:
       - block-explorer
 
-  # solana-programs
-
+  # Building Solana Programs in container is long and cumbersome (30min+).
+  # Use saved image instead.
+  # See audius-protocol/solana-programs/README.md for how to update the image
+  # and build the programs on your host machine.
   solana-test-validator:
-    # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
-    image: audius/solana-programs:latest # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
+    env_file: .env
+    image: audius/solana-test-validator:latest
+    profiles:
+      - solana
     ports:
       - '8899:8899'
       # RPC port
       - '8900:8900'
-    deploy:
-      mode: global
-      resources:
-        limits:
-          memory: 3G
-    profiles:
-      - solana
 
-  # for infrequent solana builds
-  # see audius-protocol/solana-programs/README.md
+  # See audius-protocol/solana-programs/README.md
   solana-test-validator-build:
-    image: audius/solana-programs:latest-arm64 # build on mac
-    # image: audius/solana-programs:latest-amd64 # build on linux
+    env_file: .env
+    image: audius/solana-test-validator:latest
     build:
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
       args:
-        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: '${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}'
-        TRACK_LISTEN_COUNT_PRIVATE_KEY: '${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}'
-        CLAIMABLE_TOKENS_PRIVATE_KEY: '${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}'
-        REWARD_MANAGER_PRIVATE_KEY: '${SOLANA_REWARD_MANAGER_SECRET_KEY}'
-        PAYMENT_ROUTER_PRIVATE_KEY: '${SOLANA_PAYMENT_ROUTER_SECRET_KEY}'
-        AUDIUS_DATA_PRIVATE_KEY: '${SOLANA_AUDIUS_DATA_SECRET_KEY}'
-        owner_private_key: '${SOLANA_OWNER_SECRET_KEY}'
-        feepayer_private_key: '${SOLANA_FEEPAYER_SECRET_KEY}'
-        token_private_key: '${SOLANA_TOKEN_MINT_SECRET_KEY}'
-        admin_authority_private_key: '${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}'
-        admin_account_private_key: '${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}'
-        signer_group_private_key: '${SOLANA_SIGNER_GROUP_SECRET_KEY}'
-        valid_signer_private_key: '${SOLANA_VALID_SIGNER_SECRET_KEY}'
-        reward_manager_pda_private_key: '${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}'
-        reward_manager_token_pda_private_key: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}'
-        valid_signer_eth_address: '${ETH_VALID_SIGNER_ADDRESS}'
-        fake_usdc_token_private_key: '${SOLANA_USDC_TOKEN_MINT_SECRET_KEY}'
+        SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY: '${SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY}'
+        SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY: '${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}'
+        SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: '${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}'
+        SOLANA_REWARD_MANAGER_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
+        SOLANA_PAYMENT_ROUTER_PUBLIC_KEY: '${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY}'
+        SOLANA_SIGNER_GROUP_PUBLIC_KEY: '${SOLANA_SIGNER_GROUP_PUBLIC_KEY}'
+        SOLANA_FEEPAYER_PUBLIC_KEY: '${SOLANA_FEEPAYER_PUBLIC_KEY}'
+        SOLANA_OWNER_PUBLIC_KEY: '${SOLANA_OWNER_PUBLIC_KEY}'
+        SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
+        SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
+        SOLANA_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
+        SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     profiles:
       - solana-build
+    ports:
+      - '8899:8899'
+      # RPC port
+      - '8900:8900'

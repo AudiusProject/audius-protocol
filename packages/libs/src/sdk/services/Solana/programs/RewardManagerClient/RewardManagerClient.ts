@@ -17,8 +17,9 @@ import {
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
-import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
+import type { LoggerService } from '../../../Logger'
 import { CustomInstructionError } from '../CustomInstructionError'
+import { SolanaClient } from '../SolanaClient'
 
 import { getDefaultRewardManagerClentConfig } from './getDefaultConfig'
 import {
@@ -67,24 +68,29 @@ export class RewardManagerError extends Error {
  * based on attestations from N uniquely owned discovery nodes and an anti abuse
  * oracle node.
  */
-export class RewardManagerClient extends BaseSolanaProgramClient {
+export class RewardManagerClient {
+  private readonly client: SolanaClient
   private readonly programId: PublicKey
   private readonly rewardManagerStateAccount: PublicKey
   private readonly authority: PublicKey
   private rewardManagerState: RewardManagerStateData | null = null
+  private readonly logger: LoggerService
 
   constructor(config: RewardManagerClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       getDefaultRewardManagerClentConfig(productionConfig)
     )
-    super(configWithDefaults, config.solanaWalletAdapter)
+    this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.rewardManagerStateAccount = configWithDefaults.rewardManagerState
     this.authority = RewardManagerProgram.deriveAuthority({
       programId: configWithDefaults.programId,
       rewardManagerState: configWithDefaults.rewardManagerState
     })
+    this.logger = configWithDefaults.logger.createPrefixedLogger(
+      '[reward-manager-client]'
+    )
   }
 
   public async createSenderInstruction(params: CreateSenderInstructionRequest) {
@@ -98,7 +104,7 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
       operator: operatorEthAddress,
       feePayer: feePayerOverride
     } = args
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const sender = RewardManagerProgram.deriveSender({
       ethAddress: senderEthAddress,
       programId: this.programId,
@@ -131,7 +137,7 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
       feePayer: feePayerOverride
     } = args
     const disbursementId = this.makeDisbursementId(challengeId, specifier)
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const sender = RewardManagerProgram.deriveSender({
       ethAddress: senderEthAddress,
       programId: this.programId,
@@ -208,7 +214,7 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
       feePayer: feePayerOverride
     } = args
     const disbursementId = this.makeDisbursementId(challengeId, specifier)
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const state = await this.getRewardManagerState()
     const disbursementAccount = RewardManagerProgram.deriveDisbursement({
       disbursementId,
@@ -255,7 +261,7 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
       programId: this.programId,
       authority: this.authority
     })
-    const accountInfo = await this.connection.getAccountInfo(
+    const accountInfo = await this.client.connection.getAccountInfo(
       attestationsAccount
     )
     if (!accountInfo) {
@@ -270,7 +276,7 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
 
   public async getRewardManagerState() {
     if (!this.rewardManagerState) {
-      const state = await this.connection.getAccountInfo(
+      const state = await this.client.connection.getAccountInfo(
         this.rewardManagerStateAccount
       )
       if (state) {
@@ -288,18 +294,18 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
    * Override the sendTransaction method to provide some more friendly errors
    * back to the consumer for RewardManager instructions
    */
-  public override async sendTransaction(
+  public async sendTransaction(
     transaction: Transaction | VersionedTransaction,
     sendOptions?: SendTransactionOptions | undefined
   ): Promise<string> {
     try {
-      return await super.sendTransaction(transaction, sendOptions)
+      return await this.client.sendTransaction(transaction, sendOptions)
     } catch (e) {
       if (e instanceof SendTransactionError) {
         try {
           const error = CustomInstructionError.parseSendTransactionError(e)
           if (error) {
-            const instructions = await this.getInstructions(transaction)
+            const instructions = await this.client.getInstructions(transaction)
             const instruction = instructions[error.instructionIndex]
             if (instruction && instruction.programId.equals(this.programId)) {
               const decodedInstruction =
@@ -315,8 +321,10 @@ export class RewardManagerClient extends BaseSolanaProgramClient {
             }
           }
         } catch (e) {
-          // If failed to provide user friendly error, surface original error
-          this.logger.warn('Failed to parse RewardManagerError error', e)
+          if (!(e instanceof RewardManagerError)) {
+            // If failed to provide user friendly error, surface original error
+            this.logger.warn('Failed to parse RewardManagerError error', e)
+          }
         }
       }
       throw e

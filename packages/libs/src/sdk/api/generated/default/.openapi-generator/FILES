@@ -1,4 +1,5 @@
 .openapi-generator-ignore
+apis/ChallengesApi.ts
 apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
@@ -15,6 +16,7 @@ models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
 models/BlobInfo.ts
+models/ChallengeResponse.ts
 models/CollectionActivity.ts
 models/Comment.ts
 models/CommentResponse.ts
@@ -37,6 +39,7 @@ models/FavoritesResponse.ts
 models/FollowGate.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
+models/GetChallenges.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
@@ -51,6 +54,7 @@ models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
+models/RemixersResponse.ts
 models/ReplyComment.ts
 models/Reposts.ts
 models/SubscribersResponse.ts
@@ -71,6 +75,8 @@ models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
+models/UndisbursedChallenge.ts
+models/UndisbursedChallenges.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts

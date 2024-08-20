@@ -78,6 +78,25 @@
   font-weight: var(--harmony-font-bold);
 }
 
+.left {
+  position: relative;
+  width: 100%;
+}
+
+textarea.transparentTextArea {
+  color: transparent;
+  caret-color: black;
+}
+
+.displayElementContainer {
+  left: 0;
+  top: 0;
+  line-height: 150%;
+  position: absolute;
+  text-align: left;
+  pointer-events: none;
+}
+
 .right {
   display: flex;
   align-items: flex-end;

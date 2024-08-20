@@ -607,16 +607,12 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 type FFProbeResult struct {
 	Format struct {
-		Filename       string            `json:"filename"`
-		NbStreams      int               `json:"nb_streams"`
-		NbPrograms     int               `json:"nb_programs"`
-		FormatName     string            `json:"format_name"`
-		FormatLongName string            `json:"format_long_name"`
-		Duration       string            `json:"duration,omitempty"`
-		Size           string            `json:"size"`
-		BitRate        string            `json:"bit_rate,omitempty"`
-		ProbeScore     int               `json:"probe_score"`
-		Tags           map[string]string `json:"tags,omitempty"`
+		Filename       string `json:"filename"`
+		FormatName     string `json:"format_name"`
+		FormatLongName string `json:"format_long_name"`
+		Duration       string `json:"duration,omitempty"`
+		Size           string `json:"size"`
+		BitRate        string `json:"bit_rate,omitempty"`
 	} `json:"format"`
 }
 

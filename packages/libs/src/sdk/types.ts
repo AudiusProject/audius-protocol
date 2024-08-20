@@ -13,6 +13,7 @@ import type {
 } from './services/Solana'
 import { ClaimableTokensClient } from './services/Solana/programs/ClaimableTokensClient'
 import { RewardManagerClient } from './services/Solana/programs/RewardManagerClient'
+import type { SolanaClient } from './services/Solana/programs/SolanaClient'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
 
@@ -53,9 +54,14 @@ export type ServicesContainer = {
   solanaRelay: SolanaRelayService
 
   /**
-   * Service used to interact with the Solana blockchain
+   * Service used to interact with the Solana wallet
    */
   solanaWalletAdapter: SolanaWalletAdapter
+
+  /**
+   * Service used to interact with the Solana RPCs
+   */
+  solanaClient: SolanaClient
 
   /**
    * Claimable Tokens Program client for Solana

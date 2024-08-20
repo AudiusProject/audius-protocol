@@ -1,15 +1,29 @@
+import { userMetadataFromSDK } from '~/adapters'
+import { transformAndCleanList } from '~/adapters/utils'
 import { createApi } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
+import { ID, Id, OptionalId } from '~/models/Identifiers'
+import { Nullable } from '~/utils'
 
 const relatedArtistsApi = createApi({
   reducerPath: 'relatedArtistsApi',
   endpoints: {
     getRelatedArtists: {
-      fetch: async ({ artistId }: { artistId: ID }, { apiClient }) =>
-        await apiClient.getRelatedArtists({
-          userId: artistId,
-          limit: 50
-        }),
+      fetch: async (
+        {
+          artistId,
+          currentUserId
+        }: { artistId: ID; currentUserId?: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+
+        const { data } = await sdk.full.users.getRelatedUsers({
+          id: Id.parse(artistId),
+          limit: 50,
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userMetadataFromSDK)
+      },
       options: {
         schemaKey: 'users'
       }

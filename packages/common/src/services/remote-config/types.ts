@@ -208,7 +208,10 @@ export enum IntKeys {
   COINFLOW_MAXIMUM_CENTS = 'COINFLOW_MAXIMUM_CENTS',
 
   /** Minimum balance required to initiate a USDC cash transfer */
-  MIN_USDC_WITHDRAW_BALANCE_CENTS = 'MIN_USDC_WITHDRAW_BALANCE_CENTS'
+  MIN_USDC_WITHDRAW_BALANCE_CENTS = 'MIN_USDC_WITHDRAW_BALANCE_CENTS',
+
+  /** User must meet this tier requirement to send chat blasts */
+  CHAT_BLAST_TIER_REQUIREMENT = 'CHAT_BLAST_TIER_REQUIREMENT'
 }
 
 export enum BooleanKeys {

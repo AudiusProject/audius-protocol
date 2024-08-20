@@ -6,6 +6,7 @@ import {
   accountSelectors,
   cacheUsersSelectors,
   chatActions,
+  chatSelectors,
   ReactionTypes
 } from '@audius/common/store'
 import {
@@ -33,6 +34,7 @@ import { LinkPreview } from './LinkPreview'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
 const { setMessageReaction, sendMessage } = chatActions
+const { getChat } = chatSelectors
 const { getUserId } = accountSelectors
 
 type ChatMessageListItemProps = {
@@ -65,6 +67,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       }),
     [message]
   )
+  const chat = useSelector((state) => getChat(state, chatId ?? ''))
 
   // Derived
   const senderUserId = decodeHashId(message.sender_user_id)
@@ -130,7 +133,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   // Only render reactions if user has message permissions
   const { canSendMessage } = useCanSendMessage(chatId)
   const renderReactions = () => {
-    if (!canSendMessage) return null
+    if (!canSendMessage || chat?.is_blast) return null
 
     return (
       <div
@@ -222,7 +225,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           </div>
         ) : null}
       </div>
-      {canSendMessage ? (
+      {canSendMessage && !chat?.is_blast ? (
         <ReactionPopupMenu
           anchorRef={reactionButtonRef}
           isVisible={isReactionPopupVisible}

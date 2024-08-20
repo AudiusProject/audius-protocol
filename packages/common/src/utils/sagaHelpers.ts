@@ -6,6 +6,7 @@ import {
   all,
   call,
   delay,
+  getContext,
   put,
   select,
   spawn,
@@ -14,9 +15,15 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
+import { ErrorLevel, ReportToSentryArgs } from '~/models'
 import { waitForReachability } from '~/store/reachability/sagas'
+import { toast } from '~/store/ui/toast/slice'
 
 import { Status } from '../models/Status'
+
+const messages = {
+  somethingWrong: 'Something went wrong'
+}
 
 /**
  * Calls the provided array of calls in batches with delayMs milliseconds between each batch.
@@ -137,4 +144,31 @@ export function* waitForAccount() {
 export function* waitForRead() {
   yield* call(waitForReachability)
   yield* call(waitForAccount)
+}
+
+/**
+ * Yields the provided saga, wrapping it in an error
+ * boundary that restarts the saga and toasts if it fails.
+ * @param saga
+ */
+export function* sagaWithErrorHandler(saga: () => Generator<any, void, any>) {
+  while (true) {
+    try {
+      yield* call(saga)
+      break
+    } catch (e) {
+      yield* put(toast({ content: messages.somethingWrong }))
+      console.warn(`Saga ${saga.name} failed, restarting...`, e)
+
+      // Force typing of reportToSentry. We're not able to pull it in
+      // from getContext in ~common as that would require the store.
+      const reportToSentry: (args: ReportToSentryArgs) => void =
+        yield* getContext('reportToSentry') as any
+
+      yield* call(reportToSentry, {
+        level: ErrorLevel.Error,
+        error: e as Error
+      })
+    }
+  }
 }

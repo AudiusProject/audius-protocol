@@ -1,8 +1,10 @@
-import { Chain, CollectibleState } from '@audius/common/models'
+import { userWalletsFromSDK } from '@audius/common/adapters'
+import { Chain, CollectibleState, Id } from '@audius/common/models'
 import {
   accountSelectors,
   tokenDashboardPageActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
@@ -71,18 +73,19 @@ function* fetchSplWalletInfo(wallets: string[]) {
 function* fetchAccountAssociatedWallets() {
   // TODO C-3163 - Add loading state for fetching associated wallets
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
-  const associatedWallets = yield* call(
-    [apiClient, apiClient.getAssociatedWallets],
-    {
-      userID: accountUserId
-    }
-  )
-  if (!associatedWallets) {
+
+  const { data } = yield* call([sdk.users, sdk.users.getConnectedWallets], {
+    id: Id.parse(accountUserId)
+  })
+
+  if (!data) {
     return
   }
+
+  const associatedWallets = userWalletsFromSDK(data)
 
   const ethWalletBalances = yield* fetchEthWalletInfo(associatedWallets.wallets)
   const splWalletBalances = yield* fetchSplWalletInfo(
