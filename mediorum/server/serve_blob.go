@@ -376,13 +376,21 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
+		if ss.coreSdk == nil {
+			// early out if core sdk is disabled
+			return
+		}
+
 		ctx := c.Request().Context()
+
+		// parse out time as proto object from legacy listen sig
 		parsedTime, err := time.Parse(time.RFC3339, signatureData.Timestamp)
 		if err != nil {
 			ss.logger.Error("error parsing time:", "err", err)
 			return
 		}
 
+		// construct listen data into event
 		listen := &proto.Listen{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
@@ -390,16 +398,19 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			Signature: signatureData.Signature,
 		}
 
+		// form actual proto event for signing
 		playsEvent := &proto.PlaysEvent{
 			Listens: []*proto.Listen{listen},
 		}
 
+		// sign plays event payload with mediorum priv key
 		signedPlaysEvent, err := signature.SignCoreBytes(playsEvent, ss.Config.privateKey)
 		if err != nil {
 			ss.logger.Error("error signing listen proto event", "err", err)
 			return
 		}
 
+		// construct proto listen event alongside signature of plays event
 		event := &proto.Event{
 			Signature: signedPlaysEvent,
 			Body: &proto.Event_Plays{
@@ -407,6 +418,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			},
 		}
 
+		// submit to configured core node
 		res, err := ss.coreSdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
 			Event: event,
 		})
