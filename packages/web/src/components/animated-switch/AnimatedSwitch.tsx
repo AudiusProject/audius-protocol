@@ -8,19 +8,16 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
+import { route } from '@audius/common/utils'
 import { Switch, useHistory } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
 import { getIsIOS } from 'utils/browser'
-import {
-  SIGN_IN_PAGE,
-  SIGN_UP_PAGE,
-  NOTIFICATION_PAGE,
-  getPathname
-} from 'utils/route'
+import { getPathname } from 'utils/route'
 
 import { RouterContext, SlideDirection } from './RouterContextProvider'
+const { SIGN_IN_PAGE, SIGN_UP_PAGE, NOTIFICATION_PAGE } = route
 
 const DISABLED_PAGES = new Set([SIGN_IN_PAGE, SIGN_UP_PAGE])
 

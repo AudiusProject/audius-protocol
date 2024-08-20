@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { OS, MobileOS } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import queryString from 'query-string'
@@ -17,10 +18,11 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { getIOSAppLink } from 'utils/appLinks'
 import { getOS } from 'utils/clientUtil'
 import { dismissCookieBanner, shouldShowCookieBanner } from 'utils/gdpr'
-import { ANDROID_PLAY_STORE_LINK } from 'utils/route'
 
 import styles from './DownloadPage.module.css'
 import DownloadStartingMessage from './components/DownloadStartingMessage'
+
+const { ANDROID_PLAY_STORE_LINK } = route
 
 const messages = {
   downloadTitle: 'Download the Audius App',

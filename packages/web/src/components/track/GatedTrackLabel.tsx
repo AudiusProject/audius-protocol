@@ -6,7 +6,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { Maybe } from '@audius/common/utils'
+import { Maybe, route } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
@@ -17,9 +17,9 @@ import {
 } from '@audius/harmony'
 import { useRouteMatch } from 'react-router-dom'
 
-import { SEARCH_PAGE } from 'utils/route'
-
 import { LineupTileLabel } from './LineupTileLabel'
+
+const { SEARCH_PAGE } = route
 
 const messages = {
   collectibleGated: 'Collectible Gated',

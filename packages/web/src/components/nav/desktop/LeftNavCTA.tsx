@@ -6,6 +6,7 @@ import {
   uploadActions,
   uploadSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconCloudUpload as IconUpload,
   IconUserFollow as IconFollow,
@@ -16,8 +17,8 @@ import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
-import { SIGN_UP_PAGE, UPLOAD_PAGE } from 'utils/route'
 
+const { SIGN_UP_PAGE, UPLOAD_PAGE } = route
 const { getAccountStatus, getAccountUser } = accountSelectors
 const { resetState: resetUploadState } = uploadActions
 const { getIsUploading } = uploadSelectors

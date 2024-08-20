@@ -1,4 +1,5 @@
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -6,9 +7,10 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
-import { profilePage } from 'utils/route'
 
 import styles from './ArtistCard.module.css'
+
+const { profilePage } = route
 
 type ArtistCardProps = {
   userId: ID

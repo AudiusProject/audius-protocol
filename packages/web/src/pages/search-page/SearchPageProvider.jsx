@@ -11,6 +11,7 @@ import {
   queueSelectors,
   playerSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
@@ -18,9 +19,10 @@ import { withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
-import { NOT_FOUND_PAGE, SEARCH_PAGE, doesMatchRoute } from 'utils/route'
+import { doesMatchRoute } from 'utils/route'
 
 import * as helpers from './helpers'
+const { NOT_FOUND_PAGE, SEARCH_PAGE } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const {

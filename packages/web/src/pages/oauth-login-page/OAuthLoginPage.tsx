@@ -9,6 +9,7 @@ import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, ErrorLevel, UserMetadata } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, signOutActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Flex,
   IconCaretLeft,
@@ -32,7 +33,6 @@ import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './OAuthLoginPage.module.css'
 import { ApproveTransactionScreen } from './components/ApproveTransactionScreen'
@@ -43,6 +43,7 @@ import { useOAuthSetup } from './hooks'
 import { messages } from './messages'
 import { WriteOnceTx } from './utils'
 
+const { SIGN_UP_PAGE } = route
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 

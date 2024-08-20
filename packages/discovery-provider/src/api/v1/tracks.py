@@ -252,7 +252,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "id": decode_ids_array(ids),
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )
@@ -261,7 +261,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "routes": routes_parsed,
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )

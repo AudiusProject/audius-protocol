@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -9,10 +10,10 @@ import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { env } from 'services/env'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
-import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import './CheckPage.module.css'
 
+const { SIGN_IN_PAGE, TRENDING_PAGE } = route
 const { getAccountUser, getAccountStatus } = accountSelectors
 
 declare global {

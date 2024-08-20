@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from 'react'
 
 import { ManagedUserMetadata } from '@audius/common/models'
-import { attemptStringToNumber } from '@audius/common/utils'
+import { attemptStringToNumber, route } from '@audius/common/utils'
 
 import { ToastContext } from 'components/toast/ToastContext'
 import { useQueryParamConsumer } from 'hooks/useQueryParamConsumer'
-import { SETTINGS_PAGE } from 'utils/route'
+
+const { SETTINGS_PAGE } = route
 
 const PENDING_ID_QUERY_PARAM = 'pending'
 

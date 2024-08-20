@@ -13,7 +13,7 @@ import {
   TrackPageState,
   getSDK
 } from '@audius/common/store'
-import { makeUid } from '@audius/common/utils'
+import { makeUid, route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { keccak_256 } from 'js-sha3'
 import moment from 'moment'
@@ -23,7 +23,7 @@ import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { NOT_FOUND_PAGE, trackRemixesPage } from '../../../../utils/route'
+import { trackRemixesPage } from '../../../../utils/route'
 
 import tracksSagas from './lineups/sagas'
 const { getIsReachable } = reachabilitySelectors
@@ -32,6 +32,7 @@ const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
   trackPageSelectors
 const { getTrack: getCachedTrack } = cacheTracksSelectors
 const { getUsers } = cacheUsersSelectors
+const { NOT_FOUND_PAGE } = route
 
 export const TRENDING_BADGE_LIMIT = 10
 

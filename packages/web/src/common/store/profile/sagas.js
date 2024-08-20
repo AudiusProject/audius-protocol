@@ -29,7 +29,8 @@ import {
   MAX_PROFILE_TOP_SUPPORTERS,
   MAX_PROFILE_SUPPORTING_TILES,
   SUPPORTING_PAGINATION_SIZE,
-  isResponseError
+  isResponseError,
+  route
 } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { merge } from 'lodash'
@@ -55,12 +56,12 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
-import { NOT_FOUND_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
+const { NOT_FOUND_PAGE } = route
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =

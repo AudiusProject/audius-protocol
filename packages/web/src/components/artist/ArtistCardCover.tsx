@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -10,10 +11,10 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { profilePage } from 'utils/route'
 
 import styles from './ArtistCardCover.module.css'
 
+const { profilePage } = route
 const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0, 0.005) 67.71%, rgba(0, 0, 0, 0.15) 79.17%, rgba(0, 0, 0, 0.25) 100%)`
 
 type ArtistCoverProps = {

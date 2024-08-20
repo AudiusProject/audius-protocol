@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { MobileOS } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import {
   IconAudiusLogo,
   IconStars,
@@ -13,13 +14,11 @@ import {
 
 import Drawer from 'components/drawer/Drawer'
 import { getMobileOS } from 'utils/clientUtil'
-import {
-  ANDROID_PLAY_STORE_LINK,
-  IOS_APP_STORE_LINK,
-  IOS_WEBSITE_STORE_LINK
-} from 'utils/route'
 
 import styles from './DownloadMobileAppDrawer.module.css'
+
+const { ANDROID_PLAY_STORE_LINK, IOS_APP_STORE_LINK, IOS_WEBSITE_STORE_LINK } =
+  route
 
 const messages = {
   header: 'Download the App',

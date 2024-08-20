@@ -10,7 +10,7 @@ import {
   queueSelectors,
   playerSelectors
 } from '@audius/common/store'
-import { GENRES } from '@audius/common/utils'
+import { GENRES, route } from '@audius/common/utils'
 import {
   push as pushRoute,
   replace as replaceRoute
@@ -22,8 +22,9 @@ import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { getPathname, TRENDING_GENRES } from 'utils/route'
+import { getPathname } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
+const { TRENDING_GENRES } = route
 const { makeGetCurrent } = queueSelectors
 
 const { getBuffering, getPlaying } = playerSelectors

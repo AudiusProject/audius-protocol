@@ -7,13 +7,13 @@ import {
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common/store'
-import { formatCount, Nullable } from '@audius/common/utils'
+import { formatCount, Nullable, route } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
-import { fullProfilePage, profilePage } from 'utils/route'
+import { fullProfilePage } from 'utils/route'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -24,6 +24,8 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconMilestone } from './components/icons'
 import { getEntityLink } from './utils'
+
+const { profilePage } = route
 const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {

@@ -1,5 +1,5 @@
 import { accountSelectors, getContext } from '@audius/common/store'
-import { waitForAccount } from '@audius/common/utils'
+import { route, waitForAccount } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -8,7 +8,7 @@ import {
   showRequiresAccountModal
 } from 'common/store/pages/signon/actions'
 
-import { SIGN_UP_PAGE } from '../../utils/route'
+const { SIGN_UP_PAGE } = route
 
 const { getAccountUser } = accountSelectors
 

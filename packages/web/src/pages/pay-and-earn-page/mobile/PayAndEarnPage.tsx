@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
 import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,7 +11,6 @@ import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
-import { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
@@ -19,6 +19,7 @@ import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
+const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks } = accountSelectors
 
 export const messages = {

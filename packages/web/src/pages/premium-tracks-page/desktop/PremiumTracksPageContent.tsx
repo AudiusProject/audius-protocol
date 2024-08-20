@@ -1,7 +1,11 @@
+import { route } from '@audius/common/utils'
+
 import DesktopHeader from 'components/header/desktop/Header'
 import { Page } from 'components/page/Page'
-import { BASE_URL, EXPLORE_PREMIUM_TRACKS_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
+
+const { EXPLORE_PREMIUM_TRACKS_PAGE } = route
 
 const messages = {
   pageTitle: 'Premium Tracks',

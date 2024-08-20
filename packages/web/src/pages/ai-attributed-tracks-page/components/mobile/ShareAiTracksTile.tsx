@@ -1,7 +1,10 @@
+import { route } from '@audius/common/utils'
+
 import RobotFace from 'assets/img/robotFace.png'
-import { AUDIUS_AI_BLOG_LINK } from 'utils/route'
 
 import styles from './ShareAiTracksTile.module.css'
+
+const { AUDIUS_AI_BLOG_LINK } = route
 
 const messages = {
   title: 'Share Your AI-Generated Tracks',

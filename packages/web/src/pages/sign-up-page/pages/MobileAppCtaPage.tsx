@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Flex, Hint, IconInfo } from '@audius/harmony'
 import { keyframes } from '@emotion/css'
 
 import QRCode from 'assets/img/imageQR.png'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { Heading, Page, PageFooter } from '../components/layout'
+const { SIGN_UP_COMPLETED_REDIRECT } = route
 
 const qrCodeScale = keyframes`
   0% {

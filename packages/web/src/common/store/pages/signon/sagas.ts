@@ -38,7 +38,8 @@ import {
   ELECTRONIC_SUBGENRES,
   waitForAccount,
   parseHandleReservedStatusFromSocial,
-  isValidEmailString
+  isValidEmailString,
+  route
 } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -63,7 +64,6 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
@@ -71,6 +71,7 @@ import { watchSignOnError } from './errorSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 
+const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions

@@ -51,7 +51,7 @@ import {
   PlayerBehavior,
   playerActions
 } from '@audius/common/store'
-import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
+import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
@@ -70,20 +70,19 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import {
-  profilePage,
-  NOT_FOUND_PAGE,
-  REPOSTING_USERS_ROUTE,
-  FAVORITING_USERS_ROUTE,
-  collectionPage,
-  getPathname
-} from 'utils/route'
+import { collectionPage, getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
 
+const {
+  profilePage,
+  NOT_FOUND_PAGE,
+  REPOSTING_USERS_ROUTE,
+  FAVORITING_USERS_ROUTE
+} = route
 const { trackModalOpened } = modalsActions
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent, getPlayerBehavior } = queueSelectors

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { pickHandleSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import { Paper, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -17,14 +18,12 @@ import {
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import {
-  SIGN_UP_CREATE_LOGIN_DETAILS,
-  SIGN_UP_FINISH_PROFILE_PAGE
-} from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { HandleField } from '../components/HandleField'
 import { Heading, Page, PageFooter } from '../components/layout'
+
+const { SIGN_UP_CREATE_LOGIN_DETAILS, SIGN_UP_FINISH_PROFILE_PAGE } = route
 
 const messages = {
   heading: 'Review Your Handle',

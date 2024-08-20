@@ -3,7 +3,7 @@ import { MouseEventHandler, useCallback, useState } from 'react'
 import { selectGenresPageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
-import { Genre } from '@audius/common/utils'
+import { Genre, route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,10 +15,11 @@ import { getGenres } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
+
+const { SIGN_UP_ARTISTS_PAGE } = route
 
 type SelectGenresValue = { genres: Genre[] }
 

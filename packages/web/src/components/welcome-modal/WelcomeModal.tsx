@@ -3,7 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { fillString } from '@audius/common/utils'
+import { fillString, route } from '@audius/common/utils'
 import {
   Modal,
   Button,
@@ -28,8 +28,8 @@ import { useMedia } from 'hooks/useMedia'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
-import { UPLOAD_PAGE } from 'utils/route'
 
+const { UPLOAD_PAGE } = route
 const { getUserId, getUserName } = accountSelectors
 
 export const WelcomeModal = () => {

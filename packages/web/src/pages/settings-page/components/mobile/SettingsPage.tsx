@@ -16,6 +16,7 @@ import {
   Notifications,
   PushNotifications
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   SegmentedControl,
   IconAudiusLogoHorizontalColor
@@ -30,12 +31,6 @@ import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import useScrollToTop from 'hooks/useScrollToTop'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import {
-  ACCOUNT_SETTINGS_PAGE,
-  HISTORY_PAGE,
-  ABOUT_SETTINGS_PAGE,
-  NOTIFICATION_SETTINGS_PAGE
-} from 'utils/route'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -45,6 +40,13 @@ import { ChangePasswordMobilePage } from './ChangePasswordPage'
 import NotificationsSettingsPage from './NotificationsSettingsPage'
 import styles from './SettingsPage.module.css'
 import VerificationPage from './VerificationPage'
+
+const {
+  ACCOUNT_SETTINGS_PAGE,
+  HISTORY_PAGE,
+  ABOUT_SETTINGS_PAGE,
+  NOTIFICATION_SETTINGS_PAGE
+} = route
 
 export enum SubPage {
   ACCOUNT = 'account',

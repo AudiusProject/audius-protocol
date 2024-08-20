@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button, IconUserArrowRotate } from '@audius/harmony'
 import { useLocation } from 'react-router-dom'
 
-import { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE, doesMatchRoute } from 'utils/route'
+import { doesMatchRoute } from 'utils/route'
 
 import SettingsCard from '../SettingsCard'
 
 import { AccountsYouManageSettingsModal } from './AccountsYouManageSettingsModal'
+
+const { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE } = route
 
 const messages = {
   accountsYouManageTitle: 'Accounts You Manage',

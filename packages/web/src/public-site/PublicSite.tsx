@@ -1,22 +1,24 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { ThemeProvider } from '@audius/harmony'
 import { Router, Route } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
-import {
+
+import { AppContextProvider } from '../app/AppContextProvider'
+
+import LandingPage from './pages/landing-page/LandingPage'
+
+const {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
   UPLOAD_PAGE,
   EXPLORE_PAGE,
   AUDIUS_PRESS_LINK
-} from 'utils/route'
-
-import { AppContextProvider } from '../app/AppContextProvider'
-
-import LandingPage from './pages/landing-page/LandingPage'
+} = route
 
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')

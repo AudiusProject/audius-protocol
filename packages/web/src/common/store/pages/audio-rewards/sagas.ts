@@ -33,6 +33,7 @@ import {
 import {
   encodeHashId,
   isResponseError,
+  route,
   waitForValue
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
@@ -51,13 +52,13 @@ import {
 } from 'typed-redux-saga'
 
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
 
+const { AUDIO_PAGE } = route
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -10,7 +11,7 @@ import {
   updateRouteOnExit
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_PAGE } from 'utils/route'
+const { SIGN_UP_PAGE } = route
 const { getHasAccount, getAccountStatus } = accountSelectors
 
 /**

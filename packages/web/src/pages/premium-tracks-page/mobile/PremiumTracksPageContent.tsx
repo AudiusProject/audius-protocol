@@ -1,12 +1,16 @@
 import { useContext, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
+
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import { BASE_URL, EXPLORE_PREMIUM_TRACKS_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 
 import styles from './PremiumTracksPageContent.module.css'
+
+const { EXPLORE_PREMIUM_TRACKS_PAGE } = route
 
 const messages = {
   pageTitle: 'Premium Tracks',

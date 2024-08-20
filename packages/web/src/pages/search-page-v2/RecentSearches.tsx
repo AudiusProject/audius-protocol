@@ -13,6 +13,7 @@ import {
   searchActions,
   searchSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Artwork,
   Button,
@@ -33,12 +34,12 @@ import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
-import { SEARCH_PAGE, profilePage } from 'utils/route'
 
 import { CategoryView } from './types'
 
 const MAX_RECENT_SEARCHES = 12
 
+const { SEARCH_PAGE, profilePage } = route
 const { removeItem, clearHistory } = searchActions
 const { getV2SearchHistory: getSearchHistory } = searchSelectors
 

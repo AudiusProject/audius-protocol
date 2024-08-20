@@ -33,7 +33,7 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common/store'
-import { formatDate, Uid } from '@audius/common/utils'
+import { formatDate, route, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -53,20 +53,21 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import {
-  profilePage,
-  NOT_FOUND_PAGE,
-  FEED_PAGE,
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE,
-  trackRemixesPage
-} from 'utils/route'
+import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
 
 import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
+
+const {
+  profilePage,
+  NOT_FOUND_PAGE,
+  FEED_PAGE,
+  FAVORITING_USERS_ROUTE,
+  REPOSTING_USERS_ROUTE
+} = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getPreviewing, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
