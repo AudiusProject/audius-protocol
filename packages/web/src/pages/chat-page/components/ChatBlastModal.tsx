@@ -153,7 +153,7 @@ const ChatBlastsFields = () => {
 
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { follower_count: followerCount } = user ?? {}
+  const { follower_count: followerCount } = user ?? { follower_count: 0 }
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'followers'
   return (
@@ -166,7 +166,7 @@ const FollowersMessageField = () => {
           </Text>
           {selected ? (
             <Text variant='title' size='l' color='subdued'>
-              ({followerCount ?? 0})
+              ({followerCount})
             </Text>
           ) : null}
         </Flex>
@@ -180,7 +180,7 @@ const FollowersMessageField = () => {
 
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { supporter_count: supporterCount } = user ?? {}
+  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'supporters'
   return (
@@ -193,7 +193,7 @@ const TipSupportersMessageField = () => {
           </Text>
           {selected ? (
             <Text variant='title' size='l' color='subdued'>
-              ({supporterCount ?? 0})
+              ({supporterCount})
             </Text>
           ) : null}
         </Flex>

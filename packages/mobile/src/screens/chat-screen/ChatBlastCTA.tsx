@@ -2,7 +2,6 @@ import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { useChatBlastModal } from '@audius/common/store'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 
 import {
@@ -16,6 +15,8 @@ import {
   IconTokenBronze
 } from '@audius/harmony-native'
 
+import { useAppDrawerNavigation } from '../app-drawer-screen'
+
 const messages = {
   title: 'Send a Message Blast',
   description: 'Send messages to your fans in bulk.',
@@ -23,23 +24,15 @@ const messages = {
   or: 'or'
 }
 
-type ChatBlastCTAProps = {
-  onClick: () => void
-}
-
-export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
-  const { onClick } = props
-
-  const { onOpen: openChatBlastModal } = useChatBlastModal()
-
+export const ChatBlastCTA = () => {
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
   const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
+  const navigation = useAppDrawerNavigation()
 
   const handleClick = useCallback(() => {
-    onClick()
-    openChatBlastModal()
-  }, [onClick, openChatBlastModal])
+    navigation.navigate('CreateChatBlast')
+  }, [navigation])
 
   if (!userMeetsRequirements) {
     return <ChatBlastDisabled />
