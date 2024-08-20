@@ -22,6 +22,7 @@ import {
   purchaseContentSagas,
   confirmerSagas
 } from '@audius/common/store'
+import { sagaWithErrorHandler } from '@audius/common/utils'
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
@@ -70,7 +71,7 @@ import repostPageSagas from 'common/store/user-list/reposts/sagas'
 import supportingPageSagas from 'common/store/user-list/supporting/sagas'
 import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
-import { all, fork } from 'typed-redux-saga'
+import { all, spawn } from 'typed-redux-saga'
 
 import collectionsSagas from 'app/store/cache/collections/sagas'
 
@@ -200,5 +201,5 @@ export default function* rootSaga() {
     ...walletsSagas()
   ]
 
-  yield* all(sagas.map(fork))
+  yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
 }
