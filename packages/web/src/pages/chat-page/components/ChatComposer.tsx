@@ -92,9 +92,13 @@ export const ChatComposer = (props: ChatComposerProps) => {
   })
 
   useEffect(() => {
-    if (presetMessage) {
-      resolveLinks(presetMessage)
+    const fn = async () => {
+      if (presetMessage) {
+        const editedValue = await resolveLinks(presetMessage)
+        setValue(editedValue)
+      }
     }
+    fn()
   }, [presetMessage, resolveLinks])
 
   const handleChange = useCallback(
