@@ -1,10 +1,15 @@
-import { Track } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { OptionalId, Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
@@ -24,7 +29,7 @@ function* getTrendingUnderground({
   offset: number
 }) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   yield call(remoteConfigInstance.waitForRemoteConfig)
@@ -32,14 +37,26 @@ function* getTrendingUnderground({
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.UTF)?.split(',') ?? []
   )
+  const version = remoteConfigInstance.getRemoteVar(
+    StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
+  )
 
   const currentUserId = yield* select(getUserId)
 
-  let tracks = yield* call((args) => apiClient.getTrendingUnderground(args), {
-    currentUserId,
-    limit,
-    offset
-  })
+  const { data = [] } = version
+    ? yield* call(
+        [
+          sdk.full.tracks,
+          sdk.full.tracks.getUndergroundTrendingTracksWithVersion
+        ],
+        { version, offset, limit, userId: OptionalId.parse(currentUserId) }
+      )
+    : yield* call(
+        [sdk.full.tracks, sdk.full.tracks.getUndergroundTrendingTracks],
+        { offset, limit, userId: OptionalId.parse(currentUserId) }
+      )
+
+  let tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
   if (TF.size > 0) {
     tracks = tracks.filter((t) => {

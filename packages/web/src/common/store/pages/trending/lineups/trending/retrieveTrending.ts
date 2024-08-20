@@ -1,11 +1,16 @@
-import { TimeRange, ID, Track, UserTrackMetadata } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { TimeRange, ID, Track, OptionalId } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   trendingPageLineupSelectors,
   trendingPageActions,
   trendingPageSelectors,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { Genre, Nullable } from '@audius/common/utils'
 import { keccak_256 } from 'js-sha3'
@@ -35,12 +40,16 @@ export function* retrieveTrending({
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
+  )
+
+  const version = remoteConfigInstance.getRemoteVar(
+    StringKeys.TRENDING_EXPERIMENT
   )
 
   const cachedTracks: ReturnType<ReturnType<typeof getTrendingEntries>> =
@@ -62,13 +71,18 @@ export function* retrieveTrending({
     return tracks
   }
 
-  let apiTracks: UserTrackMetadata[] = yield apiClient.getTrending({
-    genre,
+  const args = {
+    genre: genre ?? undefined,
     offset,
     limit,
-    currentUserId,
-    timeRange
-  })
+    time: timeRange,
+    userId: OptionalId.parse(currentUserId)
+  }
+
+  const { data = [] } = version
+    ? yield sdk.full.tracks.getTrendingTracksWithVersion({ ...args, version })
+    : yield sdk.full.tracks.getTrendingTracks(args)
+  let apiTracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
   // DN may return hidden tracks in trending because of its cache
   // i.e. when a track is in trending and the owner makes it hidden,
