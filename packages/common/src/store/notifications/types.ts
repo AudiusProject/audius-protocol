@@ -802,6 +802,7 @@ export type ChallengeRewardNotification = BaseNotification & {
   type: NotificationType.ChallengeReward
   challengeId: ChallengeRewardID
   entityType: string
+  amount: StringWei
 }
 
 export type ClaimableRewardNotification = BaseNotification & {
