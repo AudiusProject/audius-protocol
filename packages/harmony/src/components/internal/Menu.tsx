@@ -6,14 +6,15 @@ import { Flex, FlexProps } from 'components/layout/Flex'
 import { Paper, PaperProps } from 'components/layout/Paper'
 import { Popup } from 'components/popup/Popup'
 import { PopupProps } from 'components/popup/types'
+import { WithCSS } from 'foundations'
 
 // TODO menu label
 
 export type MenuProps = Omit<PopupProps, 'children'> & {
   maxHeight?: CSSObject['maxHeight']
   children: ReactNode
-  PaperProps?: Partial<PaperProps> & { css?: CSSObject }
-  MenuListProps?: Partial<FlexProps> & { css?: CSSObject }
+  PaperProps?: WithCSS<Partial<PaperProps>>
+  MenuListProps?: WithCSS<Partial<FlexProps>>
   scrollRef: Ref<HTMLDivElement>
 }
 

@@ -182,12 +182,13 @@ export const Select = forwardRef(function Select<Value extends string>(
           variant='option'
           {...selectedOption}
           onChange={() => {}}
-          css={{
+          css={({ spacing }) => ({
             position: 'absolute',
-            top: 26,
-            left: 4,
+            // Magic values to align the selected option with the input
+            top: spacing.unit6 + 2,
+            left: spacing.unit1,
             opacity: isOpen ? 0.5 : 1
-          }}
+          })}
           disabled
         />
       ) : null}

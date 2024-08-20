@@ -31,7 +31,7 @@ export type FilterButtonOptionType<Value extends string> = {
 
 type ChildrenProps<Value> = {
   /**
-   * A function to handle when the value is changed
+   * Callback when a value is selected
    */
   onChange: (value: Value) => void
   options: ReactNode
@@ -39,6 +39,9 @@ type ChildrenProps<Value> = {
 
 export type FilterButtonProps<Value extends string = string> = {
   value?: Value | null
+  /**
+   * Callback when a value is selected
+   */
   onChange?: (value: Value) => void
   /**
    * Selection options

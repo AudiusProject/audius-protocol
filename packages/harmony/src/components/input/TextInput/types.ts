@@ -54,10 +54,11 @@ export type TextInputProps = Omit<
   error?: boolean
   /**
    * Hides the label. If the label is hidden the placeholder will show by default instead.
-   * @default false
    */
   hideLabel?: boolean
-
+  /**
+   * When `true` hides the placeholder. Used in `Select`.
+   */
   hidePlaceholder?: boolean
   /**
    * Label Text. Required due to accessibility. If hideLabel is true, the label is set via aria-label

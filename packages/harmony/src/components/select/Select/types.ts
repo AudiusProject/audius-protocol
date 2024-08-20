@@ -16,14 +16,21 @@ export type SelectOption<Value extends string> = {
 
 type ChildrenProps<Value> = {
   /**
-   * A function to handle when the value is changed
+   * A callback triggered when the value is changed
    */
   onChange: (value: Value) => void
+  /**
+   * The rendered options, provided to the children render prop in case
+   * they want to be incorporated as-is.
+   */
   options: ReactNode
 }
 
 export type SelectProps<Value extends string = string> = {
   value: Value
+  /**
+   * A callback triggered when the value is changed
+   */
   onChange?: (value: Value) => void
 
   /**
