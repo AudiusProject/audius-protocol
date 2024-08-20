@@ -92,7 +92,7 @@ export const userTrackMetadataFromSDK = (
           category: input.stemOf.category as StemCategory,
           parent_track_id: input.stemOf.parentTrackId
         }
-      : null,
+      : undefined,
     stream_conditions: input.streamConditions
       ? accessConditionsFromSDK(input.streamConditions)
       : null,

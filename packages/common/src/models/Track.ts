@@ -248,10 +248,10 @@ export type TrackMetadata = {
   // Optional Fields
   is_playlist_upload?: boolean
   is_invalid?: boolean
-  stem_of?: Nullable<{
+  stem_of?: {
     parent_track_id: ID
     category: StemCategory
-  }>
+  }
   remix_of: Nullable<RemixOf>
   preview_cid?: Nullable<CID>
   preview_start_seconds?: Nullable<number>
