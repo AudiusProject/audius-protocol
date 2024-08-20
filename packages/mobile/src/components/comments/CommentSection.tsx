@@ -96,11 +96,22 @@ const CommentSectionContent = () => {
 }
 
 export const CommentSection = () => {
+  const { artistId, currentUserId, entityId, isEntityOwner } =
+    useCurrentCommentSection()
+
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  const handlePress = () => {
+    openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
+  }
+
   return (
     <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
       <CommentSectionHeader />
       <Paper w='100%' direction='column' gap='s' p='l'>
-        <CommentSectionContent />
+        <TouchableOpacity onPress={handlePress}>
+          <CommentSectionContent />
+        </TouchableOpacity>
       </Paper>
     </Flex>
   )

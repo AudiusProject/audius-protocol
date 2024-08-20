@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useReactToComment } from '@audius/common/context'
 import type { Comment } from '@audius/sdk'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
   CommentText,
@@ -79,37 +80,39 @@ export const CommentBlock = (props: CommentBlockProps) => {
         userId={userId}
       />
       <Flex gap='xs' w='100%' alignItems='flex-start'>
-        {isPinned || hasBadges ? (
-          <Flex direction='row' justifyContent='space-between' w='100%'>
-            {isPinned ? (
-              <Flex direction='row' gap='xs'>
-                <IconPencil color='subdued' size='xs' />
-                <Text color='subdued' size='xs'>
-                  Pinned by artist
-                </Text>
-              </Flex>
-            ) : null}
-            {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
-          </Flex>
-        ) : null}
-        <Flex direction='row' gap='s' alignItems='center'>
-          <UserLink size='s' userId={userId} strength='strong' />
-          <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-            <Timestamp time={new Date(createdAt)} />
-            {trackTimestampS !== undefined ? (
-              <>
-                <Text color='subdued' size='xs'>
-                  •
-                </Text>
+        <Flex>
+          {isPinned || hasBadges ? (
+            <Flex direction='row' justifyContent='space-between' w='100%'>
+              {isPinned ? (
+                <Flex direction='row' gap='xs'>
+                  <IconPencil color='subdued' size='xs' />
+                  <Text color='subdued' size='xs'>
+                    Pinned by artist
+                  </Text>
+                </Flex>
+              ) : null}
+              {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
+            </Flex>
+          ) : null}
+          <Flex direction='row' gap='s' alignItems='center'>
+            <UserLink size='s' userId={userId} strength='strong' />
+            <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+              <Timestamp time={new Date(createdAt)} />
+              {trackTimestampS !== undefined ? (
+                <>
+                  <Text color='subdued' size='xs'>
+                    •
+                  </Text>
 
-                <TextLink size='xs' variant='active'>
-                  {formatCommentTrackTimestamp(trackTimestampS)}
-                </TextLink>
-              </>
-            ) : null}
+                  <TextLink size='xs' variant='active'>
+                    {formatCommentTrackTimestamp(trackTimestampS)}
+                  </TextLink>
+                </>
+              ) : null}
+            </Flex>
           </Flex>
+          <CommentText>{message}</CommentText>
         </Flex>
-        <CommentText>{message}</CommentText>
 
         {!hideActions ? (
           <>
@@ -126,15 +129,15 @@ export const CommentBlock = (props: CommentBlockProps) => {
                   {reactCount}
                 </Text>
               </Flex>
-              <TextLink
-                variant='subdued'
-                size='s'
+              <TouchableOpacity
                 onPress={() => {
                   setShowReplyInput(!showReplyInput)
                 }}
               >
-                Reply
-              </TextLink>
+                <Text color='subdued' size='s'>
+                  Reply
+                </Text>
+              </TouchableOpacity>
               <IconButton
                 aria-label='edit comment'
                 icon={IconKebabHorizontal}

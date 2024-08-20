@@ -6,6 +6,7 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -14,6 +15,7 @@ import {
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
 import { Box, Divider, Flex, Text } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -24,6 +26,8 @@ import Skeleton from '../skeleton'
 import { CommentForm } from './CommentForm'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+
+const { getUserId } = accountSelectors
 
 const CommentDrawerHeader = () => {
   const { comments, commentSectionLoading: isLoading } =
@@ -141,6 +145,7 @@ const useStyles = makeStyles(({ palette }) => ({
 export const CommentDrawer = () => {
   const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const currentUserId = useSelector(getUserId)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
     data: { userId, entityId, isEntityOwner, artistId },
@@ -176,7 +181,7 @@ export const CommentDrawer = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props} bottomInset={insets.bottom}>
             <CommentSectionProvider
-              currentUserId={userId}
+              currentUserId={currentUserId}
               artistId={artistId}
               entityId={entityId}
               isEntityOwner={isEntityOwner}
@@ -189,7 +194,7 @@ export const CommentDrawer = () => {
         onDismiss={handleClose}
       >
         <CommentSectionProvider
-          currentUserId={userId}
+          currentUserId={currentUserId}
           artistId={artistId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
