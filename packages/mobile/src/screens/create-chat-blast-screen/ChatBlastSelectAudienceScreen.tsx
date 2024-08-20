@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 
 import { Button, Flex, IconTowerBroadcast } from '@audius/harmony-native'
 import { HeaderShadow } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { FormScreen } from '../form-screen'
 
@@ -24,6 +25,7 @@ type ChatBlastFormValues = {
 
 export const ChatBlastSelectAudienceScreen = () => {
   const dispatch = useDispatch()
+  const navigation = useNavigation()
   const initialValues: ChatBlastFormValues = {
     target_audience: 'followers',
     purchased_track_id: undefined,
@@ -51,6 +53,7 @@ export const ChatBlastSelectAudienceScreen = () => {
       default:
         break
     }
+    navigation.navigate('ChatList')
   }
 
   return (
@@ -66,7 +69,7 @@ export const ChatBlastSelectAudienceScreen = () => {
           }
           variant='white'
         >
-          <Flex gap='2xl'>
+          <Flex gap='l'>
             <HeaderShadow />
             <ChatBlastSelectAudienceFields />
           </Flex>
