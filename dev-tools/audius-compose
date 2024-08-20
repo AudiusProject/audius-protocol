@@ -565,6 +565,7 @@ def up(
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
                 *profiles,
                 "up",
+                "--build",
                 "--detach",
                 "--wait",
                 *args,
