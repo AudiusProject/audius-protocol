@@ -1,5 +1,41 @@
 # Audius Solana Programs
 
+## Setup
+
+### Rust
+
+[Install Rust](https://www.rust-lang.org/tools/install)
+
+Each folder should have a `rust-toolchain` specifying the version of rust you need.
+
+### Solana
+
+[Install Solana](https://docs.solanalabs.com/cli/install)
+
+Note: These programs have not been migrated to [Agave](https://solana.com/developers/guides/getstarted/setup-local-development).
+
+Please use the latest install of Solana and the build script will sync the right versions for you using `solana-install` (1.14.18 for legacy programs, 1.16.9 for Anchor programs at time of writing):
+
+```
+sh -c "$(curl -sSfL https://release.solana.com/v1.18.18/install)"
+```
+
+### Anchor
+
+[Install Anchor](https://www.anchor-lang.com/docs/installation)
+
+Used for the Payment Router and Staking Bridge. Build script will ensure the matching version of Anchor is used (0.28.0 at time of writing) via `avm use`.
+
+```
+cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+```
+
+## Development
+
+New programs should use [Anchor](https://www.anchor-lang.com/).
+
+Copy the IDL and types to the `@audius/spl` package for easier, standardized consumption, and create clients in `@audius/sdk` with sane defaults.
+
 ## Create audius/solana-test-validator for development
 
 ### 1. Build the programs locally on your machine
@@ -10,7 +46,19 @@ This script will make sure to use the correct versions of Solana CLI and Anchor 
 ./scripts/build.sh
 ```
 
-If you want, you can build the individual program you care about instead (eg. if you're creating a new program) as long as you remember to use the development keypair for it.
+#### Why not build in a docker image?
+
+There is a world in which we can build the Solana programs inside the docker image. However, this in practice is _insanely_ slow in comparison to building on the host. There's no prebuilt binaries for ARM64 Linux for Solana CLI, and even if there was, it's not a supported target for `build-bpf`. Therefore, the docker image would require:
+
+1. Building legacy programs from a amd64-linux emulated Rust 1.59 image using Solana 1.14.18
+2. Buliding Anchor programs from an amd64-linux emulated Rust 1.79 image using Solana 1.16.9
+3. Building solana-test-validator in an arm64-linux Rust 1.79 image using Solana 1.18.22
+
+Each of which takes _forever_ on our dev machines, and despite parallelizing 1 and 2, in total takes over 30 minutes.
+
+There are some benefits to building in a docker container, but they don't seem to apply here. There's generally never changes to these programs, and if there are, typically the changes are done on the host, built on the host, and deployed from the host. The dev experience of waiting >30 min for local stack is far far worse than the convenience of building these programs. A prebuilt image is sufficient for 99% of usage here, and a separate build script is ok.
+
+Do feel free to check the git history for previous attempts at building this all in one docker image though and try it out. It works, but it's painful!
 
 ### 2. Build and push the image for both arm64 and amd64
 
@@ -44,7 +92,7 @@ Then, run:
 ./scripts/init-dev-fixtures.sh
 ```
 
-## Adding a new program
+## Adding a new program to the solana-test-validator
 
 1. Make sure to add the program's .so file to the `audius/solana-test-validator` image (Dockerfile.dev).
 2. Add a `rust-toolchain` file with the version of Rust that works with your program.
