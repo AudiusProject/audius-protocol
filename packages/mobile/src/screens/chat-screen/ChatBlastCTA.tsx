@@ -24,7 +24,9 @@ const messages = {
 export const ChatBlastCTA = () => {
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
-  const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
+  const userMeetsRequirements =
+    // DEV ONLY
+    isVerified || (tierNumber && tierNumber > 0) || true
   const navigation = useAppDrawerNavigation()
 
   const handleClick = useCallback(() => {

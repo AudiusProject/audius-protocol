@@ -1,42 +1,19 @@
-import { useGetCurrentUser } from '@audius/common/api'
 import { chatActions } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
-import { Text } from '@audius/harmony-native'
-import { ExpandableRadio } from 'app/components/edit/ExpandableRadio'
-import { ExpandableRadioGroup } from 'app/components/edit/ExpandableRadioGroup'
+import { Button, Flex, IconTowerBroadcast } from '@audius/harmony-native'
+import { HeaderShadow } from 'app/components/core'
 
 import { FormScreen } from '../form-screen'
+
+import { ChatBlastSelectAudienceFields } from './ChatBlastSelectAudienceFields'
 const { createChatBlast } = chatActions
 
-const TARGET_AUDIENCE_FIELD = 'target_audience'
-
 const messages = {
-  title: 'Target Audience',
-  back: 'Back',
-  continue: 'Continue',
-  followers: {
-    label: 'My Followers',
-    description: 'Send a bulk message to all of your followers.'
-  },
-  supporters: {
-    label: 'Tip Supporters',
-    description: 'Send a bulk message to everyone who has tipped you.'
-  },
-  purchasers: {
-    label: 'Past Purchasers',
-    description:
-      'Send a bulk message to everyone who has purchased content from you on Audius.',
-    placeholder: 'Premium Content'
-  },
-  remixCreators: {
-    label: 'Remix Creators',
-    description:
-      'Send a bulk message to creators who have remixed your tracks.',
-    placeholder: 'Tracks with Remixes'
-  }
+  title: 'Select Audience',
+  continue: 'Continue'
 }
 
 type ChatBlastFormValues = {
@@ -78,99 +55,23 @@ export const ChatBlastSelectAudienceScreen = () => {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ getFieldProps }) => (
-        <FormScreen>
-          <ExpandableRadioGroup {...getFieldProps(TARGET_AUDIENCE_FIELD)}>
-            <FollowersMessageField />
-            <TipSupportersMessageField />
-            <PastPurchasersMessageField />
-            <RemixCreatorsMessageField />
-          </ExpandableRadioGroup>
+      {({ submitForm }) => (
+        <FormScreen
+          title={messages.title}
+          icon={IconTowerBroadcast}
+          bottomSection={
+            <Button variant='primary' fullWidth onPress={submitForm}>
+              {messages.continue}
+            </Button>
+          }
+          variant='white'
+        >
+          <Flex gap='2xl'>
+            <HeaderShadow />
+            <ChatBlastSelectAudienceFields />
+          </Flex>
         </FormScreen>
       )}
     </Formik>
-  )
-}
-
-const LabelWithCount = (props: { label: string; count: number }) => {
-  const { label, count } = props
-  return (
-    <Text>
-      {label} <Text color='subdued'>({count})</Text>
-    </Text>
-  )
-}
-
-const FollowersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  const { follower_count: followerCount } = user ?? { follower_count: 0 }
-
-  return (
-    <ExpandableRadio
-      value='followers'
-      label={
-        <LabelWithCount
-          label={messages.followers.label}
-          count={followerCount}
-        />
-      }
-      description={messages.followers.description}
-    />
-  )
-}
-
-const TipSupportersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
-
-  return (
-    <ExpandableRadio
-      value='supporters'
-      label={
-        <LabelWithCount
-          label={messages.supporters.label}
-          count={supporterCount}
-        />
-      }
-      description={messages.supporters.description}
-    />
-  )
-}
-
-const PastPurchasersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  // TODO: need purchasers count endpoint
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
-
-  return (
-    <ExpandableRadio
-      value='purchasers'
-      label={
-        <LabelWithCount
-          label={messages.purchasers.label}
-          count={supporterCount}
-        />
-      }
-      description={messages.purchasers.description}
-    />
-  )
-}
-
-const RemixCreatorsMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  // TODO: need remixers count endpoint
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
-
-  return (
-    <ExpandableRadio
-      value='remix_creators'
-      label={
-        <LabelWithCount
-          label={messages.remixCreators.label}
-          count={supporterCount}
-        />
-      }
-      description={messages.remixCreators.description}
-    />
   )
 }
