@@ -93,13 +93,12 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
 
-  const handleChange = useCallback(
-    async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      const originalValue = e.target.value
-      setValue(originalValue)
+  const resolveLinks = useCallback(
+    async (value: string) => {
+      setValue(value)
 
       const { matches } = matchAudiusLinks({
-        text: originalValue,
+        text: value,
         hostname: env.PUBLIC_HOSTNAME
       })
 
@@ -121,7 +120,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
 
       // Sort here to make sure that we replace all content before
       // replacing their substrings.
-      let editedValue = originalValue
+      let editedValue = value
       for (const [link, human] of Object.entries(linkToHuman).sort(
         (a, b) => b[0].length - a[0].length
       )) {
@@ -130,6 +129,19 @@ export const ChatComposer = (props: ChatComposerProps) => {
       setValue(editedValue)
     },
     [setValue, linkToHuman, humanToTrack]
+  )
+
+  useEffect(() => {
+    if (presetMessage) {
+      resolveLinks(presetMessage)
+    }
+  }, [presetMessage, resolveLinks])
+
+  const handleChange = useCallback(
+    async (e: ChangeEvent<HTMLTextAreaElement>) => {
+      resolveLinks(e.target.value)
+    },
+    [resolveLinks]
   )
 
   useEffect(() => {
