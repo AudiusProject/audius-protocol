@@ -17,7 +17,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
-import { Box, Divider, Flex, Text } from '@audius/harmony-native'
+import {
+  Box,
+  Divider,
+  Flex,
+  IconButton,
+  IconCloseAlt,
+  Text
+} from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
 
@@ -29,19 +36,41 @@ import { NoComments } from './NoComments'
 
 const { getUserId } = accountSelectors
 
-const CommentDrawerHeader = () => {
+type CommentDrawerHeaderProps = {
+  bottomSheetModalRef: React.RefObject<BottomSheetModal>
+}
+
+const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
+  const { bottomSheetModalRef } = props
+
   const { comments, commentSectionLoading: isLoading } =
     useCurrentCommentSection()
 
+  const handlePressClose = () => {
+    bottomSheetModalRef.current?.dismiss()
+  }
+
   return (
     <Flex>
-      <Flex direction='row' w='100%' justifyContent='space-between' p='l'>
+      <Flex
+        direction='row'
+        w='100%'
+        justifyContent='space-between'
+        p='l'
+        alignItems='center'
+      >
         <Text variant='body' size='m'>
           Comments
           {!isLoading && comments?.length ? (
             <Text color='subdued'>&nbsp;({comments.length})</Text>
           ) : null}
         </Text>
+        <IconButton
+          icon={IconCloseAlt}
+          onPress={handlePressClose}
+          color='subdued'
+          size='m'
+        />
       </Flex>
       <Divider orientation='horizontal' />
     </Flex>
@@ -148,7 +177,7 @@ export const CommentDrawer = () => {
   const currentUserId = useSelector(getUserId)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
-    data: { userId, entityId, isEntityOwner, artistId },
+    data: { entityId, isEntityOwner, artistId },
     isOpen,
     onClosed
   } = useDrawer('Comment')
@@ -200,7 +229,7 @@ export const CommentDrawer = () => {
           isEntityOwner={isEntityOwner}
           playTrack={() => {}} // TODO
         >
-          <CommentDrawerHeader />
+          <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
           <CommentDrawerContent />
         </CommentSectionProvider>
       </BottomSheetModal>

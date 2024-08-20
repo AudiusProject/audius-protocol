@@ -41,17 +41,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
   //   const [editComment] = useEditComment()
   const [reactToComment] = useReactToComment()
-  // Note: comment post status is shared across all inputs they may have open
-  //   const [postComment, { status: commentPostStatus }] = usePostComment()
-  //   const prevPostStatus = usePrevious(commentPostStatus)
-  //   useEffect(() => {
-  //     if (
-  //       prevPostStatus !== commentPostStatus &&
-  //       commentPostStatus === Status.SUCCESS
-  //     ) {
-  //       setShowReplyInput(false)
-  //     }
-  //   }, [commentPostStatus, prevPostStatus])
   const userId = Number(userIdStr)
   useGetUserById({ id: userId })
 
