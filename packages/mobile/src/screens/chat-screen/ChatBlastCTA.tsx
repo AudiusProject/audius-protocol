@@ -41,7 +41,6 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
     openChatBlastModal()
   }, [onClick, openChatBlastModal])
 
-  // DEBUG
   if (!userMeetsRequirements) {
     return <ChatBlastDisabled />
   }
