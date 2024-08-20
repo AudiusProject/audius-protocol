@@ -19,6 +19,7 @@ import (
 	_ "embed"
 	_ "net/http/pprof"
 
+	core "github.com/AudiusProject/audius-protocol/core/sdk"
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
@@ -66,6 +67,7 @@ type MediorumConfig struct {
 	StoreAll                  bool
 	VersionJson               VersionJson
 	DiscoveryListensEndpoints []string
+	CoreGRPCEndpoint          string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -83,6 +85,7 @@ type MediorumServer struct {
 	trustedNotifier  *ethcontracts.NotifierInfo
 	reqClient        *req.Client
 	rendezvousHasher *RendezvousHasher
+	coreSdk          *core.Sdk
 
 	// simplify
 	mediorumPathUsed uint64
@@ -284,6 +287,14 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
+	}
+
+	if config.CoreGRPCEndpoint != "" {
+		coreSdk, err := core.NewSdk(core.WithGrpcendpoint(config.CoreGRPCEndpoint))
+		if err != nil {
+			logger.Warn("error initializing core sdk", "err", err)
+		}
+		ss.coreSdk = coreSdk
 	}
 
 	routes := echoServer.Group(apiBasePath)

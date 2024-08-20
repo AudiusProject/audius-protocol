@@ -132,6 +132,7 @@ func startStagingOrProd(isProd bool) {
 		StoreAll:                  os.Getenv("STORE_ALL") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
+		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
 	}
 
 	ss, err := server.New(config)
@@ -216,6 +217,7 @@ func startSandbox() {
 		StoreAll:                  os.Getenv("STORE_ALL") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
+		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
 	}
 
 	ss, err := server.New(config)
@@ -264,6 +266,7 @@ func startDevInstance() {
 		AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
+		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
 	}
 
 	ss, err := server.New(config)
@@ -321,6 +324,7 @@ func startDevCluster() {
 			AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 			VersionJson:               GetVersionJson(),
 			DiscoveryListensEndpoints: discoveryListensEndpoints(),
+			CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {
