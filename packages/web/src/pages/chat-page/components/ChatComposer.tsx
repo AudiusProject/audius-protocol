@@ -19,7 +19,7 @@ import {
   splitOnNewline
 } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
-import { Track, Playlist, User } from '@audius/sdk'
+import { Track, Playlist, User, ResolveApi } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -31,6 +31,11 @@ import styles from './ChatComposer.module.css'
 import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
 const { sendMessage } = chatActions
+const {
+  instanceOfTrackResponse,
+  instanceOfUserResponse,
+  instanceOfPlaylistResponse
+} = ResolveApi
 
 const messages = {
   sendMessage: 'Send Message',
@@ -110,24 +115,19 @@ export const ChatComposer = (props: ChatComposerProps) => {
       for (const match of matches) {
         if (!(match in linkToHuman)) {
           const res = await sdk.resolve({ url: match })
-          const { data } = res
-          if (data) {
-            if ('title' in data) {
-              const human = formatTrackName({ track: data })
+          if (res.data) {
+            if (instanceOfTrackResponse(res)) {
+              const human = formatTrackName({ track: res.data })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data }
-            } else if (
-              Array.isArray(data) &&
-              data.length > 0 &&
-              'playlistName' in data[0]
-            ) {
-              const human = formatCollectionName({ collection: data[0] })
+              humanToData[human] = { link: match, data: res.data }
+            } else if (instanceOfPlaylistResponse(res)) {
+              const human = formatCollectionName({ collection: res.data[0] })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data: data[0] }
-            } else if ('handle' in data) {
-              const human = formatUserName({ user: data })
+              humanToData[human] = { link: match, data: res.data[0] }
+            } else if (instanceOfUserResponse(res)) {
+              const human = formatUserName({ user: res.data })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data }
+              humanToData[human] = { link: match, data: res.data }
             }
           }
         } else {

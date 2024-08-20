@@ -15,6 +15,7 @@ import {
   formatUserName
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
+import { ResolveApi } from '@audius/sdk'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
@@ -23,6 +24,12 @@ import { TextLink } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
 import { squashNewLines } from 'utils/stringUtils'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
+
+const {
+  instanceOfTrackResponse,
+  instanceOfUserResponse,
+  instanceOfPlaylistResponse
+} = ResolveApi
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>
@@ -55,17 +62,17 @@ const RenderLink = ({ attributes, content }: IntermediateRepresentation) => {
     if (isAudiusUrl(href) && !unfurledContent) {
       const fn = async () => {
         const sdk = await audiusSdk()
-        const { data } = await sdk.resolve({ url: href })
-        if (data && 'title' in data) {
-          setUnfurledContent(formatTrackName({ track: data }))
-        } else if (
-          Array.isArray(data) &&
-          data.length > 0 &&
-          'playlistName' in data[0]
-        ) {
-          setUnfurledContent(formatCollectionName({ collection: data[0] }))
-        } else if (data && 'name' in data) {
-          setUnfurledContent(formatUserName({ user: data }))
+        const res = await sdk.resolve({ url: href })
+        if (res.data) {
+          if (instanceOfTrackResponse(res)) {
+            setUnfurledContent(formatTrackName({ track: res.data }))
+          } else if (instanceOfPlaylistResponse(res)) {
+            setUnfurledContent(
+              formatCollectionName({ collection: res.data[0] })
+            )
+          } else if (instanceOfUserResponse(res)) {
+            setUnfurledContent(formatUserName({ user: res.data }))
+          }
         }
       }
       fn()
