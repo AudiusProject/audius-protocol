@@ -99,3 +99,21 @@ Then, run:
 3. Make sure `./scripts/update-keys.sh` can update the Program ID and key for your program.
 4. Make sure `./scripts/build.sh` can build your program - make sure it loads the correct Solana and/or Anchor version before building.
 5. After initializing your program, consider making fixtures of the relevant account states and adding them to the `audius/solana-test-validator` container.
+
+## Scripts
+
+`./scripts/build.sh`
+
+Builds all programs and the CLIs. Note: This will change your working version of Solana and Anchor, change them back if necessary.
+
+`./scripts/init-dev-fixtures.sh`
+
+Run this script on a `solana-test-validator` with the programs deployed to initialize the programs and write the relevant accounts to the `./fixtures` folder, so that they can be preloaded in subsequent `solana-test-validator` runs.
+
+`./scripts/install-solana.sh`
+
+Helper script to install solana in a container. Building the x86_64 build of `audius/solana-test-validator` doesn't require building from source, but the arm64 build does.
+
+`./scripts/update-keys.sh`
+
+Helper script to update Program IDs and deploy keys to the local dev configured ones. Uses `../dev-tools/compose/.env` to source the private keys for each program. This will dirty the git status, so be sure to run `./scripts/update-keys.sh restore` when you're done (`./scripts/build.sh` calls this internally)
