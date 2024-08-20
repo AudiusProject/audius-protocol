@@ -22,6 +22,7 @@ func TestChatBlast(t *testing.T) {
 	t3 := time.Now().Add(time.Second * -70).UTC()
 	t4 := time.Now().Add(time.Second * -60).UTC()
 	t5 := time.Now().Add(time.Second * -50).UTC()
+	t6 := time.Now().Add(time.Second * -40).UTC()
 
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
@@ -143,10 +144,9 @@ func TestChatBlast(t *testing.T) {
 	tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId_101_69).Scan(&count)
 	assert.Equal(t, 0, count)
 
-	// user 69 gets chat list... it has
+	// user 69 gets chat list...
 	{
-		// user 69 now has 3 chats
-		// one is a `blast:`
+		// user 69 now has a (pre-existing) chat and a blast
 		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
 			UserID: 69,
 			Limit:  10,
@@ -154,7 +154,7 @@ func TestChatBlast(t *testing.T) {
 			After:  time.Now().Add(time.Hour * -2).UTC(),
 		})
 		assert.NoError(t, err)
-		assert.Len(t, chats, 3)
+		assert.Len(t, chats, 2)
 
 		blastCount := 0
 		for _, c := range chats {
@@ -231,10 +231,10 @@ func TestChatBlast(t *testing.T) {
 		tx.QueryRow(`select count(*) from chat_member where chat_id = $1`, chatId_101_69).Scan(&count)
 		assert.Equal(t, 2, count)
 
-		tx.QueryRow(`select count(*) from chat_member where chat_id = $1 and user_id = 101`, chatId_101_69).Scan(&count)
+		tx.QueryRow(`select count(*) from chat_member where is_hidden = false and chat_id = $1 and user_id = 101`, chatId_101_69).Scan(&count)
 		assert.Equal(t, 1, count)
 
-		tx.QueryRow(`select count(*) from chat_member where chat_id = $1 and user_id = 69`, chatId_101_69).Scan(&count)
+		tx.QueryRow(`select count(*) from chat_member where is_hidden = true and chat_id = $1 and user_id = 69`, chatId_101_69).Scan(&count)
 		assert.Equal(t, 1, count)
 
 		tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId_101_69).Scan(&count)
@@ -263,6 +263,22 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, chats, 1)
+	}
+
+	// after upgrade... user 69 doesn't actually see the chat because it is hidden
+	{
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 69,
+			Limit:  50,
+			Before: time.Now().Add(time.Hour * 12),
+			After:  time.Now().Add(time.Hour * -12),
+		})
+		assert.NoError(t, err)
+		for _, chat := range chats {
+			if chat.ChatID == chatId_101_69 {
+				assert.Fail(t, "chat id should be hidden from user 69", chatId_101_69)
+			}
+		}
 	}
 
 	// ----------------- a second message ------------------------
@@ -318,6 +334,30 @@ func TestChatBlast(t *testing.T) {
 			}
 		}
 
+	}
+
+	// user 101 replies... now user 69 should see the thread
+	{
+		err = chatSendMessage(tx, 101, chatId_101_69, "respond_to_blast", t6, "101 responding to a blast from 69")
+		assert.NoError(t, err)
+
+		chats, err := queries.UserChats(tx, ctx, queries.UserChatsParams{
+			UserID: 69,
+			Limit:  50,
+			Before: time.Now().Add(time.Hour * 12),
+			After:  time.Now().Add(time.Hour * -12),
+		})
+		assert.NoError(t, err)
+		found := false
+		for _, chat := range chats {
+			if chat.ChatID == chatId_101_69 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			assert.Fail(t, "chat id should now be visible to user 69", chatId_101_69)
+		}
 	}
 
 	// ------ sender can get blasts in a given thread ----------
