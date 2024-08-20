@@ -3,10 +3,6 @@ import { describe, it, expect, vitest } from 'vitest'
 
 import { parseCollectionRoute } from './collectionRouteParser'
 
-vitest.mock('@audius/common/utils', () => {
-  return { decodeHashId: vitest.fn() }
-})
-
 describe('parseCollectionRoute', () => {
   it('can parse a playlist permalink route', () => {
     const route = '/arizmendi/playlist/croissants-11'
@@ -22,8 +18,8 @@ describe('parseCollectionRoute', () => {
     expect(collectionType).toEqual('album')
   })
 
-  it('can decode a hashed collection id route', () => {
-    vitest.mocked(decodeHashId).mockReturnValue(11845)
+  it('can decode a hashed collection id route', async () => {
+    vitest.fn(decodeHashId).mockReturnValue(11845)
 
     const route = '/playlists/eP9k7'
     const { title, collectionId, handle, collectionType } =
@@ -35,7 +31,7 @@ describe('parseCollectionRoute', () => {
   })
 
   it('returns null for invalid id in hashed collection id route', () => {
-    vitest.mocked(decodeHashId).mockReturnValue(null)
+    vitest.fn(decodeHashId).mockReturnValue(null)
 
     const route = '/playlists/asdf'
     const params = parseCollectionRoute(route)

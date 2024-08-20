@@ -1,11 +1,7 @@
-import { decodeHashId as mockDecode } from '@audius/common/utils'
+import { decodeHashId } from '@audius/common/utils'
 import { describe, it, expect, vitest } from 'vitest'
 
 import { parseTrackRoute } from './trackRouteParser'
-
-vitest.mock('@audius/common/utils', () => {
-  return { decodeHashId: vitest.fn() }
-})
 
 describe('parseTrackRoute', () => {
   it('can parse a handle/slug route', () => {
@@ -17,7 +13,7 @@ describe('parseTrackRoute', () => {
   })
 
   it('can decode a hashed track id route', () => {
-    mockDecode.mockReturnValue(11845)
+    vitest.fn(decodeHashId).mockReturnValue(11845)
 
     const route = '/tracks/eP9k7'
     const { slug, trackId, handle } = parseTrackRoute(route)
