@@ -18,7 +18,7 @@ const meta: Meta<typeof FilterButton> = {
       { value: 'Blue Man Group' }
     ],
     label: 'Choice',
-    popupProps: {
+    menuProps: {
       anchorOrigin: { horizontal: 'center', vertical: 'bottom' },
       transformOrigin: { horizontal: 'center', vertical: 'top' }
     }

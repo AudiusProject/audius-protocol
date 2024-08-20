@@ -155,7 +155,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
               options={stemCategories}
               value={stemCategory}
               onChange={onEditStemCategory}
-              popupProps={{
+              menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
                 zIndex: zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP

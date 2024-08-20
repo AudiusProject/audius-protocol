@@ -4,7 +4,7 @@ import { CSSObject } from '@emotion/react'
 
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
-import { PopupProps } from 'components/popup'
+import { MenuProps } from 'components/internal/Menu'
 
 export type FilterButtonSize = 'default' | 'small'
 
@@ -18,7 +18,6 @@ export type FilterButtonOptionType<Value extends string> = {
    * The label to display. If not provided, uses the value.
    */
   label?: string
-  helperText?: string
   icon?: IconComponent
   /**
    * A leading element to display before the option label. Useful for icons/emojis
@@ -32,7 +31,7 @@ export type FilterButtonOptionType<Value extends string> = {
 
 type ChildrenProps<Value> = {
   /**
-   * A function to handle when the value is changed
+   * Callback when a value is selected
    */
   onChange: (value: Value) => void
   options: ReactNode
@@ -40,6 +39,11 @@ type ChildrenProps<Value> = {
 }
 
 export type FilterButtonProps<Value extends string = string> = {
+  value?: Value | null
+  /**
+   * Callback when a value is selected
+   */
+  onChange?: (value: Value) => void
   /**
    * Selection options
    * e.g. { label: 'Option A', icon: IconRadar }
@@ -64,11 +68,6 @@ export type FilterButtonProps<Value extends string = string> = {
   'aria-label'?: string
 
   /**
-   * The value
-   */
-  value?: Value | null
-
-  /**
    * The button size
    * @default FilterButtonSize.DEFAULT
    */
@@ -89,11 +88,6 @@ export type FilterButtonProps<Value extends string = string> = {
    * Optional icon element to include on the right side of the button
    */
   iconRight?: IconComponent | null
-
-  /**
-   * What to do when the value is changed
-   */
-  onChange?: (value: Value) => void
 
   /**
    * What to do when the filter button is opened
@@ -133,6 +127,6 @@ export type FilterButtonProps<Value extends string = string> = {
    */
   optionsLabel?: string
 
-  popupProps?: Partial<PopupProps> & { css?: CSSObject }
+  menuProps?: Partial<MenuProps> & { css?: CSSObject }
   renderLabel?: (label: string) => ReactNode
 }

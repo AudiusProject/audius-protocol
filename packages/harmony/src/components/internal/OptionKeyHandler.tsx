@@ -1,24 +1,38 @@
 import { RefObject, useState, ReactNode, useEffect } from 'react'
 
-import { SelectOption } from './Select/types'
+import { IconComponent } from 'components/icon'
 
-type SelectPopupKeyHandlerProps = {
-  children: (activeValue: string | null) => ReactNode
+type OptionType<Value extends string> = {
+  value: Value
+  /**
+   * The label to display. If not provided, uses the value.
+   */
+  label?: string
+  helperText?: string
+  icon?: IconComponent
+  /**
+   * A leading element to display before the option label. Useful for icons/emojis
+   */
+  leadingElement?: JSX.Element
+  /**
+   * A leading element to display before the filter button label
+   */
+  labelLeadingElement?: JSX.Element
+}
+
+type OptionKeyHandlerProps<Value extends string> = {
+  children: (activeValue: Value | null) => ReactNode
   disabled?: boolean
-  onOptionSelect: (option: SelectOption) => void
+  onChange: (value: Value) => void
   optionRefs: RefObject<HTMLButtonElement[]>
-  options: SelectOption[]
+  options: OptionType<Value>[]
   scrollRef: RefObject<HTMLDivElement>
 }
 
-/**
- * Handles key events for the popup inside the Select component
- *
- * Calls the `children` function with the currently active value
- */
-export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
-  const { disabled, options, onOptionSelect, optionRefs, scrollRef, children } =
-    props
+export const OptionKeyHandler = <Value extends string>(
+  props: OptionKeyHandlerProps<Value>
+) => {
+  const { disabled, options, onChange, optionRefs, scrollRef, children } = props
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const activeValue = activeIndex !== null ? options[activeIndex]?.value : null
 
@@ -82,7 +96,7 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
           event.stopPropagation()
           event.preventDefault()
           if (activeIndex !== null && options[activeIndex]) {
-            onOptionSelect(options[activeIndex])
+            onChange(options[activeIndex].value)
           }
           break
         default:
@@ -95,7 +109,7 @@ export const SelectPopupKeyHandler = (props: SelectPopupKeyHandlerProps) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [disabled, options, activeIndex, scrollRef, optionRefs, onOptionSelect])
+  }, [disabled, options, activeIndex, scrollRef, optionRefs, onChange])
 
   return <>{children(activeValue)}</>
 }
