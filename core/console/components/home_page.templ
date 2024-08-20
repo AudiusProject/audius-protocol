@@ -29,8 +29,12 @@ templ HomePage(props HomePageProps) {
 					for _, block := range props.Blocks {
 						<div class="border-b border-gray-500 text-sm">
 							<div class="p-6">
-								<div>Block Hash: { block.BlockID.Hash.String() }</div>
-								<div>Block Number: { fmt.Sprint(block.Header.Height) }</div>
+								<div>
+									<a href={ templ.URL(fmt.Sprintf("/console/block/%s", block.BlockID.Hash.String())) }>Block Hash: { block.BlockID.Hash.String() }</a>
+								</div>
+								<div>
+									<a href={ templ.URL(fmt.Sprintf("/console/block/%s", fmt.Sprint(block.Header.Height))) }>Block Number: { fmt.Sprint(block.Header.Height) }</a>
+								</div>
 								<div>Proposer: { block.Header.ProposerAddress.String() }</div>
 								<div>Txs: { fmt.Sprint(block.NumTxs) }</div>
 							</div>

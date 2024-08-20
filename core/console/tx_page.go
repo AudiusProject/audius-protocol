@@ -19,8 +19,9 @@ func (cs *Console) txPage(c echo.Context) error {
 	}
 
 	comp := components.TxPage(components.TxPageProps{
-		Hash:   txhash,
-		Height: fmt.Sprint(tx.BlockID),
+		Hash:      txhash,
+		Height:    fmt.Sprint(tx.BlockID),
+		Timestamp: tx.CreatedAt.Time,
 	})
 	return utils.Render(c, comp)
 }
