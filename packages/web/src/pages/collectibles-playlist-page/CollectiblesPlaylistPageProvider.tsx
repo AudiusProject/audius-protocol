@@ -28,7 +28,7 @@ import {
   CollectionTrack,
   CollectionPageTrackRecord
 } from '@audius/common/store'
-import { getHash, formatSeconds } from '@audius/common/utils'
+import { getHash, formatSeconds, route } from '@audius/common/utils'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,12 +39,13 @@ import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollectio
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import { AUDIO_NFT_PLAYLIST_PAGE, profilePage } from 'utils/route'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from '../collection-page/components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from '../collection-page/components/mobile/CollectionPage'
 
 import styles from './CollectiblesPlaylistPage.module.css'
+
+const { AUDIO_NFT_PLAYLIST_PAGE, profilePage } = route
 const { getPlaying, makeGetCurrent } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { setCollectible } = collectibleDetailsUIActions

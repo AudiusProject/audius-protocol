@@ -7,6 +7,7 @@ import {
   cacheCollectionsSelectors,
   cacheUsersSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -31,10 +32,12 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { collectionPage, profilePage } from 'utils/route'
+import { collectionPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'
+
+const { profilePage } = route
 const { getUserFromCollection } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId

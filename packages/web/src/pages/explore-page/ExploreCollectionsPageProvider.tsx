@@ -5,13 +5,14 @@ import {
   explorePageCollectionsActions,
   ExploreCollectionsVariant
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
-import { EXPLORE_MOOD_PLAYLISTS_PAGE, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 
 import {
   EXPLORE_COLLECTIONS_MAP,
@@ -22,6 +23,7 @@ import {
 import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
 import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
 
+const { EXPLORE_MOOD_PLAYLISTS_PAGE } = route
 const { fetch } = explorePageCollectionsActions
 const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
   IconInstagram,
@@ -19,7 +20,11 @@ import { Link } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
-import {
+
+import styles from './NavOverlay.module.css'
+import { handleClickRoute } from './handleClickRoute'
+
+const {
   AUDIUS_BLOG_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
@@ -30,10 +35,7 @@ import {
   AUDIUS_TELEGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   DOWNLOAD_START_LINK
-} from 'utils/route'
-
-import styles from './NavOverlay.module.css'
-import { handleClickRoute } from './handleClickRoute'
+} = route
 
 const messages = {
   signUp: 'Sign Up',

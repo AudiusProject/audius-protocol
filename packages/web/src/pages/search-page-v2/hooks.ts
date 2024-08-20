@@ -6,6 +6,7 @@ import {
 } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { intersection, isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -15,12 +16,12 @@ import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 import { useHistoryContext } from 'app/HistoryProvider'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { SEARCH_BASE_ROUTE, SEARCH_PAGE } from 'utils/route'
 
 import { categories } from './categories'
 import { CategoryKey, CategoryView, SearchResultsType } from './types'
 import { ALL_RESULTS_LIMIT, urlSearchParamsToObject } from './utils'
 
+const { SEARCH_BASE_ROUTE, SEARCH_PAGE } = route
 const { getAccountStatus, getUserId } = accountSelectors
 
 export const useGetSearchResults = <C extends SearchCategory>(

@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button, ButtonProps, IconMetamask } from '@audius/harmony'
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
-import { FEED_PAGE } from 'utils/route'
+
+const { FEED_PAGE } = route
 
 const messages = {
   signIn: 'Sign In With MetaMask'

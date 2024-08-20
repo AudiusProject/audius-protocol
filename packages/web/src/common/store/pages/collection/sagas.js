@@ -6,7 +6,7 @@ import {
   collectionPageActions as collectionActions,
   reachabilitySelectors
 } from '@audius/common/store'
-import { makeUid } from '@audius/common/utils'
+import { makeUid, route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
@@ -14,9 +14,10 @@ import {
   retrieveCollections,
   retrieveCollectionByPermalink
 } from 'common/store/cache/collections/utils'
-import { NOT_FOUND_PAGE } from 'utils/route'
 
 import tracksSagas from './lineups/sagas'
+
+const { NOT_FOUND_PAGE } = route
 const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 const { getIsReachable } = reachabilitySelectors

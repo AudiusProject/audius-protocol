@@ -2,6 +2,7 @@ import { Ref, useCallback, useMemo } from 'react'
 
 import { Name, CreatePlaylistSource } from '@audius/common/models'
 import { cacheCollectionsActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   PopupMenu,
   Box,
@@ -20,9 +21,9 @@ import { useDispatch } from 'react-redux'
 
 import { Tile } from 'components/tile'
 import { track, make } from 'services/analytics'
-import { UPLOAD_PAGE } from 'utils/route'
 
 import styles from './UploadChip.module.css'
+const { UPLOAD_PAGE } = route
 const { createAlbum, createPlaylist } = cacheCollectionsActions
 
 const getMessages = (type: 'track' | 'album' | 'playlist') => ({

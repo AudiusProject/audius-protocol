@@ -1,10 +1,12 @@
 import { SearchKind } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 
 import { env } from 'services/env'
-import { SEARCH_PAGE, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 
+const { SEARCH_PAGE } = route
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 type matchParams = {

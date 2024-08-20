@@ -14,6 +14,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Modal, IconValidationX, IconNote, Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -27,9 +28,10 @@ import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { profilePage } from 'utils/route'
 
 import styles from './VerificationModal.module.css'
+
+const { profilePage } = route
 const { show: showMusicConfetti } = musicConfettiActions
 
 const messages = {

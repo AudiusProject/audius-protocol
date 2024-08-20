@@ -5,6 +5,7 @@ import {
   audioRewardsPageSelectors,
   ChallengeRewardNotification as ChallengeRewardNotificationType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -12,7 +13,6 @@ import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { env } from 'services/env'
-import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -22,6 +22,7 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
 
+const { AUDIO_PAGE } = route
 const { getUserChallenge } = audioRewardsPageSelectors
 
 const messages = {

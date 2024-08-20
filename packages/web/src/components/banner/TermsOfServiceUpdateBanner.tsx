@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react'
 
 import { Name } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { TERMS_OF_SERVICE } from 'utils/route'
 
 import { CallToActionBanner } from './CallToActionBanner'
+
+const { TERMS_OF_SERVICE } = route
 
 const messages = {
   text: 'We’ve updated our Terms of Use and Privacy Policy. By continuing to use the Audius Service, you agree to our updated Terms of Use and Privacy'

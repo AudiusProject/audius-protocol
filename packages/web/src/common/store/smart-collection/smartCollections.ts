@@ -3,8 +3,9 @@ import {
   SmartCollectionVariant,
   SmartCollection
 } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 
-import {
+const {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,
   EXPLORE_UNDER_THE_RADAR_PAGE,
@@ -12,7 +13,7 @@ import {
   EXPLORE_FEELING_LUCKY_PAGE,
   EXPLORE_REMIXABLES_PAGE,
   AUDIO_NFT_PLAYLIST_PAGE
-} from '../../../utils/route'
+} = route
 
 export const HEAVY_ROTATION: SmartCollection = {
   variant: Variant.SMART,

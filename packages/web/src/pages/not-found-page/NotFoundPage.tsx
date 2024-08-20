@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react'
 
 import { Name } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import cn from 'classnames'
@@ -16,9 +17,10 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { HOME_PAGE } from 'utils/route'
 
 import styles from './NotFoundPage.module.css'
+
+const { HOME_PAGE } = route
 
 const messages = {
   title: 'Not Found',

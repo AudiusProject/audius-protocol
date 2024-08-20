@@ -1,14 +1,15 @@
 import { Theme } from '@audius/common/models'
 import { accountSelectors, themeSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconAudiusLogoHorizontal, useTheme, Flex } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { NavMenuButton } from 'components/nav/desktop/NavMenuButton'
 import { useSelector } from 'utils/reducer'
-import { HOME_PAGE } from 'utils/route'
 
 import { NotificationsButton } from './NotificationsButton'
 
+const { HOME_PAGE } = route
 const { getAccountUser } = accountSelectors
 const { getTheme } = themeSelectors
 

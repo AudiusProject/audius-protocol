@@ -1,5 +1,5 @@
 import { vipDiscordModalSelectors } from '@audius/common/store'
-import { AUDIUS_DISCORD_LINK } from '@audius/web/src/utils/route'
+import { route } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -41,7 +41,7 @@ export const VipDiscordDrawer = () => {
 
   const discordCode = useSelector(getDiscordCode)
 
-  const { onPress } = useLink(AUDIUS_DISCORD_LINK)
+  const { onPress } = useLink(route.AUDIUS_DISCORD_LINK)
 
   return (
     <Drawer

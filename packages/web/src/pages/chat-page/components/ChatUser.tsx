@@ -1,15 +1,17 @@
 import { ReactNode, useCallback } from 'react'
 
 import { User } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { profilePage } from 'utils/route'
 
 import styles from './ChatUser.module.css'
+
+const { profilePage } = route
 
 export const ChatUser = ({
   user,

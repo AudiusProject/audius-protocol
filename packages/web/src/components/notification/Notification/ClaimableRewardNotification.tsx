@@ -1,17 +1,18 @@
 import { useCallback } from 'react'
 
 import { ClaimableRewardNotification as ClaimableRewardNotificationType } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Button, Flex, IconTokenGold } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
-
-import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
+
+const { AUDIO_PAGE } = route
 
 const messages = {
   title: 'Rewards Ready to Claim',

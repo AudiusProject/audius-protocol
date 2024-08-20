@@ -27,6 +27,7 @@ import {
   SavedPageTrack,
   TrackRecord
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -37,10 +38,10 @@ import { Dispatch } from 'redux'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const {

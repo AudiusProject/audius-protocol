@@ -7,6 +7,7 @@ import {
 import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -23,15 +24,11 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import {
-  collectionPage,
-  profilePage,
-  getPathname,
-  SEARCH_PAGE
-} from 'utils/route'
+import { collectionPage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
 
+const { profilePage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions
 
 class ConnectedSearchBar extends Component {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontalColor,
   IconKebabHorizontal,
@@ -16,7 +17,12 @@ import {
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
-import {
+import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
+import zIndex from 'utils/zIndex'
+
+import styles from './NavBanner.module.css'
+
+const {
   AUDIUS_BLOG_LINK,
   AUDIUS_HELP_LINK,
   TRENDING_PAGE,
@@ -24,11 +30,7 @@ import {
   AUDIUS_ORG,
   SIGN_UP_PAGE,
   DOWNLOAD_LINK
-} from 'utils/route'
-import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
-import zIndex from 'utils/zIndex'
-
-import styles from './NavBanner.module.css'
+} = route
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(

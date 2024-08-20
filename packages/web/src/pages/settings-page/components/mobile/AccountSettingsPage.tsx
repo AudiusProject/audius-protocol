@@ -1,6 +1,7 @@
 import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import {
   Button,
   IconVerified,
@@ -22,15 +23,16 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import {
-  ACCOUNT_VERIFICATION_SETTINGS_PAGE,
-  CHANGE_EMAIL_SETTINGS_PAGE,
-  CHANGE_PASSWORD_SETTINGS_PAGE
-} from 'utils/route'
 
 import styles from './AccountSettingsPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
+
+const {
+  ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  CHANGE_EMAIL_SETTINGS_PAGE,
+  CHANGE_PASSWORD_SETTINGS_PAGE
+} = route
 
 const messages = {
   title: 'Account',

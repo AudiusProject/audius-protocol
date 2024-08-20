@@ -12,6 +12,7 @@ import {
   ExploreCollectionsVariant,
   UploadType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
@@ -100,7 +101,11 @@ import {
 } from 'store/application/ui/scrollLock/actions'
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
-import {
+import { getPathname } from 'utils/route'
+
+import styles from './WebPlayer.module.css'
+
+const {
   FEED_PAGE,
   TRENDING_PAGE,
   NOTIFICATION_PAGE,
@@ -159,7 +164,6 @@ import {
   TRENDING_UNDERGROUND_PAGE,
   EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
-  getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
   AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
@@ -181,9 +185,7 @@ import {
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE
-} from 'utils/route'
-
-import styles from './WebPlayer.module.css'
+} = route
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors

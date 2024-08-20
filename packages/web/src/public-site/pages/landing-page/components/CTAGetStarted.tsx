@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { IconCaretRight } from '@audius/harmony'
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
@@ -12,10 +13,11 @@ import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
 import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
 import capshunBg4 from 'assets/img/publicSite/CapshunBG@4x.webp'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { TRENDING_PAGE } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './CTAGetStarted.module.css'
+
+const { TRENDING_PAGE } = route
 
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
 

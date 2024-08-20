@@ -6,19 +6,20 @@ import {
   queueSelectors,
   playerSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { DeletedPageProps as DesktopDeletedPageProps } from './components/desktop/DeletedPage'
 import { DeletedPageProps as MobileDeletedPageProps } from './components/mobile/DeletedPage'
 import { moreByActions } from './store/lineups/more-by/actions'
 import { getLineup } from './store/selectors'
 
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { makeGetLineupMetadatas } = lineupSelectors

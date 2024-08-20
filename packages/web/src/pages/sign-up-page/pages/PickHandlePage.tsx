@@ -7,6 +7,7 @@ import {
 } from '@audius/common/messages'
 import { SocialPlatform } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -25,11 +26,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import {
-  SIGN_UP_CREATE_LOGIN_DETAILS,
-  SIGN_UP_FINISH_PROFILE_PAGE,
-  SIGN_UP_REVIEW_HANDLE_PAGE
-} from 'utils/route'
 
 import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
@@ -37,6 +33,12 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
+
+const {
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE
+} = route
 
 type PickHandleValues = {
   handle: string

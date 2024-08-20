@@ -12,6 +12,7 @@ import {
   TwitterProfile,
   settingsPageSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   IconAppearance,
@@ -50,11 +51,6 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { getOS, isElectron } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import {
-  PRIVACY_POLICY,
-  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
-  TERMS_OF_SERVICE
-} from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -68,6 +64,8 @@ import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
 
+const { PRIVACY_POLICY, PRIVATE_KEY_EXPORTER_SETTINGS_PAGE, TERMS_OF_SERVICE } =
+  route
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Text,
@@ -29,11 +30,11 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
-import { SETTINGS_PAGE, TRENDING_PAGE } from 'utils/route'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './PrivateKeyExporterPage.module.css'
 
+const { SETTINGS_PAGE, TRENDING_PAGE } = route
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {

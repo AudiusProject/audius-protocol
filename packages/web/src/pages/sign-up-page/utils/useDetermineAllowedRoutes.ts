@@ -1,4 +1,5 @@
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -8,8 +9,8 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { env } from 'services/env'
-import { FEED_PAGE, SignUpPath } from 'utils/route'
 
+const { FEED_PAGE, SignUpPath } = route
 const { getAccountUser } = accountSelectors
 
 const isDevEnvironment =
@@ -32,7 +33,7 @@ export const useDetermineAllowedRoute = () => {
 
   // this requestedRoute string should have already trimmed out /signup/
   return (
-    requestedRoute: string | SignUpPath
+    requestedRoute: string | typeof SignUpPath
   ): {
     allowedRoutes: string[]
     isAllowedRoute: boolean
@@ -46,7 +47,7 @@ export const useDetermineAllowedRoute = () => {
         correctedRoute: FEED_PAGE
       }
     }
-    const attemptedPath = requestedRoute.replace('/signup/', '')
+    const attemptedPath = requestedRoute.toString().replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
     let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
     if (signUpState.linkedSocialOnFirstPage) {

@@ -4,6 +4,7 @@ import { finishProfilePageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
 import { finishProfileSchema } from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
+import { route } from '@audius/common/utils'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,12 +30,13 @@ import {
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
+
+const { SIGN_UP_GENRES_PAGE } = route
 
 export type FinishProfileValues = {
   profileImage?: ImageFieldValue

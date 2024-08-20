@@ -5,14 +5,15 @@ import {
   ExploreCollectionsVariant,
   getContext
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import { takeEvery, call, select, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
-import { EXPLORE_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 
+const { EXPLORE_PAGE } = route
 const { getAccountUser } = accountSelectors
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
 

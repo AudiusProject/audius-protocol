@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,13 +18,14 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { PasswordField } from 'components/form-fields/PasswordField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 import { NewEmailField } from '../components/EmailField'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { loginDetailsSchema } from '../utils/loginDetailsSchema'
+
+const { SIGN_UP_FINISH_PROFILE_PAGE } = route
 
 export type CreateLoginDetailsValues = {
   email: string

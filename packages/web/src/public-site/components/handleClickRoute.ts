@@ -1,20 +1,20 @@
 import { MouseEvent } from 'react'
 
+import { route } from '@audius/common/utils'
 import { History } from 'history'
 
-import {
+import { pushWindowRoute } from 'utils/route'
+
+const {
   AUDIUS_PRESS_LINK,
-  COOKIE_POLICY,
   DOWNLOAD_LINK,
   DOWNLOAD_START_LINK,
   PRIVACY_POLICY,
-  pushWindowRoute,
   TERMS_OF_SERVICE
-} from 'utils/route'
+} = route
 
 const LANDING_PAGE_ROUTES = new Set([
   PRIVACY_POLICY,
-  COOKIE_POLICY,
   TERMS_OF_SERVICE,
   AUDIUS_PRESS_LINK,
   DOWNLOAD_START_LINK,
