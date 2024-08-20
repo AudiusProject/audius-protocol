@@ -61,7 +61,6 @@ const FULL_ENDPOINT_MAP = {
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
-  getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
@@ -82,16 +81,6 @@ const FULL_ENDPOINT_MAP = {
 
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
-}
-
-type GetTrackArgs = {
-  id: ID
-  currentUserId?: Nullable<ID>
-  unlistedArgs?: {
-    urlTitle: string
-    handle: string
-  }
-  abortOnUnreachable?: boolean
 }
 
 type GetTrackStreamUrlArgs = {
@@ -340,36 +329,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrack(
-    { id, currentUserId, unlistedArgs, abortOnUnreachable }: GetTrackArgs,
-    retry = true
-  ) {
-    const encodedTrackId = this._encodeOrThrow(id)
-    const encodedCurrentUserId = encodeHashId(currentUserId ?? null)
-
-    this._assertInitialized()
-
-    const args = {
-      user_id: encodedCurrentUserId,
-      url_title: unlistedArgs?.urlTitle,
-      handle: unlistedArgs?.handle,
-      show_unlisted: !!unlistedArgs
-    }
-
-    const trackResponse = await this._getResponse<APIResponse<APITrack>>(
-      FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
-      args,
-      retry,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!trackResponse) return null
-    const adapted = adapter.makeTrack(trackResponse.data)
-    return adapted
   }
 
   async getTrackStreamUrl(
