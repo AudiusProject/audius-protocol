@@ -5,6 +5,7 @@ package console
 import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/middleware"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,6 +30,8 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 	}
 
 	g := e.Group("/console")
+
+	g.Use(middleware.ErrorLoggerMiddleware(logger))
 
 	g.GET("", c.homePage)
 	g.GET("/tx/:tx", c.txPage)
