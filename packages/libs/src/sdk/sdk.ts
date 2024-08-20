@@ -202,14 +202,16 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
-      solanaClient
+      solanaClient,
+      logger
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
       ...getDefaultRewardManagerClentConfig(servicesConfig),
-      solanaClient
+      solanaClient,
+      logger
     })
 
   const paymentRouterClient =

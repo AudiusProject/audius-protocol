@@ -1,139 +1,83 @@
-FROM --platform=linux/amd64 rust:1.60.0 AS bpf-builder
+# Builds and runs solana-test-validator, seeding it with the programs and
+# fixtures necessary for local development.
+#
+# NOTE: The image/container does NOT build the programs. Most of the developers
+# use ARM64 Macs, which makes building the programs in Docker unbearably slow.
+# The bpf builder requires the target platform to be AMD64, which means the
+# programs are built in an emulator for the ARM Macs. The builds can take 20min
+# or more, even for the Anchor programs!
+#
+# See the README for how to update this container without needing to rebuild
+# each individual program. (tl;dr - extract existing binaries from this image)
+FROM rust:1.79.0
 
 WORKDIR /usr/src/app
 
-ENV PATH="/root/solana-release/bin:${PATH}"
+# Install dependencies for running Solana CLIs
+# https://solana.com/developers/guides/getstarted/setup-local-development#dependencies-for-linux
 RUN apt-get update && \
-    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git && \
-    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.14.18/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+    apt-get install -y \
+        build-essential \
+        pkg-config \
+        libudev-dev llvm libclang-dev \
+        protobuf-compiler libssl-dev
 
-ENV CARGO_INCREMENTAL=1
-
-ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
-ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
-ARG CLAIMABLE_TOKENS_PRIVATE_KEY
-ARG REWARD_MANAGER_PRIVATE_KEY
-ARG PAYMENT_ROUTER_PRIVATE_KEY
-
-COPY audius_eth_registry ./audius_eth_registry
-COPY claimable-tokens ./claimable-tokens
-COPY cli ./cli
-COPY reward-manager ./reward-manager
-COPY payment-router ./payment-router
-COPY staking-bridge ./staking-bridge
-COPY track_listen_count ./track_listen_count
-COPY Cargo.lock Cargo.toml ./
-COPY scripts/update-keys.sh scripts/update-keys.sh
-
-RUN --mount=type=cache,id=bpf-build-cache,target=/usr/src/app/target \
-    --mount=type=cache,id=bpf-solana-cache,target=/root/.cache/solana \
-    --mount=type=cache,id=bpf-cargo-registry,target=/usr/local/cargo/registry \
-    ./scripts/update-keys.sh && \
-    cargo build-bpf && \
-    mkdir -p artifacts/main-target && \
-    cp -r target/deploy/ artifacts/main-target
-
-# ------
-FROM --platform=linux/amd64 rust:1.69.0 AS anchor-builder
-
-WORKDIR /usr/src/app
-
-ENV PATH="/root/solana-release/bin:${PATH}"
-ENV NODE_MAJOR=18
-RUN apt-get update && \
-    apt-get install -y ca-certificates curl gnupg && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn@1.22.19 @coral-xyz/anchor-cli@0.28.0 && \
-    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.3/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
-
-ENV CARGO_INCREMENTAL=1
-
-ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
-ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
-ARG CLAIMABLE_TOKENS_PRIVATE_KEY
-ARG REWARD_MANAGER_PRIVATE_KEY
-ARG PAYMENT_ROUTER_PRIVATE_KEY
-
-COPY audius_eth_registry ./audius_eth_registry
-COPY claimable-tokens ./claimable-tokens
-COPY cli ./cli
-COPY reward-manager ./reward-manager
-COPY payment-router ./payment-router
-COPY staking-bridge ./staking-bridge
-COPY track_listen_count ./track_listen_count
-COPY Cargo.lock Cargo.toml ./
-COPY scripts/update-keys.sh scripts/update-keys.sh
-
-# Note: The first cache entry here is specifically caching only the payment-router output.
-# We don't want to cache the entire /usr/src/app directory, just whatever build folder
-# might be written to during the following command. If other programs are added to this
-# step, their `target` folder could also be added as a cache directory to speed up incremental
-# compilation.
-RUN --mount=type=cache,id=anchor-build-cache,target=/usr/src/app/payment-router/target \
-    --mount=type=cache,id=anchor-solana-cache,target=/root/.cache/solana \
-    --mount=type=cache,id=anchor-cargo-registry,target=/usr/local/cargo/registry \
-    mkdir -p artifacts/anchor-target && \
-    ./scripts/update-keys.sh && \
-    cd payment-router && anchor build && cd .. && \
-    cp -r payment-router/target/deploy artifacts/anchor-target && \
-    cp -r payment-router/target/idl artifacts/anchor-target && \
-    cp -r payment-router/target/types artifacts/anchor-target
-
-# ------
-FROM rust:1.69.0
-
-WORKDIR /usr/src/app
-
-ENV CARGO_INCREMENTAL=1
-ENV NODE_MAJOR=18
-RUN apt-get update && \
-    apt-get install -y ca-certificates curl gnupg && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y clang cmake build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn @coral-xyz/anchor-cli@0.28.0
-
-ENV PATH="/root/solana-release/bin:${PATH}"
+# Installs Solana CLIs either from the install script (for available builds like linux x86_64)
+# or using cargo install to build from source (for unavailable builds like linux aarch64)
 COPY scripts/install-solana.sh /tmp/install-solana.sh
-RUN --mount=type=cache,id=deploy-cargo-cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
+RUN --mount=type=cache,id=cargo-cache,target=/usr/local/cargo/registry  /tmp/install-solana.sh
+ENV PATH="/root/solana-release/bin:${PATH}"
 
-ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
-ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
-ARG CLAIMABLE_TOKENS_PRIVATE_KEY
-ARG REWARD_MANAGER_PRIVATE_KEY
-ARG AUDIUS_DATA_PRIVATE_KEY
-ARG PAYMENT_ROUTER_PRIVATE_KEY
-ARG owner_private_key
-ARG feepayer_private_key
-ARG token_private_key
-ARG fake_usdc_token_private_key
-ARG admin_authority_private_key
-ARG admin_account_private_key
-ARG signer_group_private_key
-ARG valid_signer_private_key
-ARG reward_manager_pda_private_key
-ARG reward_manager_token_pda_private_key
-ARG valid_signer_eth_address
-
-COPY . .
-COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
-COPY --from=anchor-builder /usr/src/app/artifacts/anchor-target/. target
-
-RUN --mount=type=cache,id=deploy-solana-cache,target=/root/.cache/solana \
-    --mount=type=cache,id=deploy-cargo-cache,target=/usr/local/cargo/registry \
-    ./scripts/setup-predeployed.sh /usr/db
-
+# Ensures the test validator is running
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
-    CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1
+    CMD curl -f http://localhost:8899/health || exit 1
 
-# Used by latest tag (default)
-CMD [ "solana-test-validator", "--ledger", "/usr/db" ]
+# Copy old school bpf programs from the build step
+COPY target/deploy/claimable_tokens.so \
+    target/deploy/audius_reward_manager.so \
+    target/deploy/audius_eth_registry.so \
+    target/deploy/track_listen_count.so \
+    ./
 
-# Used by m1-slow tag. Default slots per epoch is 8192. Default ticks per slot is 64. See https://github.com/solana-labs/solana/blob/master/sdk/program/src/clock.rs
-# CMD [ "solana-test-validator", "--ledger", "/usr/db", "--slots-per-epoch", "100", "--ticks-per-slot", "32", "--no-bpf-jit", "--reset" ]
+# Copy new school anchor programs
+COPY payment-router/target/deploy/payment_router.so \
+    staking-bridge/target/deploy/staking_bridge.so \
+    ./
+
+# Copy account state fixtures
+COPY fixtures ./fixtures
+
+# Program addresses
+ARG SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY
+ARG SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY
+ARG SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY
+ARG SOLANA_REWARD_MANAGER_PUBLIC_KEY
+ARG SOLANA_PAYMENT_ROUTER_PUBLIC_KEY
+
+# Account addresses
+ARG SOLANA_SIGNER_GROUP_PUBLIC_KEY
+ARG SOLANA_VALID_SIGNER_PUBLIC_KEY
+ARG SOLANA_FEEPAYER_PUBLIC_KEY
+ARG SOLANA_OWNER_PUBLIC_KEY
+ARG SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY
+ARG SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY
+ARG SOLANA_TOKEN_MINT_PUBLIC_KEY
+ARG SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY
+
+
+# Seeds the validator with each program
+CMD solana-test-validator --ledger /usr/db \
+    --bpf-program ${SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY} audius_eth_registry.so \
+    --bpf-program ${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY} track_listen_count.so \
+    --bpf-program ${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY} claimable_tokens.so \
+    --bpf-program ${SOLANA_REWARD_MANAGER_PUBLIC_KEY} audius_reward_manager.so \
+    --bpf-program ${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY} payment_router.so \
+    --account ${SOLANA_SIGNER_GROUP_PUBLIC_KEY} ./fixtures/eth-registry-signer-group.json \
+    --account ${SOLANA_VALID_SIGNER_PUBLIC_KEY} ./fixtures/eth-registry-valid-signer.json \
+    --account ${SOLANA_FEEPAYER_PUBLIC_KEY} ./fixtures/fee-payer.json \
+    --account ${SOLANA_OWNER_PUBLIC_KEY} ./fixtures/owner.json \
+    --account ${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY} ./fixtures/reward-manager-state.json \
+    --account ${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY} ./fixtures/reward-manager-tokens.json \
+    --account ${SOLANA_TOKEN_MINT_PUBLIC_KEY} ./fixtures/waudio.json \
+    --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json \
+    --reset
