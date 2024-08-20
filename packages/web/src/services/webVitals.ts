@@ -1,9 +1,11 @@
 import { Name } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { Location } from 'history'
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 
 import { track } from 'services/analytics/amplitude'
-import { findRoute, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
+const { findRoute } = route
 
 // Establish the "initial load" route
 export const initWebVitals = (location: Location) => {

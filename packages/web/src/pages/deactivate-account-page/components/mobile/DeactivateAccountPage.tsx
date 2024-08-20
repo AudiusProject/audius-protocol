@@ -1,5 +1,7 @@
 import { useContext, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
+
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -7,7 +9,7 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import { BASE_URL, DEACTIVATE_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import {
   messages,
@@ -15,6 +17,8 @@ import {
 } from '../../DeactivateAccountPage'
 
 import styles from './DeactivateAccountPage.module.css'
+
+const { DEACTIVATE_PAGE } = route
 
 const useMobileNavContext = () => {
   useMobileHeader({ title: messages.title })

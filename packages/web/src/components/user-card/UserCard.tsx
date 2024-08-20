@@ -2,7 +2,7 @@ import { useCallback, MouseEvent } from 'react'
 
 import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, route } from '@audius/common/utils'
 import { Box, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
@@ -10,8 +10,8 @@ import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
+const { profilePage } = route
 const { getUser } = cacheUsersSelectors
 
 const messages = {

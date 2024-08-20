@@ -9,7 +9,7 @@ import {
   User
 } from '@audius/common/models'
 import { searchResultsPageTracksLineupActions as tracksActions } from '@audius/common/store'
-import { trimToAlphaNumeric } from '@audius/common/utils'
+import { route, trimToAlphaNumeric } from '@audius/common/utils'
 import {
   IconAlbum,
   IconSearch,
@@ -39,9 +39,11 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { getCategory } from 'pages/search-page/helpers'
 import { getLocationPathname } from 'store/routing/selectors'
 import { useSelector } from 'utils/reducer'
-import { fullSearchResultsPage, SEARCH_PAGE } from 'utils/route'
+import { fullSearchResultsPage } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
+
+const { SEARCH_PAGE } = route
 
 export type SearchPageContentProps = {
   tracks: LineupState<{}>

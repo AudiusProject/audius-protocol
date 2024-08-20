@@ -4,13 +4,14 @@ import { useGetManagedAccounts } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { ToastContext } from 'components/toast/ToastContext'
-import { FEED_PAGE } from 'utils/route'
 
 import { useNavigateToPage } from './useNavigateToPage'
 
+const { FEED_PAGE } = route
 const messages = {
   unauthorized: 'Unauthorized',
   unauthorizedAsManaged: `You can't do that as a managed user`

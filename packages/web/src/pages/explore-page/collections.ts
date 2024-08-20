@@ -1,6 +1,7 @@
 import { ComponentType, SVGProps } from 'react'
 
 import { ExploreCollectionsVariant } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconTurntable as IconExploreTopAlbums,
   IconPlaylists as IconExploreTopPlaylists,
@@ -9,14 +10,15 @@ import {
 
 import IconCassette from 'assets/img/iconCassette.svg'
 import IconExploreDJ from 'assets/img/iconExploreDJ.svg'
-import {
+import { exploreMoodPlaylistsPage } from 'utils/route'
+
+const {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
-  exploreMoodPlaylistsPage,
   TRENDING_PLAYLISTS_PAGE,
   TRENDING_UNDERGROUND_PAGE
-} from 'utils/route'
+} = route
 
 export type ExploreCollection = {
   variant: ExploreCollectionsVariant

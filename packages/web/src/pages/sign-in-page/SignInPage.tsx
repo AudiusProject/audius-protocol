@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -32,9 +33,10 @@ import { EmailField } from 'pages/sign-up-page/components/EmailField'
 import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
-import { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
+
+const { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } = route
 
 const SignInSchema = toFormikValidationSchema(signInSchema)
 

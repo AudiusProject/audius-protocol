@@ -1,15 +1,16 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme } from '@audius/harmony'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
+const { profilePage } = route
 const { getUser } = cacheUsersSelectors
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {

@@ -3,7 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, route } from '@audius/common/utils'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -22,10 +22,11 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './UserArtCard.module.css'
+
+const { profilePage } = route
 const { getUser } = cacheUsersSelectors
 
 const messages = {

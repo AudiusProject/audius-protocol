@@ -20,7 +20,7 @@ import {
   CommonState,
   artistPickModalActions
 } from '@audius/common/store'
-import { Genre, Nullable } from '@audius/common/utils'
+import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -30,8 +30,10 @@ import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
-import { albumPage, profilePage } from 'utils/route'
+import { albumPage } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
+
+const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions

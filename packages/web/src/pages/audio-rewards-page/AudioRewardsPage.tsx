@@ -2,6 +2,7 @@ import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
@@ -16,7 +17,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'
 import ChallengeRewardsTile from './ChallengeRewardsTile'
@@ -25,6 +26,7 @@ import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
+const { AUDIO_PAGE, TRENDING_PAGE } = route
 const { getBalance } = walletActions
 const { preloadWalletProviders } = tokenDashboardPageActions
 

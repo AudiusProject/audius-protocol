@@ -1,4 +1,10 @@
-import { ChatBlastAudience, ChatMessage, Track } from '@audius/sdk'
+import {
+  ChatBlastAudience,
+  ChatMessage,
+  Track,
+  Playlist,
+  User
+} from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
@@ -79,7 +85,7 @@ export const matchAudiusLinks = ({
     `https://${hostname.replace(
       /[.*+?^${}()|[\]\\]/g,
       '\\$&'
-    )}/[^/\\s]+/[^/\\s]+(?=\\s|$)`,
+    )}/[^/\\s]+(?:/[^/\\s]+)*(?=\\s|$)`,
     'g'
   )
   const matches: string[] = text.match(linkRegex) ?? []
@@ -90,12 +96,34 @@ export const matchAudiusLinks = ({
 }
 
 /**
- * Formats a track name for human readability.
+ * Formats a track for human readability.
  * @param track
  * @returns string of "title - display name"
  */
 export const formatTrackName = ({ track }: { track: Track }) => {
   return `${track.title} - ${track.user.name}`
+}
+
+/**
+ * Formats a collection for human readability.
+ * @param collection
+ * @returns string of "playlist name - display name"
+ */
+export const formatCollectionName = ({
+  collection
+}: {
+  collection: Playlist
+}) => {
+  return `${collection.playlistName} - ${collection.user.name}`
+}
+
+/**
+ * Formats a user for human readability.
+ * @param track
+ * @returns string of "display name"
+ */
+export const formatUserName = ({ user }: { user: User }) => {
+  return user.name
 }
 
 /**

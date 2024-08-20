@@ -8,7 +8,8 @@ import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
-  challengeRewardsConfig
+  challengeRewardsConfig,
+  route
 } from '@audius/common/utils'
 import {
   Button,
@@ -25,11 +26,12 @@ import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
+
+const { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } = route
 
 const { getOptimisticUserChallenges } = challengesSelectors
 

@@ -4,6 +4,7 @@ import {
   audioRewardsPageSelectors,
   audioRewardsPageActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconCaretRight } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -11,9 +12,9 @@ import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { getLocationPathname } from 'store/routing/selectors'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import { AUDIO_PAGE } from 'utils/route'
 
 import styles from './RewardClaimedToast.module.css'
+const { AUDIO_PAGE } = route
 const { getShowRewardClaimedToast } = audioRewardsPageSelectors
 const { resetRewardClaimedToast } = audioRewardsPageActions
 

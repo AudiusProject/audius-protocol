@@ -17,6 +17,7 @@ import {
   ProfilePageTabs,
   ProfileUser
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconAlbum,
   IconCollectible as IconCollectibles,
@@ -39,7 +40,6 @@ import NavContext, {
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
-import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -49,6 +49,8 @@ import EditProfile from './EditProfile'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
 import { ShareUserButton } from './ShareUserButton'
+
+const { profilePage } = route
 
 export type ProfilePageProps = {
   // Computed

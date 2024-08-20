@@ -1,15 +1,8 @@
 import type { ComponentType } from 'react'
 
 import { SmartCollectionVariant } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import type { SvgProps } from 'react-native-svg'
-import {
-  EXPLORE_HEAVY_ROTATION_PAGE,
-  EXPLORE_BEST_NEW_RELEASES_PAGE,
-  EXPLORE_UNDER_THE_RADAR_PAGE,
-  EXPLORE_MOST_LOVED_PAGE,
-  EXPLORE_FEELING_LUCKY_PAGE,
-  EXPLORE_REMIXABLES_PAGE
-} from 'utils/route'
 
 import {
   IconQuestionCircle,
@@ -19,6 +12,15 @@ import {
   IconRadar
 } from '@audius/harmony-native'
 import IconExploreRotation from 'app/assets/images/iconExploreRotation.svg'
+
+const {
+  EXPLORE_HEAVY_ROTATION_PAGE,
+  EXPLORE_BEST_NEW_RELEASES_PAGE,
+  EXPLORE_UNDER_THE_RADAR_PAGE,
+  EXPLORE_MOST_LOVED_PAGE,
+  EXPLORE_FEELING_LUCKY_PAGE,
+  EXPLORE_REMIXABLES_PAGE
+} = route
 
 export type SmartCollectionScreen =
   | 'UnderTheRadar'

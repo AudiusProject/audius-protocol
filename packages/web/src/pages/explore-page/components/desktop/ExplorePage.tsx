@@ -8,6 +8,7 @@ import {
   Variant
 } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
@@ -42,10 +43,12 @@ import {
   INTIMATE_PLAYLISTS,
   PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
-import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
+import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'
 import Section, { Layout } from './Section'
+
+const { EXPLORE_PAGE } = route
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',

@@ -3,7 +3,7 @@ import { useState, useContext, useCallback, useEffect } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
   IconSettings,
@@ -32,10 +32,11 @@ import NavContext, {
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
-import { SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
+
+const { SIGN_UP_PAGE, TRENDING_PAGE } = route
 
 interface NavBarProps {
   isLoading: boolean

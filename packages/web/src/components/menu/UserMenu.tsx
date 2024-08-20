@@ -3,12 +3,13 @@ import {
   usersSocialActions as socialActions,
   shareModalUIActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { profilePage } from 'utils/route'
+const { profilePage } = route
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 

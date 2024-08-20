@@ -9,7 +9,7 @@ import {
   tippingActions,
   tippingSelectors
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { removeNullable, route } from '@audius/common/utils'
 import {
   IconButton,
   IconKebabHorizontal,
@@ -24,11 +24,12 @@ import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import ArtistChip from 'components/artist/ArtistChip'
-import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreateChatUserResult.module.css'
 import { useComposeChat } from './useComposeChat'
+
+const { profilePage } = route
 
 const messages = {
   moreOptions: 'More options',
