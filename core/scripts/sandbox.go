@@ -6,6 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"golang.org/x/sync/errgroup"
 )
 
 func checkErr(e error) {
@@ -23,12 +24,58 @@ func main() {
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
 
-	_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-		Key:   "batman",
-		Value: "bruce wayne",
-	})
-	checkErr(err)
+	g, ctx := errgroup.WithContext(ctx)
 
-	_, err = sdk.GetKeyValue(ctx, &proto.GetKeyValueRequest{Key: "batman"})
-	checkErr(err)
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "batman",
+			Value: "bruce wayne",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "superman",
+			Value: "clark kent",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "wonder woman",
+			Value: "diana prince",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "spiderman",
+			Value: "peter parker",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "thanos",
+			Value: "did nothing wrong",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "i am",
+			Value: "iron man",
+		})
+		return err
+	})
+
+	// Wait for all goroutines to complete
+	if err := g.Wait(); err != nil {
+		checkErr(err)
+	}
 }

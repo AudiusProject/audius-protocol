@@ -1,0 +1,31 @@
+package components
+
+import (
+	"fmt"
+	"time"
+)
+
+type TxPageProps struct {
+	Hash      string
+	Height    string
+	Timestamp time.Time
+}
+
+templ TxPage(props TxPageProps) {
+	@HeaderBar() {
+		<div class="bg-white shadow-md rounded-lg p-4">
+			<h1 class="text-xl">
+				Transaction Details
+			</h1>
+			<div>
+				Transaction Hash: { props.Hash }
+			</div>
+			<div>
+				<a href={ templ.URL(fmt.Sprintf("/console/block/%s", props.Height)) }>Block: { props.Height }</a>
+			</div>
+			<div>
+				Timestamp: { fmt.Sprintf("Secs ago %d", int(time.Since(props.Timestamp).Seconds())) }
+			</div>
+		</div>
+	}
+}
