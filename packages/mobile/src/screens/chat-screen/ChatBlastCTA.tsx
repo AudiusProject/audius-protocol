@@ -2,7 +2,8 @@ import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { useChatBlastModal } from '@audius/common/store/ui/modals/create-chat-blast-modal'
+import { useChatBlastModal } from '@audius/common/store'
+import { TouchableHighlight } from 'react-native-gesture-handler'
 
 import {
   Box,
@@ -16,7 +17,7 @@ import {
 } from '@audius/harmony-native'
 
 const messages = {
-  title: 'Send a Targeted Message',
+  title: 'Send a Message Blast',
   description: 'Send messages to your fans in bulk.',
   badgeRequired: 'Badge Required',
   or: 'or'
@@ -28,7 +29,6 @@ type ChatBlastCTAProps = {
 
 export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { onClick } = props
-  const { color } = useTheme()
 
   const { onOpen: openChatBlastModal } = useChatBlastModal()
 
@@ -47,34 +47,25 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   }
 
   return (
-    <Box
-      backgroundColor='surface1'
-      ph='xl'
-      pv='l'
-      borderTop='strong'
-      // css={{
-      //   ':hover': {
-      //     backgroundColor: color.background.surface2
-      //   }
-      // }}
-      onTouchEnd={handleClick}
-    >
-      <Flex
-        direction='row'
-        alignItems='center'
-        gap='l'
-        justifyContent='space-between'
-      >
-        <Flex direction='row' alignItems='center' gap='s'>
-          <IconTowerBroadcast size='3xl' color='default' />
-          <Flex direction='column' gap='xs'>
-            <Text variant='title'>{messages.title}</Text>
-            <Text size='s'>{messages.description}</Text>
+    <TouchableHighlight onPress={handleClick}>
+      <Box backgroundColor='surface1' ph='xl' pv='l' borderTop='strong'>
+        <Flex
+          direction='row'
+          alignItems='center'
+          gap='l'
+          justifyContent='space-between'
+        >
+          <Flex direction='row' alignItems='center' gap='s'>
+            <IconTowerBroadcast size='3xl' color='default' />
+            <Flex direction='column' gap='xs'>
+              <Text variant='title'>{messages.title}</Text>
+              <Text size='s'>{messages.description}</Text>
+            </Flex>
           </Flex>
+          <IconCaretRight size='s' color='default' />
         </Flex>
-        <IconCaretRight size='s' color='default' />
-      </Flex>
-    </Box>
+      </Box>
+    </TouchableHighlight>
   )
 }
 
@@ -98,7 +89,7 @@ const ChatBlastDisabled = () => {
         style={{ opacity: 0.5 }}
       >
         <IconTowerBroadcast size='l' color='default' />
-        <Text variant='title'>{messages.title}</Text>
+        <Text strength='strong'>{messages.title}</Text>
       </Flex>
       <Flex direction='row' border='strong' borderRadius='m' wrap='nowrap'>
         <Box ph='s' pv={spacing.unitHalf}>
@@ -117,7 +108,9 @@ const ChatBlastDisabled = () => {
           borderBottomRightRadius='m'
         >
           <IconVerified size='s' />
-          <Text size='s'>{messages.or}</Text>
+          <Text size='s' strength='strong'>
+            {messages.or}
+          </Text>
           <IconTokenBronze size='s' />
         </Flex>
       </Flex>

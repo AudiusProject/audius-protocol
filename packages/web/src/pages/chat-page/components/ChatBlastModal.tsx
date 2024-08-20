@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 
 import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import { useChatBlastModal } from '@audius/common/src/store/ui/modals/create-chat-blast-modal'
-import { chatActions } from '@audius/common/store'
+import { useChatBlastModal, chatActions } from '@audius/common/src/store'
 import {
   Flex,
   IconTowerBroadcast,

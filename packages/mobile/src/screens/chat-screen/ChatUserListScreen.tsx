@@ -29,8 +29,7 @@ import {
   ScreenContent,
   Text,
   TextInput,
-  HeaderShadow,
-  FlatList
+  HeaderShadow
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useRoute } from 'app/hooks/useRoute'
@@ -138,7 +137,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   footerContainer: {
     position: 'absolute',
-    bottom: 0
+    bottom: 0,
+    width: '100%'
   },
   footerPadding: {
     height: spacing(30)
@@ -331,7 +331,11 @@ export const ChatUserListScreen = () => {
         </View>
         {isOneToManyDMsEnabled ? (
           <View style={styles.footerContainer}>
-            <ChatBlastCTA onClick={() => {}} />
+            <ChatBlastCTA
+              onClick={() => {
+                window.alert('Clicked Create Chat Blast')
+              }}
+            />
           </View>
         ) : null}
       </ScreenContent>

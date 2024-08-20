@@ -2,8 +2,6 @@ import { useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { chatActions, chatSelectors } from '@audius/common/store'
-import { Chat } from '@audius/common/store/pages/chat/slice'
-import type { UserChat } from '@audius/sdk'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
