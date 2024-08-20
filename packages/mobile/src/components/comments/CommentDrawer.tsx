@@ -2,80 +2,30 @@ import React, { useCallback, useEffect, useRef } from 'react'
 
 import {
   CommentSectionProvider,
-  useCurrentCommentSection,
-  usePostComment
+  useCurrentCommentSection
 } from '@audius/common/context'
-import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
   BottomSheetFooter,
-  BottomSheetTextInput,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
-import {
-  Box,
-  Divider,
-  Flex,
-  IconButton,
-  IconCloseAlt,
-  Text
-} from '@audius/harmony-native'
+import { Box, Flex } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
 
 import Skeleton from '../skeleton'
 
-import { CommentForm } from './CommentForm'
+import { CommentDrawerForm } from './CommentDrawerForm'
+import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
 const { getUserId } = accountSelectors
-
-type CommentDrawerHeaderProps = {
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>
-}
-
-const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
-  const { bottomSheetModalRef } = props
-
-  const { comments, commentSectionLoading: isLoading } =
-    useCurrentCommentSection()
-
-  const handlePressClose = () => {
-    bottomSheetModalRef.current?.dismiss()
-  }
-
-  return (
-    <Flex>
-      <Flex
-        direction='row'
-        w='100%'
-        justifyContent='space-between'
-        p='l'
-        alignItems='center'
-      >
-        <Text variant='body' size='m'>
-          Comments
-          {!isLoading && comments?.length ? (
-            <Text color='subdued'>&nbsp;({comments.length})</Text>
-          ) : null}
-        </Text>
-        <IconButton
-          icon={IconCloseAlt}
-          onPress={handlePressClose}
-          color='subdued'
-          size='m'
-        />
-      </Flex>
-      <Divider orientation='horizontal' />
-    </Flex>
-  )
-}
 
 type CommentDrawerContentProps = {}
 
@@ -117,37 +67,6 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
         </Box>
       )}
     />
-  )
-}
-
-const useFormStyles = makeStyles(({ palette }) => ({
-  form: {
-    backgroundColor: palette.white
-  }
-}))
-
-const CommentDrawerForm = () => {
-  const styles = useFormStyles()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
-
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
-  }
-
-  return (
-    <Box
-      style={{
-        ...styles.form
-      }}
-    >
-      <Box p='l'>
-        <CommentForm
-          onSubmit={handlePostComment}
-          isLoading={postCommentStatus === Status.LOADING}
-          TextInputComponent={BottomSheetTextInput as any}
-        />
-      </Box>
-    </Box>
   )
 }
 
