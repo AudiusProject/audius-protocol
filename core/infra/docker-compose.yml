@@ -1,6 +1,6 @@
 services:
-  sandbox-core:
-    container_name: sandbox-core
+  sandbox-core-1:
+    container_name: sandbox-core-1
     build:
       context: ../
       dockerfile: ./infra/Dockerfile.dev
@@ -14,17 +14,49 @@ services:
     networks:
       - sandbox-core-net
 
+  sandbox-core-2:
+    container_name: sandbox-core-2
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile.dev
+    env_file:
+      - ./dev_config/sandbox-two.env
+    restart: unless-stopped
+    ports:
+      - "6620:26656" # CometBFT P2P Server
+      - "6621:26657" # CometBFT RPC Server
+      - "6622:50051" # Core GRPC Server
+    networks:
+      - sandbox-core-net
+
+  sandbox-core-3:
+    container_name: sandbox-core-3
+    build:
+      context: ../
+      dockerfile: ./infra/Dockerfile.dev
+    env_file:
+      - ./dev_config/sandbox-three.env
+    restart: unless-stopped
+    ports:
+      - "6630:26656" # CometBFT P2P Server
+      - "6631:26657" # CometBFT RPC Server
+      - "6632:50051" # Core GRPC Server
+    networks:
+      - sandbox-core-net
+
   postgres:
     image: postgres:latest
     container_name: sandbox-core-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: core_db
+      POSTGRES_DB: core_db_1
     ports:
       - "5437:5432"
     networks:
       - sandbox-core-net
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 networks:
   sandbox-core-net:
