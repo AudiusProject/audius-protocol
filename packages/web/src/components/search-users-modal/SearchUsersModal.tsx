@@ -238,7 +238,9 @@ export const SearchUsersModal = ({
         onClose={handleClose}
         {...rest}
       />
-      {footer ?? null}
+      <Box w='100%' css={{ position: 'absolute', bottom: 0 }}>
+        {footer ?? null}
+      </Box>
     </Modal>
   )
 }
