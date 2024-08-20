@@ -93,10 +93,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(18),
     width: spacing(18)
   },
-  listContainer: {
-    flexGrow: 1,
-    flexShrink: 1
-  },
   flatListContainer: {
     minHeight: '100%',
     flexGrow: 1
@@ -308,31 +304,30 @@ export const ChatUserListScreen = () => {
               <LoadingSpinner style={styles.loadingSpinner} />
             </View>
           ) : (
-            <View style={styles.listContainer}>
-              <KeyboardAwareFlatList
-                onEndReached={handleLoadMore}
-                maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
-                data={users}
-                renderItem={({ item }) => (
-                  <ChatUserListItem
-                    userId={item.user_id}
-                    presetMessage={presetMessage}
-                  />
-                )}
-                keyExtractor={(user: User) => user.handle}
-                contentContainerStyle={styles.flatListContainer}
-                // Only show empty component if there is no search query
-                ListEmptyComponent={query ? null : <ListEmpty />}
-                keyboardShouldPersistTaps='always'
-                ListFooterComponent={<View style={styles.footerPadding} />}
-              />
-            </View>
+            <KeyboardAwareFlatList
+              onEndReached={handleLoadMore}
+              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+              data={users}
+              renderItem={({ item }) => (
+                <ChatUserListItem
+                  userId={item.user_id}
+                  presetMessage={presetMessage}
+                />
+              )}
+              keyExtractor={(user: User) => user.handle}
+              contentContainerStyle={styles.flatListContainer}
+              // Only show empty component if there is no search query
+              ListEmptyComponent={query ? null : <ListEmpty />}
+              keyboardShouldPersistTaps='always'
+              ListFooterComponent={<View style={styles.footerPadding} />}
+            />
           )}
         </View>
         {isOneToManyDMsEnabled ? (
           <View style={styles.footerContainer}>
             <ChatBlastCTA
               onClick={() => {
+                // Placeholder, to be implemented later
                 window.alert('Clicked Create Chat Blast')
               }}
             />

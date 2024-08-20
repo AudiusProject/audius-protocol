@@ -15,7 +15,7 @@ import {
 } from '@audius/harmony'
 
 const messages = {
-  title: 'Send a Targeted Message',
+  title: 'Send a Message Blast',
   description: 'Send messages to your fans in bulk.',
   badgeRequired: 'Badge Required',
   or: 'or'
