@@ -1,4 +1,7 @@
-import { userTrackMetadataFromSDK } from '@audius/common/adapters'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
 import {
   Kind,
   ID,
@@ -188,7 +191,6 @@ export function* retrieveTracks({
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
       yield* waitForRead()
-      const apiClient = yield* getContext('apiClient')
       const sdk = yield* getSDK()
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
 
@@ -209,10 +211,14 @@ export function* retrieveTracks({
       } else {
         const ids = trackIds as number[]
         if (ids.length > 1) {
-          fetched = yield* call([apiClient, 'getTracks'], {
-            ids,
-            currentUserId
-          })
+          const { data = [] } = yield* call(
+            [sdk.full.tracks, sdk.full.tracks.getBulkTracks],
+            {
+              id: ids.map((id) => Id.parse(id)),
+              userId: OptionalId.parse(currentUserId)
+            }
+          )
+          fetched = transformAndCleanList(data, userTrackMetadataFromSDK)
         } else {
           const { data } = yield* call(
             [sdk.full.tracks, sdk.full.tracks.getTrack],

@@ -1,4 +1,4 @@
-import { userTrackMetadataFromSDK } from '~/adapters'
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
@@ -20,14 +20,14 @@ const trackApi = createApi({
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return (
-          (await apiClient.getTracks({
-            ids,
-            currentUserId: currentUserId ?? null
-          })) ?? []
-        )
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.tracks.getBulkTracks({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         idArgKey: 'id',
@@ -65,9 +65,15 @@ const trackApi = createApi({
     getTracksByIds: {
       fetch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return await apiClient.getTracks({ ids, currentUserId })
+        const sdk = await audiusSdk()
+
+        const { data = [] } = await sdk.full.tracks.getBulkTracks({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         idListArgKey: 'ids',
