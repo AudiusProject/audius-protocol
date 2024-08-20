@@ -10,7 +10,9 @@ import {
   Text,
   IconTowerBroadcast,
   IconCaretRight,
-  useTheme
+  useTheme,
+  IconVerified,
+  IconTokenBronze
 } from '@audius/harmony'
 
 const messages = {
@@ -42,7 +44,7 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   }, [onClick, openChatBlastModal])
 
   if (!userMeetsRequirements) {
-    return null
+    return <ChatBlastDisabled />
   }
 
   return (
@@ -69,5 +71,45 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
         <IconCaretRight size='s' color='default' />
       </Flex>
     </Box>
+  )
+}
+
+const ChatBlastDisabled = () => {
+  const { spacing } = useTheme()
+
+  return (
+    <Flex
+      backgroundColor='surface1'
+      ph='xl'
+      pv='l'
+      borderTop='strong'
+      wrap='nowrap'
+      justifyContent='space-between'
+    >
+      <Flex alignItems='center' gap='s' css={{ opacity: 0.5 }}>
+        <IconTowerBroadcast size='l' color='default' />
+        <Text variant='title'>{messages.title}</Text>
+      </Flex>
+      <Flex border='strong' borderRadius='m' wrap='nowrap'>
+        <Box ph='s' pv={spacing.unitHalf}>
+          <Text size='s' strength='strong'>
+            {messages.badgeRequired}
+          </Text>
+        </Box>
+        <Flex
+          borderLeft='strong'
+          ph='s'
+          gap='xs'
+          alignItems='center'
+          backgroundColor='surface2'
+          borderTopRightRadius='m'
+          borderBottomRightRadius='m'
+        >
+          <IconVerified size='s' />
+          <Text size='s'>{messages.or}</Text>
+          <IconTokenBronze size='s' />
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }
