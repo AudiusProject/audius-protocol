@@ -29,15 +29,22 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 		db:     db.New(pool),
 	}
 
-	g := e.Group("/console")
+	consoleBase := e.Group("/console")
+	coreBase := e.Group("/core")
 
-	g.Use(middleware.ErrorLoggerMiddleware(logger))
-
-	g.GET("", c.homePage)
-	g.GET("/tx/:tx", c.txPage)
-	g.GET("/block/:block", c.blockPage)
-	g.GET("/net", c.networkPage)
-	g.GET("/net/:node", c.nodePage)
+	c.registerRoutes(logger, consoleBase, coreBase)
 
 	return c, nil
+}
+
+func (c *Console) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
+	for _, g := range groups {
+		g.Use(middleware.ErrorLoggerMiddleware(logger))
+
+		g.GET("", c.homePage)
+		g.GET("/tx/:tx", c.txPage)
+		g.GET("/block/:block", c.blockPage)
+		g.GET("/node", c.networkPage)
+		g.GET("/node/:node", c.nodePage)
+	}
 }
