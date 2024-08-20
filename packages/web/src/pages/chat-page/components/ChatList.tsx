@@ -15,7 +15,6 @@ import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './ChatList.module.css'
-import { ChatListBlastItem } from './ChatListBlastItem'
 import { ChatListItem } from './ChatListItem'
 import { SkeletonChatListItem } from './SkeletonChatListItem'
 
@@ -68,22 +67,14 @@ export const ChatList = (props: ChatListProps) => {
         }
       >
         {chats?.length > 0 ? (
-          chats.map((chat) =>
-            chat.is_blast ? (
-              <ChatListBlastItem
-                key={chat.chat_id}
-                chat={chat}
-                onChatClicked={onChatClicked}
-              />
-            ) : (
-              <ChatListItem
-                key={chat.chat_id}
-                currentChatId={currentChatId}
-                chat={chat}
-                onChatClicked={onChatClicked}
-              />
-            )
-          )
+          chats.map((chat) => (
+            <ChatListItem
+              key={chat.chat_id}
+              currentChatId={currentChatId}
+              chat={chat}
+              onChatClicked={onChatClicked}
+            />
+          ))
         ) : hasLoadedOnce ? (
           <div className={styles.empty}>
             <div className={styles.header}>{messages.nothingHere}</div>

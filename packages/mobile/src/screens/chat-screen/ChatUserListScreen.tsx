@@ -22,21 +22,22 @@ import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import { Box, IconCompose, IconSearch } from '@audius/harmony-native'
+import { IconCompose, IconSearch } from '@audius/harmony-native'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
 import {
   Screen,
   ScreenContent,
   Text,
   TextInput,
-  HeaderShadow
+  HeaderShadow,
+  FlatList
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
+import { ChatBlastCTA } from './ChatBlastCTA'
 import { ChatUserListItem } from './ChatUserListItem'
-import { TargetedMessageCTA } from './TargetedMessageCTA'
 
 const { getAccountUser } = accountSelectors
 const { searchUsers } = searchUsersModalActions
@@ -93,6 +94,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(18),
     width: spacing(18)
   },
+  listContainer: {
+    flexGrow: 1,
+    flexShrink: 1
+  },
   flatListContainer: {
     minHeight: '100%',
     flexGrow: 1
@@ -130,6 +135,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   icon: {
     height: spacing(6),
     width: spacing(6)
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0
   },
   footerPadding: {
     height: spacing(30)
@@ -268,8 +277,6 @@ export const ChatUserListScreen = () => {
     >
       <ScreenContent>
         <HeaderShadow />
-        <TargetedMessageCTA onClick={() => {}} />
-
         <View style={styles.rootContainer}>
           <View
             style={[
@@ -301,27 +308,33 @@ export const ChatUserListScreen = () => {
               <LoadingSpinner style={styles.loadingSpinner} />
             </View>
           ) : (
-            <KeyboardAwareFlatList
-              onEndReached={handleLoadMore}
-              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
-              data={users}
-              renderItem={({ item }) => (
-                <ChatUserListItem
-                  userId={item.user_id}
-                  presetMessage={presetMessage}
-                />
-              )}
-              keyExtractor={(user: User) => user.handle}
-              contentContainerStyle={styles.flatListContainer}
-              // Only show empty component if there is no search query
-              ListEmptyComponent={query ? null : <ListEmpty />}
-              keyboardShouldPersistTaps='always'
-              ListFooterComponent={<View style={styles.footerPadding} />}
-            />
+            <View style={styles.listContainer}>
+              <KeyboardAwareFlatList
+                onEndReached={handleLoadMore}
+                maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+                data={users}
+                renderItem={({ item }) => (
+                  <ChatUserListItem
+                    userId={item.user_id}
+                    presetMessage={presetMessage}
+                  />
+                )}
+                keyExtractor={(user: User) => user.handle}
+                contentContainerStyle={styles.flatListContainer}
+                // Only show empty component if there is no search query
+                ListEmptyComponent={query ? null : <ListEmpty />}
+                keyboardShouldPersistTaps='always'
+                ListFooterComponent={<View style={styles.footerPadding} />}
+              />
+            </View>
           )}
         </View>
+        {isOneToManyDMsEnabled ? (
+          <View style={styles.footerContainer}>
+            <ChatBlastCTA onClick={() => {}} />
+          </View>
+        ) : null}
       </ScreenContent>
-      <Text>Test</Text>
     </Screen>
   )
 }
