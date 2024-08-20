@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useRemoteVar, useSelectTierInfo } from '@audius/common/hooks'
@@ -10,9 +10,7 @@ import {
   Text,
   IconTowerBroadcast,
   IconCaretRight,
-  useTheme,
-  IconVerified,
-  IconTokenBronze
+  useTheme
 } from '@audius/harmony'
 
 const messages = {
@@ -33,7 +31,7 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { onOpen: openChatBlastModal } = useChatBlastModal()
 
   const { data: userId } = useGetCurrentUserId({})
-  const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
+  const { tierNumber, isVerified } = useSelectTierInfo(userId) ?? {}
   const chatBlastTier = useRemoteVar(IntKeys.CHAT_BLAST_TIER_REQUIREMENT)
   const userMeetsRequirements =
     isVerified || (tierNumber && tierNumber >= chatBlastTier)
@@ -44,7 +42,7 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   }, [onClick, openChatBlastModal])
 
   if (!userMeetsRequirements) {
-    return <ChatBlastDisabled />
+    return null
   }
 
   return (
@@ -71,45 +69,5 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
         <IconCaretRight size='s' color='default' />
       </Flex>
     </Box>
-  )
-}
-
-const ChatBlastDisabled = () => {
-  const { spacing } = useTheme()
-
-  return (
-    <Flex
-      backgroundColor='surface1'
-      ph='xl'
-      pv='l'
-      borderTop='strong'
-      wrap='nowrap'
-      justifyContent='space-between'
-    >
-      <Flex alignItems='center' gap='s' css={{ opacity: 0.5 }}>
-        <IconTowerBroadcast size='l' color='default' />
-        <Text variant='title'>{messages.title}</Text>
-      </Flex>
-      <Flex border='strong' borderRadius='m' wrap='nowrap'>
-        <Box ph='s' pv={spacing.unitHalf}>
-          <Text size='s' strength='strong'>
-            {messages.badgeRequired}
-          </Text>
-        </Box>
-        <Flex
-          borderLeft='strong'
-          ph='s'
-          gap='xs'
-          alignItems='center'
-          backgroundColor='surface2'
-          borderTopRightRadius='m'
-          borderBottomRightRadius='m'
-        >
-          <IconVerified size='s' />
-          <Text size='s'>{messages.or}</Text>
-          <IconTokenBronze size='s' />
-        </Flex>
-      </Flex>
-    </Flex>
   )
 }
