@@ -32,6 +32,8 @@ type Config struct {
 	PSQLConn        string
 	RetainBlocks    uint
 	PersistentPeers string
+	Seeds           string
+	ExternalAddress string
 
 	/* Audius Config */
 	Environment        string
@@ -83,9 +85,13 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvString("persistentPeers", DefaultTestnetPersistentPeers)
-	case "dev", "development", "devnet", "local":
+	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
+		cfg.ExternalAddress = os.Getenv("externalAddress")
 	}
+
+	fmt.Printf("cfg.Environment: %s", cfg.Environment)
+	fmt.Printf("persistentPeers: `%s` `%s`\n", cfg.PersistentPeers, os.Getenv("persistentPeers"))
 
 	// Disable ssl for local postgres db connection
 	if !strings.HasSuffix(cfg.PSQLConn, "?sslmode=disable") && isLocalDbUrlRegex.MatchString(cfg.PSQLConn) {
