@@ -191,6 +191,7 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   created_at: string
+  create_date: Nullable<string>
   isrc: Nullable<string>
   iswc: Nullable<string>
   credits_splits: Nullable<string>
@@ -247,10 +248,10 @@ export type TrackMetadata = {
   // Optional Fields
   is_playlist_upload?: boolean
   is_invalid?: boolean
-  stem_of?: {
+  stem_of?: Nullable<{
     parent_track_id: ID
     category: StemCategory
-  }
+  }>
   remix_of: Nullable<RemixOf>
   preview_cid?: Nullable<CID>
   preview_start_seconds?: Nullable<number>

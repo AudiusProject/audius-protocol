@@ -82,19 +82,13 @@ export function* retrieveTrackByHandleAndSlug({
     },
     retrieveFromSource: function* (permalinks: string[]) {
       yield* waitForRead()
-      const apiClient = yield* getContext('apiClient')
+      const sdk = yield* getSDK()
       const userId = yield* select(getUserId)
-      const track = yield* call((args) => {
-        const split = args[0].split('/')
-        const handle = split[1]
-        const slug = split.slice(2).join('')
-        return apiClient.getTrackByHandleAndSlug({
-          handle,
-          slug,
-          currentUserId: userId
-        })
-      }, permalinks)
-      return track
+      const { data } = yield* call(
+        [sdk.full.tracks, sdk.full.tracks.getBulkTracks],
+        { permalink: permalinks, userId: OptionalId.parse(userId) }
+      )
+      return data ? userTrackMetadataFromSDK(data[0]) : null
     },
     kind: Kind.TRACKS,
     idField: 'track_id',

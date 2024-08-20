@@ -92,7 +92,7 @@ export const userTrackMetadataFromSDK = (
           category: input.stemOf.category as StemCategory,
           parent_track_id: input.stemOf.parentTrackId
         }
-      : undefined,
+      : null,
     stream_conditions: input.streamConditions
       ? accessConditionsFromSDK(input.streamConditions)
       : null,
@@ -113,6 +113,7 @@ export const userTrackMetadataFromSDK = (
       ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,
     cover_art: input.coverArt ?? null,
+    create_date: input.createDate ?? null,
     credits_splits: input.creditsSplits ?? null,
     ddex_app: input.ddexApp ?? null,
     ddex_release_ids: input.ddexReleaseIds ?? null,
