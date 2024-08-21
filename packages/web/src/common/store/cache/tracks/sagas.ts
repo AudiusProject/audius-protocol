@@ -1,3 +1,4 @@
+import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
@@ -8,7 +9,9 @@ import {
   ID,
   Remix,
   TrackMetadata,
-  StemUploadWithFile
+  StemUploadWithFile,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -24,11 +27,11 @@ import {
   confirmTransaction,
   TrackMetadataForUpload,
   stemsUploadActions,
-  stemsUploadSelectors
+  stemsUploadSelectors,
+  getSDK
 } from '@audius/common/store'
 import {
   formatMusicalKey,
-  formatUrlName,
   makeKindId,
   squashNewLines,
   uuid,
@@ -53,7 +56,7 @@ const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
-const { getAccountUser, getUserId, getUserHandle } = accountSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
   const userIds: ID[] = []
@@ -277,7 +280,7 @@ function* confirmEditTrack(
 ) {
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const transcodePreview =
     formFields.preview_start_seconds !== null &&
     formFields.preview_start_seconds !== undefined &&
@@ -308,20 +311,12 @@ function* confirmEditTrack(
         yield* waitForAccount()
         // Need to poll with the new track name in case it changed
         const userId = yield* select(getUserId)
-        const handle = yield* select(getUserHandle)
 
-        return yield* call(
-          [apiClient, apiClient.getTrack],
-          {
-            id: trackId,
-            currentUserId: userId,
-            unlistedArgs: {
-              urlTitle: formatUrlName(formFields.title),
-              handle: handle!
-            }
-          },
-          /* retry */ false
+        const { data } = yield* call(
+          [sdk.full.tracks, sdk.full.tracks.getTrack],
+          { trackId: Id.parse(trackId), userId: OptionalId.parse(userId) }
         )
+        return data ? userTrackMetadataFromSDK(data) : null
       },
       function* (confirmedTrack: TrackMetadataForUpload & Track) {
         if (wasUnlisted && isNowListed) {
@@ -395,7 +390,7 @@ function* deleteTrackAsync(
 function* confirmDeleteTrack(trackId: ID) {
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -417,23 +412,15 @@ function* confirmDeleteTrack(trackId: ID) {
         }
 
         const track = yield* select(getTrack, { id: trackId })
-        const handle = yield* select(getUserHandle)
         yield* waitForAccount()
         const userId = yield* select(getUserId)
 
         if (!track) return
-        return yield* call(
-          [apiClient, apiClient.getTrack],
-          {
-            id: trackId,
-            currentUserId: userId,
-            unlistedArgs: {
-              urlTitle: formatUrlName(track.title),
-              handle: handle!
-            }
-          },
-          /* retry */ false
+        const { data } = yield* call(
+          [sdk.full.tracks, sdk.full.tracks.getTrack],
+          { trackId: Id.parse(trackId), userId: OptionalId.parse(userId) }
         )
+        return data ? userTrackMetadataFromSDK(data) : null
       },
       function* (deletedTrack: Track) {
         // NOTE: we do not delete from the cache as the track may be playing

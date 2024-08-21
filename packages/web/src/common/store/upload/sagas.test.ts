@@ -39,6 +39,7 @@ const emptyMetadata: TrackMetadataForUpload = {
   is_delete: false,
   track_id: 0,
   created_at: '',
+  create_date: null,
   isrc: null,
   iswc: null,
   credits_splits: null,

@@ -113,6 +113,7 @@ export const userTrackMetadataFromSDK = (
       ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,
     cover_art: input.coverArt ?? null,
+    create_date: input.createDate ?? null,
     credits_splits: input.creditsSplits ?? null,
     ddex_app: input.ddexApp ?? null,
     ddex_release_ids: input.ddexReleaseIds ?? null,

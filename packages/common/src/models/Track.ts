@@ -191,6 +191,7 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   created_at: string
+  create_date: Nullable<string>
   isrc: Nullable<string>
   iswc: Nullable<string>
   credits_splits: Nullable<string>
