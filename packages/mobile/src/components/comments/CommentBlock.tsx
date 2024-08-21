@@ -12,6 +12,7 @@ import {
   IconHeart,
   IconKebabHorizontal,
   IconPencil,
+  PlainButton,
   Text,
   TextLink,
   Timestamp
@@ -118,15 +119,14 @@ export const CommentBlock = (props: CommentBlockProps) => {
                   {reactCount}
                 </Text>
               </Flex>
-              <TouchableOpacity
+              <PlainButton
+                variant='subdued'
                 onPress={() => {
                   setShowReplyInput(!showReplyInput)
                 }}
               >
-                <Text color='subdued' size='s'>
-                  Reply
-                </Text>
-              </TouchableOpacity>
+                Reply
+              </PlainButton>
               <IconButton
                 aria-label='edit comment'
                 icon={IconKebabHorizontal}
