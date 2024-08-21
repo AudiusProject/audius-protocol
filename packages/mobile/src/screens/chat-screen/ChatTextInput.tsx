@@ -49,7 +49,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   overlayTextContainer: {
     position: 'absolute',
-    right: 40,
+    right: spacing(10),
     left: 0,
     zIndex: 0,
     paddingLeft: spacing(4) + 1,
