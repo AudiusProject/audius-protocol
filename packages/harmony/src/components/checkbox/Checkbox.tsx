@@ -1,6 +1,7 @@
-import { forwardRef, Ref } from 'react'
+import { ChangeEvent, forwardRef, Ref, useCallback } from 'react'
 
 import { useTheme } from 'foundations'
+import { useControlled } from 'hooks/useControlled'
 
 import { Flex, Box } from '../layout'
 
@@ -15,9 +16,31 @@ import { CheckboxProps } from './types'
  */
 export const Checkbox = forwardRef(
   (props: CheckboxProps, ref: Ref<HTMLInputElement>) => {
-    const { indeterminate, _isFocused, _isHovered, ...other } = props
-    const { checked } = other
+    const {
+      checked: checkedProp,
+      defaultChecked,
+      indeterminate,
+      onChange,
+      _isFocused,
+      _isHovered,
+      ...other
+    } = props
     const { color, motion } = useTheme()
+
+    const [checked, setChecked] = useControlled({
+      controlledProp: checkedProp,
+      defaultValue: defaultChecked,
+      stateName: 'checked',
+      componentName: 'Checkbox'
+    })
+
+    const handleChange = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        onChange?.(e)
+        setChecked(e.target.checked)
+      },
+      [onChange, setChecked]
+    )
 
     const Icon = !checked
       ? null
@@ -60,6 +83,8 @@ export const Checkbox = forwardRef(
             ':focus-visible ~ [data-span="focus"]': focusCss
           }}
           data-indeterminate={indeterminate}
+          checked={checked}
+          onChange={handleChange}
           {...other}
         />
         <Box
