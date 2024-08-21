@@ -1,11 +1,4 @@
-import {
-  Meta,
-  Title,
-  Description,
-  Controls,
-  Canvas,
-  Primary
-} from '@storybook/blocks'
+import { Meta, Title, Description, Controls, Canvas } from '@storybook/blocks'
 
 import { Heading } from 'storybook/components'
 
@@ -19,7 +12,6 @@ import Anatomy from './anatomy.svg'
 - [Overview](#overview)
 - [Props](#props)
 - [Anatomy](#anatomy)
-- [Variants](#variants)
 - [Configuration options](#configuration-options)
 - [Use cases and examples](#use-cases-and-examples)
 
@@ -27,8 +19,6 @@ import Anatomy from './anatomy.svg'
   ## Overview
   <Description />
 </Heading>
-
-<Primary />
 
 ## Props
 
@@ -38,9 +28,19 @@ import Anatomy from './anatomy.svg'
 
 <Anatomy />
 
-## Variants
+## Configuration options
+
+### Variants
 
 <Canvas of={CheckboxStories.Variants} />
+
+### States
+
+<Canvas of={CheckboxStories.States} />
+
+### Indeterminate
+
+<Canvas of={CheckboxStories.Indeterminate} />
 
 ## Use cases and examples
 

@@ -1,3 +1,5 @@
+import { PropsWithChildren } from 'react'
+
 import type { Meta, StoryObj } from '@storybook/react'
 
 import { Flex } from 'components/layout'
@@ -19,11 +21,15 @@ type CheckboxLabelProps = CheckboxProps & {
   label: string
 }
 
+const Label = ({ children }: PropsWithChildren) => {
+  return <Text css={{ width: 90 }}>{children}</Text>
+}
+
 const CheckboxLabel = (props: CheckboxLabelProps) => {
   const { label, ...other } = props
   return (
     <Flex gap='2xl'>
-      <Text css={{ width: 90 }}>{label}</Text>
+      <Label>{label}</Label>
       <Checkbox {...other} />
     </Flex>
   )
@@ -32,16 +38,42 @@ const CheckboxLabel = (props: CheckboxLabelProps) => {
 // Overview Story
 export const Variants: Story = {
   render: () => (
-    <Flex
-      direction='column'
-      pv='2xl'
-      gap='2xl'
-      justifyContent='space-around'
-      borderRadius='s'
-    >
+    <Flex direction='column' p='2xl' gap='2xl'>
       <CheckboxLabel label='Unchecked' />
       <CheckboxLabel label='Checked' checked />
       <CheckboxLabel label='Indeterminate' checked indeterminate />
+    </Flex>
+  )
+}
+
+export const States: Story = {
+  render: () => (
+    <Flex direction='column' p='2xl' gap='2xl'>
+      <Flex gap='2xl'>
+        <Label>Default</Label>
+        <Checkbox />
+        <Checkbox checked />
+      </Flex>
+      <Flex gap='2xl'>
+        <Label>Hover</Label>
+        <Checkbox _isHovered />
+        <Checkbox _isHovered checked />
+      </Flex>
+      <Flex gap='2xl'>
+        <Label>Focused</Label>
+        <Checkbox _isFocused />
+        <Checkbox _isFocused checked />
+      </Flex>
+    </Flex>
+  )
+}
+
+export const Indeterminate: Story = {
+  render: () => (
+    <Flex direction='column' p='2xl' gap='2xl'>
+      <CheckboxLabel label='Default' checked indeterminate />
+      <CheckboxLabel label='Hover' checked indeterminate _isHovered />
+      <CheckboxLabel label='Focused' checked indeterminate _isFocused />
     </Flex>
   )
 }

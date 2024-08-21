@@ -2,7 +2,7 @@ import { forwardRef, Ref } from 'react'
 
 import { useTheme } from 'foundations'
 
-import { Flex } from '../layout'
+import { Flex, Box } from '../layout'
 
 import IconIndeterminate from './Indeterminate.svg'
 import IconSelect from './Select.svg'
@@ -15,9 +15,9 @@ import { CheckboxProps } from './types'
  */
 export const Checkbox = forwardRef(
   (props: CheckboxProps, ref: Ref<HTMLInputElement>) => {
-    const { indeterminate, ...other } = props
+    const { indeterminate, _isFocused, _isHovered, ...other } = props
     const { checked } = other
-    const { color } = useTheme()
+    const { color, motion } = useTheme()
 
     const Icon = !checked
       ? null
@@ -25,10 +25,19 @@ export const Checkbox = forwardRef(
       ? IconIndeterminate
       : IconSelect
 
+    const hoverCss = {
+      backgroundColor: checked ? color.secondary.s200 : color.neutral.n150
+    }
+
+    const focusCss = {
+      borderRadius: 6,
+      border: `2px solid ${color.border.accent}`
+    }
+
     return (
       <Flex
-        h='unit6'
-        w='unit6'
+        h='unit7'
+        w='unit7'
         as='span'
         alignItems='center'
         justifyContent='center'
@@ -45,10 +54,25 @@ export const Checkbox = forwardRef(
             height: '100%',
             zIndex: 1,
             margin: 0,
-            padding: 0
+            padding: 0,
+            cursor: 'pointer',
+            ':hover ~ [data-span="background"]': hoverCss,
+            ':focus-visible ~ [data-span="focus"]': focusCss
           }}
           data-indeterminate={indeterminate}
           {...other}
+        />
+        <Box
+          h='unit7'
+          w='unit7'
+          as='span'
+          data-span='focus'
+          css={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            ...(_isFocused && focusCss)
+          }}
         />
         <Flex
           borderRadius='s'
@@ -56,13 +80,16 @@ export const Checkbox = forwardRef(
           h='unit5'
           w='unit5'
           as='span'
+          data-span='background'
           alignItems='center'
           justifyContent='center'
           css={{
             backgroundColor: checked
               ? color.background.accent
               : color.neutral.n200,
-            boxShadow: 'inset 2px 2px 2px 0px rgba(0, 0, 0, 0.10)'
+            boxShadow: 'inset 2px 2px 2px 0px rgba(0, 0, 0, 0.10)',
+            transition: `background-color ${motion.hover}`,
+            ...(_isHovered && hoverCss)
           }}
         >
           {Icon ? <Icon /> : null}
