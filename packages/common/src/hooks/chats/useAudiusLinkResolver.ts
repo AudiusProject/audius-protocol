@@ -51,8 +51,32 @@ const {
  *      and modifies the text accordingly, deleting the whole display text/link on a
  *      single keystroke.
  *
- * - reset: Function that resets the `trackId` and `collectionId` state to null.
+ * - clearLinks: Function that resets the `trackId` and `collectionId` state to null.
  *      Call this method when submitting.
+ *
+ * @example
+ * const Input = () => {
+ *   const [value, setValue] = useState('')
+ *   const { resolveLinks, restoreLinks, clearLinks } = useAudiusLinkResolver({
+ *     "Check out this song: https://audius.co/artist/track",
+ *     "audius.co",
+ *     audiusSdk
+ *   })
+ *
+ *   useEffect(() => {
+ *     const fn = async () => {
+ *       setValue(await resolveLinks(value))
+ *     }
+ *     fn()
+ *   }, [value, setValue])
+ *
+ *   const onSubmit = (value: string) => {
+ *     const restored = restoreLinks(value)
+ *     submit(restored)
+ *     clearLinks()
+ *   }
+ *   return <textarea value={value} onSubmit={onSubmit} />
+ * }
  */
 export const useAudiusLinkResolver = ({
   value,
@@ -112,6 +136,12 @@ export const useAudiusLinkResolver = ({
 
       // Sort here to make sure that we replace all content before
       // replacing their substrings.
+      // This is because in link replacement, we want to replace
+      // https://artist/track
+      // before we replace
+      // https://artist
+      // to make sure that we don't accidentally replace the substring
+      // and then fail to match the larger string
       let editedValue = value
       for (const [link, human] of Object.entries(linkToHuman).sort(
         (a, b) => b[0].length - a[0].length
@@ -175,7 +205,7 @@ export const useAudiusLinkResolver = ({
   /**
    * Resets any found track id / collection id
    */
-  const reset = useCallback(() => {
+  const clearLinks = useCallback(() => {
     setTrackId(null)
     setCollectionId(null)
   }, [setTrackId, setCollectionId])
@@ -205,6 +235,6 @@ export const useAudiusLinkResolver = ({
     restoreLinks,
     getMatches,
     handleBackspace,
-    reset
+    clearLinks
   }
 }

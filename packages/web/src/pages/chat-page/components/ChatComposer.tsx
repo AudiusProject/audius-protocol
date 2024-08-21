@@ -84,7 +84,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
     restoreLinks,
     getMatches,
     handleBackspace,
-    reset
+    clearLinks
   } = useAudiusLinkResolver({
     value,
     hostname: env.PUBLIC_HOSTNAME,
@@ -156,10 +156,10 @@ export const ChatComposer = (props: ChatComposerProps) => {
     }
     if (chatId !== chatIdRef.current) {
       setValue('')
-      reset()
+      clearLinks()
       chatIdRef.current = chatId
     }
-  }, [ref, chatId, chatIdRef, reset, setValue])
+  }, [ref, chatId, chatIdRef, clearLinks, setValue])
 
   const renderChatDisplay = (value: string) => {
     const matches = getMatches(value)
