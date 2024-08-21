@@ -14,17 +14,21 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 	var err error
 
 	// first find any blasts that should seed this chat ...
-	// todo: do we have to do this in both directions?
-	// todo: do we have to do this for all audiences too?
-	//       if it is related to an `audience_track_id` we won't have that here...
-	//       so maybe the client can pass a separate param like `seed_blast_ids` to seed the thread context.
-	// todo: should mark hidden for blaster
-	blasts, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
-		UserID: userId,
-		ChatID: params.ChatID, // ideally we'd just filter by chat ID which would get "both sides"... but the user id is required for the sql query... so maybe we make it so you can query by two user IDs or something...
-	})
-	if err != nil {
-		return err
+	var blasts []queries.BlastRow
+	for _, invite := range params.Invites {
+		invitedUserId, err := misc.DecodeHashId(invite.UserID)
+		if err != nil {
+			return err
+		}
+
+		pending, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
+			UserID: int32(invitedUserId),
+			ChatID: params.ChatID,
+		})
+		if err != nil {
+			return err
+		}
+		blasts = append(blasts, pending...)
 	}
 
 	// it is possible that two conflicting chats get created at the same time
