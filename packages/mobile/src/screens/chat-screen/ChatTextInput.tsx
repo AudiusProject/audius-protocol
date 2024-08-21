@@ -99,7 +99,7 @@ export const ChatTextInput = ({
     restoreLinks,
     getMatches,
     handleBackspace,
-    reset
+    clearLinks
   } = useAudiusLinkResolver({
     value: inputMessage,
     hostname: env.PUBLIC_HOSTNAME,
@@ -161,9 +161,9 @@ export const ChatTextInput = ({
       dispatch(sendMessage({ chatId, message: restoreLinks(inputMessage) }))
       setInputMessage('')
       onMessageSent()
-      reset()
+      clearLinks()
     }
-  }, [inputMessage, chatId, dispatch, onMessageSent, restoreLinks, reset])
+  }, [inputMessage, chatId, dispatch, onMessageSent, restoreLinks, clearLinks])
 
   const renderIcon = () => (
     <TouchableOpacity
