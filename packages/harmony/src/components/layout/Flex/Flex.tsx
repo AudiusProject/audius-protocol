@@ -20,7 +20,9 @@ export const Flex = styled(Box, {
     gap,
     rowGap,
     columnGap,
-    inline
+    inline,
+    row,
+    column
   } = props
   const { spacing } = theme
 
@@ -28,7 +30,7 @@ export const Flex = styled(Box, {
     display: inline ? 'inline-flex' : 'flex',
     alignItems,
     justifyContent,
-    flexDirection: direction,
+    flexDirection: direction ?? (row ? 'row' : column ? 'column' : undefined),
     flexWrap: wrap,
     gap: gap && spacing[gap],
     rowGap: rowGap && spacing[rowGap],
