@@ -49,7 +49,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
   const image = useTrackCoverArt2(trackId, SquareSizes.SIZE_150_BY_150)
 
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
 
   if (!track) return null
 
@@ -74,7 +74,10 @@ export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
     SquareSizes.SIZE_150_BY_150
   )
 
-  const { data: collection } = useGetPlaylistById({ playlistId: collectionId })
+  const { data: collection } = useGetPlaylistById(
+    { playlistId: collectionId },
+    { force: true }
+  )
 
   if (!collection) return null
 
