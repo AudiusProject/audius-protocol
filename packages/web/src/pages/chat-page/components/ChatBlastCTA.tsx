@@ -35,8 +35,7 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { data: userId } = useGetCurrentUserId({})
   const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
   const chatBlastTier = useRemoteVar(IntKeys.CHAT_BLAST_TIER_REQUIREMENT)
-  const userMeetsRequirements =
-    isVerified || (tierNumber && tierNumber >= chatBlastTier)
+  const userMeetsRequirements = isVerified || tierNumber >= chatBlastTier
 
   const handleClick = useCallback(() => {
     onClick()
