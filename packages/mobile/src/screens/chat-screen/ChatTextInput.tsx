@@ -1,21 +1,20 @@
 import { useCallback, useState } from 'react'
 
 import { chatActions, playerSelectors } from '@audius/common/store'
-import { Platform, Pressable } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconSend } from '@audius/harmony-native'
 import { TextInput } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { convertHexToRGBA } from 'app/utils/convertHexToRGBA'
 import { useThemeColors } from 'app/utils/theme'
 
 const { sendMessage } = chatActions
 const { getHasTrack } = playerSelectors
 
 const messages = {
-  startNewMessage: ' Start a New Message'
+  startNewMessage: ' Start typing...'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -24,7 +23,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center',
     backgroundColor: palette.neutralLight10,
     paddingLeft: spacing(4),
-    paddingVertical: spacing(1),
+    paddingVertical: spacing(2),
     borderRadius: spacing(1)
   },
   composeTextInput: {
@@ -34,16 +33,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center',
     paddingTop: 0
   },
-  icon: {
-    width: spacing(5),
-    height: spacing(5),
-    fill: palette.white
+  submit: {
+    paddingRight: spacing(1)
   },
-  iconCircle: {
-    borderRadius: spacing(5),
-    paddingVertical: spacing(1.5),
-    paddingLeft: 5,
-    paddingRight: 7
+  icon: {
+    width: spacing(6),
+    height: spacing(6)
   }
 }))
 
@@ -60,7 +55,7 @@ export const ChatTextInput = ({
 }: ChatTextInputProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { primary, primaryDark2 } = useThemeColors()
+  const { primary, neutralLight7 } = useThemeColors()
 
   const [inputMessage, setInputMessage] = useState(presetMessage ?? '')
   const hasLength = inputMessage.length > 0
@@ -75,28 +70,17 @@ export const ChatTextInput = ({
   }, [inputMessage, chatId, dispatch, onMessageSent])
 
   const renderIcon = () => (
-    <Pressable
+    <TouchableOpacity
       onPress={handleSubmit}
       hitSlop={spacing(2)}
-      style={({ pressed }) => [
-        styles.iconCircle,
-        {
-          backgroundColor: hasLength
-            ? pressed
-              ? primaryDark2
-              : primary
-            : // Setting opacity style affects both the background and icon
-              // on Android, this workaround keeps the icon always white.
-              convertHexToRGBA(primary, 50)
-        }
-      ]}
+      style={styles.submit}
     >
       <IconSend
         width={styles.icon.width}
         height={styles.icon.height}
-        fill={styles.icon.fill}
+        fill={hasLength ? primary : neutralLight7}
       />
-    </Pressable>
+    </TouchableOpacity>
   )
 
   return (
