@@ -3,7 +3,8 @@ import type { ReactNode } from 'react'
 import type {
   TextInputProps as RNTextInputProps,
   TextInput as RNTextInput,
-  ViewStyle
+  ViewStyle,
+  TextStyle
 } from 'react-native'
 
 import type { IconComponent, IconProps } from '../../../icons'
@@ -111,7 +112,12 @@ export type TextInputProps = RNTextInputProps & {
   /**
    * Styles to apply to the inner flex container that wraps the input, label, and adornments
    */
-  innerContainerStyle?: ViewStyle
+  innerContainerStyle?: TextStyle
+
+  /**
+   * Styles to apply to the text component
+   */
+  textStyle?: ViewStyle
 
   TextInputComponent?: typeof RNTextInput
 } & InternalProps
