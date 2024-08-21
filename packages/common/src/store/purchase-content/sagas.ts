@@ -5,11 +5,12 @@ import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
+import { userTrackMetadataFromSDK } from '~/adapters'
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
-import { ID } from '~/models/Identifiers'
+import { ID, Id, OptionalId } from '~/models/Identifiers'
 import {
   PurchaseMethod,
   PurchaseVendor,
@@ -62,6 +63,7 @@ import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
+import { getSDK } from '../sdkUtils'
 import { saveCollection } from '../social/collections/actions'
 
 import {
@@ -278,12 +280,17 @@ function* pollForPurchaseConfirmation({
       'playlist_contents' in metadata &&
       metadata.playlist_contents.track_ids
     ) {
-      const apiClient = yield* getContext('apiClient')
+      const sdk = yield* getSDK()
       for (const trackId of metadata.playlist_contents.track_ids) {
-        const track = yield* call([apiClient, 'getTrack'], {
-          id: trackId.track,
-          currentUserId
-        })
+        const { data } = yield* call(
+          [sdk.full.tracks, sdk.full.tracks.getTrack],
+          {
+            trackId: Id.parse(trackId.track),
+            userId: OptionalId.parse(currentUserId)
+          }
+        )
+        const track = data ? userTrackMetadataFromSDK(data) : null
+
         if (track) {
           yield* put(
             cacheActions.update(Kind.TRACKS, [

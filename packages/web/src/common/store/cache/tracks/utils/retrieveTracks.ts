@@ -1,9 +1,15 @@
 import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Kind,
   ID,
   TrackMetadata,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -11,7 +17,8 @@ import {
   cacheTracksSelectors,
   cacheSelectors,
   getContext,
-  CommonState
+  CommonState,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
@@ -40,6 +47,7 @@ type UnlistedTrackRequest = {
 }
 type RetrieveTracksArgs = {
   trackIds: ID[] | UnlistedTrackRequest[]
+  /** deprecated */
   canBeUnlisted?: boolean
   withStems?: boolean
   stemIds?: ID[]
@@ -77,19 +85,13 @@ export function* retrieveTrackByHandleAndSlug({
     },
     retrieveFromSource: function* (permalinks: string[]) {
       yield* waitForRead()
-      const apiClient = yield* getContext('apiClient')
+      const sdk = yield* getSDK()
       const userId = yield* select(getUserId)
-      const track = yield* call((args) => {
-        const split = args[0].split('/')
-        const handle = split[1]
-        const slug = split.slice(2).join('')
-        return apiClient.getTrackByHandleAndSlug({
-          handle,
-          slug,
-          currentUserId: userId
-        })
-      }, permalinks)
-      return track
+      const { data } = yield* call(
+        [sdk.full.tracks, sdk.full.tracks.getBulkTracks],
+        { permalink: permalinks, userId: OptionalId.parse(userId) }
+      )
+      return data ? userTrackMetadataFromSDK(data[0]) : null
     },
     kind: Kind.TRACKS,
     idField: 'track_id',
@@ -189,7 +191,7 @@ export function* retrieveTracks({
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
       yield* waitForRead()
-      const apiClient = yield* getContext('apiClient')
+      const sdk = yield* getSDK()
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
 
       if (canBeUnlisted) {
@@ -197,32 +199,36 @@ export function* retrieveTracks({
         if (ids.length > 1) {
           throw new Error('Can only query for single unlisted track')
         } else {
-          const { id, url_title, handle } = ids[0]
+          const { id } = ids[0]
 
-          fetched = yield* call([apiClient, 'getTrack'], {
-            id,
-            currentUserId,
-            unlistedArgs:
-              url_title && handle
-                ? {
-                    urlTitle: url_title,
-                    handle
-                  }
-                : undefined
-          })
+          const { data } = yield* call(
+            [sdk.full.tracks, sdk.full.tracks.getTrack],
+            { trackId: Id.parse(id), userId: OptionalId.parse(currentUserId) }
+          )
+
+          fetched = data ? userTrackMetadataFromSDK(data) : null
         }
       } else {
         const ids = trackIds as number[]
         if (ids.length > 1) {
-          fetched = yield* call([apiClient, 'getTracks'], {
-            ids,
-            currentUserId
-          })
+          const { data = [] } = yield* call(
+            [sdk.full.tracks, sdk.full.tracks.getBulkTracks],
+            {
+              id: ids.map((id) => Id.parse(id)),
+              userId: OptionalId.parse(currentUserId)
+            }
+          )
+          fetched = transformAndCleanList(data, userTrackMetadataFromSDK)
         } else {
-          fetched = yield* call([apiClient, 'getTrack'], {
-            id: ids[0],
-            currentUserId
-          })
+          const { data } = yield* call(
+            [sdk.full.tracks, sdk.full.tracks.getTrack],
+            {
+              trackId: Id.parse(ids[0]),
+              userId: OptionalId.parse(currentUserId)
+            }
+          )
+
+          fetched = data ? userTrackMetadataFromSDK(data) : null
         }
       }
       return fetched

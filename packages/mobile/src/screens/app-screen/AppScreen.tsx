@@ -11,7 +11,7 @@ import { ChangePasswordModalScreen } from '../change-password-screen'
 import { CreateChatBlastNavigator } from '../create-chat-blast-screen/CreateChatBlastNavigator'
 import { EditCollectionScreen } from '../edit-collection-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
-import { FeatureFlagOverrideModalScreen } from '../feature-flag-override-screen'
+import { FeatureFlagOverrideScreen } from '../feature-flag-override-screen'
 import { TipArtistModalScreen } from '../tip-artist-screen'
 import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
@@ -65,7 +65,7 @@ export const AppScreen = () => {
         />
         <Stack.Screen
           name='FeatureFlagOverride'
-          component={FeatureFlagOverrideModalScreen}
+          component={FeatureFlagOverrideScreen}
         />
         <Stack.Screen
           name='ChangePassword'
