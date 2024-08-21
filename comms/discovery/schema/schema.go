@@ -148,16 +148,20 @@ type TentacledInvite struct {
 }
 
 type UserChat struct {
-	ChatID                 string       `json:"chat_id"`
-	ChatMembers            []ChatMember `json:"chat_members"`
-	ClearedHistoryAt       string       `json:"cleared_history_at"`
-	InviteCode             string       `json:"invite_code"`
-	LastMessage            string       `json:"last_message"`
-	LastMessageAt          string       `json:"last_message_at"`
-	LastMessageIsPlaintext bool         `json:"last_message_is_plaintext"`
-	LastReadAt             string       `json:"last_read_at"`
-	RecheckPermissions     bool         `json:"recheck_permissions"`
-	UnreadMessageCount     float64      `json:"unread_message_count"`
+	ChatID                 string            `json:"chat_id"`
+	ChatMembers            []ChatMember      `json:"chat_members"`
+	ClearedHistoryAt       string            `json:"cleared_history_at"`
+	InviteCode             string            `json:"invite_code"`
+	LastMessage            string            `json:"last_message"`
+	LastMessageAt          string            `json:"last_message_at"`
+	LastMessageIsPlaintext bool              `json:"last_message_is_plaintext"`
+	LastReadAt             string            `json:"last_read_at"`
+	RecheckPermissions     bool              `json:"recheck_permissions"`
+	UnreadMessageCount     float64           `json:"unread_message_count"`
+	IsBlast                bool              `json:"is_blast"`
+	Audience               ChatBlastAudience `json:"audience"`
+	AudienceContentType    string            `json:"audience_content_type"`
+	AudienceContentID      string            `json:"audience_content_id"`
 }
 
 type ChatMember struct {
