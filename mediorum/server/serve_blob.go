@@ -376,8 +376,9 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
-		if ss.coreSdk == nil {
-			// early out if core sdk is disabled
+		sdk, err := ss.getCoreSdk()
+		if err != nil {
+			ss.logger.Error("could not get sdk to record listen: %v", "err", err)
 			return
 		}
 
@@ -419,7 +420,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// submit to configured core node
-		res, err := ss.coreSdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
+		res, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
 			Event: event,
 		})
 

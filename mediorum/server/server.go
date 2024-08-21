@@ -289,14 +289,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		Config:    config,
 	}
 
-	if config.CoreGRPCEndpoint != "" {
-		coreSdk, err := core.NewSdk(core.WithGrpcendpoint(config.CoreGRPCEndpoint))
-		if err != nil {
-			logger.Warn("error initializing core sdk", "err", err)
-		}
-		ss.coreSdk = coreSdk
-	}
-
 	routes := echoServer.Group(apiBasePath)
 
 	routes.GET("", func(c echo.Context) error {

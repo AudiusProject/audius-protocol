@@ -324,7 +324,7 @@ func startDevCluster() {
 			AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 			VersionJson:               GetVersionJson(),
 			DiscoveryListensEndpoints: discoveryListensEndpoints(),
-			CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
+			CoreGRPCEndpoint:          fmt.Sprintf("core-content-%d:50051", idx+1),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {
