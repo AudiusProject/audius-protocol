@@ -180,7 +180,6 @@ export const useAudiusLinkResolver = ({
       const matched = Object.keys(humanToData).find((i) =>
         textBeforeCursor.endsWith(i)
       )
-      console.log(matched)
       if (matched) {
         return (value: string) =>
           value.slice(0, cursorPosition - matched.length) +
