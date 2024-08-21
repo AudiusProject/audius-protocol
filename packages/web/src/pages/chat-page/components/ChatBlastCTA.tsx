@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
-import { useRemoteVar, useSelectTierInfo } from '@audius/common/hooks'
-import { IntKeys } from '@audius/common/services'
+import { useCanSendChatBlast } from '@audius/common/hooks'
 import { useChatBlastModal } from '@audius/common/src/store'
 import {
   Box,
@@ -31,17 +29,12 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const { color } = useTheme()
 
   const { onOpen: openChatBlastModal } = useChatBlastModal()
-
-  const { data: userId } = useGetCurrentUserId({})
-  const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
-  const chatBlastTier = useRemoteVar(IntKeys.CHAT_BLAST_TIER_REQUIREMENT)
-  const userMeetsRequirements = isVerified || tierNumber >= chatBlastTier
-
   const handleClick = useCallback(() => {
     onClick()
     openChatBlastModal()
   }, [onClick, openChatBlastModal])
 
+  const userMeetsRequirements = useCanSendChatBlast()
   if (!userMeetsRequirements) {
     return <ChatBlastDisabled />
   }

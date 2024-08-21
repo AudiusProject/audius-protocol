@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
-import { useSelectTierInfo } from '@audius/common/hooks'
+import { useCanSendChatBlast } from '@audius/common/hooks'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 
 import {
@@ -22,17 +21,13 @@ const messages = {
 }
 
 export const ChatBlastCTA = () => {
-  const { data: userId } = useGetCurrentUserId({})
-  const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
-  const userMeetsRequirements =
-    // DEV ONLY
-    isVerified || (tierNumber && tierNumber > 0) || true
   const navigation = useAppDrawerNavigation()
 
   const handleClick = useCallback(() => {
     navigation.navigate('CreateChatBlast')
   }, [navigation])
 
+  const userMeetsRequirements = useCanSendChatBlast()
   if (!userMeetsRequirements) {
     return null
   }
