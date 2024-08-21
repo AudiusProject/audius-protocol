@@ -7,10 +7,12 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import {
+  Box,
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
+  PlainButton,
   SegmentedControl
 } from '@audius/harmony'
 
@@ -26,7 +28,8 @@ const { getHasAccount } = accountSelectors
 
 const flags = Object.values(FeatureFlags)
 const messages = {
-  title: 'Feature Flag Override Settings'
+  title: 'Feature Flag Override Settings',
+  restart: 'Restart'
 }
 
 const getOverrideSetting = (flag: string) => {
@@ -55,6 +58,8 @@ export const FeatureFlagOverrideModal = () => {
       {}
     )
   )
+
+  const [isFlagChanged, setIsFlagChanged] = useState(false)
 
   useEffect(() => {
     const updateDefaultSettings = () => {
@@ -96,9 +101,20 @@ export const FeatureFlagOverrideModal = () => {
       zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}
     >
       <ModalHeader onClose={closeModal}>
-        <ModalTitle title={messages.title} />
+        <ModalTitle title={messages.title}>hi</ModalTitle>
       </ModalHeader>
       <ModalContent>
+        {isFlagChanged ? (
+          <Box mb='l'>
+            <PlainButton
+              onClick={() => window.location.reload()}
+              size='large'
+              fullWidth
+            >
+              {messages.restart}
+            </PlainButton>
+          </Box>
+        ) : null}
         {remoteInstanceLoaded ? (
           <div className={styles.optionContainer}>
             {flags.map((flag) => (
@@ -121,6 +137,7 @@ export const FeatureFlagOverrideModal = () => {
                       key === 'default' ? null : (key as OverrideSetting)
                     setOverrideSettings((prev) => ({ ...prev, [flag]: val }))
                     setOverrideSetting(flag as FeatureFlags, val)
+                    setIsFlagChanged(true)
                   }}
                 />
               </div>

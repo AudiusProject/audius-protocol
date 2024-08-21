@@ -9,13 +9,8 @@ import { FlatList } from 'react-native-gesture-handler'
 import RNRestart from 'react-native-restart'
 import { useAsync } from 'react-use'
 
-import { IconEmbed, IconClose } from '@audius/harmony-native'
-import {
-  ModalScreen,
-  Screen,
-  SegmentedControl,
-  TextButton
-} from 'app/components/core'
+import { IconEmbed, IconClose, PlainButton } from '@audius/harmony-native'
+import { ModalScreen, Screen, SegmentedControl } from 'app/components/core'
 import { FilterInput } from 'app/components/filter-input'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
@@ -51,7 +46,8 @@ const setOverrideSetting = async (flag: string, val: OverrideSetting) => {
 
 const messages = {
   title: 'Feature Flags',
-  filterPlaceholder: 'Filter Feature Flags'
+  filterPlaceholder: 'Filter Feature Flags',
+  restart: 'Restart'
 }
 
 type FeatureFlagRowProps = {
@@ -119,11 +115,9 @@ const FeatureFlagScreen = () => {
       icon={IconEmbed}
       topbarRight={
         isFlagChanged ? (
-          <TextButton
-            variant='primary'
-            onPress={() => RNRestart.Restart()}
-            title='Restart'
-          />
+          <PlainButton onPress={() => RNRestart.Restart()}>
+            {messages.restart}
+          </PlainButton>
         ) : null
       }
       topbarLeft={
