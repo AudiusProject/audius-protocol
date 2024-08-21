@@ -44,21 +44,22 @@ export const ChatBlastSelectAudienceFields = () => {
 
 const LabelWithCount = (props: {
   label: string
-  count: number
+  count?: number
   isSelected: boolean
 }) => {
   const { label, count, isSelected } = props
   return (
     <Text>
       {label}
-      {isSelected ? <Text color='subdued'> ({count})</Text> : null}
+      {isSelected && count !== undefined ? (
+        <Text color='subdued'> ({count})</Text>
+      ) : null}
     </Text>
   )
 }
 
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { follower_count: followerCount } = user ?? { follower_count: 0 }
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === 'followers'
 
@@ -68,7 +69,7 @@ const FollowersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.followers.label}
-          count={followerCount}
+          count={user.follower_count}
           isSelected={isSelected}
         />
       }
@@ -79,7 +80,6 @@ const FollowersMessageField = () => {
 
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === 'supporters'
 
@@ -89,7 +89,7 @@ const TipSupportersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.supporters.label}
-          count={supporterCount}
+          count={user.supporter_count}
           isSelected={isSelected}
         />
       }
@@ -100,8 +100,6 @@ const TipSupportersMessageField = () => {
 
 const PastPurchasersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  // TODO: need purchasers count endpoint
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === 'purchasers'
 
@@ -111,7 +109,8 @@ const PastPurchasersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.purchasers.label}
-          count={supporterCount}
+          // TODO: need purchasers count endpoint
+          count={user.supporter_count}
           isSelected={isSelected}
         />
       }
@@ -122,8 +121,6 @@ const PastPurchasersMessageField = () => {
 
 const RemixCreatorsMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  // TODO: need remixers count endpoint
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === 'remix_creators'
 
@@ -133,7 +130,8 @@ const RemixCreatorsMessageField = () => {
       label={
         <LabelWithCount
           label={messages.remixCreators.label}
-          count={supporterCount}
+          // TODO: need remixers count endpoint
+          count={user.supporter_count}
           isSelected={isSelected}
         />
       }

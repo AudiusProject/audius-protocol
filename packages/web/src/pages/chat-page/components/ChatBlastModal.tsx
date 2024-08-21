@@ -151,25 +151,39 @@ const ChatBlastsFields = () => {
   )
 }
 
+const LabelWithCount = (props: {
+  label: string
+  count?: number
+  isSelected: boolean
+}) => {
+  const { label, count, isSelected } = props
+  return (
+    <Flex gap='xs'>
+      <Text variant='title' size='l'>
+        {label}
+      </Text>
+      {isSelected && count !== undefined ? (
+        <Text variant='title' size='l' color='subdued'>
+          ({count})
+        </Text>
+      ) : null}
+    </Flex>
+  )
+}
+
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { follower_count: followerCount } = user ?? { follower_count: 0 }
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'followers'
   return (
     <Flex as='label' gap='l'>
       <Radio value='followers' />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.followers.label}
-          </Text>
-          {selected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({followerCount})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.followers.label}
+          count={user.follower_count}
+          isSelected={selected}
+        />
         {selected ? (
           <Text size='s'>{messages.followers.description}</Text>
         ) : null}
@@ -180,23 +194,17 @@ const FollowersMessageField = () => {
 
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { supporter_count: supporterCount } = user ?? { supporter_count: 0 }
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === 'supporters'
   return (
     <Flex as='label' gap='l'>
       <Radio value='supporters' />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.supporters.label}
-          </Text>
-          {selected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({supporterCount})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.supporters.label}
+          count={user.supporter_count}
+          isSelected={selected}
+        />
         {selected ? (
           <Text size='s'>{messages.supporters.description}</Text>
         ) : null}
@@ -207,12 +215,7 @@ const TipSupportersMessageField = () => {
 
 const PastPurchasersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const {
-    // TODO: Need to add a new endpoint to get the list of past purchasers
-    supporter_count: supporterCount,
-    handle,
-    user_id: currentUserId
-  } = user ?? {}
+  const { handle, user_id: currentUserId } = user ?? {}
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [purchasedTrackField, , { setValue: setPurchasedTrackId }] = useField({
     name: 'purchased_track_id',
@@ -241,16 +244,12 @@ const PastPurchasersMessageField = () => {
     <Flex as='label' gap='l'>
       <Radio value='purchasers' />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.purchasers.label}
-          </Text>
-          {isSelected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({supporterCount ?? 0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.purchasers.label}
+          // TODO: Need to add a new endpoint to get the list of past purchasers
+          count={user.supporter_count ?? 0}
+          isSelected={isSelected}
+        />
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.purchasers.description}</Text>
@@ -297,17 +296,12 @@ const RemixCreatorsMessageField = () => {
     <Flex as='label' gap='l'>
       <Radio value='remix_creators' />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.remixCreators.label}
-          </Text>
-          {isSelected ? (
-            <Text variant='title' size='l' color='subdued'>
-              {/* TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators */}
-              ({0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.remixCreators.label}
+          // TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators
+          count={user.supporter_count}
+          isSelected={isSelected}
+        />
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.remixCreators.description}</Text>
