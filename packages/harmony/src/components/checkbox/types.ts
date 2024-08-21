@@ -1,6 +1,6 @@
-import { InputHTMLAttributes } from 'react'
+import { ComponentPropsWithoutRef } from 'react'
 
-export type CheckboxProps = InputHTMLAttributes<HTMLInputElement> & {
+export type CheckboxProps = ComponentPropsWithoutRef<'input'> & {
   indeterminate?: boolean
   _isHovered?: boolean
   _isFocused?: boolean
