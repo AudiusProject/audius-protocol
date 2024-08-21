@@ -10,7 +10,7 @@ import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen
 import { ChangePasswordModalScreen } from '../change-password-screen'
 import { EditCollectionScreen } from '../edit-collection-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
-import { FeatureFlagOverrideModalScreen } from '../feature-flag-override-screen'
+import { FeatureFlagOverrideScreen } from '../feature-flag-override-screen'
 import { TipArtistModalScreen } from '../tip-artist-screen'
 import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
@@ -60,7 +60,7 @@ export const AppScreen = () => {
         />
         <Stack.Screen
           name='FeatureFlagOverride'
-          component={FeatureFlagOverrideModalScreen}
+          component={FeatureFlagOverrideScreen}
         />
         <Stack.Screen
           name='ChangePassword'
