@@ -28,7 +28,7 @@ export interface GetNotificationsRequest {
     timestamp?: number;
     groupId?: string;
     limit?: number;
-    validTypes?: Array<string>;
+    validTypes?: Array<GetNotificationsValidTypesEnum>;
 }
 
 /**
@@ -84,3 +84,41 @@ export class NotificationsApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const GetNotificationsValidTypesEnum = {
+    Announcement: 'announcement',
+    Follow: 'follow',
+    Repost: 'repost',
+    Save: 'save',
+    Remix: 'remix',
+    Cosign: 'cosign',
+    Create: 'create',
+    TipReceive: 'tip_receive',
+    TipSend: 'tip_send',
+    ChallengeReward: 'challenge_reward',
+    RepostOfRepost: 'repost_of_repost',
+    SaveOfRepost: 'save_of_repost',
+    Tastemaker: 'tastemaker',
+    Reaction: 'reaction',
+    SupporterDethroned: 'supporter_dethroned',
+    SupporterRankUp: 'supporter_rank_up',
+    SupportingRankUp: 'supporting_rank_up',
+    Milestone: 'milestone',
+    TrackMilestone: 'track_milestone',
+    TrackAddedToPlaylist: 'track_added_to_playlist',
+    PlaylistMilestone: 'playlist_milestone',
+    TierChange: 'tier_change',
+    Trending: 'trending',
+    TrendingPlaylist: 'trending_playlist',
+    TrendingUnderground: 'trending_underground',
+    UsdcPurchaseBuyer: 'usdc_purchase_buyer',
+    UsdcPurchaseSeller: 'usdc_purchase_seller',
+    TrackAddedToPurchasedAlbum: 'track_added_to_purchased_album',
+    RequestManager: 'request_manager',
+    ApproveManagerRequest: 'approve_manager_request',
+    ClaimableReward: 'claimable_reward'
+} as const;
+export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];
