@@ -8,6 +8,7 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -27,7 +28,6 @@ import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'
 import { CastButton, useDevices } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from '@audius/common/services'
 
 import {
   IconButton,

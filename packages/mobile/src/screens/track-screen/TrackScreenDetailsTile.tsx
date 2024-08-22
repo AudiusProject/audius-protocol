@@ -19,7 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -50,7 +50,6 @@ import {
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from '@audius/common/services'
 
 import {
   Box,

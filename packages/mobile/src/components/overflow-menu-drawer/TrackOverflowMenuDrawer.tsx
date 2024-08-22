@@ -8,6 +8,7 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -30,7 +31,6 @@ import {
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from '@audius/common/services'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
