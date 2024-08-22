@@ -221,21 +221,24 @@ export class ChatsApi
   public async getMessages(
     params: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
-    const { currentUserId, chatId, limit, before, after } = await parseParams(
-      'getMessages',
-      ChatGetMessagesRequestSchema
-    )(params)
+    const { currentUserId, chatId, isBlast, limit, before, after } =
+      await parseParams('getMessages', ChatGetMessagesRequestSchema)(params)
 
     let sharedSecret: Uint8Array
-    try {
-      sharedSecret = await this.getChatSecret(chatId)
-    } catch (e) {
-      this.logger.error("[audius-sdk] Couldn't get chat secret", e)
-      throw new Error("[audius-sdk] Couldn't get chat secret")
+    if (!isBlast) {
+      try {
+        sharedSecret = await this.getChatSecret(chatId)
+      } catch (e) {
+        this.logger.error("[audius-sdk] Couldn't get chat secret", e)
+        throw new Error("[audius-sdk] Couldn't get chat secret")
+      }
     }
     const path = `/comms/chats/${chatId}/messages`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (isBlast) {
+      query.is_blast = isBlast
     }
     if (limit) {
       query.limit = limit

@@ -3,7 +3,6 @@ package rpcz
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -161,11 +160,11 @@ func TestChatBlast(t *testing.T) {
 
 		blastCount := 0
 		for _, c := range chats {
-			if strings.HasPrefix(c.ChatID, "blast:") {
+			if c.IsBlast {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "blast:69:follower_audience", chats[0].ChatID)
+		assert.Equal(t, "follower_audience", chats[1].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
@@ -366,11 +365,12 @@ func TestChatBlast(t *testing.T) {
 	// ------ sender can get blasts in a given thread ----------
 	{
 		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
-			UserID: 69,
-			ChatID: "blast:69:follower_audience",
-			Before: time.Now().Add(time.Hour * 2).UTC(),
-			After:  time.Now().Add(time.Hour * -2).UTC(),
-			Limit:  10,
+			UserID:  69,
+			ChatID:  "follower_audience",
+			IsBlast: true,
+			Before:  time.Now().Add(time.Hour * 2).UTC(),
+			After:   time.Now().Add(time.Hour * -2).UTC(),
+			Limit:   10,
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 2)

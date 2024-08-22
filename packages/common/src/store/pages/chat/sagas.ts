@@ -239,6 +239,7 @@ function* doFetchLatestMessages(
       // and batching by MESSAGE_PAGE_SIZE. Sends one extra request to get the 0 response but oh well
       const response = yield* call([sdk.chats, sdk.chats.getMessages], {
         chatId,
+        isBlast: chat.is_blast,
         before,
         after,
         limit: MESSAGES_PAGE_SIZE
@@ -295,6 +296,7 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
     while (hasMoreUnread) {
       const response = yield* call([sdk.chats, sdk.chats.getMessages], {
         chatId,
+        isBlast: chat?.is_blast,
         before,
         limit: MESSAGES_PAGE_SIZE
       })
