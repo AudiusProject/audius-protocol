@@ -85,7 +85,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	ethAddress, err := common.PrivKeyHexToAddress(cfg.DelegatePrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("could not get address from priv key: %v")
+		return nil, fmt.Errorf("could not get address from priv key: %v", err)
 	}
 	cfg.WalletAddress = ethAddress
 
