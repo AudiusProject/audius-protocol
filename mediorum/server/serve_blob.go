@@ -376,9 +376,14 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				ss.logger.Error("panic recovered in goroutine", "err", r)
+			}
+		}()
+
 		sdk, err := ss.getCoreSdk()
 		if err != nil {
-			ss.logger.Error("could not get sdk to record listen: %v", "err", err)
 			return
 		}
 

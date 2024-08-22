@@ -132,7 +132,8 @@ func startStagingOrProd(isProd bool) {
 		StoreAll:                  os.Getenv("STORE_ALL") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
-		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
+		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", "core:50051"),
+		CoreJRPCEndpoint:          getenvWithDefault("coreJRPCEndpoint", "http://core:26657"),
 	}
 
 	ss, err := server.New(config)
@@ -217,7 +218,8 @@ func startSandbox() {
 		StoreAll:                  os.Getenv("STORE_ALL") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
-		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
+		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", "core:50051"),
+		CoreJRPCEndpoint:          getenvWithDefault("coreJRPCEndpoint", "http://core:26657"),
 	}
 
 	ss, err := server.New(config)
@@ -266,7 +268,8 @@ func startDevInstance() {
 		AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
-		CoreGRPCEndpoint:          os.Getenv("coreGRPCEndpoint"),
+		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", fmt.Sprintf("core-content-%d:50051", idx)),
+		CoreJRPCEndpoint:          getenvWithDefault("coreJRPCEndpoint", fmt.Sprintf("http://core-content-%d:26657", idx)),
 	}
 
 	ss, err := server.New(config)
@@ -325,6 +328,7 @@ func startDevCluster() {
 			VersionJson:               GetVersionJson(),
 			DiscoveryListensEndpoints: discoveryListensEndpoints(),
 			CoreGRPCEndpoint:          fmt.Sprintf("core-content-%d:50051", idx+1),
+			CoreJRPCEndpoint:          fmt.Sprintf("http://core-content-%d:26657", idx+1),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {

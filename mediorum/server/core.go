@@ -17,7 +17,7 @@ func (ss *MediorumServer) getCoreSdk() (*sdk.Sdk, error) {
 }
 
 func (ss *MediorumServer) initCoreSdk() error {
-	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint))
+	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
 	if err != nil {
 		return fmt.Errorf("error initialized core sdk: %v", err)
 	}

@@ -126,7 +126,7 @@ func SignBytes(input []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 }
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func recover(input string, signature []byte) (common.Address, error) {
+func recoverSigner(input string, signature []byte) (common.Address, error) {
 	hash := crypto.Keccak256Hash([]byte(input))
 	return sigverify.EcRecoverEx(hash.Bytes(), signature)
 }
