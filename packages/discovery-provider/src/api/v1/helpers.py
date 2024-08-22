@@ -12,6 +12,10 @@ from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
+from src.queries.get_notifications import (
+    NotificationType,
+    default_valid_notification_types,
+)
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
@@ -1069,6 +1073,8 @@ notifications_parser.add_argument(
     type=str,
     action="append",
     description="Additional valid notification types to return",
+    choices=[n.value for n in NotificationType],
+    default=default_valid_notification_types,
 )
 
 
