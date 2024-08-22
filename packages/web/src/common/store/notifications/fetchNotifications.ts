@@ -6,6 +6,7 @@ import { Id } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, getContext, getSDK } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
+import { GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
 import { call, select } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {
@@ -72,17 +73,17 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
   )
 
   const validTypes = [
-    isRepostOfRepostEnabled ? 'repost_of_repost' : null,
-    isSaveOfRepostEnabled ? 'save_of_repost' : null,
-    isTrendingPlaylistEnabled ? 'trending_playlist' : null,
-    isTrendingUndergroundEnabled ? 'trending_underground' : null,
-    isTastemakerEnabled ? 'tastemaker' : null,
-    isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
-    isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
-    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null,
-    isManagerModeEnabled ? 'request_manager' : null,
-    isManagerModeEnabled ? 'approve_manager_request' : null,
-    'claimable_reward'
+    isRepostOfRepostEnabled ? ValidTypes.RepostOfRepost : null,
+    isSaveOfRepostEnabled ? ValidTypes.SaveOfRepost : null,
+    isTrendingPlaylistEnabled ? ValidTypes.TrendingPlaylist : null,
+    isTrendingUndergroundEnabled ? ValidTypes.TrendingUnderground : null,
+    isTastemakerEnabled ? ValidTypes.Tastemaker : null,
+    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
+    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
+    isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
+    isManagerModeEnabled ? ValidTypes.RequestManager : null,
+    isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
+    ValidTypes.ClaimableReward
   ].filter(removeNullable)
 
   const { data } = yield* call(
