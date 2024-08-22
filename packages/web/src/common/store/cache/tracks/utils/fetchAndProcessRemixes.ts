@@ -7,10 +7,9 @@ import {
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
-  getContext,
   getSDK
 } from '@audius/common/store'
-import { removeNullable, waitForValue } from '@audius/common/utils'
+import { waitForValue } from '@audius/common/utils'
 import { select, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
@@ -85,14 +84,19 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
-  const remixParents = (yield* call([apiClient, 'getRemixing'], {
-    trackId,
-    limit: 1,
-    offset: 0,
-    currentUserId
-  })).filter(removeNullable)
+
+  const { data = [] } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrackRemixParents],
+    {
+      trackId: Id.parse(trackId),
+      offset: 0,
+      limit: 1,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const remixParents = transformAndCleanList(data, userTrackMetadataFromSDK)
 
   if (!remixParents) return
 
