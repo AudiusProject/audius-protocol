@@ -1,5 +1,9 @@
-import { ID, Track } from '@audius/common/models'
-import { getContext } from '@audius/common/store'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { ID, OptionalId, Track } from '@audius/common/models'
+import { getSDK } from '@audius/common/store'
 import { call } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -25,16 +29,18 @@ export function* retrieveUserTracks({
   limit,
   getUnlisted = false
 }: RetrieveUserTracksArgs): Generator<any, Track[], any> {
-  const apiClient = yield* getContext('apiClient')
-  const apiTracks = yield* call([apiClient, apiClient.getUserTracksByHandle], {
-    handle,
-    currentUserId,
-    sort,
-    limit,
-    offset,
-    getUnlisted
-  })
-
+  const sdk = yield* getSDK()
+  const { data = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getTracksByUserHandle],
+    {
+      handle,
+      sort,
+      limit,
+      offset,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const apiTracks = transformAndCleanList(data, userTrackMetadataFromSDK)
   const processed: Track[] = yield processAndCacheTracks(apiTracks)
   return processed
 }

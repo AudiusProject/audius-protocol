@@ -54,7 +54,6 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userAiTracksByHandle: (handle: OpaqueID) =>
     `/users/handle/${handle}/tracks/ai_attributed`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
@@ -90,15 +89,6 @@ type GetTrackStreamUrlArgs = {
     handle: string
   }
   abortOnUnreachable?: boolean
-}
-
-type GetUserTracksByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  sort?: 'date' | 'plays'
-  offset?: number
-  limit?: number
-  getUnlisted: boolean
 }
 
 type GetUserAiTracksByHandleArgs = {
@@ -413,46 +403,6 @@ export class AudiusAPIClient {
 
     const tracks = remixingResponse.data.map(adapter.makeTrack)
     return tracks
-  }
-
-  async getUserTracksByHandle({
-    handle,
-    currentUserId,
-    sort = 'date',
-    limit,
-    offset,
-    getUnlisted
-  }: GetUserTracksByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      sort,
-      limit,
-      offset
-    }
-
-    let headers = {}
-    if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      headers = {
-        [AuthHeaders.Message]: data,
-        [AuthHeaders.Signature]: signature
-      }
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.userTracksByHandle(handle),
-      params,
-      true,
-      PathType.VersionFullPath,
-      headers
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
   }
 
   async getUserAiTracksByHandle({

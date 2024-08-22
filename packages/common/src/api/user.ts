@@ -1,5 +1,6 @@
 import { full } from '@audius/sdk'
 
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, Kind, OptionalId, StringUSDC } from '~/models'
@@ -10,6 +11,7 @@ import {
 } from '~/models/USDCTransactions'
 import { Nullable } from '~/utils/typeUtils'
 
+import { SDKRequest } from './types'
 import { Id } from './utils'
 
 type GetUSDCTransactionListArgs = {
@@ -103,20 +105,22 @@ const userApi = createApi({
     },
     getTracksByUser: {
       fetch: async (
-        { userId, currentUserId }: { userId: ID; currentUserId: Nullable<ID> },
-        audiusQueryContext
-      ) => {
-        const { apiClient } = audiusQueryContext
-        const { handle } = await userApiFetch.getUserById(
-          { id: userId, currentUserId },
-          audiusQueryContext
-        )
-        const tracks = await apiClient.getUserTracksByHandle({
-          handle,
+        {
+          id,
           currentUserId,
-          getUnlisted: userId === currentUserId
+          ...params
+        }: {
+          id: ID
+        } & SDKRequest<full.GetTracksByUserRequest>,
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getTracksByUser({
+          ...params,
+          id: Id.parse(id),
+          userId: OptionalId.parse(currentUserId)
         })
-        return tracks
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         kind: Kind.TRACKS,
