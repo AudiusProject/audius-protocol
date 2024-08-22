@@ -23,7 +23,6 @@ import {
   APISearchAutocomplete,
   APIStem,
   APITrack,
-  GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID
 } from './types'
@@ -67,9 +66,7 @@ const FULL_ENDPOINT_MAP = {
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
   getReaction: '/reactions',
-  getTips: '/tips',
-  getNFTGatedTrackSignatures: (userId: OpaqueID) =>
-    `/tracks/${userId}/nft-gated-signatures`
+  getTips: '/tips'
 }
 
 export type QueryParams = {
@@ -198,13 +195,6 @@ export type GetTipsArgs = {
   minSlot?: number
   maxSlot?: number
   txSignatures?: string[]
-}
-
-export type GetNFTGatedTrackSignaturesArgs = {
-  userId: ID
-  trackMap: {
-    [id: ID]: string[]
-  }
 }
 
 type InitializationState =
@@ -740,41 +730,6 @@ export class AudiusAPIClient {
         .filter(removeNullable)
     }
     return null
-  }
-
-  async getNFTGatedTrackSignatures({
-    userId,
-    trackMap
-  }: GetNFTGatedTrackSignaturesArgs) {
-    if (!Object.keys(trackMap).length) return null
-
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-
-    // To avoid making a POST request and thereby introducing a new pattern in the DN,
-    // we build a param string that represents the info we need to verify nft collection ownership.
-    // The trackMap is a map of track ids -> token ids.
-    // If the nft collection is not ERC1155, then there are no token ids.
-    // We append the track ids and token ids as query params, making sure they're the same length
-    // so that DN knows which token ids belong to which track ids.
-    // Example:
-    // trackMap: { 1: [1, 2], 2: [], 3: [1]}
-    // query params: '?track_ids=1&token_ids=1-2&track_ids=2&token_ids=&track_ids=3&token_ids=1'
-    const trackIdParams: string[] = []
-    const tokenIdParams: string[] = []
-    Object.keys(trackMap).forEach((trackId) => {
-      trackIdParams.push(trackId)
-      tokenIdParams.push(trackMap[trackId].join('-'))
-    })
-    const params = {
-      track_ids: trackIdParams,
-      token_ids: tokenIdParams
-    }
-
-    const response = await this._getResponse<
-      APIResponse<GetNFTGatedTrackSignaturesResponse>
-    >(FULL_ENDPOINT_MAP.getNFTGatedTrackSignatures(encodedUserId), params)
-    return response ? response.data : null
   }
 
   async getPlaylistUpdates(userId: number) {
