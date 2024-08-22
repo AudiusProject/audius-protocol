@@ -1,8 +1,6 @@
 import logging
 from typing import Optional, TypedDict  # pylint: disable=C0302
 
-from sqlalchemy import distinct
-
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.user import User
 from src.queries.get_unpopulated_users import get_unpopulated_users
