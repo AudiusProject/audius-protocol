@@ -1,4 +1,5 @@
 import { useGetCurrentUser } from '@audius/common/api'
+import { ChatBlastAudience } from '@audius/sdk'
 import { useField } from 'formik'
 
 import { Text } from '@audius/harmony-native'
@@ -61,11 +62,11 @@ const LabelWithCount = (props: {
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-  const isSelected = targetAudience === 'followers'
+  const isSelected = targetAudience === ChatBlastAudience.FOLLOWERS
 
   return (
     <ExpandableRadio
-      value='followers'
+      value={ChatBlastAudience.FOLLOWERS}
       label={
         <LabelWithCount
           label={messages.followers.label}
@@ -81,11 +82,11 @@ const FollowersMessageField = () => {
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-  const isSelected = targetAudience === 'supporters'
+  const isSelected = targetAudience === ChatBlastAudience.TIPPERS
 
   return (
     <ExpandableRadio
-      value='supporters'
+      value={ChatBlastAudience.TIPPERS}
       label={
         <LabelWithCount
           label={messages.supporters.label}
@@ -101,11 +102,11 @@ const TipSupportersMessageField = () => {
 const PastPurchasersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-  const isSelected = targetAudience === 'purchasers'
+  const isSelected = targetAudience === ChatBlastAudience.CUSTOMERS
 
   return (
     <ExpandableRadio
-      value='purchasers'
+      value={ChatBlastAudience.CUSTOMERS}
       label={
         <LabelWithCount
           label={messages.purchasers.label}
@@ -122,11 +123,11 @@ const PastPurchasersMessageField = () => {
 const RemixCreatorsMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-  const isSelected = targetAudience === 'remix_creators'
+  const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 
   return (
     <ExpandableRadio
-      value='remix_creators'
+      value={ChatBlastAudience.REMIXERS}
       label={
         <LabelWithCount
           label={messages.remixCreators.label}

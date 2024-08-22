@@ -18,8 +18,8 @@ const messages = {
 }
 
 type ChatBlastFormValues = {
-  target_audience: 'followers' | 'supporters' | 'purchasers' | 'remix_creators'
-  purchased_track_id?: string
+  target_audience: ChatBlastAudience
+  purchased_content_id?: string
   remixed_track_id?: string
 }
 
@@ -27,32 +27,20 @@ export const ChatBlastSelectAudienceScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const initialValues: ChatBlastFormValues = {
-    target_audience: 'followers',
-    purchased_track_id: undefined,
+    target_audience: ChatBlastAudience.FOLLOWERS,
+    purchased_content_id: undefined,
     remixed_track_id: undefined
   }
 
   const handleSubmit = (values: ChatBlastFormValues) => {
-    switch (values.target_audience) {
-      case 'followers':
-        dispatch(
-          createChatBlast({
-            audience: ChatBlastAudience.FOLLOWERS
-          })
-        )
-        break
-      case 'supporters':
-        // do something
-        break
-      case 'purchasers':
-        // do something
-        break
-      case 'remix_creators':
-        // do something
-        break
-      default:
-        break
-    }
+    dispatch(
+      createChatBlast({
+        audience: values.target_audience,
+        audienceContentId: values.purchased_content_id,
+        // TODO: collection support
+        audienceContentType: values.purchased_content_id ? 'track' : undefined
+      })
+    )
     navigation.navigate('ChatList')
   }
 
