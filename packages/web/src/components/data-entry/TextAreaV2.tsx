@@ -3,8 +3,7 @@ import {
   useRef,
   useCallback,
   useEffect,
-  ComponentPropsWithoutRef,
-  ReactNode
+  ComponentPropsWithoutRef
 } from 'react'
 
 import cn from 'classnames'
@@ -49,7 +48,6 @@ export type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   showMaxLength?: boolean
   error?: boolean
   helperText?: string
-  renderDisplayElement?: (value: string) => ReactNode
 }
 
 const CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT = 0.875
@@ -71,7 +69,6 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
       onBlur: onBlurProp,
       error,
       helperText,
-      renderDisplayElement,
       ...other
     } = props
 
@@ -131,24 +128,14 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
             className={styles.scrollArea}
             style={{ maxHeight }}
           >
-            <div className={styles.left}>
-              <textarea
-                className={
-                  renderDisplayElement ? styles.transparentTextArea : undefined
-                }
-                ref={mergeRefs([textareaRef, forwardedRef])}
-                maxLength={maxLength ?? undefined}
-                value={value}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                {...other}
-              />
-              {renderDisplayElement ? (
-                <div className={styles.displayElementContainer}>
-                  {renderDisplayElement(value?.toString() ?? '')}
-                </div>
-              ) : null}
-            </div>
+            <textarea
+              ref={mergeRefs([textareaRef, forwardedRef])}
+              maxLength={maxLength ?? undefined}
+              value={value}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              {...other}
+            />
             <div className={styles.right}>
               <div className={styles.bottomRight}>
                 <div
