@@ -1,6 +1,6 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import { ID, StemTrackMetadata, CollectionMetadata } from '../../models'
+import { ID, CollectionMetadata } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
@@ -21,7 +21,6 @@ import {
   APIResponse,
   APISearch,
   APISearchAutocomplete,
-  APIStem,
   GetTipsResponse,
   OpaqueID
 } from './types'
@@ -56,10 +55,6 @@ const FULL_ENDPOINT_MAP = {
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
-  getStems: (trackId: OpaqueID, stemIds?: ID[]) =>
-    `/tracks/${trackId}/stems${
-      stemIds ? `?stemIds=${stemIds?.join(',')}` : ''
-    }`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
   getReaction: '/reactions',
@@ -102,11 +97,6 @@ type GetPlaylistsArgs = {
 type GetPlaylistByPermalinkArgs = {
   permalink: string
   currentUserId: Nullable<ID>
-}
-
-type GetStemsArgs = {
-  trackId: ID
-  stemIds?: ID[]
 }
 
 type GetSearchArgs = {
@@ -286,24 +276,6 @@ export class AudiusAPIClient {
     )
 
     return trackUrl?.data
-  }
-
-  async getStems({
-    trackId,
-    stemIds
-  }: GetStemsArgs): Promise<StemTrackMetadata[]> {
-    this._assertInitialized()
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const response = await this._getResponse<APIResponse<APIStem[]>>(
-      FULL_ENDPOINT_MAP.getStems(encodedTrackId, stemIds)
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makeStemTrack)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getCollectionMetadata({

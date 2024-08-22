@@ -50,7 +50,6 @@ type RetrieveTracksArgs = {
   /** deprecated */
   canBeUnlisted?: boolean
   withStems?: boolean
-  stemIds?: ID[]
   withRemixes?: boolean
   withRemixParents?: boolean
   forceRetrieveFromSource?: boolean
@@ -160,7 +159,6 @@ export function* retrieveTracks({
   trackIds,
   canBeUnlisted = false,
   withStems = false,
-  stemIds,
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
@@ -254,7 +252,7 @@ export function* retrieveTracks({
         console.error('Stems endpoint only supports fetching single tracks')
         return
       }
-      yield* call(fetchAndProcessStems, trackId, stemIds)
+      yield* call(fetchAndProcessStems, trackId)
     })
   }
 
