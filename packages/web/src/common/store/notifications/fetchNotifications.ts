@@ -5,7 +5,7 @@ import {
 import { Id } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, getContext, getSDK } from '@audius/common/store'
-import { compareSDKResponse, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import { call, select } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {
@@ -85,21 +85,6 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     'claimable_reward'
   ].filter(removeNullable)
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const legacyResponse = yield* call(
-    audiusBackendInstance.getDiscoveryNotifications,
-    {
-      timestamp: timeOffset,
-      groupIdOffset,
-      limit,
-      validTypes
-    }
-  )
-  const legacy = {
-    notifications: legacyResponse.notifications,
-    totalUnviewed: legacyResponse.totalUnviewed
-  }
-
   const { data } = yield* call(
     [sdk.full.notifications, sdk.full.notifications.getNotifications],
     {
@@ -114,12 +99,5 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  const migrated = { notifications, totalUnviewed: data?.unreadCount ?? 0 }
-  try {
-    console.debug(data?.notifications)
-    compareSDKResponse({ legacy, migrated }, 'getNotifications')
-  } catch (e) {
-    console.error(e)
-  }
-  return migrated
+  return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
 }
