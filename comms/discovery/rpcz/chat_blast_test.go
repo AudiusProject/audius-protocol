@@ -409,6 +409,64 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, messages, 3)
 	}
 
+	// -------------------------------- tipper audience
+
+	// create some follower audiuence
+	_, err = tx.Exec(`
+	insert into user_tips
+		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
+	values
+		(1, '', 201, 69, 2, $1, $1)
+	`, t0)
+	assert.NoError(t, err)
+
+	// 69 sends blast to supporters
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:  "blast_tippers_1",
+		Audience: schema.TipperAudience,
+		Message:  "thanks for your support",
+	})
+	assert.NoError(t, err)
+
+	// 201 should have a pending blast
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 201,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
+	// 69 upgrades
+	chatId_69_201 := misc.ChatID(69, 201)
+	err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
+		ChatID: chatId_69_201,
+		Invites: []schema.PurpleInvite{
+			{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+			{UserID: misc.MustEncodeHashID(201), InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// both users have 1 message
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_69_201)
+		assert.Len(t, messages, 1)
+	}
+	{
+		messages := mustGetMessagesAndReactions(201, chatId_69_201)
+		assert.Len(t, messages, 1)
+	}
+
+	// 201 should have no pending blast
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 201,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
 	err = tx.Rollback()
 	assert.NoError(t, err)
 }
