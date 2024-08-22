@@ -2539,7 +2539,9 @@ class FullPurchasersUsers(Resource):
         current_user_id = get_current_user_id(args)
         content_type = args.get("content_type")
         content_id = args.get("content_id")
-        decoded_content_id = decode_with_abort(content_id, full_ns) if content_id else None
+        decoded_content_id = (
+            decode_with_abort(content_id, full_ns) if content_id else None
+        )
         args = GetPurchasersArgs(
             seller_user_id=decoded_id,
             current_user_id=current_user_id,
