@@ -8,16 +8,10 @@ import {
   useEffect
 } from 'react'
 
-import { ID } from '@audius/common/models'
+import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { chatActions } from '@audius/common/store'
-import {
-  decodeHashId,
-  formatTrackName,
-  matchAudiusLinks,
-  splitOnNewline
-} from '@audius/common/utils'
+import { splitOnNewline } from '@audius/common/utils'
 import { IconSend, IconButton, Text, TextProps } from '@audius/harmony'
-import { Track } from '@audius/sdk'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -26,7 +20,7 @@ import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
 import styles from './ChatComposer.module.css'
-import { ComposerTrackInfo } from './ComposeTrackInfo'
+import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
 const { sendMessage } = chatActions
 
@@ -81,82 +75,53 @@ export const ChatComposer = (props: ChatComposerProps) => {
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
 
-  // Maintain bidirectional maps of audius links to human readable format
-  const linkToHuman = useRef<{ [key: string]: string }>({}).current
-  const humanToTrack = useRef<{
-    [key: string]: { link: string; track: Track }
-  }>({}).current
-
-  // The track id used to render the composer preview
-  const [trackId, setTrackId] = useState<ID | null>(null)
-
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
 
-  const handleChange = useCallback(
-    async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      const originalValue = e.target.value
-      setValue(originalValue)
-
-      const { matches } = matchAudiusLinks({
-        text: originalValue,
-        hostname: env.PUBLIC_HOSTNAME
-      })
-
-      const sdk = await audiusSdk()
-      for (const match of matches) {
-        if (!(match in linkToHuman)) {
-          const { data: track } = await sdk.resolve({ url: match })
-          if (track && 'title' in track) {
-            const human = formatTrackName({ track })
-            linkToHuman[match] = human
-            humanToTrack[human] = { link: match, track }
-          }
-        } else {
-          // If we already loaded the track, delay showing by 500ms
-          // to give the user some sense of what is happening.
-          await new Promise((resolve) => setTimeout(resolve, 500))
-        }
-      }
-
-      // Sort here to make sure that we replace all content before
-      // replacing their substrings.
-      let editedValue = originalValue
-      for (const [link, human] of Object.entries(linkToHuman).sort(
-        (a, b) => b[0].length - a[0].length
-      )) {
-        editedValue = editedValue.replaceAll(link, human)
-      }
-      setValue(editedValue)
-    },
-    [setValue, linkToHuman, humanToTrack]
-  )
+  const {
+    trackId,
+    collectionId,
+    resolveLinks,
+    restoreLinks,
+    getMatches,
+    handleBackspace,
+    clearLinks
+  } = useAudiusLinkResolver({
+    value,
+    hostname: env.PUBLIC_HOSTNAME,
+    audiusSdk
+  })
 
   useEffect(() => {
-    for (const [human, { track }] of Object.entries(humanToTrack)) {
-      if (value.includes(human)) {
-        setTrackId(decodeHashId(track.id))
-        return
+    const fn = async () => {
+      if (presetMessage) {
+        const editedValue = await resolveLinks(presetMessage)
+        setValue(editedValue)
       }
     }
-    setTrackId(null)
-  }, [trackId, humanToTrack, value])
+    fn()
+  }, [presetMessage, resolveLinks])
+
+  const handleChange = useCallback(
+    async (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setValue(e.target.value)
+      const editedValue = await resolveLinks(e.target.value)
+      setValue(editedValue)
+    },
+    [resolveLinks, setValue]
+  )
 
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault()
       if (chatId && value) {
         // On submit, actually send audius links rather than the human readable format
-        let editedValue = value
-        for (const [human, { link }] of Object.entries(humanToTrack)) {
-          editedValue = editedValue.replaceAll(human, link)
-        }
-        dispatch(sendMessage({ chatId, message: editedValue }))
+        dispatch(sendMessage({ chatId, message: restoreLinks(value) }))
         setValue('')
         onMessageSent()
       }
     },
-    [chatId, value, onMessageSent, humanToTrack, dispatch]
+    [chatId, value, onMessageSent, restoreLinks, dispatch]
   )
 
   // Submit when pressing enter while not holding shift
@@ -172,20 +137,17 @@ export const ChatComposer = (props: ChatComposerProps) => {
         const textarea = e.target as HTMLTextAreaElement
         const cursorPosition = textarea.selectionStart
         const textBeforeCursor = textarea.value.slice(0, cursorPosition)
-        const matched = Object.keys(humanToTrack).find((i) =>
-          textBeforeCursor.endsWith(i)
-        )
-        if (matched) {
+        const editValue = handleBackspace({
+          cursorPosition,
+          textBeforeCursor
+        })
+        if (editValue) {
           e.preventDefault()
-          setValue(
-            (value) =>
-              value.slice(0, cursorPosition - matched.length) +
-              value.slice(cursorPosition)
-          )
+          setValue(editValue)
         }
       }
     },
-    [handleSubmit, setValue, humanToTrack]
+    [handleSubmit, setValue, handleBackspace]
   )
 
   // Set focus and clear on new chat selected
@@ -195,15 +157,14 @@ export const ChatComposer = (props: ChatComposerProps) => {
     }
     if (chatId !== chatIdRef.current) {
       setValue('')
-      setTrackId(null)
+      clearLinks()
       chatIdRef.current = chatId
     }
-  }, [ref, chatId, chatIdRef, setTrackId, setValue])
+  }, [ref, chatId, chatIdRef, clearLinks, setValue])
 
   const renderChatDisplay = (value: string) => {
-    const regexString = Object.keys(humanToTrack).join('|')
-    const regex = regexString ? new RegExp(regexString, 'gi') : null
-    if (!regex) {
+    const matches = getMatches(value)
+    if (!matches) {
       const text = splitOnNewline(value)
       return text.map((t, i) => (
         <ComposerText key={i} color='default'>
@@ -211,7 +172,6 @@ export const ChatComposer = (props: ChatComposerProps) => {
         </ComposerText>
       ))
     }
-    const matches = value.matchAll(regex)
     const parts = []
     let lastIndex = 0
     for (const match of matches) {
@@ -258,7 +218,11 @@ export const ChatComposer = (props: ChatComposerProps) => {
 
   return (
     <div className={cn(styles.root, props.className)}>
-      {trackId ? <ComposerTrackInfo trackId={trackId} /> : null}
+      {trackId ? (
+        <ComposerTrackInfo trackId={trackId} />
+      ) : collectionId ? (
+        <ComposerCollectionInfo collectionId={collectionId} />
+      ) : null}
       <form className={styles.form} onSubmit={handleSubmit}>
         <TextAreaV2
           className={cn(styles.textArea, { [styles.focused]: focused })}

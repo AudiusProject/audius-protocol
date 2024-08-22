@@ -9,7 +9,8 @@ import {
   formatAudio,
   formatCapitalizeString,
   isNullOrUndefined,
-  makeSolanaTransactionLink
+  makeSolanaTransactionLink,
+  route
 } from '@audius/common/utils'
 import {
   IconExternalLink,
@@ -27,11 +28,12 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { Block, BlockContainer } from './Block'
 import styles from './TransactionDetailsContent.module.css'
 import { TransactionPurchaseMetadata } from './TransactionPurchaseMetadata'
+
+const { profilePage } = route
 const { getUsers } = cacheUsersSelectors
 
 const messages = {

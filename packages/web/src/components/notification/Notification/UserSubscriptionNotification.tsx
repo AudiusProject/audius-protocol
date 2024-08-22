@@ -6,12 +6,12 @@ import {
   Entity,
   UserSubscriptionNotification as UserSubscriptionNotificationType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
 import styles from './UserSubscriptionNotification.module.css'
 import { EntityLink } from './components/EntityLink'
@@ -24,6 +24,7 @@ import { ProfilePicture } from './components/ProfilePicture'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRelease } from './components/icons'
 import { getEntityLink } from './utils'
+const { profilePage } = route
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {

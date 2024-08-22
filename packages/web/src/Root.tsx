@@ -2,6 +2,7 @@ import '@audius/harmony/dist/harmony.css'
 
 import { Suspense, useState, useEffect, lazy } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Location } from 'history'
 import { useAsync } from 'react-use'
 
@@ -9,13 +10,15 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { localStorage } from 'services/local-storage'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { isElectron } from 'utils/clientUtil'
-import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
+import { getPathname } from 'utils/route'
 
 import App from './app'
 import {
   HistoryContextProvider,
   useHistoryContext
 } from './app/HistoryProvider'
+
+const { HOME_PAGE, publicSiteRoutes } = route
 
 const PublicSite = lazy(() => import('./public-site'))
 

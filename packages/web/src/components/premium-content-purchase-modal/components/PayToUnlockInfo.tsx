@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { Text, TextLink } from '@audius/harmony'
 
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { make, track } from 'services/analytics'
-import { TERMS_OF_SERVICE } from 'utils/route'
 
 import styles from './PayToUnlockInfo.module.css'
+const { TERMS_OF_SERVICE } = route
 
 const messages = {
   payToUnlock: 'Pay to unlock',

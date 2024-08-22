@@ -1,8 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
-import { useSelectTierInfo } from '@audius/common/hooks'
-import { useChatBlastModal } from '@audius/common/store'
+import { useCanSendChatBlast } from '@audius/common/hooks'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 
 import {
@@ -10,11 +8,10 @@ import {
   Flex,
   Text,
   IconTowerBroadcast,
-  IconCaretRight,
-  useTheme,
-  IconVerified,
-  IconTokenBronze
+  IconCaretRight
 } from '@audius/harmony-native'
+
+import { useAppDrawerNavigation } from '../app-drawer-screen'
 
 const messages = {
   title: 'Send a Message Blast',
@@ -23,26 +20,16 @@ const messages = {
   or: 'or'
 }
 
-type ChatBlastCTAProps = {
-  onClick: () => void
-}
-
-export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
-  const { onClick } = props
-
-  const { onOpen: openChatBlastModal } = useChatBlastModal()
-
-  const { data: userId } = useGetCurrentUserId({})
-  const { tierNumber, isVerified } = useSelectTierInfo(userId ?? 0) ?? {}
-  const userMeetsRequirements = isVerified || (tierNumber && tierNumber > 0)
+export const ChatBlastCTA = () => {
+  const navigation = useAppDrawerNavigation()
 
   const handleClick = useCallback(() => {
-    onClick()
-    openChatBlastModal()
-  }, [onClick, openChatBlastModal])
+    navigation.navigate('CreateChatBlast')
+  }, [navigation])
 
+  const userMeetsRequirements = useCanSendChatBlast()
   if (!userMeetsRequirements) {
-    return <ChatBlastDisabled />
+    return null
   }
 
   return (
@@ -65,54 +52,5 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
         </Flex>
       </Box>
     </TouchableHighlight>
-  )
-}
-
-const ChatBlastDisabled = () => {
-  const { spacing } = useTheme()
-
-  return (
-    <Flex
-      direction='row'
-      backgroundColor='surface1'
-      ph='xl'
-      pv='l'
-      borderTop='strong'
-      wrap='nowrap'
-      justifyContent='space-between'
-    >
-      <Flex
-        direction='row'
-        alignItems='center'
-        gap='s'
-        style={{ opacity: 0.5 }}
-      >
-        <IconTowerBroadcast size='l' color='default' />
-        <Text strength='strong'>{messages.title}</Text>
-      </Flex>
-      <Flex direction='row' border='strong' borderRadius='m' wrap='nowrap'>
-        <Box ph='s' pv={spacing.unitHalf}>
-          <Text size='s' strength='strong'>
-            {messages.badgeRequired}
-          </Text>
-        </Box>
-        <Flex
-          direction='row'
-          borderLeft='strong'
-          ph='s'
-          gap='xs'
-          alignItems='center'
-          backgroundColor='surface2'
-          borderTopRightRadius='m'
-          borderBottomRightRadius='m'
-        >
-          <IconVerified size='s' />
-          <Text size='s' strength='strong'>
-            {messages.or}
-          </Text>
-          <IconTokenBronze size='s' />
-        </Flex>
-      </Flex>
-    </Flex>
   )
 }

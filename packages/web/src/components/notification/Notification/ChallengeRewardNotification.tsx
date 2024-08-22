@@ -1,15 +1,14 @@
 import { useCallback } from 'react'
 
-import { BNAudio, Name } from '@audius/common/models'
+import { Name, BNAudio } from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
-import { stringWeiToAudioBN } from '@audius/common/utils'
+import { route, stringWeiToAudioBN } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { env } from 'services/env'
-import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -18,6 +17,8 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
+
+const { AUDIO_PAGE } = route
 
 const messages = {
   amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,

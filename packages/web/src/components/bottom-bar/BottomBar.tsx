@@ -1,5 +1,6 @@
 import { memo, useCallback, useContext, useState, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { useHistory } from 'react-router-dom'
 
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
@@ -8,15 +9,11 @@ import FeedButton from 'components/bottom-bar/buttons/FeedButton'
 import LibraryButton from 'components/bottom-bar/buttons/LibraryButton'
 import ProfileButton from 'components/bottom-bar/buttons/ProfileButton'
 import TrendingButton from 'components/bottom-bar/buttons/TrendingButton'
-import {
-  FEED_PAGE,
-  TRENDING_PAGE,
-  EXPLORE_PAGE,
-  FAVORITES_PAGE,
-  LIBRARY_PAGE
-} from 'utils/route'
 
 import styles from './BottomBar.module.css'
+
+const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, FAVORITES_PAGE, LIBRARY_PAGE } =
+  route
 
 type Props = {
   currentPage: string

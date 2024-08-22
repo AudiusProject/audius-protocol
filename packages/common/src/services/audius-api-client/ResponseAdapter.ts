@@ -415,6 +415,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     isrc: null,
     iswc: null,
     credits_splits: null,
+    create_date: null,
     description: null,
     followee_reposts: [],
     followee_saves: [],

@@ -2,6 +2,7 @@ import { MouseEventHandler, useCallback } from 'react'
 
 import { Name, User } from '@audius/common/models'
 import { Notification } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -11,9 +12,9 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
-import { profilePage } from 'utils/route'
 
 import styles from './UserNameLink.module.css'
+const { profilePage } = route
 
 const messages = {
   deactivated: 'Deactivated'

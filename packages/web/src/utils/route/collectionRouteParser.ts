@@ -1,12 +1,12 @@
 import { ID } from '@audius/common/models'
-import { decodeHashId } from '@audius/common/utils'
+import { decodeHashId, route } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
-import {
+const {
   PLAYLIST_ID_PAGE,
   PLAYLIST_BY_PERMALINK_PAGE,
   ALBUM_BY_PERMALINK_PAGE
-} from 'utils/route'
+} = route
 
 type CollectionRouteParams =
   | {

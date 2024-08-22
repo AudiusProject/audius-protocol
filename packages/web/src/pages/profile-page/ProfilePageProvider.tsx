@@ -38,7 +38,7 @@ import {
   followersUserListActions,
   playerSelectors
 } from '@audius/common/store'
-import { getErrorMessage, Nullable } from '@audius/common/utils'
+import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
@@ -59,11 +59,12 @@ import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { resizeImage } from 'utils/imageProcessingUtil'
-import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
+import { getPathname } from 'utils/route'
 import { parseUserRoute } from 'utils/route/userRouteParser'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
+const { NOT_FOUND_PAGE, profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { setFollowers } = followersUserListActions

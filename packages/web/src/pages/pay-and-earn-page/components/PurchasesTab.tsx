@@ -12,6 +12,7 @@ import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -22,7 +23,6 @@ import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
-import { FEED_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -35,6 +35,7 @@ import {
 } from './PurchasesTable'
 
 const { getUserId } = accountSelectors
+const { FEED_PAGE } = route
 
 const messages = {
   pageTitle: 'Purchase History',

@@ -1,7 +1,7 @@
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
-import { Maybe } from '@audius/common/utils'
+import { Maybe, route } from '@audius/common/utils'
 import {
   Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
@@ -10,8 +10,8 @@ import { Link } from 'react-router-dom'
 
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
-import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
+const { SIGN_IN_PAGE, profilePage } = route
 const { getAccountUser } = accountSelectors
 
 const { getUser } = cacheUsersSelectors

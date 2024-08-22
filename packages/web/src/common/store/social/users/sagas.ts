@@ -9,16 +9,17 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import { makeKindId } from '@audius/common/utils'
+import { makeKindId, route } from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField, fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { profilePage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
+
+const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getUserId } = accountSelectors

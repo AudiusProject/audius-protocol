@@ -8,6 +8,7 @@ import {
   useRemoveManager
 } from '@audius/common/src/api/account'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -27,13 +28,13 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import { sharedMessages } from '../sharedMessages'
 
 import { ArtistInfo } from './ArtistInfo'
 
+const { profilePage } = route
 const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
 

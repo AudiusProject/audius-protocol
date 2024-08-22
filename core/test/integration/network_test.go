@@ -26,7 +26,7 @@ var _ = Describe("Network", func() {
 
 		netRes, err = utils.ContentOne.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
+		Expect(netRes.NPeers).To(Equal(3))
 
 		res, err = utils.ContentTwo.Status(ctx)
 		Expect(err).To(BeNil())
@@ -34,7 +34,7 @@ var _ = Describe("Network", func() {
 
 		netRes, err = utils.ContentTwo.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
+		Expect(netRes.NPeers).To(Equal(3))
 
 		res, err = utils.ContentThree.Status(ctx)
 		Expect(err).To(BeNil())
@@ -42,6 +42,6 @@ var _ = Describe("Network", func() {
 
 		netRes, err = utils.ContentThree.NetInfo(ctx)
 		Expect(err).To(BeNil())
-		Expect(netRes.NPeers).To(Equal(1))
+		Expect(netRes.NPeers).To(Equal(3))
 	})
 })

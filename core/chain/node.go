@@ -33,9 +33,15 @@ func NewNode(logger *common.Logger, c *config.Config, pool *pgxpool.Pool) (*nm.N
 
 	// peering
 	config.P2P.PexReactor = true
+	config.P2P.AddrBookStrict = c.AddrBookStrict
 	if c.PersistentPeers != "" {
 		config.P2P.PersistentPeers = c.PersistentPeers
-		config.P2P.Seeds = c.PersistentPeers
+	}
+	if c.Seeds != "" {
+		config.P2P.Seeds = c.Seeds
+	}
+	if c.ExternalAddress != "" {
+		config.P2P.ExternalAddress = c.ExternalAddress
 	}
 
 	// connection settings

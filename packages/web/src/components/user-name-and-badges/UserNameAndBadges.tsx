@@ -3,16 +3,17 @@ import { MouseEventHandler, useCallback } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { profilePage } from 'utils/route'
 
 import styles from './UserNameAndBadges.module.css'
 
+const { profilePage } = route
 const { getUserId } = accountSelectors
 
 type BaseUserNameAndBadgesProps = {

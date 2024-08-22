@@ -5,7 +5,7 @@ import {
 import { Name } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { removeNullable, route } from '@audius/common/utils'
 import {
   IconKebabHorizontal,
   IconCrown,
@@ -27,17 +27,13 @@ import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
-import {
-  AUDIO_PAGE,
-  CHATS_PAGE,
-  DASHBOARD_PAGE,
-  PAYMENTS_PAGE,
-  SETTINGS_PAGE
-} from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import { NavHeaderButton } from './NavHeaderButton'
 import styles from './NavMenuButton.module.css'
+
+const { AUDIO_PAGE, CHATS_PAGE, DASHBOARD_PAGE, PAYMENTS_PAGE, SETTINGS_PAGE } =
+  route
 
 const messages = {
   settings: 'Settings',

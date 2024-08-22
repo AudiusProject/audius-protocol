@@ -2,15 +2,17 @@ import { useCallback, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make } from 'common/store/analytics/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { CHATS_PAGE } from 'utils/route'
 
 import { CallToActionBanner } from './CallToActionBanner'
+
+const { CHATS_PAGE } = route
 
 const messages = {
   text: 'Direct Messaging Now Available!',

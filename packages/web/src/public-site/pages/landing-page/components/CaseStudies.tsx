@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { route } from '@audius/common/utils'
 import { IconCaretRight } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -11,9 +12,9 @@ import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
 
 import styles from './CaseStudies.module.css'
+const { AUDIUS_REMIX_CONTESTS_LINK } = route
 
 const messages = {
   title: 'Case Studies',

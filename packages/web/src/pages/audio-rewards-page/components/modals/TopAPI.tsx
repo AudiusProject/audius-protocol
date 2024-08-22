@@ -1,14 +1,16 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button, IconArrowRight as IconArrow } from '@audius/harmony'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { AUDIUS_API_LINK } from 'utils/route'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './TopApi.module.css'
+
+const { AUDIUS_API_LINK } = route
 
 const messages = {
   modalTitle: 'Audius API',

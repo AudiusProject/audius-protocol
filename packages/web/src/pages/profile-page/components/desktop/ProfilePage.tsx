@@ -17,6 +17,7 @@ import {
   ProfilePageTabs,
   ProfileUser
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -43,13 +44,14 @@ import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
-import { profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
+
+const { profilePage } = route
 
 export type ProfilePageProps = {
   // State

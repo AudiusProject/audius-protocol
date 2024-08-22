@@ -13,7 +13,7 @@ import {
   CoverPhotoSizes
 } from '@audius/common/models'
 import { ProfileUser } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, route } from '@audius/common/utils'
 import {
   IconArtistBadge as BadgeArtist,
   IconInstagram,
@@ -39,13 +39,14 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
 import { SocialLink } from './SocialLink'
 import UploadButton from './UploadButton'
 import UploadStub from './UploadStub'
+
+const { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } = route
 
 const messages = {
   tracks: 'Tracks',

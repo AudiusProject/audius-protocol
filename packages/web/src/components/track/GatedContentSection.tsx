@@ -21,7 +21,12 @@ import {
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import {
+  formatPrice,
+  removeNullable,
+  Nullable,
+  route
+} from '@audius/common/utils'
 import {
   Flex,
   Text,
@@ -49,11 +54,11 @@ import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
 import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { LockedStatusPill } from '../locked-status-pill'
 
 import styles from './GiantTrackTile.module.css'
+const { profilePage } = route
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions

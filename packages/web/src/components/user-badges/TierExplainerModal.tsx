@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -15,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { useProfileTier } from 'hooks/wallet'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
-import { AUDIO_PAGE } from 'utils/route'
+const { AUDIO_PAGE } = route
 
 export const messages = {
   title: '$AUDIO VIP Tiers',

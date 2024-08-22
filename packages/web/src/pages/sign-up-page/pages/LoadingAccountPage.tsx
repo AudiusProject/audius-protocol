@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -7,9 +8,10 @@ import { getStatus } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { Heading, Page } from '../components/layout'
+
+const { SIGN_UP_COMPLETED_REDIRECT } = route
 
 const messages = {
   heading: 'Your Account is Almost Ready to Rock 🤘',

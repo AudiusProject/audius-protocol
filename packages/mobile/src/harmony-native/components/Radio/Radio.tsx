@@ -15,7 +15,7 @@ export type RadioProps = FlexProps & {
   checked?: boolean
   value: string
   onValueChange?: (value: string) => void
-  label?: string
+  label?: string | ReactNode
   icon?: IconComponent
   disabled?: boolean
   size?: 'default' | 'large'

@@ -8,6 +8,7 @@ import {
   fork
 } from 'typed-redux-saga'
 
+import { userTrackMetadataFromSDK } from '~/adapters'
 import {
   Chain,
   Collectible,
@@ -20,7 +21,9 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus
+  GatedContentStatus,
+  Id,
+  OptionalId
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -36,6 +39,7 @@ import { Nullable } from '~/utils/typeUtils'
 import { getCollection } from '../cache/collections/selectors'
 import { getTrack } from '../cache/tracks/selectors'
 import { PurchaseableContentType } from '../purchase-content'
+import { getSDK } from '../sdkUtils'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
@@ -424,6 +428,7 @@ export function* pollGatedContent({
 }) {
   const analytics = yield* getContext('analytics')
   const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const frequency =
@@ -447,9 +452,12 @@ export function* pollGatedContent({
           playlistId: contentId,
           currentUserId
         }))[0]
-      : yield* call([apiClient, 'getTrack'], {
-          id: contentId,
-          currentUserId
+      : yield* call(async () => {
+          const { data } = await sdk.full.tracks.getTrack({
+            trackId: Id.parse(contentId),
+            userId: OptionalId.parse(currentUserId)
+          })
+          return data ? userTrackMetadataFromSDK(data) : null
         })
 
     if (!apiEntity?.access) {

@@ -1,7 +1,8 @@
 import { signUpPolicyMessages } from '@audius/common/messages'
+import { route } from '@audius/common/utils'
 import { Text, TextLink } from '@audius/harmony'
 
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+const { PRIVACY_POLICY, TERMS_OF_SERVICE } = route
 
 export const SignUpAgreementText = () => {
   return (

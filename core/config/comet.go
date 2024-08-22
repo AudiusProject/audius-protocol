@@ -13,8 +13,12 @@ import (
 
 // reads in or creates cometbft keys from the delegate private key
 // also creates validator keys and genesis file
-func InitComet(logger *common.Logger, environment, delegatePrivateKey, rootDir string) error {
+func InitComet(logger *common.Logger, cfg *Config) error {
 	logger.Info("initializing comet config")
+
+	delegatePrivateKey := cfg.DelegatePrivateKey
+	environment := cfg.Environment
+	rootDir := cfg.RootDir
 
 	key, err := accounts.EthToCometKey(delegatePrivateKey)
 	if err != nil {
@@ -49,6 +53,8 @@ func InitComet(logger *common.Logger, environment, delegatePrivateKey, rootDir s
 		logger.Info("Generated private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
 	}
+
+	cfg.ProposerAddress = pv.GetAddress().String()
 
 	nodeKeyFile := config.NodeKeyFile()
 	if common.FileExists(nodeKeyFile) {

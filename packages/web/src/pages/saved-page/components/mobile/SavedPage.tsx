@@ -20,6 +20,7 @@ import {
   QueueItem,
   CommonState
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   IconAlbum,
@@ -42,7 +43,6 @@ import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import useTabs from 'hooks/useTabs/useTabs'
 import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
-import { TRENDING_PAGE } from 'utils/route'
 
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
@@ -50,6 +50,7 @@ import { emptyStateMessages } from '../emptyStateMessages'
 import NewCollectionButton from './NewCollectionButton'
 import styles from './SavedPage.module.css'
 
+const { TRENDING_PAGE } = route
 const { getCategory } = savedPageSelectors
 
 const emptyTabMessages = {

@@ -15,6 +15,7 @@ import {
   relatedArtistsUIActions,
   CommonState
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
@@ -29,9 +30,10 @@ import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
+
+const { profilePage } = route
 const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchRelatedArtists } = relatedArtistsUIActions
 const { getUsers } = cacheUsersSelectors

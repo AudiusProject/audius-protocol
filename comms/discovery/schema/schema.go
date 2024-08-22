@@ -229,6 +229,8 @@ type Metadata struct {
 	Timestamp      string `json:"timestamp"`
 	SenderUserID   string `json:"senderUserId"`
 	ReceiverUserID string `json:"receiverUserId"`
+	// Deprecated: Use SenderUserID instead
+	UserID string `json:"userId"`
 }
 
 type RPCPayload struct {

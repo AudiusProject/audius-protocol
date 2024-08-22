@@ -8,9 +8,11 @@ import {
   feedPageSelectors,
   collectionPageSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { matchPath } from 'react-router'
 
-import {
+import { getPathname } from 'utils/route'
+const {
   FEED_PAGE,
   TRENDING_PAGE,
   SAVED_PAGE,
@@ -24,10 +26,9 @@ import {
   DASHBOARD_PAGE,
   SETTINGS_PAGE,
   NOT_FOUND_PAGE,
-  getPathname,
   LIBRARY_PAGE,
   TRACK_EDIT_PAGE
-} from 'utils/route'
+} = route
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
