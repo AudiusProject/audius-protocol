@@ -244,10 +244,10 @@ create_notification_action_data = ns.add_model(
     "create_notification_action_data",
     OneOfModel(
         "create_notification_action_data",
-        {
-            "1": fields.Nested(create_playlist_notification_action_data),
-            "2": fields.Nested(create_track_notification_action_data),
-        },
+        [
+            create_playlist_notification_action_data,
+            create_track_notification_action_data,
+        ],
     ),
 )
 create_notification_action = ns.clone(
@@ -478,11 +478,11 @@ milestone_notification_action_data = ns.add_model(
     "milestone_notification_action_data",
     OneOfModel(
         "milestone_notification_action_data",
-        {
-            "1": fields.Nested(user_milestone_notification_action_data),
-            "2": fields.Nested(track_milestone_notification_action_data),
-            "3": fields.Nested(playlist_milestone_notification_action_data),
-        },
+        [
+            user_milestone_notification_action_data,
+            track_milestone_notification_action_data,
+            playlist_milestone_notification_action_data,
+        ],
     ),
 )
 milestone_notification_action = ns.clone(
@@ -817,41 +817,35 @@ notification = ns.add_model(
     OneOfModel(
         "notification",
         {
-            "follow": fields.Nested(follow_notification),
-            "save": fields.Nested(save_notification),
-            "repost": fields.Nested(repost_notification),
-            "repost_of_repost": fields.Nested(repost_of_repost_notification),
-            "save_of_repost": fields.Nested(save_of_repost_notification),
-            "tastemaker": fields.Nested(tastemaker_notification),
-            "remix": fields.Nested(remix_notification),
-            "cosign": fields.Nested(cosign_notification),
-            "create": fields.Nested(create_notification),
-            "tip_send": fields.Nested(send_tip_notification),
-            "tip_receive": fields.Nested(receive_tip_notification),
-            "supporter_dethroned": fields.Nested(supporter_dethroned_notification),
-            "supporter_rank_up": fields.Nested(supporter_rank_up_notification),
-            "supporting_rank_up": fields.Nested(supporter_rank_up_notification),
-            "challenge_reward": fields.Nested(challenge_reward_notification),
-            "claimable_reward": fields.Nested(claimable_reward_notification),
-            "reaction": fields.Nested(reaction_notification),
-            "milestone": fields.Nested(milestone_notification),
-            "tier_change": fields.Nested(tier_change_notification),
-            "track_added_to_playlist": fields.Nested(
-                track_added_to_playlist_notification
-            ),
-            "track_added_to_purchased_album": fields.Nested(
-                track_added_to_purchased_album_notification
-            ),
-            "usdc_purchase_seller": fields.Nested(usdc_purchase_seller_notification),
-            "usdc_purchase_buyer": fields.Nested(usdc_purchase_buyer_notification),
-            "request_manager": fields.Nested(request_manager_notification),
-            "approve_manager_request": fields.Nested(
-                approve_manager_request_notification
-            ),
-            "trending": fields.Nested(trending_notification),
-            "trending_playlist": fields.Nested(trending_playlist_notification),
-            "trending_underground": fields.Nested(trending_underground_notification),
-            "announcement": fields.Nested(announcement_notification),
+            "follow": follow_notification,
+            "save": save_notification,
+            "repost": repost_notification,
+            "repost_of_repost": repost_of_repost_notification,
+            "save_of_repost": save_of_repost_notification,
+            "tastemaker": tastemaker_notification,
+            "remix": remix_notification,
+            "cosign": cosign_notification,
+            "create": create_notification,
+            "tip_send": send_tip_notification,
+            "tip_receive": receive_tip_notification,
+            "supporter_dethroned": supporter_dethroned_notification,
+            "supporter_rank_up": supporter_rank_up_notification,
+            "supporting_rank_up": supporter_rank_up_notification,
+            "challenge_reward": challenge_reward_notification,
+            "claimable_reward": claimable_reward_notification,
+            "reaction": reaction_notification,
+            "milestone": milestone_notification,
+            "tier_change": tier_change_notification,
+            "track_added_to_playlist": track_added_to_playlist_notification,
+            "track_added_to_purchased_album": track_added_to_purchased_album_notification,
+            "usdc_purchase_seller": usdc_purchase_seller_notification,
+            "usdc_purchase_buyer": usdc_purchase_buyer_notification,
+            "request_manager": request_manager_notification,
+            "approve_manager_request": approve_manager_request_notification,
+            "trending": trending_notification,
+            "trending_playlist": trending_playlist_notification,
+            "trending_underground": trending_underground_notification,
+            "announcement": announcement_notification,
         },
         discriminator="type",
     ),

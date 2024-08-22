@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Union
 
 from flask_restx import Model, SchemaModel, fields
 
@@ -19,33 +19,85 @@ class OneOfModel(SchemaModel):
     objects, so they are re-added from the swagger.json before generating
     the Typescript types.
 
-    When marshalling, the dat must match **exactly** one of the formats.
-    Unlike normal marshallers, this model is more of a validator. Without
-    a discriminator, it doesn't know what to marshal to, so it just checks
-    that the data matches one of the models.
+    When marshalling, if not using a discriminator, the data must match
+    **exactly** one of the formats. Unlike normal marshallers, this model is
+    more of a validator. Without a discriminator, it doesn't know what to
+    marshal to, so it just checks that the data matches one of the models.
+    As implemented today, this check is not fatal - it only error logs and then
+    return the original object.
 
     ** ONLY USE WITH `NestedOneOf`, it does NOT work with fields.Nested **
 
     example:
-    ```
-    ns.add_model("my_one_of", OneOfModel("my_one_of", [fields.Nested(model_a), fields.Nested(model_b)]))
-    my_model = ns.model("my_model", { "my_field": NestedOneOf(my_one_of, allow_null=True) })
-    ```
+
+    .. code-block:: python
+        ns.add_model(
+            "my_one_of",
+            OneOfModel(
+                "my_one_of",
+                [
+                    model_a,
+                    model_b
+                ]
+            )
+        )
+        my_model = ns.model(
+            "my_model",
+            {
+                "my_field": NestedOneOf(my_one_of, allow_null=True)
+            }
+        )
 
     schema output:
-    ```
-    {
-        // ...
-        "definitions": {
-            "my_one_of": {
-                "oneOf" [
-                    { "ref": "#/definitions/model_a" },
-                    { "ref": "#/definitinos/model_b" }
-                ]
+
+    .. code-block:: json
+        {
+            // ...
+            "definitions": {
+                "my_one_of": {
+                    "oneOf" [
+                        { "ref": "#/definitions/model_a" },
+                        { "ref": "#/definitinos/model_b" }
+                    ]
+                }
             }
         }
-    }
-    ```
+
+    discriminator example:
+
+    .. code-block:: python
+        ns.add_model(
+            "my_one_of",
+            OneOfModel(
+                "my_one_of",
+                {
+                    "a": model_a,
+                    "b": model_b
+                },
+                discriminator: "type"
+            )
+        )
+        my_model = ns.model(
+            "my_model",
+            {
+                "my_field": NestedOneOf(my_one_of)
+            }
+        )
+
+    schema output:
+
+    .. code-block:: json
+        {
+            // ...
+            "definitions": {
+                "my_one_of": {
+                    "oneOf" [
+                        { "ref": "#/definitions/model_a" },
+                        { "ref": "#/definitinos/model_b" }
+                    ]
+                }
+            }
+        }
 
     See also: access_gate usage in tracks.py
     """
@@ -53,35 +105,49 @@ class OneOfModel(SchemaModel):
     def __init__(
         self,
         name,
-        fields: Dict[str, fields.Nested],
-        discriminator=None,
+        models_or_mapping: Union[List[Model], Dict[str, Model]],
+        discriminator: Union[str, None] = None,
         *args,
         **kwargs
     ):
+        if isinstance(models_or_mapping, dict):
+            if discriminator is None:
+                raise RuntimeError("Discriminator cannot be None if using mapping")
+            mapping = models_or_mapping
+            models = [model for model in models_or_mapping.values()]
+        else:
+            if discriminator is not None:
+                raise RuntimeError("Discriminator cannot be used without mapping")
+            models = models_or_mapping
+            mapping = None
+
+        nested_fields = [fields.Nested(model) for model in models]
+
         super(OneOfModel, self).__init__(
             name,
             (
                 {
-                    "oneOf": [field.__schema__ for field in fields.values()],
+                    "oneOf": [field.__schema__ for field in nested_fields],
                     "discriminator": {
                         "propertyName": discriminator,
                         "mapping": {
-                            key: field.__schema__["$ref"]
-                            for key, field in fields.items()
+                            key: fields.Nested(model).__schema__["$ref"]
+                            for key, model in mapping.items()
                         },
                     },
                 }
-                if discriminator is not None
+                if discriminator is not None and mapping is not None
                 else {
-                    "oneOf": [field.__schema__ for field in fields.values()],
+                    "oneOf": [field.__schema__ for field in nested_fields],
                 }
             ),
         )
-        self.fields = fields
         self.discriminator = discriminator
+        self.mapping = mapping
+        self.models = models
 
         # hack to register related models - hijacks Polymorphism pattern
-        self.__parents__ = [field.nested for field in self.fields.values()]
+        self.__parents__ = models
 
     @property
     def __schema__(self):
