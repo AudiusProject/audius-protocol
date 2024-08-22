@@ -24,6 +24,7 @@ import type {
   FullGetSupporter,
   FullGetSupporters,
   FullGetSupporting,
+  FullPurchasersResponse,
   FullRemixersResponse,
   FullReposts,
   FullSubscribersResponse,
@@ -32,6 +33,7 @@ import type {
   HistoryResponseFull,
   ManagedUsersResponse,
   ManagersResponse,
+  PurchasersCountResponse,
   PurchasesCountResponse,
   PurchasesResponse,
   RelatedArtistResponseFull,
@@ -58,6 +60,8 @@ import {
     FullGetSupportersToJSON,
     FullGetSupportingFromJSON,
     FullGetSupportingToJSON,
+    FullPurchasersResponseFromJSON,
+    FullPurchasersResponseToJSON,
     FullRemixersResponseFromJSON,
     FullRemixersResponseToJSON,
     FullRepostsFromJSON,
@@ -74,6 +78,8 @@ import {
     ManagedUsersResponseToJSON,
     ManagersResponseFromJSON,
     ManagersResponseToJSON,
+    PurchasersCountResponseFromJSON,
+    PurchasersCountResponseToJSON,
     PurchasesCountResponseFromJSON,
     PurchasesCountResponseToJSON,
     PurchasesResponseFromJSON,
@@ -173,6 +179,20 @@ export interface GetManagersRequest {
     isRevoked?: boolean;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
+}
+
+export interface GetPurchasersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    contentType?: string;
+    contentId?: string;
+}
+
+export interface GetPurchasers0Request {
+    id: string;
+    userId?: string;
 }
 
 export interface GetPurchasesRequest {
@@ -914,6 +934,92 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getManagers(params: GetManagersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagersResponse> {
         const response = await this.getManagersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     */
+    async getPurchasersRaw(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPurchasersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentType !== undefined) {
+            queryParameters['content_type'] = params.contentType;
+        }
+
+        if (params.contentId !== undefined) {
+            queryParameters['content_id'] = params.contentId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/purchasers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullPurchasersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     */
+    async getPurchasers(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPurchasersResponse> {
+        const response = await this.getPurchasersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     */
+    async getPurchasers_1Raw(params: GetPurchasers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasersCountResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasers_1.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/purchasers/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasersCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     */
+    async getPurchasers_1(params: GetPurchasers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersCountResponse> {
+        const response = await this.getPurchasers_1Raw(params, initOverrides);
         return await response.value();
     }
 
