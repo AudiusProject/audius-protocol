@@ -68,7 +68,7 @@ const purchasesApi = createApi({
           userId: Id.parse(userId!)
         })
         const purchases = data.map(parsePurchase)
-        console.log('asdf purchases: ', purchases)
+
         // Pre-fetch track metadata
         const trackIdsToFetch = purchases
           .filter(
@@ -122,6 +122,7 @@ const purchasesApi = createApi({
         })
 
         const purchases = data.map(parsePurchase)
+
         // Pre-fetch track metadata
         const trackIdsToFetch = purchases
           .filter(
@@ -134,6 +135,7 @@ const purchasesApi = createApi({
             context
           )
         }
+        // fetch buyer metadata
         const userIdsToFetch = purchases.map(({ buyerUserId }) => buyerUserId)
         if (userIdsToFetch.length > 0) {
           await userApiFetch.getUsersByIds({ ids: userIdsToFetch }, context)
