@@ -376,9 +376,10 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
+		ctx := context.Background()
 		defer func() {
 			if r := recover(); r != nil {
-				ss.logger.Error("panic recovered in goroutine", "err", r)
+				ss.logger.Error("core panic recovered in goroutine", "err", r)
 			}
 		}()
 
@@ -387,12 +388,10 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
-		ctx := c.Request().Context()
-
 		// parse out time as proto object from legacy listen sig
 		parsedTime, err := time.Parse(time.RFC3339, signatureData.Timestamp)
 		if err != nil {
-			ss.logger.Error("error parsing time:", "err", err)
+			ss.logger.Error("core error parsing time:", "err", err)
 			return
 		}
 
@@ -412,7 +411,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		// sign plays event payload with mediorum priv key
 		signedPlaysEvent, err := signature.SignCoreBytes(playsEvent, ss.Config.privateKey)
 		if err != nil {
-			ss.logger.Error("error signing listen proto event", "err", err)
+			ss.logger.Error("core error signing listen proto event", "err", err)
 			return
 		}
 
@@ -430,11 +429,11 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		})
 
 		if err != nil {
-			ss.logger.Error("error submitting listen event", "err", err)
+			ss.logger.Error("core error submitting listen event", "err", err)
 			return
 		}
 
-		ss.logger.Info("recorded core listen", "tx", res.Txhash)
+		ss.logger.Info("core listen recorded", "tx", res.Txhash)
 	}()
 
 	buf, err := json.Marshal(body)
