@@ -278,7 +278,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     numberOfNodes: number
     excludeOwners: string[]
     logger?: LoggerService
-  }) {
+  }): Promise<Array<{ transactionSignature: Promise<string> }>> {
     const discoveryNodes =
       await this.discoveryNodeSelector.getUniquelyOwnedEndpoints(
         numberOfNodes,
