@@ -6,9 +6,10 @@ import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FlatList } from 'react-native-gesture-handler'
+import RNRestart from 'react-native-restart'
 import { useAsync } from 'react-use'
 
-import { IconEmbed, IconClose } from '@audius/harmony-native'
+import { IconEmbed, IconClose, PlainButton } from '@audius/harmony-native'
 import { ModalScreen, Screen, SegmentedControl } from 'app/components/core'
 import { FilterInput } from 'app/components/filter-input'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -44,16 +45,18 @@ const setOverrideSetting = async (flag: string, val: OverrideSetting) => {
 }
 
 const messages = {
-  title: 'Feature Flag Override Settings',
-  filterPlaceholder: 'Filter Feature Flags'
+  title: 'Feature Flags',
+  filterPlaceholder: 'Filter Feature Flags',
+  restart: 'Restart'
 }
 
 type FeatureFlagRowProps = {
   featureFlag: FeatureFlags
+  onSelectOption: () => void
 }
 
 const FeatureFlagRow = (props: FeatureFlagRowProps) => {
-  const { featureFlag } = props
+  const { featureFlag, onSelectOption } = props
   const flag = FeatureFlags[featureFlag]
   const isEnabled = remoteConfigInstance.getFeatureEnabled(flag)
   const { value, loading } = useAsync(() => getOverrideSetting(flag), [])
@@ -70,8 +73,9 @@ const FeatureFlagRow = (props: FeatureFlagRowProps) => {
   const handleSelectOption = useCallback(
     (option: OverrideSetting) => {
       setOverrideSetting(flag, option)
+      onSelectOption()
     },
-    [flag]
+    [flag, onSelectOption]
   )
 
   return (
@@ -94,6 +98,11 @@ const FeatureFlagRow = (props: FeatureFlagRowProps) => {
 const FeatureFlagScreen = () => {
   const navigation = useNavigation()
   const [filter, setFilter] = useState('')
+  const [isFlagChanged, setIsFlagChanged] = useState(false)
+
+  const handleFlagChange = useCallback(() => {
+    setIsFlagChanged(true)
+  }, [])
 
   const filteredFlags = useMemo(() => {
     return filter ? fuzzySearch(filter, flags, 3) : flags
@@ -104,6 +113,13 @@ const FeatureFlagScreen = () => {
       variant='secondary'
       title={messages.title}
       icon={IconEmbed}
+      topbarRight={
+        isFlagChanged ? (
+          <PlainButton onPress={() => RNRestart.Restart()}>
+            {messages.restart}
+          </PlainButton>
+        ) : null
+      }
       topbarLeft={
         <TopBarIconButton icon={IconClose} onPress={navigation.goBack} />
       }
@@ -117,14 +133,18 @@ const FeatureFlagScreen = () => {
         }
         data={filteredFlags}
         renderItem={({ item }) => (
-          <FeatureFlagRow key={item} featureFlag={item} />
+          <FeatureFlagRow
+            key={item}
+            featureFlag={item}
+            onSelectOption={handleFlagChange}
+          />
         )}
       />
     </Screen>
   )
 }
 
-export const FeatureFlagOverrideModalScreen = () => {
+export const FeatureFlagOverrideScreen = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (

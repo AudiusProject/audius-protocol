@@ -25,7 +25,9 @@ export const Flex = styled(Box, {
     justifyContent,
     gap,
     rowGap,
-    columnGap
+    columnGap,
+    row,
+    column
   } = props
   const { spacing } = theme
 
@@ -33,7 +35,7 @@ export const Flex = styled(Box, {
     display: 'flex',
     alignItems,
     justifyContent,
-    flexDirection: direction,
+    flexDirection: direction ?? (row ? 'row' : column ? 'column' : undefined),
     flexWrap: wrap,
     gap: gap && spacing[gap],
     rowGap: rowGap && spacing[rowGap],

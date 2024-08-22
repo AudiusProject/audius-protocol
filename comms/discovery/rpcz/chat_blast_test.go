@@ -23,6 +23,7 @@ func TestChatBlast(t *testing.T) {
 	t4 := time.Now().Add(time.Second * -60).UTC()
 	t5 := time.Now().Add(time.Second * -50).UTC()
 	t6 := time.Now().Add(time.Second * -40).UTC()
+	t7 := time.Now().Add(time.Second * -30).UTC()
 
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
@@ -49,6 +50,8 @@ func TestChatBlast(t *testing.T) {
 	_, err := tx.Exec(`insert into follows
 		(follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
 	values
+		(68, 69, true, false, $1, ''),
+		(69, 68, true, false, $1, ''),
 		(100, 69, true, false, $1, ''),
 		(101, 69, true, false, $1, ''),
 		(102, 69, true, false, $1, ''),
@@ -371,6 +374,39 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 2)
+	}
+
+	// ------- bi-directional blasting works with upgrade --------
+	// 68 sends a blast
+	chatId_68_69 := misc.ChatID(68, 69)
+
+	_, err = chatBlast(tx, 68, t4, schema.ChatBlastRPCParams{
+		BlastID:  "blast_from_68",
+		Audience: schema.FollowerAudience,
+		Message:  "I am 68",
+	})
+	assert.NoError(t, err)
+
+	// one side does upgrade
+	err = chatCreate(tx, 69, t7, schema.ChatCreateRPCParams{
+		ChatID: chatId_68_69,
+		Invites: []schema.PurpleInvite{
+			{UserID: misc.MustEncodeHashID(68), InviteCode: "earlier"},
+			{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// both parties should have 3 messages message
+	{
+		messages := mustGetMessagesAndReactions(68, chatId_68_69)
+		assert.Len(t, messages, 3)
+	}
+
+	// both parties should have 3 messages message
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_68_69)
+		assert.Len(t, messages, 3)
 	}
 
 	err = tx.Rollback()

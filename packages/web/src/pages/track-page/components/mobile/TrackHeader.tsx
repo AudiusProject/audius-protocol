@@ -11,6 +11,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
@@ -55,7 +56,6 @@ import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { isDarkMode } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 
 import ActionButtonRow from './ActionButtonRow'
 import StatsButtonRow from './StatsButtonRow'

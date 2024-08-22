@@ -2,13 +2,25 @@ package components
 
 import "github.com/AudiusProject/audius-protocol/core/console/assets"
 
-templ HeaderBar() {
+templ (c *Components) HeaderInfo(blockHeight, txCount string) {
+	<div class="text-left text-xs p-4">
+		<div>Current Block Height: { blockHeight }</div>
+		<div>Total Transactions: { txCount }</div>
+		<div>Eth Address: { c.config.WalletAddress }</div>
+		<div>Core Address: { c.config.ProposerAddress }</div>
+	</div>
+}
+
+templ (c *Components) HeaderBar() {
 	@Base() {
 		<div class="flex flex-col h-screen bg-white shadow-md">
-			<a href="/console" class="h-[10vh] w-full flex items-center rounded-lg p-3">
-				<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-full object-contain"/>
-				<h1 class="p-3">Console</h1>
-			</a>
+			<div class="h-[10vh] w-full flex items-center justify-between rounded-lg p-3">
+				<a href="/console" class="flex items-center">
+					<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-12 w-12 object-contain"/>
+					<h1 class="p-3">Console</h1>
+				</a>
+				<div hx-get="/console/headerinfo" hx-trigger="load, every 2s" hx-swap="innerHTML"></div>
+			</div>
 			<div class="w-full flex-1 bg-gray-100 overflow-auto p-5">
 				{ children... }
 			</div>

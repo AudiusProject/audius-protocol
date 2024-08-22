@@ -1,7 +1,9 @@
+from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_thread import CommentThread
 from src.tasks.entity_manager.utils import (
+    Action,
     EntityType,
     ManageEntityParameters,
     copy_record,
@@ -12,8 +14,18 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
-def create_comment(params: ManageEntityParameters):
+def validate_comment_tx(params: ManageEntityParameters):
+    comment_id = params.entity_id
     validate_signer(params)
+    if (
+        params.action == Action.CREATE
+        and comment_id in params.existing_records[EntityType.COMMENT.value]
+    ):
+        raise IndexingValidationError(f"Comment {comment_id} already exists")
+
+
+def create_comment(params: ManageEntityParameters):
+    validate_comment_tx(params)
 
     comment_id = params.entity_id
     comment_record = Comment(
@@ -82,13 +94,29 @@ def delete_comment(params: ManageEntityParameters):
     params.add_record(comment_id, deleted_comment)
 
 
-def react_comment(params: ManageEntityParameters):
+def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
+    user_id = params.user_id
+    logger.info(f"asdf params.existing_records {params.existing_records}")
+    if (
+        params.action == Action.REACT
+        and (user_id, comment_id)
+        in params.existing_records[EntityType.COMMENT_REACTION.value]
+    ):
+        raise IndexingValidationError(
+            f"User {user_id} already reacted to comment {comment_id}"
+        )
+
+
+def react_comment(params: ManageEntityParameters):
+    validate_comment_reaction_tx(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
 
     comment_reaction_record = CommentReaction(
         comment_id=comment_id,
-        user_id=params.user_id,
+        user_id=user_id,
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -96,7 +124,9 @@ def react_comment(params: ManageEntityParameters):
         updated_at=params.block_datetime,
         is_delete=False,
     )
-    params.add_record(comment_id, comment_reaction_record, EntityType.COMMENT_REACTION)
+    params.add_record(
+        (user_id, comment_id), comment_reaction_record, EntityType.COMMENT_REACTION
+    )
 
 
 def unreact_comment(params: ManageEntityParameters):

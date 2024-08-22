@@ -19,7 +19,7 @@ import {
   Select
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
-import { Formik, FormikValues, useField } from 'formik'
+import { Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 
 const { createChatBlast } = chatActions
@@ -53,8 +53,9 @@ const messages = {
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
 type ChatBlastFormValues = {
-  target_audience: 'followers' | 'supporters' | 'purchasers' | 'remix_creators'
-  purchased_track_id?: string
+  target_audience: ChatBlastAudience
+  purchased_content_id?: string
+  // TODO: purchased_content_type
   remixed_track_id?: string
 }
 
@@ -63,33 +64,21 @@ export const ChatBlastModal = () => {
   const { isOpen, onClose } = useChatBlastModal()
 
   const initialValues: ChatBlastFormValues = {
-    target_audience: 'followers',
-    purchased_track_id: undefined,
+    target_audience: ChatBlastAudience.FOLLOWERS,
+    purchased_content_id: undefined,
     remixed_track_id: undefined
   }
 
-  const handleSubmit = (values: FormikValues) => {
+  const handleSubmit = (values: ChatBlastFormValues) => {
     onClose()
-    switch (values.target_audience) {
-      case 'followers':
-        dispatch(
-          createChatBlast({
-            audience: ChatBlastAudience.FOLLOWERS
-          })
-        )
-        break
-      case 'supporters':
-        // do something
-        break
-      case 'purchasers':
-        // do something
-        break
-      case 'remix_creators':
-        // do something
-        break
-      default:
-        break
-    }
+    dispatch(
+      createChatBlast({
+        audience: values.target_audience,
+        audienceContentId: values.purchased_content_id,
+        // TODO: collection support
+        audienceContentType: values.purchased_content_id ? 'track' : undefined
+      })
+    )
   }
 
   return (
@@ -151,25 +140,39 @@ const ChatBlastsFields = () => {
   )
 }
 
+const LabelWithCount = (props: {
+  label: string
+  count?: number
+  isSelected: boolean
+}) => {
+  const { label, count, isSelected } = props
+  return (
+    <Flex gap='xs'>
+      <Text variant='title' size='l'>
+        {label}
+      </Text>
+      {isSelected && count !== undefined ? (
+        <Text variant='title' size='l' color='subdued'>
+          ({count})
+        </Text>
+      ) : null}
+    </Flex>
+  )
+}
+
 const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { follower_count: followerCount } = user ?? {}
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
-  const selected = value === 'followers'
+  const selected = value === ChatBlastAudience.FOLLOWERS
   return (
     <Flex as='label' gap='l'>
-      <Radio value='followers' />
+      <Radio value={ChatBlastAudience.FOLLOWERS} />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.followers.label}
-          </Text>
-          {selected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({followerCount ?? 0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.followers.label}
+          count={user.follower_count}
+          isSelected={selected}
+        />
         {selected ? (
           <Text size='s'>{messages.followers.description}</Text>
         ) : null}
@@ -180,23 +183,17 @@ const FollowersMessageField = () => {
 
 const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const { supporter_count: supporterCount } = user ?? {}
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
-  const selected = value === 'supporters'
+  const selected = value === ChatBlastAudience.TIPPERS
   return (
     <Flex as='label' gap='l'>
-      <Radio value='supporters' />
+      <Radio value={ChatBlastAudience.TIPPERS} />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.supporters.label}
-          </Text>
-          {selected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({supporterCount ?? 0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.supporters.label}
+          count={user.supporter_count}
+          isSelected={selected}
+        />
         {selected ? (
           <Text size='s'>{messages.supporters.description}</Text>
         ) : null}
@@ -207,19 +204,14 @@ const TipSupportersMessageField = () => {
 
 const PastPurchasersMessageField = () => {
   const { data: user } = useGetCurrentUser()
-  const {
-    // TODO: Need to add a new endpoint to get the list of past purchasers
-    supporter_count: supporterCount,
-    handle,
-    user_id: currentUserId
-  } = user ?? {}
+  const { handle, user_id: currentUserId } = user ?? {}
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [purchasedTrackField, , { setValue: setPurchasedTrackId }] = useField({
-    name: 'purchased_track_id',
+    name: 'purchased_content_id',
     type: 'select'
   })
 
-  const isSelected = value === 'purchasers'
+  const isSelected = value === ChatBlastAudience.CUSTOMERS
 
   const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
   const premiumTrackOptions = useMemo(
@@ -239,18 +231,14 @@ const PastPurchasersMessageField = () => {
 
   return (
     <Flex as='label' gap='l'>
-      <Radio value='purchasers' />
+      <Radio value={ChatBlastAudience.CUSTOMERS} />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.purchasers.label}
-          </Text>
-          {isSelected ? (
-            <Text variant='title' size='l' color='subdued'>
-              ({supporterCount ?? 0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.purchasers.label}
+          // TODO: Need to add a new endpoint to get the list of past purchasers
+          count={user.supporter_count ?? 0}
+          isSelected={isSelected}
+        />
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.purchasers.description}</Text>
@@ -276,7 +264,7 @@ const RemixCreatorsMessageField = () => {
     type: 'select'
   })
 
-  const isSelected = value === 'remix_creators'
+  const isSelected = value === ChatBlastAudience.REMIXERS
 
   const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
   const premiumTrackOptions = useMemo(
@@ -295,19 +283,14 @@ const RemixCreatorsMessageField = () => {
 
   return (
     <Flex as='label' gap='l'>
-      <Radio value='remix_creators' />
+      <Radio value={ChatBlastAudience.REMIXERS} />
       <Flex direction='column' gap='xs'>
-        <Flex gap='xs'>
-          <Text variant='title' size='l'>
-            {messages.remixCreators.label}
-          </Text>
-          {isSelected ? (
-            <Text variant='title' size='l' color='subdued'>
-              {/* TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators */}
-              ({0})
-            </Text>
-          ) : null}
-        </Flex>
+        <LabelWithCount
+          label={messages.remixCreators.label}
+          // TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators
+          count={user.supporter_count}
+          isSelected={isSelected}
+        />
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.remixCreators.description}</Text>

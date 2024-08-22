@@ -8,7 +8,7 @@ import {
   FavoriteType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -33,7 +33,6 @@ import { TrackTileProps } from 'components/track/types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 

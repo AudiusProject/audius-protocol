@@ -1,6 +1,11 @@
+import { useCallback } from 'react'
+
 import { useGetCurrentUser } from '@audius/common/api'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import cn from 'classnames'
+
+import styles from './ChatListItem.module.css'
 
 const messages = {
   audience: 'AUDIENCE',
@@ -22,15 +27,21 @@ const messages = {
 
 type ChatListBlastItemProps = {
   chat: ChatBlast
+  currentChatId?: string
   onChatClicked: (chatId: string) => void
 }
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
-  const { chat, onChatClicked } = props
+  const { chat, onChatClicked, currentChatId } = props
   const { chat_id: chatId, audience } = chat
+  const isCurrentChat = currentChatId && currentChatId === chatId
 
   const { data: user } = useGetCurrentUser()
   const audienceCount = user?.follower_count ?? 0
+
+  const handleClick = useCallback(() => {
+    onChatClicked(chatId)
+  }, [chatId, onChatClicked])
 
   return (
     <Flex
@@ -39,7 +50,8 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       direction='column'
       gap='s'
       borderBottom='default'
-      onClick={() => onChatClicked(chatId)}
+      onClick={handleClick}
+      className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
       <Flex gap='s'>
         <IconTowerBroadcast size='l' color='default' />
@@ -47,7 +59,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
           {messages[audience].title}
         </Text>
       </Flex>
-      <Flex justifyContent='space-between'>
+      <Flex justifyContent='space-between' w='100%'>
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
         </Text>

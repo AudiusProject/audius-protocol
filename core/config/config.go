@@ -39,6 +39,8 @@ type Config struct {
 	/* Audius Config */
 	Environment        string
 	DelegatePrivateKey string
+	WalletAddress      string
+	ProposerAddress    string
 
 	/* System Config */
 	RunDownMigration bool
@@ -81,6 +83,12 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		return nil, errors.New("no environment set")
 	}
 
+	ethAddress, err := common.PrivKeyHexToAddress(cfg.DelegatePrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not get address from priv key: %v", err)
+	}
+	cfg.WalletAddress = ethAddress
+
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
@@ -101,7 +109,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	// only allow down migration in dev env
 	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && (cfg.Environment == "dev" || cfg.Environment == "sandbox")
 
-	if err := InitComet(logger, cfg.Environment, cfg.DelegatePrivateKey, cfg.RootDir); err != nil {
+	if err := InitComet(logger, &cfg); err != nil {
 		return nil, fmt.Errorf("initializing comet %v", err)
 	}
 

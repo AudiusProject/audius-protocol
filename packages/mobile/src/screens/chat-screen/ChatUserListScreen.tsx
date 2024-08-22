@@ -325,12 +325,7 @@ export const ChatUserListScreen = () => {
         </View>
         {isOneToManyDMsEnabled ? (
           <View style={styles.footerContainer}>
-            <ChatBlastCTA
-              onClick={() => {
-                // Placeholder, to be implemented later
-                window.alert('Clicked Create Chat Blast')
-              }}
-            />
+            <ChatBlastCTA />
           </View>
         ) : null}
       </ScreenContent>
