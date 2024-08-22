@@ -9,8 +9,7 @@ import {
   Flex,
   IconCaretDown,
   IconCaretUp,
-  PlainButton,
-  Text
+  PlainButton
 } from '@audius/harmony-native'
 
 import { CommentBlock } from './CommentBlock'
