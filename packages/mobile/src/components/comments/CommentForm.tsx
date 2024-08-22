@@ -3,7 +3,7 @@ import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import type { TextInput as RNTextInput } from 'react-native'
 
-import { Box, Flex, IconButton, IconSend } from '@audius/harmony-native'
+import { Flex, IconButton, IconSend } from '@audius/harmony-native'
 
 import { ProfilePicture } from '../core'
 import { HarmonyTextField } from '../fields'
@@ -47,27 +47,26 @@ const CommentFormContent = (props: CommentFormContentProps) => {
           style={{ width: 40, height: 40, flexShrink: 0 }}
         />
       ) : null}
-      <Box flex={1}>
-        <HarmonyTextField
-          name='commentMessage'
-          label='Add a comment'
-          hideLabel
-          placeholder={message}
-          endAdornment={
-            isLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <IconButton
-                aria-label='Post comment'
-                icon={IconSend}
-                color='accent'
-                onPress={submitForm}
-              />
-            )
-          }
-          TextInputComponent={TextInputComponent}
-        />
-      </Box>
+      <HarmonyTextField
+        style={{ flex: 1 }}
+        name='commentMessage'
+        label={messages.addComment}
+        hideLabel
+        placeholder={message}
+        endAdornment={
+          isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <IconButton
+              aria-label='Post comment'
+              icon={IconSend}
+              color='accent'
+              onPress={submitForm}
+            />
+          )
+        }
+        TextInputComponent={TextInputComponent}
+      />
     </Flex>
   )
 }

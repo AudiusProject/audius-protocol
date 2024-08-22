@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useReactToComment } from '@audius/common/context'
 import type { Comment } from '@audius/sdk'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
   CommentText,
@@ -21,6 +20,12 @@ import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
+
+const messages = {
+  pinned: 'Pinned by artist',
+  topSupporters: 'Top Supporters',
+  reply: 'Reply'
+}
 
 export type CommentBlockProps = {
   comment: Comment
@@ -77,11 +82,13 @@ export const CommentBlock = (props: CommentBlockProps) => {
                 <Flex direction='row' gap='xs'>
                   <IconPencil color='subdued' size='xs' />
                   <Text color='subdued' size='xs'>
-                    Pinned by artist
+                    {messages.pinned}
                   </Text>
                 </Flex>
               ) : null}
-              {hasBadges ? <Text color='accent'>Top Supporter</Text> : null}
+              {hasBadges ? (
+                <Text color='accent'>{messages.topSupporters}</Text>
+              ) : null}
             </Flex>
           ) : null}
           <Flex direction='row' gap='s' alignItems='center'>
@@ -125,7 +132,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
                   setShowReplyInput(!showReplyInput)
                 }}
               >
-                Reply
+                {messages.reply}
               </PlainButton>
               <IconButton
                 aria-label='edit comment'

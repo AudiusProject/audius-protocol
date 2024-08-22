@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
-import { Box, Flex } from '@audius/harmony-native'
+import { Box, Divider, Flex } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
 
@@ -94,6 +94,7 @@ export const CommentDrawer = () => {
   const styles = useStyles()
   const insets = useSafeAreaInsets()
   const currentUserId = useSelector(getUserId)
+
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
     data: { entityId, isEntityOwner, artistId },
@@ -149,6 +150,8 @@ export const CommentDrawer = () => {
           playTrack={() => {}} // TODO
         >
           <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
+
+          <Divider orientation='horizontal' />
           <CommentDrawerContent />
         </CommentSectionProvider>
       </BottomSheetModal>
