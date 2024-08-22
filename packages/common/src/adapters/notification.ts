@@ -37,6 +37,11 @@ function getDiscoveryEntityType({
   return Entity.Playlist
 }
 
+/**
+ * Maps the SDK notifications type to the type that the UI expects,
+ * decoding hashIds and in some cases extracting userId from the groupId
+ * and other nuanced things on a per notification basis.
+ */
 export const notificationFromSDK = (
   notification: full.Notification
 ): Notification => {
