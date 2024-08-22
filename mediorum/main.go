@@ -268,8 +268,8 @@ func startDevInstance() {
 		AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
-		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", fmt.Sprintf("core-content-%d:50051", idx)),
-		CoreJRPCEndpoint:          getenvWithDefault("coreJRPCEndpoint", fmt.Sprintf("http://core-content-%d:26657", idx)),
+		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", fmt.Sprintf("core-content-%s:50051", idx)),
+		CoreJRPCEndpoint:          getenvWithDefault("coreJRPCEndpoint", fmt.Sprintf("http://core-content-%s:26657", idx)),
 	}
 
 	ss, err := server.New(config)
