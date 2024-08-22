@@ -2413,7 +2413,7 @@ full_remixers_reponse = make_full_response(
     "full_remixers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 remixers_count_response = make_full_response(
-    "purchases_count_response", full_ns, fields.Integer()
+    "remixers_count_response", full_ns, fields.Integer()
 )
 
 USER_REMIXERS_ROUTE = "/<string:id>/remixers"
@@ -2466,6 +2466,15 @@ class RemixersUsers(FullRemixersUsers):
     @ns.marshal_with(remixers_reponse)
     def get(self, id):
         return super()._get_user_remixers(id)
+
+
+remixers_parser = current_user_parser.copy()
+remixers_parser.add_argument(
+    "track_id",
+    required=False,
+    description="Filters for remixers who have remixed the given track ID",
+    type=str,
+)
 
 
 @full_ns.route("/<string:id>/remixers/count")

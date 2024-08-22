@@ -57,6 +57,7 @@ export * from './PurchasesCountResponse';
 export * from './PurchasesResponse';
 export * from './RelatedArtistResponseFull';
 export * from './RemixablesResponse';
+export * from './RemixersCountResponse';
 export * from './RemixesResponse';
 export * from './RemixesResponseFull';
 export * from './RemixingResponse';
