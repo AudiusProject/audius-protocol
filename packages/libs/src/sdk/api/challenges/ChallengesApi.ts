@@ -91,6 +91,20 @@ export class ChallengesApi extends GeneratedChallengesApi {
    * @see {@link generateSpecifier} to create the specifier argument.
    */
   public async claimReward(request: ClaimRewardsRequest) {
+    for (let i = 0; i < 5; i++) {
+      try {
+        return await this.claimRewardAttempt(request)
+      } catch (e) {
+        console.error(`Failed to claim reward attempt ${i}: ${e}`)
+        if (i === 4) {
+          throw e
+        }
+      }
+    }
+    throw new Error('Failed to claim reward.')
+  }
+
+  private async claimRewardAttempt(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -278,7 +292,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     numberOfNodes: number
     excludeOwners: string[]
     logger?: LoggerService
-  }): Promise<Array<{ transactionSignature: Promise<string> }>> {
+  }) {
     const discoveryNodes =
       await this.discoveryNodeSelector.getUniquelyOwnedEndpoints(
         numberOfNodes,
@@ -327,8 +341,10 @@ export class ChallengesApi extends GeneratedChallengesApi {
       transactions.push(submitTransaction)
     }
     return await Promise.all(
-      transactions.map((t) => {
-        return { transactionSignature: this.rewardManager.sendTransaction(t) }
+      transactions.map(async (t) => {
+        return {
+          transactionSignature: await this.rewardManager.sendTransaction(t)
+        }
       })
     )
   }
