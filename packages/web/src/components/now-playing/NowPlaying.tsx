@@ -12,6 +12,7 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -60,7 +61,6 @@ import {
   collectibleDetailsPage
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'

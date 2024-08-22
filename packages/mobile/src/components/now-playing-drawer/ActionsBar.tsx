@@ -27,7 +27,7 @@ import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'
 import { CastButton, useDevices } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
+import { trpc } from '@audius/common/services'
 
 import {
   IconButton,

@@ -5,7 +5,7 @@ import { TrackMetadataType, useTrackMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { convertGenreLabelToValue } from '@audius/common/utils'
 import type { Mood } from '@audius/sdk'
-import { trpc } from '@audius/web/src/utils/trpcClientWeb'
+import { trpc } from '@audius/web/src/@audius/common/services'
 import { Image } from 'react-native'
 
 import { Flex, Text, TextLink, spacing } from '@audius/harmony-native'

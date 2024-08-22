@@ -50,7 +50,7 @@ import {
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
+import { trpc } from '@audius/common/services'
 
 import {
   Box,
