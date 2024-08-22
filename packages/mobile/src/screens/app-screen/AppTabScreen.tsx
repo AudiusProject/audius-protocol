@@ -114,6 +114,7 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
+  CreateChatBlast: undefined
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined

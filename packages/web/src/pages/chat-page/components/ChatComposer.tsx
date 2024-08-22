@@ -23,6 +23,7 @@ import styles from './ChatComposer.module.css'
 import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
 const { sendMessage } = chatActions
+
 const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
