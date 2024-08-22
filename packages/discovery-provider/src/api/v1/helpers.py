@@ -703,18 +703,11 @@ class DescriptiveArgument(reqparse.Argument):
             return None
         param = super().__schema__
         param["description"] = self.description
-        return param
 
-
-class ListEnumArgument(DescriptiveArgument):
-    """
-    A descriptive argument that's used for a list of enum values.
-    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
-    """
-
-    @property
-    def __schema__(self):
-        param = super().__schema__
+        # Allow for a list of enum values to be represented properly in an
+        # argument's schema. By default, the enum field is mistakenly added to
+        # the root "enum" field rather than the items "enum" field.
+        # See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
         if "enum" in param and "items" in param:
             param["items"]["enum"] = param["enum"]
             del param["enum"]
