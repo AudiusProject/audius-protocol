@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict
 
 from flask_restx import Model, SchemaModel, fields
 
@@ -50,14 +50,38 @@ class OneOfModel(SchemaModel):
     See also: access_gate usage in tracks.py
     """
 
-    def __init__(self, name, fields: List[fields.Nested], *args, **kwargs):
+    def __init__(
+        self,
+        name,
+        fields: Dict[str, fields.Nested],
+        discriminator=None,
+        *args,
+        **kwargs
+    ):
         super(OneOfModel, self).__init__(
-            name, {"oneOf": [field.__schema__ for field in fields]}
+            name,
+            (
+                {
+                    "oneOf": [field.__schema__ for field in fields.values()],
+                    "discriminator": {
+                        "propertyName": discriminator,
+                        "mapping": {
+                            key: field.__schema__["$ref"]
+                            for key, field in fields.items()
+                        },
+                    },
+                }
+                if discriminator is not None
+                else {
+                    "oneOf": [field.__schema__ for field in fields.values()],
+                }
+            ),
         )
         self.fields = fields
+        self.discriminator = discriminator
 
         # hack to register related models - hijacks Polymorphism pattern
-        self.__parents__ = [field.nested for field in self.fields]
+        self.__parents__ = [field.nested for field in self.fields.values()]
 
     @property
     def __schema__(self):

@@ -87,7 +87,18 @@ class NestedOneOf(fields.Nested):
             elif self.default is not None:
                 return self.default
         logs = []
-        for field in self.model.fields:
+        if self.model.discriminator is not None:
+            if (
+                self.model.discriminator in value
+                and value[self.model.discriminator] in self.model.fields
+            ):
+                return marshal(
+                    value, self.model.fields[value[self.model.discriminator]].nested
+                )
+            else:
+                f"fields.py | NestedOneOf | Failed to marshal discriminator={self.model.discriminator} value={value} fields={self.model.fields.keys()}"
+
+        for key, field in self.model.fields.items():
             try:
                 marshalled = marshal(value, field.nested)
                 if value == marshalled:

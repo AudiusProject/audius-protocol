@@ -78,12 +78,12 @@ access_gate = ns.add_model(
     "access_gate",
     OneOfModel(
         "access_gate",
-        [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(purchase_gate),
-            fields.Nested(nft_gate),
-        ],
+        {
+            "1": fields.Nested(tip_gate),
+            "2": fields.Nested(follow_gate),
+            "3": fields.Nested(purchase_gate),
+            "4": fields.Nested(nft_gate),
+        },
     ),
 )
 
@@ -122,11 +122,11 @@ extended_access_gate = ns.add_model(
     "extended_access_gate",
     OneOfModel(
         "extended_access_gate",
-        [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(extended_purchase_gate),
-            fields.Nested(nft_gate),
-        ],
+        {
+            "1": fields.Nested(tip_gate),
+            "2": fields.Nested(follow_gate),
+            "3": fields.Nested(extended_purchase_gate),
+            "4": fields.Nested(nft_gate),
+        },
     ),
 )
