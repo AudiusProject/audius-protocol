@@ -37,7 +37,8 @@ export function* retrieveUserTracks({
       sort,
       limit,
       offset,
-      userId: OptionalId.parse(currentUserId)
+      userId: OptionalId.parse(currentUserId),
+      filterTracks: getUnlisted ? 'all' : 'public'
     }
   )
   const apiTracks = transformAndCleanList(data, userTrackMetadataFromSDK)

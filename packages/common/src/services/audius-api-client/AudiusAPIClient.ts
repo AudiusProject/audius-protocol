@@ -7,7 +7,6 @@ import {
 } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'
-import { AuthHeaders } from '../audius-backend'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
@@ -54,8 +53,6 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  userAiTracksByHandle: (handle: OpaqueID) =>
-    `/users/handle/${handle}/tracks/ai_attributed`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
@@ -89,15 +86,6 @@ type GetTrackStreamUrlArgs = {
     handle: string
   }
   abortOnUnreachable?: boolean
-}
-
-type GetUserAiTracksByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  sort?: 'date' | 'plays'
-  offset?: number
-  limit?: number
-  getUnlisted: boolean
 }
 
 type GetPremiumTracksArgs = {
@@ -403,47 +391,6 @@ export class AudiusAPIClient {
 
     const tracks = remixingResponse.data.map(adapter.makeTrack)
     return tracks
-  }
-
-  async getUserAiTracksByHandle({
-    handle,
-    currentUserId,
-    sort = 'date',
-    limit,
-    offset,
-    getUnlisted
-  }: GetUserAiTracksByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      sort,
-      limit,
-      offset
-    }
-
-    let headers = {}
-    if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      headers = {
-        [AuthHeaders.Message]: data,
-
-        [AuthHeaders.Signature]: signature
-      }
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.userAiTracksByHandle(handle),
-      params,
-      true,
-      PathType.VersionFullPath,
-      headers
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
   }
 
   async getPremiumTracks({
