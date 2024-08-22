@@ -1,8 +1,12 @@
-import { IntKeys, FeatureFlags } from '@audius/common/services'
-import { getContext } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
-import { partition } from 'lodash'
-import { call } from 'typed-redux-saga'
+import {
+  notificationFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { Id } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors, getContext, getSDK } from '@audius/common/store'
+import { compareSDKResponse, removeNullable } from '@audius/common/utils'
+import { call, select } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {
   limit: number
@@ -16,50 +20,20 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     timeOffset = Math.round(new Date().getTime() / 1000), // current unix timestamp (sec)
     groupIdOffset
   } = config
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const remoteConfig = yield* getContext('remoteConfigInstance')
 
-  yield* call(remoteConfig.waitForRemoteConfig)
-
-  const useDiscoveryNotifications = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.DISCOVERY_NOTIFICATIONS
-  )
-
-  const discoveryNotificationsGenesisUnixTimestamp = remoteConfig.getRemoteVar(
-    IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP
-  )
-
-  const shouldFetchNotificationFromDiscovery =
-    useDiscoveryNotifications &&
-    discoveryNotificationsGenesisUnixTimestamp &&
-    timeOffset > discoveryNotificationsGenesisUnixTimestamp
-
-  if (shouldFetchNotificationFromDiscovery) {
-    return yield* call(fetchDiscoveryNotifications, {
-      limit,
-      timeOffset,
-      groupIdOffset
-    })
-  }
-
-  return yield* call(fetchIdentityNotifications, limit, timeOffset)
-}
-
-function* fetchIdentityNotifications(limit: number, timeOffset: number) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
-  return yield* call(audiusBackendInstance.getNotifications, {
+  return yield* call(fetchDiscoveryNotifications, {
     limit,
-    timeOffset
+    timeOffset,
+    groupIdOffset
   })
 }
 
 function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
   const { timeOffset, groupIdOffset, limit } = params
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const remoteConfig = yield* getContext('remoteConfigInstance')
+  const userId = yield* select(accountSelectors.getUserId)
+  const encodedUserId = Id.parse(userId)
 
   const isRepostOfRepostEnabled = yield* call(
     getFeatureEnabled,
@@ -111,7 +85,8 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     'claimable_reward'
   ].filter(removeNullable)
 
-  const discoveryNotifications = yield* call(
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const legacyResponse = yield* call(
     audiusBackendInstance.getDiscoveryNotifications,
     {
       timestamp: timeOffset,
@@ -120,49 +95,31 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
       validTypes
     }
   )
-
-  if ('error' in discoveryNotifications) return discoveryNotifications
-
-  const { notifications, totalUnviewed } = discoveryNotifications
-
-  const discoveryNotificationsGenesisUnixTimestamp = remoteConfig.getRemoteVar(
-    IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP
-  )
-
-  // discovery notifications created after the genesis timestamp are valid,
-  // while notifications created before should be discarded
-  const [validNotifications, invalidNotifications] = partition(
-    notifications,
-    ({ timestamp }) =>
-      discoveryNotificationsGenesisUnixTimestamp &&
-      timestamp > discoveryNotificationsGenesisUnixTimestamp
-  )
-
-  if (invalidNotifications.length === 0) {
-    return { notifications: validNotifications, totalUnviewed }
+  const legacy = {
+    notifications: legacyResponse.notifications,
+    totalUnviewed: legacyResponse.totalUnviewed
   }
 
-  // We have reached the end of valid discovery notifications, fetch identity
-  // notifications for remaining
-
-  const newLimit = limit - validNotifications.length
-  const newTimestamp =
-    validNotifications[validNotifications.length - 1]?.timestamp ?? timeOffset
-
-  const identityNotifications = yield* call(
-    fetchIdentityNotifications,
-    newLimit,
-    newTimestamp
-  )
-
-  if ('error' in identityNotifications) {
-    return { notifications: validNotifications, totalUnviewed }
-  } else {
-    return {
-      notifications: validNotifications.concat(
-        identityNotifications.notifications
-      ),
-      totalUnviewed
+  const { data } = yield* call(
+    [sdk.full.notifications, sdk.full.notifications.getNotifications],
+    {
+      timestamp: timeOffset,
+      groupId: groupIdOffset,
+      validTypes,
+      userId: encodedUserId,
+      limit
     }
+  )
+  const notifications = data
+    ? transformAndCleanList(data.notifications, notificationFromSDK)
+    : []
+
+  const migrated = { notifications, totalUnviewed: data?.unreadCount ?? 0 }
+  try {
+    console.debug(data?.notifications)
+    compareSDKResponse({ legacy, migrated }, 'getNotifications')
+  } catch (e) {
+    console.error(e)
   }
+  return migrated
 }
