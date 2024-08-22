@@ -59,6 +59,7 @@ func main() {
 	}
 
 	e := echo.New()
+	e.HideBanner = true
 
 	_, err = console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
