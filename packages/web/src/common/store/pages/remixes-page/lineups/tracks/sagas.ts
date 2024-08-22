@@ -1,11 +1,15 @@
-import { Track } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { Id, OptionalId, Track } from '@audius/common/models'
 import {
   accountSelectors,
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors,
-  getContext,
-  CommonState
+  CommonState,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -25,20 +29,26 @@ function* getTracks({
   limit: number
   payload?: { trackId: number | null }
 }) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const { trackId } = payload ?? {}
   if (!trackId) return []
   yield* waitForRead()
 
   const currentUserId = yield* select(getUserId)
-  const { tracks, count } = yield* call([apiClient, 'getRemixes'], {
-    trackId,
-    offset,
-    limit,
-    currentUserId
-  })
 
-  yield* put(setCount({ count }))
+  const { data = { count: 0, tracks: [] } } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrackRemixes],
+    {
+      trackId: Id.parse(trackId),
+      offset,
+      limit,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+
+  const tracks = transformAndCleanList(data.tracks, userTrackMetadataFromSDK)
+
+  yield* put(setCount({ count: data.count }))
 
   const processedTracks = yield* call(processAndCacheTracks, tracks)
 

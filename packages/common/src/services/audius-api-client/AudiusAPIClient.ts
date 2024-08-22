@@ -61,7 +61,6 @@ const FULL_ENDPOINT_MAP = {
     `/tracks/${trackId}/stems${
       stemIds ? `?stemIds=${stemIds?.join(',')}` : ''
     }`,
-  getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
@@ -110,18 +109,6 @@ type GetPlaylistByPermalinkArgs = {
 type GetStemsArgs = {
   trackId: ID
   stemIds?: ID[]
-}
-
-type GetRemixesArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit: number
-  offset: number
-}
-
-type RemixesResponse = {
-  tracks: APITrack[]
-  count: number
 }
 
 type GetRemixingArgs = {
@@ -326,28 +313,6 @@ export class AudiusAPIClient {
       .map(adapter.makeStemTrack)
       .filter(removeNullable)
     return adapted
-  }
-
-  async getRemixes({ trackId, limit, offset, currentUserId }: GetRemixesArgs) {
-    this._assertInitialized()
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      userId: encodedUserId ?? undefined,
-      limit,
-      offset
-    }
-
-    const remixesResponse = await this._getResponse<
-      APIResponse<RemixesResponse>
-    >(FULL_ENDPOINT_MAP.getRemixes(encodedTrackId), params)
-
-    if (!remixesResponse) return { count: 0, tracks: [] }
-
-    const tracks = remixesResponse.data.tracks
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return { count: remixesResponse.data.count, tracks }
   }
 
   async getRemixing({
