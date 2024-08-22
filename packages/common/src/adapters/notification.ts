@@ -224,7 +224,12 @@ export const notificationFromSDK = (
         const data = action.data
         if (full.instanceOfCreatePlaylistNotificationActionData(data)) {
           entityType = data.isAlbum ? Entity.Album : Entity.Playlist
-          return decodeHashId(data.playlistId)
+          // Future proofing for when playlistId is fixed to be a string
+          return decodeHashId(
+            Array.isArray(data.playlistId)
+              ? data.playlistId[0]!
+              : data.playlistId
+          )
         }
         entityType = Entity.Track
         return decodeHashId(data.trackId)
