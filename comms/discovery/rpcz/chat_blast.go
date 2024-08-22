@@ -3,6 +3,7 @@ package rpcz
 import (
 	"time"
 
+	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
 )
@@ -25,6 +26,12 @@ type OutgoingChatMessage struct {
 }
 
 func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastRPCParams) ([]OutgoingChatMessage, error) {
+	var audienceContentID *int
+	if params.AudienceContentID != nil {
+		id, _ := misc.DecodeHashId(*params.AudienceContentID)
+		audienceContentID = &id
+	}
+
 	// insert params.Message into chat_blast table
 	_, err := tx.Exec(`
 		insert into chat_blast
@@ -33,7 +40,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			($1, $2, $3, $4, $5, $6, $7)
 		on conflict (blast_id)
 		do nothing
-		`, params.BlastID, userId, params.Audience, params.AudienceContentType, params.AudienceContentID, params.Message, ts)
+		`, params.BlastID, userId, params.Audience, params.AudienceContentType, audienceContentID, params.Message, ts)
 	if err != nil {
 		return nil, err
 	}
