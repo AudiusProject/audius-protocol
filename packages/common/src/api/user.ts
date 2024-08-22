@@ -169,6 +169,37 @@ const userApi = createApi({
         return data ?? 0
       },
       options: { retry: true }
+    },
+    getRemixers: {
+      fetch: async (
+        { id, trackId }: { id: ID; trackId?: string },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getRemixers({
+          id: Id.parse(id),
+          trackId
+        })
+        return userMetadataListFromSDK(users)
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
+    getRemixersCount: {
+      fetch: async (
+        { id, trackId }: { id: ID; trackId?: string },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data } = await sdk.full.users.getRemixersCount({
+          id: Id.parse(id),
+          trackId
+        })
+        return data
+      },
+      options: {}
     }
   }
 })
@@ -179,7 +210,9 @@ export const {
   useGetUserByHandle,
   useGetTracksByUser,
   useGetUSDCTransactions,
-  useGetUSDCTransactionsCount
+  useGetUSDCTransactionsCount,
+  useGetRemixers,
+  useGetRemixersCount
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

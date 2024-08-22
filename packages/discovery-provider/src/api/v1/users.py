@@ -2413,7 +2413,7 @@ full_remixers_reponse = make_full_response(
     "full_remixers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
 remixers_count_response = make_full_response(
-    "purchases_count_response", full_ns, fields.Integer()
+    "remixers_count_response", full_ns, fields.Integer()
 )
 
 USER_REMIXERS_ROUTE = "/<string:id>/remixers"
@@ -2476,7 +2476,7 @@ class FullRemixersUsersCount(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(remixers_parser)
+    @full_ns.expect(current_user_parser)
     @full_ns.marshal_with(remixers_count_response)
     def get(self, id):
         decoded_user_id = decode_with_abort(id, full_ns)
