@@ -237,6 +237,9 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
+    if (isBlast) {
+      query.is_blast = isBlast
+    }
     if (limit) {
       query.limit = limit
     }

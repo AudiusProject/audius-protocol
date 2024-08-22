@@ -61,7 +61,7 @@ WHERE chat_member.user_id = $1 AND chat_member.chat_id = $2
 union all (
 
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
-    concat_ws(':', 'blast', audience, audience_content_type, audience_content_id) as chat_id,
+    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
     created_at as last_message_at,
@@ -121,7 +121,7 @@ WHERE chat_member.user_id = $1
 union all (
 
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
-    concat_ws(':', 'blast', audience, audience_content_type, audience_content_id) as chat_id,
+    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
     created_at as last_message_at,

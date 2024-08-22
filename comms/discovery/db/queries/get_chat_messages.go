@@ -54,11 +54,12 @@ LIMIT $3
 `
 
 type ChatMessagesAndReactionsParams struct {
-	UserID int32     `db:"user_id" json:"user_id"`
-	ChatID string    `db:"chat_id" json:"chat_id"`
-	Limit  int32     `json:"limit"`
-	Before time.Time `json:"before"`
-	After  time.Time `json:"after"`
+	UserID  int32     `db:"user_id" json:"user_id"`
+	ChatID  string    `db:"chat_id" json:"chat_id"`
+	Limit   int32     `json:"limit"`
+	Before  time.Time `json:"before"`
+	After   time.Time `json:"after"`
+	IsBlast bool      `json:"is_blast"`
 }
 
 type ChatMessageAndReactionsRow struct {
@@ -114,12 +115,12 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 	var rows []ChatMessageAndReactionsRow
 
 	// special case to handle outgoing blasts...
-	if strings.HasPrefix(arg.ChatID, "blast:") {
+	if arg.IsBlast {
 		parts := strings.Split(arg.ChatID, ":")
-		if len(parts) < 2 {
+		if len(parts) < 1 {
 			return nil, errors.New("bad request: invalid blast id")
 		}
-		audience := parts[1]
+		audience := parts[0]
 
 		if schema.ChatBlastAudience(audience) == schema.FollowerAudience {
 			const outgoingBlastMessages = `

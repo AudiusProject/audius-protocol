@@ -296,8 +296,8 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
     while (hasMoreUnread) {
       const response = yield* call([sdk.chats, sdk.chats.getMessages], {
         chatId,
-        before,
         isBlast: chat?.is_blast,
+        before,
         limit: MESSAGES_PAGE_SIZE
       })
       // Only save the last response summary. Pagination is one-way
