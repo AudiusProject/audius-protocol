@@ -148,7 +148,7 @@ export const makeBlastChatId = ({
   audienceContentId?: string
 }) => {
   return (
-    `${audience}` +
+    `blast:${audience}` +
     (audienceContentType ? `:${audienceContentType}` : '') +
     (audienceContentId ? `:${audienceContentId}` : '')
   )

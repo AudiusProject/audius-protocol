@@ -116,11 +116,10 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 	// special case to handle outgoing blasts...
 	if strings.HasPrefix(arg.ChatID, "blast:") {
 		parts := strings.Split(arg.ChatID, ":")
-		if len(parts) < 3 {
+		if len(parts) < 2 {
 			return nil, errors.New("bad request: invalid blast id")
 		}
-		// encodedUserID := parts[1]
-		audience := parts[2]
+		audience := parts[1]
 
 		if schema.ChatBlastAudience(audience) == schema.FollowerAudience {
 			const outgoingBlastMessages = `

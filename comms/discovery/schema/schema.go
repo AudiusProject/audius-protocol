@@ -160,8 +160,8 @@ type UserChat struct {
 	UnreadMessageCount     float64           `json:"unread_message_count"`
 	IsBlast                bool              `json:"is_blast"`
 	Audience               ChatBlastAudience `json:"audience"`
-	AudienceContentType    string            `json:"audience_content_type"`
-	AudienceContentID      string            `json:"audience_content_id"`
+	AudienceContentType    *string           `json:"audience_content_type,omitempty"`
+	AudienceContentID      *string           `json:"audience_content_id,omitempty"`
 }
 
 type ChatMember struct {

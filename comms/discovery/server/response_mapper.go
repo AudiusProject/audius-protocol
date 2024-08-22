@@ -28,11 +28,18 @@ func ToChatMemberResponse(member db.ChatMember) schema.ChatMember {
 }
 
 func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.UserChat {
-	var encodedContentId string
-
+	var encodedContentId *string
 	if chat.AudienceContentID.Valid {
-		encodedContentId, _ = misc.EncodeHashId(int(chat.AudienceContentID.Int32))
+		id, _ := misc.EncodeHashId(int(chat.AudienceContentID.Int32))
+		encodedContentId = &id
 	}
+
+	var audienceContentType *string
+	if chat.AudienceContentType.Valid {
+		contentType := chat.AudienceContentType.String
+		audienceContentType = &contentType
+	}
+
 	chatData := schema.UserChat{
 		ChatID:                 chat.ChatID,
 		LastMessageAt:          chat.LastMessageAt.Format(time.RFC3339Nano),
@@ -42,7 +49,7 @@ func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.Us
 		LastMessageIsPlaintext: chat.LastMessageIsPlaintext,
 		IsBlast:                chat.IsBlast,
 		Audience:               schema.ChatBlastAudience(chat.Audience.String),
-		AudienceContentType:    chat.AudienceContentType.String,
+		AudienceContentType:    audienceContentType,
 		AudienceContentID:      encodedContentId,
 	}
 	chatData.RecheckPermissions = rpcz.RecheckPermissionsRequired(chat.LastMessageAt, members)

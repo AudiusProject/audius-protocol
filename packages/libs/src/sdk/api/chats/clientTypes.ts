@@ -29,6 +29,7 @@ export type ChatGetRequest = z.infer<typeof ChatGetRequestSchema>
 export const ChatGetMessagesRequestSchema = z.object({
   currentUserId: z.optional(z.string()),
   chatId: z.string(),
+  isBlast: z.optional(z.boolean()),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())

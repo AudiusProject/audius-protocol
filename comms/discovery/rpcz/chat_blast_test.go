@@ -165,7 +165,7 @@ func TestChatBlast(t *testing.T) {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "blast:69:follower_audience", chats[0].ChatID)
+		assert.Equal(t, "blast:follower_audience", chats[0].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
@@ -367,7 +367,7 @@ func TestChatBlast(t *testing.T) {
 	{
 		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
 			UserID: 69,
-			ChatID: "blast:69:follower_audience",
+			ChatID: "blast:follower_audience",
 			Before: time.Now().Add(time.Hour * 2).UTC(),
 			After:  time.Now().Add(time.Hour * -2).UTC(),
 			Limit:  10,
