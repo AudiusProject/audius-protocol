@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from flask_restx import Model, SchemaModel, fields
 
@@ -123,24 +123,23 @@ class OneOfModel(SchemaModel):
 
         nested_fields = [fields.Nested(model) for model in models]
 
+        schema: Dict[str, Any] = {
+            "oneOf": [field.__schema__ for field in nested_fields],
+        }
+        if discriminator is not None and mapping is not None:
+            schema["discriminator"] = (
+                {
+                    "propertyName": discriminator,
+                    "mapping": {
+                        key: fields.Nested(model).__schema__["$ref"]
+                        for key, model in mapping.items()
+                    },
+                },
+            )
+
         super(OneOfModel, self).__init__(
             name,
-            (
-                {
-                    "oneOf": [field.__schema__ for field in nested_fields],
-                    "discriminator": {
-                        "propertyName": discriminator,
-                        "mapping": {
-                            key: fields.Nested(model).__schema__["$ref"]
-                            for key, model in mapping.items()
-                        },
-                    },
-                }
-                if discriminator is not None and mapping is not None
-                else {
-                    "oneOf": [field.__schema__ for field in nested_fields],
-                }
-            ),
+            schema,
         )
         self.discriminator = discriminator
         self.mapping = mapping
