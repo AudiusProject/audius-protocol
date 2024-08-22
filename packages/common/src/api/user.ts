@@ -172,12 +172,12 @@ const userApi = createApi({
     },
     getRemixers: {
       fetch: async (
-        { id, trackId }: { id: ID; trackId?: string },
+        { userId, trackId }: { userId: ID; trackId?: string },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data: users = [] } = await sdk.full.users.getRemixers({
-          id: Id.parse(id),
+          id: Id.parse(userId),
           trackId
         })
         return userMetadataListFromSDK(users)
@@ -189,12 +189,12 @@ const userApi = createApi({
     },
     getRemixersCount: {
       fetch: async (
-        { id, trackId }: { id: ID; trackId?: string },
+        { userId, trackId }: { userId: ID; trackId?: string },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getRemixersCount({
-          id: Id.parse(id),
+          id: Id.parse(userId),
           trackId
         })
         return data

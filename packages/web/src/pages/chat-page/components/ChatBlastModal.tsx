@@ -268,7 +268,7 @@ const RemixCreatorsMessageField = () => {
     type: 'select'
   })
   const { data: remixersCount } = useGetRemixersCount({
-    id: currentUserId,
+    userId: currentUserId,
     trackId: remixedTrackField.value
   })
 
