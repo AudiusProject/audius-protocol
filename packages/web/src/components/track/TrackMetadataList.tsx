@@ -7,7 +7,7 @@ import {
   useTrackMetadata
 } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import { Flex } from '@audius/harmony'
 import { Genre, Mood } from '@audius/sdk'
 
@@ -15,7 +15,6 @@ import { MetadataItem } from 'components/entity/MetadataItem'
 import { TextLink } from 'components/link'
 import { moodMap } from 'utils/Moods'
 import { getSearchPageLocation } from 'utils/route'
-import { trpc } from 'utils/trpcClientWeb'
 
 const renderMood = (mood: Mood) => {
   return (

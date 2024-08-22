@@ -1,9 +1,9 @@
 import type { ID } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { MusicBadge } from '@audius/harmony-native'
-import { trpc } from 'app/services/trpc-client-mobile'
 
 const messages = {
   followsYou: 'Follows You'

@@ -8,7 +8,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -31,7 +31,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { albumPage } from 'utils/route'
-import { trpc } from 'utils/trpcClientWeb'
 
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions

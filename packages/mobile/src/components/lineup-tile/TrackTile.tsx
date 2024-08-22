@@ -10,6 +10,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -29,7 +30,6 @@ import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
 
 import type { ImageProps } from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
