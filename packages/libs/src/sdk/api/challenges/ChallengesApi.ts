@@ -91,20 +91,6 @@ export class ChallengesApi extends GeneratedChallengesApi {
    * @see {@link generateSpecifier} to create the specifier argument.
    */
   public async claimReward(request: ClaimRewardsRequest) {
-    for (let i = 0; i < 5; i++) {
-      try {
-        return await this.claimRewardAttempt(request)
-      } catch (e) {
-        console.error(`Failed to claim reward attempt ${i}: ${e}`)
-        if (i === 4) {
-          throw e
-        }
-      }
-    }
-    throw new Error('Failed to claim reward.')
-  }
-
-  private async claimRewardAttempt(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
