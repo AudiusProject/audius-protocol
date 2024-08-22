@@ -49,7 +49,7 @@ func (cs *Console) homePage(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, components.HomePage(components.HomePageProps{
+	return utils.Render(c, cs.c.HomePage(components.HomePageProps{
 		Blocks: blockchainInfo.BlockMetas,
 		Txs:    txResults,
 	}))

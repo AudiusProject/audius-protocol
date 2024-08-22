@@ -18,8 +18,8 @@ type HomePageProps struct {
 	Txs    []*TxProps
 }
 
-templ HomePage(props HomePageProps) {
-	@HeaderBar() {
+templ (c *Components) HomePage(props HomePageProps) {
+	@c.HeaderBar() {
 		<div class="flex h-full gap-x-4">
 			<div class="w-1/2 bg-white shadow-md rounded-lg h-full flex flex-col">
 				<div class="px-4 py-8 p font-bold text-l border-b border-gray-500">
