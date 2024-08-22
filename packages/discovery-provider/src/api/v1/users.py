@@ -2468,6 +2468,15 @@ class RemixersUsers(FullRemixersUsers):
         return super()._get_user_remixers(id)
 
 
+remixers_parser = current_user_parser.copy()
+remixers_parser.add_argument(
+    "track_id",
+    required=False,
+    description="Filters for remixers who have remixed the given track ID",
+    type=str,
+)
+
+
 @full_ns.route("/<string:id>/remixers/count")
 class FullRemixersUsersCount(Resource):
     @full_ns.doc(
@@ -2476,7 +2485,7 @@ class FullRemixersUsersCount(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(current_user_parser)
+    @full_ns.expect(remixers_parser)
     @full_ns.marshal_with(remixers_count_response)
     def get(self, id):
         decoded_user_id = decode_with_abort(id, full_ns)
