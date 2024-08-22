@@ -69,8 +69,7 @@ const FULL_ENDPOINT_MAP = {
   getReaction: '/reactions',
   getTips: '/tips',
   getNFTGatedTrackSignatures: (userId: OpaqueID) =>
-    `/tracks/${userId}/nft-gated-signatures`,
-  getPremiumTracks: '/tracks/usdc-purchase'
+    `/tracks/${userId}/nft-gated-signatures`
 }
 
 export type QueryParams = {
@@ -86,12 +85,6 @@ type GetTrackStreamUrlArgs = {
     handle: string
   }
   abortOnUnreachable?: boolean
-}
-
-type GetPremiumTracksArgs = {
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -391,32 +384,6 @@ export class AudiusAPIClient {
 
     const tracks = remixingResponse.data.map(adapter.makeTrack)
     return tracks
-  }
-
-  async getPremiumTracks({
-    currentUserId,
-    limit,
-    offset
-  }: GetPremiumTracksArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.getPremiumTracks,
-      params,
-      true,
-      PathType.VersionFullPath
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
   }
 
   async getCollectionMetadata({

@@ -42,7 +42,8 @@ function* getTracks({
       offset,
       limit,
       userId: OptionalId.parse(currentUserId),
-      filterTracks: 'public'
+      filterTracks: 'public',
+      sort: 'date'
     }
   )
 
