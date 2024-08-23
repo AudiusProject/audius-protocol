@@ -40,7 +40,7 @@ export const MetadataItem = (props: MetadataItemProps) => {
       <Text tag='dt' variant='label' color='subdued'>
         {label}
       </Text>
-      {renderValue()}
+      <dd>{renderValue()}</dd>
     </Flex>
   )
 }

@@ -69,21 +69,10 @@ export const useTrackMetadata = ({
       isHidden: !albumInfo
     },
     {
-      id: TrackMetadataType.DURATION,
-      label: 'Duration',
-      value: formatSecondsAsText(duration)
-    },
-    {
       id: TrackMetadataType.GENRE,
       label: 'Genre',
       value: getCanonicalName(genre),
       url: searchPage({ category: 'tracks', genre: genre as Genre })
-    },
-    {
-      id: TrackMetadataType.RELEASE_DATE,
-      value: formatDate(releaseDate ?? ''),
-      label: 'Released',
-      isHidden: isUnlisted
     },
     {
       id: TrackMetadataType.MOOD,
@@ -92,16 +81,27 @@ export const useTrackMetadata = ({
       url: searchPage({ category: 'tracks', mood: mood as Mood })
     },
     {
+      id: TrackMetadataType.KEY,
+      label: 'Key',
+      value: parsedMusicalKey,
+      url: searchPage({ category: 'tracks', key: parsedMusicalKey })
+    },
+    {
       id: TrackMetadataType.BPM,
       label: 'BPM',
       value: parsedBpm,
       url: searchPage({ category: 'tracks', bpm: parsedBpm })
     },
     {
-      id: TrackMetadataType.KEY,
-      label: 'Key',
-      value: parsedMusicalKey,
-      url: searchPage({ category: 'tracks', key: parsedMusicalKey })
+      id: TrackMetadataType.RELEASE_DATE,
+      value: formatDate(releaseDate ?? ''),
+      label: 'Released',
+      isHidden: isUnlisted
+    },
+    {
+      id: TrackMetadataType.DURATION,
+      label: 'Duration',
+      value: formatSecondsAsText(duration)
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 

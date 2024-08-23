@@ -12,9 +12,8 @@ type CollectionMetadataProps = {
 /**
  * The additional metadata shown at the bottom of the Collection Screen Header
  */
-export const CollectionMetadataList = ({
-  collectionId
-}: CollectionMetadataProps) => {
+export const CollectionMetadataList = (props: CollectionMetadataProps) => {
+  const { collectionId } = props
   const metadataItems = useCollectionMetadata({ collectionId })
 
   return (

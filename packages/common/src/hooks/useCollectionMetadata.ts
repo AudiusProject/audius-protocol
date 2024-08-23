@@ -5,6 +5,7 @@ import { useGetPlaylistById } from '~/api/collection'
 import { ID } from '~/models/Identifiers'
 import { getCollectionDuration } from '~/store/cache/collections/selectors'
 import { CommonState } from '~/store/commonStore'
+import { pluralize } from '~/utils/formatUtil'
 import { formatDate, formatSecondsAsText } from '~/utils/timeUtil'
 
 export enum CollectionMetadataType {
@@ -52,14 +53,6 @@ export const useCollectionMetadata = ({
 
   const metadataItems = [
     {
-      id: CollectionMetadataType.DURATION,
-      label: 'Duration',
-      value: `${numTracks} tracks${
-        duration ? `, ${formatSecondsAsText(duration)}` : ''
-      }`,
-      isHidden: !numTracks
-    },
-    {
       id: CollectionMetadataType.RELEASE_DATE,
       value: formatDate(releaseDate ?? createdAt),
       label: 'Released',
@@ -70,6 +63,14 @@ export const useCollectionMetadata = ({
       value: formatDate(updatedAt ?? createdAt),
       label: 'Updated',
       isHidden: isPrivate
+    },
+    {
+      id: CollectionMetadataType.DURATION,
+      label: 'Duration',
+      value: `${numTracks} ${pluralize('track', numTracks)}${
+        duration ? `, ${formatSecondsAsText(duration)}` : ''
+      }`,
+      isHidden: !numTracks
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
