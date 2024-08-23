@@ -2506,7 +2506,7 @@ purchasers_parser = pagination_with_current_user_parser.copy()
 purchasers_parser.add_argument(
     "content_type",
     required=False,
-    description="Type of content (track or album) to filter by",
+    description="Type of content to filter by (track or album)",
     type=str,
 )
 purchasers_parser.add_argument(
@@ -2556,7 +2556,7 @@ class FullPurchasersUsers(Resource):
 
     @full_ns.doc(
         id="""Get purchasers""",
-        description="Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided",
+        description="Gets the list of unique users who have purchased content by the given user",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -2571,7 +2571,7 @@ class FullPurchasersUsers(Resource):
 class PurchasersUsers(FullPurchasersUsers):
     @ns.doc(
         id="""Get purchasers""",
-        description="Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided",
+        description="Gets the list of unique users who have purchased content by the given user",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -2585,7 +2585,7 @@ class PurchasersUsers(FullPurchasersUsers):
 class FullPurchasersUsersCount(Resource):
     @full_ns.doc(
         id="""Get purchasers""",
-        description="Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided",
+        description="Gets the list of users who have purchased content by the given user",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
