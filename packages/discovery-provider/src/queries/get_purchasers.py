@@ -32,7 +32,6 @@ def _get_purchasers(session, args: GetPurchasersArgs):
     buyers_query = (
         session.query(USDCPurchase.buyer_user_id)
         .distinct()
-        .join(User, User.user_id == USDCPurchase.buyer_user_id)
         .filter(USDCPurchase.seller_user_id == seller_user_id)
         .all()
     )

@@ -2593,18 +2593,16 @@ class PurchasersUsers(FullPurchasersUsers):
 @full_ns.route("/<string:id>/purchasers/count")
 class FullPurchasersUsersCount(Resource):
     @full_ns.doc(
-        id="""Get purchasers""",
+        id="""Get purchasers count""",
         description="Gets the list of users who have purchased content by the given user",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(current_user_parser)
+    @full_ns.expect(purchasers_parser)
     @full_ns.marshal_with(purchasers_count_response)
     def get(self, id):
         decoded_user_id = decode_with_abort(id, full_ns)
         args = purchasers_parser.parse_args()
-        limit = get_default_max(args.get("limit"), 10, 100)
-        offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
         content_type = args.get("content_type")
         content_id = args.get("content_id")
@@ -2616,8 +2614,6 @@ class FullPurchasersUsersCount(Resource):
             current_user_id=current_user_id,
             content_type=content_type,
             content_id=decoded_content_id,
-            limit=limit,
-            offset=offset,
         )
         count = get_purchasers_count(args)
         return success_response(count)
