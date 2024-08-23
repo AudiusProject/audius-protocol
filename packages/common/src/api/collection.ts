@@ -34,7 +34,9 @@ const collectionApi = createApi({
           playlistId: Id.parse(playlistId),
           userId: OptionalId.parse(currentUserId)
         })
-        return data.length ? userCollectionMetadataFromSDK(data[0]) : null
+        return data.length
+          ? userCollectionMetadataFromSDK(data[0]) ?? null
+          : null
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
