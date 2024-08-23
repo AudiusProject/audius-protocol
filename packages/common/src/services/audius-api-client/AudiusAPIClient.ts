@@ -1,6 +1,6 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import { ID, CollectionMetadata } from '../../models'
+import { ID } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
@@ -41,8 +41,7 @@ enum PathType {
 const ROOT_ENDPOINT_MAP = {
   feed: `/feed`,
   healthCheck: '/health_check',
-  blockConfirmation: '/block_confirmation',
-  getCollectionMetadata: '/playlists'
+  blockConfirmation: '/block_confirmation'
 }
 
 const FULL_ENDPOINT_MAP = {
@@ -71,12 +70,6 @@ type GetTrackStreamUrlArgs = {
     urlTitle: string
     handle: string
   }
-  abortOnUnreachable?: boolean
-}
-
-type GetCollectionMetadataArgs = {
-  collectionId: ID
-  currentUserId: ID
   abortOnUnreachable?: boolean
 }
 
@@ -262,26 +255,6 @@ export class AudiusAPIClient {
     )
 
     return trackUrl?.data
-  }
-
-  async getCollectionMetadata({
-    collectionId,
-    currentUserId,
-    abortOnUnreachable
-  }: GetCollectionMetadataArgs) {
-    this._assertInitialized()
-
-    const headers = { 'X-User-ID': currentUserId.toString() }
-    const params = { playlist_id: collectionId }
-    const response = await this._getResponse<APIResponse<CollectionMetadata[]>>(
-      ROOT_ENDPOINT_MAP.getCollectionMetadata,
-      params,
-      false,
-      PathType.RootPath,
-      headers,
-      abortOnUnreachable
-    )
-    return response?.data?.[0]
   }
 
   async getPlaylistByPermalink({
