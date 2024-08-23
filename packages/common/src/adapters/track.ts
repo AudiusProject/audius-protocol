@@ -9,7 +9,7 @@ import {
   StemCategory,
   TrackSegment
 } from '~/models'
-import { Stem, StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
+import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { License } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
