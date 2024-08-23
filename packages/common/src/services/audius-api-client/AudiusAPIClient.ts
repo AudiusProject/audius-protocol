@@ -50,7 +50,6 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
@@ -78,12 +77,6 @@ type GetTrackStreamUrlArgs = {
 type GetCollectionMetadataArgs = {
   collectionId: ID
   currentUserId: ID
-  abortOnUnreachable?: boolean
-}
-
-type GetPlaylistsArgs = {
-  playlistIds: ID[]
-  currentUserId: Nullable<ID>
   abortOnUnreachable?: boolean
 }
 
@@ -289,38 +282,6 @@ export class AudiusAPIClient {
       abortOnUnreachable
     )
     return response?.data?.[0]
-  }
-
-  async getPlaylists({
-    playlistIds,
-    currentUserId,
-    abortOnUnreachable
-  }: GetPlaylistsArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedPlaylistIds = playlistIds.map((id) => this._encodeOrThrow(id))
-
-    const params = {
-      id: encodedPlaylistIds,
-      user_id: encodedCurrentUserId || undefined,
-      limit: encodedPlaylistIds.length
-    }
-
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.getPlaylists,
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getPlaylistByPermalink({

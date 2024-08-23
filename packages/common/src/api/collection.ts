@@ -1,4 +1,7 @@
-import { userCollectionMetadataFromSDK } from '~/adapters'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '~/adapters'
 import { createApi } from '~/audius-query'
 import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils'
@@ -24,12 +27,14 @@ const collectionApi = createApi({
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return await apiClient.getPlaylists({
-          playlistIds: ids,
-          currentUserId: currentUserId ?? null
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
         })
+        return transformAndCleanList(data, userCollectionMetadataFromSDK)
       },
       options: {
         idArgKey: 'playlistId',
