@@ -9,7 +9,6 @@ import {
   Flex,
   IconButton,
   IconHeart,
-  IconKebabHorizontal,
   IconPencil,
   PlainButton,
   Text,
@@ -20,6 +19,8 @@ import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
+
+import { CommentOverflowMenu } from './CommentOverflowMenu'
 
 const messages = {
   pinned: 'Pinned by artist',
@@ -134,13 +135,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               >
                 {messages.reply}
               </PlainButton>
-              <IconButton
-                aria-label='edit comment'
-                icon={IconKebabHorizontal}
-                size='s'
-                color='subdued'
-                onPress={() => {}}
-              />
+              <CommentOverflowMenu commentId={commentId} isPinned={isPinned} />
             </Flex>
           </>
         ) : null}
