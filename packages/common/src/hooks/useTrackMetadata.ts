@@ -65,8 +65,7 @@ export const useTrackMetadata = ({
       id: TrackMetadataType.ALBUM,
       label: 'Album',
       value: albumInfo?.playlist_name ?? '',
-      url: albumInfo?.permalink,
-      isHidden: !albumInfo
+      url: albumInfo?.permalink
     },
     {
       id: TrackMetadataType.GENRE,
