@@ -49,8 +49,6 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getPlaylistByPermalink: (handle: string, slug: string) =>
-    `/playlists/by_permalink/${handle}/${slug}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
@@ -71,11 +69,6 @@ type GetTrackStreamUrlArgs = {
     handle: string
   }
   abortOnUnreachable?: boolean
-}
-
-type GetPlaylistByPermalinkArgs = {
-  permalink: string
-  currentUserId: Nullable<ID>
 }
 
 type GetSearchArgs = {
@@ -255,35 +248,6 @@ export class AudiusAPIClient {
     )
 
     return trackUrl?.data
-  }
-
-  async getPlaylistByPermalink({
-    permalink,
-    currentUserId
-  }: GetPlaylistByPermalinkArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-    const splitPermalink = permalink.split('/')
-    if (splitPermalink.length !== 4) {
-      throw Error(
-        'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
-      )
-    }
-    const [, handle, , slug] = splitPermalink
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.getPlaylistByPermalink(handle, slug),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getSearchFull({

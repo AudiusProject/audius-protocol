@@ -6,6 +6,17 @@ import { createApi } from '~/audius-query'
 import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils'
 
+export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
+  const splitPermalink = permalink.split('/')
+  if (splitPermalink.length !== 4) {
+    throw Error(
+      'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
+    )
+  }
+  const [, handle, , slug] = splitPermalink
+  return { handle, slug }
+}
+
 const collectionApi = createApi({
   reducerPath: 'collectionApi',
   endpoints: {
@@ -49,14 +60,17 @@ const collectionApi = createApi({
           permalink,
           currentUserId
         }: { permalink: string; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return (
-          await apiClient.getPlaylistByPermalink({
-            permalink,
-            currentUserId
+        const sdk = await audiusSdk()
+        const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
+        const { data = [] } =
+          await sdk.full.playlists.getPlaylistByHandleAndSlug({
+            handle,
+            slug,
+            userId: OptionalId.parse(currentUserId)
           })
-        )[0]
+        return transformAndCleanList(data, userCollectionMetadataFromSDK)[0]
       },
       options: {
         permalinkArgKey: 'permalink',
