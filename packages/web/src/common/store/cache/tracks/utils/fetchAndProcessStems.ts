@@ -1,17 +1,15 @@
 import {
-  Kind,
-  StemCategory,
-  ID,
-  Stem,
-  StemTrackMetadata
-} from '@audius/common/models'
+  stemTrackMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { Kind, StemCategory, ID, Stem, Id } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   cacheActions,
-  getContext
+  getSDK
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
-import { call, put } from 'redux-saga/effects'
+import { call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -25,21 +23,23 @@ const { getTrack } = cacheTracksSelectors
  *
  * @param trackId the parent track for which to fetch stems
  */
-export function* fetchAndProcessStems(trackId: ID, stemIds?: ID[]) {
+export function* fetchAndProcessStems(trackId: ID) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
 
-  const stems: StemTrackMetadata[] = yield call(
-    [apiClient, apiClient.getStems],
-    { trackId, stemIds }
+  const { data = [] } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrackStems],
+    { trackId: Id.parse(trackId) }
   )
 
+  const stems = transformAndCleanList(data, stemTrackMetadataFromSDK)
+
   if (stems.length) {
-    yield call(processAndCacheTracks, stems)
+    yield* call(processAndCacheTracks, stems)
   }
 
   // Don't update the original track with stems until it's in the cache
-  yield call(waitForValue, getTrack, { id: trackId })
+  yield* call(waitForValue, getTrack, { id: trackId })
 
   // Create the update
   const stemsUpdate: Stem[] = stems.map((s) => ({
@@ -48,7 +48,7 @@ export function* fetchAndProcessStems(trackId: ID, stemIds?: ID[]) {
     orig_filename: s.orig_filename ?? ''
   }))
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.TRACKS, [
       {
         id: trackId,

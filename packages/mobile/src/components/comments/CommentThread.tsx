@@ -3,9 +3,14 @@ import { useState } from 'react'
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { ReplyComment } from '@audius/sdk'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import { Flex, IconCaretDown, IconCaretUp, Text } from '@audius/harmony-native'
+import {
+  Box,
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  PlainButton
+} from '@audius/harmony-native'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -34,42 +39,45 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   return (
     <>
       <CommentBlock comment={rootComment} />
-      <Flex pl={40} direction='column' mv='s' gap='s'>
+      <Flex pl={40} direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TouchableOpacity onPress={() => toggleReplies(rootComment.id)}>
-            <Flex direction='row' gap='s' alignItems='center'>
-              {hiddenReplies[rootComment.id] ? (
-                <IconCaretUp color='subdued' size='s' />
-              ) : (
-                <IconCaretDown color='subdued' size='s' />
-              )}
-              <Text variant='title' size='s' color='subdued'>
-                {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
-              </Text>
-            </Flex>
-          </TouchableOpacity>
+          <Box mv='xs'>
+            <PlainButton
+              onPress={() => toggleReplies(rootComment.id)}
+              variant='subdued'
+              iconLeft={
+                hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
+              }
+            >
+              {hiddenReplies[rootComment.id] ? 'Show Replies' : 'Hide Replies'}
+            </PlainButton>
+          </Box>
         ) : null}
         {hiddenReplies[rootComment.id] ? null : (
-          <Flex direction='column' gap='l'>
-            {rootComment?.replies?.map((reply: ReplyComment) => (
-              <Flex w='100%' key={reply.id}>
-                <CommentBlock
-                  comment={reply}
-                  parentCommentId={rootComment.id}
-                />
-              </Flex>
-            ))}
-          </Flex>
+          <>
+            <Flex direction='column' gap='l'>
+              {rootComment?.replies?.map((reply: ReplyComment) => (
+                <Flex w='100%' key={reply.id}>
+                  <CommentBlock
+                    comment={reply}
+                    parentCommentId={rootComment.id}
+                  />
+                </Flex>
+              ))}
+            </Flex>
+
+            {(rootComment?.replies?.length ?? 0) > 0 ? (
+              <Box mv='xs'>
+                <PlainButton
+                  variant='subdued'
+                  onPress={() => handleLoadMoreReplies(rootComment.id)}
+                >
+                  {messages.showMoreReplies}
+                </PlainButton>
+              </Box>
+            ) : null}
+          </>
         )}
-        {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TouchableOpacity
-            onPress={() => handleLoadMoreReplies(rootComment.id)}
-          >
-            <Text variant='title' size='s' color='subdued'>
-              {messages.showMoreReplies}
-            </Text>
-          </TouchableOpacity>
-        ) : null}
       </Flex>
     </>
   )

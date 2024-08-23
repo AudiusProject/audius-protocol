@@ -3,7 +3,6 @@ package rpcz
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -161,11 +160,11 @@ func TestChatBlast(t *testing.T) {
 
 		blastCount := 0
 		for _, c := range chats {
-			if strings.HasPrefix(c.ChatID, "blast:") {
+			if c.IsBlast {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "blast:69:follower_audience", chats[0].ChatID)
+		assert.Equal(t, "follower_audience", chats[1].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
@@ -366,11 +365,12 @@ func TestChatBlast(t *testing.T) {
 	// ------ sender can get blasts in a given thread ----------
 	{
 		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
-			UserID: 69,
-			ChatID: "blast:69:follower_audience",
-			Before: time.Now().Add(time.Hour * 2).UTC(),
-			After:  time.Now().Add(time.Hour * -2).UTC(),
-			Limit:  10,
+			UserID:  69,
+			ChatID:  "follower_audience",
+			IsBlast: true,
+			Before:  time.Now().Add(time.Hour * 2).UTC(),
+			After:   time.Now().Add(time.Hour * -2).UTC(),
+			Limit:   10,
 		})
 		assert.NoError(t, err)
 		assert.Len(t, messages, 2)
@@ -409,6 +409,183 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, messages, 3)
 	}
 
+	// -------------------------------- tipper audience
+
+	// create some follower audiuence
+	_, err = tx.Exec(`
+	insert into user_tips
+		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
+	values
+		(1, '', 201, 69, 2, $1, $1)
+	`, t0)
+	assert.NoError(t, err)
+
+	// 69 sends blast to supporters
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:  "blast_tippers_1",
+		Audience: schema.TipperAudience,
+		Message:  "thanks for your support",
+	})
+	assert.NoError(t, err)
+
+	// 201 should have a pending blast
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 201,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
+	// 69 upgrades
+	chatId_69_201 := misc.ChatID(69, 201)
+	err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
+		ChatID: chatId_69_201,
+		Invites: []schema.PurpleInvite{
+			{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+			{UserID: misc.MustEncodeHashID(201), InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// both users have 1 message
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_69_201)
+		assert.Len(t, messages, 1)
+	}
+	{
+		messages := mustGetMessagesAndReactions(201, chatId_69_201)
+		assert.Len(t, messages, 1)
+	}
+
+	// 201 should have no pending blast
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 201,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
+	// -------------- remixer
+
+	tx.MustExec(`
+	INSERT INTO tracks
+	   (track_id, is_current, is_delete, owner_id, created_at, updated_at)
+	   VALUES
+	   (1, true, false, 69, now(), now());
+
+	INSERT INTO tracks
+	   (track_id, is_current, is_delete, owner_id, created_at, updated_at)
+	   VALUES
+	   (2, true, false, 202, now(), now());
+
+	   INSERT INTO remixes values (1,2);
+	`)
+
+	// 69 sends blast to remixers
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:             "blast_remixers_1",
+		Audience:            schema.RemixerAudience,
+		AudienceContentType: stringPointer("track"),
+		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
+		Message:             "thanks for your remix",
+	})
+	assert.NoError(t, err)
+
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 202,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
+	// 69 sends another blast to all remixers
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:  "blast_remixers_2",
+		Audience: schema.RemixerAudience,
+		Message:  "new stems coming soon",
+	})
+	assert.NoError(t, err)
+
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 202,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 2)
+	}
+
+	// 202 upgrades... should have 2 messages
+	chatId_202_69 := misc.ChatID(202, 69)
+	err = chatCreate(tx, 202, t3, schema.ChatCreateRPCParams{
+		ChatID: chatId_202_69,
+		Invites: []schema.PurpleInvite{
+			{UserID: misc.MustEncodeHashID(202), InviteCode: "earlier"},
+			{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// both users have 2 messages
+	{
+		messages := mustGetMessagesAndReactions(202, chatId_202_69)
+		assert.Len(t, messages, 2)
+	}
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_202_69)
+		assert.Len(t, messages, 2)
+	}
+
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:             "blast_remixers_3",
+		Audience:            schema.RemixerAudience,
+		AudienceContentType: stringPointer("track"),
+		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
+		Message:             "yall are the best",
+	})
+	assert.NoError(t, err)
+
+	// both users have 3 messages
+	{
+		messages := mustGetMessagesAndReactions(202, chatId_202_69)
+		assert.Len(t, messages, 3)
+	}
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_202_69)
+		assert.Len(t, messages, 3)
+	}
+
+	// ------------- PURCHASE
+	tx.MustExec(`
+	insert into usdc_purchases
+	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id)
+	values
+	(0, '', 203, 69, 5.99, 'track', 1);
+	`)
+
+	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+		BlastID:  "blast_customers_1",
+		Audience: schema.CustomerAudience,
+		// AudienceContentType: stringPointer("track"),
+		// AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
+		Message: "thank you for yr purchase",
+	})
+	assert.NoError(t, err)
+
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 203,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
 	err = tx.Rollback()
 	assert.NoError(t, err)
+}
+
+func stringPointer(val string) *string {
+	return &val
 }

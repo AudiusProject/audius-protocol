@@ -55,6 +55,9 @@ models/ManagedUsersResponse.ts
 models/ManagersResponse.ts
 models/NftCollection.ts
 models/NftGate.ts
+models/NftGatedTrackSignature.ts
+models/NftGatedTrackSignatureData.ts
+models/NftGatedTrackSignaturesResponse.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
@@ -68,6 +71,7 @@ models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
 models/RelatedArtistResponseFull.ts
 models/RemixablesResponse.ts
+models/RemixersCountResponse.ts
 models/RemixesResponse.ts
 models/RemixesResponseFull.ts
 models/RemixingResponse.ts
