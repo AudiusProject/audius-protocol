@@ -94,7 +94,14 @@ class OneOfModel(SchemaModel):
                     "oneOf" [
                         { "ref": "#/definitions/model_a" },
                         { "ref": "#/definitinos/model_b" }
-                    ]
+                    ],
+                    "discriminator": {
+                        "propertyName": "type",
+                        "mapping": {
+                            "a": "#/definitions/model_a",
+                            "b": "#/definitions/model_b"
+                        }
+                    }
                 }
             }
         }
