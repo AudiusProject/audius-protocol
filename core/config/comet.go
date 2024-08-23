@@ -47,6 +47,7 @@ func InitComet(logger *common.Logger, cfg *Config) error {
 	if common.FileExists(privValKeyFile) {
 		logger.Info("Found private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
+		pv = privval.LoadFilePV(privValKeyFile, privValStateFile)
 	} else {
 		pv = privval.NewFilePV(key, privValKeyFile, privValStateFile)
 		pv.Save()
