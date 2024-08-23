@@ -135,7 +135,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               >
                 {messages.reply}
               </PlainButton>
-              <CommentOverflowMenu commentId={commentId} isPinned={isPinned} />
+              <CommentOverflowMenu comment={comment} />
             </Flex>
           </>
         ) : null}

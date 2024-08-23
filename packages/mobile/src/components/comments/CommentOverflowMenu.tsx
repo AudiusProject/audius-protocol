@@ -4,11 +4,12 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection,
   useDeleteComment,
-  usePinComment
+  usePinComment,
+  useReportComment
 } from '@audius/common/context'
-import { accountSelectors } from '@audius/common/store'
+import { encodeHashId, removeNullable } from '@audius/common/utils'
+import type { Comment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
-import { useSelector } from 'react-redux'
 
 import { IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 
@@ -17,37 +18,59 @@ import {
   type ActionDrawerRow
 } from '../action-drawer'
 
-const { getUserId } = accountSelectors
-
 type CommentOverflowMenuProps = {
-  commentId: string
-  isPinned: boolean
+  comment: Comment
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
-  const { commentId, isPinned } = props
+  const {
+    comment: { id, userId, isPinned }
+  } = props
 
   // Need isOpen and isVisible to account for the closing animation
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
-  const currentUserId = useSelector(getUserId)
-  const { artistId, entityId, isEntityOwner } = useCurrentCommentSection()
+  const { artistId, entityId, isEntityOwner, currentUserId } =
+    useCurrentCommentSection()
+
+  // TODO: Move to context?
+  const currentUserIdString = encodeHashId(currentUserId)
+  const isCommentOwner = userId === currentUserIdString
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
+  const [reportComment] = useReportComment()
 
   const rows: ActionDrawerRow[] = [
-    {
+    isEntityOwner && {
       text: 'Pin',
-      callback: () => pinComment(commentId, isPinned)
+      callback: () => pinComment(id, isPinned)
     },
-    {
+    isEntityOwner &&
+      !isCommentOwner && {
+        text: 'Flag & Remove',
+        callback: () => reportComment(id)
+      },
+    !isCommentOwner && {
+      text: 'Mute User',
+      callback: () => {} // TODO
+    },
+    // TODO: check if receiving notifications
+    isCommentOwner && {
+      text: 'Turn Off Notifications',
+      callback: () => {} // TODO
+    },
+    isCommentOwner && {
+      text: 'Edit',
+      callback: () => {} // TODO
+    },
+    isCommentOwner && {
       text: 'Delete',
-      callback: () => deleteComment(commentId),
+      callback: () => deleteComment(id),
       isDestructive: true
     }
-  ]
+  ].filter(removeNullable)
 
   return (
     <>
