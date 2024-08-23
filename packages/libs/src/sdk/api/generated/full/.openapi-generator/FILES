@@ -32,6 +32,7 @@ models/FullGetSupporters.ts
 models/FullGetSupporting.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
+models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
 models/FullRemixersResponse.ts
@@ -65,6 +66,7 @@ models/PlaylistLibrary.ts
 models/ProfilePicture.ts
 models/Purchase.ts
 models/PurchaseGate.ts
+models/PurchasersCountResponse.ts
 models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
 models/RelatedArtistResponseFull.ts

@@ -110,6 +110,11 @@ from src.queries.get_managed_users import (
     get_user_managers_with_grants,
     is_active_manager,
 )
+from src.queries.get_purchasers import (
+    GetPurchasersArgs,
+    get_purchasers,
+    get_purchasers_count,
+)
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_remixers import GetRemixersArgs, get_remixers, get_remixers_count
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -2503,4 +2508,112 @@ class FullRemixersUsersCount(Resource):
             offset=offset,
         )
         count = get_remixers_count(args)
+        return success_response(count)
+
+
+purchasers_parser = pagination_with_current_user_parser.copy()
+purchasers_parser.add_argument(
+    "content_type",
+    required=False,
+    description="Type of content to filter by (track or album)",
+    type=str,
+)
+purchasers_parser.add_argument(
+    "content_id",
+    required=False,
+    description="Filters for users who have purchased the given track or album ID",
+    type=str,
+)
+purchasers_reponse = make_response(
+    "purchasers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_purchasers_reponse = make_full_response(
+    "full_purchasers_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+purchasers_count_response = make_full_response(
+    "purchasers_count_response", full_ns, fields.Integer()
+)
+
+USER_PURCHASERS_ROUTE = "/<string:id>/purchasers"
+
+
+@full_ns.route(USER_PURCHASERS_ROUTE)
+class FullPurchasersUsers(Resource):
+    @log_duration(logger)
+    def _get_user_purchasers(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = purchasers_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        content_type = args.get("content_type")
+        content_id = args.get("content_id")
+        decoded_content_id = (
+            decode_with_abort(content_id, full_ns) if content_id else None
+        )
+        args = GetPurchasersArgs(
+            seller_user_id=decoded_id,
+            current_user_id=current_user_id,
+            content_type=content_type,
+            content_id=decoded_content_id,
+            limit=limit,
+            offset=offset,
+        )
+        purchasers = get_purchasers(args)
+        users = list(map(extend_user, purchasers))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get purchasers""",
+        description="Gets the list of unique users who have purchased content by the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(purchasers_parser)
+    @full_ns.marshal_with(full_purchasers_reponse)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        return self._get_user_purchasers(id)
+
+
+@ns.route(USER_PURCHASERS_ROUTE)
+class PurchasersUsers(FullPurchasersUsers):
+    @ns.doc(
+        id="""Get purchasers""",
+        description="Gets the list of unique users who have purchased content by the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(purchasers_parser)
+    @ns.marshal_with(purchasers_reponse)
+    def get(self, id):
+        return super()._get_user_purchasers(id)
+
+
+@full_ns.route("/<string:id>/purchasers/count")
+class FullPurchasersUsersCount(Resource):
+    @full_ns.doc(
+        id="""Get purchasers count""",
+        description="Gets the list of users who have purchased content by the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(purchasers_parser)
+    @full_ns.marshal_with(purchasers_count_response)
+    def get(self, id):
+        decoded_user_id = decode_with_abort(id, full_ns)
+        args = purchasers_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+        content_type = args.get("content_type")
+        content_id = args.get("content_id")
+        decoded_content_id = (
+            decode_with_abort(content_id, full_ns) if content_id else None
+        )
+        args = GetPurchasersArgs(
+            seller_user_id=decoded_user_id,
+            current_user_id=current_user_id,
+            content_type=content_type,
+            content_id=decoded_content_id,
+        )
+        count = get_purchasers_count(args)
         return success_response(count)
