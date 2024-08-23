@@ -2,6 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { playlistPermalinkToHandleAndSlug } from '@audius/common/api'
 import {
   Kind,
   CollectionMetadata,
@@ -121,15 +122,15 @@ export function* retrieveCollection({
   permalink
 }: retrieveCollectionArgs) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
   const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
   if (permalink) {
-    const playlists = yield* call([apiClient, 'getPlaylistByPermalink'], {
-      currentUserId,
-      permalink
-    })
-    return playlists
+    const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
+    const { data = [] } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getPlaylistByHandleAndSlug],
+      { handle, slug, userId: OptionalId.parse(currentUserId) }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
   }
   if (playlistId) {
     const { data = [] } = yield* call(

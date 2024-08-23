@@ -11,13 +11,12 @@ import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
-import { StringKeys, RemoteConfigInstance } from '../remote-config'
+import { RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
 import {
   APIBlockConfirmation,
-  APIPlaylist,
   APIResponse,
   APISearch,
   APISearchAutocomplete,
@@ -45,8 +44,6 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  trendingPlaylists: (experiment: string | null) =>
-    experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
@@ -87,13 +84,6 @@ type GetSearchArgs = {
   hasDownloads?: boolean
   isPremium?: boolean
   sortMethod?: SearchSortMethod
-}
-
-type GetTrendingPlaylistsArgs = {
-  currentUserId: Nullable<ID>
-  limit: number
-  offset: number
-  time: 'week' | 'month' | 'year'
 }
 
 export type AssociatedWalletsResponse = {
@@ -326,35 +316,6 @@ export class AudiusAPIClient {
       isAutocomplete: true,
       ...adapted
     })
-  }
-
-  async getTrendingPlaylists({
-    currentUserId,
-    time,
-    limit,
-    offset
-  }: GetTrendingPlaylistsArgs) {
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      limit,
-      offset,
-      time
-    }
-
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.PLAYLIST_TRENDING_EXPERIMENT
-    )
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
-      params
-    )
-
-    if (!response) return []
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getBlockConfirmation(

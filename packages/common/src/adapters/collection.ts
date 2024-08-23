@@ -64,11 +64,7 @@ export const userCollectionMetadataFromSDK = (
     playlist_owner_id: decodedOwnerId,
     // TODO: Remove this when api is fixed to return UTC dates
     release_date: input.releaseDate
-      ? dayjs
-          .utc(input.releaseDate)
-          .local()
-          // utc -> local
-          .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+      ? dayjs.utc(input.releaseDate).local().toString()
       : null,
 
     // Nested Transformed Fields
