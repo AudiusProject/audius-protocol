@@ -1,6 +1,5 @@
 import { Suspense, useCallback } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -253,12 +252,7 @@ const TrackHeader = ({
     }
 
     return (
-      <Flex
-        gap='s'
-        wrap='wrap'
-        justifyContent='center'
-        className={styles.withSectionDivider}
-      >
+      <Flex gap='s' wrap='wrap' w='100%'>
         {filteredTags.map((tag) => (
           <SearchTag key={tag} source='track page'>
             {tag}
@@ -460,25 +454,6 @@ const TrackHeader = ({
       ) : null}
     </div>
   )
-}
-
-TrackHeader.defaultProps = {
-  loading: false,
-  playing: false,
-  active: true,
-  coverArtUrl: placeholderArt,
-  artistVerified: false,
-  description: '',
-
-  isOwner: false,
-  isAlbum: false,
-  hasTracks: false,
-  isPublished: false,
-  isSaved: false,
-
-  saveCount: 0,
-  tags: [],
-  onPlay: () => {}
 }
 
 export default TrackHeader

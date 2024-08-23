@@ -1,6 +1,10 @@
-import { matchPath } from 'react-router'
+import qs from 'query-string'
+import { matchPath, generatePath } from 'react-router'
+
+import { SearchCategory, SearchFilters } from '~/api/search'
 
 import { encodeUrlName } from './formatUtil'
+import { convertGenreLabelToValue, Genre } from './genres'
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
@@ -363,4 +367,26 @@ export const findRoute = (pathname: string) => {
     }
   }
   return null
+}
+
+type NullableSearchFilters = {
+  [key in keyof SearchFilters]: SearchFilters[key] | null
+}
+
+type SearchOptions = {
+  category?: SearchCategory
+  query?: string
+} & NullableSearchFilters
+
+export const searchPage = (searchOptions: SearchOptions) => {
+  const { category, ...searchParams } = searchOptions
+
+  if (searchParams.genre) {
+    searchParams.genre = convertGenreLabelToValue(searchParams.genre) as Genre
+  }
+
+  return qs.stringifyUrl({
+    url: generatePath(SEARCH_PAGE, { category }),
+    query: searchParams
+  })
 }

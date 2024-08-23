@@ -1,7 +1,7 @@
 import { useCollectionMetadata } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex } from '@audius/harmony-native'
 
 import { MetadataItem } from './MetadataItem'
 
@@ -12,19 +12,14 @@ type CollectionMetadataProps = {
 /**
  * The additional metadata shown at the bottom of the Collection Screen Header
  */
-export const CollectionMetadataList = ({
-  collectionId
-}: CollectionMetadataProps) => {
+export const CollectionMetadataList = (props: CollectionMetadataProps) => {
+  const { collectionId } = props
   const metadataItems = useCollectionMetadata({ collectionId })
 
   return (
     <Flex gap='l' w='100%' direction='row' wrap='wrap'>
       {metadataItems.map(({ label, id, value }) => (
-        <MetadataItem key={id} label={label}>
-          <Text variant='body' size='s' strength='strong'>
-            {value}
-          </Text>
-        </MetadataItem>
+        <MetadataItem key={id} label={label} value={value} />
       ))}
     </Flex>
   )
