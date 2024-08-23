@@ -1,9 +1,15 @@
 import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Kind,
   CollectionMetadata,
   Collection,
   UserCollectionMetadata,
-  ID
+  ID,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -12,7 +18,8 @@ import {
   cacheSelectors,
   reformatCollection,
   getContext,
-  CommonState
+  CommonState,
+  getSDK
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
 import { chunk } from 'lodash'
@@ -115,6 +122,7 @@ export function* retrieveCollection({
 }: retrieveCollectionArgs) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
   if (permalink) {
     const playlists = yield* call([apiClient, 'getPlaylistByPermalink'], {
@@ -124,11 +132,14 @@ export function* retrieveCollection({
     return playlists
   }
   if (playlistId) {
-    const playlists = yield* call([apiClient, 'getPlaylist'], {
-      currentUserId,
-      playlistId
-    })
-    return playlists
+    const { data = [] } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+      {
+        playlistId: Id.parse(playlistId),
+        userId: OptionalId.parse(currentUserId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
   }
   return []
 }

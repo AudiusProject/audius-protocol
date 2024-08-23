@@ -1,5 +1,6 @@
+import { userCollectionMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Kind } from '~/models'
+import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils'
 
 const collectionApi = createApi({
@@ -11,15 +12,15 @@ const collectionApi = createApi({
           playlistId,
           currentUserId
         }: { playlistId: Nullable<ID>; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
         if (!playlistId) return null
-        return (
-          await apiClient.getPlaylist({
-            playlistId,
-            currentUserId: currentUserId ?? null
-          })
-        )[0]
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.playlists.getPlaylist({
+          playlistId: Id.parse(playlistId),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return data.length ? userCollectionMetadataFromSDK(data[0]) : null
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },

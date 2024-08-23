@@ -1,4 +1,5 @@
 import { full } from '@audius/sdk'
+import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
@@ -58,6 +59,18 @@ export const userCollectionMetadataFromSDK = (
 
     variant: Variant.USER_GENERATED,
 
+    // Conversions
+    playlist_id: decodedPlaylistId,
+    playlist_owner_id: decodedOwnerId,
+    // TODO: Remove this when api is fixed to return UTC dates
+    release_date: input.releaseDate
+      ? dayjs
+          .utc(input.releaseDate)
+          .local()
+          // utc -> local
+          .format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ')
+      : null,
+
     // Nested Transformed Fields
     artists: input.artists
       ? transformAndCleanList(input.artists, resourceContributorFromSDK)
@@ -83,8 +96,6 @@ export const userCollectionMetadataFromSDK = (
         addedTimestampToPlaylistTrackId
       )
     },
-    playlist_id: decodedPlaylistId,
-    playlist_owner_id: decodedOwnerId,
     producer_copyright_line: input.producerCopyrightLine
       ? (snakecaseKeys(input.producerCopyrightLine) as Copyright)
       : null,
@@ -100,8 +111,7 @@ export const userCollectionMetadataFromSDK = (
     // Nullable fields
     cover_art: input.coverArt ?? null,
     cover_art_sizes: input.coverArtSizes ?? null,
-    description: input.description ?? null,
-    release_date: input.releaseDate ?? null
+    description: input.description ?? null
   }
 
   return newCollection
