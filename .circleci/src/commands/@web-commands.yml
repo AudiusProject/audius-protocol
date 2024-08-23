@@ -118,6 +118,15 @@ web-distribute:
     - attach_workspace:
         at: ./
     - run:
+        name: Install Node.js 18.7.0
+        command: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install 18.7.0
+          nvm alias default 18.7.0
+          nvm use 18.7.0
+    - run:
         name: Install dependencies
         command: rm -rf node_modules && SKIP_POD_INSTALL=true npm ci
     - when:
