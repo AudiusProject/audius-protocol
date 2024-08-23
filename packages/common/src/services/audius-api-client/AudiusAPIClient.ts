@@ -1,13 +1,12 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import { ID, StemTrackMetadata, CollectionMetadata } from '../../models'
+import { ID, CollectionMetadata } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
 } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'
-import { AuthHeaders } from '../audius-backend'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
@@ -22,9 +21,6 @@ import {
   APIResponse,
   APISearch,
   APISearchAutocomplete,
-  APIStem,
-  APITrack,
-  GetNFTGatedTrackSignaturesResponse,
   GetTipsResponse,
   OpaqueID
 } from './types'
@@ -54,27 +50,15 @@ const FULL_ENDPOINT_MAP = {
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
-  userAiTracksByHandle: (handle: OpaqueID) =>
-    `/users/handle/${handle}/tracks/ai_attributed`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
   getPlaylists: '/playlists',
   getPlaylistByPermalink: (handle: string, slug: string) =>
     `/playlists/by_permalink/${handle}/${slug}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
-  getStems: (trackId: OpaqueID, stemIds?: ID[]) =>
-    `/tracks/${trackId}/stems${
-      stemIds ? `?stemIds=${stemIds?.join(',')}` : ''
-    }`,
-  getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
-  getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
   getReaction: '/reactions',
-  getTips: '/tips',
-  getNFTGatedTrackSignatures: (userId: OpaqueID) =>
-    `/tracks/${userId}/nft-gated-signatures`,
-  getPremiumTracks: '/tracks/usdc-purchase'
+  getTips: '/tips'
 }
 
 export type QueryParams = {
@@ -90,30 +74,6 @@ type GetTrackStreamUrlArgs = {
     handle: string
   }
   abortOnUnreachable?: boolean
-}
-
-type GetUserTracksByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  sort?: 'date' | 'plays'
-  offset?: number
-  limit?: number
-  getUnlisted: boolean
-}
-
-type GetUserAiTracksByHandleArgs = {
-  handle: string
-  currentUserId: Nullable<ID>
-  sort?: 'date' | 'plays'
-  offset?: number
-  limit?: number
-  getUnlisted: boolean
-}
-
-type GetPremiumTracksArgs = {
-  currentUserId: Nullable<ID>
-  offset?: number
-  limit?: number
 }
 
 type GetCollectionMetadataArgs = {
@@ -137,30 +97,6 @@ type GetPlaylistsArgs = {
 type GetPlaylistByPermalinkArgs = {
   permalink: string
   currentUserId: Nullable<ID>
-}
-
-type GetStemsArgs = {
-  trackId: ID
-  stemIds?: ID[]
-}
-
-type GetRemixesArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit: number
-  offset: number
-}
-
-type RemixesResponse = {
-  tracks: APITrack[]
-  count: number
-}
-
-type GetRemixingArgs = {
-  trackId: ID
-  currentUserId: Nullable<ID>
-  limit: number
-  offset: number
 }
 
 type GetSearchArgs = {
@@ -227,13 +163,6 @@ export type GetTipsArgs = {
   minSlot?: number
   maxSlot?: number
   txSignatures?: string[]
-}
-
-export type GetNFTGatedTrackSignaturesArgs = {
-  userId: ID
-  trackMap: {
-    [id: ID]: string[]
-  }
 }
 
 type InitializationState =
@@ -347,179 +276,6 @@ export class AudiusAPIClient {
     )
 
     return trackUrl?.data
-  }
-
-  async getStems({
-    trackId,
-    stemIds
-  }: GetStemsArgs): Promise<StemTrackMetadata[]> {
-    this._assertInitialized()
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const response = await this._getResponse<APIResponse<APIStem[]>>(
-      FULL_ENDPOINT_MAP.getStems(encodedTrackId, stemIds)
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makeStemTrack)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getRemixes({ trackId, limit, offset, currentUserId }: GetRemixesArgs) {
-    this._assertInitialized()
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      userId: encodedUserId ?? undefined,
-      limit,
-      offset
-    }
-
-    const remixesResponse = await this._getResponse<
-      APIResponse<RemixesResponse>
-    >(FULL_ENDPOINT_MAP.getRemixes(encodedTrackId), params)
-
-    if (!remixesResponse) return { count: 0, tracks: [] }
-
-    const tracks = remixesResponse.data.tracks
-      .map(adapter.makeTrack)
-      .filter(removeNullable)
-    return { count: remixesResponse.data.count, tracks }
-  }
-
-  async getRemixing({
-    trackId,
-    limit,
-    offset,
-    currentUserId
-  }: GetRemixingArgs) {
-    this._assertInitialized()
-    const encodedTrackId = this._encodeOrThrow(trackId)
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      userId: encodedUserId ?? undefined,
-      limit,
-      offset
-    }
-
-    const remixingResponse = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.getRemixing(encodedTrackId),
-      params
-    )
-
-    if (!remixingResponse) return []
-
-    const tracks = remixingResponse.data.map(adapter.makeTrack)
-    return tracks
-  }
-
-  async getUserTracksByHandle({
-    handle,
-    currentUserId,
-    sort = 'date',
-    limit,
-    offset,
-    getUnlisted
-  }: GetUserTracksByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      sort,
-      limit,
-      offset
-    }
-
-    let headers = {}
-    if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      headers = {
-        [AuthHeaders.Message]: data,
-        [AuthHeaders.Signature]: signature
-      }
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.userTracksByHandle(handle),
-      params,
-      true,
-      PathType.VersionFullPath,
-      headers
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
-  }
-
-  async getUserAiTracksByHandle({
-    handle,
-    currentUserId,
-    sort = 'date',
-    limit,
-    offset,
-    getUnlisted
-  }: GetUserAiTracksByHandleArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      sort,
-      limit,
-      offset
-    }
-
-    let headers = {}
-    if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      headers = {
-        [AuthHeaders.Message]: data,
-
-        [AuthHeaders.Signature]: signature
-      }
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.userAiTracksByHandle(handle),
-      params,
-      true,
-      PathType.VersionFullPath,
-      headers
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
-  }
-
-  async getPremiumTracks({
-    currentUserId,
-    limit,
-    offset
-  }: GetPremiumTracksArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset
-    }
-
-    const response = await this._getResponse<APIResponse<APITrack[]>>(
-      FULL_ENDPOINT_MAP.getPremiumTracks,
-      params,
-      true,
-      PathType.VersionFullPath
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
-    return adapted
   }
 
   async getCollectionMetadata({
@@ -876,41 +632,6 @@ export class AudiusAPIClient {
         .filter(removeNullable)
     }
     return null
-  }
-
-  async getNFTGatedTrackSignatures({
-    userId,
-    trackMap
-  }: GetNFTGatedTrackSignaturesArgs) {
-    if (!Object.keys(trackMap).length) return null
-
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-
-    // To avoid making a POST request and thereby introducing a new pattern in the DN,
-    // we build a param string that represents the info we need to verify nft collection ownership.
-    // The trackMap is a map of track ids -> token ids.
-    // If the nft collection is not ERC1155, then there are no token ids.
-    // We append the track ids and token ids as query params, making sure they're the same length
-    // so that DN knows which token ids belong to which track ids.
-    // Example:
-    // trackMap: { 1: [1, 2], 2: [], 3: [1]}
-    // query params: '?track_ids=1&token_ids=1-2&track_ids=2&token_ids=&track_ids=3&token_ids=1'
-    const trackIdParams: string[] = []
-    const tokenIdParams: string[] = []
-    Object.keys(trackMap).forEach((trackId) => {
-      trackIdParams.push(trackId)
-      tokenIdParams.push(trackMap[trackId].join('-'))
-    })
-    const params = {
-      track_ids: trackIdParams,
-      token_ids: tokenIdParams
-    }
-
-    const response = await this._getResponse<
-      APIResponse<GetNFTGatedTrackSignaturesResponse>
-    >(FULL_ENDPOINT_MAP.getNFTGatedTrackSignatures(encodedUserId), params)
-    return response ? response.data : null
   }
 
   async getPlaylistUpdates(userId: number) {

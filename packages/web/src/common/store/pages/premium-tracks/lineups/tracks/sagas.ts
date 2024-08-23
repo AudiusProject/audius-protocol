@@ -1,9 +1,13 @@
-import { Track } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { OptionalId, Track } from '@audius/common/models'
 import {
   accountSelectors,
   premiumTracksPageLineupSelectors,
   premiumTracksPageLineupActions,
-  getContext
+  getSDK
 } from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
@@ -22,13 +26,13 @@ function* getPremiumTracks({
   limit: number
 }) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
-  const tracks = yield* call([apiClient, apiClient.getPremiumTracks], {
-    offset,
-    limit,
-    currentUserId
-  })
+  const { data = [] } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrendingUSDCPurchaseTracks],
+    { limit, offset, userId: OptionalId.parse(currentUserId) }
+  )
+  const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
   const processedTracks = yield* call(processAndCacheTracks, tracks)
   return processedTracks
 }

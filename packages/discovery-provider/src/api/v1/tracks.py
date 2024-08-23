@@ -88,7 +88,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
 
-from .models.tracks import blob_info
+from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_access_info, track_full
 
@@ -1749,17 +1749,25 @@ class FullUSDCPurchaseTracks(Resource):
         return success_response(premium_tracks)
 
 
+full_nft_gated_track_signatures_response = make_full_response(
+    "nft_gated_track_signatures_response",
+    full_ns,
+    fields.Nested(nft_gated_track_signature_mapping),
+)
+
+
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
 class NFTGatedTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Gated Track Signatures""",
+        id="""Get NFT Gated Track Signatures""",
         description="""Gets gated track signatures for passed in gated track ids""",
         params={
             "user_id": """The user for whom we are generating gated track signatures."""
         },
     )
     @full_ns.expect(track_signatures_parser)
+    @full_ns.marshal_with(full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
