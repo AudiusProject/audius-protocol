@@ -18,6 +18,16 @@ import {
   type ActionDrawerRow
 } from '../action-drawer'
 
+const messages = {
+  pin: 'Pin',
+  flagAndRemove: 'Flag & Remove',
+  muteUser: 'Mute User',
+  turnOffNotifications: 'Turn Off Notifications',
+  edit: 'Edit',
+  delete: 'Delete',
+  moreActions: 'more actions'
+}
+
 type CommentOverflowMenuProps = {
   comment: Comment
 }
@@ -44,29 +54,29 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
-      text: 'Pin',
+      text: messages.pin,
       callback: () => pinComment(id, isPinned)
     },
     isEntityOwner &&
       !isCommentOwner && {
-        text: 'Flag & Remove',
+        text: messages.flagAndRemove,
         callback: () => reportComment(id)
       },
     !isCommentOwner && {
-      text: 'Mute User',
+      text: messages.muteUser,
       callback: () => {} // TODO
     },
     // TODO: check if receiving notifications
     isCommentOwner && {
-      text: 'Turn Off Notifications',
+      text: messages.turnOffNotifications,
       callback: () => {} // TODO
     },
     isCommentOwner && {
-      text: 'Edit',
+      text: messages.edit,
       callback: () => {} // TODO
     },
     isCommentOwner && {
-      text: 'Delete',
+      text: messages.delete,
       callback: () => deleteComment(id),
       isDestructive: true
     }
@@ -75,7 +85,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   return (
     <>
       <IconButton
-        aria-label='more actions'
+        aria-label={messages.moreActions}
         icon={IconKebabHorizontal}
         size='s'
         color='subdued'
