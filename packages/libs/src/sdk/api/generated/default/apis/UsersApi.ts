@@ -701,7 +701,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of unique users who have purchased content by the given user
      */
     async getPurchasersRaw(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasersResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -743,7 +743,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of unique users who have purchased content by the given user
      */
     async getPurchasers(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersResponse> {
         const response = await this.getPurchasersRaw(params, initOverrides);

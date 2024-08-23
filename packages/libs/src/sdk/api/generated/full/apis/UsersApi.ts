@@ -193,9 +193,13 @@ export interface GetPurchasersRequest {
     contentId?: string;
 }
 
-export interface GetPurchasers0Request {
+export interface GetPurchasersCountRequest {
     id: string;
+    offset?: number;
+    limit?: number;
     userId?: string;
+    contentType?: string;
+    contentId?: string;
 }
 
 export interface GetPurchasesRequest {
@@ -940,7 +944,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of unique users who have purchased content by the given user
      */
     async getPurchasersRaw(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPurchasersResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -982,7 +986,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of unique users who have purchased content by the given user
      */
     async getPurchasers(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPurchasersResponse> {
         const response = await this.getPurchasersRaw(params, initOverrides);
@@ -991,17 +995,33 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of users who have purchased content by the given user
      */
-    async getPurchasers_1Raw(params: GetPurchasers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasersCountResponse>> {
+    async getPurchasersCountRaw(params: GetPurchasersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasersCountResponse>> {
         if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasers_1.');
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasersCount.');
         }
 
         const queryParameters: any = {};
 
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentType !== undefined) {
+            queryParameters['content_type'] = params.contentType;
+        }
+
+        if (params.contentId !== undefined) {
+            queryParameters['content_id'] = params.contentId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1017,10 +1037,10 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the list of unique users who have purchased content by the given user, or a specific content by that user if provided
+     * Gets the list of users who have purchased content by the given user
      */
-    async getPurchasers_1(params: GetPurchasers0Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersCountResponse> {
-        const response = await this.getPurchasers_1Raw(params, initOverrides);
+    async getPurchasersCount(params: GetPurchasersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersCountResponse> {
+        const response = await this.getPurchasersCountRaw(params, initOverrides);
         return await response.value();
     }
 
