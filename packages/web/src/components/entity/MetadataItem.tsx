@@ -1,20 +1,46 @@
-import { PropsWithChildren } from 'react'
+import { ReactNode } from 'react'
 
 import { Flex, Text } from '@audius/harmony'
 
-type MetadataItemProps = PropsWithChildren<{
-  label: string
-}>
+import { TextLink } from 'components/link'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-export const MetadataItem = ({ label, children }: MetadataItemProps) => {
+export type MetadataItemProps = {
+  label: string
+  value: string
+  url?: string
+  renderValue?: (value: string) => ReactNode
+}
+
+export const MetadataItem = (props: MetadataItemProps) => {
+  const isMobile = useIsMobile()
+  const { label, value, url, renderValue: renderValueProp } = props
+
+  const renderValue = () => {
+    const valueElement = renderValueProp ? renderValueProp(value) : value
+
+    return url ? (
+      <TextLink
+        to={url}
+        variant={isMobile ? 'visible' : 'default'}
+        size='s'
+        strength='strong'
+      >
+        {valueElement}
+      </TextLink>
+    ) : (
+      <Text size='s' strength='strong'>
+        {valueElement}
+      </Text>
+    )
+  }
+
   return (
     <Flex direction='row' alignItems='center' gap='xs'>
       <Text tag='dt' variant='label' color='subdued'>
         {label}
       </Text>
-      <Text tag='dd' variant='body' size='s' strength='strong'>
-        {children}
-      </Text>
+      {renderValue()}
     </Flex>
   )
 }

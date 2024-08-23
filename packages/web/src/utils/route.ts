@@ -1,12 +1,11 @@
-import { SearchCategory } from '@audius/common/api'
+import { SearchCategory, SearchFilters } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-// import { convertGenreLabelToValue } from '@audius/common/src/utils/genres'
-import { route } from '@audius/common/utils'
-import { Genre, Mood } from '@audius/sdk'
+import { convertGenreLabelToValue, route } from '@audius/common/utils'
+import { Genre } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
+import { stringifyUrl } from 'query-string'
 import { matchPath } from 'react-router'
-import { generatePath } from 'react-router-dom'
 
 import { env } from 'services/env'
 
@@ -206,32 +205,20 @@ export const pushUniqueRoute = (location: Location, route: string) => {
   return { type: '' }
 }
 
-const ELECTRONIC_PREFIX = 'Electronic - '
-
-export const getSearchPageLocation = ({
-  category,
-  ...searchParams
-}: {
+type SearchOptions = {
   category?: 'all' | 'tracks' | 'profiles' | 'albums' | 'playlists'
   query?: string
-  genre?: Genre
-  mood?: Mood
-  bpm?: string
-  key?: string
-  isVerified?: boolean
-  isPremium?: boolean
-  hasDownloads?: boolean
-}) => {
-  const params = Object.entries(searchParams).reduce((acc, [key, val]) => {
-    acc[key] =
-      key === 'genre'
-        ? (val as Genre).replace(ELECTRONIC_PREFIX, '')
-        : String(val)
-    return acc
-  }, {} as { [key: string]: string })
+} & SearchFilters
 
-  return {
-    pathname: generatePath(SEARCH_PAGE, { category }),
-    search: new URLSearchParams(params).toString()
+export const createSearchPageUrl = (searchOptions: SearchOptions) => {
+  const { category, ...searchParams } = searchOptions
+
+  if (searchParams.genre) {
+    searchParams.genre = convertGenreLabelToValue(searchParams.genre) as Genre
   }
+
+  return stringifyUrl({
+    url: `${SEARCH_PAGE}/${category}`,
+    query: searchParams
+  })
 }

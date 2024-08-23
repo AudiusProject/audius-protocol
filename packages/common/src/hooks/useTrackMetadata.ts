@@ -1,41 +1,46 @@
+import { Mood } from '@audius/sdk'
+
 import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
-import { FeatureFlags } from '~/services/remote-config/feature-flags'
+import { trpc } from '~/services/trpc'
 import { parseMusicalKey } from '~/utils/musicalKeys'
+import { searchPage } from '~/utils/route'
 
-import { getCanonicalName } from '../utils/genres'
+import { Genre, getCanonicalName } from '../utils/genres'
 import { formatDate, formatSecondsAsText } from '../utils/timeUtil'
 
-import { useFeatureFlag } from './useFeatureFlag'
-
 export enum TrackMetadataType {
+  ALBUM = 'album',
   DURATION = 'duration',
   GENRE = 'genre',
   MOOD = 'mood',
   KEY = 'key',
   BPM = 'bpm',
   RELEASE_DATE = 'releaseDate',
-  UPDATED_AT = 'updatedAt',
-  ALBUM = 'album'
+  UPDATED_AT = 'updatedAt'
 }
 
 type TrackMetadataProps = {
   trackId: ID
 }
 
-type TrackMetadataInfo = {
+export type TrackMetadataInfo = {
   id: TrackMetadataType
   label: string
   value: string
+  url?: string
 }
 
 export const useTrackMetadata = ({
   trackId
 }: TrackMetadataProps): TrackMetadataInfo[] => {
   const { data: track } = useGetTrackById({ id: trackId })
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
+
+  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
+    { trackId },
+    { enabled: !!trackId }
   )
+
   if (!track) return []
 
   const {
@@ -49,7 +54,20 @@ export const useTrackMetadata = ({
     is_custom_bpm: isCustomBpm
   } = track
 
+  const parsedBpm = bpm
+    ? parseFloat((bpm ?? 0).toFixed(isCustomBpm ? 2 : 0)).toString()
+    : ''
+
+  const parsedMusicalKey = musical_key ? parseMusicalKey(musical_key) ?? '' : ''
+
   const labels = [
+    {
+      id: TrackMetadataType.ALBUM,
+      label: 'Album',
+      value: albumInfo?.playlist_name ?? '',
+      url: albumInfo?.permalink,
+      isHidden: !albumInfo
+    },
     {
       id: TrackMetadataType.DURATION,
       label: 'Duration',
@@ -58,7 +76,8 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.GENRE,
       label: 'Genre',
-      value: getCanonicalName(genre)
+      value: getCanonicalName(genre),
+      url: searchPage({ category: 'tracks', genre: genre as Genre })
     },
     {
       id: TrackMetadataType.RELEASE_DATE,
@@ -69,21 +88,20 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.MOOD,
       label: 'Mood',
-      value: mood
+      value: mood,
+      url: searchPage({ category: 'tracks', mood: mood as Mood })
     },
     {
       id: TrackMetadataType.BPM,
       label: 'BPM',
-      value: bpm
-        ? parseFloat((bpm ?? 0).toFixed(isCustomBpm ? 2 : 0)).toString()
-        : '',
-      isHidden: !isSearchV2Enabled
+      value: parsedBpm,
+      url: searchPage({ category: 'tracks', bpm: parsedBpm })
     },
     {
       id: TrackMetadataType.KEY,
       label: 'Key',
-      value: musical_key ? parseMusicalKey(musical_key) ?? '' : '',
-      isHidden: !isSearchV2Enabled
+      value: parsedMusicalKey,
+      url: searchPage({ category: 'tracks', key: parsedMusicalKey })
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 

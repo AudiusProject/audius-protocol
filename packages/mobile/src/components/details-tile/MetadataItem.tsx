@@ -1,18 +1,41 @@
-import type { PropsWithChildren } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, Text, TextLink } from '@audius/harmony-native'
 
-type MetadataItemProps = PropsWithChildren<{
+export type MetadataItemProps = {
   label: string
-}>
+  value: string
+  url?: string
+  renderValue?: (value: string, link: ReactElement) => ReactNode
+}
 
-export const MetadataItem = ({ label, children }: MetadataItemProps) => {
+export const MetadataItem = (props: MetadataItemProps) => {
+  const { label, value, url, renderValue: renderValueProp } = props
+
+  const renderValue = () => {
+    const valueElement = url ? (
+      <TextLink url={url} variant='visible' size='s' strength='strong'>
+        {value}
+      </TextLink>
+    ) : (
+      <Text size='s' strength='strong'>
+        {value}
+      </Text>
+    )
+
+    if (renderValueProp) {
+      return renderValueProp(value, valueElement)
+    } else {
+      return valueElement
+    }
+  }
+
   return (
-    <Flex direction='row' alignItems='center' key={label} gap='xs'>
+    <Flex direction='row' alignItems='center' gap='xs'>
       <Text variant='label' color='subdued'>
         {label}
       </Text>
-      {children}
+      {renderValue()}
     </Flex>
   )
 }
