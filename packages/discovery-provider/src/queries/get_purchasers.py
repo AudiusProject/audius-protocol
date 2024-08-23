@@ -2,7 +2,6 @@ import logging
 from typing import Optional, TypedDict  # pylint: disable=C0302
 
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
-from src.models.users.user import User
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import add_query_pagination, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
