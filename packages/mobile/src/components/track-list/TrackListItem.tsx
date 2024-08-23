@@ -10,6 +10,7 @@ import {
   type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -29,7 +30,6 @@ import type {
 } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
 
 import {
   IconButton,

@@ -10,8 +10,10 @@ import type {
   User
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
@@ -20,6 +22,8 @@ import { makeStyles } from 'app/styles'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenRemixes } from './TrackScreenRemixes'
+
+const { getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -47,6 +51,7 @@ export const TrackScreenMainContent = ({
 }: TrackScreenMainContentProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
+  const currentUserId = useSelector(getUserId)
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
@@ -80,7 +85,7 @@ export const TrackScreenMainContent = ({
           <Flex flex={3}>
             <CommentSectionProvider
               artistId={track.owner_id}
-              currentUserId={user.user_id}
+              currentUserId={currentUserId}
               entityId={track.track_id}
               isEntityOwner={user.user_id === track.owner_id}
               playTrack={() => {}} // TODO

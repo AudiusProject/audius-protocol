@@ -51,7 +51,7 @@ func (cs *Console) blockPage(c echo.Context) error {
 		})
 	}
 
-	return utils.Render(c, components.BlockPage(components.BlockPageProps{
+	return utils.Render(c, cs.c.BlockPage(components.BlockPageProps{
 		Hash:      hex.EncodeToString(block.Block.Hash()),
 		Height:    fmt.Sprint(block.Block.Height),
 		Timestamp: block.Block.Time,

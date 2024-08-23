@@ -74,6 +74,7 @@ export const ChatList = (props: ChatListProps) => {
                 key={chat.chat_id}
                 chat={chat}
                 onChatClicked={onChatClicked}
+                currentChatId={currentChatId}
               />
             ) : (
               <ChatListItem

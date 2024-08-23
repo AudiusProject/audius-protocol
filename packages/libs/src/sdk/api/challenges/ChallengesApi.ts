@@ -327,7 +327,11 @@ export class ChallengesApi extends GeneratedChallengesApi {
       transactions.push(submitTransaction)
     }
     return await Promise.all(
-      transactions.map((t) => this.rewardManager.sendTransaction(t))
+      transactions.map(async (t) => {
+        return {
+          transactionSignature: await this.rewardManager.sendTransaction(t)
+        }
+      })
     )
   }
 

@@ -19,6 +19,7 @@ import type {
   FullTopListener,
   FullTrackResponse,
   FullTracksResponse,
+  NftGatedTrackSignaturesResponse,
   RemixablesResponse,
   RemixesResponseFull,
   RemixingResponse,
@@ -34,6 +35,8 @@ import {
     FullTrackResponseToJSON,
     FullTracksResponseFromJSON,
     FullTracksResponseToJSON,
+    NftGatedTrackSignaturesResponseFromJSON,
+    NftGatedTrackSignaturesResponseToJSON,
     RemixablesResponseFromJSON,
     RemixablesResponseToJSON,
     RemixesResponseFullFromJSON,
@@ -63,16 +66,16 @@ export interface GetFeelingLuckyTracksRequest {
     minFollowers?: number;
 }
 
-export interface GetGatedTrackSignaturesRequest {
-    userId: string;
-    trackIds?: Array<number>;
-    tokenIds?: Array<string>;
-}
-
 export interface GetMostLovedTracksRequest {
     userId?: string;
     limit?: number;
     withUsers?: boolean;
+}
+
+export interface GetNFTGatedTrackSignaturesRequest {
+    userId: string;
+    trackIds?: Array<number>;
+    tokenIds?: Array<string>;
 }
 
 export interface GetRecommendedTracksRequest {
@@ -323,44 +326,6 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets gated track signatures for passed in gated track ids
-     */
-    async getGatedTrackSignaturesRaw(params: GetGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (params.userId === null || params.userId === undefined) {
-            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getGatedTrackSignatures.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.trackIds) {
-            queryParameters['track_ids'] = params.trackIds;
-        }
-
-        if (params.tokenIds) {
-            queryParameters['token_ids'] = params.tokenIds;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Gets gated track signatures for passed in gated track ids
-     */
-    async getGatedTrackSignatures(params: GetGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getGatedTrackSignaturesRaw(params, initOverrides);
-    }
-
-    /**
-     * @hidden
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
     async getMostLovedTracksRaw(params: GetMostLovedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -395,6 +360,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getMostLovedTracks(params: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
         const response = await this.getMostLovedTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets gated track signatures for passed in gated track ids
+     */
+    async getNFTGatedTrackSignaturesRaw(params: GetNFTGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NftGatedTrackSignaturesResponse>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getNFTGatedTrackSignatures.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.trackIds) {
+            queryParameters['track_ids'] = params.trackIds;
+        }
+
+        if (params.tokenIds) {
+            queryParameters['token_ids'] = params.tokenIds;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NftGatedTrackSignaturesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets gated track signatures for passed in gated track ids
+     */
+    async getNFTGatedTrackSignatures(params: GetNFTGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NftGatedTrackSignaturesResponse> {
+        const response = await this.getNFTGatedTrackSignaturesRaw(params, initOverrides);
         return await response.value();
     }
 

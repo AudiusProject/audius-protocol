@@ -10,6 +10,7 @@ import { StringUSDC } from '~/models/Wallet'
 import { Nullable } from '~/utils/typeUtils'
 
 import { trackApiFetch } from './track'
+import { userApiFetch } from './user'
 import { HashId, Id } from './utils'
 
 type GetPurchaseListArgs = {
@@ -134,6 +135,12 @@ const purchasesApi = createApi({
             context
           )
         }
+        // fetch buyer metadata
+        const userIdsToFetch = purchases.map(({ buyerUserId }) => buyerUserId)
+        if (userIdsToFetch.length > 0) {
+          await userApiFetch.getUsersByIds({ ids: userIdsToFetch }, context)
+        }
+
         // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
         return purchases
       },

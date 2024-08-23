@@ -260,7 +260,7 @@ const commentsApi = createApi({
           id,
           (comment) => ({
             ...(comment as Comment),
-            reactCount: comment?.reactCount + isLiked ? 1 : -1
+            reactCount: (comment?.reactCount ?? 0) + (isLiked ? 1 : -1)
           }),
           dispatch
         )

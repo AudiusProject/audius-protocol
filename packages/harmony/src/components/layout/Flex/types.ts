@@ -12,6 +12,8 @@ export type BaseFlexProps = {
   justifyContent?: CSSProperties['justifyContent']
   wrap?: CSSProperties['flexWrap']
   inline?: boolean
+  row?: boolean
+  column?: boolean
 }
 
 export type FlexProps = BaseFlexProps & BoxProps

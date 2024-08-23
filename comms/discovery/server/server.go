@@ -422,7 +422,14 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 		return c.String(400, "bad request: "+err.Error())
 	}
 
-	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
+	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), IsBlast: false, Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
+	if c.QueryParam("is_blast") != "" {
+		isBlast, err := strconv.ParseBool(c.QueryParam("is_blast"))
+		if err != nil {
+			return err
+		}
+		params.IsBlast = isBlast
+	}
 	if c.QueryParam("before") != "" {
 		beforeCursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("before"))
 		if err != nil {

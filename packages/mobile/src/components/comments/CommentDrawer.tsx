@@ -2,47 +2,30 @@ import React, { useCallback, useEffect, useRef } from 'react'
 
 import {
   CommentSectionProvider,
-  useCurrentCommentSection,
-  usePostComment
+  useCurrentCommentSection
 } from '@audius/common/context'
-import { Status } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
   BottomSheetFooter,
-  BottomSheetTextInput,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
-import { Box, Divider, Flex, Text } from '@audius/harmony-native'
+import { Box, Divider, Flex } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
 
 import Skeleton from '../skeleton'
 
-import { CommentForm } from './CommentForm'
+import { CommentDrawerForm } from './CommentDrawerForm'
+import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
-const CommentDrawerHeader = () => {
-  const { comments, commentSectionLoading: isLoading } =
-    useCurrentCommentSection()
-
-  return (
-    <Flex>
-      <Flex direction='row' w='100%' justifyContent='space-between' p='l'>
-        <Text variant='body' size='m'>
-          Comments
-          {!isLoading && comments?.length ? (
-            <Text color='subdued'>&nbsp;({comments.length})</Text>
-          ) : null}
-        </Text>
-      </Flex>
-      <Divider orientation='horizontal' />
-    </Flex>
-  )
-}
+const { getUserId } = accountSelectors
 
 type CommentDrawerContentProps = {}
 
@@ -87,37 +70,6 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
   )
 }
 
-const useFormStyles = makeStyles(({ palette }) => ({
-  form: {
-    backgroundColor: palette.white
-  }
-}))
-
-const CommentDrawerForm = () => {
-  const styles = useFormStyles()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
-
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
-  }
-
-  return (
-    <Box
-      style={{
-        ...styles.form
-      }}
-    >
-      <Box p='l'>
-        <CommentForm
-          onSubmit={handlePostComment}
-          isLoading={postCommentStatus === Status.LOADING}
-          TextInputComponent={BottomSheetTextInput as any}
-        />
-      </Box>
-    </Box>
-  )
-}
-
 const BORDER_RADIUS = 40
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -141,9 +93,11 @@ const useStyles = makeStyles(({ palette }) => ({
 export const CommentDrawer = () => {
   const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const currentUserId = useSelector(getUserId)
+
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
-    data: { userId, entityId, isEntityOwner, artistId },
+    data: { entityId, isEntityOwner, artistId },
     isOpen,
     onClosed
   } = useDrawer('Comment')
@@ -176,7 +130,7 @@ export const CommentDrawer = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props} bottomInset={insets.bottom}>
             <CommentSectionProvider
-              currentUserId={userId}
+              currentUserId={currentUserId}
               artistId={artistId}
               entityId={entityId}
               isEntityOwner={isEntityOwner}
@@ -189,13 +143,15 @@ export const CommentDrawer = () => {
         onDismiss={handleClose}
       >
         <CommentSectionProvider
-          currentUserId={userId}
+          currentUserId={currentUserId}
           artistId={artistId}
           entityId={entityId}
           isEntityOwner={isEntityOwner}
           playTrack={() => {}} // TODO
         >
-          <CommentDrawerHeader />
+          <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
+
+          <Divider orientation='horizontal' />
           <CommentDrawerContent />
         </CommentSectionProvider>
       </BottomSheetModal>
