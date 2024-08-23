@@ -127,15 +127,13 @@ class OneOfModel(SchemaModel):
             "oneOf": [field.__schema__ for field in nested_fields],
         }
         if discriminator is not None and mapping is not None:
-            schema["discriminator"] = (
-                {
-                    "propertyName": discriminator,
-                    "mapping": {
-                        key: fields.Nested(model).__schema__["$ref"]
-                        for key, model in mapping.items()
-                    },
+            schema["discriminator"] = {
+                "propertyName": discriminator,
+                "mapping": {
+                    key: fields.Nested(model).__schema__["$ref"]
+                    for key, model in mapping.items()
                 },
-            )
+            }
 
         super(OneOfModel, self).__init__(
             name,
