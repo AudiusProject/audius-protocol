@@ -32,12 +32,23 @@ type ChallengeRewardNotificationProps = {
   notification: ChallengeRewardNotificationType
 }
 
+const trendingChallengeIdMapping = {
+  tt: 'trending-track',
+  tp: 'trending-playlist',
+  tut: 'trending-underground-track'
+}
+
 export const ChallengeRewardNotification = (
   props: ChallengeRewardNotificationProps
 ) => {
   const { notification } = props
   const { challengeId } = notification
-  const info = challengeRewardsConfig[challengeId]
+  const mappedChallengeRewardsConfigKey =
+    challengeId in trendingChallengeIdMapping
+      ? trendingChallengeIdMapping[challengeId]
+      : challengeId
+
+  const info = challengeRewardsConfig[mappedChallengeRewardsConfigKey]
   const amount = stringWeiToAudioBN(notification.amount)
   const navigation = useNotificationNavigation()
 
