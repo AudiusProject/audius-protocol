@@ -56,3 +56,11 @@ Integration tests are written with [ginkgo](https://github.com/onsi/ginkgo) and 
 ```bash
 ginkgo generate NewTestName
 ```
+
+### ts client gen
+
+```
+npm install -g npm install ts-proto
+
+protoc --plugin=/private/var/orion/.nvm/versions/node/v18.17.0/bin/protoc-gen-ts_proto --ts_proto_out=./ts-gen ./protocol.proto
+```

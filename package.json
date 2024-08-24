@@ -105,6 +105,8 @@
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
+    "@grpc/grpc-js": "^1.11.1",
+    "@improbable-eng/grpc-web": "^0.15.0",
     "@redux-devtools/remote": "0.8.0",
     "@types/express": "^4.17.21",
     "@web3modal/ethers": "4.1.0",
@@ -112,7 +114,8 @@
     "express": "^4.19.2",
     "pg": "8.8.0",
     "pino": "^9.1.0",
-    "react-native-google-cast": "4.6.2"
+    "react-native-google-cast": "4.6.2",
+    "ts-proto": "^2.0.3"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
