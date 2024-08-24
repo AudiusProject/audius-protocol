@@ -36,11 +36,12 @@ playlist_updates_response = make_full_response(
 )
 
 
-@full_ns.route("/<string:user_id>", doc=False)
+@full_ns.route("/<string:user_id>")
 class GetNotifications(Resource):
     @full_ns.doc(
-        id="""Get notifications for user ID""",
+        id="""Get Notifications""",
         description="""Get notifications for user ID""",
+        params={"user_id": "A User ID"},
     )
     @full_ns.expect(notifications_parser)
     @full_ns.marshal_with(notifications_response)
