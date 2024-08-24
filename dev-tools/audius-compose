@@ -490,9 +490,21 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
-@click.option("--ddex-deps", is_flag=True, help="Bring up only ddex dependency containers (Mongo and S3)")
-@click.option("--ddex-release-by-release", is_flag=True, help="Bring up only ddex containers (release-by-release choreography)")
-@click.option("--ddex-batched", is_flag=True, help="Bring up only ddex containers (batch choreography)")
+@click.option(
+    "--ddex-deps",
+    is_flag=True,
+    help="Bring up only ddex dependency containers (Mongo and S3)",
+)
+@click.option(
+    "--ddex-release-by-release",
+    is_flag=True,
+    help="Bring up only ddex containers (release-by-release choreography)",
+)
+@click.option(
+    "--ddex-batched",
+    is_flag=True,
+    help="Bring up only ddex containers (batch choreography)",
+)
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -525,8 +537,13 @@ def up(
 
     if ddex_deps or ddex_release_by_release or ddex_batched:
         generate_ddex_mongo_key(protocol_dir)
-        profiles = ["--profile=ddex-deps", *(["--profile=ddex"] if not ddex_deps else [])]
-        os.environ["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
+        profiles = [
+            "--profile=ddex-deps",
+            *(["--profile=ddex"] if not ddex_deps else []),
+        ]
+        os.environ["DDEX_CHOREOGRAPHY"] = (
+            "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
+        )
     else:
         AAO_DIR = pathlib.Path(
             os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")
@@ -672,7 +689,9 @@ def test_run(protocol_dir, service, args):
 
     if service.startswith("ddex"):
         env["COMPOSE_PROFILES"] = "ddex"
-        env["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
+        env["DDEX_CHOREOGRAPHY"] = (
+            "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
+        )
         generate_ddex_mongo_key(protocol_dir)
 
     result = subprocess.run(
@@ -797,7 +816,7 @@ def ps(protocol_dir):
             "{{json .}}",
         ],
         capture_output=True,
-        text=True
+        text=True,
     )
 
     if proc.returncode != 0:
