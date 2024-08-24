@@ -630,7 +630,7 @@ export type MilestoneNotification = BaseNotification &
         type: NotificationType.Milestone
         entityType: Entity
         entityId: ID
-        achievement: Achievement
+        achievement: Exclude<Achievement, Achievement.Followers>
         value: number
       }
     | {

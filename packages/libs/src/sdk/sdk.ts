@@ -17,8 +17,7 @@ import {
   SearchApi as SearchApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
-  TransactionsApi as TransactionsApiFull,
-  NotificationsApi as NotificationsApiFull
+  TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
@@ -360,8 +359,7 @@ const initializeApis = ({
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
     tips: new TipsApiFull(generatedApiClientConfigFull),
-    transactions: new TransactionsApiFull(generatedApiClientConfigFull),
-    notifications: new NotificationsApiFull(generatedApiClientConfigFull)
+    transactions: new TransactionsApiFull(generatedApiClientConfigFull)
   }
 
   return {
