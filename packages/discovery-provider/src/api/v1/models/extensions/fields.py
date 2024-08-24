@@ -64,59 +64,20 @@ class NestedOneOf(fields.Nested):
 
     The throwing behavior is different from other fields, and the "marshalling"
     behaves more like "validating". Care should be taken to ensure only the
-    exact matching data is represented in this field. The only exception is when
-    using a discriminator, in which case the marshalling works how one would
-    expect.
+    exact matching data is represented in this field.
 
     example:
+    ```
+    ns.add_model("my_one_of", OneOfModel("my_one_of", [fields.Nested(model_a), fields.Nested(model_b)]))
+    my_model = ns.model("my_model", { "my_field": NestedOneOf(my_one_of, allow_null=True) })
+    ```
 
-    .. code-block:: python
-        ns.add_model(
-            "my_one_of",
-            OneOfModel(
-                "my_one_of",
-                [
-                    model_a,
-                    model_b
-                ]
-            )
-        )
-        my_model = ns.model(
-            "my_model",
-            {
-                "my_field": NestedOneOf(my_one_of, allow_null=True)
-            }
-        )
-
-    discriminator example:
-
-    .. code-block:: python
-        ns.add_model(
-            "my_one_of",
-            OneOfModel(
-                "my_one_of",
-                {
-                    "a": model_a,
-                    "b": model_b
-                },
-                discriminator: "type"
-            )
-        )
-        my_model = ns.model(
-            "my_model",
-            {
-                "my_field": NestedOneOf(my_one_of)
-            }
-        )
-
-
-    See also: usages in tracks.py (access_gate) and notifications.py
+    See also: access_gate usage in tracks.py
 
     """
 
     def __init__(self, model: OneOfModel, **kwargs):
         super(NestedOneOf, self).__init__(model, **kwargs)
-        self.model = model
 
     def output(self, key, data, **kwargs):
         value = get_value(key, data)
@@ -126,20 +87,9 @@ class NestedOneOf(fields.Nested):
             elif self.default is not None:
                 return self.default
         logs = []
-        if self.model.discriminator is not None and self.model.mapping is not None:
-            if (
-                self.model.discriminator in value
-                and value[self.model.discriminator] in self.model.mapping
-            ):
-                return marshal(
-                    value, self.model.mapping[value[self.model.discriminator]]
-                )
-            else:
-                f"fields.py | NestedOneOf | Failed to marshal discriminator={self.model.discriminator} value={value} fields={self.model.fields.keys()}"
-
-        for model in self.model.models:
+        for field in self.model.fields:
             try:
-                marshalled = marshal(value, model)
+                marshalled = marshal(value, field.nested)
                 if value == marshalled:
                     return value
                 logs.append(f"marshalled={marshalled}")

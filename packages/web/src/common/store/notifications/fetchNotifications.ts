@@ -1,13 +1,8 @@
-import {
-  notificationFromSDK,
-  transformAndCleanList
-} from '@audius/common/adapters'
-import { Id } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, getContext, getSDK } from '@audius/common/store'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
+import { getContext } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
-import { call, select } from 'typed-redux-saga'
+import { partition } from 'lodash'
+import { call } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {
   limit: number
@@ -21,20 +16,50 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     timeOffset = Math.round(new Date().getTime() / 1000), // current unix timestamp (sec)
     groupIdOffset
   } = config
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const remoteConfig = yield* getContext('remoteConfigInstance')
 
-  return yield* call(fetchDiscoveryNotifications, {
+  yield* call(remoteConfig.waitForRemoteConfig)
+
+  const useDiscoveryNotifications = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.DISCOVERY_NOTIFICATIONS
+  )
+
+  const discoveryNotificationsGenesisUnixTimestamp = remoteConfig.getRemoteVar(
+    IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP
+  )
+
+  const shouldFetchNotificationFromDiscovery =
+    useDiscoveryNotifications &&
+    discoveryNotificationsGenesisUnixTimestamp &&
+    timeOffset > discoveryNotificationsGenesisUnixTimestamp
+
+  if (shouldFetchNotificationFromDiscovery) {
+    return yield* call(fetchDiscoveryNotifications, {
+      limit,
+      timeOffset,
+      groupIdOffset
+    })
+  }
+
+  return yield* call(fetchIdentityNotifications, limit, timeOffset)
+}
+
+function* fetchIdentityNotifications(limit: number, timeOffset: number) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  return yield* call(audiusBackendInstance.getNotifications, {
     limit,
-    timeOffset,
-    groupIdOffset
+    timeOffset
   })
 }
 
 function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
   const { timeOffset, groupIdOffset, limit } = params
-  const sdk = yield* getSDK()
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const userId = yield* select(accountSelectors.getUserId)
-  const encodedUserId = Id.parse(userId)
+  const remoteConfig = yield* getContext('remoteConfigInstance')
 
   const isRepostOfRepostEnabled = yield* call(
     getFeatureEnabled,
@@ -73,32 +98,71 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
   )
 
   const validTypes = [
-    isRepostOfRepostEnabled ? ValidTypes.RepostOfRepost : null,
-    isSaveOfRepostEnabled ? ValidTypes.SaveOfRepost : null,
-    isTrendingPlaylistEnabled ? ValidTypes.TrendingPlaylist : null,
-    isTrendingUndergroundEnabled ? ValidTypes.TrendingUnderground : null,
-    isTastemakerEnabled ? ValidTypes.Tastemaker : null,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
-    isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
-    isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
-    isManagerModeEnabled ? ValidTypes.RequestManager : null,
-    isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
-    ValidTypes.ClaimableReward
+    isRepostOfRepostEnabled ? 'repost_of_repost' : null,
+    isSaveOfRepostEnabled ? 'save_of_repost' : null,
+    isTrendingPlaylistEnabled ? 'trending_playlist' : null,
+    isTrendingUndergroundEnabled ? 'trending_underground' : null,
+    isTastemakerEnabled ? 'tastemaker' : null,
+    isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
+    isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
+    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null,
+    isManagerModeEnabled ? 'request_manager' : null,
+    isManagerModeEnabled ? 'approve_manager_request' : null,
+    'claimable_reward'
   ].filter(removeNullable)
 
-  const { data } = yield* call(
-    [sdk.full.notifications, sdk.full.notifications.getNotifications],
+  const discoveryNotifications = yield* call(
+    audiusBackendInstance.getDiscoveryNotifications,
     {
       timestamp: timeOffset,
-      groupId: groupIdOffset,
-      validTypes,
-      userId: encodedUserId,
-      limit
+      groupIdOffset,
+      limit,
+      validTypes
     }
   )
-  const notifications = data
-    ? transformAndCleanList(data.notifications, notificationFromSDK)
-    : []
 
-  return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
+  if ('error' in discoveryNotifications) return discoveryNotifications
+
+  const { notifications, totalUnviewed } = discoveryNotifications
+
+  const discoveryNotificationsGenesisUnixTimestamp = remoteConfig.getRemoteVar(
+    IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP
+  )
+
+  // discovery notifications created after the genesis timestamp are valid,
+  // while notifications created before should be discarded
+  const [validNotifications, invalidNotifications] = partition(
+    notifications,
+    ({ timestamp }) =>
+      discoveryNotificationsGenesisUnixTimestamp &&
+      timestamp > discoveryNotificationsGenesisUnixTimestamp
+  )
+
+  if (invalidNotifications.length === 0) {
+    return { notifications: validNotifications, totalUnviewed }
+  }
+
+  // We have reached the end of valid discovery notifications, fetch identity
+  // notifications for remaining
+
+  const newLimit = limit - validNotifications.length
+  const newTimestamp =
+    validNotifications[validNotifications.length - 1]?.timestamp ?? timeOffset
+
+  const identityNotifications = yield* call(
+    fetchIdentityNotifications,
+    newLimit,
+    newTimestamp
+  )
+
+  if ('error' in identityNotifications) {
+    return { notifications: validNotifications, totalUnviewed }
+  } else {
+    return {
+      notifications: validNotifications.concat(
+        identityNotifications.notifications
+      ),
+      totalUnviewed
+    }
+  }
 }

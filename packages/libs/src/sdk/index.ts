@@ -14,8 +14,7 @@ export { ResolveApi } from './api/ResolveApi'
 export { ChallengesApi } from './api/challenges/ChallengesApi'
 export {
   GetAudioTransactionHistorySortMethodEnum,
-  GetAudioTransactionHistorySortDirectionEnum,
-  GetNotificationsValidTypesEnum
+  GetAudioTransactionHistorySortDirectionEnum
 } from './api/generated/full'
 export * from './api/challenges/types'
 export * from './api/chats/clientTypes'
