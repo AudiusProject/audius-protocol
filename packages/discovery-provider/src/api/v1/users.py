@@ -148,6 +148,10 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_tracks_remixed import (
+    GetUserTracksRemixedArgs,
+    get_user_tracks_remixed,
+)
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.query_helpers import (
@@ -2617,3 +2621,28 @@ class FullPurchasersUsersCount(Resource):
         )
         count = get_purchasers_count(args)
         return success_response(count)
+
+
+USER_TRACKS_REMIXED_ROUTE = USER_TRACKS_ROUTE + "/remixed"
+
+
+@full_ns.route(USER_TRACKS_REMIXED_ROUTE)
+class FullUserTracksRemixed(Resource):
+    @full_ns.doc(
+        id="Get User Tracks Remixed",
+        description="Gets tracks owned by the user which have been remixed by another track",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(tracks_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = tracks_route_parser.parse_args()
+        query_args = GetUserTracksRemixedArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        tracks = get_user_tracks_remixed(query_args)
+        return success_response(list(map(extend_track, tracks)))
