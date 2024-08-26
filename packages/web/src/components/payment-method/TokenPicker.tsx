@@ -12,6 +12,10 @@ type Asset = {
   symbol: string
 }
 
+const messages = {
+  searchToken: 'Search Token'
+}
+
 export const TokenPicker = ({
   selectedTokenAddress,
   onChange,
@@ -62,7 +66,7 @@ export const TokenPicker = ({
       menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { maxHeight: 400, maxWidth: 260 }
+        css: { maxHeight: 400, maxWidth: 300 }
       }}
       options={options}
       value={selectedTokenAddress}
@@ -70,6 +74,7 @@ export const TokenPicker = ({
       onOpen={onOpen}
       showFilterInput
       variant='replaceLabel'
+      filterInputProps={{ label: messages.searchToken }}
     />
   )
 }

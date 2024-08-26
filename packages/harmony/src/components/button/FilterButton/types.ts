@@ -27,6 +27,10 @@ export type FilterButtonOptionType<Value extends string> = {
    * A leading element to display before the filter button label
    */
   labelLeadingElement?: JSX.Element
+  /**
+   * Text to display after the element
+   */
+  helperText?: string
 }
 
 type ChildrenProps<Value> = {
