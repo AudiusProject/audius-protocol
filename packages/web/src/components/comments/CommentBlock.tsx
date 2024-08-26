@@ -68,10 +68,14 @@ export const CommentBlock = (props: CommentBlockProps) => {
 
   return (
     <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
-      <Avatar
-        css={{ width: 44, height: 44, flexShrink: 0 }}
-        src={profileImage}
-      />
+      <Box css={{ flexShrink: 0 }}>
+        <UserLink userId={commentUserId} disabled={isDeleting} popover noText>
+          <Avatar
+            css={{ width: 44, height: 44, flexShrink: 0 }}
+            src={profileImage}
+          />
+        </UserLink>
+      </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
           <CommentBadges
@@ -85,7 +89,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
-          <UserLink userId={commentUserId} disabled={isDeleting} />
+          <UserLink userId={commentUserId} disabled={isDeleting} popover />
           <Flex gap='xs' alignItems='center' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
