@@ -255,10 +255,7 @@ def parse_route_transaction_memos(
                     type=RouteTransactionMemoType.recovery, metadata=None
                 )
                 continue
-            if (
-                memo.startswith(GEO_MEMO_STRING)
-                and shared_config["discprov"]["env"] != "dev"
-            ):
+            if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
                 if not geo_data:
                     logger.warn(
