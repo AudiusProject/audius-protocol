@@ -81,6 +81,7 @@ from src.api.v1.models.users import (
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.queries.get_content_sold import GetContentSoldArgs, get_content_sold
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -115,6 +116,7 @@ from src.queries.get_purchasers import (
     get_purchasers,
     get_purchasers_count,
 )
+from src.queries.
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_remixers import GetRemixersArgs, get_remixers, get_remixers_count
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -2617,3 +2619,57 @@ class FullPurchasersUsersCount(Resource):
         )
         count = get_purchasers_count(args)
         return success_response(count)
+
+
+content_sold_parser = pagination_with_current_user_parser.copy()
+content_sold_response = make_response(
+    "content_sold_response", ns, fields.Nested(tracks_and_playlists_ids)
+)
+full_content_sold_response = make_full_response(
+    "content_sold_full_response", full_ns, fields.Nested(tracks_and_playlists_ids)
+)
+
+USER_CONTENT_SOLD_ROUTE = "/<string:id>/sold/"
+
+
+@full_ns.route(USER_CONTENT_SOLD_ROUTE)
+class FullContentSold(Resource):
+    @log_duration(logger)
+    def _get_content_sold(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = content_sold_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = GetContentSoldArgs(
+            seller_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+        )
+        content = get_content_sold(args)
+        return success_response(content)
+
+    @full_ns.doc(
+        id="""Get content sold""",
+        description="Gets content owned by user that has been purchased at least once",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(content_sold_parser)
+    @full_ns.marshal_with(full_content_sold_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        return self._get_content_sold(id)
+
+
+@ns.route(USER_CONTENT_SOLD_ROUTE)
+class ContentSold(FullContentSold):
+    @ns.doc(
+        id="""Get content sold""",
+        description="Gets content owned by user that has been purchased at least once",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(content_sold_parser)
+    @ns.marshal_with(content_sold_response)
+    def get(self, id):
+        return super()._get_content_sold(id)
