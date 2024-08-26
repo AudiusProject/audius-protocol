@@ -50,7 +50,9 @@ export const CommentHeader = ({
                 cursor: 'pointer',
                 transition: motion.hover
               }}
-              onClick={triggerPopup}
+              onClick={() => {
+                triggerPopup()
+              }}
               className='kebabIcon'
             />
           )}

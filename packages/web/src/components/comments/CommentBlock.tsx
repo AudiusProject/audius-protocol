@@ -90,7 +90,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
         ) : null}
         <Flex gap='s' alignItems='center'>
           <UserLink userId={commentUserId} disabled={isDeleting} popover />
-          <Flex gap='xs' alignItems='center' h='100%'>
+          <Flex gap='xs' alignItems='flex-end' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
               <>
