@@ -258,12 +258,18 @@ def parse_route_transaction_memos(
             if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
                 if not geo_data:
-                    raise Exception("No geo data found in geo memo")
+                    logger.warn(
+                        f"index_payment_router.py | No geo data found in geo memo: {memo}"
+                    )
+                    continue
                 city = geo_data.get("city")
                 region = geo_data.get("region")
                 country = geo_data.get("country")
                 if not country:
-                    raise Exception("No country found in geo data")
+                    logger.warn(
+                        f"index_payment_router.py | No country found in geo memo: {memo}"
+                    )
+                    continue
                 geo_memo = GeoMetadataDict(
                     {
                         "city": city,
