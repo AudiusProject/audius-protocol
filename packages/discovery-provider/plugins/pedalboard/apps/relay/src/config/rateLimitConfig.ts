@@ -190,6 +190,11 @@ const RELAY_RATE_LIMITS = {
     app: 10,
     allowlist: 1000,
   },
+  DownloadTrack: {
+    owner: 2000,
+    app: 2000,
+    allowlist: 2000,
+  },
   SavePlaylist: {
     owner: 2000,
     app: 10,

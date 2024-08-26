@@ -1,14 +1,5 @@
+import { route } from '@audius/common/utils'
 import { COPYRIGHT_TEXT } from '@audius/web/src/utils/copyright'
-import {
-  AUDIUS_CAREERS_LINK,
-  AUDIUS_CONTACT_EMAIL_LINK,
-  AUDIUS_DISCORD_LINK,
-  AUDIUS_HELP_LINK,
-  AUDIUS_INSTAGRAM_LINK,
-  AUDIUS_TWITTER_LINK,
-  PRIVACY_POLICY,
-  TERMS_OF_SERVICE
-} from '@audius/web/src/utils/route'
 import { View, Image } from 'react-native'
 import codePush from 'react-native-code-push'
 import { useAsync } from 'react-use'
@@ -83,29 +74,29 @@ export const AboutScreen = () => {
             <Text variant='body2'>{messages.copyright}</Text>
           </View>
         </View>
-        <SettingsRow url={AUDIUS_DISCORD_LINK} firstItem>
+        <SettingsRow url={route.AUDIUS_DISCORD_LINK} firstItem>
           <SettingsRowLabel label={messages.discord} icon={IconDiscord} />
         </SettingsRow>
-        <SettingsRow url={AUDIUS_TWITTER_LINK}>
+        <SettingsRow url={route.AUDIUS_TWITTER_LINK}>
           <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
         </SettingsRow>
-        <SettingsRow url={AUDIUS_INSTAGRAM_LINK}>
+        <SettingsRow url={route.AUDIUS_INSTAGRAM_LINK}>
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
         </SettingsRow>
-        <SettingsRow url={AUDIUS_CONTACT_EMAIL_LINK}>
+        <SettingsRow url={route.AUDIUS_CONTACT_EMAIL_LINK}>
           <SettingsRowLabel label={messages.contact} icon={IconMessage} />
         </SettingsRow>
-        <SettingsRow url={AUDIUS_CAREERS_LINK}>
+        <SettingsRow url={route.AUDIUS_CAREERS_LINK}>
           <SettingsRowLabel label={messages.careers} icon={IconUserGroup} />
         </SettingsRow>
         <Divider />
-        <SettingsRow url={AUDIUS_HELP_LINK}>
+        <SettingsRow url={route.AUDIUS_HELP_LINK}>
           <SettingsRowLabel label={messages.help} />
         </SettingsRow>
-        <SettingsRow url={`https://audius.co${TERMS_OF_SERVICE}`}>
+        <SettingsRow url={`https://audius.co${route.TERMS_OF_SERVICE}`}>
           <SettingsRowLabel label={messages.terms} />
         </SettingsRow>
-        <SettingsRow url={`https://audius.co${PRIVACY_POLICY}`}>
+        <SettingsRow url={`https://audius.co${route.PRIVACY_POLICY}`}>
           <SettingsRowLabel label={messages.privacy} />
         </SettingsRow>
       </ScreenContent>

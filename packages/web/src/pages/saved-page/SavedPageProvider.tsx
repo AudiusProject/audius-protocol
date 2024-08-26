@@ -27,6 +27,7 @@ import {
   SavedPageTrack,
   TrackRecord
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -37,10 +38,10 @@ import { Dispatch } from 'redux'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const {
@@ -244,11 +245,13 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const playingIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
-    const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
-      (item) =>
-        item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-        item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-    )
+    const filteredMetadata = this.formatMetadata(trackMetadatas)
+      .filter((item) => !item._marked_deleted && !item.is_delete)
+      .filter(
+        (item) =>
+          item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+          item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+      )
     const filteredIndex =
       playingIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)

@@ -292,7 +292,10 @@ const RenderForm = ({
     { setValue: setPurchaseMethodMintAddress }
   ] = useField(PURCHASE_METHOD_MINT_ADDRESS)
 
-  const { data: balance } = useUSDCBalance({ isPolling: true })
+  const { data: balance } = useUSDCBalance({
+    isPolling: true,
+    commitment: 'confirmed'
+  })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance

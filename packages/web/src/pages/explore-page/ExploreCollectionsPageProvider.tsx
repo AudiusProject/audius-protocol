@@ -5,13 +5,14 @@ import {
   explorePageCollectionsActions,
   ExploreCollectionsVariant
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
-import { EXPLORE_MOOD_PLAYLISTS_PAGE, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 
 import {
   EXPLORE_COLLECTIONS_MAP,
@@ -22,6 +23,7 @@ import {
 import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
 import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
 
+const { EXPLORE_MOOD_PLAYLISTS_PAGE } = route
 const { fetch } = explorePageCollectionsActions
 const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 
@@ -44,6 +46,11 @@ const ExploreCollectionsPageProvider = ({
   children: Children
 }: ExploreCollectionsPageProviderProps) => {
   const { location } = useHistory()
+  const match = matchPath<{
+    mood: string
+  }>(getPathname(location), {
+    path: EXPLORE_MOOD_PLAYLISTS_PAGE
+  })
   const [info, setInfo] = useState<
     ExploreCollection | ExploreMoodCollection | null
   >(null)
@@ -51,12 +58,7 @@ const ExploreCollectionsPageProvider = ({
   useEffect(() => {
     if (variant === ExploreCollectionsVariant.MOOD) {
       // Mood playlist
-      const match = matchPath<{
-        mood: string
-      }>(getPathname(location), {
-        path: EXPLORE_MOOD_PLAYLISTS_PAGE
-      })
-      if (match && match.params.mood) {
+      if (match?.params.mood) {
         const collectionInfo = EXPLORE_MOOD_COLLECTIONS_MAP[match.params.mood]
         fetch(variant, collectionInfo.moods)
         setInfo(collectionInfo)
@@ -68,7 +70,8 @@ const ExploreCollectionsPageProvider = ({
       fetch(variant)
       setInfo(EXPLORE_COLLECTIONS_MAP[variant])
     }
-  }, [variant, fetch, location])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant, fetch])
 
   const title = info
     ? info.variant === ExploreCollectionsVariant.MOOD

@@ -1,3 +1,4 @@
+import { route } from '@audius/common/utils'
 import {
   IconMessage as IconContact,
   IconUserGroup as IconCareers,
@@ -12,7 +13,13 @@ import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import Page from 'components/page/Page'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
-import {
+
+import packageInfo from '../../../../../package.json'
+
+import styles from './AboutSettingsPage.module.css'
+import settingsPageStyles from './SettingsPage.module.css'
+
+const {
   AUDIUS_CAREERS_LINK,
   AUDIUS_CONTACT_EMAIL_LINK,
   AUDIUS_DISCORD_LINK,
@@ -21,13 +28,7 @@ import {
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
-} from 'utils/route'
-
-import packageInfo from '../../../../../package.json'
-
-import styles from './AboutSettingsPage.module.css'
-import settingsPageStyles from './SettingsPage.module.css'
-
+} = route
 const { version: appVersion } = packageInfo
 
 const messages = {

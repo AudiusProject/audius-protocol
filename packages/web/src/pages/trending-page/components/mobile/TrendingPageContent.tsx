@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import { Name, TimeRange } from '@audius/common/models'
 import { trendingPageLineupActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconAllTime,
   IconCalendarDay as IconDay,
@@ -23,13 +24,14 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
-import { BASE_URL, TRENDING_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 import { scrollWindowToTop } from 'utils/scroll'
 
 import RewardsBanner from '../RewardsBanner'
 
 import TrendingFilterButton from './TrendingFilterButton'
 import styles from './TrendingPageContent.module.css'
+const { TRENDING_PAGE } = route
 const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
 

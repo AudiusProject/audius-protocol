@@ -12,6 +12,10 @@ from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
+from src.queries.get_notifications import (
+    NotificationType,
+    default_valid_notification_types,
+)
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
@@ -699,18 +703,11 @@ class DescriptiveArgument(reqparse.Argument):
             return None
         param = super().__schema__
         param["description"] = self.description
-        return param
 
-
-class ListEnumArgument(DescriptiveArgument):
-    """
-    A descriptive argument that's used for a list of enum values.
-    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
-    """
-
-    @property
-    def __schema__(self):
-        param = super().__schema__
+        # Allow for a list of enum values to be represented properly in an
+        # argument's schema. By default, the enum field is mistakenly added to
+        # the root "enum" field rather than the items "enum" field.
+        # See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
         if "enum" in param and "items" in param:
             param["items"]["enum"] = param["enum"]
             del param["enum"]
@@ -1069,6 +1066,8 @@ notifications_parser.add_argument(
     type=str,
     action="append",
     description="Additional valid notification types to return",
+    choices=[n.value for n in NotificationType],
+    default=default_valid_notification_types,
 )
 
 

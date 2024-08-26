@@ -5,7 +5,7 @@ import {
   walletActions,
   getContext
 } from '@audius/common/store'
-import { waitForValue, doEvery } from '@audius/common/utils'
+import { waitForValue, doEvery, route } from '@audius/common/utils'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
@@ -13,11 +13,12 @@ import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
-import { DASHBOARD_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { actions as dashboardActions } from './slice'
 import ArtistDashboardState from './types'
+
+const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
 const getAccountUser = accountSelectors.getAccountUser
 

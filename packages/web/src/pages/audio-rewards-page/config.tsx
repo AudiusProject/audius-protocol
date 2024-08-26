@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 
 import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
-import { Nullable, challengeRewardsConfig } from '@audius/common/utils'
+import { Nullable, challengeRewardsConfig, route } from '@audius/common/utils'
 import {
   IconArrowRight,
   IconCheck,
@@ -10,7 +10,8 @@ import {
 } from '@audius/harmony'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
-import {
+
+const {
   EXPLORE_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   LIBRARY_PAGE,
@@ -18,7 +19,7 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE,
   profilePage
-} from 'utils/route'
+} = route
 
 type LinkButtonType =
   | 'trackUpload'

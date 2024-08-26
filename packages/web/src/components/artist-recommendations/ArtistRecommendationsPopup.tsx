@@ -1,11 +1,11 @@
-import { RefObject, useContext } from 'react'
+import { RefObject } from 'react'
 
 import { ID, User } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Popup } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { AppState } from 'store/types'
 import zIndex from 'utils/zIndex'
 
@@ -22,7 +22,7 @@ type Props = {
 
 export const ArtistRecommendationsPopup = (props: Props) => {
   const { anchorRef, artistId, isVisible, onClose } = props
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   // Get the artist
   const user = useSelector<AppState, User | null>((state) =>

@@ -28,7 +28,7 @@
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "npm run test:unit && npm run test:sdk",
     "test:libs": "./scripts/test.sh",
-    "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
+    "test:unit": "export TS_NODE_PROJECT=libs.test.tsconfig.json; ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",
     "test:integration": "ts-mocha tests/index.js",
     "setup": "./scripts/migrate_contracts.sh",
@@ -79,7 +79,7 @@
     "@project-serum/anchor": "0.24.1",
     "@scure/base": "1.1.1",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "1.78.4",
+    "@solana/web3.js": "1.93.4",
     "abi-decoder": "2.4.0",
     "ajv": "6.12.2",
     "assert": "2.0.0",
@@ -181,7 +181,7 @@
     "tslib": "^2.6.2",
     "type-fest": "2.17.0",
     "typed-emitter": "2.1.0",
-    "typescript": "5.0.4",
+    "typescript": "5.4.5",
     "wait-for-expect": "3.0.2"
   },
   "repository": {

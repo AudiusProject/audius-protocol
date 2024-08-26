@@ -73,8 +73,10 @@ import IconNoWifiSVG from '../assets/icons/NoWifi.svg'
 import IconNoteSVG from '../assets/icons/Note.svg'
 import IconNotificationOffSVG from '../assets/icons/NotificationOff.svg'
 import IconNotificationOnSVG from '../assets/icons/NotificationOn.svg'
+import IconPaperAirplaneSVG from '../assets/icons/PaperAirplane.svg'
 import IconPauseSVG from '../assets/icons/Pause.svg'
 import IconPencilSVG from '../assets/icons/Pencil.svg'
+import IconPinSVG from '../assets/icons/Pin.svg'
 import IconPlaySVG from '../assets/icons/Play.svg'
 import IconPlaybackPauseSVG from '../assets/icons/PlaybackPause.svg'
 import IconPlaybackPlaySVG from '../assets/icons/PlaybackPlay.svg'
@@ -118,6 +120,7 @@ import IconTastemakerSVG from '../assets/icons/Tastemaker.svg'
 import IconThumbsDownSVG from '../assets/icons/ThumbsDown.svg'
 import IconThumbsUpSVG from '../assets/icons/ThumbsUp.svg'
 import IconTippingSVG from '../assets/icons/Tipping.svg'
+import IconTowerBroadcastSVG from '../assets/icons/TowerBroadcast.svg'
 import IconTransactionSVG from '../assets/icons/Transaction.svg'
 import IconTrashSVG from '../assets/icons/Trash.svg'
 import IconTrendingSVG from '../assets/icons/Trending.svg'
@@ -215,6 +218,7 @@ export const IconTipping = IconTippingSVG as IconComponent
 export const IconCloudDownload = IconCloudDownloadSVG as IconComponent
 export const IconNoWifi = IconNoWifiSVG as IconComponent
 export const IconTransaction = IconTransactionSVG as IconComponent
+export const IconTowerBroadcast = IconTowerBroadcastSVG as IconComponent
 export const IconCloudDownloadError = IconCloudDownloadErrorSVG as IconComponent
 export const IconNote = IconNoteSVG as IconComponent
 export const IconTrash = IconTrashSVG as IconComponent
@@ -234,7 +238,9 @@ export const IconCloudDownloadQueued =
 export const IconPause = IconPauseSVG as IconComponent
 export const IconTurntable = IconTurntableSVG as IconComponent
 export const IconCloudUpload = IconCloudUploadSVG as IconComponent
+export const IconPaperAirplane = IconPaperAirplaneSVG as IconComponent
 export const IconPencil = IconPencilSVG as IconComponent
+export const IconPin = IconPinSVG as IconComponent
 export const IconUser = IconUserSVG as IconComponent
 export const IconUserArrowRotate = IconUserArrowRotateSVG as IconComponent
 export const IconCollectible = IconCollectibleSVG as IconComponent

@@ -14,9 +14,6 @@ import {
   stripeModalUISagas as stripeModalSagas,
   vipDiscordModalSagas,
   toastSagas,
-  uploadConfirmationModalUISagas as uploadConfirmationModalSagas,
-  editAccessConfirmationModalUISagas as editAccessConfirmationModalSagas,
-  publishTrackConfirmationModalUISagas as publishTrackConfirmationModalSagas,
   searchUsersModalSagas,
   modalsSagas,
   playerSagas as commonPlayerSagas,
@@ -25,7 +22,8 @@ import {
   purchaseContentSagas,
   confirmerSagas
 } from '@audius/common/store'
-import { all, fork } from 'redux-saga/effects'
+import { sagaWithErrorHandler } from '@audius/common/utils'
+import { all, spawn } from 'typed-redux-saga'
 
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
@@ -203,9 +201,6 @@ export default function* rootSaga() {
     searchUsersModalSagas(),
     stemUploadSagas(),
     tokenDashboardSagas(),
-    uploadConfirmationModalSagas(),
-    editAccessConfirmationModalSagas(),
-    publishTrackConfirmationModalSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
@@ -233,5 +228,5 @@ export default function* rootSaga() {
     // Version refresh
     reloadSagas()
   )
-  yield all(sagas.map(fork))
+  yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
 }

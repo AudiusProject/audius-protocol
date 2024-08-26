@@ -45,6 +45,7 @@ import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { GatedContentLabel } from '../GatedContentLabel'
+import { LineupTileLabel } from '../LineupTileLabel'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -194,6 +195,7 @@ type LockedOrPlaysContentProps = Pick<
   | 'isStreamGated'
   | 'streamConditions'
   | 'variant'
+  | 'id'
 > & {
   lockedContentType: 'premium' | 'gated'
   gatedTrackStatus?: GatedContentStatus
@@ -201,6 +203,7 @@ type LockedOrPlaysContentProps = Pick<
 }
 
 const renderLockedContent = ({
+  id,
   hasStreamAccess,
   isOwner,
   isStreamGated,
@@ -222,6 +225,8 @@ const renderLockedContent = ({
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickGatedUnlockPill}
           buttonSize='small'
+          contentId={id}
+          contentType={lockedContentType}
         />
       )
     }
@@ -333,12 +338,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
   if (isPrivate) {
     specialContentLabel = (
-      <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>
-        <IconVisibilityHidden size='s' color='subdued' />
-        <Text variant='body' size='xs' color='subdued'>
-          {messages.hidden}
-        </Text>
-      </Flex>
+      <LineupTileLabel icon={IconVisibilityHidden}>
+        {messages.hidden}
+      </LineupTileLabel>
     )
   }
 
@@ -424,11 +426,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 isVisible={isTrending && shouldShow}
                 showCrown={showRankIcon}
               />
-              {isReadonly ? (
-                <Text variant='body' size='xs' strength='default'>
-                  {specialContentLabel}
-                </Text>
-              ) : null}
+              {isReadonly ? specialContentLabel : null}
               {shouldShowStats ? (
                 <>
                   <Flex
@@ -483,6 +481,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               className={cn(styles.bottomRight, fadeIn)}
             >
               {renderLockedContent({
+                id,
                 hasStreamAccess,
                 isOwner,
                 isStreamGated,
@@ -521,6 +520,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               hasStreamAccess={props.hasStreamAccess}
               streamConditions={props.streamConditions}
               isUnlisted={isUnlisted}
+              contentId={id}
+              contentType='playlist'
             />
           </div>
         ) : null}

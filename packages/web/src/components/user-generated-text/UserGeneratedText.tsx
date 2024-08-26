@@ -4,17 +4,32 @@ import {
   MouseEvent,
   Ref,
   ForwardedRef,
-  ElementType
+  ElementType,
+  useEffect,
+  useState
 } from 'react'
 
+import {
+  formatCollectionName,
+  formatTrackName,
+  formatUserName
+} from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
+import { ResolveApi } from '@audius/sdk'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
 import { ExternalTextLink } from 'components/link/ExternalTextLink'
 import { TextLink } from 'components/link/TextLink'
+import { audiusSdk } from 'services/audius-sdk'
 import { squashNewLines } from 'utils/stringUtils'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
+
+const {
+  instanceOfTrackResponse,
+  instanceOfUserResponse,
+  instanceOfPlaylistResponse
+} = ResolveApi
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>
@@ -39,8 +54,30 @@ const formatAudiusUrl = (href: string) => {
   return getPathFromAudiusUrl(href) as string
 }
 
-const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
+const RenderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const { href, ...props } = attributes
+  const [unfurledContent, setUnfurledContent] = useState<string>()
+
+  useEffect(() => {
+    if (isAudiusUrl(href) && !unfurledContent) {
+      const fn = async () => {
+        const sdk = await audiusSdk()
+        const res = await sdk.resolve({ url: href })
+        if (res.data) {
+          if (instanceOfTrackResponse(res)) {
+            setUnfurledContent(formatTrackName({ track: res.data }))
+          } else if (instanceOfPlaylistResponse(res)) {
+            setUnfurledContent(
+              formatCollectionName({ collection: res.data[0] })
+            )
+          } else if (instanceOfUserResponse(res)) {
+            setUnfurledContent(formatUserName({ user: res.data }))
+          }
+        }
+      }
+      fn()
+    }
+  }, [href, unfurledContent, setUnfurledContent])
 
   const isExternalLink = !isAudiusUrl(href)
   const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
@@ -49,7 +86,7 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
 
   return (
     <LinkComponent to={to} variant='visible' {...props}>
-      {content}
+      {unfurledContent ?? content}
     </LinkComponent>
   )
 }
@@ -72,7 +109,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
 
   const options: Opts = useMemo(
     () => ({
-      render: renderLink,
+      render: RenderLink,
       attributes: {
         source: linkSource,
         onClick: onClickLink,

@@ -1,6 +1,7 @@
+import { route } from '@audius/common/utils'
 import { Redirect, Route, RouteProps } from 'react-router'
 
-import { TRENDING_PAGE } from 'utils/route'
+const { TRENDING_PAGE } = route
 
 type BaseDesktopRouteProps = RouteProps & { isMobile: boolean }
 

@@ -171,7 +171,9 @@ export const createUploadTrackMetadataSchema = () =>
     producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
     parentalWarningType: z.optional(z.string().nullable()),
     bpm: z.optional(z.number().nullable()),
+    isCustomBpm: z.optional(z.boolean()),
     musicalKey: z.optional(z.string().nullable()),
+    isCustomMusicalKey: z.optional(z.boolean()),
     audioAnalysisErrorCount: z.optional(z.number())
   })
 
@@ -285,6 +287,17 @@ export const UnrepostTrackSchema = z
 
 export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
 
+export const RecordTrackDownloadSchema = z
+  .object({
+    userId: HashId.optional(),
+    trackId: HashId
+  })
+  .strict()
+
+export type RecordTrackDownloadRequest = z.input<
+  typeof RecordTrackDownloadSchema
+>
+
 const PurchaseTrackSchemaBase = z.object({
   /** The ID of the user purchasing the track. */
   userId: HashId,
@@ -299,7 +312,9 @@ const PurchaseTrackSchemaBase = z.object({
   /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
   extraAmount: z
     .union([z.number().min(0), z.bigint().min(BigInt(0))])
-    .optional()
+    .optional(),
+  /** Whether to include the staking system as a recipient */
+  includeNetworkCut: z.boolean().optional()
 })
 
 export const GetPurchaseTrackTransactionSchema = z

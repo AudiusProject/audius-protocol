@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -16,7 +17,6 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
@@ -26,6 +26,7 @@ import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
+const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks } = accountSelectors
 
 export const messages = {

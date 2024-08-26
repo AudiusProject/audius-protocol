@@ -9,6 +9,7 @@ import type {
 import {
   creativeCommons,
   formatPrice,
+  isBpmValid,
   parseMusicalKey
 } from '@audius/common/utils'
 import { Formik } from 'formik'
@@ -36,7 +37,9 @@ const errorMessages = {
   previewStartZero:
     'Preview must start at 0 since the track is less than 30 seconds.',
   bpmTooLow: `BPM less than ${MIN_BPM}`,
-  bpmTooHigh: `BPM greater than ${MAX_BPM}`
+  bpmTooHigh: `BPM greater than ${MAX_BPM}`,
+  isrc: "Invalid ISRC. Must be in the format 'CC-XXX-YY-NNNNN'",
+  iswc: "Invalid ISWC. Must be in the format 'T-34524688-1'"
 }
 
 const useEditTrackSchema = () => {
@@ -65,7 +68,22 @@ const useEditTrackSchema = () => {
           stream_conditions: z.any(),
           duration: z.number().nullable(),
           preview_start_seconds: z.any(),
-          bpm: z.optional(z.string().nullable())
+          bpm: z.optional(z.string().nullable()),
+          isrc: z.optional(
+            z
+              .string()
+              .regex(
+                /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i,
+                errorMessages.isrc
+              )
+              .nullable()
+          ),
+          iswc: z.optional(
+            z
+              .string()
+              .regex(/^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i, errorMessages.iswc)
+              .nullable()
+          )
         })
         .refine(
           (values) => {
@@ -87,7 +105,7 @@ const useEditTrackSchema = () => {
           (values) => {
             return typeof values.genre === 'string' && !!values.genre
           },
-          { message: errorMessages.description, path: ['genre'] }
+          { message: errorMessages.genre, path: ['genre'] }
         )
         .refine(
           (values) => {
@@ -206,6 +224,14 @@ const useEditTrackSchema = () => {
 
 export type EditTrackParams = TrackForUpload
 
+const getInitialBpm = (bpm: number | null | undefined) => {
+  if (bpm) {
+    const bpmString = bpm.toString()
+    return isBpmValid(bpmString) ? bpmString : undefined
+  }
+  return undefined
+}
+
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
 
@@ -220,11 +246,11 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     musical_key: initialValuesProp.musical_key
       ? parseMusicalKey(initialValuesProp.musical_key)
       : undefined,
-    bpm: initialValuesProp.bpm ? initialValuesProp.bpm.toString() : undefined
+    bpm: getInitialBpm(initialValuesProp.bpm)
   }
 
   const handleSubmit = useCallback(
-    (values: FormValues) => {
+    (values: FormValues, { setSubmitting }) => {
       const {
         licenseType: ignoredLicenseType,
         trackArtwork: ignoredTrackArtwork,
@@ -302,6 +328,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
       // submit the metadata
       onSubmit(metadata)
+      setSubmitting(false)
     },
     [initialValuesProp, onSubmit]
   )

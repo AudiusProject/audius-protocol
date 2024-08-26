@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  Name,
   FollowSource,
   ModalSource,
   Chain,
@@ -20,7 +21,12 @@ import {
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import {
+  formatPrice,
+  removeNullable,
+  Nullable,
+  route
+} from '@audius/common/utils'
 import {
   Flex,
   Text,
@@ -46,12 +52,13 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
+import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import { LockedStatusPill } from '../locked-status-pill'
 
 import styles from './GiantTrackTile.module.css'
+const { profilePage } = route
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
@@ -305,7 +312,16 @@ const LockedGatedContentSection = ({
         <Button
           variant='primary'
           color='lightGreen'
-          onClick={handlePurchase}
+          onClick={() => {
+            track(
+              make({
+                eventName: Name.PURCHASE_CONTENT_BUY_CLICKED,
+                contentId,
+                contentType
+              })
+            )
+            handlePurchase()
+          }}
           fullWidth
         >
           {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
@@ -639,20 +655,22 @@ export const GatedContentSection = ({
         mouseEnterDelay={0.1}
         component='span'
       >
-        <h2
-          className={styles.gatedContentOwner}
-          onClick={() =>
-            dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
-          }
-        >
-          {entity.name}
+        <Flex gap='xs' alignItems='center'>
+          <h2
+            className={styles.gatedContentOwner}
+            onClick={() =>
+              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+            }
+          >
+            {entity.name}
+          </h2>
           <UserBadges
             userId={entity.user_id}
             className={styles.badgeIcon}
             badgeSize={14}
             useSVGTiers
           />
-        </h2>
+        </Flex>
       </ArtistPopover>
     ),
     [dispatch]

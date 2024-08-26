@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common/models'
-import {
-  audioRewardsPageSelectors,
-  ChallengeRewardNotification as ChallengeRewardNotificationType
-} from '@audius/common/store'
+import { Name, BNAudio } from '@audius/common/models'
+import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
+import { route, stringWeiToAudioBN } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { env } from 'services/env'
-import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -22,10 +18,10 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
 
-const { getUserChallenge } = audioRewardsPageSelectors
+const { AUDIO_PAGE } = route
 
 const messages = {
-  amountEarned: (amount: number) => `You've earned ${amount} $AUDIO`,
+  amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
@@ -48,10 +44,7 @@ export const ChallengeRewardNotification = (
   const record = useRecord()
 
   const { title, icon } = getChallengeConfig(challengeId)
-  const { amount } = useSelector((state) =>
-    getUserChallenge(state, { challengeId })
-  )
-
+  const amount = stringWeiToAudioBN(notification.amount)
   const handleClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
     record(

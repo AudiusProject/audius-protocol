@@ -19,7 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -33,22 +33,23 @@ import {
   OverflowSource,
   repostsUserListActions,
   favoritesUserListActions,
+  trackPageActions,
   RepostType,
   playerSelectors,
   playbackPositionSelectors,
   PurchaseableContentType,
-  usePublishContentModal
+  usePublishConfirmationModal,
+  useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
 import {
+  formatReleaseDate,
   Genre,
   getDogEarType,
-  getLocalTimezone,
   removeNullable
 } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
 
 import {
   Box,
@@ -115,9 +116,7 @@ const messages = {
   preview: 'Preview',
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
-    `Releases ${dayjs(releaseDate).format(
-      'M/D/YY [@] h:mm A'
-    )} ${getLocalTimezone()}`
+    `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -163,16 +162,19 @@ export const TrackScreenDetailsTile = ({
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
-  const isPlaying = useSelector(getPlaying)
+  const isPlaybackActive = useSelector(getPlaying)
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingId = playingId === track.track_id
+  const isPlaying = isPlaybackActive && isPlayingId
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
   const isCurrentTrack = useSelector((state: CommonState) => {
     return track && track.track_id === getTrackId(state)
   })
-  const { onOpen: openPublishModal } = usePublishContentModal()
+  const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openEarlyReleaseConfirmation } =
+    useEarlyReleaseConfirmationModal()
   const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
     FeatureFlags.SEARCH_V2
   )
@@ -197,7 +199,8 @@ export const TrackScreenDetailsTile = ({
     is_delete: isDeleted,
     release_date: releaseDate,
     is_scheduled_release: isScheduledRelease,
-    _is_publishing
+    _is_publishing,
+    preview_cid
   } = track as Track
 
   const isOwner = ownerId === currentUserId
@@ -229,7 +232,8 @@ export const TrackScreenDetailsTile = ({
     isUnlisted &&
     releaseDate &&
     dayjs(releaseDate).isAfter(dayjs())
-  const shouldShowPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
+  const shouldShowPreview =
+    isUSDCPurchaseGated && (isOwner || !hasStreamAccess) && preview_cid
   const shouldHideFavoriteCount =
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
   const shouldHideRepostCount =
@@ -433,9 +437,28 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const publish = useCallback(() => {
+    dispatch(trackPageActions.makeTrackPublic(trackId))
+  }, [dispatch, trackId])
+
   const handlePressPublish = useCallback(() => {
-    openPublishModal({ contentId: trackId, contentType: 'track' })
-  }, [openPublishModal, trackId])
+    if (isScheduledRelease) {
+      openEarlyReleaseConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    } else {
+      openPublishConfirmation({
+        confirmCallback: publish,
+        contentType: 'track'
+      })
+    }
+  }, [
+    openPublishConfirmation,
+    openEarlyReleaseConfirmation,
+    isScheduledRelease,
+    publish
+  ])
 
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
@@ -498,7 +521,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   return (
-    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
+    <Paper>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text

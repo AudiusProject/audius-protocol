@@ -16,6 +16,8 @@ import type {
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { FilterButtonScreen } from '@audius/harmony-native'
+import type { FilterButtonScreenParams } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -112,6 +114,7 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
+  CreateChatBlast: undefined
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined
@@ -125,6 +128,7 @@ export type AppTabScreenParamList = {
     chatId: string
     presetMessage?: string
   }
+  FilterButton: FilterButtonScreenParams
 }
 
 const forFade = ({ current }) => ({
@@ -329,6 +333,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           component={AccountVerificationScreen}
         />
       </Stack.Group>
+      <Stack.Screen
+        name='FilterButton'
+        component={FilterButtonScreen}
+        options={{ ...screenOptions, presentation: 'fullScreenModal' }}
+      />
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
         <Stack.Screen name='ChatUserList' component={ChatUserListScreen} />

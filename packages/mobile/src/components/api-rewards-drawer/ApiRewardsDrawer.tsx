@@ -1,4 +1,4 @@
-import { AUDIUS_API_LINK } from '@audius/web/src/utils/route'
+import { route } from '@audius/common/utils'
 import type { ImageStyle } from 'react-native'
 import { Image, View } from 'react-native'
 
@@ -49,7 +49,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const ApiRewardsDrawer = () => {
   const styles = useStyles()
 
-  const { onPress } = useLink(AUDIUS_API_LINK)
+  const { onPress } = useLink(route.AUDIUS_API_LINK)
 
   return (
     <AppDrawer modalName={MODAL_NAME}>

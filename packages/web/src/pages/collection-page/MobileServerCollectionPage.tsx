@@ -5,6 +5,7 @@ import {
 } from '@audius/common/src/store/pages/collection/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import { Nullable } from '@audius/common/src/utils/typeUtils'
+import { route } from '@audius/common/utils'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import IconPlay from '@audius/harmony/src/assets/icons/Play.svg'
@@ -23,9 +24,10 @@ import { TextLink } from '@audius/harmony/src/components/text-link'
 
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
 import { ServerTrackList } from './components/ServerTrackList'
+
+const { profilePage } = route
 
 export const MobileServerCollectionPage = () => {
   const collection = useSelector(getCollection) as Nullable<Collection>

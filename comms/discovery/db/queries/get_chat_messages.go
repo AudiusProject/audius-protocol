@@ -4,14 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"comms.audius.co/discovery/db"
+	"comms.audius.co/discovery/schema"
 )
 
 // Get a chat message
 const chatMessage = `
-select message_id, chat_id, user_id, created_at, ciphertext from chat_message where chat_id = $1 and message_id = $2
+SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat_message.created_at, 
+COALESCE(chat_message.ciphertext, chat_blast.plaintext) AS ciphertext
+FROM chat_message chat_message LEFT JOIN chat_blast chat_blast USING (blast_id) WHERE chat_message.chat_id = $1 AND chat_message.message_id = $2;
 `
 
 type ChatMessageParams struct {
@@ -27,37 +31,45 @@ func ChatMessage(q db.Queryable, ctx context.Context, arg ChatMessageParams) (db
 
 // Get chat messages and reactions
 const chatMessagesAndReactions = `
-SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat_message.created_at, chat_message.ciphertext, COALESCE(jsonb_agg(reactions) FILTER (WHERE reactions.message_id IS NOT NULL), '[]') AS reactions
+SELECT
+	chat_message.message_id,
+	chat_message.chat_id,
+	chat_message.user_id,
+	chat_message.created_at,
+	COALESCE(chat_message.ciphertext, chat_blast.plaintext) as ciphertext,
+	chat_blast.plaintext is not null as is_plaintext,
+	to_json(array(select row_to_json(r) from chat_message_reactions r where chat_message.message_id = r.message_id)) AS reactions
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
-LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
+LEFT JOIN chat_blast USING (blast_id)
 WHERE chat_member.user_id = $1
 	AND chat_message.chat_id = $2
-	AND chat_message.created_at < $4 
-	AND chat_message.created_at > $5 
-	AND (chat_member.cleared_history_at IS NULL 
+	AND chat_message.created_at < $4
+	AND chat_message.created_at > $5
+	AND (chat_member.cleared_history_at IS NULL
 		OR chat_message.created_at > chat_member.cleared_history_at
 	)
-GROUP BY chat_message.message_id
 ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
 `
 
 type ChatMessagesAndReactionsParams struct {
-	UserID int32     `db:"user_id" json:"user_id"`
-	ChatID string    `db:"chat_id" json:"chat_id"`
-	Limit  int32     `json:"limit"`
-	Before time.Time `json:"before"`
-	After  time.Time `json:"after"`
+	UserID  int32     `db:"user_id" json:"user_id"`
+	ChatID  string    `db:"chat_id" json:"chat_id"`
+	Limit   int32     `json:"limit"`
+	Before  time.Time `json:"before"`
+	After   time.Time `json:"after"`
+	IsBlast bool      `json:"is_blast"`
 }
 
 type ChatMessageAndReactionsRow struct {
-	MessageID  string    `db:"message_id" json:"message_id"`
-	ChatID     string    `db:"chat_id" json:"chat_id"`
-	UserID     int32     `db:"user_id" json:"user_id"`
-	CreatedAt  time.Time `db:"created_at" json:"created_at"`
-	Ciphertext string    `db:"ciphertext" json:"ciphertext"`
-	Reactions  Reactions `json:"reactions"`
+	MessageID   string    `db:"message_id" json:"message_id"`
+	ChatID      string    `db:"chat_id" json:"chat_id"`
+	UserID      int32     `db:"user_id" json:"user_id"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	Ciphertext  string    `db:"ciphertext" json:"ciphertext"`
+	IsPlaintext bool      `db:"is_plaintext" json:"is_plaintext"`
+	Reactions   Reactions `json:"reactions"`
 }
 
 type JSONTime struct {
@@ -101,6 +113,48 @@ func (t *JSONTime) UnmarshalJSON(b []byte) error {
 
 func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessagesAndReactionsParams) ([]ChatMessageAndReactionsRow, error) {
 	var rows []ChatMessageAndReactionsRow
+
+	// special case to handle outgoing blasts...
+	if arg.IsBlast {
+		parts := strings.Split(arg.ChatID, ":")
+		if len(parts) < 1 {
+			return nil, errors.New("bad request: invalid blast id")
+		}
+		audience := parts[0]
+
+		if schema.ChatBlastAudience(audience) == schema.FollowerAudience {
+			const outgoingBlastMessages = `
+			SELECT
+				b.blast_id as message_id,
+				$2 as chat_id,
+				b.from_user_id as user_id,
+				b.created_at,
+				b.plaintext as ciphertext,
+				true as is_plaintext,
+				'[]'::json AS reactions
+			FROM chat_blast b
+			WHERE b.from_user_id = $1
+			  AND b.audience = $3
+			  AND b.created_at < $4
+			  AND b.created_at > $5
+			ORDER BY b.created_at DESC
+			LIMIT $6
+			`
+
+			err := q.SelectContext(ctx, &rows, outgoingBlastMessages,
+				arg.UserID,
+				arg.ChatID,
+				audience,
+				arg.Before,
+				arg.After,
+				arg.Limit,
+			)
+			return rows, err
+		} else {
+			return nil, errors.New("bad request: unsupported audience " + audience)
+		}
+	}
+
 	err := q.SelectContext(ctx, &rows, chatMessagesAndReactions,
 		arg.UserID,
 		arg.ChatID,

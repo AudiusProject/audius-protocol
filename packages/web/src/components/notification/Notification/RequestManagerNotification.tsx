@@ -4,12 +4,12 @@ import {
   RequestManagerNotification as RequestManagerNotificationType,
   notificationsSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconUserArrowRotate } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-import { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -18,6 +18,7 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 
+const { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE } = route
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {

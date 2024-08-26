@@ -1,9 +1,9 @@
 import { ID } from '@audius/common/models'
 import { ProfilePageTabRoute } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
+import { decodeHashId, route } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
-import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
+const { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } = route
 
 type UserRouteParams =
   | { handle: string; userId: null; tab: null }

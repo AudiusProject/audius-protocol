@@ -2,25 +2,26 @@ import { Name, Chain } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
+import { decodeHashId } from '@audius/common/utils'
 import { call, put, select } from 'typed-redux-saga'
 
 const { getAssociatedWallets } = tokenDashboardPageSelectors
 const { updateWalletError } = tokenDashboardPageActions
 
 export function* checkIsNewWallet(walletAddress: string, chain: Chain) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const { connectedEthWallets, connectedSolWallets } = yield* select(
     getAssociatedWallets
   )
 
-  const associatedUserId = yield* call(
-    [apiClient, apiClient.getAssociatedWalletUserId],
-    {
-      address: walletAddress
-    }
-  )
+  const { data } = yield* call([sdk.users, sdk.users.getUserIDFromWallet], {
+    associatedWallet: walletAddress
+  })
+  const associatedUserId =
+    data && data.userId ? decodeHashId(data.userId) : null
 
   const associatedWallets =
     chain === Chain.Eth ? connectedEthWallets : connectedSolWallets

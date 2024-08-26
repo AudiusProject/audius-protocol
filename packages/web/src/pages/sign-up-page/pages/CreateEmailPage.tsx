@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -35,19 +36,20 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
-import {
-  SIGN_IN_PAGE,
-  SIGN_UP_CREATE_LOGIN_DETAILS,
-  SIGN_UP_HANDLE_PAGE,
-  SIGN_UP_PASSWORD_PAGE,
-  SIGN_UP_REVIEW_HANDLE_PAGE
-} from 'utils/route'
 
 import ConnectedMetaMaskModal from '../components/ConnectedMetaMaskModal'
 import { NewEmailField } from '../components/EmailField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
+
+const {
+  SIGN_IN_PAGE,
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE
+} = route
 
 const smallDesktopWindowHeight = 900
 

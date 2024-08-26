@@ -73,6 +73,7 @@ export const Tag = (props: TagProps) => {
       </Text>
       {Icon ? (
         <IconButton
+          asChild
           icon={Icon}
           color='staticWhite'
           onClick={isDefaultMultiselect ? onClick : undefined}

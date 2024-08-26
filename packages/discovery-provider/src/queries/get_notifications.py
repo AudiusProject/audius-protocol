@@ -167,12 +167,15 @@ class NotificationType(str, Enum):
     USDC_PURCHASE_BUYER = "usdc_purchase_buyer"
     USDC_PURCHASE_SELLER = "usdc_purchase_seller"
     TRACK_ADDED_TO_PURCHASED_ALBUM = "track_added_to_purchased_album"
+    REQUEST_MANAGER = "request_manager"
+    APPROVE_MANAGER_REQUEST = "approve_manager_request"
+    CLAIMABLE_REWARD = "claimable_reward"
 
     def __str__(self) -> str:
         return str.__str__(self)
 
 
-default_valid_types = [
+default_valid_notification_types = [
     NotificationType.REPOST,
     NotificationType.SAVE,
     NotificationType.FOLLOW,
@@ -206,7 +209,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     Gets the user's notifications in the database
     """
-    valid_types = args.get("valid_types", default_valid_types)
+    valid_types = args.get("valid_types", default_valid_notification_types)
     limit = args.get("limit") or DEFAULT_LIMIT
     limit = min(limit, MAX_LIMIT)  # type: ignore
 
@@ -508,7 +511,7 @@ notifications_sql = notifications_sql.bindparams(
 
 
 def get_notifications(session: Session, args: GetNotificationArgs):
-    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
+    args["valid_types"] = args.get("valid_types", []) + default_valid_notification_types  # type: ignore
 
     notifications = get_notification_groups(session, args)
     notification_ids = []
@@ -569,7 +572,7 @@ class GetUnreadNotificationCount(TypedDict):
 
 
 def get_unread_notification_count(session: Session, args: GetUnreadNotificationCount):
-    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
+    args["valid_types"] = args.get("valid_types", []) + default_valid_notification_types  # type: ignore
     resultproxy = session.execute(
         unread_notification_count_sql,
         {"user_id": args["user_id"], "valid_types": args.get("valid_types", None)},

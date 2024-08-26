@@ -8,11 +8,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
-import {
-  formatCount,
-  formatReleaseDate,
-  getLocalTimezone
-} from '@audius/common/utils'
+import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
@@ -30,11 +26,11 @@ import { CollectionDownloadStatusIndicator } from 'app/components/offline-downlo
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
 
+import { GatedTrackLabel } from './GatedTrackLabel'
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
-import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
+import { LineupTileGatedContentLabel } from './LineupTileGatedContentLabel'
+import { LineupTileLabel } from './LineupTileLabel'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant, LineupTileSource } from './types'
@@ -56,10 +52,10 @@ const messages = {
     `Releases ${formatReleaseDate({
       date,
       withHour: true
-    })} ${getLocalTimezone()}`
+    })}`
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
     flexDirection: 'row',
     alignItems: 'stretch',
@@ -85,18 +81,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   disabledStatItem: {
     opacity: 0.5
-  },
-  favoriteStat: {
-    height: spacing(3.5),
-    width: spacing(3.5)
-  },
-  repostStat: {
-    height: spacing(4),
-    width: spacing(4)
-  },
-  tagContainer: {
-    ...flexRowCentered(),
-    gap: spacing(1)
   }
 }))
 
@@ -121,6 +105,7 @@ type Props = {
   showArtistPick?: boolean
   releaseDate?: string
   source?: LineupTileSource
+  type: 'track' | 'album' | 'playlist'
 }
 
 export const LineupTileStats = ({
@@ -143,11 +128,11 @@ export const LineupTileStats = ({
   isArtistPick,
   showArtistPick,
   releaseDate,
-  source
+  source,
+  type
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
-  const { neutralLight4, accentPurple } = useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -215,48 +200,30 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {!isUnlisted && streamConditions ? (
-          <LineupTileGatedContentTypeTag
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-          />
-        ) : null}
-        {!streamConditions && showArtistPick && isArtistPick ? (
-          <View style={styles.tagContainer}>
-            <IconStar
-              fill={neutralLight4}
-              height={spacing(4)}
-              width={spacing(4)}
+        {showArtistPick && isArtistPick ? (
+          <LineupTileLabel icon={IconStar} color='accent'>
+            {messages.artistPick}
+          </LineupTileLabel>
+        ) : !isUnlisted ? (
+          type === 'track' ? (
+            <GatedTrackLabel trackId={id} />
+          ) : streamConditions ? (
+            <LineupTileGatedContentLabel
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
             />
-            <Text fontSize='xs' colorValue={neutralLight4}>
-              {messages.artistPick}
-            </Text>
-          </View>
-        ) : null}
-        {isUnlisted && !isScheduledRelease ? (
-          <View style={styles.tagContainer}>
-            <IconVisibilityHidden
-              fill={neutralLight4}
-              height={spacing(4)}
-              width={spacing(4)}
-            />
-            <Text fontSize='xs' colorValue={neutralLight4}>
-              {messages.hidden}
-            </Text>
-          </View>
+          ) : null
         ) : null}
         {isUnlisted && isScheduledRelease && releaseDate ? (
-          <View style={styles.tagContainer}>
-            <IconCalendarMonth
-              fill={accentPurple}
-              height={spacing(4)}
-              width={spacing(4)}
-            />
-            <Text fontSize='xs' colorValue={accentPurple}>
-              {messages.releases(releaseDate)}
-            </Text>
-          </View>
+          <LineupTileLabel icon={IconCalendarMonth} color='accent'>
+            {messages.releases(releaseDate)}
+          </LineupTileLabel>
+        ) : null}
+        {isUnlisted && !isScheduledRelease ? (
+          <LineupTileLabel icon={IconVisibilityHidden}>
+            {messages.hidden}
+          </LineupTileLabel>
         ) : null}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
@@ -270,12 +237,7 @@ export const LineupTileStats = ({
                 disabled={!repostCount || isReadonly}
                 onPress={handlePressReposts}
               >
-                <IconRepost
-                  height={spacing(4)}
-                  width={spacing(4)}
-                  fill={neutralLight4}
-                  style={styles.repostStat}
-                />
+                <IconRepost color='subdued' size='s' />
                 <Text style={trackTileStyles.statText}>
                   {formatCount(repostCount)}
                 </Text>
@@ -289,12 +251,7 @@ export const LineupTileStats = ({
                 disabled={!saveCount || isReadonly}
                 onPress={handlePressFavorites}
               >
-                <IconHeart
-                  style={styles.favoriteStat}
-                  height={spacing(3.5)}
-                  width={spacing(3.5)}
-                  fill={neutralLight4}
-                />
+                <IconHeart color='subdued' size='s' />
                 <Text style={trackTileStyles.statText}>
                   {formatCount(saveCount)}
                 </Text>

@@ -8,7 +8,7 @@ import {
   Flex,
   TextInput,
   TextInputSize,
-  OptionsFilterButton
+  FilterButton
 } from '@audius/harmony'
 
 import { ArtistDashboardAlbumsTab } from './ArtistDashboardAlbumsTab'
@@ -109,13 +109,15 @@ export const ArtistContentSection = () => {
               onClick={() => onClickPill(Pills.ALBUMS)}
             />
           </Flex>
-          <OptionsFilterButton
+          <FilterButton
             onChange={handleSelectFilter}
-            selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
+            value={isTracks ? selectedTrackFilter : selectedAlbumFilter}
             label={messages.allReleases}
             options={filterButtonOptions}
-            popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            menuProps={{
+              anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+              transformOrigin: { vertical: 'top', horizontal: 'left' }
+            }}
             disabled={isFilterButtonDisabled}
           />
         </Flex>

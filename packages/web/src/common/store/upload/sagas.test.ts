@@ -39,6 +39,7 @@ const emptyMetadata: TrackMetadataForUpload = {
   is_delete: false,
   track_id: 0,
   created_at: '',
+  create_date: null,
   isrc: null,
   iswc: null,
   credits_splits: null,
@@ -270,7 +271,7 @@ describe('upload', () => {
         ])
         // Reports to sentry
         .call(reportToSentry, {
-          name: 'Upload Worker Failed: Error',
+          name: 'Upload Worker Failed',
           error: mockError,
           additionalInfo: {
             trackId: 3,
@@ -289,7 +290,7 @@ describe('upload', () => {
           fn: reportToSentry,
           args: [
             {
-              name: 'Upload Worker Failed: Error',
+              name: 'Upload Worker Failed',
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,

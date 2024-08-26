@@ -11,17 +11,14 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { modalsActions } from '@audius/common/store'
+import { useEditAccessConfirmationModal } from '@audius/common/store'
 import { getUsersMayLoseAccess, type Nullable } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 
 import { Hint, IconCart } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { FormScreen } from 'app/screens/form-screen'
 
-import { EditPriceAndAudienceConfirmationDrawer } from '../../../screens/edit-track-screen/components/EditPriceAndAudienceConfirmationDrawer'
 import type {
   FormValues,
   RemixOfField
@@ -38,12 +35,14 @@ import { SpecialAccessRadioField } from './SpecialAccessRadioField'
 const publicAvailability = StreamTrackAvailabilityType.PUBLIC
 
 export const PriceAndAudienceScreen = () => {
-  const { initialValues } = useFormikContext<FormValues>()
+  const { initialValues, validateForm } = useFormikContext<FormValues>()
   const [, , { setValue: setIsStreamGated }] =
     useField<boolean>('is_stream_gated')
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setPreviewValue }] = useField<Nullable<number>>(
+    'preview_start_seconds'
+  )
   const [{ value: isScheduledRelease }] = useField<boolean>(
     'is_scheduled_release'
   )
@@ -76,13 +75,13 @@ export const PriceAndAudienceScreen = () => {
     ) {
       return StreamTrackAvailabilityType.SPECIAL_ACCESS
     }
-    if (isUnlisted && !isScheduledRelease) {
-      return StreamTrackAvailabilityType.HIDDEN
-    }
     return StreamTrackAvailabilityType.PUBLIC
     // we only care about what the initial value was here
     // eslint-disable-next-line
   }, [])
+
+  const { onOpen: onOpenEditAccessConfirmationModal } =
+    useEditAccessConfirmationModal()
 
   const {
     disableUsdcGate: disableUsdcGateOption,
@@ -113,7 +112,6 @@ export const PriceAndAudienceScreen = () => {
 
   const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
   const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
-  const setFields = useSetEntityAvailabilityFields()
 
   const usdcGateIsInvalid = useMemo(() => {
     // first time user selects usdc purchase option
@@ -140,7 +138,6 @@ export const PriceAndAudienceScreen = () => {
   const isFormInvalid =
     usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const [usersMayLoseAccess, setUsersMayLoseAccess] = useState(false)
   const [specialAccessType, setSpecialAccessType] = useState<
@@ -169,51 +166,21 @@ export const PriceAndAudienceScreen = () => {
   }, [availability, initialStreamConditions, specialAccessType])
 
   const handleSubmit = useCallback(() => {
+    validateForm() // Fixes any erroneous errors that haven't been revalidated
     if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
-      dispatch(
-        modalsActions.setVisibility({
-          modal: 'EditPriceAndAudienceConfirmation',
-          visible: true
-        })
-      )
-    }
-  }, [dispatch, isEditableAccessEnabled, isUpload, usersMayLoseAccess])
-
-  const handleCancel = useCallback(() => {
-    dispatch(
-      modalsActions.setVisibility({
-        modal: 'EditPriceAndAudienceConfirmation',
-        visible: false
+      onOpenEditAccessConfirmationModal({
+        confirmCallback: navigation.goBack,
+        cancelCallback: navigation.goBack
       })
-    )
-  }, [dispatch])
-
-  // Listen for `navigation.goBack` events and in the case of going back
-  // reset the availability fields.
-  // Note that this is a stop gap against a better model which would be to have
-  // each radio subgroup manage its own state. That requires a larger refactor.
-  useEffect(() => {
-    const listener = navigation.addListener('beforeRemove', ({ data }) => {
-      if (isFormInvalid && data.action.type === 'GO_BACK') {
-        setFields({
-          is_stream_gated: initialValues.is_stream_gated,
-          stream_conditions: initialValues.stream_conditions,
-          is_unlisted: initialValues.is_unlisted,
-          preview_start_seconds: initialValues.preview_start_seconds,
-          'field_visibility.genre': initialValues.field_visibility?.genre,
-          'field_visibility.mood': initialValues.field_visibility?.mood,
-          'field_visibility.tags': initialValues.field_visibility?.tags,
-          'field_visibility.share': initialValues.field_visibility?.share,
-          'field_visibility.play_count':
-            initialValues.field_visibility?.play_count,
-          'field_visibility.remixes': initialValues.field_visibility?.remixes
-        })
-      }
-    })
-    return () => {
-      navigation.removeListener('beforeRemove', listener)
     }
-  }, [initialValues, navigation, setFields, isFormInvalid])
+  }, [
+    isEditableAccessEnabled,
+    isUpload,
+    usersMayLoseAccess,
+    validateForm,
+    navigation.goBack,
+    onOpenEditAccessConfirmationModal
+  ])
 
   return (
     <FormScreen
@@ -223,6 +190,7 @@ export const PriceAndAudienceScreen = () => {
       disableSubmit={isFormInvalid}
       stopNavigation={!isUpload && usersMayLoseAccess}
       onSubmit={handleSubmit}
+      revertOnCancel
     >
       {isRemix ? <Hint m='l'>{messages.markedAsRemix}</Hint> : null}
       <ExpandableRadioGroup
@@ -236,6 +204,7 @@ export const PriceAndAudienceScreen = () => {
           onValueChange={() => {
             setIsStreamGated(false)
             setStreamConditions(null)
+            setPreviewValue(null)
           }}
         />
         <PremiumRadioField
@@ -257,12 +226,6 @@ export const PriceAndAudienceScreen = () => {
           />
         ) : null}
       </ExpandableRadioGroup>
-      {!isUpload ? (
-        <EditPriceAndAudienceConfirmationDrawer
-          onConfirm={navigation.goBack}
-          onCancel={handleCancel}
-        />
-      ) : null}
     </FormScreen>
   )
 }

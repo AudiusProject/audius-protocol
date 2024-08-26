@@ -1,5 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -13,7 +14,12 @@ import {
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
 
 import { useMedia } from 'hooks/useMedia'
-import {
+
+import { useDetermineAllowedRoute } from '../utils/useDetermineAllowedRoutes'
+
+import { ProgressHeader } from './ProgressHeader'
+
+const {
   SIGN_IN_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
@@ -22,11 +28,7 @@ import {
   SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PAGE,
   TRENDING_PAGE
-} from 'utils/route'
-
-import { useDetermineAllowedRoute } from '../utils/useDetermineAllowedRoutes'
-
-import { ProgressHeader } from './ProgressHeader'
+} = route
 
 export const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')

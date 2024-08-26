@@ -4,21 +4,14 @@ import {
   CommsResponse,
   ChatPermission,
   ChatMessage,
-  ChatMessageNullableReaction
+  ChatMessageNullableReaction,
+  ChatBlastAudience
 } from './serverTypes'
 
 // REQUEST PARAMETERS
 
-export const ChatListenRequestSchema = z.optional(
-  z.object({
-    currentUserId: z.optional(z.string())
-  })
-)
-
-export type ChatListenRequest = z.infer<typeof ChatListenRequestSchema>
-
 export const ChatGetAllRequestSchema = z.object({
-  currentUserId: z.optional(z.string()),
+  userId: z.string(),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())
@@ -36,6 +29,7 @@ export type ChatGetRequest = z.infer<typeof ChatGetRequestSchema>
 export const ChatGetMessagesRequestSchema = z.object({
   currentUserId: z.optional(z.string()),
   chatId: z.string(),
+  isBlast: z.optional(z.boolean()),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())
@@ -90,6 +84,19 @@ export const ChatMessageRequestSchema = z.object({
 })
 
 export type ChatMessageRequest = z.infer<typeof ChatMessageRequestSchema>
+
+export const ChatBlastMessageRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
+  blastId: z.string(),
+  message: z.string(),
+  audience: z.nativeEnum(ChatBlastAudience),
+  audienceContentId: z.optional(z.string()),
+  audienceContentType: z.optional(z.enum(['track', 'album']))
+})
+
+export type ChatBlastMessageRequest = z.infer<
+  typeof ChatBlastMessageRequestSchema
+>
 
 export const ChatReactRequestSchema = z.object({
   currentUserId: z.optional(z.string()),

@@ -8,7 +8,7 @@ import {
   FavoriteType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -24,7 +24,7 @@ import {
   RepostType,
   playerSelectors
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { Genre, route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -32,13 +32,12 @@ import { Dispatch } from 'redux'
 import { TrackTileProps } from 'components/track/types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
-import { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
 import TrackTile from './TrackTile'
+const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 const { getUid, getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions

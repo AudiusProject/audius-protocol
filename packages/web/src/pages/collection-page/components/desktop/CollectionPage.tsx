@@ -11,7 +11,6 @@ import {
   ModalSource,
   Track
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   CollectionTrack,
   CollectionsPageType,
@@ -20,6 +19,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { getDogEarType, removeNullable } from '@audius/common/utils'
+import { Flex, Text } from '@audius/harmony'
 
 import {
   CollectiblesPlaylistTableColumn,
@@ -32,7 +32,6 @@ import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
@@ -40,7 +39,8 @@ import styles from './CollectionPage.module.css'
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
-    owner: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
+    ownerTitle: 'Nothing here yet',
+    ownerCta: 'Start adding tracks',
     visitor: `This ${collectionType} is empty...`
   },
   type: {
@@ -50,19 +50,24 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   remove: 'Remove from this'
 })
 
-const EmptyPage = (props: {
+type EmptyPageProps = {
   text?: string | null
   isOwner: boolean
   isAlbum: boolean
-}) => {
-  const messages = getMessages(props.isAlbum ? 'album' : 'playlist')
-  const text =
-    props.text ||
-    (props.isOwner ? messages.emptyPage.owner : messages.emptyPage.visitor)
+}
+
+const EmptyPage = (props: EmptyPageProps) => {
+  const { isAlbum, isOwner, text: textProp } = props
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
-    <div className={styles.emptyWrapper}>
-      <p className={styles.emptyText}>{text}</p>
-    </div>
+    <Flex p='2xl' alignItems='center' direction='column' gap='s'>
+      <Text variant='title' size='l'>
+        {textProp ?? isOwner
+          ? messages.emptyPage.ownerTitle
+          : messages.emptyPage.visitor}
+      </Text>
+      {isOwner ? <Text size='l'>{messages.emptyPage.ownerCta}</Text> : null}
+    </Flex>
   )
 }
 
@@ -109,6 +114,7 @@ export type CollectionPageProps = {
   ) => void
   onClickReposts?: () => void
   onClickFavorites?: () => void
+  trackCount: number
 }
 
 const CollectionPage = ({
@@ -132,17 +138,14 @@ const CollectionPage = ({
   onClickRow,
   onClickSave,
   onClickRepostTrack,
-  onClickPurchaseTrack,
   onSortTracks,
   onReorderTracks,
   onClickRemove,
   onClickReposts,
-  onClickFavorites
+  onClickFavorites,
+  trackCount
 }: CollectionPageProps) => {
   const { status, metadata, user } = collection
-  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
@@ -153,7 +156,8 @@ const CollectionPage = ({
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading =
-    tracks.status === Status.LOADING || tracks.status === Status.IDLE
+    trackCount > 0 &&
+    (tracks.status === Status.LOADING || tracks.status === Status.IDLE)
 
   const coverArtSizes =
     metadata && metadata?.variant !== Variant.SMART
@@ -326,7 +330,7 @@ const CollectionPage = ({
         className={styles.bodyWrapper}
         size='large'
         elevation='mid'
-        dogEar={isPremiumAlbumsEnabled ? dogEarType : undefined}
+        dogEar={dogEarType}
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
@@ -352,7 +356,6 @@ const CollectionPage = ({
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              isPremiumEnabled={isPremiumAlbumsEnabled}
               onReorderTracks={onReorderTracks}
               onSortTracks={onSortTracks}
               isReorderable={

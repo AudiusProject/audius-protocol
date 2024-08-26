@@ -10,6 +10,7 @@ import {
   queueSelectors,
   playerSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   push as pushRoute,
   replace as replaceRoute
@@ -21,7 +22,8 @@ import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { getPathname, TRENDING_PAGE } from 'utils/route'
+import { getPathname } from 'utils/route'
+const { TRENDING_PAGE } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors

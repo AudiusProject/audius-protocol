@@ -1,6 +1,7 @@
 export { ClaimableTokensProgram } from './claimable-tokens/ClaimableTokensProgram'
-export { RewardManagerInstruction } from './reward-manager/constants'
+export * from './claimable-tokens/constants'
 export { RewardManagerProgram } from './reward-manager/RewardManagerProgram'
+export * from './reward-manager/constants'
 export { Secp256k1Program } from './secp256k1/Secp256k1Program'
 export { ethAddress } from './layout-utils'
 export * from './associated-token'

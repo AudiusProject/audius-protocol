@@ -1,6 +1,6 @@
 import { ErrorLevel } from '@audius/common/models'
 import type { ReportToSentryArgs } from '@audius/common/models'
-import { getErrorMessage } from '@audius/common/utils'
+import { getErrorMessage, isResponseError } from '@audius/common/utils'
 import { captureException, withScope } from '@sentry/react-native'
 import type { SeverityLevel } from '@sentry/types'
 
@@ -41,10 +41,21 @@ export const reportToSentry = async ({
   name
 }: ReportToSentryArgs) => {
   try {
-    withScope((scope) => {
+    withScope(async (scope) => {
       scope.setExtra('mobileClientVersionInclOTA', versionInfo ?? 'unknown')
       if (level) {
         scope.setLevel(Levels[level])
+      }
+      if (isResponseError(error)) {
+        const responseBody =
+          (await error.response.json().catch()) ??
+          (await error.response.text().catch())
+        additionalInfo = {
+          ...additionalInfo,
+          response: error.response,
+          requestId: error.response.headers.get('X-Request-ID'),
+          responseBody
+        }
       }
       if (additionalInfo) {
         scope.setContext('additionalInfo', additionalInfo)

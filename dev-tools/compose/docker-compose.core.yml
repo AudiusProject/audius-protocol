@@ -1,0 +1,14 @@
+services:
+  core:
+    container_name: core
+    build:
+      context: ${PROJECT_ROOT}/core
+      dockerfile: ./infra/Dockerfile
+      target: final
+    restart: unless-stopped
+    profiles:
+      - discovery
+      - storage
+    depends_on:
+      db:
+        condition: service_healthy

@@ -55,7 +55,7 @@ services:
     <<: *common
     healthcheck:
       # identity_service is the last db to be created in init-db.sql
-      test: ['CMD', 'pg_isready', '--dbname', 'identity_service']
+      test: [ 'CMD', 'pg_isready', '--dbname', 'identity_service' ]
       interval: 10s
       timeout: 5s
 
@@ -63,6 +63,54 @@ services:
     extends:
       file: docker-compose.dev-tools.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: audius-cmd
+    <<: *common
+
+  # Core
+
+  # service name intentionally left as "core" despite being core-discovery-1
+  # for compatibility with audius-compose CI tooling
+  core:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-discovery-1
+    ports:
+      - '6661:26659'
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+    <<: *common
+
+  core-content-1:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-1
+    ports:
+      - '6671:26659'
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
+    <<: *common
+
+  core-content-2:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-2
+    ports:
+      - '6672:26659'
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
+    <<: *common
+
+  core-content-3:
+    extends:
+      file: docker-compose.core.yml
+      service: core
+    container_name: core-content-3
+    ports:
+      - '6673:26659'
+    env_file:
+      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
     <<: *common
 
   # Identity
@@ -292,10 +340,10 @@ services:
     container_name: ddex-s3
     <<: *common
     ports:
-      - "127.0.0.1:4566:4566"
+      - '127.0.0.1:4566:4566'
     volumes:
-      - "ddex-s3:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - 'ddex-s3:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
     profiles:
       - ddex
       - ddex-deps
@@ -361,7 +409,6 @@ services:
 
 networks:
   ddex-network:
-
 
 volumes:
   poa-contracts-abis:

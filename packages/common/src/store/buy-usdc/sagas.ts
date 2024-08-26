@@ -12,7 +12,6 @@ import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import {
   createPaymentRouterRouteTransaction,
-  createRootWalletRecoveryTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -20,6 +19,7 @@ import {
   getTokenAccountInfo,
   getUserbankAccountInfo,
   pollForTokenBalanceChange,
+  recoverUsdcFromRootWallet,
   relayTransaction
 } from '~/services/audius-backend/solana'
 import { getAccountUser } from '~/store/account/selectors'
@@ -34,7 +34,7 @@ import { coinflowOnrampModalActions } from '~/store/ui/modals/coinflow-onramp-mo
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { setUSDCBalance } from '~/store/wallet/slice'
-import { waitForRead, waitForValue } from '~/utils'
+import { waitForRead } from '~/utils'
 
 import {
   buyUSDCFlowFailed,
@@ -412,9 +412,9 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    const feePayerString: string = yield* call(waitForValue, getFeePayer)
-    const feePayerKey = new PublicKey(feePayerString)
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
 
     const usdcTokenAccount = yield* call(
       findAssociatedTokenAddress,
@@ -458,49 +458,19 @@ function* recoverPurchaseIfNecessary() {
       })
     )
 
-    yield* call(
-      retry,
-      async () => {
-        const transferTransaction = await createRootWalletRecoveryTransaction(
-          audiusBackendInstance,
-          {
-            wallet: rootAccount,
-            userBank,
-            amount,
-            feePayer: feePayerKey
-          }
-        )
-        transferTransaction.partialSign(rootAccount)
+    const user = yield* select(getAccountUser)
+    const ethWallet = user?.wallet
+    if (!ethWallet) {
+      throw new Error('User is not signed in')
+    }
 
-        console.debug(`Starting root wallet USDC recovery transaction...`)
-        const { res, error } = await relayTransaction(audiusBackendInstance, {
-          transaction: transferTransaction
-        })
-
-        if (res) {
-          console.debug(`Recovery transaction succeeded: ${res}`)
-          return res
-        } else {
-          console.debug(
-            `Transfer transaction stringified: ${JSON.stringify(
-              transferTransaction
-            )}`
-          )
-          // Throw to retry
-          throw new Error(error ?? 'Unknown root wallet USDC recovery error')
-        }
-      },
-      {
-        minTimeout: TRANSACTION_RETRY_DELAY_MS,
-        retries: TRANSACTION_RETRY_COUNT,
-        factor: 1,
-        onRetry: (e: Error, attempt: number) => {
-          console.error(
-            `Got error recovering USDC from root wallet to user bank: ${e}. Attempt ${attempt}. Retrying...`
-          )
-        }
-      }
-    )
+    console.debug('Recovering', amount, 'USDC from root wallet...')
+    yield* call(recoverUsdcFromRootWallet, {
+      sdk,
+      sender: rootAccount,
+      receiverEthWallet: ethWallet,
+      amount
+    })
 
     const updatedBalance = yield* call(
       pollForTokenBalanceChange,

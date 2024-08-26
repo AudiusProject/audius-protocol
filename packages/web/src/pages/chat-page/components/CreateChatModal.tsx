@@ -1,6 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
@@ -21,6 +23,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
+import { ChatBlastCTA } from './ChatBlastCTA'
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
 
 const messages = {
@@ -33,6 +36,10 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
+  const { isEnabled: isChatBlastsEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
+
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
@@ -108,6 +115,9 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
+        footer={
+          isChatBlastsEnabled ? <ChatBlastCTA onClick={onClose} /> : undefined
+        }
       />
     </>
   )

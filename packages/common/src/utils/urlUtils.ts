@@ -16,12 +16,13 @@ const audiusUrlRegex =
 
 export const isAudiusUrl = (url: string) => new RegExp(audiusUrlRegex).test(url)
 export const isInteralAudiusUrl = (url: string) =>
-  isAudiusUrl(url) &&
-  !externalAudiusLinks.some((externalLink) => externalLink.includes(url))
+  url.startsWith('/') ||
+  (isAudiusUrl(url) &&
+    !externalAudiusLinks.some((externalLink) => externalLink.includes(url)))
 export const isExternalAudiusUrl = (url: string) =>
   new RegExp(audiusUrlRegex).test(url)
 export const getPathFromAudiusUrl = (url: string) =>
-  new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null
+  url.startsWith('/') ? url : new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null
 
 const collectionUrlRegex =
   // eslint-disable-next-line no-useless-escape

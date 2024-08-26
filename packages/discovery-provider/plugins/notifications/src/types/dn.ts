@@ -655,7 +655,9 @@ export interface TrackRow {
   producer_copyright_line?: any | null
   parental_warning_type?: any | null
   bpm?: number | null
+  is_custom_bpm?: boolean | null
   musical_key?: string | null
+  is_custom_musical_key?: boolean | null
   audio_analysis_error_count?: number
 }
 export interface TrendingParamRow {

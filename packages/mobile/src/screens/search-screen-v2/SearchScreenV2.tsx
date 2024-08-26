@@ -22,12 +22,6 @@ import { RecentSearches } from './RecentSearches'
 import { SearchBarV2 } from './SearchBarV2'
 import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
-import {
-  FilterBpmScreen,
-  FilterGenreScreen,
-  FilterMoodScreen,
-  FilterMusicalKeyScreen
-} from './screens'
 import { SearchResults } from './search-results/SearchResults'
 import {
   SearchContext,
@@ -38,7 +32,6 @@ import {
 } from './searchState'
 
 const { getV2SearchHistory } = searchSelectors
-const Stack = createNativeStackNavigator()
 
 const itemKindByCategory: Record<SearchCategory, Kind | null> = {
   all: null,
@@ -48,11 +41,12 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
   albums: Kind.COLLECTIONS
 }
 
-export const SearchScreenV2 = () => {
+const SearchScreenV2 = () => {
   const [query] = useSearchQuery()
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
   const [autoFocus, setAutoFocus] = useSearchAutoFocus()
+
   const history = useSelector(getV2SearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
@@ -112,6 +106,8 @@ export const SearchScreenV2 = () => {
   )
 }
 
+const Stack = createNativeStackNavigator()
+
 export const SearchScreenStack = () => {
   const { params } = useRoute<'Search'>()
 
@@ -146,17 +142,12 @@ export const SearchScreenStack = () => {
         filters,
         setFilters,
         bpmType,
-        setBpmType
+        setBpmType,
+        active: true
       }}
     >
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name='SearchResults' component={SearchScreenV2} />
-        <Stack.Group screenOptions={{ presentation: 'fullScreenModal' }}>
-          <Stack.Screen name='FilterMood' component={FilterMoodScreen} />
-          <Stack.Screen name='FilterGenre' component={FilterGenreScreen} />
-          <Stack.Screen name='FilterKey' component={FilterMusicalKeyScreen} />
-          <Stack.Screen name='FilterBpm' component={FilterBpmScreen} />
-        </Stack.Group>
       </Stack.Navigator>
     </SearchContext.Provider>
   )

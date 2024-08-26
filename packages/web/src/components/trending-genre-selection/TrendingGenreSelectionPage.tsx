@@ -4,15 +4,20 @@ import {
   trendingPageActions,
   trendingPageSelectors
 } from '@audius/common/store'
-import { Genre, ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
+import {
+  Genre,
+  ELECTRONIC_PREFIX,
+  TRENDING_GENRES,
+  route
+} from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
-import { TRENDING_PAGE } from 'utils/route'
 
 import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
+const { TRENDING_PAGE } = route
 const { getTrendingGenre, getTrendingTimeRange } = trendingPageSelectors
 const { trendingMonthActions, trendingWeekActions, trendingAllTimeActions } =
   trendingPageLineupActions

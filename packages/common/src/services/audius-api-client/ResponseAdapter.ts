@@ -379,7 +379,7 @@ export const makePlaylist = (
     access,
     // TODO: Remove this when api is fixed to return UTC dates
     release_date: playlist.release_date
-      ? dayjs.utc(playlist.release_date).local()
+      ? dayjs.utc(playlist.release_date).local().toString()
       : undefined, // utc -> local
 
     // Fields to prune
@@ -415,6 +415,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     isrc: null,
     iswc: null,
     credits_splits: null,
+    create_date: null,
     description: null,
     followee_reposts: [],
     followee_saves: [],

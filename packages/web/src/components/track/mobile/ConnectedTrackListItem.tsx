@@ -7,6 +7,7 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -26,7 +27,6 @@ import { Dispatch } from 'redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
-import { trpc } from 'utils/trpcClientWeb'
 
 import TrackListItem, {
   TrackItemAction,

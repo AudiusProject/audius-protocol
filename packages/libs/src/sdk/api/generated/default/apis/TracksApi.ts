@@ -18,6 +18,7 @@ import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
   TopListener,
+  TrackCommentsResponse,
   TrackInspect,
   TrackResponse,
   TrackSearch,
@@ -28,6 +29,8 @@ import {
     AccessInfoResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
+    TrackCommentsResponseFromJSON,
+    TrackCommentsResponseToJSON,
     TrackInspectFromJSON,
     TrackInspectToJSON,
     TrackResponseFromJSON,
@@ -60,6 +63,7 @@ export interface GetTrackRequest {
 export interface GetTrackAccessInfoRequest {
     trackId: string;
     userId?: string;
+    includeNetworkCut?: boolean;
 }
 
 export interface GetTrackTopListenersRequest {
@@ -109,6 +113,12 @@ export interface StreamTrackRequest {
     apiKey?: string;
     skipCheck?: boolean;
     noRedirect?: boolean;
+}
+
+export interface TrackCommentsRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
 }
 
 /**
@@ -251,6 +261,10 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.includeNetworkCut !== undefined) {
+            queryParameters['include_network_cut'] = params.includeNetworkCut;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -560,6 +574,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.streamTrackRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
+     * Get a list of comments for a track
+     */
+    async trackCommentsRaw(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackComments.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comments`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a list of comments for a track
+     */
+    async trackComments(params: TrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponse> {
+        const response = await this.trackCommentsRaw(params, initOverrides);
+        return await response.value();
     }
 
 }

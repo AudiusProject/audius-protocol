@@ -1,11 +1,7 @@
-import { decodeHashId as mockDecode } from '@audius/common/utils'
+import { decodeHashId } from '@audius/common/utils'
 import { describe, it, expect, vitest } from 'vitest'
 
 import { parseUserRoute } from './userRouteParser'
-
-vitest.mock('@audius/common/utils', () => {
-  return { decodeHashId: vitest.fn() }
-})
 
 describe('parseUserRoute', () => {
   it('can decode a user handle route', () => {
@@ -16,7 +12,7 @@ describe('parseUserRoute', () => {
   })
 
   it('can decode a hashed user id route', () => {
-    mockDecode.mockReturnValue(11845)
+    vitest.fn(decodeHashId).mockReturnValue(11845)
 
     const route = '/users/eP9k7'
     const { userId, handle } = parseUserRoute(route)
@@ -31,7 +27,7 @@ describe('parseUserRoute', () => {
   })
 
   it('returns null for an invalid hash id', () => {
-    mockDecode.mockReturnValue(null)
+    vitest.fn(decodeHashId).mockReturnValue(null)
 
     const route = '/users/asdf'
     const params = parseUserRoute(route)

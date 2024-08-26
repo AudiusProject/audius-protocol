@@ -1,15 +1,16 @@
 import { useContext } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button, Flex, IconError, Text } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { FEED_PAGE } from 'utils/route'
 
 import { EditFormScrollContext } from '../../pages/edit-page/EditTrackPage'
 
 import styles from './AnchoredSubmitRowEdit.module.css'
+const { FEED_PAGE } = route
 
 const messages = {
   save: 'Save Changes',

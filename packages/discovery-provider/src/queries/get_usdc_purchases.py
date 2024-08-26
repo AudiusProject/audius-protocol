@@ -44,7 +44,7 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesCountArgs):
 
     # Basic filters
     if content_ids:
-        base_query = base_query.filter(USDCPurchase.content_id == content_ids)
+        base_query = base_query.filter(USDCPurchase.content_id.in_(content_ids))
     if buyer_user_id:
         base_query = base_query.filter(USDCPurchase.buyer_user_id == buyer_user_id)
     if seller_user_id:

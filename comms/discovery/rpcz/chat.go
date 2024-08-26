@@ -1,8 +1,10 @@
 package rpcz
 
 import (
+	"context"
 	"time"
 
+	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
@@ -10,6 +12,24 @@ import (
 
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
+
+	// first find any blasts that should seed this chat ...
+	var blasts []queries.BlastRow
+	for _, invite := range params.Invites {
+		invitedUserId, err := misc.DecodeHashId(invite.UserID)
+		if err != nil {
+			return err
+		}
+
+		pending, err := queries.GetNewBlasts(tx, context.Background(), queries.ChatMembershipParams{
+			UserID: int32(invitedUserId),
+			ChatID: params.ChatID,
+		})
+		if err != nil {
+			return err
+		}
+		blasts = append(blasts, pending...)
+	}
 
 	// it is possible that two conflicting chats get created at the same time
 	// in which case there will be two different chat secrets
@@ -28,6 +48,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 	}
 
 	for _, invite := range params.Invites {
+
 		invitedUserId, err := misc.DecodeHashId(invite.UserID)
 		if err != nil {
 			return err
@@ -46,13 +67,78 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		if err != nil {
 			return err
 		}
+
 	}
+
+	for _, blast := range blasts {
+		_, err = tx.Exec(`
+		insert into chat_message
+			(message_id, chat_id, user_id, created_at, blast_id)
+		values
+			($1, $2, $3, $4, $5)
+		on conflict do nothing
+		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, blast.CreatedAt, blast.BlastID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = chatUpdateLatestFields(tx, params.ChatID)
 
 	return err
 }
 
 func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.Time) error {
 	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
+	return err
+}
+
+func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
+	// universal latest message thing
+	_, err := tx.Exec(`
+	with latest as (
+		select
+			m.chat_id,
+			m.created_at,
+			m.ciphertext,
+			m.blast_id,
+			b.plaintext
+		from
+			chat_message m
+			left join chat_blast b using (blast_id)
+		where m.chat_id = $1
+		order by m.created_at desc
+		limit 1
+	)
+	update chat c
+	set
+		last_message_at = latest.created_at,
+		last_message = coalesce(latest.ciphertext, latest.plaintext),
+		last_message_is_plaintext = latest.blast_id is not null
+	from latest
+	where c.chat_id = latest.chat_id;
+	`, chatId)
+	if err != nil {
+		return err
+	}
+
+	// set chat_member.is_hidden to false
+	// if there are any non-blast messages
+	// or any blasts from the other party
+	_, err = tx.Exec(`
+	UPDATE chat_member member
+	SET is_hidden = NOT EXISTS(
+		SELECT *
+		FROM chat_message msg
+		LEFT JOIN chat_blast b USING (blast_id)
+		WHERE msg.chat_id = member.chat_id
+		AND (
+			msg.blast_id IS NULL OR
+			b.from_user_id != member.user_id
+		)
+	)
+	WHERE member.chat_id = $1
+	`, chatId)
 	return err
 }
 
@@ -66,7 +152,7 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	}
 
 	// update chat's info on last message
-	_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", messageTimestamp, ciphertext, chatId)
+	err = chatUpdateLatestFields(tx, chatId)
 	if err != nil {
 		return err
 	}

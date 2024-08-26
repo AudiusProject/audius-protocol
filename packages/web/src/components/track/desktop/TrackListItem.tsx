@@ -9,7 +9,7 @@ import {
   UID
 } from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
-import { Genre, formatSeconds } from '@audius/common/utils'
+import { Genre, formatSeconds, route } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -19,11 +19,11 @@ import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { isDescendantElementOf } from 'utils/domUtils'
-import { profilePage } from 'utils/route'
 
 import { TrackTileSize } from '../types'
 
 import styles from './TrackListItem.module.css'
+const { profilePage } = route
 
 const makeStrings = ({ deleted }: { deleted: boolean }) => ({
   deleted: deleted ? ` [Deleted By Artist]` : '',

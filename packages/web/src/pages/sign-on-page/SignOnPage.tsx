@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -23,7 +24,8 @@ import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
 import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { ScrollView } from 'pages/sign-up-page/components/layout'
-import {
+
+const {
   SIGN_IN_CONFIRM_EMAIL_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_APP_CTA_PAGE,
@@ -36,7 +38,7 @@ import {
   TRENDING_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_ARTISTS_PAGE
-} from 'utils/route'
+} = route
 
 const messages = {
   newToAudius: 'New to Audius?',

@@ -46,7 +46,7 @@ export const TablePlayButton = ({
           className={cn(styles.icon, {
             [styles.hideDefault]: hideDefault && !playing
           })}
-          fill={isLocked ? n150 : shouldShowPremiumColor ? lightGreen : p300}
+          fill={shouldShowPremiumColor ? lightGreen : isLocked ? n150 : p300}
         />
       )}
     </div>

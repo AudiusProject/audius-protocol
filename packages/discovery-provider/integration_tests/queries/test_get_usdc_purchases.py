@@ -173,7 +173,7 @@ def test_get_purchases(app):
 
         specific_sale = get_usdc_purchases(
             {
-                "content_ids": 3,
+                "content_ids": [3],
                 "content_type": PurchaseType.track,
                 "sort_method": PurchaseSortMethod.date,
             }

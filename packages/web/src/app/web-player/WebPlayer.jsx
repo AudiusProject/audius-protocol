@@ -12,6 +12,7 @@ import {
   ExploreCollectionsVariant,
   UploadType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
@@ -46,11 +47,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
-import {
-  MainContentContext,
-  MainContentContextProvider,
-  MAIN_CONTENT_ID
-} from 'pages/MainContentContext'
+import { MainContentContext, MAIN_CONTENT_ID } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
@@ -104,7 +101,11 @@ import {
 } from 'store/application/ui/scrollLock/actions'
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
-import {
+import { getPathname } from 'utils/route'
+
+import styles from './WebPlayer.module.css'
+
+const {
   FEED_PAGE,
   TRENDING_PAGE,
   NOTIFICATION_PAGE,
@@ -163,7 +164,6 @@ import {
   TRENDING_UNDERGROUND_PAGE,
   EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
-  getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
   AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
@@ -185,9 +185,7 @@ import {
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE
-} from 'utils/route'
-
-import styles from './WebPlayer.module.css'
+} = route
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
@@ -416,13 +414,8 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const {
-      incrementScroll,
-      decrementScroll,
-      userHandle,
-      isSearchV2Enabled,
-      isEditTrackRedesignEnabled
-    } = this.props
+    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
+      this.props
 
     const {
       showWebUpdateBanner,
@@ -480,7 +473,7 @@ class WebPlayer extends Component {
           <Notice />
           <Navigator />
           <div
-            ref={this.props.mainContentRef}
+            ref={this.props.setMainContentRef}
             id={MAIN_CONTENT_ID}
             role='main'
             className={cn(styles.mainContentWrapper, {
@@ -503,7 +496,6 @@ class WebPlayer extends Component {
                     to={{ pathname: getPathname({ pathname: '' }) }}
                   />
                 ))}
-
                 <Route
                   exact
                   path={'/fb/share'}
@@ -710,7 +702,6 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-
                 <DesktopRoute
                   path={UPLOAD_ALBUM_PAGE}
                   isMobile={isMobile}
@@ -728,7 +719,6 @@ class WebPlayer extends Component {
                     <UploadPage {...props} scrollToTop={this.scrollToTop} />
                   )}
                 />
-
                 <Route
                   exact
                   path={[SAVED_PAGE, LIBRARY_PAGE]}
@@ -853,10 +843,8 @@ class WebPlayer extends Component {
                   isMobile={isMobile}
                   render={() => <SettingsPage subPage={SubPage.ABOUT} />}
                 />
-
                 <Route path={APP_REDIRECT} component={AppRedirectListener} />
                 <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
-
                 <Route
                   exact
                   path={PLAYLIST_PAGE}
@@ -866,13 +854,11 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-
                 <Route
                   exact
                   path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
                   component={EditCollectionPage}
                 />
-
                 <Route
                   exact
                   path={ALBUM_PAGE}
@@ -880,7 +866,6 @@ class WebPlayer extends Component {
                     <CollectionPage key={location.pathname} type='album' />
                   )}
                 />
-
                 {/* Hash id routes */}
                 <Route
                   exact
@@ -898,7 +883,6 @@ class WebPlayer extends Component {
                   path={PLAYLIST_ID_PAGE}
                   component={CollectionPage}
                 />
-
                 {/*
                 Define profile page sub-routes before profile page itself.
                 The rules for sub-routes would lose in a precedence fight with
@@ -926,21 +910,14 @@ class WebPlayer extends Component {
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
                 />
-
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
-
-                {isEditTrackRedesignEnabled ? (
-                  <DesktopRoute
-                    path={TRACK_EDIT_PAGE}
-                    isMobile={isMobile}
-                    render={(props) => (
-                      <EditTrackPage
-                        {...props}
-                        scrollToTop={this.scrollToTop}
-                      />
-                    )}
-                  />
-                ) : null}
+                <DesktopRoute
+                  path={TRACK_EDIT_PAGE}
+                  isMobile={isMobile}
+                  render={(props) => (
+                    <EditTrackPage {...props} scrollToTop={this.scrollToTop} />
+                  )}
+                />
 
                 <Route
                   exact
@@ -952,7 +929,6 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <MobileRoute
                   exact
                   path={REPOSTING_USERS_ROUTE}
@@ -1005,7 +981,6 @@ class WebPlayer extends Component {
                     />
                   )}
                 />
-
                 <Redirect
                   from={HOME_PAGE}
                   to={{
@@ -1057,10 +1032,7 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
-  isEditTrackRedesignEnabled: getFeatureEnabled(
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
+  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -1084,13 +1056,13 @@ const RouterWebPlayer = withRouter(
 
 const MainContentRouterWebPlayer = () => {
   return (
-    <MainContentContextProvider>
-      <MainContentContext.Consumer>
-        {({ mainContentRef }) => (
-          <RouterWebPlayer mainContentRef={mainContentRef} />
-        )}
-      </MainContentContext.Consumer>
-    </MainContentContextProvider>
+    <MainContentContext.Consumer>
+      {({ ref, setRef }) => {
+        return (
+          <RouterWebPlayer setMainContentRef={setRef} mainContentRef={ref} />
+        )
+      }}
+    </MainContentContext.Consumer>
   )
 }
 

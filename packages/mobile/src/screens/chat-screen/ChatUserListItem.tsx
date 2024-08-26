@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -20,7 +21,6 @@ import {
 } from '@audius/harmony-native'
 import { Text, ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
-import { trpc } from 'app/services/trpc-client-mobile'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 

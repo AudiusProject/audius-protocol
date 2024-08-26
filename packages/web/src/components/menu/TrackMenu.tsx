@@ -8,20 +8,19 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
-  useEditTrackModal,
   playbackPositionActions,
   playbackPositionSelectors,
   CommonState,
   artistPickModalActions
 } from '@audius/common/store'
-import { Genre, Nullable } from '@audius/common/utils'
+import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -31,8 +30,9 @@ import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
-import { albumPage, profilePage } from 'utils/route'
-import { trpc } from 'utils/trpcClientWeb'
+import { albumPage } from 'utils/route'
+
+const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
@@ -104,9 +104,6 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isEditTrackRedesignEnabled } = useFlag(
-    FeatureFlags.EDIT_TRACK_REDESIGN
-  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -114,13 +111,10 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
-  const { onOpen } = useEditTrackModal()
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
     const permalink = trackPermalink || track?.permalink
-    isEditTrackRedesignEnabled
-      ? permalink && goToRoute(`${permalink}/edit`)
-      : onOpen({ trackId })
+    permalink && goToRoute(`${permalink}/edit`)
   }
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>

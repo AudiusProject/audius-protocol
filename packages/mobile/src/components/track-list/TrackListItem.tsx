@@ -10,6 +10,7 @@ import {
   type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -29,7 +30,6 @@ import type {
 } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
 
 import {
   IconButton,
@@ -237,9 +237,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isPlaying = useSelector((state) => {
     return isActive && getPlaying(state)
   })
+  const isPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   // Unlike other gated tracks, USDC purchase gated tracks are playable because they have previews
-  const isPlayable =
-    !isDeleted && (!isLocked || isContentUSDCPurchaseGated(streamConditions))
+  const isPlayable = !isDeleted && (!isLocked || isPurchaseGated)
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -292,7 +292,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isTrackOwner && isLocked && !isDeleted
+      !isTrackOwner && isLocked && isPurchaseGated && !isDeleted
         ? OverflowAction.PURCHASE_TRACK
         : null,
       isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
@@ -334,7 +334,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isContextPlaylistOwner,
     dispatch,
     track_id,
-    contextPlaylistId
+    contextPlaylistId,
+    isPurchaseGated
   ])
 
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {

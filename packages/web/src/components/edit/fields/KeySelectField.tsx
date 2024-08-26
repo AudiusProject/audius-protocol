@@ -1,16 +1,7 @@
 import { useState } from 'react'
 
 import { MUSICAL_KEYS } from '@audius/common/utils'
-import {
-  Box,
-  Divider,
-  FilterButtonOptions,
-  Flex,
-  Paper,
-  Popup,
-  SegmentedControl,
-  SelectInput
-} from '@audius/harmony'
+import { Box, Divider, Flex, SegmentedControl, Select } from '@audius/harmony'
 import { useField } from 'formik'
 
 const messages = {
@@ -21,75 +12,56 @@ type KeySelectFieldProps = {
   name: string
 }
 
+const getValueFromKey = (key: string) =>
+  // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
+  key.includes('/') ? key.split('/')[1] : key
+
 export const KeySelectField = (props: KeySelectFieldProps) => {
   const { name } = props
   const [field, { touched, error }, { setValue }] = useField(name)
+  const key = field.value
 
   const hasError = Boolean(touched && error)
 
-  const [scale, setScale] = useState<'Major' | 'Minor'>('Major')
+  const [scale, setScale] = useState<'Major' | 'Minor'>(
+    key?.split(' ')[1] ?? 'Major'
+  )
   const keyOptions = MUSICAL_KEYS.map((key) => {
-    const keyParts = key.split('/')
     return {
       label: key,
-      // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
-      value: keyParts.length > 1 ? keyParts[1] : key
+      value: `${getValueFromKey(key)} ${scale}`
     }
   })
 
-  const key = field.value
-
   return (
-    <SelectInput
+    <Select
       value={key}
       label={messages.key}
+      options={keyOptions}
       error={hasError}
       helperText={hasError ? error : undefined}
       onChange={setValue}
+      menuProps={{ PaperProps: { css: { minWidth: 200 } } }}
     >
-      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          takeWidthOfAnchor
-        >
-          <Paper mv='s' border='strong' shadow='far' css={{ minWidth: 200 }}>
-            <Flex
-              w='100%'
-              gap='s'
-              pv='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-            >
-              <Box w='100%' ph='s'>
-                <SegmentedControl
-                  fullWidth
-                  options={[
-                    { key: 'Major', text: 'Major' },
-                    { key: 'Minor', text: 'Minor' }
-                  ]}
-                  selected={scale}
-                  onSelectOption={setScale}
-                />
-              </Box>
-              <Divider css={{ width: '100%' }} />
-              <Flex direction='column' w='100%' ph='s'>
-                <FilterButtonOptions
-                  options={keyOptions}
-                  onChange={(option) =>
-                    handleChange(
-                      `${option.value} ${scale}`,
-                      `${option.label} ${scale}`
-                    )
-                  }
-                />
-              </Flex>
-            </Flex>
-          </Paper>
-        </Popup>
+      {({ options }) => (
+        <>
+          <Box w='100%' ph='s'>
+            <SegmentedControl
+              fullWidth
+              options={[
+                { key: 'Major', text: 'Major' },
+                { key: 'Minor', text: 'Minor' }
+              ]}
+              selected={scale}
+              onSelectOption={setScale}
+            />
+          </Box>
+          <Divider css={{ width: '100%' }} />
+          <Flex direction='column' w='100%' ph='s'>
+            {options}
+          </Flex>
+        </>
       )}
-    </SelectInput>
+    </Select>
   )
 }

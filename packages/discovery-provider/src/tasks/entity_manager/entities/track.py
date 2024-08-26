@@ -16,6 +16,7 @@ from src.gated_content.content_access_checker import (
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_download import TrackDownload
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.usdc_purchase import PurchaseAccessType
@@ -413,18 +414,26 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 ]
 
         elif key == "bpm":
-            if "bpm" in track_metadata and track_metadata["bpm"]:
-                try:
-                    track_record.bpm = float(track_metadata["bpm"])  # type: ignore
-                except ValueError:
-                    continue
+            if "bpm" in track_metadata:
+                bpm_value = track_metadata["bpm"]
+                if bpm_value is None:
+                    track_record.bpm = None
+                else:
+                    try:
+                        bpm_float = float(bpm_value)
+                        if bpm_float != 0:
+                            track_record.bpm = bpm_float  # type: ignore
+                    except (ValueError, TypeError):
+                        continue
 
         elif key == "musical_key":
-            if "musical_key" in track_metadata and track_metadata["musical_key"]:
-                if isinstance(
-                    track_metadata["musical_key"], str
-                ) and is_valid_musical_key(track_metadata["musical_key"]):
-                    track_record.musical_key = track_metadata["musical_key"]
+            if "musical_key" in track_metadata:
+                key_value = track_metadata["musical_key"]
+                if key_value is None:
+                    track_record.musical_key = None
+                else:
+                    if isinstance(key_value, str) and is_valid_musical_key(key_value):
+                        track_record.musical_key = key_value
 
         else:
             # For most fields, update the track_record when the corresponding field exists
@@ -486,7 +495,11 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
-    if params.action != Action.DELETE:
+    if params.action == Action.DOWNLOAD:
+        if track_id not in params.existing_records["Track"]:
+            raise IndexingValidationError(f"Track {track_id} does not exist")
+
+    if params.action != Action.DELETE and params.action != Action.DOWNLOAD:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
             ai_attribution_user = params.existing_records["User"][
@@ -643,6 +656,38 @@ def delete_track(params: ManageEntityParameters):
     params.session.query(Stem).filter_by(child_track_id=track_id).delete()
 
     params.add_record(track_id, deleted_track)
+
+
+def download_track(params: ManageEntityParameters):
+    validate_track_tx(params)
+
+    track_id = params.entity_id
+    existing_track = params.existing_records["Track"][track_id]
+    if (
+        track_id in params.new_records["Track"]
+    ):  # override with last updated track is in this block
+        existing_track = params.new_records["Track"][track_id][-1]
+
+    if not existing_track:
+        raise IndexingValidationError(f"Track {track_id} does not exist")
+
+    stem_of = existing_track.stem_of
+    parent_track_id = (
+        stem_of.get("parent_track_id", track_id)
+        if isinstance(stem_of, dict)
+        else track_id
+    )
+
+    session = params.session
+
+    record = TrackDownload(
+        txhash=params.txhash,
+        blocknumber=params.block_number,
+        parent_track_id=parent_track_id,
+        track_id=track_id,
+        user_id=params.user_id,
+    )
+    session.add(record)
 
 
 # Make sure that the user has access to remix parent tracks

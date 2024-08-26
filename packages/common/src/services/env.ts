@@ -50,6 +50,7 @@ export type Env = {
   OPTIMIZELY_KEY: string
   ORACLE_ETH_ADDRESSES: string
   PAYMENT_ROUTER_PROGRAM_ID: string
+  STAKING_BRIDGE_PROGRAM_ID: string
   PUBLIC_HOSTNAME: string
   PUBLIC_PROTOCOL: string
   BASENAME: string

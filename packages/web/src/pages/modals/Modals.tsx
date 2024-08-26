@@ -17,18 +17,20 @@ import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
+import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
 import { EditAccessConfirmationModal } from 'components/edit-access-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
+import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
-import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
+import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -50,6 +52,7 @@ import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
 
 import { AppModal } from './AppModal'
 
@@ -68,9 +71,6 @@ const TrendingRewardsModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
 )
 
-const EditTrackModal = lazy(
-  () => import('components/edit-track/EditTrackModal')
-)
 const InboxSettingsModal = lazy(
   () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
@@ -79,7 +79,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
-  EditTrack: EditTrackModal,
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
@@ -87,7 +86,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   EditAccessConfirmation: EditAccessConfirmationModal,
-  PublishTrackConfirmation: PublishTrackConfirmationModal,
+  EarlyReleaseConfirmation: EarlyReleaseConfirmationModal,
+  PublishConfirmation: PublishConfirmationModal,
+  HideContentConfirmation: HideContentConfirmationModal,
   AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
@@ -106,6 +107,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
+  ChatBlastModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
   CoinflowOnramp: CoinflowOnrampModal,

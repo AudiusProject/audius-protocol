@@ -221,6 +221,8 @@ export enum Name {
 
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
+  TRACK_EDIT_BPM_CHANGED = 'Track Edit: BPM Changed',
+  TRACK_EDIT_MUSICAL_KEY_CHANGED = 'Track Edit: Musical Key Changed',
 
   // Collection Edits
   COLLECTION_EDIT_ACCESS_CHANGED = 'Collection Edit: Access Changed',
@@ -456,6 +458,7 @@ export enum Name {
   STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
+  PURCHASE_CONTENT_BUY_CLICKED = 'Purchase Content: Buy Clicked',
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
@@ -1167,6 +1170,20 @@ type TrackEditAccessChanged = {
   to: TrackAccessType
 }
 
+type TrackEditBpmChanged = {
+  eventName: Name.TRACK_EDIT_BPM_CHANGED
+  id: number
+  from: number
+  to: number
+}
+
+type TrackEditMusicalKeyChanged = {
+  eventName: Name.TRACK_EDIT_MUSICAL_KEY_CHANGED
+  id: number
+  from: string
+  to: string
+}
+
 // Collection Edits
 type CollectionEditAccessChanged = {
   eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED
@@ -1444,33 +1461,40 @@ type ModalClosed = {
   name: string
 }
 
+export type SearchSource =
+  | 'autocomplete'
+  | 'search results page'
+  | 'more results page'
+
 // Search
 type SearchTerm = {
   eventName: Name.SEARCH_SEARCH
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchTag = {
   eventName: Name.SEARCH_TAG_SEARCH
   tag: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchMoreResults = {
   eventName: Name.SEARCH_MORE_RESULTS
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
 }
 
 type SearchResultSelect = {
   eventName: Name.SEARCH_RESULT_SELECT
   term: string
-  source: 'autocomplete' | 'search results page' | 'more results page'
+  source: SearchSource
   id: ID
   kind: 'track' | 'profile' | 'playlist' | 'album'
 }
 
+// This event is no longer fired with search v2
+// Use page views instead
 type SearchTabClick = {
   eventName: Name.SEARCH_TAB_CLICK
   term: string
@@ -1708,6 +1732,7 @@ type RewardsClaimFailure = {
   amount: number
   url?: string
   error: string
+  instruction?: string
 }
 
 type RewardsClaimBlocked = {
@@ -2187,6 +2212,12 @@ type ContentPurchaseMetadata = {
   isVerifiedArtist: boolean
 }
 
+type PurchaseContentBuyClicked = {
+  eventName: Name.PURCHASE_CONTENT_BUY_CLICKED
+  contentId: number
+  contentType: string
+}
+
 type PurchaseContentStarted = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_STARTED
 }
@@ -2515,6 +2546,8 @@ export type AllTrackingEvents =
   | TrackDownloadSuccessfulDownloadSingle
   | TrackDownloadFailedDownloadSingle
   | TrackEditAccessChanged
+  | TrackEditBpmChanged
+  | TrackEditMusicalKeyChanged
   | CollectionEditAccessChanged
   | CollectionEdit
   | TrackUploadSuccess
@@ -2689,6 +2722,7 @@ export type AllTrackingEvents =
   | StripeFulfillmentComplete
   | StripeError
   | StripeRejected
+  | PurchaseContentBuyClicked
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure

@@ -1,68 +1,51 @@
+import { ReactNode } from 'react'
+
 import { IconComponent } from 'components/icon'
-import { Origin } from 'components/popup/types'
+import { TextInputProps } from 'components/input'
+import { MenuProps } from 'components/internal/Menu'
 
-import { SelectInputProps } from '../SelectInput/types'
-
-export type SelectOption = {
-  value: string
+export type SelectOption<Value extends string> = {
+  value: Value
   /**
    * The label to display. If not provided, uses the value.
    */
   label?: string
-  helperText?: string
   icon?: IconComponent
   leadingElement?: JSX.Element
 }
 
-export type SelectPopupProps = {
+type ChildrenProps<Value> = {
   /**
-   * Popup anchor origin
-   * @default { horizontal: 'left', vertical: 'bottom' }
+   * A callback triggered when the value is changed
    */
-  popupAnchorOrigin?: Origin
-
+  onChange: (value: Value) => void
   /**
-   * Popup max height
+   * The rendered options, provided to the children render prop in case
+   * they want to be incorporated as-is.
    */
-  popupMaxHeight?: number
-
-  /**
-   * Popup transform origin
-   * @default { horizontal: 'left', vertical: 'top' }
-   */
-  popupTransformOrigin?: Origin
-
-  /**
-   * Popup portal location passed to the inner popup
-   */
-  popupPortalLocation?: HTMLElement
-
-  /**
-   * zIndex applied to the inner Popup component
-   */
-  popupZIndex?: number
+  options: ReactNode
 }
 
-export type SelectProps = {
+export type SelectProps<Value extends string = string> = {
+  value: Value
   /**
-   * Placeholder text for the filter input
+   * A callback triggered when the value is changed
    */
-  filterInputPlaceholder?: string
+  onChange?: (value: Value) => void
 
   /**
    * Selection options
    * e.g. { label: 'Option A', icon: IconRadar }
    */
-  options: SelectOption[]
+  options: SelectOption<Value>[]
+
+  children?: (props: ChildrenProps<Value>) => ReactNode
 
   /**
    * Label to display above options
    */
   optionsLabel?: string
-
-  /**
-   * The selected value
-   */
-  selection?: string | null
-} & SelectPopupProps &
-  Omit<SelectInputProps, 'children' | 'value'>
+  InputProps?: Partial<TextInputProps>
+  menuProps?: Partial<MenuProps>
+  clearable?: boolean
+} & Omit<TextInputProps, 'value' | 'onChange' | 'children'>

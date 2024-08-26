@@ -5,6 +5,7 @@ import { useGetPlaylistById } from '~/api/collection'
 import { ID } from '~/models/Identifiers'
 import { getCollectionDuration } from '~/store/cache/collections/selectors'
 import { CommonState } from '~/store/commonStore'
+import { pluralize } from '~/utils/formatUtil'
 import { formatDate, formatSecondsAsText } from '~/utils/timeUtil'
 
 export enum CollectionMetadataType {
@@ -45,31 +46,31 @@ export const useCollectionMetadata = ({
   const {
     is_private: isPrivate,
     updated_at: updatedAt,
-    is_scheduled_release: isScheduledRelease,
-    release_date: releaseDate
+    release_date: releaseDate,
+    created_at: createdAt
   } = collection
   const numTracks = collection.playlist_contents?.track_ids?.length ?? 0
 
   const metadataItems = [
     {
-      id: CollectionMetadataType.DURATION,
-      label: 'Duration',
-      value: `${numTracks} tracks${
-        duration ? `, ${formatSecondsAsText(duration)}` : ''
-      }`,
-      isHidden: !numTracks
-    },
-    {
       id: CollectionMetadataType.RELEASE_DATE,
-      value: formatDate(releaseDate ?? ''),
+      value: formatDate(releaseDate ?? createdAt),
       label: 'Released',
-      isHidden: isPrivate || !releaseDate || isScheduledRelease
+      isHidden: isPrivate
     },
     {
       id: CollectionMetadataType.UPDATED_AT,
-      value: formatDate(updatedAt ?? ''),
+      value: formatDate(updatedAt ?? createdAt),
       label: 'Updated',
-      isHidden: isPrivate || !updatedAt
+      isHidden: isPrivate
+    },
+    {
+      id: CollectionMetadataType.DURATION,
+      label: 'Duration',
+      value: `${numTracks} ${pluralize('track', numTracks)}${
+        duration ? `, ${formatSecondsAsText(duration)}` : ''
+      }`,
+      isHidden: !numTracks
     }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 

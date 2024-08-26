@@ -3,11 +3,12 @@ import { useCallback, MouseEvent } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, AllTrackingEvents } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { route } from '@audius/common/utils'
 import { Tag, TagProps } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { getSearchPageLocation, searchResultsPage } from 'utils/route'
+import { searchResultsPage } from 'utils/route'
 
 type TagClickingEvent = Extract<
   AllTrackingEvents,
@@ -35,7 +36,7 @@ export const SearchTag = (props: SearchTagProps) => {
   )
 
   const linkTo = isSearchV2Enabled
-    ? getSearchPageLocation({ query: `#${children}` })
+    ? route.searchPage({ query: `#${children}` })
     : searchResultsPage(`#${children}`)
 
   return (

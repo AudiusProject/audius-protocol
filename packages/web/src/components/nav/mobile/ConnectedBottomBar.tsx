@@ -5,6 +5,7 @@ import {
   explorePageActions,
   ExplorePageTabs
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -16,15 +17,10 @@ import {
 } from 'common/store/pages/signon/actions'
 import BottomBar from 'components/bottom-bar/BottomBar'
 import { AppState } from 'store/types'
-import {
-  FEED_PAGE,
-  TRENDING_PAGE,
-  EXPLORE_PAGE,
-  profilePage,
-  getPathname,
-  LIBRARY_PAGE
-} from 'utils/route'
+import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
+  route
 const { setTab } = explorePageActions
 const { getUserHandle } = accountSelectors
 

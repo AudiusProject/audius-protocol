@@ -1,6 +1,10 @@
 import { ReactNode } from 'react'
 
+import { CSSObject } from '@emotion/react'
+
 import { IconComponent } from 'components/icon'
+import { TextInputProps } from 'components/input'
+import { MenuProps } from 'components/internal/Menu'
 
 export type FilterButtonSize = 'default' | 'small'
 
@@ -8,32 +12,48 @@ export type FilterButtonVariant =
   | 'fillContainer' // When a value is present, the button will be in an active state and have a remove icon (default)
   | 'replaceLabel' // Shows the value as the label of the button, but doesn't show an active state
 
-type ChildrenProps = {
+export type FilterButtonOptionType<Value extends string> = {
+  value: Value
   /**
-   * State representing whether the FilterButton is open.
-   * This can be used to implement a popup via `children`
+   * The label to display. If not provided, uses the value.
    */
-  isOpen: boolean
+  label?: string
+  icon?: IconComponent
   /**
-   * Set open state
+   * A leading element to display before the option label. Useful for icons/emojis
    */
-  setIsOpen: (isOpen: boolean) => void
+  leadingElement?: JSX.Element
   /**
-   * A function to handle when the value is changed
+   * A leading element to display before the filter button label
    */
-  handleChange: (value: string) => void
-  /**
-   * A ref to the anchor element (button)
-   */
-  anchorRef: React.RefObject<HTMLButtonElement>
+  labelLeadingElement?: JSX.Element
 }
 
-export type FilterButtonProps = {
+type ChildrenProps<Value> = {
+  /**
+   * Callback when a value is selected
+   */
+  onChange: (value: Value) => void
+  options: ReactNode
+  setIsOpen: (isOpen: boolean) => void
+}
+
+export type FilterButtonProps<Value extends string = string> = {
+  value?: Value | null
+  /**
+   * Callback when a value is selected
+   */
+  onChange?: (value: Value) => void
+  /**
+   * Selection options
+   * e.g. { label: 'Option A', icon: IconRadar }
+   */
+  options?: FilterButtonOptionType<Value>[]
   /**
    * Children render prop. This can be used to render a dropdown component
    * for example
    */
-  children?: (props: ChildrenProps) => ReactNode
+  children?: (props: ChildrenProps<Value>) => ReactNode
 
   /**
    * The text that appears on the button component.
@@ -46,11 +66,6 @@ export type FilterButtonProps = {
    * If no label is provided, specify an optional aria-label
    */
   'aria-label'?: string
-
-  /**
-   * The value
-   */
-  value?: string | null
 
   /**
    * The button size
@@ -73,11 +88,6 @@ export type FilterButtonProps = {
    * Optional icon element to include on the right side of the button
    */
   iconRight?: IconComponent | null
-
-  /**
-   * What to do when the value is changed
-   */
-  onChange?: (value: string) => void
 
   /**
    * What to do when the filter button is opened
@@ -104,4 +114,19 @@ export type FilterButtonProps = {
    * Optional leading element to include on the left side of the button
    */
   leadingElement?: ReactNode
+
+  /**
+   * Show a text input to filter the options
+   */
+  showFilterInput?: boolean
+
+  filterInputProps?: TextInputProps
+
+  /**
+   * Label to display above options
+   */
+  optionsLabel?: string
+
+  menuProps?: Partial<MenuProps> & { css?: CSSObject }
+  renderLabel?: (label: string) => ReactNode
 }

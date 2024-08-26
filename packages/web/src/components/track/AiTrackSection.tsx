@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common/models'
 import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
   IconRobot,
@@ -15,9 +16,10 @@ import { useSelector } from 'common/hooks/useSelector'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { emptyStringGuard } from 'pages/track-page/utils'
-import { profilePage, profilePageAiAttributedTracks } from 'utils/route'
+import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiTrackSection.module.css'
+const { profilePage } = route
 const { getUser } = cacheUsersSelectors
 const { fetchUsers } = cacheUsersActions
 

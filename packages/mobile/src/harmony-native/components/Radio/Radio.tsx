@@ -15,7 +15,7 @@ export type RadioProps = FlexProps & {
   checked?: boolean
   value: string
   onValueChange?: (value: string) => void
-  label?: string
+  label?: string | ReactNode
   icon?: IconComponent
   disabled?: boolean
   size?: 'default' | 'large'
@@ -82,6 +82,7 @@ export const Radio = (props: RadioProps) => {
       onPress={onValueChange}
       style={[style, disabled && { opacity: 0.5 }]}
       disabled={disabled}
+      activeOpacity={Number(checked)}
     >
       <Flex gap='l' {...flexProps}>
         <Flex direction='row' gap='m'>

@@ -1,4 +1,4 @@
-import { ReactElement, useMemo, useState } from 'react'
+import { ReactElement, useCallback, useState } from 'react'
 
 import {
   GENRES,
@@ -6,28 +6,25 @@ import {
   convertGenreLabelToValue
 } from '@audius/common/utils'
 import {
-  OptionsFilterButton,
   Flex,
-  FilterButton,
-  FilterButtonOptions,
-  Popup,
-  Paper,
   SegmentedControl,
-  IconCaretDown,
   Divider,
-  Box
+  Box,
+  FilterButton
 } from '@audius/harmony'
+import { Mood } from '@audius/sdk'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { BpmFilter } from './BpmFilter'
+import { useUpdateSearchParams } from './hooks'
+import { MOODS } from './moods'
 import { Filter } from './types'
-import { MOODS, useUpdateSearchParams } from './utils'
 
 const messages = {
   genre: 'Genre',
-  genreSearchPlaceholder: 'Search Genre',
+  genreFilterLabel: 'Search Genre',
   mood: 'Mood',
-  moodSearchPlaceholder: 'Search Mood',
+  moodFilterLabel: 'Search Mood',
   key: 'Key',
   isPremium: 'Premium',
   isVerified: 'Verified',
@@ -40,19 +37,21 @@ const GenreFilter = () => {
   const updateSearchParams = useUpdateSearchParams('genre')
 
   return (
-    <OptionsFilterButton
+    <FilterButton
       label={messages.genre}
-      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      popupMaxHeight={400}
-      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      selection={genre}
+      menuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        maxHeight: 400
+      }}
+      value={genre}
       onChange={updateSearchParams}
       options={GENRES.map((genre) => ({
         label: genre,
         value: convertGenreLabelToValue(genre)
       }))}
       showFilterInput
-      filterInputPlaceholder={messages.genreSearchPlaceholder}
+      filterInputProps={{ label: messages.genreFilterLabel }}
     />
   )
 }
@@ -61,7 +60,7 @@ const MoodFilter = () => {
   const [urlSearchParams] = useSearchParams()
   const mood = urlSearchParams.get('mood')
   const updateSearchParams = useUpdateSearchParams('mood')
-  const sortedKeys = Object.keys(MOODS).sort()
+  const sortedKeys = Object.keys(MOODS).sort() as Mood[]
 
   const moodCss = {
     '& .emoji': {
@@ -84,16 +83,18 @@ const MoodFilter = () => {
   }))
 
   return (
-    <OptionsFilterButton
+    <FilterButton
       label={messages.mood}
-      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      popupMaxHeight={400}
-      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      selection={mood}
+      menuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        maxHeight: 400
+      }}
+      value={mood}
       onChange={updateSearchParams}
       options={moodOptions}
       showFilterInput
-      filterInputPlaceholder={messages.moodSearchPlaceholder}
+      filterInputProps={{ label: messages.moodFilterLabel }}
     />
   )
 }
@@ -109,76 +110,56 @@ const KeyFilter = () => {
   const [scale, setScale] = useState(key?.split(' ')[1] ?? 'Major')
   const keyOptions = MUSICAL_KEYS.map((k) => ({
     label: k,
-    value: getValueFromKey(k)
+    value: `${getValueFromKey(k)} ${scale}`
   }))
 
-  const activeValue = useMemo(() => {
-    if (!key) return null
-    const keyRegex = /(.+) (Major|Minor)/
-    const keyRes = keyRegex.exec(key)?.[1]
-    return keyRes ? getValueFromKey(keyRes) : null
-  }, [key])
-
-  const label = useMemo(() => {
-    const pitch = key?.split(' ')[0]
-    return keyOptions.find((option) => option.value === pitch)?.label
-  }, [key, keyOptions])
+  const renderLabel = useCallback(
+    (label: string) => {
+      const musicalKey = MUSICAL_KEYS.find((key) => key.match(label))
+      if (!musicalKey) return messages.key
+      return `${musicalKey} ${scale}`
+    },
+    [scale]
+  )
 
   return (
     <FilterButton
       value={key}
-      label={label ? `${label} ${scale}` : messages.key}
+      renderLabel={renderLabel}
+      label={messages.key}
       onChange={updateSearchParams}
-      iconRight={IconCaretDown}
+      menuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        css: { minWidth: 200 }
+      }}
+      options={keyOptions}
     >
-      {({ handleChange, isOpen, setIsOpen, anchorRef }) => (
-        <Popup
-          anchorRef={anchorRef}
-          isVisible={isOpen}
-          onClose={() => setIsOpen(false)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      {({ options }) => (
+        <Flex
+          w='100%'
+          gap='s'
+          pv='s'
+          direction='column'
+          alignItems='flex-start'
+          role='listbox'
         >
-          <Paper
-            mt='s'
-            border='strong'
-            shadow='far'
-            css={{ minWidth: 200 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Flex
-              w='100%'
-              gap='s'
-              pv='s'
-              direction='column'
-              alignItems='flex-start'
-              role='listbox'
-            >
-              <Box w='100%' ph='s'>
-                <SegmentedControl
-                  fullWidth
-                  options={[
-                    { key: 'Major', text: 'Major' },
-                    { key: 'Minor', text: 'Minor' }
-                  ]}
-                  selected={scale}
-                  onSelectOption={setScale}
-                />
-              </Box>
-              <Divider css={{ width: '100%' }} />
-              <Flex direction='column' w='100%' ph='s'>
-                <FilterButtonOptions
-                  activeValue={activeValue}
-                  options={keyOptions}
-                  onChange={(option) => {
-                    handleChange(`${option.value} ${scale}`)
-                    setIsOpen(false)
-                  }}
-                />
-              </Flex>
-            </Flex>
-          </Paper>
-        </Popup>
+          <Box w='100%' ph='s'>
+            <SegmentedControl
+              fullWidth
+              options={[
+                { key: 'Major', text: 'Major' },
+                { key: 'Minor', text: 'Minor' }
+              ]}
+              selected={scale}
+              onSelectOption={setScale}
+            />
+          </Box>
+          <Divider css={{ width: '100%' }} />
+          <Flex direction='column' w='100%' ph='s'>
+            {options}
+          </Flex>
+        </Flex>
       )}
     </FilterButton>
   )
@@ -194,7 +175,7 @@ const IsPremiumFilter = () => {
       label={messages.isPremium}
       value={isPremium}
       onClick={() => updateSearchParams(isPremium ? '' : 'true')}
-    ></FilterButton>
+    />
   )
 }
 
@@ -210,7 +191,7 @@ const HasDownloadsFilter = () => {
       onClick={() => {
         updateSearchParams(hasDownloads ? '' : 'true')
       }}
-    ></FilterButton>
+    />
   )
 }
 
@@ -226,7 +207,7 @@ const IsVerifiedFilter = () => {
       onClick={() => {
         updateSearchParams(isVerified ? '' : 'true')
       }}
-    ></FilterButton>
+    />
   )
 }
 

@@ -157,7 +157,7 @@ class DropdownInput extends Component {
             }
             notFoundContent={''}
             getPopupContainer={popupContainer}
-            onVisibleChange={this.onVisibleChange}
+            onDropdownVisibleChange={this.onVisibleChange}
             {...other}
           >
             {options}

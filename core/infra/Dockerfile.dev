@@ -1,0 +1,7 @@
+FROM scratch
+
+WORKDIR /bin
+
+COPY ./tmp/core-amd64 ./core
+
+CMD ["./core"]

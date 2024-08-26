@@ -1,11 +1,15 @@
-import { Kind, ID, UserTrackMetadata } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { Kind, ID, Id, OptionalId } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
-  getContext
+  getSDK
 } from '@audius/common/store'
-import { removeNullable, waitForValue } from '@audius/common/utils'
+import { waitForValue } from '@audius/common/utils'
 import { select, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
@@ -25,22 +29,24 @@ const INITIAL_FETCH_LIMIT = 6
  */
 export function* fetchAndProcessRemixes(trackId: ID) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
-  const {
-    tracks: remixes,
-    count
-  }: { tracks: UserTrackMetadata[]; count: number } = yield* call(
-    [apiClient, 'getRemixes'],
+
+  const { data } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrackRemixes],
     {
-      trackId,
+      trackId: Id.parse(trackId),
       offset: 0,
       limit: INITIAL_FETCH_LIMIT,
-      currentUserId
+      userId: OptionalId.parse(currentUserId)
     }
   )
 
-  if (!remixes) return
+  if (!data) return
+
+  const { count, tracks } = data
+  const remixes = transformAndCleanList(tracks, userTrackMetadataFromSDK)
 
   if (remixes.length) {
     yield* call(processAndCacheTracks, remixes)
@@ -78,14 +84,19 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
-  const remixParents = (yield* call([apiClient, 'getRemixing'], {
-    trackId,
-    limit: 1,
-    offset: 0,
-    currentUserId
-  })).filter(removeNullable)
+
+  const { data = [] } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getTrackRemixParents],
+    {
+      trackId: Id.parse(trackId),
+      offset: 0,
+      limit: 1,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const remixParents = transformAndCleanList(data, userTrackMetadataFromSDK)
 
   if (!remixParents) return
 

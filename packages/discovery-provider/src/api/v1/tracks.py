@@ -38,11 +38,13 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
+from src.api.v1.models.comments import base_comment_model
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
+from src.queries.get_comments import get_track_comments
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -86,7 +88,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
 
-from .models.tracks import blob_info
+from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_access_info, track_full
 
@@ -250,7 +252,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "id": decode_ids_array(ids),
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )
@@ -259,7 +261,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "routes": routes_parsed,
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )
@@ -460,6 +462,35 @@ class TrackInspect(Resource):
                 logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
 
         abort_not_found(track_id, ns)
+
+
+track_comments_response = make_response(
+    "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
+)
+
+
+# Comment
+@ns.route("/<string:track_id>/comments")
+class TrackComments(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comments""",
+        description="""Get a list of comments for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(track_comments_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, ns)
+        track_comments = get_track_comments(args, decoded_id)
+        return success_response(track_comments)
 
 
 # Stream
@@ -1362,6 +1393,10 @@ track_remixables_route_parser.add_argument(
     description="Boolean to include user info with tracks",
 )
 
+track_remixables_response = make_full_response(
+    "remixables_response", full_ns, fields.List(fields.Nested(track_full))
+)
+
 
 @full_ns.route("/remixables")
 class FullRemixableTracks(Resource):
@@ -1372,7 +1407,7 @@ class FullRemixableTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(track_remixables_route_parser)
-    @full_ns.marshal_with(full_track_response)
+    @full_ns.marshal_with(track_remixables_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
@@ -1714,17 +1749,25 @@ class FullUSDCPurchaseTracks(Resource):
         return success_response(premium_tracks)
 
 
+full_nft_gated_track_signatures_response = make_full_response(
+    "nft_gated_track_signatures_response",
+    full_ns,
+    fields.Nested(nft_gated_track_signature_mapping),
+)
+
+
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
 class NFTGatedTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Gated Track Signatures""",
+        id="""Get NFT Gated Track Signatures""",
         description="""Gets gated track signatures for passed in gated track ids""",
         params={
             "user_id": """The user for whom we are generating gated track signatures."""
         },
     )
     @full_ns.expect(track_signatures_parser)
+    @full_ns.marshal_with(full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
@@ -1796,6 +1839,14 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
 )
 
+access_info_parser = current_user_parser.copy()
+access_info_parser.add_argument(
+    "include_network_cut",
+    required=False,
+    type=bool,
+    description="Whether to include the staking system as a recipient",
+)
+
 
 @ns.route("/<string:track_id>/access-info")
 class GetTrackAccessInfo(Resource):
@@ -1805,10 +1856,11 @@ class GetTrackAccessInfo(Resource):
         description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
-    @ns.expect(current_user_parser)
+    @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
         args = current_user_parser.parse_args()
+        include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
         get_track_args: GetTrackArgs = {
@@ -1822,8 +1874,12 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(raw["stream_conditions"])
-        download_conditions = get_extended_purchase_gate(raw["download_conditions"])
+        stream_conditions = get_extended_purchase_gate(
+            gate=raw["stream_conditions"], include_network_cut=include_network_cut
+        )
+        download_conditions = get_extended_purchase_gate(
+            gate=raw["download_conditions"], include_network_cut=include_network_cut
+        )
         track = extend_track(raw)
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions

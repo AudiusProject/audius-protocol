@@ -5,6 +5,7 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconSearch as IconBigSearch, Box } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
@@ -17,9 +18,11 @@ import Lineup from 'components/lineup/Lineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { UserCard } from 'components/user-card'
-import { fullSearchResultsPage, NOT_FOUND_PAGE } from 'utils/route'
+import { fullSearchResultsPage } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
+
+const { NOT_FOUND_PAGE } = route
 
 const SearchHeader = (props) => {
   const secondary = (
@@ -125,7 +128,7 @@ class SearchPageContent extends Component {
     const onClickTile = (trackId, source) => {
       this.props.dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
-          searchText,
+          term: searchText,
           kind: 'track',
           id: trackId,
           source

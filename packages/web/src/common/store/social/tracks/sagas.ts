@@ -691,6 +691,8 @@ function* downloadTracks({
   try {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const apiClient = yield* getContext('apiClient')
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
     const trackDownload = yield* getContext('trackDownload')
     let queryParams: QueryParams = {}
 
@@ -722,6 +724,21 @@ function* downloadTracks({
       files,
       rootDirectoryName,
       abortSignal
+    })
+    yield* call(async () => {
+      await Promise.all(
+        tracks.map(async ({ trackId }) => {
+          try {
+            await sdk.tracks.recordTrackDownload({
+              userId: userId ? encodeHashId(userId)! : undefined,
+              trackId: encodeHashId(trackId)!
+            })
+            console.debug('Recorded download for track', trackId)
+          } catch (e) {
+            console.error('Failed to record download for track', trackId, e)
+          }
+        })
+      )
     })
   } catch (e) {
     console.error(

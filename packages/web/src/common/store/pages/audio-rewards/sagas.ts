@@ -1,9 +1,14 @@
 import {
+  undisbursedUserChallengeFromSDK,
+  userChallengeFromSDK
+} from '@audius/common/adapters'
+import {
   UserChallenge,
   ChallengeRewardID,
   StringWei,
   SpecifierWithAmount,
-  Name
+  Name,
+  Id
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -22,11 +27,17 @@ import {
   modalsActions,
   getContext,
   musicConfettiActions,
-  CommonStoreContext
+  CommonStoreContext,
+  getSDK
 } from '@audius/common/store'
-import { encodeHashId, waitForValue } from '@audius/common/utils'
+import {
+  encodeHashId,
+  isResponseError,
+  route,
+  waitForValue
+} from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk, ChallengeId, Errors } from '@audius/sdk'
+import { AudiusSdk, ChallengeId, Errors, RewardManagerError } from '@audius/sdk'
 import {
   call,
   fork,
@@ -40,14 +51,14 @@ import {
   all
 } from 'typed-redux-saga'
 
-import { isResponseError, reportToSentry } from 'store/errors/reportToSentry'
-import { AUDIO_PAGE } from 'utils/route'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForRead } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
 
+const { AUDIO_PAGE } = route
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
@@ -280,6 +291,17 @@ async function claimRewardsForChallenge({
                 error: await error.response.clone().text()
               })
             )
+          } else if (error instanceof RewardManagerError) {
+            await track(
+              make({
+                eventName: Name.REWARDS_CLAIM_FAILURE,
+                challengeId,
+                specifier: specifierWithAmount.specifier,
+                amount: specifierWithAmount.amount,
+                error: error.customErrorName ?? 'Unkown',
+                instruction: error.instructionName
+              })
+            )
           } else {
             await track(
               make({
@@ -364,7 +386,7 @@ function* claimSingleChallengeRewardAsync(
       } else {
         yield* call(reportToSentry, {
           error,
-          name: `ClaimRewards: ${error.name}`,
+          name: 'ClaimRewards',
           additionalInfo: {
             challengeId,
             specifier: res.specifier,
@@ -488,25 +510,30 @@ function* watchClaimAllChallengeRewards() {
 
 function* fetchUserChallengesAsync() {
   yield* call(waitForRead)
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
   try {
-    const userChallenges: UserChallenge[] | null = yield* call(
-      apiClient.getUserChallenges,
+    const { data: challengesData = [] } = yield* call(
+      [sdk.users, sdk.users.getUserChallenges],
       {
-        userID: currentUserId
+        id: Id.parse(currentUserId)
       }
     )
-    const undisbursedChallenges = yield* call(
-      [apiClient, apiClient.getUndisbursedUserChallenges],
+
+    const userChallenges = challengesData.map(userChallengeFromSDK)
+
+    const { data = [] } = yield* call(
+      [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
       {
-        userID: currentUserId
+        userId: Id.parse(currentUserId)
       }
     )
+    const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)
+
     yield* put(fetchUserChallengesSucceeded({ userChallenges }))
-    yield* put(setUndisbursedChallenges(undisbursedChallenges ?? []))
+    yield* put(setUndisbursedChallenges(undisbursedChallenges))
   } catch (e) {
     console.error(e)
     yield* put(fetchUserChallengesFailed())

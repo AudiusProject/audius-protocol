@@ -25,6 +25,7 @@ nft_collection = ns.model(
     "nft_collection",
     {
         "chain": fields.String(enum=["eth", "sol"], required=True),
+        "standard": fields.String(enum=["ERC721", "ERC1155"]),
         "address": fields.String(required=True),
         "name": fields.String(required=True),
         "imageUrl": fields.String(),
@@ -78,10 +79,10 @@ access_gate = ns.add_model(
     OneOfModel(
         "access_gate",
         [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(purchase_gate),
-            fields.Nested(nft_gate),
+            tip_gate,
+            follow_gate,
+            purchase_gate,
+            nft_gate,
         ],
     ),
 )
@@ -91,7 +92,7 @@ extended_payment_split = ns.clone(
     "extended_payment_split",
     payment_split,
     {
-        "eth_wallet": fields.String(required=True),
+        "eth_wallet": fields.String(),
         "payout_wallet": fields.String(required=True),
         "amount": fields.Integer(required=True),
     },
@@ -122,10 +123,10 @@ extended_access_gate = ns.add_model(
     OneOfModel(
         "extended_access_gate",
         [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(extended_purchase_gate),
-            fields.Nested(nft_gate),
+            tip_gate,
+            follow_gate,
+            extended_purchase_gate,
+            nft_gate,
         ],
     ),
 )

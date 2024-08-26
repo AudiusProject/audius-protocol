@@ -33,7 +33,7 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common/store'
-import { formatDate, Uid } from '@audius/common/utils'
+import { formatDate, route, Uid } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -53,20 +53,21 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import {
-  profilePage,
-  NOT_FOUND_PAGE,
-  FEED_PAGE,
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE,
-  trackRemixesPage
-} from 'utils/route'
+import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
 
 import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
+
+const {
+  profilePage,
+  NOT_FOUND_PAGE,
+  FEED_PAGE,
+  FAVORITING_USERS_ROUTE,
+  REPOSTING_USERS_ROUTE
+} = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getPreviewing, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
@@ -266,20 +267,13 @@ class TrackPageProvider extends Component<
 
     const isOwner = track?.owner_id === userId
     const shouldPreview = isPreview && isOwner
-    if (isPlaying && previewing === shouldPreview) {
-      pause()
-      record(
-        make(Name.PLAYBACK_PAUSE, {
-          id: `${track.id}`,
-          source: PlaybackSource.TRACK_PAGE
-        })
-      )
-    } else if (
-      currentQueueItem.track &&
-      currentQueueItem.track.track_id === track.id &&
-      previewing === shouldPreview
-    ) {
-      play()
+
+    const isSameTrack =
+      currentQueueItem.track && currentQueueItem.track.track_id === track.id
+
+    if (previewing !== isPreview || !isSameTrack) {
+      stop()
+      play(track.uid, { isPreview: shouldPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
@@ -287,9 +281,16 @@ class TrackPageProvider extends Component<
           source: PlaybackSource.TRACK_PAGE
         })
       )
-    } else if (track) {
-      stop()
-      play(track.uid, { isPreview: shouldPreview && isOwner })
+    } else if (isPlaying) {
+      pause()
+      record(
+        make(Name.PLAYBACK_PAUSE, {
+          id: `${track.id}`,
+          source: PlaybackSource.TRACK_PAGE
+        })
+      )
+    } else {
+      play()
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,

@@ -73,6 +73,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/chats/unread", s.getUnreadChatCount)
 	g.POST("/mutate", s.mutate)
 
+	g.GET("/blasts", s.getNewBlasts)
+
 	g.GET("/chats/permissions", s.getChatPermissions)
 	g.GET("/chats/blockees", s.getChatBlockees)
 	g.GET("/chats/blockers", s.getChatBlockers)
@@ -308,6 +310,25 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 	return nil
 }
 
+func (s *ChatServer) getNewBlasts(c echo.Context) error {
+	ctx := c.Request().Context()
+	userId, err := userIdForSignedGet(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	blasts, err := queries.GetNewBlasts(db.Conn, ctx, queries.ChatMembershipParams{
+		UserID: userId,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   blasts,
+	})
+}
+
 func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
 	userId, err := userIdForSignedGet(c)
@@ -401,7 +422,14 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 		return c.String(400, "bad request: "+err.Error())
 	}
 
-	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
+	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), IsBlast: false, Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
+	if c.QueryParam("is_blast") != "" {
+		isBlast, err := strconv.ParseBool(c.QueryParam("is_blast"))
+		if err != nil {
+			return err
+		}
+		params.IsBlast = isBlast
+	}
 	if c.QueryParam("before") != "" {
 		beforeCursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("before"))
 		if err != nil {

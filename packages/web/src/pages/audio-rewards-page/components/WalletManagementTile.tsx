@@ -10,7 +10,7 @@ import {
   buyAudioActions,
   OnRampProvider
 } from '@audius/common/store'
-import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { isNullOrUndefined, formatWei, route } from '@audius/common/utils'
 import {
   IconReceive,
   IconSend,
@@ -41,14 +41,11 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
 import { getClient } from 'utils/clientUtil'
-import {
-  AUDIO_TRANSACTIONS_PAGE,
-  pushUniqueRoute,
-  TRENDING_PAGE
-} from 'utils/route'
+import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
+const { AUDIO_TRANSACTIONS_PAGE, TRENDING_PAGE } = route
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
@@ -12,17 +12,17 @@ import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MainContentContext } from 'pages/MainContentContext'
+import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
-import { UPLOAD_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -34,6 +34,7 @@ import {
   SalesTableSortMethod
 } from './SalesTable'
 
+const { UPLOAD_PAGE } = route
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -174,7 +175,7 @@ export const SalesTab = ({
   isLoading
 }: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
   const isMobile = useIsMobile()
-  const { mainContentRef } = useContext(MainContentContext)
+  const mainContentRef = useMainContentRef()
 
   const columns = isMobile
     ? (['contentName', 'date', 'value'] as SalesTableColumn[])

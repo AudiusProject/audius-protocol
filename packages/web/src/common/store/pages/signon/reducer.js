@@ -1,4 +1,4 @@
-import { FEED_PAGE } from 'utils/route'
+import { route } from '@audius/common/utils'
 
 import {
   SET_ACCOUNT_READY,
@@ -42,6 +42,8 @@ import {
   SET_WELCOME_MODAL_SHOWN
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
+
+const { FEED_PAGE } = route
 
 const createTextField = () => ({
   value: '',

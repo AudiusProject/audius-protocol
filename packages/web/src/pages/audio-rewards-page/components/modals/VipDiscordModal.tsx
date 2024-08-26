@@ -1,4 +1,5 @@
 import { vipDiscordModalSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Button, IconDiscord } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -6,13 +7,13 @@ import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { TitleWrapper } from 'pages/audio-rewards-page/WalletModal'
-import { AUDIUS_DISCORD_LINK } from 'utils/route'
 
 import ClickableAddress from '../ClickableAddress'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './VipDiscordModal.module.css'
 
+const { AUDIUS_DISCORD_LINK } = route
 const { getDiscordCode } = vipDiscordModalSelectors
 
 const messages = {

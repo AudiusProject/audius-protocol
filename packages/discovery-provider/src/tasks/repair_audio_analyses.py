@@ -4,7 +4,8 @@ from typing import List
 
 import requests
 from redis import Redis
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm.session import Session
 
 from src.models.tracks.track import Track
@@ -18,7 +19,7 @@ logger = StructuredLogger(__name__)
 
 REPAIR_AUDIO_ANALYSES_LOCK = "repair_audio_analyses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
-BATCH_SIZE = 5000
+BATCH_SIZE = 1000
 
 
 def valid_musical_key(musical_key):
@@ -32,16 +33,32 @@ def valid_bpm(bpm):
 def query_tracks(session: Session) -> List[Track]:
     tracks = (
         session.query(Track)
+        .options(
+            # Eagerly load necessary attributes to avoid DetachedInstanceError
+            load_only(
+                Track.track_id,
+                Track.track_cid,
+                Track.audio_upload_id,
+                Track.bpm,
+                Track.is_custom_bpm,
+                Track.musical_key,
+                Track.is_custom_musical_key,
+                Track.audio_analysis_error_count,
+            )
+        )
         .filter(
             Track.is_current == True,
-            or_(Track.musical_key == None, Track.bpm == None),
+            or_(
+                and_(Track.musical_key == None, Track.is_custom_musical_key == False),
+                and_(Track.bpm == None, Track.is_custom_bpm == False),
+            ),
             Track.audio_analysis_error_count < 3,
             Track.track_cid != None,
             Track.genre != "Podcasts",
             Track.genre != "Podcast",
             Track.genre != "Audiobooks",
         )
-        .order_by(Track.track_id.desc())
+        .order_by(Track.created_at.desc())
         .limit(BATCH_SIZE)
         .all()
     )
@@ -58,6 +75,9 @@ def select_content_nodes(redis: Redis):
 def repair(session: Session, redis: Redis):
     # Query batch of tracks that are missing key or bpm and have err counts < 3 from db
     tracks = query_tracks(session)
+    session.commit()  # Close tx
+    session.expunge_all()  # Detach all instances so they can be referenced without a session
+
     nodes = select_content_nodes(redis)
     num_tracks_updated = 0
     for track in tracks:
@@ -74,10 +94,6 @@ def repair(session: Session, redis: Redis):
                     else f"{node}/uploads/{track.audio_upload_id}"
                 )
                 resp = requests.get(endpoint, timeout=5)
-                if resp.status_code == 404 and not legacy_track:
-                    # Use legacy path for upload ids that are not found
-                    # (I think there are some edge cases from early storage v2 migration days)
-                    legacy_track = True
                 resp.raise_for_status()
                 data = resp.json()
             except Exception:
@@ -97,11 +113,11 @@ def repair(session: Session, redis: Redis):
 
             # Fill in missing analysis results and err count if present
             track_updated = False
-            if key and not track.musical_key:
+            if key and not track.musical_key and not track.is_custom_musical_key:
                 if valid_musical_key(key):
                     track_updated = True
                     track.musical_key = key
-            if bpm and not track.bpm:
+            if bpm and not track.bpm and not track.is_custom_bpm:
                 if valid_bpm(bpm):
                     track_updated = True
                     track.bpm = bpm
@@ -109,7 +125,17 @@ def repair(session: Session, redis: Redis):
                 track_updated = True
                 track.audio_analysis_error_count = error_count
             if track_updated:
-                num_tracks_updated += 1
+                # Update track in a tx
+                try:
+                    session.merge(track)
+                    session.commit()
+                    num_tracks_updated += 1
+                except Exception as e:
+                    logger.error(
+                        f"repair_audio_analyses.py | Error committing track update for track ID {track.track_id}",
+                        exc_info=True,
+                    )
+                    raise e
 
             if error_count >= 3:
                 logger.warning(
@@ -140,7 +166,7 @@ def repair_audio_analyses(self) -> None:
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
         try:
-            with db.scoped_session() as session:
+            with db.scoped_session(expire_on_commit=False) as session:
                 repair(session, redis)
         except Exception as e:
             logger.error(

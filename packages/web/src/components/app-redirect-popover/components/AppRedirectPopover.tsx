@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 import { matchPath } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -9,9 +10,11 @@ import { useSessionStorage } from 'react-use'
 import { useHistoryContext } from 'app/HistoryProvider'
 import AppIcon from 'assets/img/appIcon240.png'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
+import { getPathname } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
+
+const { APP_REDIRECT, SIGN_UP_PAGE } = route
 
 const messages = {
   openInApp: 'Open in Audius App',

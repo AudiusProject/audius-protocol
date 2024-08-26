@@ -7,6 +7,7 @@ import {
   formatDate,
   formatSecondsAsText
 } from '@audius/common/src/utils/timeUtil'
+import { route } from '@audius/common/utils'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import IconPlay from '@audius/harmony/src/assets/icons/Play.svg'
@@ -27,9 +28,10 @@ import { Link } from 'react-router-dom'
 
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
 import { useSelector } from 'utils/reducer'
-import { profilePage, searchResultsPage } from 'utils/route'
+import { searchResultsPage } from 'utils/route'
 
 import { Metadata } from './components/Metadata'
+const { profilePage } = route
 
 export const DesktopServerTrackPage = () => {
   const track = useSelector(getTrack)

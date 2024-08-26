@@ -26,6 +26,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       maxLengthWarningThreshold = 0.9,
       size = TextInputSize.DEFAULT,
       hideLabel,
+      hidePlaceholder,
       label: labelProp,
       value,
       id: idProp,
@@ -43,6 +44,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       endIcon: EndIcon,
       IconProps,
       endAdornment: endAdornmentProp,
+      elevateLabel,
       _incorrectError,
       _isHovered,
       _isFocused,
@@ -81,11 +83,16 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     const shouldShowLabel = !hideLabel && size !== TextInputSize.SMALL
     const labelText = required ? `${labelProp} *` : labelProp
     const placeholderText =
-      required && hideLabel ? `${placeholder} *` : placeholder
+      required && hideLabel
+        ? `${placeholder} *`
+        : size === TextInputSize.SMALL
+        ? labelText
+        : placeholder
     const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
-    const shouldShowPlaceholder = isFocused || !shouldShowLabel
+    const shouldShowPlaceholder =
+      (isFocused || !shouldShowLabel) && !hidePlaceholder
     const shouldShowAdornments = isFocused || hasValue || !shouldShowLabel
     // Show the maxlength text whenever we hit a certain threshold (default 70%) + the input is focused
     const shouldShowMaxLengthText =
@@ -125,7 +132,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       [styles.focused]: isFocused
     }
 
-    const inputRender = (
+    const inputElement = (
       <Flex alignItems='center' justifyContent='space-between'>
         {startAdornmentText && shouldShowAdornments ? (
           <Text variant='label' size='l' color='subdued'>
@@ -155,7 +162,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       </Flex>
     )
 
-    const isLabelElevated = hasValue || isFocused
+    const isLabelElevated = hasValue || isFocused || elevateLabel
 
     return (
       <Flex
@@ -219,7 +226,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                 ) : null}
               </Flex>
             ) : null}
-            {inputRender}
+            {inputElement}
           </Flex>
           {endAdornment}
         </label>

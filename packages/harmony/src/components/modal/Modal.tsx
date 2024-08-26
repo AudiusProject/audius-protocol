@@ -237,6 +237,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const modalContentClickedRef = useRef<boolean>(false)
   const outsideClickRef = useClickOutside(
     onClose,
+    isOpen,
     // Check to see if the click outside is not another modal wrapper.
     // If it is, that means we have a nested modal situation and shouldn't
     // dismiss "this" modal. We let the useClickOutside in "that" modal to
@@ -262,8 +263,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
         return isModalWrapper && !isThisModalWrapper
       }
       return false
-    },
-    isOpen
+    }
   )
 
   const handleEscape = useCallback(() => {
@@ -352,7 +352,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                         role='dialog'
                         aria-labelledby={titleId}
                         aria-describedby={subtitleId}
-                        onClick={handleModalContentClicked}
+                        onMouseDown={handleModalContentClicked}
                       >
                         <>
                           {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}

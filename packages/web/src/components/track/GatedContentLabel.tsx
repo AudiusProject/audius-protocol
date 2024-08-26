@@ -7,13 +7,13 @@ import {
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
-  Flex,
-  Text,
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  useTheme
+  IconColors
 } from '@audius/harmony'
+
+import { LineupTileLabel } from './LineupTileLabel'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -21,47 +21,41 @@ const messages = {
   premium: 'Premium'
 }
 
-/** Renders a label indicating a gated content type. If the user does
- * not yet have access or is the owner, the label will be in an accented color.
- */
-export const GatedContentLabel = ({
-  streamConditions,
-  hasStreamAccess,
-  isOwner
-}: {
+type GatedContentLabelProps = {
   streamConditions?: Nullable<AccessConditions>
   hasStreamAccess: boolean
   isOwner: boolean
-}) => {
-  const { color } = useTheme()
+}
+
+/** Renders a label indicating a gated content type. If the user does
+ * not yet have access or is the owner, the label will be in an accented color.
+ */
+export const GatedContentLabel = (props: GatedContentLabelProps) => {
+  const { streamConditions, hasStreamAccess, isOwner } = props
   let message = messages.specialAccess
   let IconComponent = IconSpecialAccess
-  let specialColor = color.icon.default
+  let specialColor: IconColors = 'subdued'
 
   if (
     isContentFollowGated(streamConditions) ||
     isContentTipGated(streamConditions)
   ) {
-    specialColor = color.special.blue
+    specialColor = 'special'
   } else if (isContentCollectibleGated(streamConditions)) {
     message = messages.collectibleGated
     IconComponent = IconCollectible
-    specialColor = color.special.blue
+    specialColor = 'special'
   } else if (isContentUSDCPurchaseGated(streamConditions)) {
     message = messages.premium
     IconComponent = IconCart
-    specialColor = color.special.lightGreen
+    specialColor = 'premium'
   }
 
-  const finalColor =
-    isOwner || !hasStreamAccess ? specialColor : color.icon.subdued
+  specialColor = isOwner || !hasStreamAccess ? specialColor : 'subdued'
 
   return (
-    <Flex alignItems='center' gap='xs' css={{ whiteSpace: 'nowrap' }}>
-      <IconComponent size='s' fill={finalColor} />
-      <Text variant='body' size='xs' css={{ color: finalColor }}>
-        {message}
-      </Text>
-    </Flex>
+    <LineupTileLabel icon={IconComponent} color={specialColor}>
+      {message}
+    </LineupTileLabel>
   )
 }

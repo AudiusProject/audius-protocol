@@ -14,9 +14,9 @@ export const newAntiAbuseConfig = (
   return {
     antiAbuseOracleUrl: url,
     allowRules: new Set([-17, -18]),
-    blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
+    blockRelayAbuseErrorCodes: new Set([0, 8, 10, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
-    blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 13, 15]),
+    blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 15]),
     useAao,
   };
 };

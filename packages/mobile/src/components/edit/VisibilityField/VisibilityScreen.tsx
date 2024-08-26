@@ -41,7 +41,7 @@ export const VisibilityScreen = () => {
   const initiallyPublic = !isUpload && !initialValues[hiddenKey]
 
   const initialVisibilityType =
-    is_scheduled_release && release_date
+    is_scheduled_release && isHidden
       ? 'scheduled'
       : isHidden
       ? 'hidden'
@@ -124,7 +124,8 @@ export const VisibilityScreen = () => {
           disabled={!isEditableAccessEnabled && initiallyPublic}
         />
         {!initiallyPublic &&
-        (entityType === 'track' || isPaidScheduledEnabled) ? (
+        (entityType === 'track' ||
+          (isPaidScheduledEnabled && entityType === 'album')) ? (
           <ExpandableRadio
             value='scheduled'
             label={messages.scheduledRelease}

@@ -36,6 +36,8 @@ export type PlayerState = {
 
   // Counter to track seek calls for times where we seek to the same position multiple times
   seekCounter: number
+
+  playerBehavior?: PlayerBehavior
 }
 
 export const initialState: PlayerState = {
@@ -121,7 +123,9 @@ const slice = createSlice({
   name: 'player',
   initialState,
   reducers: {
-    play: (_state, _action: PayloadAction<PlayPayload>) => {},
+    play: (state, action: PayloadAction<PlayPayload>) => {
+      state.playerBehavior = action.payload?.playerBehavior
+    },
     playSucceeded: (state, action: PayloadAction<PlaySucceededPayload>) => {
       const { uid, trackId } = action.payload
       state.playing = true

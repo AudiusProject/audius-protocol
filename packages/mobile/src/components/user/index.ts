@@ -1,2 +1,2 @@
 export * from './FollowButton'
-export * from './FollowsYouChip'
+export * from './FollowsYouBadge'

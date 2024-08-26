@@ -54,9 +54,12 @@ export type TextInputProps = Omit<
   error?: boolean
   /**
    * Hides the label. If the label is hidden the placeholder will show by default instead.
-   * @default false
    */
   hideLabel?: boolean
+  /**
+   * When `true` hides the placeholder. Used in `Select`.
+   */
+  hidePlaceholder?: boolean
   /**
    * Label Text. Required due to accessibility. If hideLabel is true, the label is set via aria-label
    */
@@ -108,4 +111,8 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
+  /**
+   * When `true` elevate the label. Useful for adding custom values. Reference `Select` component
+   */
+  elevateLabel?: boolean
 } & InternalProps

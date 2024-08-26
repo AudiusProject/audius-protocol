@@ -36,7 +36,7 @@
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.6",
+    "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@audius/trpc-server": "*",
@@ -63,6 +63,7 @@
     "proxy-memoize": "1.2.0",
     "query-string": "8.1.0",
     "react-redux": "8.0.5",
+    "react-router": "5.3.4",
     "react-use": "17.4.0",
     "redux": "4.0.5",
     "redux-persist": "6.0.0",
@@ -92,7 +93,7 @@
   "peerDependencies": {
     "@reduxjs/toolkit": "1.6.1",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "1.78.4",
+    "@solana/web3.js": "1.93.4",
     "@stripe/crypto": "0.0.4",
     "react": "^18.2.0",
     "redux-saga": "1.1.3"

@@ -5,13 +5,17 @@ import {
 } from '@solana/web3.js'
 import { z } from 'zod'
 
-import { PublicKeySchema } from '../types'
+import { PublicKeySchema, type SolanaWalletAdapter } from '../types'
 
-export type BaseSolanaProgramConfigInternal = {
+export type SolanaClientConfigInternal = {
   /** Connection to interact with the Solana RPC */
-  rpcEndpoint: string
+  rpcEndpoints: string[]
   /** Configuration to use for the RPC connection. */
   rpcConfig?: ConnectionConfig
+}
+
+export type SolanaClientConfig = Partial<SolanaClientConfigInternal> & {
+  solanaWalletAdapter: SolanaWalletAdapter
 }
 
 export const PrioritySchema = z.enum([
@@ -49,16 +53,42 @@ export const BuildTransactionSchema = z
           .default([])
       ])
       .optional(),
+    /**
+     * Adds a ComputeBudget instruction to set the compute unit price for the
+     * transaction. Can specify a percentile or percentile enum to use recent
+     * prioritization fees to programatically set the price.
+     */
     priorityFee: z
       .union([
         z.object({
-          microLamports: z.number()
+          /**
+           * The exact amount of microLamports to add per compute unit.
+           */
+          microLamports: z.number().min(0)
         }),
         z.object({
-          percentile: z.number().min(0).max(100)
+          /**
+           * Specify the precise percentile (0-100) of recent priority fees
+           * to use as this transactions priority fee per compute unit.
+           */
+          percentile: z.number().min(0).max(100),
+          /**
+           * The minimum microLamports to use as the priority fee per compute
+           * unit, regardless of the percentiles.
+           */
+          minimumMicroLamports: z.number().min(0).optional()
         }),
         z.object({
-          priority: PrioritySchema
+          /**
+           * Specify an enum-based percentile of recent priority fees to use as
+           * this transactions priority fee per compute unit.
+           */
+          priority: PrioritySchema,
+          /**
+           * The minimum microLamports to use as the priority fee per compute
+           * unit, regardless of the percentiles.
+           */
+          minimumMicroLamports: z.number().min(0).optional()
         })
       ])
       .optional()

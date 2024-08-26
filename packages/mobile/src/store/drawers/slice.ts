@@ -1,5 +1,4 @@
 import type { ID } from '@audius/common/models'
-import type { PublishContentModalState } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
@@ -12,7 +11,6 @@ export type Drawer =
   | 'ForgotPassword'
   | 'NowPlaying'
   | 'CancelEditTrack'
-  | 'PublishContentDrawer'
   | 'DeleteTrackConfirmation'
   | 'ConnectWallets'
   | 'ConfirmRemoveWallet'
@@ -23,7 +21,6 @@ export type Drawer =
   | 'UnfavoriteDownloadedCollection'
   | 'RateCallToAction'
   | 'LockedContent'
-  | 'GatedContentUploadPrompt'
   | 'ChatActions'
   | 'CreateChatActions'
   | 'ProfileActions'
@@ -33,6 +30,7 @@ export type Drawer =
   | 'OfflineListening'
   | 'Welcome'
   | 'ManagerMode'
+  | 'Comment'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -59,7 +57,6 @@ export type DrawerData = {
     collectionId: ID
   }
   LockedContent: undefined
-  GatedContentUploadPrompt: undefined
   ChatActions: { userId: number; chatId: string }
   CreateChatActions: { userId: number }
   ProfileActions: undefined
@@ -73,7 +70,7 @@ export type DrawerData = {
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   Welcome: undefined
   ManagerMode: undefined
-  PublishContentDrawer: PublishContentModalState
+  Comment: { userId: ID; entityId: ID; isEntityOwner: boolean; artistId: ID }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -97,7 +94,6 @@ const initialState: DrawersState = {
   UnfavoriteDownloadedCollection: false,
   RateCallToAction: false,
   LockedContent: false,
-  GatedContentUploadPrompt: false,
   ChatActions: false,
   CreateChatActions: false,
   ProfileActions: false,
@@ -106,7 +102,7 @@ const initialState: DrawersState = {
   SupportersInfo: false,
   Welcome: false,
   ManagerMode: false,
-  PublishContentDrawer: false,
+  Comment: false,
   data: {}
 }
 

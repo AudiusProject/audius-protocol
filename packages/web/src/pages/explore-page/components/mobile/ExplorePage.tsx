@@ -14,7 +14,7 @@ import {
   ExplorePageTabs as ExploreTabs,
   ExploreCollectionsVariant
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { removeNullable, route } from '@audius/common/utils'
 import {
   IconStars as IconForYou,
   IconMood as IconMoods,
@@ -45,12 +45,13 @@ import {
   ExploreMoodCollection,
   PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
-import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
+const { EXPLORE_PAGE } = route
 const { getTab } = explorePageSelectors
 const { setTab } = explorePageActions
 

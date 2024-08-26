@@ -2,6 +2,7 @@ import { ChangeEvent } from 'react'
 
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchemaMessages } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import { Hint, IconError, TextLink } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -13,7 +14,8 @@ import {
   HarmonyTextField,
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
-import { SIGN_IN_PAGE } from 'utils/route'
+
+const { SIGN_IN_PAGE } = route
 
 export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
   const dispatch = useDispatch()

@@ -79,13 +79,17 @@ func (ss *MediorumServer) serveBlobLocation(c echo.Context) error {
 			return 1
 		})
 
-		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix {
-			if len(attrs) > 0 {
-				best := attrs[0]
-				if err := ss.pullFileFromHost(best.Host, cid); err != nil {
-					return err
+		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix && len(attrs) > 0 {
+			best := attrs[0]
+			for _, a := range attrs {
+				if a.Attr.Size < best.Attr.Size {
+					break
+				}
+				if err := ss.pullFileFromHost(a.Host, cid); err == nil {
+					break
 				}
 			}
+
 		}
 	}
 
@@ -507,4 +511,14 @@ func (ss *MediorumServer) serveInternalBlobPOST(c echo.Context) error {
 	}
 
 	return c.JSON(200, "ok")
+}
+
+func (ss *MediorumServer) serveLegacyBlobAnalysis(c echo.Context) error {
+	cid := c.Param("cid")
+	var analysis *QmAudioAnalysis
+	err := ss.crud.DB.First(&analysis, "cid = ?", cid).Error
+	if err != nil {
+		return echo.NewHTTPError(404, err.Error())
+	}
+	return c.JSON(200, analysis)
 }

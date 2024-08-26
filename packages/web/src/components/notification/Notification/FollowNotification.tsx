@@ -4,6 +4,7 @@ import {
   notificationsSelectors,
   FollowNotification as FollowNotificationType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +18,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -28,7 +28,9 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
+
 const { getNotificationUsers } = notificationsSelectors
+const { profilePage } = route
 
 const messages = {
   and: 'and',

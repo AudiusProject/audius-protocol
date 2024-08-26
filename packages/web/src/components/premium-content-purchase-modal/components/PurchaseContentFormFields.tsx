@@ -68,7 +68,10 @@ export const PurchaseContentFormFields = ({
   ] = useField(PURCHASE_METHOD_MINT_ADDRESS)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
-  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const { data: balanceBN } = useUSDCBalance({
+    isPolling: true,
+    commitment: 'confirmed'
+  })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balanceBN

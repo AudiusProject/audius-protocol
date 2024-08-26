@@ -40,18 +40,28 @@ export class SDKMigrationFailedError extends Error {
  * literal values, will do a strict equals. For objects, will do a deep diff.
  * Throws `SDKMigrationFailedError` if there is a difference between the two responses.
  */
-export const compareSDKResponse = <T extends object>(
+export const compareSDKResponse = <T extends object | undefined | null>(
   { legacy, migrated }: CheckSDKMigrationArgs<T>,
   endpointName: string
 ) => {
+  if (legacy == null || migrated == null) {
+    if (legacy !== migrated) {
+      console.error(`SDK Migration failed (empty) for ${endpointName}`, {
+        legacy,
+        migrated
+      })
+    } else {
+      console.debug(`SDK Migration succeeded (empty) for ${endpointName}`)
+    }
+    return
+  }
   // Migrated is an error, skip the diff
   if (migrated instanceof Error) {
-    throw new SDKMigrationFailedError({
-      endpointName,
-      innerMessage: 'Migrated response was error',
-      legacyValue: legacy,
-      migratedValue: migrated
+    console.error(`SDK Migration failed (error) for ${endpointName}`, {
+      legacy,
+      migrated
     })
+    return
   }
   // Both object-like, perform deep diff
   if (typeof legacy === 'object' && typeof migrated === 'object') {
@@ -61,74 +71,23 @@ export const compareSDKResponse = <T extends object>(
       !isEmpty(diff.deleted) ||
       !isEmpty(diff.updated)
     ) {
-      throw new SDKMigrationFailedError({
+      console.error(`SDK Migration failed (diff) for ${endpointName}`, {
         diff,
-        endpointName,
-        innerMessage: 'Legacy and migrated values differ',
-        legacyValue: legacy,
-        migratedValue: migrated
+        legacy,
+        migrated
       })
+    } else {
+      console.debug(`SDK Migration succeeded (object diff) for ${endpointName}`)
     }
+    return
   }
   // Not object like, perform strict equals
-  else if (legacy !== migrated) {
-    throw new SDKMigrationFailedError({
-      endpointName,
-      innerMessage: 'Legacy and migrated values not strictly equal',
-      legacyValue: legacy,
-      migratedValue: migrated
+  if (legacy !== migrated) {
+    console.error(`SDK Migration failed (!==) for ${endpointName}`, {
+      legacy,
+      migrated
     })
+  } else {
+    console.debug(`SDK Migration succeeded (===) for ${endpointName}`)
   }
-  console.debug(`SDK Migration succeeded for ${endpointName}`)
-}
-
-const safeAwait = async <T>(promiseOrFn: Promise<T> | (() => Promise<T>)) => {
-  try {
-    return await (typeof promiseOrFn === 'function'
-      ? promiseOrFn()
-      : promiseOrFn)
-  } catch (e) {
-    return e instanceof Error ? e : new Error(`${e}`)
-  }
-}
-
-export type SDKMigrationChecker = <T extends object>(config: {
-  legacy: Promise<T> | (() => Promise<T>)
-  migrated: Promise<T> | (() => Promise<T>)
-  endpointName: string
-}) => Promise<T>
-
-export const checkSDKMigration = async <T extends object>({
-  legacy: legacyCall,
-  migrated: migratedCall,
-  endpointName
-}: {
-  legacy: Promise<T> | (() => Promise<T>)
-  migrated: Promise<T> | (() => Promise<T>)
-  endpointName: string
-}) => {
-  const legacyPromise =
-    typeof legacyCall === 'function' ? legacyCall() : legacyCall
-
-  const [legacy, migrated] = await Promise.all([
-    legacyPromise,
-    safeAwait(migratedCall)
-  ])
-
-  try {
-    compareSDKResponse({ legacy, migrated }, endpointName)
-  } catch (e) {
-    const error =
-      e instanceof SDKMigrationFailedError
-        ? e
-        : new SDKMigrationFailedError({
-            endpointName,
-            innerMessage: `Unknown error: ${e}`,
-            legacyValue: legacy,
-            migratedValue: migrated
-          })
-    console.warn('SDK Migration failed', error)
-  }
-
-  return legacy
 }

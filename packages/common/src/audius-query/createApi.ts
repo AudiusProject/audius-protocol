@@ -127,8 +127,10 @@ export const createApi = <
       (endpointName, fetchArgs, updateRecipe) =>
       (dispatch: Dispatch, getState: () => any) => {
         const key = getKeyFromFetchArgs(fetchArgs)
-        const endpointState = getState().api[reducerPath][endpointName][key]
-        if (!endpointState) return
+        // New endpoint state is used whenever updateQueryData is called before the endpoint being updated has had a chance to be called
+        const newEndpointState = { status: Status.SUCCESS, normalizedData: {} }
+        const endpointState =
+          getState().api[reducerPath][endpointName][key] || newEndpointState
         const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]
@@ -372,7 +374,11 @@ const fetchData = async <Args, Data>(
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
       : await fetch(fetchArgs, context)
-    if (apiData == null) {
+
+    if (apiData === null || apiData === undefined) {
+      if (force?.current) {
+        force.current = false
+      }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
 
@@ -480,7 +486,12 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current ? null : queryState
+    const state = force.current
+      ? {
+          normalizedData: null,
+          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+        }
+      : queryState
 
     const { normalizedData, status, errorMessage, isInitialValue } = state ?? {
       normalizedData: null,

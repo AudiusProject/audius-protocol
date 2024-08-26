@@ -24,7 +24,6 @@ export enum FeatureFlags {
   PODCAST_CONTROL_UPDATES_ENABLED = 'podcast_control_updates_enabled',
   PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK = 'podcast_control_updates_enabled_fallback',
   LAZY_USERBANK_CREATION_ENABLED = 'lazy_userbank_creation_enabled',
-  DISCOVERY_NOTIFICATIONS = 'discovery_notifications',
   REPOST_OF_REPOST_NOTIFICATIONS = 'repost_of_repost_notifications',
   SAVE_OF_REPOST_NOTIFICATIONS = 'save_of_repost_notifications',
   TRENDING_PLAYLIST_NOTIFICATIONS = 'trending_playlist_notifications',
@@ -54,13 +53,17 @@ export enum FeatureFlags {
   MANAGER_MODE = 'manager_mode',
   SEARCH_V2 = 'search_v2',
   PAYOUT_WALLET_ENABLED = 'payout_wallet_enabled',
-  EDIT_TRACK_REDESIGN = 'edit_track_redesign',
   SKIP_STREAM_CHECK = 'skip_stream_check',
   PREFETCH_STREAM_URLS = 'prefetch_stream_urls',
   HIDDEN_PAID_SCHEDULED = 'hidden_paid_scheduled',
   EDITABLE_ACCESS_ENABLED = 'editable_access_enabled',
+  PAY_WITH_ANYTHING_ENABLED = 'pay_with_anything_enabled',
+  COMMENTS_ENABLED = 'comments_enabled',
+  COMMENT_POSTING_ENABLED = 'comment_posting_enabled',
   PAID_SCHEDULED = 'paid_scheduled',
-  PAY_WITH_ANYTHING_ENABLED = 'pay_with_anything_enabled'
+  ONE_TO_MANY_DMS = 'one_to_many_dms',
+  NETWORK_CUT_ENABLED = 'network_cut_enabled',
+  SOCIAL_SIGNUP = 'social_signup'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -100,7 +103,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED]: false,
   [FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK]: false,
   [FeatureFlags.LAZY_USERBANK_CREATION_ENABLED]: false,
-  [FeatureFlags.DISCOVERY_NOTIFICATIONS]: false,
   [FeatureFlags.REPOST_OF_REPOST_NOTIFICATIONS]: false,
   [FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS]: false,
   [FeatureFlags.TRENDING_PLAYLIST_NOTIFICATIONS]: false,
@@ -130,11 +132,15 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.MANAGER_MODE]: false,
   [FeatureFlags.SEARCH_V2]: false,
   [FeatureFlags.PAYOUT_WALLET_ENABLED]: false,
-  [FeatureFlags.EDIT_TRACK_REDESIGN]: false,
   [FeatureFlags.SKIP_STREAM_CHECK]: false,
   [FeatureFlags.PREFETCH_STREAM_URLS]: false,
   [FeatureFlags.HIDDEN_PAID_SCHEDULED]: false,
   [FeatureFlags.EDITABLE_ACCESS_ENABLED]: false,
   [FeatureFlags.PAID_SCHEDULED]: false,
-  [FeatureFlags.PAY_WITH_ANYTHING_ENABLED]: false
+  [FeatureFlags.PAY_WITH_ANYTHING_ENABLED]: false,
+  [FeatureFlags.COMMENTS_ENABLED]: false,
+  [FeatureFlags.COMMENT_POSTING_ENABLED]: false,
+  [FeatureFlags.ONE_TO_MANY_DMS]: false,
+  [FeatureFlags.NETWORK_CUT_ENABLED]: false,
+  [FeatureFlags.SOCIAL_SIGNUP]: false
 }

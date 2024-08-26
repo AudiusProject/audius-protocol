@@ -1,7 +1,8 @@
 import { Select, SelectProps } from '@audius/harmony'
 import { useField } from 'formik'
+import { SetOptional } from 'type-fest'
 
-export type SelectFieldProps = SelectProps & {
+export type SelectFieldProps = SetOptional<SelectProps, 'value'> & {
   name: string
 }
 
@@ -14,7 +15,6 @@ export const SelectField = (props: SelectFieldProps) => {
   return (
     <Select
       {...field}
-      selection={field.value}
       error={hasError}
       helperText={hasError ? error : undefined}
       onChange={setValue}

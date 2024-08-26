@@ -5,13 +5,16 @@ import {
   priceAndAudienceScreenName
 } from 'app/components/edit/PriceAndAudienceField'
 import { VisibilityScreen } from 'app/components/edit/VisibilityField'
-import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
+import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
+import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
+import { HideContentConfirmationDrawer } from './components/HideContentConfirmationDrawer'
+import { PublishConfirmationDrawer } from './components/PublishConfirmationDrawer'
 import {
   AdvancedScreen,
   IsrcIswcScreen,
@@ -67,8 +70,11 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
       </Stack.Navigator>
-      <GatedContentUploadPromptDrawer isUpload={!initialValues.track_id} />
       <SupportersInfoDrawer />
+      <EditAccessConfirmationDrawer />
+      <HideContentConfirmationDrawer />
+      <PublishConfirmationDrawer />
+      <EarlyReleaseConfirmationDrawer />
     </>
   )
 }

@@ -8,7 +8,7 @@ import {
 import { selectArtistsPageMessages } from '@audius/common/messages'
 import { Status, UserMetadata } from '@audius/common/models'
 import { selectArtistsSchema } from '@audius/common/schemas'
-import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
+import { Genre, convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik, useFormikContext } from 'formik'
@@ -30,7 +30,6 @@ import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
@@ -40,6 +39,8 @@ import {
   PageFooter,
   ScrollView
 } from '../components/layout'
+
+const { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } = route
 
 const AnimatedFlex = animated(Flex)
 
@@ -130,6 +131,19 @@ export const SelectArtistsPage = () => {
     }
   })
   const formikSchema = toFormikValidationSchema(selectArtistsSchema)
+
+  const artistContent = artists?.length ? (
+    artists.map((user) => (
+      <FollowArtistCard key={user.user_id} user={user as UserMetadata} />
+    ))
+  ) : (
+    <Flex pv='xl' gap='xs' alignItems='center'>
+      <Text variant='body' size='l'>
+        {selectArtistsPageMessages.noResults}
+      </Text>
+      <i className='emoji thinking-face' />
+    </Flex>
+  )
 
   return (
     <Formik
@@ -236,12 +250,7 @@ export const SelectArtistsPage = () => {
                       ? range(9).map((index) => (
                           <FollowArtistTileSkeleton key={index} />
                         ))
-                      : artists?.map((user) => (
-                          <FollowArtistCard
-                            key={user.user_id}
-                            user={user as UserMetadata}
-                          />
-                        ))}
+                      : artistContent}
                   </Flex>
                 </ArtistsList>
               </SelectArtistsPreviewContextProvider>

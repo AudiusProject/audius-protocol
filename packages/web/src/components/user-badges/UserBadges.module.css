@@ -1,9 +1,9 @@
 .container {
   display: flex;
   overflow: visible;
+  gap: 4px;
 }
 
-.container svg,
-.inlineContainer svg {
+.inlineContainer svg:first-child {
   margin-right: 4px !important;
 }
