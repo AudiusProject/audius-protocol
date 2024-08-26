@@ -51,15 +51,16 @@ export const TrackScreenMainContent = ({
 }: TrackScreenMainContentProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
-  const currentUserId = useSelector(getUserId)
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const remixTrackIds = track._remixes?.map(({ track_id }) => track_id) ?? null
+  const { track_id, _remixes, field_visibility, _remixes_count } = track
+
+  const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
   const handlePressGoToRemixes = () => {
-    navigation.push('TrackRemixes', { id: track.track_id })
+    navigation.push('TrackRemixes', { id: track_id })
   }
   return (
     <View style={styles.root}>
@@ -71,27 +72,19 @@ export const TrackScreenMainContent = ({
           isLineupLoading={!lineup?.entries?.[0]}
         />
 
-        {track.field_visibility?.remixes &&
+        {field_visibility?.remixes &&
           remixTrackIds &&
           remixTrackIds.length > 0 && (
             <TrackScreenRemixes
               trackIds={remixTrackIds}
               onPressGoToRemixes={handlePressGoToRemixes}
-              count={track._remixes_count ?? null}
+              count={_remixes_count ?? null}
             />
           )}
 
         {isCommentingEnabled ? (
           <Flex flex={3}>
-            <CommentSectionProvider
-              artistId={track.owner_id}
-              currentUserId={currentUserId}
-              entityId={track.track_id}
-              isEntityOwner={user.user_id === track.owner_id}
-              playTrack={() => {}} // TODO
-            >
-              <CommentSection />
-            </CommentSectionProvider>
+            <CommentSection entityId={track_id} />
           </Flex>
         ) : null}
         {lineupHeader}
