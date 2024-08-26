@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Name, BNAudio } from '@audius/common/models'
+import { Name, BNAudio, ChallengeRewardID } from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import { route, stringWeiToAudioBN } from '@audius/common/utils'
 import { push } from 'connected-react-router'
@@ -35,6 +35,14 @@ type ChallengeRewardNotificationProps = {
   notification: ChallengeRewardNotificationType
 }
 
+const trendingChallengeIdMapping: {
+  [key in ChallengeRewardID]?: ChallengeRewardID
+} = {
+  tt: 'trending-track',
+  tp: 'trending-playlist',
+  tut: 'trending-underground'
+}
+
 export const ChallengeRewardNotification = (
   props: ChallengeRewardNotificationProps
 ) => {
@@ -42,8 +50,10 @@ export const ChallengeRewardNotification = (
   const { challengeId, timeLabel, isViewed, type } = notification
   const dispatch = useDispatch()
   const record = useRecord()
+  const mappedChallengeRewardsConfigKey =
+    trendingChallengeIdMapping[challengeId] ?? challengeId
 
-  const { title, icon } = getChallengeConfig(challengeId)
+  const { title, icon } = getChallengeConfig(mappedChallengeRewardsConfigKey)
   const amount = stringWeiToAudioBN(notification.amount)
   const handleClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
