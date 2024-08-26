@@ -33,3 +33,11 @@ limit 1;
 select *
 from core_validators
 where node_type = $1;
+
+-- name: GetLatestSlaRollup :one
+select * from sla_rollups order by time desc limit 1;
+
+-- name: GetInProgressRollupReports :many
+select * from sla_node_reports
+where sla_rollup_id is null 
+order by address;

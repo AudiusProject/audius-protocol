@@ -7,7 +7,54 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const clearUnindexedSlaNodeReports = `-- name: ClearUnindexedSlaNodeReports :exec
+delete from sla_node_reports
+where sla_rollup_id is null
+`
+
+func (q *Queries) ClearUnindexedSlaNodeReports(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, clearUnindexedSlaNodeReports)
+	return err
+}
+
+const indexSlaNodeReport = `-- name: IndexSlaNodeReport :exec
+insert into sla_node_reports (sla_rollup_id, address, blocks_proposed)
+values ($1, $2, $3)
+`
+
+type IndexSlaNodeReportParams struct {
+	SlaRollupID    pgtype.Int4
+	Address        string
+	BlocksProposed int32
+}
+
+func (q *Queries) IndexSlaNodeReport(ctx context.Context, arg IndexSlaNodeReportParams) error {
+	_, err := q.db.Exec(ctx, indexSlaNodeReport, arg.SlaRollupID, arg.Address, arg.BlocksProposed)
+	return err
+}
+
+const indexSlaRollup = `-- name: IndexSlaRollup :one
+insert into sla_rollups (time, block_start, block_end)
+values ($1, $2, $3)
+returning id
+`
+
+type IndexSlaRollupParams struct {
+	Time       pgtype.Timestamp
+	BlockStart int64
+	BlockEnd   int64
+}
+
+func (q *Queries) IndexSlaRollup(ctx context.Context, arg IndexSlaRollupParams) (int32, error) {
+	row := q.db.QueryRow(ctx, indexSlaRollup, arg.Time, arg.BlockStart, arg.BlockEnd)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
 
 const insertKVStore = `-- name: InsertKVStore :one
 insert into core_kvstore (key, value, tx_hash)
@@ -80,5 +127,22 @@ type UpsertAppStateParams struct {
 
 func (q *Queries) UpsertAppState(ctx context.Context, arg UpsertAppStateParams) error {
 	_, err := q.db.Exec(ctx, upsertAppState, arg.BlockHeight, arg.AppHash)
+	return err
+}
+
+const upsertSlaRollupReport = `-- name: UpsertSlaRollupReport :exec
+with updated as (
+    update sla_node_reports 
+    set blocks_proposed = blocks_proposed + 1
+    where address = $1 and sla_rollup_id is null
+    returning id, address, blocks_proposed, sla_rollup_id
+)
+insert into sla_node_reports (address, blocks_proposed, sla_rollup_id)
+select $1, 1, null
+where not exists (select 1 from updated)
+`
+
+func (q *Queries) UpsertSlaRollupReport(ctx context.Context, address string) error {
+	_, err := q.db.Exec(ctx, upsertSlaRollupReport, address)
 	return err
 }

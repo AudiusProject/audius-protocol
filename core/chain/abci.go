@@ -6,12 +6,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
+	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
@@ -83,19 +85,38 @@ func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxR
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
 	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
-	code := app.isValid(check.Tx)
-	return &abcitypes.CheckTxResponse{Code: code}, nil
+	if app.isValidKVTx(check.Tx) {
+		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
+	} else {
+		return &abcitypes.CheckTxResponse{Code: 1}, nil
+	}
 }
 
 func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
 	return &abcitypes.InitChainResponse{}, nil
 }
 
-func (app *CoreApplication) PrepareProposal(_ context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
-	return &abcitypes.PrepareProposalResponse{Txs: proposal.Txs}, nil
+func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
+	proposalTxs := proposal.Txs
+	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
+		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
+		if err != nil {
+			app.logger.Error("Failed to create rollup transaction", "error", err)
+		} else {
+			proposalTxs = append(proposalTxs, rollupTx)
+		}
+	}
+	return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, nil
 }
 
-func (app *CoreApplication) ProcessProposal(_ context.Context, proposal *abcitypes.ProcessProposalRequest) (*abcitypes.ProcessProposalResponse, error) {
+func (app *CoreApplication) ProcessProposal(ctx context.Context, proposal *abcitypes.ProcessProposalRequest) (*abcitypes.ProcessProposalResponse, error) {
+	valid, err := app.validateBlockTxs(ctx, proposal.Time, proposal.Height, proposal.Txs)
+	if err != nil {
+		app.logger.Error("Reporting unknown proposal status due to validation error", "error", err)
+		return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_UNKNOWN}, err
+	} else if !valid {
+		return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_REJECT}, nil
+	}
 	return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_ACCEPT}, nil
 }
 
@@ -113,13 +134,14 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-			continue
-		}
-
-		if code := app.isValid(tx); code != 0 {
-			logger.Errorf("Error: invalid transaction index %v", i)
-			txs[i] = &abcitypes.ExecTxResult{Code: code}
-		} else {
+		} else if app.isRollupTx(tx) {
+			if err := app.indexRollupTx(ctx, tx); err != nil {
+				logger.Error("Failed to index rollup", "error", err)
+				txs[i] = &abcitypes.ExecTxResult{Code: 1}
+			} else {
+				txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+			}
+		} else if app.isValidKVTx(tx) {
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)
@@ -152,6 +174,9 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 					},
 				},
 			}
+		} else {
+			logger.Errorf("Error: invalid transaction index %v", i)
+			txs[i] = &abcitypes.ExecTxResult{Code: 1}
 		}
 	}
 
@@ -178,6 +203,18 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		AppHash:     nextAppHash,
 	}); err != nil {
 		app.logger.Errorf("error upserting app state %v", err)
+	}
+
+	// increment number of proposed blocks for sla auditor
+	addr := cometbfttypes.Address(req.ProposerAddress).String()
+	if err := app.getDb().UpsertSlaRollupReport(ctx, addr); err != nil {
+		app.logger.Error(
+			"Error attempting to increment blocks proposed by node",
+			"address",
+			addr,
+			"error",
+			err,
+		)
 	}
 
 	return &abcitypes.FinalizeBlockResponse{
@@ -219,14 +256,14 @@ func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcit
 	return &abcitypes.VerifyVoteExtensionResponse{}, nil
 }
 
-func (app *CoreApplication) isValid(tx []byte) uint32 {
+func (app *CoreApplication) isValidKVTx(tx []byte) bool {
 	// check format
 	parts := bytes.Split(tx, []byte("="))
 	if len(parts) != 2 {
-		return 1
+		return false
 	}
 
-	return 0
+	return true
 }
 
 func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
@@ -236,4 +273,31 @@ func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, erro
 		return nil, err
 	}
 	return &msg, nil
+}
+
+func (app *KVStoreApplication) isValidSlaRollup(tx []byte) bool {
+	var msg gen_proto.SlaRollup
+	err := proto.Unmarshal(tx, &msg)
+	return err == nil
+}
+
+func (app *KVStoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
+	alreadyContainsRollup := false
+	for _, tx := range txs {
+		valid, err := app.isValidRollupTx(ctx, blockTime, blockHeight, tx)
+		if err != nil {
+			return false, err
+		} else if valid && alreadyContainsRollup {
+			return false, nil
+		} else if valid {
+			alreadyContainsRollup = true
+		} else if app.isValidProtoEvent(tx) {
+			continue
+		} else if app.isValidKVTx(tx) {
+			continue
+		} else {
+			return false, nil
+		}
+	}
+	return true, nil
 }

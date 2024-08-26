@@ -62,6 +62,37 @@ func (q *Queries) GetAppStateAtHeight(ctx context.Context, blockHeight int64) (G
 	return i, err
 }
 
+const getInProgressRollupReports = `-- name: GetInProgressRollupReports :many
+select id, address, blocks_proposed, sla_rollup_id from sla_node_reports
+where sla_rollup_id is null 
+order by address
+`
+
+func (q *Queries) GetInProgressRollupReports(ctx context.Context) ([]SlaNodeReport, error) {
+	rows, err := q.db.Query(ctx, getInProgressRollupReports)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SlaNodeReport
+	for rows.Next() {
+		var i SlaNodeReport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Address,
+			&i.BlocksProposed,
+			&i.SlaRollupID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getKey = `-- name: GetKey :one
 select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
 `
@@ -96,6 +127,22 @@ func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, 
 	row := q.db.QueryRow(ctx, getLatestAppState)
 	var i GetLatestAppStateRow
 	err := row.Scan(&i.BlockHeight, &i.AppHash)
+	return i, err
+}
+
+const getLatestSlaRollup = `-- name: GetLatestSlaRollup :one
+select id, block_start, block_end, time from sla_rollups order by time desc limit 1
+`
+
+func (q *Queries) GetLatestSlaRollup(ctx context.Context) (SlaRollup, error) {
+	row := q.db.QueryRow(ctx, getLatestSlaRollup)
+	var i SlaRollup
+	err := row.Scan(
+		&i.ID,
+		&i.BlockStart,
+		&i.BlockEnd,
+		&i.Time,
+	)
 	return i, err
 }
 

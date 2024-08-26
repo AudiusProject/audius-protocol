@@ -79,3 +79,15 @@ message KeyValueResponse {
   string value = 2;
   string txhash = 3;
 }
+
+message SlaRollup {
+  google.protobuf.Timestamp timestamp = 1;
+  int64 block_start = 2;
+  int64 block_end = 3;
+  repeated SlaNodeReport reports = 4;
+}
+
+message SlaNodeReport {
+  string address = 1;
+  int32 num_blocks_proposed = 2;
+}

@@ -1,4 +1,8 @@
+GO_SRCS := $(shell find ./ -type f -name *.go) go.sum go.mod $(wildcard config/genesis/*.json)
 SQL_SRCS := $(shell find db/sql/ -type f -name '*.sql') db/sqlc.yaml
+GEN_ARTIFACTS := $(wildcard gen/proto/*.pb.go) $(wildcard db/*.sql.go)
+NATIVE_BIN := ./tmp/core
+AMD64_BIN := ./tmp/core-amd64
 
 .PHONY: deps
 deps:
@@ -12,26 +16,34 @@ deps:
 	@go mod tidy
 
 .PHONY: gen
-gen: $(SQL_SRCS)
-	@which sqlc || ( \
-		echo "ERROR: sqlc command not found." \
-		"Run 'make deps' to install necessary tooling." \
+gen: $(GEN_ARTIFACTS)
+
+$(GEN_ARTIFACTS): $(SQL_SRCS) protocol.proto
+	@which -s sqlc templ modd || ( \
+		echo "ERROR: audius core dev tooling not found." \
+		"Run 'make deps' to install necessary golang packages." \
 		&& false \
 	)
 	go generate ./...
+	protoc --go_out=gen/ --go-grpc_out=gen/ protocol.proto
 	cd db && sqlc generate
 	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
-build-native:
+.PHONY: build-native
+build-native: $(NATIVE_BIN)
+
+$(NATIVE_BIN): $(GO_SRCS)
 	@go build -o ./tmp/core
 
-build-amd64:
+.PHONY: build-amd64
+build-amd64: $(AMD64_BIN)
+
+$(AMD64_BIN): $(GO_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
 
 .PHONY: dev
-dev:
-	make gen
+dev: gen
 	audius-compose up db core core-content-1 core-content-2 core-content-3
 
 .PHONY: sandbox-node
