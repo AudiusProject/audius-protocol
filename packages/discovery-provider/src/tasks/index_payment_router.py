@@ -255,7 +255,10 @@ def parse_route_transaction_memos(
                     type=RouteTransactionMemoType.recovery, metadata=None
                 )
                 continue
-            if memo.startswith(GEO_MEMO_STRING):
+            if (
+                memo.startswith(GEO_MEMO_STRING)
+                and shared_config["discprov"]["env"] != "dev"
+            ):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
                 if not geo_data:
                     raise Exception("No geo data found in geo memo")
