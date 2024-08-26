@@ -131,7 +131,7 @@ const KeyFilter = () => {
       menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { minWidth: 200 }
+        width: 200
       }}
       options={keyOptions}
     >

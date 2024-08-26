@@ -15,13 +15,12 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
 import { TextInput, TextInputSize } from 'components/input/TextInput'
 import { Menu } from 'components/internal/Menu'
-import { MenuItem } from 'components/internal/MenuItem'
-import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
 import { Flex, Box } from 'components/layout'
 import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
+import { OptionsList, VirtualizedOptionsList } from './FilterButtonOptionsList'
 import { FilterButtonProps } from './types'
 
 const messages = {
@@ -49,7 +48,8 @@ export const FilterButton = forwardRef(function FilterButton<
     showFilterInput,
     filterInputProps,
     optionsLabel,
-    renderLabel = (label) => label
+    renderLabel = (label) => label,
+    virtualized
   } = props
   const { color, cornerRadius, spacing, typography } = useTheme()
   const [value, setValue] = useControlled({
@@ -216,30 +216,23 @@ export const FilterButton = forwardRef(function FilterButton<
   )
 
   const optionElements = filteredOptions ? (
-    <OptionKeyHandler
-      options={filteredOptions}
-      disabled={!isOpen}
-      onChange={handleOptionSelected}
-      optionRefs={optionRefs}
-      scrollRef={scrollRef}
-    >
-      {(activeValue) =>
-        filteredOptions.map((option, index) => (
-          <MenuItem
-            variant='option'
-            ref={(el) => {
-              if (optionRefs && optionRefs.current && el) {
-                optionRefs.current[index] = el
-              }
-            }}
-            key={option.value}
-            {...option}
-            onChange={handleChange}
-            isActive={option.value === activeValue}
-          />
-        ))
-      }
-    </OptionKeyHandler>
+    virtualized ? (
+      <VirtualizedOptionsList
+        options={filteredOptions}
+        optionRefs={optionRefs}
+        onChange={handleOptionSelected}
+        height={menuProps?.maxHeight}
+        width={menuProps?.width}
+      />
+    ) : (
+      <OptionsList
+        options={filteredOptions}
+        isOpen={isOpen}
+        optionRefs={optionRefs}
+        scrollRef={scrollRef}
+        onChange={handleOptionSelected}
+      />
+    )
   ) : null
 
   return (
