@@ -69,7 +69,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
   return (
     <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
       <Avatar
-        css={{ width: 40, height: 40, flexShrink: 0 }}
+        css={{ width: 44, height: 44, flexShrink: 0 }}
         src={profileImage}
       />
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
