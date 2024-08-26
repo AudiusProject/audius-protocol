@@ -26,7 +26,6 @@ def _get_user_tracks_remixed(session, args: GetUserTracksRemixedArgs):
         session.query(Remix)
         .join(Track, Remix.parent_track_id == Track.track_id)
         .filter(Track.owner_id == user_id)
-        .all()
     )
 
     return query
