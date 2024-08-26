@@ -188,8 +188,14 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   'trending-playlist': {
     icon: <i className='emoji large arrow-curve-up' />
   },
+  tp: {
+    icon: <i className='emoji large arrow-curve-up' />
+  },
   'trending-track': {
     icon: <i className='emoji large chart-increasing' />
+  },
+  tt: {
+    icon: <i className='emoji large arrow-curve-up' />
   },
   'top-api': {
     icon: <i className='emoji large gear' />
@@ -198,6 +204,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     icon: <i className='emoji large white-heavy-check-mark' />
   },
   'trending-underground': {
+    icon: <i className='emoji large chart-bar' />
+  },
+  tut: {
     icon: <i className='emoji large chart-bar' />
   }
 }
