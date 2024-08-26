@@ -5,11 +5,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  Ref
+  Ref,
+  RefObject
 } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 import { mergeRefs } from 'react-merge-refs'
+import { List } from 'react-virtualized'
 
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
@@ -22,10 +24,116 @@ import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
-import { FilterButtonProps } from './types'
+import { FilterButtonProps, FilterButtonOptionType } from './types'
 
 const messages = {
   noMatches: 'No matches'
+}
+
+type OptionsProps<Value extends string> = {
+  options: FilterButtonOptionType<Value>[]
+  isOpen: boolean
+  onSelected: (value: Value) => void
+  optionRefs: RefObject<HTMLButtonElement[]>
+  scrollRef: RefObject<HTMLDivElement>
+  onChange: (value: Value) => void
+}
+
+const VirtualizedOptionsList = <Value extends string>({
+  options,
+  isOpen,
+  onSelected,
+  optionRefs,
+  scrollRef,
+  onChange,
+  height,
+  width
+}: OptionsProps<Value> & { height: number; width: number }) => {
+  const [rowHeight, setRowHeight] = useState(50)
+  useEffect(() => {
+    if (optionRefs.current?.[0]) {
+      setRowHeight(optionRefs.current?.[0].offsetHeight)
+    }
+  }, [optionRefs])
+
+  const renderItem = useCallback(
+    (activeValue: Value | null) =>
+      ({ index }: { index: number }) => {
+        const option = options[index]
+
+        return (
+          <MenuItem
+            variant='option'
+            ref={(el) => {
+              if (optionRefs && optionRefs.current && el) {
+                optionRefs.current[index] = el
+              }
+            }}
+            key={option.value}
+            {...option}
+            onChange={onChange}
+            isActive={option.value === activeValue}
+          />
+        )
+      },
+    [onChange, optionRefs, options]
+  )
+
+  return (
+    <OptionKeyHandler
+      options={options}
+      disabled={!isOpen}
+      onChange={onSelected}
+      optionRefs={optionRefs}
+      scrollRef={scrollRef}
+    >
+      {(activeValue) => (
+        <List
+          width={width}
+          height={height}
+          rowCount={options.length}
+          rowHeight={rowHeight}
+          rowRenderer={renderItem(activeValue)}
+        />
+      )}
+    </OptionKeyHandler>
+  )
+}
+
+const OptionsList = <Value extends string>({
+  options,
+  isOpen,
+  onSelected,
+  optionRefs,
+  scrollRef,
+  onChange
+}: OptionsProps<Value>) => {
+  return (
+    <OptionKeyHandler
+      options={options}
+      disabled={!isOpen}
+      onChange={onSelected}
+      optionRefs={optionRefs}
+      scrollRef={scrollRef}
+    >
+      {(activeValue) =>
+        options.map((option, index) => (
+          <MenuItem
+            variant='option'
+            ref={(el) => {
+              if (optionRefs && optionRefs.current && el) {
+                optionRefs.current[index] = el
+              }
+            }}
+            key={option.value}
+            {...option}
+            onChange={onChange}
+            isActive={option.value === activeValue}
+          />
+        ))
+      }
+    </OptionKeyHandler>
+  )
 }
 
 export const FilterButton = forwardRef(function FilterButton<
@@ -49,7 +157,8 @@ export const FilterButton = forwardRef(function FilterButton<
     showFilterInput,
     filterInputProps,
     optionsLabel,
-    renderLabel = (label) => label
+    renderLabel = (label) => label,
+    virtualized
   } = props
   const { color, cornerRadius, spacing, typography } = useTheme()
   const [value, setValue] = useControlled({
@@ -216,30 +325,27 @@ export const FilterButton = forwardRef(function FilterButton<
   )
 
   const optionElements = filteredOptions ? (
-    <OptionKeyHandler
-      options={filteredOptions}
-      disabled={!isOpen}
-      onChange={handleOptionSelected}
-      optionRefs={optionRefs}
-      scrollRef={scrollRef}
-    >
-      {(activeValue) =>
-        filteredOptions.map((option, index) => (
-          <MenuItem
-            variant='option'
-            ref={(el) => {
-              if (optionRefs && optionRefs.current && el) {
-                optionRefs.current[index] = el
-              }
-            }}
-            key={option.value}
-            {...option}
-            onChange={handleChange}
-            isActive={option.value === activeValue}
-          />
-        ))
-      }
-    </OptionKeyHandler>
+    virtualized ? (
+      <VirtualizedOptionsList
+        options={filteredOptions}
+        isOpen={isOpen}
+        onSelected={handleOptionSelected}
+        optionRefs={optionRefs}
+        scrollRef={scrollRef}
+        onChange={handleChange}
+        height={Number(menuProps?.css?.maxHeight ?? 100)}
+        width={Number(menuProps?.css?.maxWidth ?? 100)}
+      />
+    ) : (
+      <OptionsList
+        options={filteredOptions}
+        isOpen={isOpen}
+        onSelected={handleOptionSelected}
+        optionRefs={optionRefs}
+        scrollRef={scrollRef}
+        onChange={handleChange}
+      />
+    )
   ) : null
 
   return (

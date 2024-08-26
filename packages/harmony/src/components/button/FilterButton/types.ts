@@ -128,5 +128,16 @@ export type FilterButtonProps<Value extends string = string> = {
   optionsLabel?: string
 
   menuProps?: Partial<MenuProps> & { css?: CSSObject }
+
   renderLabel?: (label: string) => ReactNode
+
+  /**
+   * Whether or not to virtualize the options
+   */
+  virtualized?: boolean
+
+  /**
+   * Max width of the popup. Required when virtualized
+   */
+  popupMaxWidth?: number
 }

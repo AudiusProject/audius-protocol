@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Flex, OptionsFilterButton } from '@audius/harmony'
+import { Flex, FilterButton } from '@audius/harmony'
 import { useAsync } from 'react-use'
 
 const TOKEN_LIST_URL = 'https://token.jup.ag/strict'
@@ -56,15 +56,16 @@ export const TokenPicker = ({
   }))
 
   return (
-    <OptionsFilterButton
+    <FilterButton
       virtualized
       label='asset'
-      popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      popupMaxWidth={260}
-      popupMaxHeight={400}
-      popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      menuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        css: { maxHeight: 400, maxWidth: 260 }
+      }}
       options={options}
-      selection={selectedTokenAddress}
+      value={selectedTokenAddress}
       onChange={handleChange}
       onOpen={onOpen}
       showFilterInput
