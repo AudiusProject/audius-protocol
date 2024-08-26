@@ -1767,7 +1767,7 @@ class NFTGatedTrackSignatures(Resource):
         },
     )
     @full_ns.expect(track_signatures_parser)
-    @full_ns.marshal_with(full_nft_gated_track_signatures_response)
+    @full_ns.response(200, "Success", full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
