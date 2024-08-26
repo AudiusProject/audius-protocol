@@ -7,17 +7,21 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { SquareSizes, Status } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Avatar, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
+import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { AppState } from 'store/types'
 
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadges } from './CommentBadges'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
+const { getUser } = cacheUsersSelectors
 
 export type CommentBlockProps = {
   comment: Comment
@@ -36,6 +40,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
   } = comment
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
+  const commentUserId = Number(commentUserIdStr)
+
+  const userHandle = useSelector(
+    (state: AppState) => getUser(state, { id: commentUserId })?.handle
+  )
+
   const { artistId } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
@@ -52,7 +62,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
       setShowReplyInput(false)
     }
   }, [commentPostStatus, prevPostStatus])
-  const commentUserId = Number(commentUserIdStr)
   // fetch user profile info
   useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
   const profileImage = useProfilePicture(
@@ -125,7 +134,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
         />
 
         {showReplyInput ? (
-          <CommentForm parentCommentId={parentCommentId ?? comment.id} />
+          <CommentForm
+            parentCommentId={parentCommentId ?? comment.id}
+            initialValue={`@${userHandle}`}
+          />
         ) : null}
       </Flex>
     </Flex>
