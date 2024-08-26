@@ -12,6 +12,7 @@ import { WithCSS } from 'foundations'
 
 export type MenuProps = Omit<PopupProps, 'children'> & {
   maxHeight?: CSSObject['maxHeight']
+  width?: CSSObject['width']
   children: ReactNode
   PaperProps?: WithCSS<Partial<PaperProps>>
   MenuListProps?: WithCSS<Partial<FlexProps>>
@@ -22,6 +23,7 @@ export const Menu = (props: MenuProps) => {
   const {
     children,
     maxHeight,
+    width,
     PaperProps,
     MenuListProps,
     scrollRef,
@@ -37,7 +39,7 @@ export const Menu = (props: MenuProps) => {
           gap='s'
           alignItems='flex-start'
           role='listbox'
-          css={{ maxHeight, overflowY: 'auto' }}
+          css={{ maxHeight, width, overflowY: 'auto' }}
           ref={scrollRef}
           {...MenuListProps}
         >
