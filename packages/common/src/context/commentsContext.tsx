@@ -27,28 +27,19 @@ import {
 
 const { tracksActions } = trackPageLineupActions
 
-/**
- * Context object to avoid prop drilling and share a common API with web/native code
- */
-
-// Props passed in from above (also get forwarded thru)
-type CommentSectionContextProps = {
-  currentUserId: Nullable<ID>
-  artistId: ID
-  entityId: ID
-  entityType?: EntityType.TRACK
-  isEntityOwner: boolean
-  playTrack: () => void
-}
-
 export enum CommentSortMethod {
   top = 'top',
   newest = 'newest',
   timestamp = 'timestamp'
 }
 
-// Props sent down to context (some are handled inside the context component)
-type CommentSectionContextType = CommentSectionContextProps & {
+type CommentSectionContextType = {
+  currentUserId: Nullable<ID>
+  artistId: ID
+  entityId: ID
+  entityType?: EntityType.TRACK
+  isEntityOwner: boolean
+  playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
   currentSort: CommentSortMethod
