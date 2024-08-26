@@ -100,9 +100,11 @@ models/PurchaseGate.ts
 models/PurchasersCountResponse.ts
 models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
+models/Reaction.ts
 models/ReactionNotification.ts
 models/ReactionNotificationAction.ts
 models/ReactionNotificationActionData.ts
+models/Reactions.ts
 models/ReceiveTipNotification.ts
 models/ReceiveTipNotificationAction.ts
 models/ReceiveTipNotificationActionData.ts

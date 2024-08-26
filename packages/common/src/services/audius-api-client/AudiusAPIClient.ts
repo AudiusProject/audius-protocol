@@ -47,8 +47,7 @@ const FULL_ENDPOINT_MAP = {
     `/notifications/${userId}/playlist_updates`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   searchFull: `/search/full`,
-  searchAutocomplete: `/search/autocomplete`,
-  getReaction: '/reactions'
+  searchAutocomplete: `/search/autocomplete`
 }
 
 export type QueryParams = {
@@ -98,32 +97,6 @@ export type GetSocialFeedArgs = QueryParams & {
 }
 
 type GetSocialFeedResponse = {}
-
-type GetReactionArgs = {
-  reactedToIds: string[]
-}
-
-type GetReactionResponse = [
-  {
-    reaction_value: string
-    reaction_type: string
-    sender_user_id: string
-    reacted_to: string
-  }
-]
-
-export type GetTipsArgs = {
-  userId: ID
-  limit?: number
-  offset?: number
-  receiverMinFollowers?: number
-  receiverIsVerified?: boolean
-  currentUserFollows?: 'sender' | 'receiver' | 'sender_or_receiver'
-  uniqueBy?: 'sender' | 'receiver'
-  minSlot?: number
-  maxSlot?: number
-  txSignatures?: string[]
-}
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -371,31 +344,6 @@ export class AudiusAPIClient {
     )
     if (!response) return null
     return response.data
-  }
-
-  async getReaction({ reactedToIds }: GetReactionArgs) {
-    const params = {
-      reacted_to_ids: reactedToIds
-    }
-    const response = await this._getResponse<APIResponse<GetReactionResponse>>(
-      FULL_ENDPOINT_MAP.getReaction,
-      params,
-      false,
-      PathType.VersionFullPath,
-      {},
-      true
-    ) // Perform without retries, using 'split' approach for multiple query params
-
-    if (!response || !response.data.length) return null
-
-    const adapted = response.data.map((item) => ({
-      reactionValue: parseInt(item.reaction_value),
-      reactionType: item.reaction_type,
-      senderUserId: decodeHashId(item.sender_user_id),
-      reactedTo: item.reacted_to
-    }))[0]
-
-    return adapted
   }
 
   async getPlaylistUpdates(userId: number) {
