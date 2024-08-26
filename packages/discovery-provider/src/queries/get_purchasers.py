@@ -32,7 +32,6 @@ def _get_purchasers(session, args: GetPurchasersArgs):
         session.query(USDCPurchase.buyer_user_id)
         .distinct()
         .filter(USDCPurchase.seller_user_id == seller_user_id)
-        .all()
     )
 
     # Optionally filter by given content type and id
