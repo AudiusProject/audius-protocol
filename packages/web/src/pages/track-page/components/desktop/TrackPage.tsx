@@ -1,4 +1,3 @@
-import { CommentSectionProvider } from '@audius/common/context'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -6,7 +5,6 @@ import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
 import { CommentSection } from 'components/comments/CommentSection'
-import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
