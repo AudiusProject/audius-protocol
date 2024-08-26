@@ -76,6 +76,7 @@ union all (
 		audience_content_id
   FROM chat_blast b
   WHERE from_user_id = $1
+    AND concat_ws(':', audience, audience_content_type, audience_content_id) = $2
   ORDER BY
     audience,
     audience_content_type,

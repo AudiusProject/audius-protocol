@@ -18,7 +18,7 @@ begin
             timestamp >= (new.completed_at - interval '1 hour')
             limit 1;
 
-            if existing_notification is null then
+            if existing_notification is null and new.challenge_id not in ('tt', 'tp', 'tut') then
                 insert into notification
                 (blocknumber, user_ids, timestamp, type, group_id, specifier, data)
                 values

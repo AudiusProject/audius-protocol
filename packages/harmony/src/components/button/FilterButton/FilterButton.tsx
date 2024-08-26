@@ -17,14 +17,13 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
 import { TextInput, TextInputSize } from 'components/input/TextInput'
 import { Menu } from 'components/internal/Menu'
-import { MenuItem } from 'components/internal/MenuItem'
-import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
 import { Flex, Box } from 'components/layout'
 import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
 
-import { FilterButtonProps, FilterButtonOptionType } from './types'
+import { OptionsList, VirtualizedOptionsList } from './FilterButtonOptionsList'
+import { FilterButtonProps } from './types'
 
 const messages = {
   noMatches: 'No matches'
@@ -328,22 +327,18 @@ export const FilterButton = forwardRef(function FilterButton<
     virtualized ? (
       <VirtualizedOptionsList
         options={filteredOptions}
-        isOpen={isOpen}
-        onSelected={handleOptionSelected}
         optionRefs={optionRefs}
-        scrollRef={scrollRef}
-        onChange={handleChange}
-        height={Number(menuProps?.css?.maxHeight ?? 100)}
-        width={Number(menuProps?.css?.maxWidth ?? 100)}
+        onChange={handleOptionSelected}
+        height={menuProps?.maxHeight}
+        width={menuProps?.width}
       />
     ) : (
       <OptionsList
         options={filteredOptions}
         isOpen={isOpen}
-        onSelected={handleOptionSelected}
         optionRefs={optionRefs}
         scrollRef={scrollRef}
-        onChange={handleChange}
+        onChange={handleOptionSelected}
       />
     )
   ) : null
