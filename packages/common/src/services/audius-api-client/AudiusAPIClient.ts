@@ -6,7 +6,7 @@ import {
   SearchSortMethod
 } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
-import { Nullable, removeNullable } from '../../utils/typeUtils'
+import { Nullable } from '../../utils/typeUtils'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
@@ -20,7 +20,6 @@ import {
   APIResponse,
   APISearch,
   APISearchAutocomplete,
-  GetTipsResponse,
   OpaqueID
 } from './types'
 
@@ -49,8 +48,7 @@ const FULL_ENDPOINT_MAP = {
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
-  getReaction: '/reactions',
-  getTips: '/tips'
+  getReaction: '/reactions'
 }
 
 export type QueryParams = {
@@ -398,63 +396,6 @@ export class AudiusAPIClient {
     }))[0]
 
     return adapted
-  }
-
-  async getTips({
-    userId,
-    limit,
-    offset,
-    receiverMinFollowers,
-    receiverIsVerified,
-    currentUserFollows,
-    uniqueBy,
-    minSlot,
-    maxSlot,
-    txSignatures
-  }: GetTipsArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedUserId,
-      limit,
-      offset,
-      receiver_min_followers: receiverMinFollowers,
-      receiver_is_verififed: receiverIsVerified,
-      current_user_follows: currentUserFollows,
-      unique_by: uniqueBy,
-      min_slot: minSlot,
-      max_slot: maxSlot,
-      tx_signatures: txSignatures
-    }
-
-    const response = await this._getResponse<APIResponse<GetTipsResponse[]>>(
-      FULL_ENDPOINT_MAP.getTips,
-      params
-    )
-    if (response && response.data) {
-      return response.data
-        .map((u) => {
-          const sender = adapter.makeUser(u.sender)
-          const receiver = adapter.makeUser(u.receiver)
-          // Should never happen
-          if (!sender && receiver) return null
-
-          return {
-            ...u,
-            sender: adapter.makeUser(u.sender)!,
-            receiver: adapter.makeUser(u.receiver)!,
-            // Hack alert:
-            // Don't show followee supporters yet, because they take too
-            // long to load in (requires a subsequent call to DN)
-            // followee_supporter_ids: u.followee_supporters.map(({ user_id }) =>
-            //   decodeHashId(user_id)
-            // )
-            followee_supporter_ids: []
-          }
-        })
-        .filter(removeNullable)
-    }
-    return null
   }
 
   async getPlaylistUpdates(userId: number) {
