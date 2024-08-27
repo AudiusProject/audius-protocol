@@ -1,12 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    PrimaryKeyConstraint,
-    Text,
-)
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, PrimaryKeyConstraint, Text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin

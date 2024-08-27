@@ -424,6 +424,7 @@ def copy_record(
         DashboardWalletUser,
         Comment,
         CommentReaction,
+        MutedUser,
     ],
     block_number: int,
     event_blockhash: str,

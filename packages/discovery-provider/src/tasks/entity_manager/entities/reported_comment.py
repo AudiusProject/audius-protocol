@@ -4,7 +4,6 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
-    copy_record,
     validate_signer,
 )
 from src.utils.structured_logger import StructuredLogger

@@ -1,4 +1,3 @@
-import json
 import logging  # pylint: disable=C0302
 from typing import List
 
