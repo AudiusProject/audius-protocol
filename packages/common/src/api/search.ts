@@ -7,7 +7,7 @@ import { Name, SearchSource, UserTrackMetadata } from '~/models'
 import { ID, OptionalId } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
-import { Genre, compareSDKResponse, formatMusicalKey } from '~/utils'
+import { Genre, formatMusicalKey } from '~/utils'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -50,7 +50,7 @@ const searchApi = createApi({
     getSearchResults: {
       fetch: async (
         args: getSearchArgs,
-        { apiClient, audiusBackend, audiusSdk, getFeatureEnabled, analytics }
+        { audiusBackend, audiusSdk, getFeatureEnabled, analytics }
       ) => {
         const {
           category,
@@ -107,33 +107,9 @@ const searchApi = createApi({
         }
 
         const search = async () => {
-          const searchParams = {
-            kind,
-            currentUserId,
-            query,
-            limit: limit || 50,
-            offset: offset || 0,
-            includePurchaseable: isUSDCEnabled,
-            ...filters,
-            bpmMin,
-            bpmMax,
-            key: formatMusicalKey(filters.key)
-          }
-          // Fire analytics only for the first page of results
-          if (offset === 0) {
-            analytics.track(
-              analytics.make({
-                eventName: Name.SEARCH_SEARCH,
-                term: query,
-                source,
-                ...searchParams
-              })
-            )
-          }
           const sdk = await audiusSdk()
-          const legacy = await apiClient.getSearchFull(searchParams)
           const key = formatMusicalKey(filters.key)
-          const { data } = await sdk.full.search.search({
+          const searchParams = {
             kind,
             userId: OptionalId.parse(currentUserId),
             query,
@@ -148,13 +124,22 @@ const searchApi = createApi({
             isVerified: filters.isVerified,
             hasDownloads: filters.hasDownloads,
             isPurchaseable: filters.isPremium
-          })
+          }
+          // Fire analytics only for the first page of results
+          if (offset === 0) {
+            analytics.track(
+              analytics.make({
+                eventName: Name.SEARCH_SEARCH,
+                term: query,
+                source,
+                ...searchParams
+              })
+            )
+          }
+          const { data } = await sdk.full.search.search()
           const { tracks, playlists, albums, users } =
             searchResultsFromSDK(data)
           const results = { tracks, playlists, albums, users }
-
-          compareSDKResponse({ legacy, migrated: results }, 'search')
-
           return results
         }
 
