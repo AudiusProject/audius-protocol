@@ -2626,7 +2626,30 @@ class FullPurchasersUsersCount(Resource):
 USER_TRACKS_REMIXED_ROUTE = USER_TRACKS_ROUTE + "/remixed"
 
 
-@full_ns.route("/<string:id>/tracks/remixed")
+@ns.route(USER_TRACKS_REMIXED_ROUTE)
+class UserTracksRemixed(Resource):
+    @ns.doc(
+        id="""Get User Tracks Remixed""",
+        description="Gets tracks owned by the user which have been remixed by another track",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = tracks_route_parser.parse_args()
+        query_args = GetUserTracksRemixedArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        tracks = get_user_tracks_remixed(query_args)
+        return success_response(list(map(extend_track, tracks)))
+
+
+@full_ns.route(USER_TRACKS_REMIXED_ROUTE)
 class FullUserTracksRemixed(Resource):
     @full_ns.doc(
         id="""Get User Tracks Remixed""",
