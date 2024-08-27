@@ -15,7 +15,7 @@ test_entities = {
             "user_id": 1,
             "entity_id": 1,
             "entity_type": "Track",
-            "created_at": datetime(2024, 1, i),
+            "created_at": datetime(2022, 1, i),
         }
         for i in range(1, 11)
     ]
@@ -24,7 +24,7 @@ test_entities = {
             "user_id": 1,
             "entity_id": 1,
             "entity_type": "Track",
-            "created_at": datetime(2022, 1, i),
+            "created_at": datetime(2024, 1, i),
             "comment_id": i + 100,
         }
         for i in range(1, 11)
@@ -50,11 +50,12 @@ test_entities = {
 }
 
 
-def test_get_comments_most_recent(app):
+def test_get_comments_default(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
         comments = get_track_comments({}, 1)
+
         assert len(comments) == 5
         for comment in comments:
             if decode_string_id(comment["id"]) == 10:
@@ -63,7 +64,7 @@ def test_get_comments_most_recent(app):
             else:
                 assert len(comment["replies"]) == 0
 
-            assert 5 < decode_string_id(comment["id"]) <= 10
+            assert 1 <= decode_string_id(comment["id"]) <= 5
 
 
 def test_get_comments_page(app):
@@ -73,7 +74,7 @@ def test_get_comments_page(app):
         comments = get_track_comments({"limit": 5, "offset": 5}, 1)
 
         for comment in comments:
-            assert decode_string_id(comment["id"]) <= 5
+            assert 6 <= decode_string_id(comment["id"]) <= 10
 
 
 def test_get_comments_replies(app):
@@ -82,4 +83,4 @@ def test_get_comments_replies(app):
         populate_mock_db(db, test_entities)
         comments = get_comment_replies({"limit": 2, "offset": 2}, 10)
         for comment in comments:
-            assert 106 <= decode_string_id(comment["id"]) <= 108
+            assert 104 <= decode_string_id(comment["id"]) <= 106
