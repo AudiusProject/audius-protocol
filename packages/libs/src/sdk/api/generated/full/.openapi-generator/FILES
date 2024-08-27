@@ -94,6 +94,9 @@ models/PlaylistFull.ts
 models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
 models/PlaylistMilestoneNotificationActionData.ts
+models/PlaylistUpdate.ts
+models/PlaylistUpdates.ts
+models/PlaylistUpdatesResponse.ts
 models/ProfilePicture.ts
 models/Purchase.ts
 models/PurchaseGate.ts

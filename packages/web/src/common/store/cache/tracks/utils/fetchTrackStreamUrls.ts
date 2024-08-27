@@ -9,7 +9,7 @@ import {
   calculatePlayerBehavior,
   getSDK
 } from '@audius/common/store'
-import { getQueryParams } from '@audius/common/utils'
+import { getQueryParams, isResponseError } from '@audius/common/utils'
 import { all, call, select, put, delay, fork, cancel } from 'typed-redux-saga'
 const { getUserId } = accountSelectors
 const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
@@ -77,11 +77,16 @@ export function* fetchTrackStreamUrls({
           earlyResultsArr.push({ [id]: streamUrl })
           return streamUrl !== undefined ? { [id]: streamUrl } : undefined
         } catch (e) {
-          reportToSentry({
-            error: e as Error,
-            name: 'Stream Prefetch',
-            additionalInfo: { trackId: id }
-          })
+          // Don't log 404s as errors, could be for deleted tracks etc.
+          if (isResponseError(e) && e.response.status === 404) {
+            console.warn(`Prefetch: Track ${id} not found`)
+          } else {
+            reportToSentry({
+              error: e as Error,
+              name: 'Stream Prefetch',
+              additionalInfo: { trackId: id }
+            })
+          }
         }
       })
     )

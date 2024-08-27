@@ -5,7 +5,7 @@ import {
   SearchKind,
   SearchSortMethod
 } from '../../store/pages/search-results/types'
-import { decodeHashId, encodeHashId } from '../../utils/hashIds'
+import { encodeHashId } from '../../utils/hashIds'
 import { Nullable } from '../../utils/typeUtils'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
@@ -43,8 +43,6 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  playlistUpdates: (userId: OpaqueID) =>
-    `/notifications/${userId}/playlist_updates`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`
 }
@@ -301,28 +299,6 @@ export class AudiusAPIClient {
     )
     if (!response) return null
     return response.data
-  }
-
-  async getPlaylistUpdates(userId: number) {
-    type ApiPlaylistUpdate = {
-      playlist_id: string
-      updated_at: string
-      last_seen_at: string
-    }
-    type PlaylistUpdatesResponse = { playlist_updates: ApiPlaylistUpdate[] }
-    const response = await this._getResponse<
-      APIResponse<PlaylistUpdatesResponse>
-    >(FULL_ENDPOINT_MAP.playlistUpdates(encodeHashId(userId)))
-    const playlistUpdates = response?.data?.playlist_updates
-
-    if (!playlistUpdates) {
-      return null
-    }
-
-    return playlistUpdates.map((playlistUpdate) => ({
-      ...playlistUpdate,
-      playlist_id: decodeHashId(playlistUpdate.playlist_id) as number
-    }))
   }
 
   async init() {
