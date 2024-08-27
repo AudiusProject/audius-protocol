@@ -18,6 +18,8 @@ export const CommentSectionDesktop = () => {
     artistId,
     comments,
     commentSectionLoading,
+    isLoadingMorePages,
+    hasMorePages,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
 
@@ -25,6 +27,7 @@ export const CommentSectionDesktop = () => {
     getCanCreateChat(state, { userId: artistId })
   )
 
+  console.log({ hasMorePages, isLoadingMorePages })
   if (commentSectionLoading) {
     return <CommentSkeletons />
   }
@@ -51,15 +54,18 @@ export const CommentSectionDesktop = () => {
             ))}
           </Flex>
           {/* TODO: this button is temporary; will be replaced with endless scroll */}
-          <Button
-            onClick={() => {
-              handleLoadMoreRootComments()
-            }}
-            size='small'
-            css={{ width: 'max-content', marginTop: '16px' }}
-          >
-            Load more comments
-          </Button>
+          {hasMorePages ? (
+            <Button
+              onClick={() => {
+                handleLoadMoreRootComments()
+              }}
+              size='small'
+              css={{ width: 'max-content', marginTop: '16px' }}
+              disabled={isLoadingMorePages}
+            >
+              Load more comments
+            </Button>
+          ) : null}
         </Flex>
       </Paper>
     </Flex>

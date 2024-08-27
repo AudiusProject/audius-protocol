@@ -1,11 +1,13 @@
 import { useState } from 'react'
 
-import { useGetCommentById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
+import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
 import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
+
+const COMMENT_THREAD_PAGE_SIZE = 3
 
 const messages = {
   showMoreReplies: 'Show More Replies'
@@ -15,7 +17,14 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   const { data: rootComment } = useGetCommentById({
     id: commentId
   })
-  const { handleLoadMoreReplies } = useCurrentCommentSection()
+  const { data: replies, loadMore } = useAllPaginatedQuery(
+    // @ts-ignore
+    useGetCommentRepliesById,
+    { id: commentId },
+    { pageSize: COMMENT_THREAD_PAGE_SIZE }
+  )
+
+  console.log({ replies })
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})
@@ -56,7 +65,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
         )}
         {/* TODO: need a way to hide this when no more to load */}
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onClick={() => handleLoadMoreReplies(rootComment.id)}>
+          <TextLink onClick={() => loadMore()}>
             {messages.showMoreReplies}
           </TextLink>
         ) : null}

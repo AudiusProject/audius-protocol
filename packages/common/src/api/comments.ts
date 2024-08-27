@@ -11,12 +11,13 @@ import { decodeHashId, encodeHashId } from '~/utils'
 const optimisticUpdateCommentList = (
   entityId: number,
   updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
-  dispatch: ThunkDispatch<any, any, any>
+  dispatch: ThunkDispatch<any, any, any>,
+  page: number = 0
 ) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
-      { entityId },
+      { entityId, limit: 5, offset: page },
       updateRecipe
     )
   )
@@ -45,10 +46,20 @@ const commentsApi = createApi({
   endpoints: {
     // Queries
     getCommentsByTrackId: {
-      async fetch({ entityId }: { entityId: ID }, { audiusSdk }) {
+      async fetch(
+        {
+          entityId,
+          offset,
+          limit
+        }: { entityId: ID; offset?: number; limit?: number },
+        { audiusSdk }
+      ) {
+        console.log({ entityId, offset, limit })
         const sdk = await audiusSdk()
         const commentsRes = await sdk.tracks.trackComments({
-          trackId: encodeHashId(entityId)
+          trackId: encodeHashId(entityId),
+          offset,
+          limit
         })
         return commentsRes?.data
       },
@@ -65,6 +76,23 @@ const commentsApi = createApi({
         const commentsRes = await sdk.comments.getComment({
           commentId: id
         })
+        return commentsRes?.data
+      },
+      options: { type: 'query' }
+    },
+    getCommentRepliesById: {
+      async fetch(
+        { id, limit, offset }: { id: string; limit?: number; offset?: number },
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        console.log('getting comment for id ', id)
+        const commentsRes = await sdk.comments.getComment({
+          commentId: id,
+          limit,
+          offset
+        })
+        console.log({ commentsRes })
         return commentsRes?.data
       },
       options: { type: 'query' }
@@ -91,8 +119,8 @@ const commentsApi = createApi({
         { dispatch }
       ) {
         const newComment: Comment = {
-          id: newId,
-          userId,
+          id: `${newId}`,
+          userId: `${userId}`,
           message: body,
           isPinned: false,
           trackTimestampS,
@@ -276,7 +304,8 @@ export const {
   useDeleteCommentById,
   usePostComment,
   usePinCommentById,
-  useReactToCommentById
+  useReactToCommentById,
+  useGetCommentRepliesById
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

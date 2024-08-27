@@ -27,20 +27,21 @@ export const usePaginatedQuery = <
     offset: page * pageSize
   } as ArgsType
   const result = useQueryHook(args, queryHookOptions)
+  const hasMore =
+    result.status === Status.IDLE ||
+    (!result.data && result.status === Status.LOADING) ||
+    result.data?.length === pageSize
 
   const loadMore = useCallback(() => {
-    if (!disabled) {
+    if (!disabled || !hasMore) {
       setPage(page + 1)
     }
-  }, [disabled, page])
+  }, [disabled, hasMore, page])
 
   return {
     ...result,
     loadMore,
-    hasMore:
-      result.status === Status.IDLE ||
-      (!result.data && result.status === Status.LOADING) ||
-      result.data?.length === pageSize
+    hasMore
   }
 }
 
@@ -110,22 +111,21 @@ export const useAllPaginatedQuery = <
   const hasNotFetched = !result.data && result.status !== Status.SUCCESS
   const fetchedFullPreviousPage = result.data?.length === pageSize
 
+  console.log({ notError, notStarted, hasNotFetched, fetchedFullPreviousPage })
+
   const hasMore =
-    notError &&
-    !stillLoadingCurrentPage &&
-    (notStarted || hasNotFetched || fetchedFullPreviousPage)
+    notError && (notStarted || hasNotFetched || fetchedFullPreviousPage)
 
   const loadMore = useCallback(() => {
-    if (stillLoadingCurrentPage) {
+    if (stillLoadingCurrentPage || !hasMore) {
       return
     }
     setLoadingMore(true)
     setPage(page + 1)
-  }, [stillLoadingCurrentPage, page])
+  }, [stillLoadingCurrentPage, hasMore, page])
 
   return {
     ...result,
-    // TODO: add another status for reloading
     status: allData?.length > 0 ? Status.SUCCESS : status,
     data: allData,
     isLoadingMore: stillLoadingCurrentPage,

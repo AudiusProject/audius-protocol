@@ -8,7 +8,7 @@ from src.api.v1.helpers import (
     pagination_parser,
     success_response,
 )
-from src.api.v1.models.comments import base_comment_model
+from src.api.v1.models.comments import reply_array_model
 from src.queries.get_comments import get_comment_replies
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 ns = Namespace("comments", description="Comment related operations")
 
 comment_response = make_response(
-    "comment_response", ns, fields.Nested(base_comment_model)
+    "comment_response", ns, fields.Nested(reply_array_model)
 )
 
 

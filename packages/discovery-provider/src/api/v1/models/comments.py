@@ -16,6 +16,9 @@ reply_comment_model = ns.model(
         "updated_at": fields.String(required=False),
     },
 )
+
+reply_array_model = ns.model(fields.List(reply_comment_model))
+
 base_comment_model = ns.model(
     "comment",
     {

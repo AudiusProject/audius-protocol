@@ -3,7 +3,7 @@ import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
 
-import { usePaginatedQuery } from '..//audius-query'
+import { useAllPaginatedQuery } from '..//audius-query'
 import { ID, Status } from '..//models'
 import { Nullable } from '..//utils'
 import {
@@ -40,6 +40,8 @@ type CommentSectionContextType = CommentSectionContextProps & {
   commentSectionLoading: boolean
   comments: Comment[]
   currentSort: CommentSortMethod
+  isLoadingMorePages: boolean
+  hasMorePages: boolean
   setCurrentSort: (sort: CommentSortMethod) => void
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
@@ -62,8 +64,10 @@ export const CommentSectionProvider = ({
   const {
     data: comments = [],
     status,
-    loadMore
-  } = usePaginatedQuery(
+    loadMore,
+    isLoadingMore: isLoadingMorePages,
+    hasMore: hasMorePages
+  } = useAllPaginatedQuery(
     // @ts-ignore - TODO: theres something wrong here in the audius-query types
     useGetCommentsByTrackId,
     { entityId },
@@ -100,6 +104,8 @@ export const CommentSectionProvider = ({
         comments,
         commentSectionLoading,
         isEntityOwner,
+        isLoadingMorePages,
+        hasMorePages,
         currentSort,
         setCurrentSort,
         playTrack,
