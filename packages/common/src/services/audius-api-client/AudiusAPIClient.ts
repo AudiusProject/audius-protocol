@@ -1,6 +1,6 @@
 import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
 
-import { ID, CollectionMetadata } from '../../models'
+import { ID } from '../../models'
 import {
   SearchKind,
   SearchSortMethod
@@ -11,13 +11,12 @@ import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
-import { StringKeys, RemoteConfigInstance } from '../remote-config'
+import { RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
 import {
   APIBlockConfirmation,
-  APIPlaylist,
   APIResponse,
   APISearch,
   APISearchAutocomplete,
@@ -41,19 +40,12 @@ enum PathType {
 const ROOT_ENDPOINT_MAP = {
   feed: `/feed`,
   healthCheck: '/health_check',
-  blockConfirmation: '/block_confirmation',
-  getCollectionMetadata: '/playlists'
+  blockConfirmation: '/block_confirmation'
 }
 
 const FULL_ENDPOINT_MAP = {
-  trendingPlaylists: (experiment: string | null) =>
-    experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
-  getPlaylists: '/playlists',
-  getPlaylistByPermalink: (handle: string, slug: string) =>
-    `/playlists/by_permalink/${handle}/${slug}`,
   getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
@@ -76,29 +68,6 @@ type GetTrackStreamUrlArgs = {
   abortOnUnreachable?: boolean
 }
 
-type GetCollectionMetadataArgs = {
-  collectionId: ID
-  currentUserId: ID
-  abortOnUnreachable?: boolean
-}
-
-type GetPlaylistArgs = {
-  playlistId: ID
-  currentUserId: Nullable<ID>
-  abortOnUnreachable?: boolean
-}
-
-type GetPlaylistsArgs = {
-  playlistIds: ID[]
-  currentUserId: Nullable<ID>
-  abortOnUnreachable?: boolean
-}
-
-type GetPlaylistByPermalinkArgs = {
-  permalink: string
-  currentUserId: Nullable<ID>
-}
-
 type GetSearchArgs = {
   currentUserId: Nullable<ID>
   query: string
@@ -115,13 +84,6 @@ type GetSearchArgs = {
   hasDownloads?: boolean
   isPremium?: boolean
   sortMethod?: SearchSortMethod
-}
-
-type GetTrendingPlaylistsArgs = {
-  currentUserId: Nullable<ID>
-  limit: number
-  offset: number
-  time: 'week' | 'month' | 'year'
 }
 
 export type AssociatedWalletsResponse = {
@@ -278,116 +240,6 @@ export class AudiusAPIClient {
     return trackUrl?.data
   }
 
-  async getCollectionMetadata({
-    collectionId,
-    currentUserId,
-    abortOnUnreachable
-  }: GetCollectionMetadataArgs) {
-    this._assertInitialized()
-
-    const headers = { 'X-User-ID': currentUserId.toString() }
-    const params = { playlist_id: collectionId }
-    const response = await this._getResponse<APIResponse<CollectionMetadata[]>>(
-      ROOT_ENDPOINT_MAP.getCollectionMetadata,
-      params,
-      false,
-      PathType.RootPath,
-      headers,
-      abortOnUnreachable
-    )
-    return response?.data?.[0]
-  }
-
-  async getPlaylist({
-    playlistId,
-    currentUserId,
-    abortOnUnreachable
-  }: GetPlaylistArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedPlaylistId = this._encodeOrThrow(playlistId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getPlaylists({
-    playlistIds,
-    currentUserId,
-    abortOnUnreachable
-  }: GetPlaylistsArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const encodedPlaylistIds = playlistIds.map((id) => this._encodeOrThrow(id))
-
-    const params = {
-      id: encodedPlaylistIds,
-      user_id: encodedCurrentUserId || undefined,
-      limit: encodedPlaylistIds.length
-    }
-
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.getPlaylists,
-      params,
-      undefined,
-      undefined,
-      undefined,
-      abortOnUnreachable
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
-  }
-
-  async getPlaylistByPermalink({
-    permalink,
-    currentUserId
-  }: GetPlaylistByPermalinkArgs) {
-    this._assertInitialized()
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedCurrentUserId || undefined
-    }
-    const splitPermalink = permalink.split('/')
-    if (splitPermalink.length !== 4) {
-      throw Error(
-        'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
-      )
-    }
-    const [, handle, , slug] = splitPermalink
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.getPlaylistByPermalink(handle, slug),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
-  }
-
   async getSearchFull({
     currentUserId,
     query,
@@ -464,35 +316,6 @@ export class AudiusAPIClient {
       isAutocomplete: true,
       ...adapted
     })
-  }
-
-  async getTrendingPlaylists({
-    currentUserId,
-    time,
-    limit,
-    offset
-  }: GetTrendingPlaylistsArgs) {
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      limit,
-      offset,
-      time
-    }
-
-    const experiment = this.remoteConfigInstance.getRemoteVar(
-      StringKeys.PLAYLIST_TRENDING_EXPERIMENT
-    )
-    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
-      FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
-      params
-    )
-
-    if (!response) return []
-    const adapted = response.data
-      .map(adapter.makePlaylist)
-      .filter(removeNullable)
-    return adapted
   }
 
   async getBlockConfirmation(

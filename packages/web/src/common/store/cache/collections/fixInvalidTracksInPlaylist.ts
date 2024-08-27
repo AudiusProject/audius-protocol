@@ -1,8 +1,13 @@
-import { ID, UserCollectionMetadata } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { ID, Id, OptionalId } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
@@ -18,7 +23,7 @@ export function* fixInvalidTracksInPlaylist(
 ) {
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const removedTrackIds = new Set(invalidTrackIds)
 
   const playlist = yield* select(getCollection, { id: playlistId })
@@ -37,9 +42,13 @@ export function* fixInvalidTracksInPlaylist(
   if (error) throw error
 
   const currentUserId = yield* select(getUserId)
-  const playlists: UserCollectionMetadata[] = yield apiClient.getPlaylist({
-    playlistId,
-    currentUserId
-  })
+  const { data = [] } = yield* call(
+    [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+    {
+      playlistId: Id.parse(playlistId),
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const playlists = transformAndCleanList(data, userCollectionMetadataFromSDK)
   return playlists[0]
 }

@@ -1,10 +1,15 @@
-import { UserCollectionMetadata, Collection } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { Collection, OptionalId } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
@@ -19,7 +24,7 @@ let numberOfFilteredPlaylists = 0
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   yield* waitForRead()
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   yield* call(remoteConfigInstance.waitForRemoteConfig)
@@ -37,15 +42,32 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   // maybe due to some bug in the lineup.
   // Setting the limit to 10 so we at least get enough playlists back from first fetch for now.
   const TMP_LIMIT = 10
-  let playlists: UserCollectionMetadata[] = yield* call(
-    (args) => apiClient.getTrendingPlaylists(args),
-    {
-      currentUserId,
-      limit: TMP_LIMIT,
-      offset: offset + numberOfFilteredPlaylists,
-      time
-    }
+
+  const version = remoteConfigInstance.getRemoteVar(
+    StringKeys.PLAYLIST_TRENDING_EXPERIMENT
   )
+
+  const args = {
+    userId: OptionalId.parse(currentUserId),
+    limit: TMP_LIMIT,
+    offset: offset + numberOfFilteredPlaylists,
+    time
+  }
+
+  const { data = [] } = version
+    ? yield* call(
+        [
+          sdk.full.playlists,
+          sdk.full.playlists.getTrendingPlaylistsWithVersion
+        ],
+        { ...args, version }
+      )
+    : yield* call(
+        [sdk.full.playlists, sdk.full.playlists.getTrendingPlaylists],
+        args
+      )
+
+  let playlists = transformAndCleanList(data, userCollectionMetadataFromSDK)
 
   if (TF.size > 0) {
     playlists = playlists.filter((p) => {

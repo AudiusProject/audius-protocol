@@ -57,6 +57,7 @@ export const userTrackMetadataFromSDK = (
     // Conversions
     track_id: decodedTrackId,
     owner_id: decodedOwnerId,
+    // TODO: Remove this when api is fixed to return UTC dates
     release_date: input.releaseDate
       ? dayjs
           .utc(input.releaseDate)
