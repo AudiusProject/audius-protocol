@@ -1,4 +1,4 @@
-import { mapValues, omit } from 'lodash'
+import { mapValues } from 'lodash'
 import objectHash from 'object-hash'
 
 import { Kind } from '~/models/Kind'
@@ -13,9 +13,7 @@ export function capitalize(str: string) {
 
 export const getKeyFromFetchArgs = (fetchArgs: any) => {
   if (fetchArgs === undefined) return 'default'
-  // usePaginatedQuery includes fetchArgs that don't belong in the key
-  const fetchArgsNoPagination = omit(fetchArgs, ['limit', 'offset'])
-  return objectHash(fetchArgsNoPagination)
+  return objectHash(fetchArgs)
 }
 
 export const selectCommonEntityMap = (
