@@ -69,7 +69,6 @@ export const CommentSectionProvider = ({
     { entityId },
     {
       pageSize: 5,
-      force: true,
       disabled: entityId === 0
     }
   )

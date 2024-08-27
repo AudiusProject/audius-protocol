@@ -1,9 +1,13 @@
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import type {
   CollectionMetadata,
   UserCollectionMetadata
 } from '@audius/common/models'
-import { SquareSizes } from '@audius/common/models'
-import { accountSelectors, getContext } from '@audius/common/store'
+import { Id, OptionalId, SquareSizes } from '@audius/common/models'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
@@ -121,14 +125,18 @@ function* downloadCollectionAsync(
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return OfflineDownloadStatus.ERROR
 
-  const apiClient = yield* getContext('apiClient')
-  const [collection] = yield* call([apiClient, apiClient.getPlaylist], {
-    playlistId: collectionId,
-    currentUserId,
-    // Needed to ensure APIClient doesn't abort when we become unreachable,
-    // allowing this job time to self-cancel
-    abortOnUnreachable: false
-  })
+  const sdk = yield* getSDK()
+  const { data = [] } = yield* call(
+    [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+    {
+      playlistId: Id.parse(collectionId),
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const [collection] = transformAndCleanList(
+    data,
+    userCollectionMetadataFromSDK
+  )
 
   if (!collection) return OfflineDownloadStatus.ERROR
 
