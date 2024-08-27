@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useEffect } from 'react'
 
 import {
   Flex,
@@ -10,6 +10,7 @@ import {
   PlainButton,
   IconCaretUp
 } from '@audius/harmony'
+import { useToggle } from 'react-use'
 
 import { Expandable } from 'components/expandable/Expandable'
 
@@ -60,20 +61,8 @@ export const SummaryTable = ({
   renderBody: renderBodyProp
 }: SummaryTableProps) => {
   const { color } = useTheme()
-
-  // Collapsible is collapsed by default
-  const [expanded, setExpanded] = useState(!collapsible)
-  const onToggleExpand = useCallback(
-    () => setExpanded((val) => !val),
-    [setExpanded]
-  )
-
-  // Extra items are collapsed by default
-  const [showExtraItems, setShowExtraItems] = useState(false)
-  const onToggleExtraItems = useCallback(
-    () => setShowExtraItems((val) => !val),
-    [setShowExtraItems]
-  )
+  const [isExpanded, setIsExpanded] = useToggle(!collapsible)
+  const [showExtraItems, setShowExtraItems] = useToggle(false)
 
   useEffect(() => {
     if (!showExtraItems) {
@@ -93,14 +82,14 @@ export const SummaryTable = ({
           backgroundColor: color.background.surface1,
           cursor: collapsible ? 'pointer' : 'auto'
         }}
-        onClick={onToggleExpand}
+        onClick={setIsExpanded}
       >
         <Flex gap='s'>
           {collapsible ? (
             <IconCaretDown
               css={{
                 transition: 'transform var(--harmony-expressive)',
-                transform: `rotate(${expanded ? -180 : 0}deg)`
+                transform: `rotate(${isExpanded ? -180 : 0}deg)`
               }}
               size='m'
               color='default'
@@ -139,7 +128,7 @@ export const SummaryTable = ({
     return (
       <Flex p='xs'>
         <PlainButton
-          onClick={onToggleExtraItems}
+          onClick={setShowExtraItems}
           iconRight={showExtraItems ? IconCaretUp : IconCaretDown}
           disabled={disableExtraItemsToggle}
         >
@@ -209,7 +198,7 @@ export const SummaryTable = ({
       >
         {renderHeader()}
         {collapsible ? (
-          <Expandable expanded={expanded}>{renderContent()}</Expandable>
+          <Expandable expanded={isExpanded}>{renderContent()}</Expandable>
         ) : (
           renderContent()
         )}

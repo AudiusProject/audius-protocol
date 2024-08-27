@@ -155,7 +155,7 @@ export const LockedContentDetailsTile = ({
           />
           {earnAmount ? (
             <Flex alignItems='center' gap='xs' pt='xs'>
-              <IconCart height={16} width={16} color='premium' />
+              <IconCart size='l' color='premium' />
               <Text variant='body' size='xs' strength='strong' color='premium'>
                 {messages.earn(earnAmount)}
               </Text>

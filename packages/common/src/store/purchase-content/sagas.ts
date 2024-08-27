@@ -1,6 +1,6 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
-import { createJupiterApiClient } from '@jup-ag/api'
+import type { createJupiterApiClient } from '@jup-ag/api'
 import {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
@@ -36,6 +36,7 @@ import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
+  getRecentBlockhash,
   getRootSolanaAccount,
   getSolanaConnection,
   getTokenAccountInfo,
@@ -568,8 +569,6 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
-  const decimals = TOKEN_LISTING_MAP.USDC.decimals
-  const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
 
   const analyticsInfo = {
     price: price / 100,
@@ -656,7 +655,9 @@ function* doStartPurchaseContentFlow({
         }
         break
       }
-      case PurchaseMethod.WALLET:
+      case PurchaseMethod.WALLET: {
+        const decimals = TOKEN_LISTING_MAP.USDC.decimals
+        const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
         if (!purchaseMethodMintAddress) {
           throw new Error('Missing purchase method mint address')
         }
@@ -670,6 +671,7 @@ function* doStartPurchaseContentFlow({
           inputMint: purchaseMethodMintAddress
         })
         break
+      }
       case PurchaseMethod.CARD: {
         const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
         switch (purchaseVendor) {
@@ -810,8 +812,11 @@ function* doStartPurchaseContentFlow({
   }
 }
 
-const initJupiter = () => {
+let jup: ReturnType<typeof createJupiterApiClient> | undefined
+
+const initJupiter = async () => {
   try {
+    const { createJupiterApiClient } = await import('@jup-ag/api')
     return createJupiterApiClient()
   } catch (e) {
     console.error('Jupiter failed to initialize', e)
@@ -819,13 +824,11 @@ const initJupiter = () => {
   }
 }
 
-let _jup: ReturnType<typeof createJupiterApiClient>
-
-const getJupiterInstance = () => {
-  if (!_jup) {
-    _jup = initJupiter()
+const getJupiterInstance = async () => {
+  if (!jup) {
+    jup = await initJupiter()
   }
-  return _jup
+  return jup
 }
 
 /**
@@ -848,7 +851,7 @@ function* swapToUsdcAndSendToUserbank({
     transaction: Transaction | VersionedTransaction
   ) => Promise<Transaction>
 }) {
-  const jup = getJupiterInstance()
+  const jup = yield* call(getJupiterInstance)
 
   const {
     destinationTokenAccountPublicKey,
@@ -857,6 +860,34 @@ function* swapToUsdcAndSendToUserbank({
     connection,
     sourceWalletPublicKey
   })
+
+  // If the mints are the same, just send the funds
+  if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const recentBlockhash = yield* call(
+      getRecentBlockhash,
+      audiusBackendInstance
+    )
+    const message = new TransactionMessage({
+      recentBlockhash,
+      payerKey: sourceWalletPublicKey,
+      instructions: [
+        createUsdcAssociatedTokenAccountInstruction || null,
+        createTransferInstruction(
+          destinationTokenAccountPublicKey,
+          usdcUserBankTokenAccountPublicKey,
+          sourceWalletPublicKey,
+          amount
+        )
+      ].filter(Boolean) as TransactionInstruction[]
+    })
+
+    // Execute the swap by signing and sending the transaction
+    return yield* call(
+      signAndSendTransaction,
+      new VersionedTransaction(message.compileToV0Message())
+    )
+  }
 
   // Get quote for the swap
   const quote = yield* call([jup, jup.quoteGet], {
@@ -1020,7 +1051,9 @@ function* purchaseWithAnything({
 
     // Get the solana wallet provider
     const provider = window.solana
-    if (!provider) return
+    if (!provider) {
+      throw new Error('No solana provider / wallet found')
+    }
     const sourceWallet = yield* call(provider.connect)
 
     // Swap input mint to usdc
