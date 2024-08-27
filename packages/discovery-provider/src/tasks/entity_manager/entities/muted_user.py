@@ -17,10 +17,12 @@ def validate_mute_user_tx(params: ManageEntityParameters):
     validate_signer(params)
     if (
         params.action == Action.CREATE
-        and (muted_user_id, params.user_id)
+        and (params.user_id, muted_user_id)
         in params.existing_records[EntityType.MUTED_USER.value]
     ):
-        raise IndexingValidationError(f"User {muted_user_id} already muted")
+        raise IndexingValidationError(
+            f"User {params.user_id} already muted user {muted_user_id}"
+        )
 
 
 def mute_user(params: ManageEntityParameters):

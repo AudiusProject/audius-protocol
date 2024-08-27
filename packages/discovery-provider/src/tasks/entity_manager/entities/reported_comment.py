@@ -13,14 +13,16 @@ logger = StructuredLogger(__name__)
 
 
 def validate_report_comment_tx(params: ManageEntityParameters):
-    muted_user_id = params.entity_id
+    reported_comment_id = params.entity_id
     validate_signer(params)
     if (
         params.action == Action.CREATE
-        and (params.user_id, muted_user_id)
+        and (params.user_id, reported_comment_id)
         in params.existing_records[EntityType.REPORTED_COMMENT.value]
     ):
-        raise IndexingValidationError(f"User {muted_user_id} already muted")
+        raise IndexingValidationError(
+            f"Comment {reported_comment_id} already reported by user {params.user_id}"
+        )
 
 
 def report_comment(params: ManageEntityParameters):
