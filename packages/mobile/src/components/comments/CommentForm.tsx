@@ -21,7 +21,7 @@ type CommentFormProps = {
 }
 
 const messages = {
-  beFirstComment: 'Be the first to comment',
+  beFirstComment: 'Be the first to comment!',
   addComment: 'Add a comment'
 }
 

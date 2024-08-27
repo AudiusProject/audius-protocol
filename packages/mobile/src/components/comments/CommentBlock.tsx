@@ -18,6 +18,7 @@ import {
 import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
+import { FavoriteButton } from '../favorite-button'
 import { UserLink } from '../user-link'
 
 import { CommentOverflowMenu } from './CommentOverflowMenu'
@@ -116,12 +117,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
           <>
             <Flex direction='row' gap='l' alignItems='center'>
               <Flex direction='row' alignItems='center' gap='xs'>
-                <IconButton
-                  size='m'
-                  icon={IconHeart}
-                  color={reactionState ? 'active' : 'subdued'}
-                  aria-label='Heart comment'
+                <FavoriteButton
                   onPress={handleCommentReact}
+                  isActive={reactionState}
+                  wrapperStyle={{ height: 20, width: 20 }}
                 />
                 <Text color='default' size='s'>
                   {reactCount}

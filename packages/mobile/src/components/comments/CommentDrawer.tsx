@@ -14,9 +14,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
-import { Box, Divider, Flex } from '@audius/harmony-native'
+import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { makeStyles } from 'app/styles'
 
 import Skeleton from '../skeleton'
 
@@ -72,26 +71,8 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
 
 const BORDER_RADIUS = 40
 
-const useStyles = makeStyles(({ palette }) => ({
-  drawer: {
-    backgroundColor: palette.white,
-    width: '100%',
-    shadowRadius: 15,
-    borderTopRightRadius: BORDER_RADIUS,
-    borderTopLeftRadius: BORDER_RADIUS,
-    overflow: 'hidden'
-  },
-  chin: {
-    backgroundColor: palette.white,
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    zIndex: 5
-  }
-}))
-
 export const CommentDrawer = () => {
-  const styles = useStyles()
+  const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const currentUserId = useSelector(getUserId)
 
@@ -118,7 +99,13 @@ export const CommentDrawer = () => {
         ref={bottomSheetModalRef}
         snapPoints={['66%', '100%']}
         topInset={insets.top}
-        style={styles.drawer}
+        style={{
+          borderTopRightRadius: BORDER_RADIUS,
+          borderTopLeftRadius: BORDER_RADIUS,
+          overflow: 'hidden'
+        }}
+        backgroundStyle={{ backgroundColor: color.background.white }}
+        handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}
@@ -155,12 +142,16 @@ export const CommentDrawer = () => {
           <CommentDrawerContent />
         </CommentSectionProvider>
       </BottomSheetModal>
-      <Box
+      {/* <Box
         style={{
-          ...styles.chin,
+          backgroundColor: color.background.white,
+          position: 'absolute',
+          bottom: 0,
+          width: '100%',
+          zIndex: 5,
           height: insets.bottom
         }}
-      />
+      /> */}
     </>
   )
 }
