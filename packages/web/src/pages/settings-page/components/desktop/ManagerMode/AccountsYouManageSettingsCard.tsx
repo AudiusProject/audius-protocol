@@ -25,16 +25,11 @@ export const AccountsYouManageSettingsCard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const dispatch = useDispatch()
   const location = useLocation()
-  const isManagedAccountsRoute = doesMatchRoute(
-    location,
-    ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE
-  )
-
   useEffect(() => {
-    if (isManagedAccountsRoute) {
+    if (doesMatchRoute(location, ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE)) {
       setIsModalOpen(true)
     }
-  }, [isManagedAccountsRoute])
+  }, [location])
 
   const handleOpen = useCallback(() => {
     setIsModalOpen(true)
@@ -42,10 +37,10 @@ export const AccountsYouManageSettingsCard = () => {
 
   const handleClose = useCallback(() => {
     setIsModalOpen(false)
-    if (isManagedAccountsRoute) {
+    if (doesMatchRoute(location, ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE)) {
       dispatch(replace(SETTINGS_PAGE))
     }
-  }, [isManagedAccountsRoute, dispatch])
+  }, [location, dispatch])
 
   return (
     <>
