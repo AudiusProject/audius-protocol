@@ -11,17 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// contract addresses
-var (
-	ProdRegistryAddress = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
-	StageRegistryAddress = "0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3"
-	DevRegistryAddress = "0xABbfF712977dB51f9f212B85e8A4904c818C2b63"
-
-	ProdAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
-	StageAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
-	DevAcdcAddress = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
-)
-
 // contract keys
 var (
 	RegistryKey               = common.Utf8ToHex("Registry")
@@ -47,19 +36,6 @@ type AudiusContracts struct {
 	AudioToken             *gen.AudiusToken
 	RewardsManager         *gen.EthRewardsManager
 	ServiceTypeManager     *gen.ServiceTypeManager
-}
-
-func NewContracts(rpc *ethclient.Client, env string) (*AudiusContracts, error) {
-	switch env {
-	case "prod":
-			return NewAudiusContracts(rpc, ProdRegistryAddress)
-	case "stage":
-			return NewAudiusContracts(rpc, StageRegistryAddress)
-	case "dev":
-			return NewAudiusContracts(rpc, DevRegistryAddress)
-	default:
-			return nil, fmt.Errorf("env not valid for contracts: %s", env)
-	}
 }
 
 // instantiates audius contract manager so that contracts can be initialized lazily

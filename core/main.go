@@ -73,22 +73,13 @@ func main() {
 	}
 	logger.Info("created console")
 
-
-	ethrpc, err := ethclient.Dial("http://audius-protocol-eth-ganache-1")
+	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
 		logger.Errorf("eth client dial err: %v", err)
 		return
 	}
 
-	// chainId, err := ethrpc.ChainID(context.Background())
-	// if err != nil {
-	// 	logger.Errorf("could not get chain id: %v", err)
-	// 	return
-	// }
-
-	// logger.Infof("dialed eth at chain: %d", chainId.Int64())
-
-	c, err := contracts.NewContracts(ethrpc, config.Environment)
+	c, err := contracts.NewAudiusContracts(ethrpc, config.EthRegistryAddress)
 	if err != nil {
 		logger.Errorf("contracts init error: %v", err)
 		return
