@@ -152,6 +152,7 @@ services:
       audius_solana_rewards_manager_account: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
       audius_solana_anchor_data_program_id: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
       audius_solana_anchor_admin_storage_public_key: '${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}'
+      audius_solana_staking_bridge_usdc_payout_wallet: '${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET}'
 
       audius_discprov_dev_mode: 'true'
       audius_discprov_loglevel: 'debug'

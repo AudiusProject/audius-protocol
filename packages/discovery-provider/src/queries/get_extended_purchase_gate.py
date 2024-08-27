@@ -234,7 +234,8 @@ def _get_extended_purchase_gate(
     session: Session, gate: PurchaseGate, include_network_cut=False
 ):
     price = gate.get("usdc_purchase", {}).get("price", None)
-    splits = gate.get("usdc_purchase", {}).get("splits", [])
+    original_splits = gate.get("usdc_purchase", {}).get("splits", [])
+    splits = [orig.copy() for orig in original_splits]
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
     splits = calculate_split_amounts(price, splits, include_network_cut)
     extended_splits = [cast(ExtendedSplit, split) for split in splits]

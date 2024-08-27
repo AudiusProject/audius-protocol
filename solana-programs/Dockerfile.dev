@@ -63,6 +63,7 @@ ARG SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY
 ARG SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY
 ARG SOLANA_TOKEN_MINT_PUBLIC_KEY
 ARG SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY
+ARG SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET
 
 
 # Seeds the validator with each program
@@ -80,4 +81,5 @@ CMD solana-test-validator --ledger /usr/db \
     --account ${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY} ./fixtures/reward-manager-tokens.json \
     --account ${SOLANA_TOKEN_MINT_PUBLIC_KEY} ./fixtures/waudio.json \
     --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json \
+    --account ${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET} ./fixtures/owner-usdc.json \
     --reset
