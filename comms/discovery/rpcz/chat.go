@@ -77,7 +77,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		values
 			($1, $2, $3, $4, $5)
 		on conflict do nothing
-		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, blast.CreatedAt, blast.BlastID)
+		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, blast.CreatedAt.Add(time.Second*-1), blast.BlastID)
 		if err != nil {
 			return err
 		}
