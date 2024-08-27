@@ -1,4 +1,4 @@
-import { mapValues, omit } from 'lodash'
+import { mapValues } from 'lodash'
 import objectHash from 'object-hash'
 
 import { Kind } from '~/models/Kind'
