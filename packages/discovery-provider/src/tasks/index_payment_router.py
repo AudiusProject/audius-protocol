@@ -239,7 +239,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
 
 
 def parse_route_transaction_memos(
-    session: Session, memos: List[str], timestamp: datetime
+    session: Session, memos: List[str], timestamp: datetime, include_network_cut: bool
 ) -> Tuple[RouteTransactionMemo | None, GeoMetadataDict | None]:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     if len(memos) == 0:
@@ -373,7 +373,9 @@ def parse_route_transaction_memos(
                 and content_owner_id is not None
             ):
                 wallet_splits = add_wallet_info_to_splits(session, splits, timestamp)
-                amount_splits = calculate_split_amounts(price, wallet_splits)
+                amount_splits = calculate_split_amounts(
+                    price, wallet_splits, include_network_cut=include_network_cut
+                )
                 splits = to_wallet_amount_map(amount_splits)
             if (
                 price is not None
@@ -761,8 +763,17 @@ def process_route_instruction(
         )
     elif is_usdc:
         logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
+        include_network_cut = (
+            receiver_accounts.index(
+                shared_config["solana"]["staking_bridge_usdc_payout_wallet"]
+            )
+            > -1
+        )
         memo, geo_metadata = parse_route_transaction_memos(
-            session=session, memos=memos, timestamp=timestamp
+            session=session,
+            memos=memos,
+            timestamp=timestamp,
+            include_network_cut=include_network_cut,
         )
         validate_and_index_usdc_transfers(
             session=session,
