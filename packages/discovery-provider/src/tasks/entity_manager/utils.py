@@ -75,6 +75,8 @@ class Action(str, Enum):
     DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    MUTE = "Mute"
+    UNMUTE = "Unmute"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -104,6 +106,7 @@ class EntityType(str, Enum):
     TIP = "Tip"
     COMMENT = "Comment"
     COMMENT_REACTION = "CommentReaction"
+    MUTED_USER = "MutedUser"
 
     def __str__(self) -> str:
         return str.__str__(self)

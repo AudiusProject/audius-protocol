@@ -44,6 +44,7 @@ from src.tasks.entity_manager.entities.comment import (
     unreact_comment,
     update_comment,
 )
+from src.tasks.entity_manager.entities.muted_user import mute_user
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
     create_dashboard_wallet_user,
     delete_dashboard_wallet_user,
@@ -377,6 +378,16 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         unreact_comment(params)
+                    elif (
+                        params.action == Action.MUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        mute_user(params)
+                    elif (
+                        params.action == Action.UNMUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        unmute_user(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
