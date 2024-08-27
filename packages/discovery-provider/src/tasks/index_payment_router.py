@@ -764,11 +764,10 @@ def process_route_instruction(
     elif is_usdc:
         logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
         include_network_cut = (
-            receiver_accounts.index(
-                shared_config["solana"]["staking_bridge_usdc_payout_wallet"]
-            )
-            > -1
+            shared_config["solana"]["staking_bridge_usdc_payout_wallet"]
+            in receiver_accounts
         )
+
         memo, geo_metadata = parse_route_transaction_memos(
             session=session,
             memos=memos,
