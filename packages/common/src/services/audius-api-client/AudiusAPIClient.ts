@@ -45,24 +45,12 @@ const ROOT_ENDPOINT_MAP = {
 const FULL_ENDPOINT_MAP = {
   playlistUpdates: (userId: OpaqueID) =>
     `/notifications/${userId}/playlist_updates`,
-  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`
 }
 
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
-}
-
-type GetTrackStreamUrlArgs = {
-  id: ID
-  currentUserId?: Nullable<ID>
-  queryParams: QueryParams
-  unlistedArgs?: {
-    urlTitle: string
-    handle: string
-  }
-  abortOnUnreachable?: boolean
 }
 
 type GetSearchArgs = {
@@ -178,37 +166,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getTrackStreamUrl(
-    {
-      id,
-      currentUserId,
-      queryParams,
-      abortOnUnreachable
-    }: GetTrackStreamUrlArgs,
-    retry = true
-  ) {
-    const encodedTrackId = this._encodeOrThrow(id)
-    const encodedCurrentUserId =
-      encodeHashId(currentUserId ?? null) || undefined
-
-    this._assertInitialized()
-
-    const trackUrl = await this._getResponse<APIResponse<string>>(
-      FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
-      {
-        ...queryParams,
-        no_redirect: true,
-        user_id: encodedCurrentUserId
-      },
-      retry,
-      PathType.VersionPath,
-      undefined,
-      abortOnUnreachable
-    )
-
-    return trackUrl?.data
   }
 
   async getSearchFull({
