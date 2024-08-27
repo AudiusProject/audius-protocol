@@ -134,7 +134,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	SELECT chat_id, to_user_id FROM targ;
 	`
 
-	err = tx.Select(&results, fanOutSql, params.BlastID, ts)
+	err = tx.Select(&results, fanOutSql, params.BlastID, ts.Add(time.Second*-1))
 	if err != nil {
 		return nil, err
 	}

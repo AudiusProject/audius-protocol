@@ -165,7 +165,7 @@ func TestChatBlast(t *testing.T) {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "follower_audience", chats[1].ChatID)
+		assert.Equal(t, "follower_audience", chats[0].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
