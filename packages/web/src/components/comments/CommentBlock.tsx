@@ -6,15 +6,15 @@ import {
   useDeleteComment,
   usePostComment
 } from '@audius/common/context'
-import { SquareSizes, Status } from '@audius/common/models'
+import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { ArtistPick, Avatar, Box, Flex, Text, Timestamp } from '@audius/harmony'
+import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
+import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 
 import { CommentActionBar } from './CommentActionBar'
@@ -62,12 +62,8 @@ export const CommentBlock = (props: CommentBlockProps) => {
       setShowReplyInput(false)
     }
   }, [commentPostStatus, prevPostStatus])
-  // fetch user profile info
+  // triggers a fetch to get user profile info
   useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
-  const profileImage = useProfilePicture(
-    commentUserId,
-    SquareSizes.SIZE_150_BY_150
-  )
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
@@ -78,12 +74,11 @@ export const CommentBlock = (props: CommentBlockProps) => {
   return (
     <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0 }}>
-        <UserLink userId={commentUserId} disabled={isDeleting} popover noText>
-          <Avatar
-            css={{ width: 44, height: 44, flexShrink: 0 }}
-            src={profileImage}
-          />
-        </UserLink>
+        <Avatar
+          userId={commentUserId}
+          css={{ width: 44, height: 44 }}
+          popover
+        />
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
