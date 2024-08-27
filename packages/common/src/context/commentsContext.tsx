@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { usePaginatedQuery } from '..//audius-query'
 import { ID, Status } from '..//models'
-import { playerSelectors, trackPageLineupActions } from '..//store'
 import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
@@ -24,8 +23,8 @@ import {
   useGetCurrentUserId,
   useGetTrackById
 } from '../api'
-
-const { tracksActions } = trackPageLineupActions
+import { tracksActions } from '../store/pages/track/lineup/actions'
+import { playerSelectors } from '../store/player'
 
 export enum CommentSortMethod {
   top = 'top',
