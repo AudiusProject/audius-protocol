@@ -241,6 +241,13 @@ export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
 }
 
+export interface GetUserTracksRemixedRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+}
+
 export interface SearchUsersRequest {
     query?: string;
     genre?: Array<string>;
@@ -1249,6 +1256,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
         const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserTracksRemixed.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/tracks/remixed`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUserTracksRemixedRaw(params, initOverrides);
         return await response.value();
     }
 

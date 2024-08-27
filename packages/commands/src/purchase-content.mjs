@@ -45,7 +45,8 @@ program
         trackId,
         userId,
         price,
-        extraAmount
+        extraAmount,
+        includeNetworkCut: true
       })
       console.log(chalk.green('Successfully purchased track'))
       console.log(chalk.yellow('Transaction Signature:'), response)
@@ -96,7 +97,8 @@ program
         albumId,
         userId,
         price,
-        extraAmount
+        extraAmount,
+        includeNetworkCut: true
       })
       console.log(chalk.green('Successfully purchased album'))
       console.log(chalk.yellow('Transaction Signature:'), response)

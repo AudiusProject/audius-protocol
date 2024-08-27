@@ -1,4 +1,9 @@
-import { accountSelectors, getContext } from '@audius/common/store'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { Id, OptionalId } from '@audius/common/models'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import type { CollectionAction, OfflineEntry } from '../slice'
@@ -19,11 +24,19 @@ function* downloadFavoritedCollection(action: CollectionAction) {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
-  const apiClient = yield* getContext('apiClient')
-  const collection = yield* call([apiClient, apiClient.getCollectionMetadata], {
-    collectionId,
-    currentUserId
-  })
+  const sdk = yield* getSDK()
+
+  const { data = [] } = yield* call(
+    [sdk.playlists, sdk.playlists.getPlaylist],
+    {
+      playlistId: Id.parse(collectionId),
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const [collection] = transformAndCleanList(
+    data,
+    userCollectionMetadataFromSDK
+  )
 
   if (!collection) return
 
