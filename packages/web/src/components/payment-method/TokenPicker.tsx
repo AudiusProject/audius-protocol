@@ -66,7 +66,8 @@ export const TokenPicker = ({
       menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { maxHeight: 400, maxWidth: 300 }
+        maxHeight: 400,
+        width: 300
       }}
       options={options}
       value={selectedTokenAddress}
