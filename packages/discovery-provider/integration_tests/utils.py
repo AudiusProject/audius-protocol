@@ -791,8 +791,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 text=comment_meta.get("text", ""),
                 created_at=comment_meta.get("created_at", datetime.now()),
                 updated_at=comment_meta.get("updated_at", datetime.now()),
-                txhash=track_meta.get("txhash", str(i + block_offset)),
-                blockhash=track_meta.get("blockhash", str(i + block_offset)),
+                txhash=comment_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_meta.get("blockhash", str(i + block_offset)),
             )
             session.add(comment_record)
         for i, comment_threads_meta in enumerate(comment_threads):

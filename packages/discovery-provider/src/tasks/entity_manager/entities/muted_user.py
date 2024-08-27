@@ -1,6 +1,5 @@
 from src.exceptions import IndexingValidationError
 from src.models.moderation.muted_user import MutedUser
-
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -28,9 +27,11 @@ def mute_user(params: ManageEntityParameters):
     validate_mute_user_tx(params)
 
     muted_user_id = params.entity_id
+    user_id = params.user_id
+
     muted_user_record = MutedUser(
         muted_user_id=muted_user_id,
-        user_id=params.user_id,
+        user_id=user_id,
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -39,7 +40,11 @@ def mute_user(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    params.add_record(muted_user_id, muted_user_record)
+    params.add_record(
+        (user_id, muted_user_id),
+        muted_user_record,
+        EntityType.MUTED_USER,
+    )
 
 
 def unmute_user(params: ManageEntityParameters):
