@@ -66,6 +66,17 @@ func (r *Registry) updateRegisteredNodes() error {
 			}
 
 			logger.Infof("got registered %s: endpoint: %s delegatewallet: %s", nodeType, endpointInfo.Endpoint, endpointInfo.DelegateOwnerWallet.String())
+
+			switch nodeType {
+			case "content-node":
+				r.state.contentNodes[endpointInfo.Endpoint] = NodeState{
+					EthDelegateWallet: endpointInfo.DelegateOwnerWallet.String(),
+				}
+			case "discovery-provider":
+				r.state.contentNodes[endpointInfo.Endpoint] = NodeState{
+					EthDelegateWallet: endpointInfo.DelegateOwnerWallet.String(),
+				}
+			}
 		}
 	}
 
