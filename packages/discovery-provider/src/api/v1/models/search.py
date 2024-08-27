@@ -1,7 +1,7 @@
 from flask_restx import fields
 
 from .common import ns
-from .playlists import full_playlist_model
+from .playlists import full_playlist_without_tracks_model
 from .tracks import track_full
 from .users import user_model_full
 
@@ -12,11 +12,17 @@ search_model = ns.model(
         "followed_users": fields.List(fields.Nested(user_model_full), required=False),
         "tracks": fields.List(fields.Nested(track_full), required=True),
         "saved_tracks": fields.List(fields.Nested(track_full), required=False),
-        "playlists": fields.List(fields.Nested(full_playlist_model), required=True),
-        "saved_playlists": fields.List(
-            fields.Nested(full_playlist_model), required=False
+        "playlists": fields.List(
+            fields.Nested(full_playlist_without_tracks_model), required=True
         ),
-        "albums": fields.List(fields.Nested(full_playlist_model), required=True),
-        "saved_albums": fields.List(fields.Nested(full_playlist_model), required=False),
+        "saved_playlists": fields.List(
+            fields.Nested(full_playlist_without_tracks_model), required=False
+        ),
+        "albums": fields.List(
+            fields.Nested(full_playlist_without_tracks_model), required=True
+        ),
+        "saved_albums": fields.List(
+            fields.Nested(full_playlist_without_tracks_model), required=False
+        ),
     },
 )

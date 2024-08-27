@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFull } from './PlaylistFull';
+import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
 import {
-    PlaylistFullFromJSON,
-    PlaylistFullFromJSONTyped,
-    PlaylistFullToJSON,
-} from './PlaylistFull';
+    PlaylistFullWithoutTracksFromJSON,
+    PlaylistFullWithoutTracksFromJSONTyped,
+    PlaylistFullWithoutTracksToJSON,
+} from './PlaylistFullWithoutTracks';
 import type { TrackFull } from './TrackFull';
 import {
     TrackFullFromJSON,
@@ -65,28 +65,28 @@ export interface SearchModel {
     savedTracks?: Array<TrackFull>;
     /**
      * 
-     * @type {Array<PlaylistFull>}
+     * @type {Array<PlaylistFullWithoutTracks>}
      * @memberof SearchModel
      */
-    playlists: Array<PlaylistFull>;
+    playlists: Array<PlaylistFullWithoutTracks>;
     /**
      * 
-     * @type {Array<PlaylistFull>}
+     * @type {Array<PlaylistFullWithoutTracks>}
      * @memberof SearchModel
      */
-    savedPlaylists?: Array<PlaylistFull>;
+    savedPlaylists?: Array<PlaylistFullWithoutTracks>;
     /**
      * 
-     * @type {Array<PlaylistFull>}
+     * @type {Array<PlaylistFullWithoutTracks>}
      * @memberof SearchModel
      */
-    albums: Array<PlaylistFull>;
+    albums: Array<PlaylistFullWithoutTracks>;
     /**
      * 
-     * @type {Array<PlaylistFull>}
+     * @type {Array<PlaylistFullWithoutTracks>}
      * @memberof SearchModel
      */
-    savedAlbums?: Array<PlaylistFull>;
+    savedAlbums?: Array<PlaylistFullWithoutTracks>;
 }
 
 /**
@@ -116,10 +116,10 @@ export function SearchModelFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'followedUsers': !exists(json, 'followed_users') ? undefined : ((json['followed_users'] as Array<any>).map(UserFullFromJSON)),
         'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
         'savedTracks': !exists(json, 'saved_tracks') ? undefined : ((json['saved_tracks'] as Array<any>).map(TrackFullFromJSON)),
-        'playlists': ((json['playlists'] as Array<any>).map(PlaylistFullFromJSON)),
-        'savedPlaylists': !exists(json, 'saved_playlists') ? undefined : ((json['saved_playlists'] as Array<any>).map(PlaylistFullFromJSON)),
-        'albums': ((json['albums'] as Array<any>).map(PlaylistFullFromJSON)),
-        'savedAlbums': !exists(json, 'saved_albums') ? undefined : ((json['saved_albums'] as Array<any>).map(PlaylistFullFromJSON)),
+        'playlists': ((json['playlists'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
+        'savedPlaylists': !exists(json, 'saved_playlists') ? undefined : ((json['saved_playlists'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
+        'albums': ((json['albums'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
+        'savedAlbums': !exists(json, 'saved_albums') ? undefined : ((json['saved_albums'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
     };
 }
 
@@ -136,10 +136,10 @@ export function SearchModelToJSON(value?: SearchModel | null): any {
         'followed_users': value.followedUsers === undefined ? undefined : ((value.followedUsers as Array<any>).map(UserFullToJSON)),
         'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
         'saved_tracks': value.savedTracks === undefined ? undefined : ((value.savedTracks as Array<any>).map(TrackFullToJSON)),
-        'playlists': ((value.playlists as Array<any>).map(PlaylistFullToJSON)),
-        'saved_playlists': value.savedPlaylists === undefined ? undefined : ((value.savedPlaylists as Array<any>).map(PlaylistFullToJSON)),
-        'albums': ((value.albums as Array<any>).map(PlaylistFullToJSON)),
-        'saved_albums': value.savedAlbums === undefined ? undefined : ((value.savedAlbums as Array<any>).map(PlaylistFullToJSON)),
+        'playlists': ((value.playlists as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
+        'saved_playlists': value.savedPlaylists === undefined ? undefined : ((value.savedPlaylists as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
+        'albums': ((value.albums as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
+        'saved_albums': value.savedAlbums === undefined ? undefined : ((value.savedAlbums as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
     };
 }
 

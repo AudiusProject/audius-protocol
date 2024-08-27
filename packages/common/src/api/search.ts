@@ -1,12 +1,13 @@
 import { Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
 
+import { searchResultsFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Name, SearchSource, UserTrackMetadata } from '~/models'
-import { ID } from '~/models/Identifiers'
+import { ID, OptionalId } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
-import { Genre, formatMusicalKey } from '~/utils'
+import { Genre, compareSDKResponse, formatMusicalKey } from '~/utils'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -49,7 +50,7 @@ const searchApi = createApi({
     getSearchResults: {
       fetch: async (
         args: getSearchArgs,
-        { apiClient, audiusBackend, getFeatureEnabled, analytics }
+        { apiClient, audiusBackend, audiusSdk, getFeatureEnabled, analytics }
       ) => {
         const {
           category,
@@ -129,7 +130,32 @@ const searchApi = createApi({
               })
             )
           }
-          return await apiClient.getSearchFull(searchParams)
+          const sdk = await audiusSdk()
+          const legacy = await apiClient.getSearchFull(searchParams)
+          const key = formatMusicalKey(filters.key)
+          const { data } = await sdk.full.search.search({
+            kind,
+            userId: OptionalId.parse(currentUserId),
+            query,
+            limit: limit || 50,
+            offset: offset || 0,
+            includePurchaseable: isUSDCEnabled,
+            bpmMin,
+            bpmMax,
+            key: key ? [key] : undefined,
+            genre: filters.genre ? [filters.genre] : undefined,
+            mood: filters.mood ? [filters.mood] : undefined,
+            isVerified: filters.isVerified,
+            hasDownloads: filters.hasDownloads,
+            isPurchaseable: filters.isPremium
+          })
+          const { tracks, playlists, albums, users } =
+            searchResultsFromSDK(data)
+          const results = { tracks, playlists, albums, users }
+
+          compareSDKResponse({ legacy, migrated: results }, 'search')
+
+          return results
         }
 
         const results = query?.[0] === '#' ? await searchTags() : await search()
