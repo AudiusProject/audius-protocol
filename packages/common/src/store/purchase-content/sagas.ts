@@ -38,7 +38,8 @@ import { BNUSDC } from '~/models/Wallet'
 import {
   getRootSolanaAccount,
   getSolanaConnection,
-  getTokenAccountInfo
+  getTokenAccountInfo,
+  pollForTokenBalanceChange
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
@@ -1031,6 +1032,12 @@ function* purchaseWithAnything({
       sourceWalletPublicKey: sourceWallet.publicKey,
       usdcUserBankTokenAccountPublicKey: usdcUserBankTokenAccount.address,
       signAndSendTransaction: provider.signAndSendTransaction
+    })
+
+    yield* call(pollForTokenBalanceChange, audiusBackendInstance, {
+      initialBalance: usdcUserBankTokenAccount.amount,
+      tokenAccount: usdcUserBank,
+      mint: 'usdc'
     })
 
     // Purchase from USDC user bank balance
