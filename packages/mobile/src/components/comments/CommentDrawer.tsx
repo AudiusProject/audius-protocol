@@ -17,10 +17,9 @@ import { useSelector } from 'react-redux'
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 
-import Skeleton from '../skeleton'
-
 import { CommentDrawerForm } from './CommentDrawerForm'
 import { CommentDrawerHeader } from './CommentDrawerHeader'
+import { CommentSkeleton } from './CommentSkeleton'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
@@ -35,13 +34,11 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
   // Loading state
   if (isLoading) {
     return (
-      <Flex direction='row' gap='s' alignItems='center' p='l'>
-        <Skeleton width={40} height={40} style={{ borderRadius: 100 }} />
-        <Flex gap='s'>
-          <Skeleton height={20} width={240} />
-          <Skeleton height={20} width={160} />
-        </Flex>
-      </Flex>
+      <>
+        <CommentSkeleton />
+        <CommentSkeleton />
+        <CommentSkeleton />
+      </>
     )
   }
 
