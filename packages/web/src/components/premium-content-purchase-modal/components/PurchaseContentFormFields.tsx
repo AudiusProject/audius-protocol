@@ -15,7 +15,7 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
-import { Flex, Text, IconValidationCheck } from '@audius/harmony'
+import { Flex, Text, IconValidationCheck, Box } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
@@ -133,10 +133,12 @@ export const PurchaseContentFormFields = ({
   return (
     <>
       {isUnlocking || isPurchased ? null : (
-        <PayExtraFormSection
-          amountPresets={payExtraAmountPresetValues}
-          disabled={isUnlocking}
-        />
+        <Box ph='m'>
+          <PayExtraFormSection
+            amountPresets={payExtraAmountPresetValues}
+            disabled={isUnlocking}
+          />
+        </Box>
       )}
       <PurchaseSummaryTable
         {...purchaseSummaryValues}

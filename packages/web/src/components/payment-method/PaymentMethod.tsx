@@ -11,8 +11,9 @@ import {
   Flex,
   IconCreditCard,
   IconDonate,
-  IconMerch,
-  IconTransaction,
+  IconInfo,
+  IconPhantomPlain,
+  IconQrCode,
   Radio,
   RadioGroup,
   Text
@@ -21,6 +22,7 @@ import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { Tooltip } from 'components/tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
@@ -28,11 +30,13 @@ import { TokenPicker } from './TokenPicker'
 
 const messages = {
   paymentMethod: 'Payment Method',
-  withExistingBalance: 'Existing balance',
-  withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer',
-  payWith: 'Pay with',
-  anything: 'anything'
+  withExistingBalance: 'Balance (USDC)',
+  withCard: 'Credit/Debit Card',
+  withCrypto: 'USDC Transfer',
+  withAnything: 'Pay with Anything',
+  withAnythingHelperText: 'Pay with any Solana (SPL) token',
+  showAdvanced: 'Advanced Payment Options',
+  hideAdvanced: 'Advanced Payment Options'
 }
 
 type PaymentMethodProps = {
@@ -135,7 +139,7 @@ export const PaymentMethod = ({
     {
       id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
-      icon: IconTransaction
+      icon: IconQrCode
     }
   ]
   if (
@@ -146,30 +150,22 @@ export const PaymentMethod = ({
     extraOptions.push({
       id: PurchaseMethod.WALLET,
       label: (
-        <Text>
-          <Text>{`${messages.payWith} `}</Text>
-          <Text
-            strength='strong'
-            style={{
-              backgroundImage:
-                'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)',
-              color: 'transparent',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            {messages.anything}
-          </Text>
-        </Text>
+        <Flex alignItems='center' gap='xs'>
+          <Text>{messages.withAnything}</Text>
+          <Tooltip text={messages.withAnythingHelperText}>
+            <IconInfo color='subdued' height={16} width={16} />
+          </Tooltip>
+        </Flex>
       ),
-      icon: IconMerch,
-      value: (
-        <TokenPicker
-          selectedTokenAddress={selectedPurchaseMethodMintAddress}
-          onChange={setSelectedPurchaseMethodMintAddress}
-          onOpen={handleOpenTokenPicker}
-        />
-      )
+      icon: IconPhantomPlain,
+      value:
+        selectedMethod === PurchaseMethod.WALLET ? (
+          <TokenPicker
+            selectedTokenAddress={selectedPurchaseMethodMintAddress}
+            onChange={setSelectedPurchaseMethodMintAddress}
+            onOpen={handleOpenTokenPicker}
+          />
+        ) : null
     })
   }
 
@@ -217,7 +213,7 @@ export const PaymentMethod = ({
           <Flex
             key={id}
             {...getFlexProps(id as PurchaseMethod)}
-            pv='m'
+            pv='s'
             ph='xl'
             css={{ opacity: disabled ? 0.5 : 1 }}
             borderTop='default'
@@ -225,6 +221,7 @@ export const PaymentMethod = ({
             <Flex
               onClick={() => setSelectedMethod(id as PurchaseMethod)}
               css={{ cursor: 'pointer' }}
+              h={32}
               alignItems='center'
               justifyContent='space-between'
               gap='s'
@@ -259,6 +256,12 @@ export const PaymentMethod = ({
       items={options}
       extraItems={extraOptions}
       onHideExtraItems={handleHideExtraItems}
+      showExtraItemsCopy={messages.showAdvanced}
+      disableExtraItemsToggle={
+        selectedMethod === PurchaseMethod.WALLET ||
+        selectedMethod === PurchaseMethod.CRYPTO
+      }
+      hideExtraItemsCopy={messages.hideAdvanced}
       renderBody={renderBody}
     />
   )

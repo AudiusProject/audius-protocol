@@ -32,7 +32,8 @@ const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: (contentType: 'track' | 'album') =>
-    `PREMIUM ${contentType.toUpperCase()}`
+    `PREMIUM ${contentType.toUpperCase()}`,
+  earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
 export type LockedContentDetailsTileProps = {
@@ -40,13 +41,15 @@ export type LockedContentDetailsTileProps = {
   owner: UserMetadata
   showLabel?: boolean
   disabled?: boolean
+  earnAmount?: string
 }
 
 export const LockedContentDetailsTile = ({
   metadata,
   owner,
   showLabel = true,
-  disabled = false
+  disabled = false,
+  earnAmount
 }: LockedContentDetailsTileProps) => {
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
@@ -140,19 +143,24 @@ export const LockedContentDetailsTile = ({
             <Text>{message}</Text>
           </Flex>
         ) : null}
-        <Flex w='100%' direction='column' gap='s'>
-          <Text ellipses variant='heading'>
+        <Flex w='100%' direction='column' gap='xs'>
+          <Text ellipses variant='title' size='m'>
             {title}
           </Text>
-          <Text variant='title'>
-            <Text color='subdued'>{messages.by}</Text>{' '}
-            <UserLink
-              textVariant='title'
-              strength='weak'
-              userId={owner.user_id}
-              disabled={disabled}
-            />
-          </Text>
+          <UserLink
+            textVariant='body'
+            size='m'
+            userId={owner.user_id}
+            disabled={disabled}
+          />
+          {earnAmount ? (
+            <Flex alignItems='center' gap='xs' pt='xs'>
+              <IconCart height={16} width={16} color='premium' />
+              <Text variant='body' size='xs' strength='strong' color='premium'>
+                {messages.earn(earnAmount)}
+              </Text>
+            </Flex>
+          ) : null}
         </Flex>
       </Flex>
     </Flex>

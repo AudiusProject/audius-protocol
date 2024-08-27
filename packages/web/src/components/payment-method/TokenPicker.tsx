@@ -63,6 +63,7 @@ export const TokenPicker = ({
     <FilterButton
       virtualized
       label='asset'
+      size='small'
       menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },

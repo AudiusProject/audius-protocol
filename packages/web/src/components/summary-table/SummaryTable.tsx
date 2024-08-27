@@ -7,7 +7,8 @@ import {
   TextColors,
   Text,
   useTheme,
-  TextLink
+  PlainButton,
+  IconCaretUp
 } from '@audius/harmony'
 
 import { Expandable } from 'components/expandable/Expandable'
@@ -27,6 +28,9 @@ export type SummaryTableProps = {
   items: SummaryTableItem[]
   extraItems?: SummaryTableItem[]
   onHideExtraItems?: () => void
+  showExtraItemsCopy?: string
+  hideExtraItemsCopy?: string
+  disableExtraItemsToggle?: boolean
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
@@ -45,6 +49,9 @@ export const SummaryTable = ({
   items,
   extraItems,
   onHideExtraItems,
+  showExtraItemsCopy,
+  hideExtraItemsCopy,
+  disableExtraItemsToggle,
   summaryItem,
   title,
   secondaryTitle,
@@ -131,15 +138,15 @@ export const SummaryTable = ({
   const renderMoreOptionsToggle = () => {
     return (
       <Flex p='xs'>
-        <TextLink
+        <PlainButton
           onClick={onToggleExtraItems}
-          variant='secondary'
-          textVariant='body'
-          size='s'
-          strength='strong'
+          iconRight={showExtraItems ? IconCaretUp : IconCaretDown}
+          disabled={disableExtraItemsToggle}
         >
-          {showExtraItems ? messages.hideAdvanced : messages.showAdvanced}
-        </TextLink>
+          {showExtraItems
+            ? hideExtraItemsCopy || messages.hideAdvanced
+            : showExtraItemsCopy || messages.showAdvanced}
+        </PlainButton>
       </Flex>
     )
   }
@@ -190,14 +197,14 @@ export const SummaryTable = ({
   }
 
   return (
-    <Flex direction='column'>
+    <Flex direction='column' gap='l'>
       <Flex
         alignItems='center'
         alignSelf='stretch'
         justifyContent='center'
         direction='column'
         border='default'
-        borderRadius='xs'
+        borderRadius='s'
         css={{ overflow: 'hidden' }}
       >
         {renderHeader()}
