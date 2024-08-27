@@ -11,9 +11,11 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console"
+	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/sync/errgroup"
@@ -30,6 +32,8 @@ func main() {
 		logger.Errorf("reading in config: %v", err)
 		return
 	}
+
+	logger.Infof("starting up on env: %s", config.Environment)
 
 	// db migrations
 	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
@@ -57,6 +61,7 @@ func main() {
 		logger.Errorf("grpc init error: %v", err)
 		return
 	}
+	logger.Info("created grpc server")
 
 	e := echo.New()
 	e.HideBanner = true
@@ -66,6 +71,43 @@ func main() {
 		logger.Errorf("console init error: %v", err)
 		return
 	}
+	logger.Info("created console")
+
+
+	ethrpc, err := ethclient.Dial("http://audius-protocol-eth-ganache-1")
+	if err != nil {
+		logger.Errorf("eth client dial err: %v", err)
+		return
+	}
+
+	// chainId, err := ethrpc.ChainID(context.Background())
+	// if err != nil {
+	// 	logger.Errorf("could not get chain id: %v", err)
+	// 	return
+	// }
+
+	// logger.Infof("dialed eth at chain: %d", chainId.Int64())
+
+	c, err := contracts.NewContracts(ethrpc, config.Environment)
+	if err != nil {
+		logger.Errorf("contracts init error: %v", err)
+		return
+	}
+	logger.Info("initialized contracts")
+
+	audius, err := c.GetAudioTokenContract()
+	if err != nil {
+		logger.Errorf("could not get audio contract: %v", err)
+		return
+	}
+
+	totalSupply, err := audius.TotalSupply(nil)
+	if err != nil {
+		logger.Errorf("could not get audio total balance: %v", err)
+		return
+	}
+
+	logger.Infof("audio total supply: %s", totalSupply)
 
 	eg, ctx := errgroup.WithContext(context.Background())
 

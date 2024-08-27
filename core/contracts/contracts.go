@@ -13,11 +13,13 @@ import (
 
 // contract addresses
 var (
-	MainnetRegistryAddress = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
-	TestnetRegistryAddress = "0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3"
+	ProdRegistryAddress = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
+	StageRegistryAddress = "0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3"
+	DevRegistryAddress = "0xABbfF712977dB51f9f212B85e8A4904c818C2b63"
 
-	MainnetAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
-	TestnetAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
+	ProdAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
+	StageAcdcAddress = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
+	DevAcdcAddress = "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
 )
 
 // contract keys
@@ -47,17 +49,37 @@ type AudiusContracts struct {
 	ServiceTypeManager     *gen.ServiceTypeManager
 }
 
+func NewContracts(rpc *ethclient.Client, env string) (*AudiusContracts, error) {
+	switch env {
+	case "prod":
+			return NewAudiusContracts(rpc, ProdRegistryAddress)
+	case "stage":
+			return NewAudiusContracts(rpc, StageRegistryAddress)
+	case "dev":
+			return NewAudiusContracts(rpc, DevRegistryAddress)
+	default:
+			return nil, fmt.Errorf("env not valid for contracts: %s", env)
+	}
+}
+
 // instantiates audius contract manager so that contracts can be initialized lazily
 func NewAudiusContracts(rpc *ethclient.Client, registryAddress string) (*AudiusContracts, error) {
 	ok := geth.IsHexAddress(registryAddress)
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("registryAddress %s is not a valid hex address", registryAddress))
+		return nil, fmt.Errorf("registryAddress %s is not a valid hex address", registryAddress)
 	}
 	addr := geth.HexToAddress(registryAddress)
 	registry, err := gen.NewRegistry(addr, rpc)
 	if err != nil {
 		return nil, err
 	}
+
+	// ensure we can call the registry
+	_, err = registry.Owner(nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not get registry owner: %v", err)
+	}
+
 	return &AudiusContracts{
 		Rpc:      rpc,
 		Registry: registry,
