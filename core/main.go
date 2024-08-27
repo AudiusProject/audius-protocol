@@ -14,6 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
+	"github.com/AudiusProject/audius-protocol/core/registry_bridge"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -63,16 +64,6 @@ func main() {
 	}
 	logger.Info("created grpc server")
 
-	e := echo.New()
-	e.HideBanner = true
-
-	_, err = console.NewConsole(config, logger, e, rpc, pool)
-	if err != nil {
-		logger.Errorf("console init error: %v", err)
-		return
-	}
-	logger.Info("created console")
-
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
 		logger.Errorf("eth client dial err: %v", err)
@@ -86,21 +77,27 @@ func main() {
 	}
 	logger.Info("initialized contracts")
 
-	audius, err := c.GetAudioTokenContract()
+	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c)
 	if err != nil {
-		logger.Errorf("could not get audio contract: %v", err)
+		logger.Errorf("contracts init error: %v", err)
 		return
 	}
 
-	totalSupply, err := audius.TotalSupply(nil)
+	e := echo.New()
+	e.HideBanner = true
+
+	_, err = console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
-		logger.Errorf("could not get audio total balance: %v", err)
+		logger.Errorf("console init error: %v", err)
 		return
 	}
-
-	logger.Infof("audio total supply: %s", totalSupply)
+	logger.Info("created console")
 
 	eg, ctx := errgroup.WithContext(context.Background())
+
+	eg.Go(func() error {
+		return registryBridge.Start()
+	})
 
 	eg.Go(func() error {
 		return e.Start("0.0.0.0:26659")
