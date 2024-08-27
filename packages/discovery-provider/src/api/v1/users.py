@@ -2638,7 +2638,7 @@ class UserTracksRemixed(Resource):
     @ns.marshal_with(tracks_response)
     def get(self, id):
         decoded_id = decode_with_abort(id, ns)
-        args = tracks_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         query_args = GetUserTracksRemixedArgs(
             user_id=decoded_id,
             current_user_id=get_current_user_id(args),
@@ -2661,7 +2661,7 @@ class FullUserTracksRemixed(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self, id):
         decoded_id = decode_with_abort(id, full_ns)
-        args = tracks_route_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         query_args = GetUserTracksRemixedArgs(
             user_id=decoded_id,
             current_user_id=get_current_user_id(args),
