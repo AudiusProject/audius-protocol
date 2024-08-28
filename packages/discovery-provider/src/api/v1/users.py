@@ -16,6 +16,7 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_purchasable_content,
     extend_purchase,
     extend_supporter,
     extend_supporting,
@@ -61,6 +62,11 @@ from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.extensions.models import WildcardModel
 from src.api.v1.models.grants import managed_user, user_manager
+from src.api.v1.models.purchasable_content import (
+    make_polymorph_purchasable_content,
+    purchasable_content_full_model,
+    purchasable_content_model,
+)
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -147,6 +153,10 @@ from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_mo
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
+)
+from src.queries.get_user_purchased_content import (
+    GetUserPurchasedContentArgs,
+    get_user_purchasable_content,
 )
 from src.queries.get_user_tracks_remixed import (
     GetUserTracksRemixedArgs,
@@ -2670,3 +2680,41 @@ class FullUserTracksRemixed(Resource):
         )
         tracks = get_user_tracks_remixed(query_args)
         return success_response(list(map(extend_track, tracks)))
+
+
+USER_PURCHASED_CONTENT_ROUTE = USER_ROUTE + "/purchased"
+
+purchased_response = make_response(
+    "purchased", ns, fields.List(purchasable_content_model)
+)
+
+full_purchased_response = make_full_response(
+    "full_purchased", full_ns, fields.List(purchasable_content_full_model)
+)
+
+
+@ns.route(USER_PURCHASED_CONTENT_ROUTE)
+class UserTracksPurchased(Resource):
+    @ns.doc(
+        id="""Get User Purchased Content""",
+        description="Gets content owned by the user which has been purchased by another user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(purchased_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = pagination_with_current_user_parser.parse_args()
+        query_args = GetUserPurchasedContentArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        purchased_content = get_user_purchasable_content(query_args)
+        purchased_content = list(map(extend_purchasable_content, purchased_content))
+
+        return success_response(
+            list(map(make_polymorph_purchasable_content, purchased_content))
+        )

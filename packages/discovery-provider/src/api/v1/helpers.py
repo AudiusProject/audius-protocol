@@ -513,6 +513,24 @@ def extend_activity(item):
     return None
 
 
+def extend_purchasable_content(item):
+    if item.get("track_id"):
+        return {
+            "content_type": "track",
+            "item": extend_track(item),
+        }
+    if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
+        # Wee hack to make sure this marshals correctly. The marshaller for
+        # playlist_model expects these two values to be the same type.
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        return {
+            "content_type": "album",
+            "item": extended_playlist,
+        }
+    return None
+
+
 challenge_type_map: Dict[str, str] = {
     ChallengeType.boolean: "boolean",
     ChallengeType.numeric: "numeric",
