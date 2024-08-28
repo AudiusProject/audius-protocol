@@ -22,6 +22,8 @@ import { CommentDrawerHeader } from './CommentDrawerHeader'
 import { CommentSkeleton } from './CommentSkeleton'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+import { useGestureEventsHandlers } from './useGestureEventHandlers'
+import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
 const { getUserId } = accountSelectors
 
@@ -57,6 +59,7 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
       keyExtractor={({ id }) => id}
       ListHeaderComponent={<Box h='l' />}
       enableFooterMarginAdjustment
+      scrollEventsHandlersHook={useScrollEventsHandlers}
       renderItem={({ item }) => (
         <Box ph='l'>
           <CommentThread commentId={item.id} />
@@ -103,6 +106,7 @@ export const CommentDrawer = () => {
         }}
         backgroundStyle={{ backgroundColor: color.background.white }}
         handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
+        gestureEventsHandlersHook={useGestureEventsHandlers}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}
@@ -139,7 +143,7 @@ export const CommentDrawer = () => {
           <CommentDrawerContent />
         </CommentSectionProvider>
       </BottomSheetModal>
-      {/* <Box
+      <Box
         style={{
           backgroundColor: color.background.white,
           position: 'absolute',
@@ -148,7 +152,7 @@ export const CommentDrawer = () => {
           zIndex: 5,
           height: insets.bottom
         }}
-      /> */}
+      />
     </>
   )
 }
