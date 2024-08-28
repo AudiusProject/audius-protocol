@@ -14,18 +14,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
+import type { SearchPlaylistFull } from './SearchPlaylistFull';
 import {
-    PlaylistFullWithoutTracksFromJSON,
-    PlaylistFullWithoutTracksFromJSONTyped,
-    PlaylistFullWithoutTracksToJSON,
-} from './PlaylistFullWithoutTracks';
-import type { TrackFull } from './TrackFull';
+    SearchPlaylistFullFromJSON,
+    SearchPlaylistFullFromJSONTyped,
+    SearchPlaylistFullToJSON,
+} from './SearchPlaylistFull';
+import type { SearchTrackFull } from './SearchTrackFull';
 import {
-    TrackFullFromJSON,
-    TrackFullFromJSONTyped,
-    TrackFullToJSON,
-} from './TrackFull';
+    SearchTrackFullFromJSON,
+    SearchTrackFullFromJSONTyped,
+    SearchTrackFullToJSON,
+} from './SearchTrackFull';
 import type { UserFull } from './UserFull';
 import {
     UserFullFromJSON,
@@ -53,40 +53,40 @@ export interface SearchModel {
     followedUsers?: Array<UserFull>;
     /**
      * 
-     * @type {Array<TrackFull>}
+     * @type {Array<SearchTrackFull>}
      * @memberof SearchModel
      */
-    tracks: Array<TrackFull>;
+    tracks: Array<SearchTrackFull>;
     /**
      * 
-     * @type {Array<TrackFull>}
+     * @type {Array<SearchTrackFull>}
      * @memberof SearchModel
      */
-    savedTracks?: Array<TrackFull>;
+    savedTracks?: Array<SearchTrackFull>;
     /**
      * 
-     * @type {Array<PlaylistFullWithoutTracks>}
+     * @type {Array<SearchPlaylistFull>}
      * @memberof SearchModel
      */
-    playlists: Array<PlaylistFullWithoutTracks>;
+    playlists: Array<SearchPlaylistFull>;
     /**
      * 
-     * @type {Array<PlaylistFullWithoutTracks>}
+     * @type {Array<SearchPlaylistFull>}
      * @memberof SearchModel
      */
-    savedPlaylists?: Array<PlaylistFullWithoutTracks>;
+    savedPlaylists?: Array<SearchPlaylistFull>;
     /**
      * 
-     * @type {Array<PlaylistFullWithoutTracks>}
+     * @type {Array<SearchPlaylistFull>}
      * @memberof SearchModel
      */
-    albums: Array<PlaylistFullWithoutTracks>;
+    albums: Array<SearchPlaylistFull>;
     /**
      * 
-     * @type {Array<PlaylistFullWithoutTracks>}
+     * @type {Array<SearchPlaylistFull>}
      * @memberof SearchModel
      */
-    savedAlbums?: Array<PlaylistFullWithoutTracks>;
+    savedAlbums?: Array<SearchPlaylistFull>;
 }
 
 /**
@@ -114,12 +114,12 @@ export function SearchModelFromJSONTyped(json: any, ignoreDiscriminator: boolean
         
         'users': ((json['users'] as Array<any>).map(UserFullFromJSON)),
         'followedUsers': !exists(json, 'followed_users') ? undefined : ((json['followed_users'] as Array<any>).map(UserFullFromJSON)),
-        'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
-        'savedTracks': !exists(json, 'saved_tracks') ? undefined : ((json['saved_tracks'] as Array<any>).map(TrackFullFromJSON)),
-        'playlists': ((json['playlists'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
-        'savedPlaylists': !exists(json, 'saved_playlists') ? undefined : ((json['saved_playlists'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
-        'albums': ((json['albums'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
-        'savedAlbums': !exists(json, 'saved_albums') ? undefined : ((json['saved_albums'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
+        'tracks': ((json['tracks'] as Array<any>).map(SearchTrackFullFromJSON)),
+        'savedTracks': !exists(json, 'saved_tracks') ? undefined : ((json['saved_tracks'] as Array<any>).map(SearchTrackFullFromJSON)),
+        'playlists': ((json['playlists'] as Array<any>).map(SearchPlaylistFullFromJSON)),
+        'savedPlaylists': !exists(json, 'saved_playlists') ? undefined : ((json['saved_playlists'] as Array<any>).map(SearchPlaylistFullFromJSON)),
+        'albums': ((json['albums'] as Array<any>).map(SearchPlaylistFullFromJSON)),
+        'savedAlbums': !exists(json, 'saved_albums') ? undefined : ((json['saved_albums'] as Array<any>).map(SearchPlaylistFullFromJSON)),
     };
 }
 
@@ -134,12 +134,12 @@ export function SearchModelToJSON(value?: SearchModel | null): any {
         
         'users': ((value.users as Array<any>).map(UserFullToJSON)),
         'followed_users': value.followedUsers === undefined ? undefined : ((value.followedUsers as Array<any>).map(UserFullToJSON)),
-        'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
-        'saved_tracks': value.savedTracks === undefined ? undefined : ((value.savedTracks as Array<any>).map(TrackFullToJSON)),
-        'playlists': ((value.playlists as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
-        'saved_playlists': value.savedPlaylists === undefined ? undefined : ((value.savedPlaylists as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
-        'albums': ((value.albums as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
-        'saved_albums': value.savedAlbums === undefined ? undefined : ((value.savedAlbums as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
+        'tracks': ((value.tracks as Array<any>).map(SearchTrackFullToJSON)),
+        'saved_tracks': value.savedTracks === undefined ? undefined : ((value.savedTracks as Array<any>).map(SearchTrackFullToJSON)),
+        'playlists': ((value.playlists as Array<any>).map(SearchPlaylistFullToJSON)),
+        'saved_playlists': value.savedPlaylists === undefined ? undefined : ((value.savedPlaylists as Array<any>).map(SearchPlaylistFullToJSON)),
+        'albums': ((value.albums as Array<any>).map(SearchPlaylistFullToJSON)),
+        'saved_albums': value.savedAlbums === undefined ? undefined : ((value.savedAlbums as Array<any>).map(SearchPlaylistFullToJSON)),
     };
 }
 

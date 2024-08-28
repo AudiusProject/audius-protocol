@@ -37,7 +37,7 @@ const addedTimestampToPlaylistTrackId = ({
 }
 
 export const userCollectionMetadataFromSDK = (
-  input: full.PlaylistFullWithoutTracks
+  input: full.PlaylistFullWithoutTracks | full.SearchPlaylistFull
 ): UserCollectionMetadata | undefined => {
   const decodedPlaylistId = decodeHashId(input.id)
   const decodedOwnerId = decodeHashId(input.userId)

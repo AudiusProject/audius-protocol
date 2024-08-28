@@ -139,6 +139,8 @@ models/SaveOfRepostNotificationActionData.ts
 models/SearchAutocompleteResponse.ts
 models/SearchFullResponse.ts
 models/SearchModel.ts
+models/SearchPlaylistFull.ts
+models/SearchTrackFull.ts
 models/SendTipNotification.ts
 models/SendTipNotificationAction.ts
 models/SendTipNotificationActionData.ts

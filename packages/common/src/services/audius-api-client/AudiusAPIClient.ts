@@ -1,10 +1,6 @@
-import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
+import type { AudiusLibs } from '@audius/sdk'
 
 import { ID } from '../../models'
-import {
-  SearchKind,
-  SearchSortMethod
-} from '../../store/pages/search-results/types'
 import { encodeHashId } from '../../utils/hashIds'
 import { Nullable } from '../../utils/typeUtils'
 import type { AudiusBackend } from '../audius-backend'
@@ -13,15 +9,7 @@ import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
 import { RemoteConfigInstance } from '../remote-config'
 
-import * as adapter from './ResponseAdapter'
-import { processSearchResults } from './helper'
-import {
-  APIBlockConfirmation,
-  APIResponse,
-  APISearch,
-  APISearchAutocomplete,
-  OpaqueID
-} from './types'
+import { APIBlockConfirmation, APIResponse, OpaqueID } from './types'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
@@ -42,30 +30,8 @@ const ROOT_ENDPOINT_MAP = {
   blockConfirmation: '/block_confirmation'
 }
 
-const FULL_ENDPOINT_MAP = {
-  searchAutocomplete: `/search/autocomplete`
-}
-
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
-}
-
-type GetSearchArgs = {
-  currentUserId: Nullable<ID>
-  query: string
-  kind?: SearchKind
-  limit?: number
-  offset?: number
-  includePurchaseable?: boolean
-  genre?: Genre
-  mood?: Mood
-  bpmMin?: number
-  bpmMax?: number
-  key?: string
-  isVerified?: boolean
-  hasDownloads?: boolean
-  isPremium?: boolean
-  sortMethod?: SearchSortMethod
 }
 
 export type AssociatedWalletsResponse = {
@@ -97,19 +63,6 @@ type InitializationState =
       // Requests are dispatched and handled via libs
       type: 'libs'
     }
-
-const emptySearchResponse: APIResponse<APISearch> = {
-  data: {
-    users: [],
-    followed_users: [],
-    tracks: [],
-    saved_tracks: [],
-    playlists: [],
-    saved_playlists: [],
-    saved_albums: [],
-    albums: []
-  }
-}
 
 type AudiusAPIClientConfig = {
   audiusBackendInstance: AudiusBackend
@@ -163,37 +116,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getSearchAutocomplete({
-    currentUserId,
-    query,
-    kind,
-    offset,
-    limit,
-    includePurchaseable
-  }: GetSearchArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      query,
-      kind,
-      offset,
-      limit,
-      includePurchaseable
-    }
-
-    const searchResponse =
-      (await this._getResponse<APIResponse<APISearchAutocomplete>>(
-        FULL_ENDPOINT_MAP.searchAutocomplete,
-        params
-      )) ?? emptySearchResponse
-    const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
-    return processSearchResults({
-      isAutocomplete: true,
-      ...adapted
-    })
   }
 
   async getBlockConfirmation(

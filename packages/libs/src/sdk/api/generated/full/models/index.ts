@@ -129,6 +129,8 @@ export * from './SaveOfRepostNotificationActionData';
 export * from './SearchAutocompleteResponse';
 export * from './SearchFullResponse';
 export * from './SearchModel';
+export * from './SearchPlaylistFull';
+export * from './SearchTrackFull';
 export * from './SendTipNotification';
 export * from './SendTipNotificationAction';
 export * from './SendTipNotificationActionData';
