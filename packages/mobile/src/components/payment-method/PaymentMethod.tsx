@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import type { BNUSDC } from '@audius/common/models'
@@ -15,9 +15,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   IconCreditCard,
   IconDonate,
-  IconTransaction
+  IconTransaction,
+  IconMerch,
+  Text,
+  Flex
 } from '@audius/harmony-native'
-import { Divider, RadioButton, Text } from 'app/components/core'
+import { Divider, GradientText, RadioButton } from 'app/components/core'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -28,12 +31,16 @@ import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 import { CardSelectionButton } from './CardSelectionButton'
+import { TokenPicker } from './TokenPicker'
 
 const messages = {
   title: 'Payment Method',
   existingBalance: 'Existing balance',
   withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer'
+  withCrypto: 'Add via crypto transfer',
+  payWith: 'Pay with',
+  anything: 'anything',
+  requiresPhantom: 'Phantom wallet required'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -65,20 +72,26 @@ const useStyles = makeStyles(({ spacing }) => ({
 type PaymentMethodProps = {
   selectedMethod: Nullable<PurchaseMethod>
   setSelectedMethod: (method: PurchaseMethod) => void
+  selectedPurchaseMethodMintAddress?: string
+  setSelectedPurchaseMethodMintAddress?: (address: string) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
   isCoinflowEnabled?: boolean
+  isPayWithAnythingEnabled?: boolean
   showVendorChoice?: boolean
 }
 
 export const PaymentMethod = ({
   selectedMethod,
   setSelectedMethod,
+  selectedPurchaseMethodMintAddress,
+  setSelectedPurchaseMethodMintAddress,
   balance,
   isExistingBalanceDisabled,
   showExistingBalance,
   isCoinflowEnabled,
+  isPayWithAnythingEnabled,
   showVendorChoice
 }: PaymentMethodProps) => {
   const styles = useStyles()
@@ -106,11 +119,7 @@ export const PaymentMethod = ({
     {
       id: PurchaseMethod.CARD,
       value: PurchaseMethod.CARD,
-      label: (
-        <Text fontSize='medium' weight='medium'>
-          {messages.withCard}
-        </Text>
-      ),
+      label: <Text size='m'>{messages.withCard}</Text>,
       icon: IconCreditCard,
       content:
         vendorOptions.length > 1 && showVendorChoice ? (
@@ -118,16 +127,6 @@ export const PaymentMethod = ({
             selectedVendor={purchaseVendor ?? vendorOptions[0]}
           />
         ) : null
-    },
-    {
-      id: PurchaseMethod.CRYPTO,
-      value: PurchaseMethod.CRYPTO,
-      label: (
-        <Text fontSize='medium' weight='medium'>
-          {messages.withCrypto}
-        </Text>
-      ),
-      icon: IconTransaction
     }
   ]
   if (showExistingBalance) {
@@ -143,12 +142,10 @@ export const PaymentMethod = ({
         >
           <Text>{messages.existingBalance}</Text>
           <Text
-            fontSize='medium'
-            weight='bold'
+            size='m'
+            strength='strong'
             color={
-              selectedMethod === PurchaseMethod.BALANCE
-                ? 'secondary'
-                : 'neutral'
+              selectedMethod === PurchaseMethod.BALANCE ? 'accent' : 'default'
             }
           >
             ${balanceFormatted}
@@ -164,6 +161,60 @@ export const PaymentMethod = ({
         />
       ),
       disabled: isExistingBalanceDisabled
+    })
+  }
+
+  const handleOpenTokenPicker = useCallback(() => {
+    setSelectedMethod(PurchaseMethod.WALLET)
+  }, [setSelectedMethod])
+
+  const extraItems = [
+    {
+      id: PurchaseMethod.CRYPTO,
+      value: PurchaseMethod.CRYPTO,
+      label: <Text size='m'>{messages.withCrypto}</Text>,
+      icon: IconTransaction
+    }
+  ]
+  if (
+    isPayWithAnythingEnabled &&
+    selectedPurchaseMethodMintAddress &&
+    setSelectedPurchaseMethodMintAddress
+  ) {
+    extraItems.push({
+      id: PurchaseMethod.WALLET,
+      value: PurchaseMethod.WALLET,
+      label: (
+        <Flex flex={1}>
+          <Flex direction='row' justifyContent='space-between'>
+            <Flex direction='row' gap='xs' alignItems='center'>
+              <Text>{`${messages.payWith}`}</Text>
+              <GradientText
+                colors={[
+                  'red',
+                  'orange',
+                  'yellow',
+                  'green',
+                  'blue',
+                  'indigo',
+                  'violet'
+                ]}
+              >
+                {messages.anything}
+              </GradientText>
+            </Flex>
+            <TokenPicker
+              selectedTokenAddress={selectedPurchaseMethodMintAddress}
+              onChange={setSelectedPurchaseMethodMintAddress}
+              onOpen={handleOpenTokenPicker}
+            />
+          </Flex>
+          <Text size='xs' color='subdued'>
+            {messages.requiresPhantom}
+          </Text>
+        </Flex>
+      ),
+      icon: IconMerch
     })
   }
 
@@ -194,6 +245,7 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.title}
       items={items}
+      extraItems={extraItems}
       renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}
