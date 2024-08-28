@@ -43,7 +43,6 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`
 }
 
@@ -164,53 +163,6 @@ export class AudiusAPIClient {
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getSearchFull({
-    currentUserId,
-    query,
-    kind,
-    offset,
-    limit,
-    includePurchaseable,
-    genre,
-    mood,
-    bpmMin,
-    bpmMax,
-    key,
-    isVerified,
-    hasDownloads,
-    isPremium,
-    sortMethod
-  }: GetSearchArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      query,
-      kind,
-      offset,
-      limit,
-      includePurchaseable,
-      genre,
-      mood,
-      bpm_min: bpmMin,
-      bpm_max: bpmMax,
-      key,
-      is_verified: isVerified,
-      has_downloads: hasDownloads,
-      is_purchaseable: isPremium,
-      sort_method: sortMethod
-    }
-
-    const searchResponse =
-      (await this._getResponse<APIResponse<APISearch>>(
-        FULL_ENDPOINT_MAP.searchFull,
-        params
-      )) ?? emptySearchResponse
-
-    const adapted = adapter.adaptSearchResponse(searchResponse)
-    return processSearchResults(adapted)
   }
 
   async getSearchAutocomplete({
