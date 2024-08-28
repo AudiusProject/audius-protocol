@@ -20,6 +20,8 @@ services:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile.dev
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && air discovery"
+    volumes:
+      - ${PROJECT_ROOT}/comms:/app
 
   es-indexer:
     extends:
