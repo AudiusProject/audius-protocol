@@ -482,7 +482,8 @@ const slice = createSlice({
         return
       }
 
-      // Update the chat metadata
+      // Update the chat metadata, but don't update recheck_permissions unless
+      // it's a message received from someone else
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
         changes: {
