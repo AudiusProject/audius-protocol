@@ -67,8 +67,23 @@ type SetMessageReactionPayload = {
   reaction: string | null
 }
 
-const chatSortComparator = (a: Chat, b: Chat) =>
-  dayjs(a.last_message_at).isBefore(dayjs(b.last_message_at)) ? 1 : -1
+const chatSortComparator = (a: Chat, b: Chat) => {
+  const aLastMessageAt = dayjs(a.last_message_at)
+  const bLastMessageAt = dayjs(b.last_message_at)
+  const alphabeticalSort = a.chat_id.localeCompare(b.chat_id)
+  // If last message timestamps are the same, favor blasts on top, then sort by chat_id alphabetically
+  if (aLastMessageAt.isSame(bLastMessageAt)) {
+    if (a.is_blast || b.is_blast) {
+      return a.is_blast && !b.is_blast
+        ? -1
+        : b.is_blast && !a.is_blast
+        ? 1
+        : alphabeticalSort
+    }
+    return alphabeticalSort
+  }
+  return aLastMessageAt.isBefore(bLastMessageAt) ? 1 : -1
+}
 
 export const chatsAdapter = createEntityAdapter<UserChatWithMessagesStatus>({
   selectId: (chat) => chat.chat_id,
@@ -467,6 +482,15 @@ const slice = createSlice({
         return
       }
 
+      // Update the chat metadata
+      chatsAdapter.updateOne(state.chats, {
+        id: chatId,
+        changes: {
+          last_message: message.message,
+          last_message_at: message.created_at
+        }
+      })
+
       // Return early if we've seen this message
       const existingMessage = getMessage(
         state.messages[chatId],
@@ -483,8 +507,6 @@ const slice = createSlice({
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
         changes: {
-          last_message: message.message,
-          last_message_at: message.created_at,
           // If a new message comes through, we don't need to recheck permissions anymore
           recheck_permissions: false
         }
