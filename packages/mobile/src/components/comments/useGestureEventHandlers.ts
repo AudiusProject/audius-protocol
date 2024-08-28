@@ -11,7 +11,11 @@ import {
   useBottomSheetInternal
 } from '@gorhom/bottom-sheet'
 import { Keyboard, Platform } from 'react-native'
-import { runOnJS, useWorkletCallback } from 'react-native-reanimated'
+import {
+  runOnJS,
+  useSharedValue,
+  useWorkletCallback
+} from 'react-native-reanimated'
 
 export const clamp = (
   value: number,
@@ -96,6 +100,7 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
         animatedScrollableContentOffsetY
       ]
     )
+
   const handleOnActive: GestureEventHandlerCallbackType<GestureEventContextType> =
     useWorkletCallback(
       function handleOnActive(source, { translationY }, context) {
@@ -146,12 +151,12 @@ export const useGestureEventsHandlers: GestureEventsHandlersHookType = () => {
         /**
          * NOTE: this is the change to the default hook.
          * If the drawer is at a a snap point and the scrollable is scrolled,
-         * do not handle the gesture if the scroll is downwards
+         * do not handle the gesture
          */
         if (
           source === GESTURE_SOURCE.SCROLLABLE &&
           atSnapPoint &&
-          animatedScrollableContentOffsetY.value > 0
+          animatedScrollableContentOffsetY.value !== 0
         ) {
           return
         }

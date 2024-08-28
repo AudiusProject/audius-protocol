@@ -5,7 +5,8 @@ import type {
 import {
   useBottomSheetInternal,
   ANIMATION_STATE,
-  SHEET_STATE
+  SHEET_STATE,
+  SCROLLABLE_STATE
 } from '@gorhom/bottom-sheet'
 import { scrollTo, useWorkletCallback } from 'react-native-reanimated'
 
@@ -53,10 +54,14 @@ export const useScrollEventsHandlers: ScrollEventsHandlersHookType = (
          * If the drawer is not at a a snap point or the scrollable is scrolled upwards,
          * lock the scrolling
          */
-        if (!atSnapPoint || y < 0) {
-          const lockPosition = context.shouldLockInitialPosition
-            ? context.initialContentOffsetY ?? 0
-            : 0
+
+        animatedScrollableState.value =
+          !atSnapPoint || y < 0
+            ? SCROLLABLE_STATE.LOCKED
+            : SCROLLABLE_STATE.UNLOCKED
+
+        if (animatedScrollableState.value === SCROLLABLE_STATE.LOCKED) {
+          const lockPosition = 0
 
           // @ts-ignore
           scrollTo(scrollableRef, 0, lockPosition, false)

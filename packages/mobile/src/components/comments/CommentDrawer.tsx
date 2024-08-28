@@ -58,6 +58,7 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
       data={comments}
       keyExtractor={({ id }) => id}
       ListHeaderComponent={<Box h='l' />}
+      ListFooterComponent={<Box h='l' />}
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
       renderItem={({ item }) => (
