@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import { CommentSectionContext } from '@audius/common/context'
 import {
@@ -9,7 +9,7 @@ import {
   PopupMenuItem,
   Text
 } from '@audius/harmony'
-import { css, useTheme } from '@emotion/react'
+import { useTheme } from '@emotion/react'
 
 const messages = {
   turnOffNotifs: 'Turn off notifications'
@@ -31,25 +31,15 @@ export const CommentHeader = ({
   const popupMenuItems: PopupMenuItem[] = [
     { onClick: handleMuteEntityNotifications, text: messages.turnOffNotifs }
   ]
-  const [isPopupOpen, setIsPopupOpen] = useState(false)
 
   return (
-    <Flex
-      justifyContent='space-between'
-      w='100%'
-      css={css`
-        &:hover .kebabIcon {
-          opacity: 1;
-        }
-      `}
-    >
+    <Flex justifyContent='space-between' w='100%'>
       <Text variant='title' size='l'>
         Comments ({!isLoading ? commentCount : '...'})
       </Text>
       {isEntityOwner && !isLoading ? (
         <PopupMenu
           items={popupMenuItems}
-          onClose={() => setIsPopupOpen(false)}
           renderTrigger={(anchorRef, triggerPopup) => (
             <IconButton
               aria-label='Show comment options'
@@ -58,11 +48,9 @@ export const CommentHeader = ({
               ref={anchorRef}
               css={{
                 cursor: 'pointer',
-                opacity: isPopupOpen ? 1 : 0, // keep icon visible when popup is open
                 transition: motion.hover
               }}
               onClick={() => {
-                setIsPopupOpen(true)
                 triggerPopup()
               }}
               className='kebabIcon'
