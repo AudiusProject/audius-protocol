@@ -17,7 +17,7 @@ export const TimestampLink = ({
     dispatch(seek({ seconds: trackTimestampS }))
   }
   return (
-    <TextLink size='s' variant='active' onClick={handleClick}>
+    <TextLink size='xs' variant='active' onClick={handleClick}>
       {formatTrackTimestamp(trackTimestampS)}
     </TextLink>
   )

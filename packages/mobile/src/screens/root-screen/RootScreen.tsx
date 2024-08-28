@@ -6,6 +6,7 @@ import {
   chatActions,
   playerActions
 } from '@audius/common/store'
+import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,
@@ -163,6 +164,9 @@ export const RootScreen = () => {
             component={ResetPasswordModalScreen}
             options={{ presentation: 'modal' }}
           />
+          <Stack.Screen name='TokenPicker' options={{ presentation: 'modal' }}>
+            {() => <PortalHost name='TokenPickerPortal' />}
+          </Stack.Screen>
         </Stack.Navigator>
       ) : null}
     </>
