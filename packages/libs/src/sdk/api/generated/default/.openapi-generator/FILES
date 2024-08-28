@@ -18,6 +18,7 @@ models/AuthorizedApps.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
 models/CollectionActivity.ts
+models/CollectionPurchasableContent.ts
 models/Comment.ts
 models/CommentResponse.ts
 models/ConnectedWallets.ts
@@ -52,6 +53,8 @@ models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
+models/PurchasableContent.ts
+models/Purchased.ts
 models/PurchasersResponse.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
@@ -72,6 +75,7 @@ models/TrackArtwork.ts
 models/TrackCommentsResponse.ts
 models/TrackElement.ts
 models/TrackInspect.ts
+models/TrackPurchasableContent.ts
 models/TrackResponse.ts
 models/TrackSearch.ts
 models/TracksResponse.ts

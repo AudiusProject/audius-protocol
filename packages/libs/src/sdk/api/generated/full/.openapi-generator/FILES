@@ -30,6 +30,7 @@ models/ClaimableRewardNotificationActionData.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
+models/CollectionPurchasableContentFull.ts
 models/CosignNotification.ts
 models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts
@@ -56,6 +57,7 @@ models/FullGetSupporters.ts
 models/FullGetSupporting.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
+models/FullPurchased.ts
 models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
@@ -95,6 +97,7 @@ models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
 models/PlaylistMilestoneNotificationActionData.ts
 models/ProfilePicture.ts
+models/PurchasableContentFull.ts
 models/Purchase.ts
 models/PurchaseGate.ts
 models/PurchasersCountResponse.ts
@@ -169,6 +172,7 @@ models/TrackFull.ts
 models/TrackId.ts
 models/TrackLibraryResponseFull.ts
 models/TrackMilestoneNotificationActionData.ts
+models/TrackPurchasableContentFull.ts
 models/TrackRepostsResponseFull.ts
 models/TrackSegment.ts
 models/TransactionDetails.ts

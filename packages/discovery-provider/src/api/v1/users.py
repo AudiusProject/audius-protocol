@@ -2718,3 +2718,30 @@ class UserTracksPurchased(Resource):
         return success_response(
             list(map(make_polymorph_purchasable_content, purchased_content))
         )
+
+
+@full_ns.route(USER_PURCHASED_CONTENT_ROUTE)
+class FullUserTracksPurchased(Resource):
+    @full_ns.doc(
+        id="""Get User Purchased Content""",
+        description="Gets content owned by the user which has been purchased by another user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_purchased_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        query_args = GetUserPurchasedContentArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        purchased_content = get_user_purchasable_content(query_args)
+        purchased_content = list(map(extend_purchasable_content, purchased_content))
+
+        return success_response(
+            list(map(make_polymorph_purchasable_content, purchased_content))
+        )

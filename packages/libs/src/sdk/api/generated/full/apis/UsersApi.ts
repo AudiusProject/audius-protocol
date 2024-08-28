@@ -24,6 +24,7 @@ import type {
   FullGetSupporter,
   FullGetSupporters,
   FullGetSupporting,
+  FullPurchased,
   FullPurchasersResponse,
   FullRemixersResponse,
   FullReposts,
@@ -61,6 +62,8 @@ import {
     FullGetSupportersToJSON,
     FullGetSupportingFromJSON,
     FullGetSupportingToJSON,
+    FullPurchasedFromJSON,
+    FullPurchasedToJSON,
     FullPurchasersResponseFromJSON,
     FullPurchasersResponseToJSON,
     FullRemixersResponseFromJSON,
@@ -419,6 +422,13 @@ export interface GetUserLibraryTracksRequest {
     type?: GetUserLibraryTracksTypeEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
+}
+
+export interface GetUserPurchasedContentRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetUserTracksRemixedRequest {
@@ -2305,6 +2315,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets content owned by the user which has been purchased by another user
+     */
+    async getUserPurchasedContentRaw(params: GetUserPurchasedContentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPurchased>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserPurchasedContent.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/purchased`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullPurchasedFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets content owned by the user which has been purchased by another user
+     */
+    async getUserPurchasedContent(params: GetUserPurchasedContentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPurchased> {
+        const response = await this.getUserPurchasedContentRaw(params, initOverrides);
         return await response.value();
     }
 

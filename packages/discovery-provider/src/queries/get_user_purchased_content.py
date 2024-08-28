@@ -46,7 +46,7 @@ def _get_user_purchasable_content(session, args: GetUserPurchasedContentArgs):
         .outerjoin(
             Playlist,
             and_(
-                USDCPurchase.content_type == "playlist",
+                USDCPurchase.content_type == "album",
                 USDCPurchase.content_id == Playlist.playlist_id,
                 Playlist.is_current == True,
                 Playlist.is_delete == False,
@@ -61,6 +61,8 @@ def _get_user_purchasable_content(session, args: GetUserPurchasedContentArgs):
             or_(Track.owner_id == user_id, Playlist.playlist_owner_id == user_id),
         )
         .order_by(
+            Track.track_id.desc(),
+            Playlist.playlist_id.desc(),
             USDCPurchase.created_at.desc(),
             USDCPurchase.content_id.desc(),
             USDCPurchase.content_type.desc(),
@@ -80,13 +82,12 @@ def get_user_purchasable_content(args: GetUserPurchasedContentArgs):
     with db.scoped_session() as session:
         query = _get_user_purchasable_content(session, args)
         query_results = add_query_pagination(query, limit, offset).all()
-        purchasable_content = helpers.query_result_to_list(query_results)
 
         tracks = helpers.query_result_to_list(
-            filter(None, [item[1] for item in purchasable_content])
+            filter(None, [item[1] for item in query_results])
         )
         playlists = helpers.query_result_to_list(
-            filter(None, [item[2] for item in purchasable_content])
+            filter(None, [item[2] for item in query_results])
         )
 
         track_ids = [track["track_id"] for track in tracks]
@@ -102,6 +103,11 @@ def get_user_purchasable_content(args: GetUserPurchasedContentArgs):
         )
 
         unsorted_purchasable_content = tracks + playlists
+        unsorted_purchasable_content = [
+            # The user gets wrapped in an array due to the joins, so we need to unpack it
+            {**content, "user": content["user"][0]}
+            for content in unsorted_purchasable_content
+        ]
 
         user_purchasable_content = sorted(
             unsorted_purchasable_content,
