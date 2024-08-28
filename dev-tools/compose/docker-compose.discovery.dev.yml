@@ -16,6 +16,10 @@ services:
     extends:
       file: docker-compose.discovery.prod.yml
       service: comms
+    build:
+      context: ${PROJECT_ROOT}/comms
+      dockerfile: Dockerfile.dev
+    command: sh -c ". /tmp/dev-tools/startup/startup.sh && air discovery"
 
   es-indexer:
     extends:
