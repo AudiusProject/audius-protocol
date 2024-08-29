@@ -19,6 +19,7 @@ export const CommentSectionDesktop = () => {
     comments,
     commentSectionLoading,
     isLoadingMorePages,
+    forceRefresh,
     hasMorePages,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
@@ -27,7 +28,6 @@ export const CommentSectionDesktop = () => {
     getCanCreateChat(state, { userId: artistId })
   )
 
-  console.log({ hasMorePages, isLoadingMorePages })
   if (commentSectionLoading) {
     return <CommentSkeletons />
   }
@@ -35,6 +35,13 @@ export const CommentSectionDesktop = () => {
   return (
     <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
       <CommentHeader commentCount={comments.length} />
+      <Button
+        onClick={() => {
+          forceRefresh()
+        }}
+      >
+        Refresh{' '}
+      </Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed ? (
           <>

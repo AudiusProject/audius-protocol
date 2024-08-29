@@ -13,9 +13,6 @@ export function capitalize(str: string) {
 
 export const getKeyFromFetchArgs = (fetchArgs: any) => {
   if (fetchArgs === undefined) return 'default'
-  // usePaginatedQuery includes fetchArgs that don't belong in the key
-  // TODO: how do I do this now
-  // const fetchArgsNoPagination = omit(fetchArgs, ['limit', 'offset'])
   return objectHash(fetchArgs)
 }
 

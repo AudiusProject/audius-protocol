@@ -29,6 +29,13 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
           Parameters<EndpointDefinitions[Property]['fetch']>[0],
           Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
         >
+      : EndpointDefinitions[Property]['options']['type'] extends 'paginatedQuery'
+      ? (
+          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          options: PaginatedQueryHookOptions
+        ) => PaginatedQueryHookResults<
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
       : (
           fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
           options?: QueryHookOptions
@@ -81,7 +88,7 @@ type EndpointOptions = {
   kind?: Kind
   retry?: boolean
   retryConfig?: RetryConfig
-  type?: 'query' | 'mutation'
+  type?: 'query' | 'mutation' | 'paginatedQuery'
 }
 
 export type EndpointConfig<Args, Data> = {
@@ -138,6 +145,8 @@ export type PerKeyState<NormalizedData> = {
   errorMessage?: string
 }
 
+export type PaginatedQueryArgs = { limit: number; offset: number }
+
 export type QueryHookOptions = {
   disabled?: boolean
   shallow?: boolean
@@ -147,12 +156,27 @@ export type QueryHookOptions = {
   debounce?: number
 }
 
+export type PaginatedQueryHookOptions = QueryHookOptions & {
+  pageSize: number // How many items to fetch per page, translates to limit in fetchArgs
+  singlePageData?: boolean // By default we return a list of all page data, this turns that off and only returns data for the current page
+  shouldUseSelector?: boolean // TODO: remove
+}
+
 export type QueryHookResults<Data> = {
   data: Data
   status: Status
   errorMessage?: string
   forceRefresh: () => void
 }
+
+export type PaginatedQueryHookResults<Data extends []> =
+  QueryHookResults<Data> & {
+    isLoadingMore: boolean
+    hasMore: boolean
+    loadMore: () => void
+    softReset: () => void
+    hardReset: () => void
+  }
 
 export type MutationHookResponse<Data> = {
   data: Data

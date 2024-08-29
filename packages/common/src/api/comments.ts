@@ -54,16 +54,15 @@ const commentsApi = createApi({
         }: { entityId: ID; offset?: number; limit?: number },
         { audiusSdk }
       ) {
-        console.log({ entityId, offset, limit })
         const sdk = await audiusSdk()
         const commentsRes = await sdk.tracks.trackComments({
           trackId: encodeHashId(entityId),
           offset,
           limit
         })
-        return commentsRes?.data
+        return commentsRes?.data ?? []
       },
-      options: { type: 'query' },
+      options: { type: 'paginatedQuery' },
       async onQuerySuccess(comments: Comment[], _args, { dispatch }) {
         comments.forEach((comment) => {
           optimisticUpdateComment(comment.id, () => comment, dispatch)
@@ -71,12 +70,8 @@ const commentsApi = createApi({
       }
     },
     getCommentById: {
-      async fetch({ id }: { id: string }, { audiusSdk }) {
-        const sdk = await audiusSdk()
-        const commentsRes = await sdk.comments.getComment({
-          commentId: id
-        })
-        return commentsRes?.data
+      async fetch({ id: _id }: { id: string }): Promise<Comment | undefined> {
+        return undefined
       },
       options: { type: 'query' }
     },
@@ -86,13 +81,11 @@ const commentsApi = createApi({
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
-        console.log('getting comment for id ', id)
         const commentsRes = await sdk.comments.getComment({
           commentId: id,
           limit,
           offset
         })
-        console.log({ commentsRes })
         return commentsRes?.data
       },
       options: { type: 'query' }
@@ -119,7 +112,7 @@ const commentsApi = createApi({
         { dispatch }
       ) {
         const newComment: Comment = {
-          id: `${newId}`,
+          id: newId,
           userId: `${userId}`,
           message: body,
           isPinned: false,
@@ -129,6 +122,20 @@ const commentsApi = createApi({
           createdAt: new Date().toISOString(),
           updatedAt: undefined
         }
+        optimisticUpdateComment(
+          parentCommentId ?? newId,
+          (parentComment) => {
+            // Handle replies. Need to find the parent and add the new comment to the replies array
+            if (parentCommentId && parentComment) {
+              parentComment.replies = parentComment.replies || []
+              parentComment.replies.push(newComment)
+              return parentComment
+            } else {
+              return newComment
+            }
+          },
+          dispatch
+        )
         optimisticUpdateCommentList(
           entityId,
           (prevState) => {
@@ -149,24 +156,11 @@ const commentsApi = createApi({
           },
           dispatch
         )
-        optimisticUpdateComment(
-          parentCommentId ?? newId,
-          (parentComment) => {
-            if (parentCommentId && parentComment) {
-              parentComment.replies = parentComment.replies || []
-              parentComment.replies.push(newComment)
-              return parentComment
-            } else {
-              return newComment
-            }
-          },
-          dispatch
-        )
       }
     },
     deleteCommentById: {
       async fetch(
-        { id, userId, entityId }: { id: string; userId: ID; entityId: ID },
+        { id, userId }: { id: string; userId: ID; entityId: ID },
         { audiusSdk }
       ) {
         const decodedId = decodeHashId(id.toString())

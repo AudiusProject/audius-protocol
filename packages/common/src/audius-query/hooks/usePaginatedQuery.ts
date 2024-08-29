@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { isEqual } from 'lodash'
+import { useSelector } from 'react-redux'
 import { useCustomCompareEffect } from 'react-use'
 
 import { Status } from '~/models/Status'
+import { CommonState } from '~/store'
 
 import { QueryHookOptions, QueryHookResults } from '../types'
+import { getKeyFromFetchArgs } from '../utils'
 
 export const usePaginatedQuery = <
   Data,
@@ -76,6 +79,7 @@ export const useAllPaginatedQuery = <
     limit: pageSize,
     offset: page * pageSize
   } as ArgsType
+
   const result = useQueryHook(args, queryHookOptions)
 
   useEffect(() => {
@@ -92,6 +96,7 @@ export const useAllPaginatedQuery = <
         setLoadingMore(false)
         return
       }
+      // what if we just selected the data instead of accumulating it
       if (result.status === Status.SUCCESS) {
         setAllData((allData) => [
           ...allData,
@@ -110,8 +115,6 @@ export const useAllPaginatedQuery = <
   const notStarted = result.status === Status.IDLE && allData.length === 0
   const hasNotFetched = !result.data && result.status !== Status.SUCCESS
   const fetchedFullPreviousPage = result.data?.length === pageSize
-
-  console.log({ notError, notStarted, hasNotFetched, fetchedFullPreviousPage })
 
   const hasMore =
     notError && (notStarted || hasNotFetched || fetchedFullPreviousPage)

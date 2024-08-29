@@ -2,7 +2,13 @@ import { useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { Flex, IconCaretDown, IconCaretUp, TextLink } from '@audius/harmony'
+import {
+  Divider,
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  TextLink
+} from '@audius/harmony'
 import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
@@ -17,14 +23,13 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   const { data: rootComment } = useGetCommentById({
     id: commentId
   })
-  const { data: replies, loadMore } = useAllPaginatedQuery(
-    // @ts-ignore
-    useGetCommentRepliesById,
-    { id: commentId },
-    { pageSize: COMMENT_THREAD_PAGE_SIZE }
-  )
+  // const { data: replies, loadMore } = useAllPaginatedQuery(
+  //   // @ts-ignore
+  //   useGetCommentRepliesById,
+  //   { id: commentId },
+  //   { pageSize: COMMENT_THREAD_PAGE_SIZE, disabled: true }
+  // )
 
-  console.log({ replies })
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})
