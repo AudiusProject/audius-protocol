@@ -171,7 +171,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   )
 
   return (
-    <>
+    <View>
       <View
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
@@ -205,12 +205,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
               }}
               url={match.getAnchorHref()}
               source={source}
+              {...linkProps}
             >
               {text}
             </Link>
           ) : null
         })}
       </View>
-    </>
+    </View>
   )
 }
