@@ -317,7 +317,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                           showUnderline: true
                         }}
                         onPress={Keyboard.dismiss}
-                        allowPointerEventsToPassThrough
                       >
                         {message.message}
                       </UserGeneratedText>
