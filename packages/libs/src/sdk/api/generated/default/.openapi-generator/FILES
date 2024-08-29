@@ -52,11 +52,13 @@ models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/ProfilePicture.ts
+models/PurchasersResponse.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/RemixersResponse.ts
 models/ReplyComment.ts
 models/Reposts.ts
+models/StreamUrlResponse.ts
 models/SubscribersResponse.ts
 models/Supporter.ts
 models/Supporting.ts

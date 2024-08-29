@@ -1,11 +1,19 @@
 import {
+  CommentSectionProvider,
   useCurrentCommentSection,
   usePostComment
 } from '@audius/common/context'
+import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
-import { Flex, IconCaretRight, Paper, Text } from '@audius/harmony-native'
+import {
+  Flex,
+  IconCaretRight,
+  Paper,
+  PlainButton,
+  Text
+} from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 
 import Skeleton from '../skeleton'
@@ -14,7 +22,8 @@ import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
 
 const messages = {
-  noComments: 'Nothing here yet'
+  noComments: 'Nothing here yet',
+  viewAll: 'View all'
 }
 
 const CommentSectionHeader = () => {
@@ -35,7 +44,12 @@ const CommentSectionHeader = () => {
   const isShowingComments = !isLoading && comments?.length
 
   return (
-    <Flex direction='row' w='100%' justifyContent='space-between'>
+    <Flex
+      direction='row'
+      w='100%'
+      justifyContent='space-between'
+      alignItems='center'
+    >
       <Text variant='title' size='m'>
         Comments
         {isShowingComments ? (
@@ -43,14 +57,13 @@ const CommentSectionHeader = () => {
         ) : null}
       </Text>
       {isShowingComments ? (
-        <TouchableOpacity onPress={handlePressViewAll}>
-          <Flex direction='row' alignItems='center' gap='xs'>
-            <Text variant='title' color='subdued' size='m'>
-              View All
-            </Text>
-            <IconCaretRight color='subdued' height={16} width={16} />
-          </Flex>
-        </TouchableOpacity>
+        <PlainButton
+          onPress={handlePressViewAll}
+          iconRight={IconCaretRight}
+          variant='subdued'
+        >
+          {messages.viewAll}
+        </PlainButton>
       ) : null}
     </Flex>
   )
@@ -95,13 +108,29 @@ const CommentSectionContent = () => {
   return <CommentBlock comment={comments[0]} hideActions />
 }
 
-export const CommentSection = () => {
+type CommentSectionProps = {
+  entityId: ID
+}
+
+export const CommentSection = (props: CommentSectionProps) => {
+  const { entityId } = props
+
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  const handlePress = () => {
+    openDrawer({ entityId })
+  }
+
   return (
-    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-      <CommentSectionHeader />
-      <Paper w='100%' direction='column' gap='s' p='l'>
-        <CommentSectionContent />
-      </Paper>
-    </Flex>
+    <CommentSectionProvider entityId={entityId}>
+      <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
+        <CommentSectionHeader />
+        <Paper w='100%' direction='column' gap='s' p='l'>
+          <TouchableOpacity onPress={handlePress}>
+            <CommentSectionContent />
+          </TouchableOpacity>
+        </Paper>
+      </Flex>
+    </CommentSectionProvider>
   )
 }

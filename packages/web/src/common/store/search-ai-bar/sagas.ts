@@ -1,5 +1,9 @@
-import { Name } from '@audius/common/models'
-import { accountSelectors, SearchKind, getContext } from '@audius/common/store'
+import {
+  limitAutocompleteResults,
+  searchResultsFromSDK
+} from '@audius/common/adapters'
+import { Name, OptionalId } from '@audius/common/models'
+import { accountSelectors, SearchKind, getSDK } from '@audius/common/store'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -13,16 +17,21 @@ const getUserId = accountSelectors.getUserId
 export function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
 
-  const results = yield* call([apiClient, 'getSearchAutocomplete'], {
-    currentUserId: userId,
-    query: searchText,
-    limit: 10,
-    offset: 0,
-    kind: SearchKind.USERS
-  })
+  const { data } = yield* call(
+    [sdk.full.search, sdk.full.search.searchAutocomplete],
+    {
+      userId: OptionalId.parse(userId),
+      query: searchText,
+      limit: 10,
+      offset: 0,
+      kind: SearchKind.USERS
+    }
+  )
+  const results = limitAutocompleteResults(searchResultsFromSDK(data))
+
   const { users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   return {

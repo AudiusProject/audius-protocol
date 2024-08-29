@@ -1,6 +1,10 @@
-import { Name } from '@audius/common/models'
+import {
+  limitAutocompleteResults,
+  searchResultsFromSDK
+} from '@audius/common/adapters'
+import { Name, OptionalId } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, getContext } from '@audius/common/store'
+import { accountSelectors, getContext, getSDK } from '@audius/common/store'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -14,7 +18,7 @@ const getUserId = accountSelectors.getUserId
 export function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const userId = yield* select(getUserId)
@@ -24,15 +28,20 @@ export function* getSearchResults(searchText: string) {
     FeatureFlags.USDC_PURCHASES
   )
 
-  const results = yield* call([apiClient, 'getSearchAutocomplete'], {
-    currentUserId: userId,
-    query: searchText,
-    limit: 3,
-    offset: 0,
-    includePurchaseable: isUSDCEnabled
-  })
+  const { data } = yield* call(
+    [sdk.full.search, sdk.full.search.searchAutocomplete],
+    {
+      userId: OptionalId.parse(userId),
+      query: searchText,
+      limit: 3,
+      offset: 0,
+      includePurchaseable: isUSDCEnabled
+    }
+  )
+  const { tracks, albums, playlists, users } = limitAutocompleteResults(
+    searchResultsFromSDK(data)
+  )
 
-  const { tracks, albums, playlists, users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   const checkedTracks = tracks.filter((t) => {
     return !t.is_delete && !t.user.is_deactivated

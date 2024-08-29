@@ -58,7 +58,6 @@ import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './PremiumContentPurchaseModal.module.css'
-import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
@@ -148,20 +147,16 @@ const RenderForm = ({
         currentPage={currentPageIndex}
       >
         <>
-          {stage !== PurchaseContentStage.FINISH ? (
-            <AudioMatchSection
-              amount={USDC(price / 100)
-                .round()
-                .toShorthand()}
-            />
-          ) : null}
-          <Flex p={isMobile ? 'l' : 'xl'}>
+          <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
             <Flex direction='column' gap='xl' w='100%'>
               <LockedContentDetailsTile
                 showLabel={false}
                 metadata={metadata}
                 owner={metadata.user}
                 disabled={isLinkDisabled}
+                earnAmount={USDC(price / 100)
+                  .round()
+                  .toShorthand()}
               />
               <PurchaseContentFormFields
                 stage={stage}

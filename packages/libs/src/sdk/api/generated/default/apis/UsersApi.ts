@@ -25,6 +25,7 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
+  PurchasersResponse,
   RelatedArtistResponse,
   RemixersResponse,
   Reposts,
@@ -56,6 +57,8 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
+    PurchasersResponseFromJSON,
+    PurchasersResponseToJSON,
     RelatedArtistResponseFromJSON,
     RelatedArtistResponseToJSON,
     RemixersResponseFromJSON,
@@ -150,6 +153,15 @@ export interface GetFollowingRequest {
     userId?: string;
 }
 
+export interface GetPurchasersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    contentType?: string;
+    contentId?: string;
+}
+
 export interface GetRelatedUsersRequest {
     id: string;
     offset?: number;
@@ -227,6 +239,13 @@ export interface GetUserChallengesRequest {
 
 export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
+}
+
+export interface GetUserTracksRemixedRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface SearchUsersRequest {
@@ -684,6 +703,57 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getFollowing(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
         const response = await this.getFollowingRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the list of unique users who have purchased content by the given user
+     */
+    async getPurchasersRaw(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.contentType !== undefined) {
+            queryParameters['content_type'] = params.contentType;
+        }
+
+        if (params.contentId !== undefined) {
+            queryParameters['content_id'] = params.contentId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/purchasers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the list of unique users who have purchased content by the given user
+     */
+    async getPurchasers(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersResponse> {
+        const response = await this.getPurchasersRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1186,6 +1256,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
         const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserTracksRemixed.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/tracks/remixed`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUserTracksRemixedRaw(params, initOverrides);
         return await response.value();
     }
 

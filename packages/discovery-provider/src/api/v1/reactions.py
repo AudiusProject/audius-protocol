@@ -1,4 +1,4 @@
-from flask_restx import Namespace, Resource, fields, marshal_with, reqparse
+from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -45,7 +45,7 @@ class BulkReactions(Resource):
         },
     )
     @ns.expect(get_reactions_parser)
-    @marshal_with(get_reactions_response)
+    @ns.marshal_with(get_reactions_response)
     @cache(ttl_sec=5)
     def get(self):
         args = get_reactions_parser.parse_args()

@@ -39,7 +39,10 @@ export type Specifier = string
  */
 export enum ChallengeName {
   AudioMatchingBuy = 'b',
-  AudioMatchingSell = 's'
+  AudioMatchingSell = 's',
+  TrendingTrack = 'tt',
+  TrendingPlaylist = 'tp',
+  TrendingUndergroundTrack = 'tut'
 }
 
 export type ChallengeRewardID =
@@ -60,6 +63,9 @@ export type ChallengeRewardID =
   | 'top-api'
   | 'verified-upload'
   | 'trending-underground'
+  | ChallengeName.TrendingTrack
+  | ChallengeName.TrendingPlaylist
+  | ChallengeName.TrendingUndergroundTrack
 
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha

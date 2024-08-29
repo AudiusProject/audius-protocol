@@ -3,6 +3,7 @@ from flask_restx import fields
 from .access_gate import access_gate, extended_access_gate
 from .common import favorite, ns, repost
 from .extensions.fields import NestedOneOf
+from .extensions.models import WildcardModel
 from .users import user_model, user_model_full
 
 track_artwork = ns.model(
@@ -206,6 +207,18 @@ track_full = ns.clone(
     },
 )
 
+# Search results may exclude these fields if populated for auto-complete
+# TODO: Search results should be entirely different types
+# https://linear.app/audius/issue/PAY-3390/split-search-types-out-from-entity-types
+search_track_full = ns.clone(
+    "search_track_full",
+    track_full,
+    {
+        "followee_reposts": fields.List(fields.Nested(repost), required=False),
+        "followee_favorites": fields.List(fields.Nested(favorite), required=False),
+    },
+)
+
 stem_full = ns.model(
     "stem_full",
     {
@@ -258,3 +271,35 @@ track_access_info = ns.model(
         ),
     },
 )
+
+track_signature_data = ns.model(
+    "nft_gated_track_signature_data",
+    {
+        "data": fields.String(required=True),
+        "signature": fields.String(required=True),
+    },
+)
+
+nft_gated_track_signature = ns.model(
+    "nft_gated_track_signature",
+    {
+        "mp3": fields.Nested(
+            track_signature_data,
+            required=True,
+        ),
+        "original": fields.Nested(
+            track_signature_data,
+            required=True,
+        ),
+    },
+)
+
+signature_data_wild = fields.Wildcard(
+    fields.Nested(nft_gated_track_signature, required=True)
+)
+
+nft_gated_track_signature_mapping = WildcardModel(
+    "nft_gated_track_signature_mapping",
+    {"*": signature_data_wild},
+)
+ns.add_model("nft_gated_track_signature_mapping", nft_gated_track_signature_mapping)

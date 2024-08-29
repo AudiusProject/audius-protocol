@@ -1,3 +1,5 @@
+import { searchResultsFromSDK } from '@audius/common/adapters'
+import { OptionalId } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -6,7 +8,8 @@ import {
   searchResultsPageActions as searchPageActions,
   SearchKind,
   getContext,
-  SearchSortMethod
+  SearchSortMethod,
+  getSDK
 } from '@audius/common/store'
 import {
   Genre,
@@ -177,28 +180,29 @@ export function* getSearchResults({
     FeatureFlags.USDC_PURCHASES
   )
 
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
   const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
+  const formattedKey = formatMusicalKey(key)
 
-  const results = yield* call([apiClient, 'getSearchFull'], {
-    currentUserId: userId,
-    query: searchText,
+  const { data } = yield* call([sdk.full.search, sdk.full.search.search], {
+    bpmMax,
+    bpmMin,
+    hasDownloads,
+    includePurchaseable: isUSDCEnabled,
+    isPurchaseable: isPremium,
+    isVerified,
     kind,
     limit,
     offset,
-    includePurchaseable: isUSDCEnabled,
-    genre,
-    mood,
-    bpmMin,
-    bpmMax,
-    key: formatMusicalKey(key),
-    isVerified,
-    hasDownloads,
-    isPremium,
-    sortMethod
+    query: searchText,
+    sortMethod,
+    userId: OptionalId.parse(userId),
+    genre: genre ? [genre] : undefined,
+    mood: mood ? [mood] : undefined,
+    key: formattedKey ? [formattedKey] : undefined
   })
-  const { tracks, albums, playlists, users } = results
+  const { tracks, albums, playlists, users } = searchResultsFromSDK(data)
 
   yield* call(processAndCacheUsers, users)
   yield* call(processAndCacheTracks, tracks)

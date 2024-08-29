@@ -19,6 +19,10 @@ type UserChatRow struct {
 	LastActiveAt           sql.NullTime   `db:"last_active_at" json:"last_active_at"`
 	UnreadCount            int32          `db:"unread_count" json:"unread_count"`
 	ClearedHistoryAt       sql.NullTime   `db:"cleared_history_at" json:"cleared_history_at"`
+	IsBlast                bool           `db:"is_blast" json:"is_blast"`
+	Audience               sql.NullString `db:"audience" json:"audience"`
+	AudienceContentType    sql.NullString `db:"audience_content_type" json:"audience_content_type"`
+	AudienceContentID      sql.NullInt32  `db:"audience_content_id" json:"audience_content_id"`
 }
 
 // Get a chat's last_message_at
@@ -45,10 +49,41 @@ SELECT
   chat_member.invite_code,
   chat_member.last_active_at,
   chat_member.unread_count,
-  chat_member.cleared_history_at
+  chat_member.cleared_history_at,
+	false as is_blast,
+	null as audience,
+	null as audience_content_type,
+	null as audience_content_id
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1 AND chat_member.chat_id = $2
+
+union all (
+
+  SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
+    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
+    min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
+    plaintext as last_message,
+		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
+    true as last_message_is_plaintext,
+    '' as invite_code,
+    created_at as last_active_at,
+    0 as unread_count,
+    null as cleared_history_at,
+		true as is_blast,
+		audience,
+		audience_content_type,
+		audience_content_id
+  FROM chat_blast b
+  WHERE from_user_id = $1
+    AND concat_ws(':', audience, audience_content_type, audience_content_id) = $2
+  ORDER BY
+    audience,
+    audience_content_type,
+    audience_content_id,
+    created_at DESC
+
+)
 `
 
 func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (UserChatRow, error) {
@@ -68,7 +103,11 @@ SELECT
   chat_member.invite_code,
   chat_member.last_active_at,
   chat_member.unread_count,
-  chat_member.cleared_history_at
+  chat_member.cleared_history_at,
+	false as is_blast,
+	null as audience,
+	null as audience_content_type,
+	null as audience_content_id
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1
@@ -83,15 +122,19 @@ WHERE chat_member.user_id = $1
 union all (
 
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
-    concat_ws(':', 'blast', from_user_id, audience, audience_content_type, audience_content_id) as chat_id,
+    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
-    created_at as last_message_at,
+		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
     true as last_message_is_plaintext,
     '' as invite_code,
     created_at as last_active_at,
     0 as unread_count,
-    null as cleared_history_at
+    null as cleared_history_at,
+		true as is_blast,
+		audience,
+		audience_content_type,
+		audience_content_id
   FROM chat_blast b
   WHERE from_user_id = $1
   ORDER BY

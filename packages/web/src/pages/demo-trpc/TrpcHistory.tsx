@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
+import { trpc } from '@audius/common/services'
 import { RouterOutput } from '@audius/trpc-server'
 import { Link } from 'react-router-dom'
-
-import { trpc } from 'utils/trpcClientWeb'
 
 import { CidImage } from './DemoTrpcPage'
 import styles from './TrpcHistory.module.css'

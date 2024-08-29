@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 
-import { useGetCurrentUser, useGetUserTracksByHandle } from '@audius/common/api'
+import {
+  useGetCurrentUser,
+  useGetRemixersCount,
+  useGetUserTracksByHandle
+} from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useChatBlastModal, chatActions } from '@audius/common/src/store'
 import {
@@ -191,7 +195,7 @@ const TipSupportersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.supporters.label}
-          count={user.supporter_count}
+          count={user.supporter_count ?? 0}
           isSelected={selected}
         />
         {selected ? (
@@ -263,6 +267,10 @@ const RemixCreatorsMessageField = () => {
     name: 'remixed_track_id',
     type: 'select'
   })
+  const { data: remixersCount } = useGetRemixersCount({
+    userId: currentUserId,
+    trackId: remixedTrackField.value
+  })
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
@@ -271,7 +279,6 @@ const RemixCreatorsMessageField = () => {
     () =>
       (tracks ?? [])
         .filter((track) => {
-          // TODO: get tracks with remixes
           return true
         })
         .map((track) => ({
@@ -287,8 +294,7 @@ const RemixCreatorsMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.remixCreators.label}
-          // TODO: Need to add a new endpoint to get the list of tracks with remixes and their creators
-          count={user.supporter_count}
+          count={remixersCount}
           isSelected={isSelected}
         />
         {isSelected ? (

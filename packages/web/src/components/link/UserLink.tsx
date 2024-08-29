@@ -2,6 +2,7 @@ import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme } from '@audius/harmony'
+import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
@@ -18,6 +19,7 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   badgeSize?: IconSize
   popover?: boolean
   popoverMount?: MountPlacement
+  noText?: boolean // Should be used if you're intending for the children to be the link element (i.e. Avatar)
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -27,6 +29,7 @@ export const UserLink = (props: UserLinkProps) => {
     popover,
     popoverMount,
     children,
+    noText,
     ...other
   } = props
   const { iconSizes, spacing } = useTheme()
@@ -39,7 +42,7 @@ export const UserLink = (props: UserLinkProps) => {
   const handle = useSelector((state) => getUser(state, { id: userId })?.handle)
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
-  const linkElement = (
+  const textLink = (
     <TextLink
       to={url}
       css={{
@@ -59,6 +62,8 @@ export const UserLink = (props: UserLinkProps) => {
       {children}
     </TextLink>
   )
+  const noTextLink = <Link to={url}>{children}</Link>
+  const linkElement = noText ? noTextLink : textLink
 
   return popover && handle ? (
     <ArtistPopover

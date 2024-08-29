@@ -29,8 +29,14 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
       >
         {image}
       </Flex>
-      <Flex direction='column' alignItems='flex-start' justifyContent='center'>
-        <Text variant='body' strength='strong'>
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        justifyContent='center'
+        backgroundColor='surface1'
+        mr='4xl'
+      >
+        <Text variant='body' strength='strong' numberOfLines={1}>
           {title}
         </Text>
         <Flex direction='row' alignItems='center' gap='xs'>

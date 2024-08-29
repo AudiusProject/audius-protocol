@@ -88,7 +88,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
 
-from .models.tracks import blob_info
+from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_access_info, track_full
 
@@ -548,6 +548,10 @@ stream_parser.add_argument(
     default=None,
 )
 
+stream_url_response = make_response(
+    "stream_url_response", ns, fields.String(required=True)
+)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -564,6 +568,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
+    @ns.response(200, "Success", stream_url_response)
     @ns.expect(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):
@@ -1749,17 +1754,25 @@ class FullUSDCPurchaseTracks(Resource):
         return success_response(premium_tracks)
 
 
+full_nft_gated_track_signatures_response = make_full_response(
+    "nft_gated_track_signatures_response",
+    full_ns,
+    fields.Nested(nft_gated_track_signature_mapping),
+)
+
+
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
 class NFTGatedTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Gated Track Signatures""",
+        id="""Get NFT Gated Track Signatures""",
         description="""Gets gated track signatures for passed in gated track ids""",
         params={
             "user_id": """The user for whom we are generating gated track signatures."""
         },
     )
     @full_ns.expect(track_signatures_parser)
+    @full_ns.response(200, "Success", full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
@@ -1835,7 +1848,7 @@ access_info_parser = current_user_parser.copy()
 access_info_parser.add_argument(
     "include_network_cut",
     required=False,
-    type=bool,
+    type=inputs.boolean,
     description="Whether to include the staking system as a recipient",
 )
 
@@ -1851,7 +1864,7 @@ class GetTrackAccessInfo(Resource):
     @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
-        args = current_user_parser.parse_args()
+        args = access_info_parser.parse_args()
         include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)

@@ -1,12 +1,12 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
+import { createAudiusTrpcClient, trpc } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
-
-import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
+import { env } from 'services/env'
 
 type TrpcProviderProps = {
   children: ReactNode
@@ -15,7 +15,7 @@ type TrpcProviderProps = {
 export const TrpcProvider = (props: TrpcProviderProps) => {
   const { children } = props
   const currentUserId = useSelector(accountSelectors.getUserId)
-  const [selectedNode, setSelectedNode] = useState('')
+  const [selectedNode, setSelectedNode] = useState(env.TRPC_ENDPOINT)
 
   function updateSelectedNode(dn: string | null) {
     if (!dn) return
@@ -46,7 +46,7 @@ export const TrpcProvider = (props: TrpcProviderProps) => {
   )
 
   const trpcClient = useMemo(() => {
-    return createAudiusTrpcClient(selectedNode, currentUserId)
+    return createAudiusTrpcClient(currentUserId, selectedNode)
   }, [selectedNode, currentUserId])
 
   return (

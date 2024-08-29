@@ -17,11 +17,9 @@ export const CollectionMetadataList = ({
   const metadataItems = useCollectionMetadata({ collectionId })
 
   return (
-    <Flex as='dt' direction='row' gap='l' wrap='wrap'>
+    <Flex as='dl' direction='row' gap='l' wrap='wrap'>
       {metadataItems.map(({ id, label, value }) => (
-        <MetadataItem key={id} label={label}>
-          {value}
-        </MetadataItem>
+        <MetadataItem key={id} label={label} value={value} />
       ))}
     </Flex>
   )

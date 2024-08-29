@@ -55,7 +55,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   return (
     <div onClick={onClick} className={cn(styles.tableOptionsButton, className)}>
-      <Menu menu={overflowMenu} dismissOnMouseLeave>
+      <Menu menu={overflowMenu}>
         {(ref, triggerPopup) => (
           <div
             className={tabStyles.iconKebabHorizontalWrapper}

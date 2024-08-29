@@ -339,6 +339,7 @@ workflows:
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
+            packages/common/.* run-protocol-dashboard-workflow true
             packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
@@ -468,8 +469,7 @@ workflows:
 
   auto-approve-sp-deploy:
     when:
-      equal:
-        ['auto-approve-sp-deploy', << pipeline.parameters.workflow >>]
+      equal: ['auto-approve-sp-deploy', << pipeline.parameters.workflow >>]
     jobs:
       - approve-sp-deployment-holds:
           context: [slack-secrets, circle-daily-deploy-secrets]
