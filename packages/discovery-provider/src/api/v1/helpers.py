@@ -588,9 +588,6 @@ def extend_purchase(purchase):
     new_purchase["seller_user_id"] = encode_int_id(purchase["seller_user_id"])
     new_purchase["content_id"] = encode_int_id(purchase["content_id"])
     new_purchase["access"] = purchase["access"]
-    for split in new_purchase["splits"]:
-        if "user_id" in split:
-            split["user_id"] = encode_int_id(split["user_id"])
     return new_purchase
 
 
