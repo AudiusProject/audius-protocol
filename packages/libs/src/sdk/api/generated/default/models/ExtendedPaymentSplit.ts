@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface ExtendedPaymentSplit {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ExtendedPaymentSplit
      */
-    userId?: string;
+    userId?: number;
     /**
      * 
      * @type {number}
