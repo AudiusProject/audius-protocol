@@ -217,7 +217,7 @@ module.exports = {
         'developers/api/search-tracks',
         'developers/api/get-trending-tracks',
         'developers/api/get-underground-trending-tracks',
-        // 'developers/api/get-track-access-info',
+        'developers/api/get-track-access-info',
         'developers/api/stream-track',
         'developers/api/download-track',
         'developers/api/inspect-track',
