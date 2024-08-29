@@ -22,6 +22,12 @@ def validate_comment_tx(params: ManageEntityParameters):
         and comment_id in params.existing_records[EntityType.COMMENT.value]
     ):
         raise IndexingValidationError(f"Comment {comment_id} already exists")
+    if params.metadata["entity_type"] != "Track":
+        raise IndexingValidationError(
+            f"Entity type {params.metadata['entity_type']}  does not exist"
+        )
+    if params.metadata["body"]:
+        raise IndexingValidationError("Comment body is empty")
 
 
 def create_comment(params: ManageEntityParameters):
@@ -33,7 +39,7 @@ def create_comment(params: ManageEntityParameters):
         user_id=params.user_id,
         text=params.metadata["body"],
         entity_type=params.metadata["entity_type"],
-        entity_id=params.metadata["entity_id"],
+        entity_id=params.entity_id,
         track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
         blockhash=params.event_blockhash,
@@ -46,11 +52,22 @@ def create_comment(params: ManageEntityParameters):
     params.add_record(comment_id, comment_record)
 
     if params.metadata["parent_comment_id"]:
-        remix = CommentThread(
+        existing_comment_thread = (
+            params.session.query(CommentThread)
+            .filter_by(
+                parent_comment_id=params.metadata["parent_comment_id"],
+                comment_id=comment_id,
+            )
+            .first()
+        )
+        if existing_comment_thread:
+            return
+
+        comment_thread = CommentThread(
             parent_comment_id=params.metadata["parent_comment_id"],
             comment_id=comment_id,
         )
-        params.session.add(remix)
+        params.session.add(comment_thread)
 
 
 def update_comment(params: ManageEntityParameters):
