@@ -163,7 +163,15 @@ def validate_user_metadata(
         if str(pubkey) != wallet:
             raise IndexingValidationError(f"Invalid spl address {wallet}")
 
-        account_info = solana_client_manager.get_account_info_json_parsed(pubkey)
+        # Try for a while to get the token account owner.
+        # If we can't get it (solana issues), fail to index successfully.
+        # Maybe this user submitted a bogus address?
+        account_info = solana_client_manager.get_account_info_json_parsed(
+            pubkey, retries=100, commitment="confirmed"
+        )
+
+        if not account_info:
+            raise IndexingValidationError(f"Spl address is unavailable {wallet}")
 
         if account_info.owner != SPL_TOKEN_PUBKEY:
             raise IndexingValidationError(

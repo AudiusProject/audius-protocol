@@ -200,14 +200,16 @@ class SolanaClientManager:
         )
 
     def get_account_info_json_parsed(
-        self, account: Pubkey, retries=DEFAULT_MAX_RETRIES
+        self, account: Pubkey, retries=DEFAULT_MAX_RETRIES, commitment=None
     ):
         def _get_account_info_json_parsed(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
-                    response = client.get_account_info_json_parsed(account)
+                    response = client.get_account_info_json_parsed(
+                        account, commitment=commitment
+                    )
                     return response.value
                 except Exception as e:
                     logger.error(
