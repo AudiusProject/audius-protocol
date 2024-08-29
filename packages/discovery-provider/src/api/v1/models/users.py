@@ -155,6 +155,11 @@ user_subscribers = ns.model(
     },
 )
 
+split = ns.model(
+    "purchase_split",
+    {"user_id": fields.String(required=True), "amount": fields.String(required=True)},
+)
+
 purchase = ns.model(
     "purchase",
     {
@@ -169,5 +174,6 @@ purchase = ns.model(
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=True),
         "access": StringEnumToLower(required=True),
+        "splits": fields.List(fields.Nested(split, requird=True), required=True),
     },
 )
