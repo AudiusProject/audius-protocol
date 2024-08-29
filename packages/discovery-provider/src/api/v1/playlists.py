@@ -32,9 +32,9 @@ from src.api.v1.models.playlists import (
     playlist_model,
 )
 from src.api.v1.models.users import user_model_full
+from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import get_playlists
-from src.queries.get_purchase_gate import get_new_purchase_gate
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
@@ -720,7 +720,7 @@ class GetPlaylistAccessInfo(Resource):
         if not playlists:
             abort_not_found(playlist_id, ns)
         raw = playlists[0]
-        stream_conditions = get_new_purchase_gate(
+        stream_conditions = get_extended_purchase_gate(
             gate=raw["stream_conditions"], include_network_cut=include_network_cut
         )
         playlist = extend_playlist(raw)

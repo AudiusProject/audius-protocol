@@ -1,10 +1,10 @@
 import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_purchase_gate import (
+from src.queries.get_extended_purchase_gate import (
     add_wallet_info_to_splits,
     calculate_split_amounts,
-    get_new_purchase_gate,
+    get_extended_purchase_gate,
     to_wallet_amount_map,
 )
 from src.utils.db_session import get_db
@@ -65,7 +65,7 @@ def test_get_extended_splits(app):
     with db.scoped_session() as session:
 
         # Gets most recent payout wallet by default
-        res = get_new_purchase_gate(
+        res = get_extended_purchase_gate(
             {
                 "usdc_purchase": {
                     "price": 100,
@@ -169,7 +169,7 @@ def test_get_extended_splits_with_network_cut(app):
     with db.scoped_session() as session:
 
         # Gets most recent payout wallet by default
-        res = get_new_purchase_gate(
+        res = get_extended_purchase_gate(
             {
                 "usdc_purchase": {
                     "price": 100,

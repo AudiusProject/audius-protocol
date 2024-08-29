@@ -37,7 +37,7 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
-from src.queries.get_purchase_gate import (
+from src.queries.get_extended_purchase_gate import (
     ExtendedSplit,
     add_wallet_info_to_splits,
     calculate_split_amounts,
