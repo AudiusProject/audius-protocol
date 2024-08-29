@@ -40,14 +40,14 @@ export type AssociatedWalletsResponse = {
 }
 
 export type GetSocialFeedArgs = QueryParams & {
-  filter: string
+  filter: 'all' | 'original' | 'repost'
   with_users?: boolean
   tracks_only?: boolean
   followee_user_ids?: ID[]
   current_user_id?: ID
 }
 
-type GetSocialFeedResponse = {}
+type GetSocialFeedResponse = Array<any>
 
 type InitializationState =
   | { state: 'uninitialized' }

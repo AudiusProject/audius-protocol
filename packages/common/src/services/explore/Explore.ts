@@ -4,7 +4,6 @@ import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 
 import {
   Collection,
-  FeedFilter,
   ID,
   OptionalId,
   UserCollectionMetadata,
@@ -99,7 +98,7 @@ export class Explore {
         offset: 0,
         limit,
         with_users: true,
-        filter: FeedFilter.ORIGINAL,
+        filter: 'original',
         tracks_only: true,
         current_user_id: currentUserId
       })) as UserTrackMetadata[] | null
