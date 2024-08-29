@@ -44,6 +44,8 @@ type CommentSectionProviderProps = {
   // and provided for the components in CommentDrawer
   replyingToComment?: Comment
   setReplyingToComment?: (comment: Comment) => void
+  editingComment?: Comment
+  setEditingComment?: (comment: Comment) => void
 }
 
 type CommentSectionContextType = {
@@ -72,7 +74,9 @@ export const CommentSectionProvider = (
     entityType = EntityType.TRACK,
     children,
     replyingToComment,
-    setReplyingToComment
+    setReplyingToComment,
+    editingComment,
+    setEditingComment
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
@@ -130,6 +134,8 @@ export const CommentSectionProvider = (
         currentSort,
         replyingToComment,
         setReplyingToComment,
+        editingComment,
+        setEditingComment,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,

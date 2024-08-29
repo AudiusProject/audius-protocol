@@ -7,7 +7,7 @@ import {
   usePinComment,
   useReportComment
 } from '@audius/common/context'
-import { encodeHashId, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import type { Comment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 
@@ -41,11 +41,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
-  const { entityId, isEntityOwner, currentUserId } = useCurrentCommentSection()
-
-  // TODO: Move to context?
-  const currentUserIdString = encodeHashId(currentUserId)
-  const isCommentOwner = userId === currentUserIdString
+  const { entityId, isEntityOwner, currentUserId, setEditingComment } =
+    useCurrentCommentSection()
+  const isCommentOwner = Number(userId) === currentUserId
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
@@ -72,7 +70,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     },
     isCommentOwner && {
       text: messages.edit,
-      callback: () => {} // TODO
+      callback: () => setEditingComment?.(props.comment)
     },
     isCommentOwner && {
       text: messages.delete,

@@ -73,6 +73,7 @@ export const CommentDrawer = () => {
   const insets = useSafeAreaInsets()
 
   const [replyingToComment, setReplyingToComment] = useState<Comment>()
+  const [editingComment, setEditingComment] = useState<Comment>()
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
@@ -119,6 +120,8 @@ export const CommentDrawer = () => {
               entityId={entityId}
               replyingToComment={replyingToComment}
               setReplyingToComment={setReplyingToComment}
+              editingComment={editingComment}
+              setEditingComment={setEditingComment}
             >
               <CommentDrawerForm />
             </CommentSectionProvider>
@@ -130,6 +133,8 @@ export const CommentDrawer = () => {
           entityId={entityId}
           replyingToComment={replyingToComment}
           setReplyingToComment={setReplyingToComment}
+          editingComment={editingComment}
+          setEditingComment={setEditingComment}
         >
           <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
           <Divider orientation='horizontal' />

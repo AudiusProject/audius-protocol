@@ -35,7 +35,7 @@ type CommentFormContentProps = Omit<
 
 const CommentFormContent = (props: CommentFormContentProps) => {
   const { isLoading, TextInputComponent } = props
-  const { currentUserId, comments, replyingToComment } =
+  const { currentUserId, comments, replyingToComment, editingComment } =
     useCurrentCommentSection()
   const ref = useRef<RNTextInput>(null)
 
@@ -55,10 +55,20 @@ const CommentFormContent = (props: CommentFormContentProps) => {
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
-      setFieldValue('commentMessage', `@${replyingToUser.handle}`)
+      setFieldValue('commentMessage', `@${replyingToUser.handle} `)
       ref.current?.focus()
     }
   }, [replyingToComment, replyingToUser, setFieldValue])
+
+  /**
+   * Populate and focus input when editing a comment
+   */
+  useEffect(() => {
+    if (editingComment) {
+      setFieldValue('commentMessage', editingComment.message)
+      ref.current?.focus()
+    }
+  }, [editingComment, setFieldValue])
 
   const message = comments?.length
     ? messages.addComment
