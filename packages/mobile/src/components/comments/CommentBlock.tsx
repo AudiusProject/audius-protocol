@@ -1,14 +1,15 @@
 import { useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
-import { useReactToComment } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  useReactToComment
+} from '@audius/common/context'
 import type { Comment } from '@audius/sdk'
 
 import {
   CommentText,
   Flex,
-  IconButton,
-  IconHeart,
   IconPencil,
   PlainButton,
   Text,
@@ -37,6 +38,7 @@ export type CommentBlockProps = {
 
 export const CommentBlock = (props: CommentBlockProps) => {
   const { comment, hideActions } = props
+  const { setReplyingToComment } = useCurrentCommentSection()
   const {
     isPinned,
     message,
@@ -47,23 +49,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
     userId: userIdStr
   } = comment
 
-  //   const [editComment] = useEditComment()
   const [reactToComment] = useReactToComment()
   const userId = Number(userIdStr)
   useGetUserById({ id: userId })
 
   const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
-  const [showReplyInput, setShowReplyInput] = useState(false)
-  //   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
   const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
-
-  //   const handleCommentEdit = (commentMessage: string) => {
-  //     editComment(commentId, commentMessage)
-  //   }
-
-  //   const handleCommentReply = (commentMessage: string) => {
-  //     postComment(commentMessage, parentCommentId ?? comment.id)
-  //   }
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -129,7 +120,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
               <PlainButton
                 variant='subdued'
                 onPress={() => {
-                  setShowReplyInput(!showReplyInput)
+                  setReplyingToComment?.(comment)
                 }}
               >
                 {messages.reply}

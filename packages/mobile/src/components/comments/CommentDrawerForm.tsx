@@ -1,6 +1,9 @@
 import React from 'react'
 
-import { usePostComment } from '@audius/common/context'
+import {
+  useCurrentCommentSection,
+  usePostComment
+} from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 
@@ -9,10 +12,11 @@ import { Box } from '@audius/harmony-native'
 import { CommentForm } from './CommentForm'
 
 export const CommentDrawerForm = () => {
+  const { replyingToComment } = useCurrentCommentSection()
   const [postComment, { status: postCommentStatus }] = usePostComment()
 
   const handlePostComment = (message: string) => {
-    postComment(message, undefined)
+    postComment(message, replyingToComment?.id)
   }
 
   return (

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
 import { accountSelectors } from '@audius/common/store'
+import type { Comment } from '@audius/sdk'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -27,9 +28,7 @@ import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
 const { getUserId } = accountSelectors
 
-type CommentDrawerContentProps = {}
-
-const CommentDrawerContent = (props: CommentDrawerContentProps) => {
+const CommentDrawerContent = () => {
   const { comments, commentSectionLoading: isLoading } =
     useCurrentCommentSection()
 
@@ -61,6 +60,7 @@ const CommentDrawerContent = (props: CommentDrawerContentProps) => {
       ListFooterComponent={<Box h='l' />}
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
+      keyboardShouldPersistTaps='handled'
       renderItem={({ item }) => (
         <Box ph='l'>
           <CommentThread commentId={item.id} />
@@ -76,6 +76,8 @@ export const CommentDrawer = () => {
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const currentUserId = useSelector(getUserId)
+
+  const [replyingToComment, setReplyingToComment] = useState<Comment>()
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
@@ -124,6 +126,8 @@ export const CommentDrawer = () => {
               entityId={entityId}
               isEntityOwner={isEntityOwner}
               playTrack={() => {}} // TODO
+              replyingToComment={replyingToComment}
+              setReplyingToComment={setReplyingToComment}
             >
               <CommentDrawerForm />
             </CommentSectionProvider>
@@ -137,9 +141,10 @@ export const CommentDrawer = () => {
           entityId={entityId}
           isEntityOwner={isEntityOwner}
           playTrack={() => {}} // TODO
+          replyingToComment={replyingToComment}
+          setReplyingToComment={setReplyingToComment}
         >
           <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
-
           <Divider orientation='horizontal' />
           <CommentDrawerContent />
         </CommentSectionProvider>

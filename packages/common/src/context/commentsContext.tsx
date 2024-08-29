@@ -3,9 +3,6 @@ import { PropsWithChildren, createContext, useContext, useState } from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
 
-import { usePaginatedQuery } from '..//audius-query'
-import { ID, Status } from '..//models'
-import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -14,6 +11,9 @@ import {
   usePostComment as useAQueryPostComment,
   useReactToCommentById
 } from '../api'
+import { usePaginatedQuery } from '../audius-query'
+import { ID, Status } from '../models'
+import { Nullable } from '../utils'
 
 /**
  * Context object to avoid prop drilling and share a common API with web/native code
@@ -27,6 +27,11 @@ type CommentSectionContextProps = {
   entityType?: EntityType.TRACK
   isEntityOwner: boolean
   playTrack: () => void
+
+  // These are optional because they are only used on mobile
+  // and provided for the components in CommentDrawer
+  replyingToComment?: Comment
+  setReplyingToComment?: (comment: Comment) => void
 }
 
 export enum CommentSortMethod {
@@ -57,7 +62,9 @@ export const CommentSectionProvider = ({
   isEntityOwner,
   entityType = EntityType.TRACK,
   children,
-  playTrack
+  playTrack,
+  replyingToComment,
+  setReplyingToComment
 }: PropsWithChildren<CommentSectionContextProps>) => {
   const {
     data: comments = [],
@@ -100,6 +107,8 @@ export const CommentSectionProvider = ({
         commentSectionLoading,
         isEntityOwner,
         currentSort,
+        replyingToComment,
+        setReplyingToComment,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,

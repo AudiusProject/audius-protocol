@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react'
+
+import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
@@ -32,8 +35,30 @@ type CommentFormContentProps = Omit<
 
 const CommentFormContent = (props: CommentFormContentProps) => {
   const { isLoading, TextInputComponent } = props
-  const { currentUserId, comments } = useCurrentCommentSection()
+  const { currentUserId, comments, replyingToComment } =
+    useCurrentCommentSection()
+  const ref = useRef<RNTextInput>(null)
+
+  const replyingToUserId = Number(replyingToComment?.userId)
+  const { data: replyingToUser } = useGetUserById(
+    {
+      id: replyingToUserId
+    },
+    { disabled: !replyingToComment }
+  )
+
+  const { setFieldValue } = useFormikContext()
   const { submitForm } = useFormikContext()
+
+  /**
+   * Populate and focus input when replying to a comment
+   */
+  useEffect(() => {
+    if (replyingToComment && replyingToUser) {
+      setFieldValue('commentMessage', `@${replyingToUser.handle}`)
+      ref.current?.focus()
+    }
+  }, [replyingToComment, replyingToUser, setFieldValue])
 
   const message = comments?.length
     ? messages.addComment
@@ -51,6 +76,7 @@ const CommentFormContent = (props: CommentFormContentProps) => {
         style={{ flex: 1 }}
         name='commentMessage'
         label={messages.addComment}
+        ref={ref}
         hideLabel
         placeholder={message}
         endAdornment={
