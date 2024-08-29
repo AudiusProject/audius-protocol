@@ -136,7 +136,7 @@ function* downloadTrackAsync(
 
   const { data } = yield* call([sdk.full.tracks, sdk.full.tracks.getTrack], {
     trackId: Id.parse(trackId),
-    userId: OptionalId.parse(current)
+    userId: OptionalId.parse(currentUserId)
   })
   const track = data ? userTrackMetadataFromSDK(data) : null
 
