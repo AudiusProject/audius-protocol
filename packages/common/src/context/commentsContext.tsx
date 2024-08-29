@@ -60,7 +60,7 @@ type CommentSectionProviderProps = {
 export const CommentSectionProvider = (
   props: PropsWithChildren<CommentSectionProviderProps>
 ) => {
-  const { entityId, entityType, children } = props
+  const { entityId, entityType = EntityType.TRACK, children } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
     data: comments = [],
