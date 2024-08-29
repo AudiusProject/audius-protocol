@@ -174,6 +174,6 @@ purchase = ns.model(
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=True),
         "access": StringEnumToLower(required=True),
-        "splits": fields.List(fields.Nested(split, requird=True), required=True),
+        "splits": fields.List(fields.Nested(split), required=True),
     },
 )
