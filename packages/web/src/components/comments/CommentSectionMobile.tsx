@@ -4,7 +4,6 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { Status } from '@audius/common/models'
-import { COMMENTS_PAGE } from '@audius/common/src/utils/route'
 import {
   Flex,
   IconCaretRight,
@@ -14,7 +13,6 @@ import {
   Text
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
-import { generatePath } from 'react-router-dom-v5-compat'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'

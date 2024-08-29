@@ -84,6 +84,7 @@ import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
+import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
@@ -104,8 +105,6 @@ import 'utils/redirect'
 import { getPathname } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
-
-import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
 
 const {
   FEED_PAGE,
