@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, Union, cast
 
 import requests
-from flask_restx import reqparse
+from flask_restx import inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
@@ -954,7 +954,7 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "includePurchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Whether or not to include purchaseable content",
 )
 full_search_parser.add_argument(
@@ -974,19 +974,19 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "is_verified",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include verified users in the user results",
 )
 full_search_parser.add_argument(
     "has_downloads",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include tracks that have downloads in the track results",
 )
 full_search_parser.add_argument(
     "is_purchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include purchaseable tracks and albums in the track and album results",
 )
 full_search_parser.add_argument(
@@ -999,13 +999,13 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "bpm_min",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm greater than or equal to",
 )
 full_search_parser.add_argument(
     "bpm_max",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm less than or equal to",
 )
 full_search_parser.add_argument(

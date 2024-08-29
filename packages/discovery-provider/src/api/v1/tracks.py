@@ -548,6 +548,10 @@ stream_parser.add_argument(
     default=None,
 )
 
+stream_url_response = make_response(
+    "stream_url_response", ns, fields.String(required=True)
+)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -564,6 +568,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
+    @ns.response(200, "Success", stream_url_response)
     @ns.expect(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):

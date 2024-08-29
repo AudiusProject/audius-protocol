@@ -17,10 +17,13 @@
 import * as runtime from '../runtime';
 import type {
   NotificationsResponse,
+  PlaylistUpdatesResponse,
 } from '../models';
 import {
     NotificationsResponseFromJSON,
     NotificationsResponseToJSON,
+    PlaylistUpdatesResponseFromJSON,
+    PlaylistUpdatesResponseToJSON,
 } from '../models';
 
 export interface GetNotificationsRequest {
@@ -29,6 +32,10 @@ export interface GetNotificationsRequest {
     groupId?: string;
     limit?: number;
     validTypes?: Array<GetNotificationsValidTypesEnum>;
+}
+
+export interface GetPlaylistUpdatesRequest {
+    userId: string;
 }
 
 /**
@@ -80,6 +87,37 @@ export class NotificationsApi extends runtime.BaseAPI {
      */
     async getNotifications(params: GetNotificationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationsResponse> {
         const response = await this.getNotificationsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get playlists the user has saved that have been updated for user ID
+     */
+    async getPlaylistUpdatesRaw(params: GetPlaylistUpdatesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistUpdatesResponse>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getPlaylistUpdates.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/notifications/{user_id}/playlist_updates`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistUpdatesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get playlists the user has saved that have been updated for user ID
+     */
+    async getPlaylistUpdates(params: GetPlaylistUpdatesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistUpdatesResponse> {
+        const response = await this.getPlaylistUpdatesRaw(params, initOverrides);
         return await response.value();
     }
 

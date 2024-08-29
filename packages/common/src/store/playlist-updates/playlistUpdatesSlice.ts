@@ -1,7 +1,8 @@
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'
 
+import { PlaylistUpdate } from '~/models/PlaylistLibrary'
+
 import {
-  PlaylistUpdate,
   PlaylistUpdatesReceivedAction,
   PlaylistUpdateState,
   UpdatedPlaylistViewedAction
