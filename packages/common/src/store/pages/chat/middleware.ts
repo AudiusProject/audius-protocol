@@ -3,6 +3,7 @@ import { Middleware } from 'redux'
 
 import { Status } from '~/models/Status'
 import { getUserId } from '~/store/account/selectors'
+import { makeBlastChatId } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { actions as chatActions } from './slice'
@@ -16,6 +17,7 @@ export const chatMiddleware =
   (store) => {
     let messageListener: ChatEvents['message'] | null = null
     let reactionListener: ChatEvents['reaction'] | null = null
+    let blastListener: ChatEvents['blast'] | null = null
     let openListener: ChatEvents['open'] | null = null
     let closeListener: ChatEvents['close'] | null = null
     let errorListener: ChatEvents['error'] | null = null
@@ -36,6 +38,28 @@ export const chatMiddleware =
             store.dispatch(
               addMessage({
                 chatId,
+                message,
+                status: Status.SUCCESS,
+                isSelfMessage
+              })
+            )
+          }
+          blastListener = ({
+            audience,
+            audienceContentType,
+            audienceContentId,
+            message
+          }) => {
+            const currentUserId = getUserId(store.getState())
+            const isSelfMessage =
+              message.sender_user_id === encodeHashId(currentUserId)
+            store.dispatch(
+              addMessage({
+                chatId: makeBlastChatId({
+                  audience,
+                  audienceContentType,
+                  audienceContentId
+                }),
                 message,
                 status: Status.SUCCESS,
                 isSelfMessage
@@ -69,6 +93,7 @@ export const chatMiddleware =
           }
           sdk.chats.addEventListener('open', openListener)
           sdk.chats.addEventListener('message', messageListener)
+          sdk.chats.addEventListener('blast', blastListener)
           sdk.chats.addEventListener('reaction', reactionListener)
           sdk.chats.addEventListener('close', closeListener)
           sdk.chats.addEventListener('error', errorListener)

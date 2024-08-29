@@ -84,6 +84,7 @@ import IconPlaylistsSVG from '../assets/icons/Playlists.svg'
 import IconPlusSVG from '../assets/icons/Plus.svg'
 import IconPodcastBackSVG from '../assets/icons/PodcastBack.svg'
 import IconPodcastForwardSVG from '../assets/icons/PodcastForward.svg'
+import IconQrCodeSVG from '../assets/icons/QrCode.svg'
 import IconQuestionCircleSVG from '../assets/icons/QuestionCircle.svg'
 import IconRadarSVG from '../assets/icons/Radar.svg'
 import IconReceiveSVG from '../assets/icons/Receive.svg'
@@ -302,3 +303,4 @@ export const IconMerch = IconMerchSVG as IconComponent
 export const IconSupport = IconSupportSVG as IconComponent
 export const IconPlaybackPause = IconPlaybackPauseSVG as IconComponent
 export const IconPlaybackPlay = IconPlaybackPlaySVG as IconComponent
+export const IconQrCode = IconQrCodeSVG as IconComponent

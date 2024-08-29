@@ -1,6 +1,21 @@
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Kind } from '~/models'
+import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils'
+
+export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
+  const splitPermalink = permalink.split('/')
+  if (splitPermalink.length !== 4) {
+    throw Error(
+      'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
+    )
+  }
+  const [, handle, , slug] = splitPermalink
+  return { handle, slug }
+}
 
 const collectionApi = createApi({
   reducerPath: 'collectionApi',
@@ -11,24 +26,28 @@ const collectionApi = createApi({
           playlistId,
           currentUserId
         }: { playlistId: Nullable<ID>; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
         if (!playlistId) return null
-        return (
-          await apiClient.getPlaylist({
-            playlistId,
-            currentUserId: currentUserId ?? null
-          })
-        )[0]
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.playlists.getPlaylist({
+          playlistId: Id.parse(playlistId),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return data.length
+          ? userCollectionMetadataFromSDK(data[0]) ?? null
+          : null
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return await apiClient.getPlaylists({
-          playlistIds: ids,
-          currentUserId: currentUserId ?? null
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
         })
+        return transformAndCleanList(data, userCollectionMetadataFromSDK)
       },
       options: {
         idArgKey: 'playlistId',
@@ -43,14 +62,17 @@ const collectionApi = createApi({
           permalink,
           currentUserId
         }: { permalink: string; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return (
-          await apiClient.getPlaylistByPermalink({
-            permalink,
-            currentUserId
+        const sdk = await audiusSdk()
+        const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
+        const { data = [] } =
+          await sdk.full.playlists.getPlaylistByHandleAndSlug({
+            handle,
+            slug,
+            userId: OptionalId.parse(currentUserId)
           })
-        )[0]
+        return transformAndCleanList(data, userCollectionMetadataFromSDK)[0]
       },
       options: {
         permalinkArgKey: 'permalink',

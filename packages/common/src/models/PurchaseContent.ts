@@ -1,7 +1,8 @@
 export enum PurchaseMethod {
   BALANCE = 'balance',
   CARD = 'card',
-  CRYPTO = 'crypto'
+  CRYPTO = 'crypto',
+  WALLET = 'wallet'
 }
 
 export enum PurchaseVendor {

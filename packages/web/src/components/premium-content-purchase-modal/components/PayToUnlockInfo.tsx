@@ -4,15 +4,13 @@ import { Name } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { Text, TextLink } from '@audius/harmony'
 
-import { LockedStatusPill } from 'components/locked-status-pill'
 import { make, track } from 'services/analytics'
 
 import styles from './PayToUnlockInfo.module.css'
 const { TERMS_OF_SERVICE } = route
 
 const messages = {
-  payToUnlock: 'Pay to unlock',
-  copyPart1: 'By clicking on "Buy", you agree to our ',
+  copyPart1: 'By proceeding, you agree to our ',
   termsOfUse: 'Terms of Use',
   copyPart2: '. Additional payment provider fees may apply.'
 }
@@ -24,19 +22,10 @@ export const PayToUnlockInfo = () => {
 
   return (
     <div className={styles.container}>
-      <Text
-        variant='label'
-        size='l'
-        strength='strong'
-        className={styles.header}
-      >
-        <span>{messages.payToUnlock}</span>
-        <LockedStatusPill locked />
-      </Text>
-      <Text className={styles.copy} variant='body'>
+      <Text className={styles.copy} variant='body' size='xs'>
         <span>{messages.copyPart1}</span>
         <TextLink
-          variant='secondary'
+          variant='visible'
           isExternal
           href={TERMS_OF_SERVICE}
           onClick={handleClickTOSLink}
