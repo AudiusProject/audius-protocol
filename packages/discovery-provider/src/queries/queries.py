@@ -4,7 +4,6 @@ from flask import Blueprint, Response, request
 
 from src import api_helpers, exceptions
 from src.queries.get_cid_source import get_cid_source
-from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
@@ -18,6 +17,7 @@ from src.queries.get_previously_private_playlists import (
     get_previously_private_playlists,
 )
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
+from src.queries.get_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user

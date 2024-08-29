@@ -18,6 +18,7 @@ from src.api.v1.helpers import (
     current_user_parser,
     decode_ids_array,
     decode_with_abort,
+    extend_access_gate,
     extend_blob_info,
     extend_track,
     extend_user,
@@ -45,11 +46,11 @@ from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_TTL_SEC,
 )
 from src.queries.get_comments import get_track_comments
-from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_nft_gated_track_signatures import get_nft_gated_track_signatures
 from src.queries.get_premium_tracks import get_usdc_purchase_tracks
+from src.queries.get_purchase_gate import get_new_purchase_gate
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -1874,13 +1875,13 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(
+        stream_conditions = get_new_purchase_gate(
             gate=raw["stream_conditions"], include_network_cut=include_network_cut
         )
-        download_conditions = get_extended_purchase_gate(
+        download_conditions = get_new_purchase_gate(
             gate=raw["download_conditions"], include_network_cut=include_network_cut
         )
         track = extend_track(raw)
-        track["stream_conditions"] = stream_conditions
-        track["download_conditions"] = download_conditions
+        track["stream_conditions"] = extend_access_gate(stream_conditions)
+        track["download_conditions"] = extend_access_gate(download_conditions)
         return success_response(track)

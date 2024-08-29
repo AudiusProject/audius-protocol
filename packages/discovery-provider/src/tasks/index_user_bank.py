@@ -41,7 +41,7 @@ from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.queries.get_extended_purchase_gate import (
+from src.queries.get_purchase_gate import (
     add_wallet_info_to_splits,
     calculate_split_amounts,
     to_wallet_amount_map,

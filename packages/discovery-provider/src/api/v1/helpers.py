@@ -11,10 +11,14 @@ from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
-from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
 from src.queries.get_notifications import (
     NotificationType,
     default_valid_notification_types,
+)
+from src.queries.get_purchase_gate import (
+    AccessGate,
+    PurchaseGate,
+    get_legacy_purchase_gate,
 )
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
@@ -399,15 +403,30 @@ def extend_track(track, session=None):
 
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
-        track["stream_conditions"] = get_legacy_purchase_gate(
-            track["stream_conditions"], session
+        track["stream_conditions"] = extend_access_gate(
+            track["stream_conditions"], session, use_legacy_purchase_gate=True
         )
     if "download_conditions" in track:
-        track["download_conditions"] = get_legacy_purchase_gate(
-            track["download_conditions"], session
+        track["download_conditions"] = extend_access_gate(
+            track["download_conditions"], session, use_legacy_purchase_gate=True
         )
 
     return track
+
+
+def extend_access_gate(gate: AccessGate, session=None, use_legacy_purchase_gate=False):
+    if "usdc_purchase" in gate:
+        if use_legacy_purchase_gate:
+            return get_legacy_purchase_gate(gate, session)
+        # help mypy
+        gate = cast(PurchaseGate, gate)
+        for split in gate["usdc_purchase"]["splits"]:
+            if split.get("user_id") is not None:
+                # help mypy
+                user_id = cast(int, split["user_id"])
+                split["user_id"] = encode_int_id(user_id)
+        return gate
+    return gate
 
 
 def get_encoded_track_id(track):

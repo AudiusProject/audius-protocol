@@ -170,7 +170,7 @@ def calculate_split_amounts(
 def add_wallet_info_to_splits(
     session: Session, splits: List[Split], timestamp: Optional[datetime]
 ):
-    user_ids = [split["user_id"] for split in splits]
+    user_ids = [split.get("user_id") for split in splits]
 
     max_block_timestamps = (
         session.query(
@@ -230,7 +230,7 @@ def to_wallet_amount_map(splits: List[ExtendedSplit]):
     }
 
 
-def _get_extended_purchase_gate(
+def _get_new_purchase_gate(
     session: Session, gate: PurchaseGate, include_network_cut=False
 ):
     price = gate.get("usdc_purchase", {}).get("price", None)
@@ -239,23 +239,21 @@ def _get_extended_purchase_gate(
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
     extended_splits = calculate_split_amounts(price, splits, include_network_cut)
     extended_gate: ExtendedPurchaseGate = {
-        "usdc_purchase": {"price": price, "splits": extended_splits}
+        "usdc_purchase": {"price": price, "splits": extended_splits},
     }
     return extended_gate
 
 
-def get_extended_purchase_gate(
-    gate: AccessGate, session=None, include_network_cut=False
-):
+def get_new_purchase_gate(gate: AccessGate, session=None, include_network_cut=False):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            return _get_extended_purchase_gate(session, gate, include_network_cut)
+            return _get_new_purchase_gate(session, gate, include_network_cut)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                return _get_extended_purchase_gate(session, gate, include_network_cut)
+                return _get_new_purchase_gate(session, gate, include_network_cut)
 
 
 def get_legacy_purchase_gate(gate: AccessGate, session=None, include_network_cut=False):
@@ -263,13 +261,11 @@ def get_legacy_purchase_gate(gate: AccessGate, session=None, include_network_cut
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            new_gate = _get_extended_purchase_gate(session, gate, include_network_cut)
+            new_gate = _get_new_purchase_gate(session, gate, include_network_cut)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                new_gate = _get_extended_purchase_gate(
-                    session, gate, include_network_cut
-                )
+                new_gate = _get_new_purchase_gate(session, gate, include_network_cut)
         extended_splits = new_gate["usdc_purchase"]["splits"]
         splits = to_wallet_amount_map(extended_splits)
         new_gate["usdc_purchase"]["splits"] = splits
