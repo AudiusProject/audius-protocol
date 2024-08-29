@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface ExtendedPaymentSplit {
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ExtendedPaymentSplit
      */
-    userId: number;
+    userId?: string;
     /**
      * 
      * @type {number}
@@ -57,7 +57,6 @@ export interface ExtendedPaymentSplit {
  */
 export function instanceOfExtendedPaymentSplit(value: object): value is ExtendedPaymentSplit {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "percentage" in value && value["percentage"] !== undefined;
     isInstance = isInstance && "payoutWallet" in value && value["payoutWallet"] !== undefined;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
@@ -75,7 +74,7 @@ export function ExtendedPaymentSplitFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'userId': json['user_id'],
+        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
         'percentage': json['percentage'],
         'ethWallet': !exists(json, 'eth_wallet') ? undefined : json['eth_wallet'],
         'payoutWallet': json['payout_wallet'],
