@@ -157,9 +157,15 @@ export type QueryHookOptions = {
 }
 
 export type PaginatedQueryHookOptions = QueryHookOptions & {
-  pageSize: number // How many items to fetch per page, translates to limit in fetchArgs
-  singlePageData?: boolean // By default we return a list of all page data, this turns that off and only returns data for the current page
-  shouldUseSelector?: boolean // TODO: remove
+  /**
+   * Page size to use.
+   * NOTE: if you change this value after the hook was initialized you will cause a cache miss and it will re-fetch data.
+   */
+  pageSize: number
+  /**
+   * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
+   */
+  singlePageData?: boolean //
 }
 
 export type QueryHookResults<Data> = {
@@ -171,10 +177,26 @@ export type QueryHookResults<Data> = {
 
 export type PaginatedQueryHookResults<Data extends []> =
   QueryHookResults<Data> & {
+    /**
+     * Tracks load state for new pages loading in (not the initial page; initial page can be tracked via status).
+     * Only used after calling loadMore() first
+     */
     isLoadingMore: boolean
+    /**
+     * Returns false if we get data back that is less than the page size
+     */
     hasMore: boolean
+    /**
+     * Load the next page
+     */
     loadMore: () => void
+    /**
+     * A soft reset to go back to the first page. Doesn't clear the data from the store
+     */
     softReset: () => void
+    /**
+     * A hard reset that goes back to the first page AND clears all the data from the store
+     */
     hardReset: () => void
   }
 

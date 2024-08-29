@@ -10,6 +10,9 @@ import { CommonState } from '~/store'
 import { QueryHookOptions, QueryHookResults } from '../types'
 import { getKeyFromFetchArgs } from '../utils'
 
+/**
+ * @deprecated This hook is deprecated in favor of using the 'paginatedQuery' type inside the createApi() method. See comments.ts for an example.
+ */
 export const usePaginatedQuery = <
   Data,
   ArgsType extends { limit: number; offset: number }
@@ -48,6 +51,9 @@ export const usePaginatedQuery = <
   }
 }
 
+/**
+ * @deprecated This hook is deprecated in favor of using the 'paginatedQuery' type inside the createApi() method. See comments.ts for an example.
+ */
 export const useAllPaginatedQuery = <
   Data,
   ArgsType extends { limit: number; offset: number }
