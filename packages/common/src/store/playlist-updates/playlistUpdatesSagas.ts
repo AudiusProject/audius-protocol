@@ -1,9 +1,12 @@
 import { call, takeEvery, select, put } from 'typed-redux-saga'
 
+import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
+import { Id } from '~/models'
 import { Name } from '~/models/Analytics'
 import { getContext } from '~/store/effects'
 
 import { getUserId } from '../account/selectors'
+import { getSDK } from '../sdkUtils'
 
 import { selectPlaylistUpdatesTotal } from './playlistUpdatesSelectors'
 import {
@@ -21,15 +24,20 @@ function* fetchPlaylistUpdatesWorker() {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const existingUpdatesTotal = yield* select(selectPlaylistUpdatesTotal)
 
-  const playlistUpdates = yield* call(
-    [apiClient, apiClient.getPlaylistUpdates],
-    currentUserId
+  const { data } = yield* call(
+    [sdk.full.notifications, sdk.full.notifications.getPlaylistUpdates],
+    { userId: Id.parse(currentUserId) }
   )
 
-  if (!playlistUpdates) return
+  const playlistUpdates = transformAndCleanList(
+    data?.playlistUpdates ?? [],
+    playlistUpdateFromSDK
+  )
+
+  if (!playlistUpdates.length) return
 
   const currentUpdatesTotal = playlistUpdates.length
 

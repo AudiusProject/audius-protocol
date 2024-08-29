@@ -41,8 +41,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
-  const { artistId, entityId, isEntityOwner, currentUserId } =
-    useCurrentCommentSection()
+  const { entityId, isEntityOwner, currentUserId } = useCurrentCommentSection()
 
   // TODO: Move to context?
   const currentUserIdString = encodeHashId(currentUserId)
@@ -97,13 +96,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
       {isVisible ? (
         <Portal hostName='DrawerPortal'>
-          <CommentSectionProvider
-            currentUserId={currentUserId}
-            artistId={artistId}
-            entityId={entityId}
-            isEntityOwner={isEntityOwner}
-            playTrack={() => {}}
-          >
+          <CommentSectionProvider entityId={entityId}>
             <ActionDrawerWithoutRedux
               rows={rows}
               isOpen={isOpen}

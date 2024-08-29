@@ -16,6 +16,7 @@ export type MenuItemProps<Value extends string> = Omit<
   label?: string
   icon?: IconComponent
   leadingElement?: JSX.Element
+  helperText?: string
   isActive?: boolean
 } & (
     | {
@@ -30,8 +31,16 @@ export const MenuItem = forwardRef(function <Value extends string>(
   props: MenuItemProps<Value>,
   ref: Ref<HTMLButtonElement>
 ) {
-  const { label, isActive, onClick, icon, leadingElement, variant, ...other } =
-    props
+  const {
+    label,
+    isActive,
+    onClick,
+    icon,
+    leadingElement,
+    variant,
+    helperText,
+    ...other
+  } = props
 
   const { color, cornerRadius, spacing, typography } = useTheme()
 
@@ -104,6 +113,16 @@ export const MenuItem = forwardRef(function <Value extends string>(
       >
         {variant === 'option' ? label ?? props.value : label}
       </Text>
+      {helperText ? (
+        <Text
+          variant='body'
+          size={variant === 'option' ? 'l' : 'm'}
+          strength={variant === 'button' ? 'strong' : 'default'}
+          color={isActive ? 'staticWhite' : 'subdued'}
+        >
+          {helperText}
+        </Text>
+      ) : null}
     </BaseButton>
   )
 })

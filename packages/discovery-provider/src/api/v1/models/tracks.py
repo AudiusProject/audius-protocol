@@ -207,6 +207,18 @@ track_full = ns.clone(
     },
 )
 
+# Search results may exclude these fields if populated for auto-complete
+# TODO: Search results should be entirely different types
+# https://linear.app/audius/issue/PAY-3390/split-search-types-out-from-entity-types
+search_track_full = ns.clone(
+    "search_track_full",
+    track_full,
+    {
+        "followee_reposts": fields.List(fields.Nested(repost), required=False),
+        "followee_favorites": fields.List(fields.Nested(favorite), required=False),
+    },
+)
+
 stem_full = ns.model(
     "stem_full",
     {

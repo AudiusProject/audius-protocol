@@ -1,5 +1,5 @@
 import { ID } from '~/models/Identifiers'
-import { PurchaseableContentType } from '~/store/purchase-content'
+import { PurchaseableContentType } from '~/store/purchase-content/types'
 
 import { createModal } from '../createModal'
 

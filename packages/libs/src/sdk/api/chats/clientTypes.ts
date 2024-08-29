@@ -173,6 +173,12 @@ export type ChatEvents = {
     messageId: string
     reaction: ChatMessageNullableReaction
   }) => void
+  ['blast']: (params: {
+    audience: ChatBlastAudience
+    audienceContentType?: 'track' | 'album'
+    audienceContentId?: string
+    message: ChatMessage
+  }) => void
 }
 
 export type UnfurlResponse = {

@@ -29,6 +29,12 @@ export type UserTip = {
   tx_signature: string
 }
 
+export type UserTipWithUsers = UserTip & {
+  sender: UserMetadata
+  receiver: UserMetadata
+  followee_supporters: { user_id: string }[]
+}
+
 export type LastDismissedTip = {
   receiver_id: ID
 }

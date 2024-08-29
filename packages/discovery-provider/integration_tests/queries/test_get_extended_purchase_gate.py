@@ -185,7 +185,7 @@ def test_get_extended_splits_with_network_cut(app):
         assert res["usdc_purchase"]["splits"][1]["amount"] == 100000
         assert (
             res["usdc_purchase"]["splits"][1]["payout_wallet"]
-            == "staking-bridge-usdc-payout-wallet"
+            == "3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb"
         )
 
         # Gets older payout wallet when necessary
@@ -197,8 +197,8 @@ def test_get_extended_splits_with_network_cut(app):
         legacy_splits = to_wallet_amount_map(splits)
         assert "first-wallet" in legacy_splits
         assert legacy_splits["first-wallet"] == 900000
-        assert "staking-bridge-usdc-payout-wallet" in legacy_splits
-        assert legacy_splits["staking-bridge-usdc-payout-wallet"] == 100000
+        assert "3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb" in legacy_splits
+        assert legacy_splits["3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb"] == 100000
 
         # Falls back to user bank if present
         even_older_splits = add_wallet_info_to_splits(
@@ -211,8 +211,8 @@ def test_get_extended_splits_with_network_cut(app):
         legacy_splits = to_wallet_amount_map(even_older_splits)
         assert "user-bank" in legacy_splits
         assert legacy_splits["user-bank"] == 900000
-        assert "staking-bridge-usdc-payout-wallet" in legacy_splits
-        assert legacy_splits["staking-bridge-usdc-payout-wallet"] == 100000
+        assert "3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb" in legacy_splits
+        assert legacy_splits["3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb"] == 100000
 
         # Returns None if no user bank indexed and no payout wallet
         other_user_splits = add_wallet_info_to_splits(
@@ -223,5 +223,7 @@ def test_get_extended_splits_with_network_cut(app):
             100, other_user_splits, include_network_cut=True
         )
         other_user_splits = to_wallet_amount_map(other_user_splits)
-        assert "staking-bridge-usdc-payout-wallet" in other_user_splits
-        assert other_user_splits["staking-bridge-usdc-payout-wallet"] == 100000
+        assert "3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb" in other_user_splits
+        assert (
+            other_user_splits["3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb"] == 100000
+        )

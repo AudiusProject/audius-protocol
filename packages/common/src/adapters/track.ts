@@ -32,7 +32,7 @@ export const trackSegmentFromSDK = ({
 })
 
 export const userTrackMetadataFromSDK = (
-  input: full.TrackFull
+  input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
   const decodedTrackId = decodeHashId(input.id)
   const decodedOwnerId = decodeHashId(input.userId)

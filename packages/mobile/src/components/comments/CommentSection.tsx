@@ -1,7 +1,9 @@
 import {
+  CommentSectionProvider,
   useCurrentCommentSection,
   usePostComment
 } from '@audius/common/context'
+import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
@@ -106,24 +108,29 @@ const CommentSectionContent = () => {
   return <CommentBlock comment={comments[0]} hideActions />
 }
 
-export const CommentSection = () => {
-  const { artistId, currentUserId, entityId, isEntityOwner } =
-    useCurrentCommentSection()
+type CommentSectionProps = {
+  entityId: ID
+}
+
+export const CommentSection = (props: CommentSectionProps) => {
+  const { entityId } = props
 
   const { onOpen: openDrawer } = useDrawer('Comment')
 
   const handlePress = () => {
-    openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
+    openDrawer({ entityId })
   }
 
   return (
-    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-      <CommentSectionHeader />
-      <Paper w='100%' direction='column' gap='s' p='l'>
-        <TouchableOpacity onPress={handlePress}>
-          <CommentSectionContent />
-        </TouchableOpacity>
-      </Paper>
-    </Flex>
+    <CommentSectionProvider entityId={entityId}>
+      <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
+        <CommentSectionHeader />
+        <Paper w='100%' direction='column' gap='s' p='l'>
+          <TouchableOpacity onPress={handlePress}>
+            <CommentSectionContent />
+          </TouchableOpacity>
+        </Paper>
+      </Flex>
+    </CommentSectionProvider>
   )
 }

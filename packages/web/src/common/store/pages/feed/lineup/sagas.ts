@@ -51,7 +51,7 @@ function* getTracks({
 
   const params: GetSocialFeedArgs = {
     offset,
-    limit: offset + limit,
+    limit,
     filter,
     with_users: true,
     current_user_id: currentUser.user_id

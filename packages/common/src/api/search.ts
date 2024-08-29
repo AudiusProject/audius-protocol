@@ -1,9 +1,10 @@
 import { Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
 
+import { searchResultsFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Name, SearchSource, UserTrackMetadata } from '~/models'
-import { ID } from '~/models/Identifiers'
+import { ID, OptionalId } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
@@ -49,7 +50,7 @@ const searchApi = createApi({
     getSearchResults: {
       fetch: async (
         args: getSearchArgs,
-        { apiClient, audiusBackend, getFeatureEnabled, analytics }
+        { audiusBackend, audiusSdk, getFeatureEnabled, analytics }
       ) => {
         const {
           category,
@@ -106,17 +107,23 @@ const searchApi = createApi({
         }
 
         const search = async () => {
+          const sdk = await audiusSdk()
+          const key = formatMusicalKey(filters.key)
           const searchParams = {
             kind,
-            currentUserId,
+            userId: OptionalId.parse(currentUserId),
             query,
             limit: limit || 50,
             offset: offset || 0,
             includePurchaseable: isUSDCEnabled,
-            ...filters,
             bpmMin,
             bpmMax,
-            key: formatMusicalKey(filters.key)
+            key: key ? [key] : undefined,
+            genre: filters.genre ? [filters.genre] : undefined,
+            mood: filters.mood ? [filters.mood] : undefined,
+            isVerified: filters.isVerified,
+            hasDownloads: filters.hasDownloads,
+            isPurchaseable: filters.isPremium
           }
           // Fire analytics only for the first page of results
           if (offset === 0) {
@@ -129,7 +136,11 @@ const searchApi = createApi({
               })
             )
           }
-          return await apiClient.getSearchFull(searchParams)
+          const { data } = await sdk.full.search.search()
+          const { tracks, playlists, albums, users } =
+            searchResultsFromSDK(data)
+          const results = { tracks, playlists, albums, users }
+          return results
         }
 
         const results = query?.[0] === '#' ? await searchTags() : await search()

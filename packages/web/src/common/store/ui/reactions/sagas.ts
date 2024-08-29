@@ -1,3 +1,5 @@
+import { transformAndCleanList } from '@audius/common/adapters'
+import { HashId } from '@audius/common/models'
 import { AudiusBackend, FeatureFlags } from '@audius/common/services'
 import {
   reactionsUIActions,
@@ -6,11 +8,13 @@ import {
   getReactionFromRawValue,
   getContext,
   ReactionTypes,
-  accountSelectors
+  accountSelectors,
+  getSDK
 } from '@audius/common/store'
 import {
   encodeHashId,
   getErrorMessage,
+  isResponseError,
   removeNullable
 } from '@audius/common/utils'
 import { AudiusSdk } from '@audius/sdk'
@@ -69,17 +73,30 @@ const submitReaction = async ({
 function* fetchReactionValuesAsync({
   payload
 }: ReturnType<typeof fetchReactionValues>) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   // Fetch reactions
-  // TODO: [PAY-305] This endpoint should be fixed to properly allow multiple reaction fetches
+  // TODO: https://linear.app/audius/issue/PAY-3383/fix-bulk-reactions-endpoint
   const reactions = yield* all(
     payload.entityIds.map((id) =>
-      call([apiClient, apiClient.getReaction], {
-        reactedToIds: [id]
+      call(async () => {
+        try {
+          const { data = [] } = await sdk.full.reactions.bulkGetReactions({
+            reactedToIds: [id]
+          })
+          return transformAndCleanList(data, (item) => ({
+            ...item,
+            reactionValue: parseInt(item.reactionValue),
+            senderUserId: HashId.parse(item.senderUserId)
+          }))[0]
+        } catch (e) {
+          if (isResponseError(e) && e.response.status === 404) {
+            return null
+          }
+          throw e
+        }
       })
     )
   )
-
   // Add them to the store
   // Many of these reactions may be null (i.e. entity not reacted to), ignore them
   const toUpdate = reactions

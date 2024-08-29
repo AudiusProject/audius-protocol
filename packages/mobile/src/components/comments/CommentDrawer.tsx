@@ -4,7 +4,6 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import { accountSelectors } from '@audius/common/store'
 import type { Comment } from '@audius/sdk'
 import {
   BottomSheetFlatList,
@@ -13,7 +12,6 @@ import {
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -25,8 +23,6 @@ import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
-
-const { getUserId } = accountSelectors
 
 const CommentDrawerContent = () => {
   const { comments, commentSectionLoading: isLoading } =
@@ -75,13 +71,12 @@ const BORDER_RADIUS = 40
 export const CommentDrawer = () => {
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
-  const currentUserId = useSelector(getUserId)
 
   const [replyingToComment, setReplyingToComment] = useState<Comment>()
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {
-    data: { entityId, isEntityOwner, artistId },
+    data: { entityId },
     isOpen,
     onClosed
   } = useDrawer('Comment')
@@ -121,11 +116,7 @@ export const CommentDrawer = () => {
         footerComponent={(props) => (
           <BottomSheetFooter {...props} bottomInset={insets.bottom}>
             <CommentSectionProvider
-              currentUserId={currentUserId}
-              artistId={artistId}
               entityId={entityId}
-              isEntityOwner={isEntityOwner}
-              playTrack={() => {}} // TODO
               replyingToComment={replyingToComment}
               setReplyingToComment={setReplyingToComment}
             >
@@ -136,11 +127,7 @@ export const CommentDrawer = () => {
         onDismiss={handleClose}
       >
         <CommentSectionProvider
-          currentUserId={currentUserId}
-          artistId={artistId}
           entityId={entityId}
-          isEntityOwner={isEntityOwner}
-          playTrack={() => {}} // TODO
           replyingToComment={replyingToComment}
           setReplyingToComment={setReplyingToComment}
         >
