@@ -16,6 +16,7 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_feed_item,
     extend_purchase,
     extend_supporter,
     extend_supporting,
@@ -59,7 +60,9 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
+from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
+from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
 from src.api.v1.models.support import (
     supporter_response,
@@ -101,6 +104,7 @@ from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
 )
+from src.queries.get_feed import get_feed
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
@@ -2670,3 +2674,61 @@ class FullUserTracksRemixed(Resource):
         )
         tracks = get_user_tracks_remixed(query_args)
         return success_response(list(map(extend_track, tracks)))
+
+
+USER_FEED_ROUTE = "/<string:id>/feed"
+user_feed_parser = current_user_parser.copy()
+user_feed_parser.add_argument(
+    "filter",
+    required=False,
+    type=str,
+    choices=["all", "repost", "original"],
+    default="all",
+)
+user_feed_parser.add_argument(
+    "tracks_only",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "with_users",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "followee_user_id", action="append", type=int, required=False
+)
+
+user_feed_response = make_full_response(
+    "user_feed_response", full_ns, fields.List(NestedOneOf(user_feed_item))
+)
+
+# TODO: log_duration, record_metrics
+
+
+@full_ns.route(USER_FEED_ROUTE)
+class FullUserFeed(Resource):
+    @full_ns.doc(
+        id="""Get User Feed""",
+        description="Gets the feed for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_feed_parser)
+    @full_ns.marshal_with(user_feed_response)
+    @auth_middleware(user_feed_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        parsedArgs = user_feed_parser.parse_args()
+        args = {
+            "user_id": decoded_id,
+            "filter": parsedArgs.get("filter"),
+            "tracks_only": parsedArgs.get("tracks_only"),
+            "with_users": parsedArgs.get("with_users"),
+            "followee_user_ids": parsedArgs.get("followee_user_id"),
+        }
+
+        feed_results = get_feed(args)
+        return success_response(list(map(extend_feed_item, feed_results)))
