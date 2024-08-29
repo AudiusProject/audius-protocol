@@ -70,9 +70,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
         )}
         {/* TODO: need a way to hide this when no more to load */}
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onClick={() => loadMore()}>
-            {messages.showMoreReplies}
-          </TextLink>
+          <TextLink>{messages.showMoreReplies}</TextLink>
         ) : null}
       </Flex>
     </Flex>
