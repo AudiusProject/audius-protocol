@@ -2,8 +2,7 @@ import { useCallback, useState } from 'react'
 
 import {
   useCurrentStems,
-  useDownloadableContentAccess,
-  useGatedContentAccess
+  useDownloadableContentAccess
 } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { DownloadQuality, ModalSource } from '@audius/common/models'
@@ -47,7 +46,6 @@ const messages = {
   choose: 'Choose File Quality',
   mp3: 'MP3',
   lossless: 'Lossless',
-  downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
@@ -67,10 +65,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     getTrack(state, { id: trackId })
   )
   const { stemTracks } = useCurrentStems({ trackId })
-  const { hasDownloadAccess } = useGatedContentAccess(track)
-  const shouldDisplayDownloadAll =
-    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
-    hasDownloadAccess
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -262,23 +256,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ))}
-        {shouldDisplayDownloadAll ? (
-          <Flex p='l' borderTop='default' justifyContent='center'>
-            <Button
-              variant='secondary'
-              iconLeft={IconReceive}
-              size='small'
-              onPress={() =>
-                handleDownload({
-                  trackIds: stemTracks.map((t) => t.id),
-                  parentTrackId: trackId
-                })
-              }
-            >
-              {messages.downloadAll}
-            </Button>
-          </Flex>
-        ) : null}
       </Expandable>
     </Flex>
   )
