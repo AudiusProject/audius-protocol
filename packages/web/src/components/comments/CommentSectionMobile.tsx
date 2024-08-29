@@ -1,22 +1,20 @@
+import { useGetTrackById } from '@audius/common/api'
 import {
-  CommentSectionProvider,
   useCurrentCommentSection,
   usePostComment
 } from '@audius/common/context'
-import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
-import { TouchableOpacity } from 'react-native'
-
+import { COMMENTS_PAGE } from '@audius/common/src/utils/route'
 import {
   Flex,
   IconCaretRight,
   Paper,
   PlainButton,
+  Skeleton,
   Text
-} from '@audius/harmony-native'
-import { useDrawer } from 'app/hooks/useDrawer'
-
-import Skeleton from '../skeleton'
+} from '@audius/harmony'
+import { Link } from 'react-router-dom'
+import { generatePath } from 'react-router-dom-v5-compat'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
@@ -32,10 +30,12 @@ const CommentSectionHeader = () => {
     commentSectionLoading: isLoading,
     comments
   } = useCurrentCommentSection()
-  const { onOpen: openDrawer } = useDrawer('Comment')
 
-  const handlePressViewAll = () => {
-    openDrawer({ entityId })
+  const { data: track } = useGetTrackById({ id: entityId })
+
+  const handleClickViewAll = () => {
+    // TODO open the page
+    // openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
   }
 
   const isShowingComments = !isLoading && comments?.length
@@ -55,11 +55,12 @@ const CommentSectionHeader = () => {
       </Text>
       {isShowingComments ? (
         <PlainButton
-          onPress={handlePressViewAll}
+          onClick={handleClickViewAll}
           iconRight={IconCaretRight}
           variant='subdued'
+          asChild
         >
-          {messages.viewAll}
+          <Link to={`${track?.permalink}/comments`}>{messages.viewAll}</Link>
         </PlainButton>
       ) : null}
     </Flex>
@@ -80,10 +81,10 @@ const CommentSectionContent = () => {
   if (isLoading) {
     return (
       <Flex direction='row' gap='s' alignItems='center'>
-        <Skeleton width={40} height={40} style={{ borderRadius: 100 }} />
+        <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
         <Flex gap='s'>
-          <Skeleton height={20} width={240} />
-          <Skeleton height={20} width={160} />
+          <Skeleton h={20} w={240} />
+          <Skeleton h={20} w={160} />
         </Flex>
       </Flex>
     )
@@ -105,29 +106,13 @@ const CommentSectionContent = () => {
   return <CommentBlock comment={comments[0]} hideActions />
 }
 
-type CommentSectionProps = {
-  entityId: ID
-}
-
-export const CommentSection = (props: CommentSectionProps) => {
-  const { entityId } = props
-
-  const { onOpen: openDrawer } = useDrawer('Comment')
-
-  const handlePress = () => {
-    openDrawer({ entityId })
-  }
-
+export const CommentSectionMobile = () => {
   return (
-    <CommentSectionProvider entityId={entityId}>
-      <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-        <CommentSectionHeader />
-        <Paper w='100%' direction='column' gap='s' p='l'>
-          <TouchableOpacity onPress={handlePress}>
-            <CommentSectionContent />
-          </TouchableOpacity>
-        </Paper>
-      </Flex>
-    </CommentSectionProvider>
+    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
+      <CommentSectionHeader />
+      <Paper w='100%' direction='column' gap='s' p='l'>
+        <CommentSectionContent />
+      </Paper>
+    </Flex>
   )
 }

@@ -105,6 +105,8 @@ import { getPathname } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
 
+import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
+
 const {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -135,6 +137,7 @@ const {
   PLAYLIST_PAGE,
   ALBUM_PAGE,
   TRACK_PAGE,
+  TRACK_COMMENTS_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
@@ -909,6 +912,13 @@ class WebPlayer extends Component {
                   exact
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
+                />
+                <Route exact path={TRACK_PAGE} component={TrackPage} />
+                <MobileRoute
+                  exact
+                  path={TRACK_COMMENTS_PAGE}
+                  isMobile={isMobile}
+                  component={TrackCommentsPage}
                 />
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
                 <DesktopRoute
