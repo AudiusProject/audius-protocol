@@ -18,7 +18,6 @@ import {
   removeNullable,
   getQueryParams
 } from '@audius/common/utils'
-import { current } from '@reduxjs/toolkit'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
