@@ -18,7 +18,8 @@ import {
   usePurchaseMethod,
   isStreamPurchaseable,
   isTrackDownloadPurchaseable,
-  isContentDownloadGated
+  isContentDownloadGated,
+  PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import {
@@ -263,6 +264,11 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
+  // TODO Re-enable pay with anything (mobile) when fully working
+  // const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
+  //   FeatureFlags.PAY_WITH_ANYTHING_ENABLED
+  // )
+  const isPayWithAnythingEnabledFlag = false
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
@@ -281,6 +287,12 @@ const RenderForm = ({
   useEffect(() => {
     setPurchaseVendor(purchaseVendor)
   }, [purchaseVendor, setPurchaseVendor])
+
+  const [
+    { value: purchaseMethodMintAddress },
+    ,
+    { setValue: setPurchaseMethodMintAddress }
+  ] = useField(PURCHASE_METHOD_MINT_ADDRESS)
 
   const { data: balance } = useUSDCBalance({
     isPolling: true,
@@ -372,10 +384,17 @@ const RenderForm = ({
                   <PaymentMethod
                     selectedMethod={purchaseMethod}
                     setSelectedMethod={setPurchaseMethod}
+                    selectedPurchaseMethodMintAddress={
+                      purchaseMethodMintAddress
+                    }
+                    setSelectedPurchaseMethodMintAddress={
+                      setPurchaseMethodMintAddress
+                    }
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance={!!(balance && !balance.isZero())}
                     isCoinflowEnabled={showCoinflow}
+                    isPayWithAnythingEnabled={isPayWithAnythingEnabledFlag}
                     showVendorChoice={false}
                   />
                 )}

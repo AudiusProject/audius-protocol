@@ -37,7 +37,7 @@ export const CommentSectionDesktop = () => {
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
           <CommentSortBar />
-          <Flex direction='column' gap='m' pt='m'>
+          <Flex direction='column' gap='xl' pt='m'>
             {comments.length === 0 ? <NoComments /> : null}
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />

@@ -908,6 +908,19 @@ export class ChatsApi
         } else if (data.rpc.method === 'chat.blast') {
           const userId = data.metadata.receiverUserId
           await this.upgradeBlasts(userId)
+          this.eventEmitter.emit('blast', {
+            audience: data.rpc.params.audience,
+            audienceContentType: data.rpc.params.audience_content_type,
+            audienceContentId: data.rpc.params.audience_content_id,
+            message: {
+              message_id: data.rpc.params.blast_id,
+              message: data.rpc.params.message,
+              sender_user_id: userId,
+              created_at: data.metadata.timestamp,
+              reactions: [],
+              is_plaintext: true
+            }
+          })
         }
       }
       handleAsync()

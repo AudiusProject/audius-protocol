@@ -21,11 +21,15 @@ export type ActionDrawerRow = {
   isDestructive?: boolean
 }
 
-type ActionDrawerProps = {
-  modalName: Modals
+export type ActionDrawerContentProps = {
   rows: ActionDrawerRow[]
   styles?: { row?: ViewStyle }
   disableAutoClose?: boolean
+  children?: ReactNode | ReactNode[]
+} & Pick<AppDrawerProps, 'onClose'>
+
+type ActionDrawerProps = ActionDrawerContentProps & {
+  modalName: Modals
 } & SetOptional<AppDrawerProps, 'children'>
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
@@ -53,24 +57,22 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   }
 }))
 
-// `ActionDrawer` is a drawer that presents a list of clickable rows with text
-const ActionDrawer = (props: ActionDrawerProps) => {
+export const ActionDrawerContent = (props: ActionDrawerContentProps) => {
   const {
-    modalName,
     rows,
     styles: stylesProp,
     disableAutoClose,
     children,
-    ...other
+    onClose
   } = props
+
   const styles = useStyles()
-  const { onClose } = useDrawerState(modalName)
 
   const didSelectRow = useCallback(
     (index: number) => {
       const { callback } = rows[index]
       if (!disableAutoClose) {
-        onClose()
+        onClose?.()
       }
       if (callback) {
         callback()
@@ -82,31 +84,55 @@ const ActionDrawer = (props: ActionDrawerProps) => {
   const { neutralLight9 } = useThemeColors()
 
   return (
+    <View>
+      {children}
+      {rows.map(({ text, isDestructive = false, icon, style }, index) => (
+        <TouchableHighlight
+          key={`${text}-${index}`}
+          onPress={() => {
+            didSelectRow(index)
+          }}
+          underlayColor={neutralLight9}
+        >
+          <View style={[styles.row, stylesProp?.row]}>
+            {icon ? <View style={styles.actionIcon}>{icon}</View> : null}
+            <Text
+              fontSize='xl'
+              weight='demiBold'
+              color={isDestructive ? 'accentRed' : 'secondary'}
+              style={style}
+            >
+              {text}
+            </Text>
+          </View>
+        </TouchableHighlight>
+      ))}
+    </View>
+  )
+}
+
+// `ActionDrawer` is a drawer that presents a list of clickable rows with text
+const ActionDrawer = (props: ActionDrawerProps) => {
+  const {
+    modalName,
+    rows,
+    styles: stylesProp,
+    disableAutoClose,
+    children,
+    ...other
+  } = props
+  const { onClose } = useDrawerState(modalName)
+
+  return (
     <AppDrawer modalName={modalName} {...other}>
-      <View>
+      <ActionDrawerContent
+        onClose={onClose}
+        rows={rows}
+        styles={stylesProp}
+        disableAutoClose={disableAutoClose}
+      >
         {children}
-        {rows.map(({ text, isDestructive = false, icon, style }, index) => (
-          <TouchableHighlight
-            key={`${text}-${index}`}
-            onPress={() => {
-              didSelectRow(index)
-            }}
-            underlayColor={neutralLight9}
-          >
-            <View style={[styles.row, stylesProp?.row]}>
-              {icon ? <View style={styles.actionIcon}>{icon}</View> : null}
-              <Text
-                fontSize='xl'
-                weight='demiBold'
-                color={isDestructive ? 'accentRed' : 'secondary'}
-                style={style}
-              >
-                {text}
-              </Text>
-            </View>
-          </TouchableHighlight>
-        ))}
-      </View>
+      </ActionDrawerContent>
     </AppDrawer>
   )
 }

@@ -1,5 +1,21 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
+import type { createJupiterApiClient } from '@jup-ag/api'
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync
+} from '@solana/spl-token'
+import {
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+  AddressLookupTableAccount,
+  TransactionMessage,
+  Connection,
+  TransactionInstruction
+} from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
@@ -20,8 +36,11 @@ import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
+  getRecentBlockhash,
   getRootSolanaAccount,
-  getTokenAccountInfo
+  getSolanaConnection,
+  getTokenAccountInfo,
+  pollForTokenBalanceChange
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
@@ -65,6 +84,7 @@ import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
 import { saveCollection } from '../social/collections/actions'
+import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
   buyUSDC,
@@ -525,6 +545,7 @@ function* doStartPurchaseContentFlow({
     extraAmountPreset,
     purchaseMethod,
     purchaseVendor,
+    purchaseMethodMintAddress,
     contentId,
     contentType = PurchaseableContentType.TRACK
   }
@@ -547,6 +568,8 @@ function* doStartPurchaseContentFlow({
     contentType
   })
 
+  const totalAmount = (price + (extraAmount ?? 0)) / 100
+
   const analyticsInfo = {
     price: price / 100,
     contentId,
@@ -556,7 +579,7 @@ function* doStartPurchaseContentFlow({
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
-    totalAmount: (price + (extraAmount ?? 0)) / 100,
+    totalAmount,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
     payExtraPreset: extraAmountPreset
   }
@@ -630,6 +653,23 @@ function* doStartPurchaseContentFlow({
             includeNetworkCut: isNetworkCutEnabled
           })
         }
+        break
+      }
+      case PurchaseMethod.WALLET: {
+        const decimals = TOKEN_LISTING_MAP.USDC.decimals
+        const totalAmountWithDecimals = Math.ceil(totalAmount * 10 ** decimals)
+        if (!purchaseMethodMintAddress) {
+          throw new Error('Missing purchase method mint address')
+        }
+        yield* call(purchaseWithAnything, {
+          purchaserUserId,
+          contentId,
+          contentType,
+          price,
+          extraAmount,
+          totalAmountWithDecimals,
+          inputMint: purchaseMethodMintAddress
+        })
         break
       }
       case PurchaseMethod.CARD: {
@@ -769,6 +809,294 @@ function* doStartPurchaseContentFlow({
         ...analyticsInfo
       })
     )
+  }
+}
+
+let jup: ReturnType<typeof createJupiterApiClient> | undefined
+
+const initJupiter = async () => {
+  try {
+    const { createJupiterApiClient } = await import('@jup-ag/api')
+    return createJupiterApiClient()
+  } catch (e) {
+    console.error('Jupiter failed to initialize', e)
+    throw e
+  }
+}
+
+const getJupiterInstance = async () => {
+  if (!jup) {
+    jup = await initJupiter()
+  }
+  return jup
+}
+
+/**
+ * Executes the Jupiter swap from input mint to $USDC and sends the $USDC to the userbank
+ */
+function* swapToUsdcAndSendToUserbank({
+  connection,
+  inputMint,
+  amount,
+  sourceWalletPublicKey,
+  usdcUserBankTokenAccountPublicKey,
+  signAndSendTransaction
+}: {
+  connection: Connection
+  inputMint: string
+  amount: number
+  sourceWalletPublicKey: PublicKey
+  usdcUserBankTokenAccountPublicKey: PublicKey
+  signAndSendTransaction: (
+    transaction: Transaction | VersionedTransaction
+  ) => Promise<Transaction>
+}) {
+  const jup = yield* call(getJupiterInstance)
+
+  const {
+    destinationTokenAccountPublicKey,
+    instruction: createUsdcAssociatedTokenAccountInstruction
+  } = yield* call(getUsdcAssociatedTokenAccountWithCreateInstruction, {
+    connection,
+    sourceWalletPublicKey
+  })
+
+  // If the mints are the same, just send the funds
+  if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const recentBlockhash = yield* call(
+      getRecentBlockhash,
+      audiusBackendInstance
+    )
+    const message = new TransactionMessage({
+      recentBlockhash,
+      payerKey: sourceWalletPublicKey,
+      instructions: [
+        createUsdcAssociatedTokenAccountInstruction || null,
+        createTransferInstruction(
+          destinationTokenAccountPublicKey,
+          usdcUserBankTokenAccountPublicKey,
+          sourceWalletPublicKey,
+          amount
+        )
+      ].filter(Boolean) as TransactionInstruction[]
+    })
+
+    // Execute the swap by signing and sending the transaction
+    return yield* call(
+      signAndSendTransaction,
+      new VersionedTransaction(message.compileToV0Message())
+    )
+  }
+
+  // Get quote for the swap
+  const quote = yield* call([jup, jup.quoteGet], {
+    inputMint,
+    outputMint: TOKEN_LISTING_MAP.USDC.address,
+    amount,
+    onlyDirectRoutes: true,
+    swapMode: 'ExactOut'
+  })
+  if (!quote) {
+    throw new Error(`Failed to get Jupiter quote for ${inputMint} => USDC`)
+  }
+
+  // Make sure user has enough funds to purchase content
+  try {
+    const externalTokenAccountPublicKey = getAssociatedTokenAddressSync(
+      new PublicKey(inputMint),
+      sourceWalletPublicKey
+    )
+    const { amount } = yield* call(
+      getAccount,
+      connection,
+      externalTokenAccountPublicKey
+    )
+    if (amount < BigInt(quote.inAmount)) {
+      throw new PurchaseContentError(
+        PurchaseErrorCode.InsufficientExternalTokenBalance,
+        `You do not have enough funds for ${inputMint} to complete this purchase.`
+      )
+    }
+  } catch {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.InsufficientExternalTokenBalance,
+      `You do not have enough funds for ${inputMint} to complete this purchase.`
+    )
+  }
+
+  // Get swap instructions
+  const { swapTransaction } = yield* call([jup, jup.swapPost], {
+    swapRequest: {
+      quoteResponse: quote,
+      userPublicKey: sourceWalletPublicKey.toString(),
+      destinationTokenAccount: destinationTokenAccountPublicKey.toString()
+    }
+  })
+  const decoded = Buffer.from(swapTransaction, 'base64')
+  const transaction = VersionedTransaction.deserialize(decoded)
+  // Get address lookup table accounts
+  const getLUTs = async () => {
+    return await Promise.all(
+      transaction.message.addressTableLookups.map(async (lookup) => {
+        return new AddressLookupTableAccount({
+          key: lookup.accountKey,
+          state: AddressLookupTableAccount.deserialize(
+            await connection
+              .getAccountInfo(lookup.accountKey)
+              .then((res: any) => res.data)
+          )
+        })
+      })
+    )
+  }
+  const addressLookupTableAccounts = yield* call(getLUTs)
+  // Decompile transaction message and add transfer instruction
+  const message = TransactionMessage.decompile(transaction.message, {
+    addressLookupTableAccounts
+  })
+
+  // Prepend transaction instructions with USDC associated token account creation instruction if needed
+  if (createUsdcAssociatedTokenAccountInstruction) {
+    console.info(
+      'Prepending USDC associated token account creation instruction to transaction...'
+    )
+    message.instructions.unshift(createUsdcAssociatedTokenAccountInstruction)
+  }
+
+  // Append transfer instruction to send USDC to user bank
+  message.instructions.push(
+    createTransferInstruction(
+      destinationTokenAccountPublicKey,
+      usdcUserBankTokenAccountPublicKey,
+      sourceWalletPublicKey,
+      amount
+    )
+  )
+
+  // Compile the message and update the transaction
+  transaction.message = message.compileToV0Message(addressLookupTableAccounts)
+
+  // Execute the swap by signing and sending the transaction
+  return yield* call(signAndSendTransaction, transaction)
+}
+
+// We use our own version of getOrCreateAssociatedTokenAccount instead of the one
+// from @solana/spl-token so we can sign the transaction with the solana wallet provider
+// since we do not have access to the private key in the wallet provider.
+function* getUsdcAssociatedTokenAccountWithCreateInstruction({
+  connection,
+  sourceWalletPublicKey
+}: {
+  connection: Connection
+  sourceWalletPublicKey: PublicKey
+}) {
+  let instruction: TransactionInstruction | null = null
+
+  const destinationTokenAccountPublicKey = getAssociatedTokenAddressSync(
+    new PublicKey(TOKEN_LISTING_MAP.USDC.address),
+    sourceWalletPublicKey
+  )
+
+  try {
+    yield* call(getAccount, connection, destinationTokenAccountPublicKey)
+  } catch {
+    instruction = createAssociatedTokenAccountInstruction(
+      sourceWalletPublicKey,
+      destinationTokenAccountPublicKey,
+      sourceWalletPublicKey,
+      new PublicKey(TOKEN_LISTING_MAP.USDC.address)
+    )
+  }
+
+  return { destinationTokenAccountPublicKey, instruction }
+}
+
+function* purchaseWithAnything({
+  purchaserUserId,
+  contentId,
+  contentType = PurchaseableContentType.TRACK,
+  price,
+  extraAmount,
+  totalAmountWithDecimals,
+  inputMint
+}: {
+  purchaserUserId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
+  price: number
+  extraAmount?: number
+  totalAmountWithDecimals: number
+  inputMint: string
+}) {
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+
+    // Get the USDC user bank
+    const usdcUserBank = yield* call(getUSDCUserBank)
+    const usdcUserBankTokenAccount = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        mint: 'usdc',
+        tokenAccount: usdcUserBank
+      }
+    )
+    if (!usdcUserBankTokenAccount) {
+      throw new Error('Failed to fetch USDC user bank token account info')
+    }
+
+    // Get the solana wallet provider
+    const provider = window.solana
+    if (!provider) {
+      throw new Error('No solana provider / wallet found')
+    }
+    const sourceWallet = yield* call(provider.connect)
+
+    // Swap input mint to usdc
+    console.info('Swapping to USDC then sending to USDC userbank...')
+    yield* call(swapToUsdcAndSendToUserbank, {
+      connection,
+      inputMint,
+      amount: totalAmountWithDecimals,
+      sourceWalletPublicKey: sourceWallet.publicKey,
+      usdcUserBankTokenAccountPublicKey: usdcUserBankTokenAccount.address,
+      signAndSendTransaction: provider.signAndSendTransaction
+    })
+
+    yield* call(pollForTokenBalanceChange, audiusBackendInstance, {
+      initialBalance: usdcUserBankTokenAccount.amount,
+      tokenAccount: usdcUserBank,
+      mint: 'usdc'
+    })
+
+    // Purchase from USDC user bank balance
+    console.info(
+      `Purchasing ${
+        contentType === PurchaseableContentType.TRACK ? 'track' : 'album'
+      } with id ${contentId}...`
+    )
+    if (contentType === PurchaseableContentType.TRACK) {
+      yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
+        userId: encodeHashId(purchaserUserId),
+        trackId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
+    } else {
+      yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
+        userId: encodeHashId(purchaserUserId),
+        albumId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
+    }
+  } catch (e) {
+    console.error(`handlePayWithAnything | Error: ${e}`)
+    throw e
   }
 }
 

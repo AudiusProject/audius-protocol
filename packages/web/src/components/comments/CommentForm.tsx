@@ -107,7 +107,7 @@ export const CommentForm = ({
               size='auto'
               isLoading={false} // loading is not working correctly?
               src={profileImage}
-              css={{ width: 40, height: 40, flexShrink: 0 }}
+              css={{ width: 44, height: 44, flexShrink: 0 }}
             />
           ) : null}
           <TextField
