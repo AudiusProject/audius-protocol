@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -67,53 +64,30 @@ func main() {
 		return
 	}
 
+	grpcLis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		logger.Errorf("grpc listener not created: %v", err)
+		return
+	}
+
 	eg, ctx := errgroup.WithContext(context.Background())
 
+	// console
 	eg.Go(func() error {
+		defer e.Shutdown(ctx)
 		return e.Start("0.0.0.0:26659")
 	})
 
+	// cometbft
 	eg.Go(func() error {
-		nodeStarted := make(chan struct{})
-		go func() {
-			node.Start()
-			close(nodeStarted)
-		}()
-
-		select {
-		case <-nodeStarted:
-			defer func() {
-				node.Stop()
-				node.Wait()
-			}()
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-
-		// Listen for OS signals to gracefully shut down the node
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-		select {
-		case <-c:
-			return nil
-		case <-ctx.Done():
-			return ctx.Err()
-		}
+		defer node.Stop()
+		return node.Start()
 	})
 
+	// grpc
 	eg.Go(func() error {
-		lis, err := net.Listen("tcp", "0.0.0.0:50051")
-		if err != nil {
-			return err
-		}
-		defer lis.Close()
-
-		go func() {
-			<-ctx.Done()
-			lis.Close()
-		}()
-
-		return server.Serve(lis)
+		defer grpcLis.Close()
+		return server.Serve(grpcLis)
 	})
 
 	if err := eg.Wait(); err != nil {
