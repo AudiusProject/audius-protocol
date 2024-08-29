@@ -50,7 +50,8 @@ FROM
     LEFT JOIN user_payout_wallet_history ON user_payout_wallet_history.user_id = users.user_id
     AND user_payout_wallet_history.block_timestamp = relevant_timestamps.block_timestamp
 WHERE
-    up.signature = usdc_purchases.signature;
+    up.splits IS NULL
+    AND up.signature = usdc_purchases.signature;
 
 ALTER TABLE
     usdc_purchases
