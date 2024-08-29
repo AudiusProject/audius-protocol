@@ -4,7 +4,6 @@ import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useGatedContentAccess,
   useUploadingStems
 } from '@audius/common/hooks'
 import {
@@ -55,7 +54,6 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
-  downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
@@ -76,7 +74,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shallowEqual
   )
   const { stemTracks } = useCurrentStems({ trackId })
-  const { hasDownloadAccess } = useGatedContentAccess(track)
   const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {
     price,
@@ -85,10 +82,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
-
-  const shouldDisplayDownloadAll =
-    (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
-    hasDownloadAccess
 
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
@@ -164,25 +157,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       shouldDisplayDownloadFollowGated,
       track
     ]
-  )
-
-  const downloadAllButton = () => (
-    <Button
-      variant='secondary'
-      size='small'
-      iconLeft={IconReceive}
-      onClick={() =>
-        handleDownload({
-          trackIds: stemTracks.map((s) => s.id),
-          parentTrackId: trackId
-        })
-      }
-      disabled={
-        shouldDisplayDownloadFollowGated || shouldDisplayPremiumDownloadLocked
-      }
-    >
-      {messages.downloadAll}
-    </Button>
   )
 
   return (
@@ -313,11 +287,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 isLoading
               />
             ))}
-            {shouldDisplayDownloadAll || isMobile ? (
-              <Flex borderTop='default' p='l' justifyContent='center'>
-                {downloadAllButton()}
-              </Flex>
-            ) : null}
           </Box>
         </Expandable>
       </Flex>
