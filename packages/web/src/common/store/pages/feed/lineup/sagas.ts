@@ -12,16 +12,13 @@ import {
   LineupTrack,
   Id
 } from '@audius/common/models'
-import { GetSocialFeedArgs } from '@audius/common/services'
 import {
   accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
-  getContext,
   CommonState,
   getSDK
 } from '@audius/common/store'
-import { compareSDKResponse } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { all, call, select } from 'typed-redux-saga'
 
@@ -53,28 +50,13 @@ function* getTracks({
   const currentUser = yield* select(getAccountUser)
   if (!currentUser) return []
   const filterEnum: FeedFilter = yield* select(getFeedFilter)
-  const apiClient = yield* getContext('apiClient')
   const sdk = yield* getSDK()
   const filter = filterMap[filterEnum]
-
-  const params: GetSocialFeedArgs = {
-    offset,
-    limit,
-    filter,
-    with_users: true,
-    current_user_id: currentUser.user_id
-  }
 
   // If the user has followee user ids set, use those to fetch the feed.
   // It implies that the feed is otherwise going to be empty so we give a
   // hint to the API.
   const followeeUserIds = yield* select(getFollowIds)
-  if (followeeUserIds && followeeUserIds.length > 0) {
-    // Get the artists the user selected in signup or on their empty feed
-    params.followee_user_ids = followeeUserIds
-  }
-
-  const legacy = yield* call([apiClient, apiClient.getSocialFeed], params)
 
   const userId = Id.parse(currentUser.user_id)
   const { data = [] } = yield* call(
@@ -83,13 +65,15 @@ function* getTracks({
       id: userId,
       userId,
       filter,
+      limit,
+      offset,
+      followeeUserId: followeeUserIds.length ? followeeUserIds : undefined,
       withUsers: true
     }
   )
   const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
     ({ item }) => item
   )
-  compareSDKResponse({ legacy, migrated: feed }, 'getFeed')
 
   if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
