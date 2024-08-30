@@ -92,8 +92,6 @@ body {
 
   --accent-purple: #8e51cf;
 
-  --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
-  --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient: linear-gradient(-22deg, #5b23e1 0%, #a22feb 100%);
   --accent-red-gradient: linear-gradient(
@@ -102,7 +100,7 @@ body {
     var(--accent-red-light-1) 100%
   );
 
-  --scrubber-hover: var(--primary-gradient);
+  --scrubber-hover: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   --slider-handle: var(--white);
   --play-button-fill: #ffffff;
 }

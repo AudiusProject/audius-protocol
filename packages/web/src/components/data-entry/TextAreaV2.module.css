@@ -27,6 +27,7 @@
   font-weight: var(--harmony-font-medium);
   line-height: 150%;
   overflow: visible;
+  caret-color: var(--harmony-secondary);
 }
 .root:hover textarea {
   border-color: var(--harmony-n-200);
@@ -83,9 +84,17 @@
   width: 100%;
 }
 
+textarea::selection {
+  background: #a116b7;
+  color: var(--harmony-white);
+}
+
 textarea.transparentTextArea {
   color: transparent;
-  caret-color: black;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
 }
 
 .displayElementContainer {

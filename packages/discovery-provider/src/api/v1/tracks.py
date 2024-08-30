@@ -548,6 +548,10 @@ stream_parser.add_argument(
     default=None,
 )
 
+stream_url_response = make_response(
+    "stream_url_response", ns, fields.String(required=True)
+)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -564,6 +568,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
+    @ns.response(200, "Success", stream_url_response)
     @ns.expect(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):
@@ -1767,7 +1772,7 @@ class NFTGatedTrackSignatures(Resource):
         },
     )
     @full_ns.expect(track_signatures_parser)
-    @full_ns.marshal_with(full_nft_gated_track_signatures_response)
+    @full_ns.response(200, "Success", full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
@@ -1843,7 +1848,7 @@ access_info_parser = current_user_parser.copy()
 access_info_parser.add_argument(
     "include_network_cut",
     required=False,
-    type=bool,
+    type=inputs.boolean,
     description="Whether to include the staking system as a recipient",
 )
 
@@ -1859,7 +1864,7 @@ class GetTrackAccessInfo(Resource):
     @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
-        args = current_user_parser.parse_args()
+        args = access_info_parser.parse_args()
         include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)

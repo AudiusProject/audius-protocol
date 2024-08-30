@@ -1,7 +1,10 @@
 import {
+  CommentSectionProvider,
   useCurrentCommentSection,
   usePostComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
+import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
@@ -19,24 +22,16 @@ import Skeleton from '../skeleton'
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
 
-const messages = {
-  noComments: 'Nothing here yet',
-  viewAll: 'View all'
-}
-
 const CommentSectionHeader = () => {
   const {
-    artistId,
-    currentUserId,
     entityId,
     commentSectionLoading: isLoading,
-    comments,
-    isEntityOwner
+    comments
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
 
   const handlePressViewAll = () => {
-    openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
+    openDrawer({ entityId })
   }
 
   const isShowingComments = !isLoading && comments?.length
@@ -106,24 +101,29 @@ const CommentSectionContent = () => {
   return <CommentBlock comment={comments[0]} hideActions />
 }
 
-export const CommentSection = () => {
-  const { artistId, currentUserId, entityId, isEntityOwner } =
-    useCurrentCommentSection()
+type CommentSectionProps = {
+  entityId: ID
+}
+
+export const CommentSection = (props: CommentSectionProps) => {
+  const { entityId } = props
 
   const { onOpen: openDrawer } = useDrawer('Comment')
 
   const handlePress = () => {
-    openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
+    openDrawer({ entityId })
   }
 
   return (
-    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-      <CommentSectionHeader />
-      <Paper w='100%' direction='column' gap='s' p='l'>
-        <TouchableOpacity onPress={handlePress}>
-          <CommentSectionContent />
-        </TouchableOpacity>
-      </Paper>
-    </Flex>
+    <CommentSectionProvider entityId={entityId}>
+      <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
+        <CommentSectionHeader />
+        <Paper w='100%' direction='column' gap='s' p='l'>
+          <TouchableOpacity onPress={handlePress}>
+            <CommentSectionContent />
+          </TouchableOpacity>
+        </Paper>
+      </Flex>
+    </CommentSectionProvider>
   )
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func checkErr(e error) {
@@ -70,6 +71,25 @@ func main() {
 		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
 			Key:   "i am",
 			Value: "iron man",
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
+			Event: &proto.Event{
+				Signature: "test signature",
+				Body: &proto.Event_Plays{
+					Plays: &proto.PlaysEvent{
+						Listens: []*proto.Listen{
+							{TrackId: "track one",
+								UserId:    "user one",
+								Signature: "inside sig",
+								Timestamp: timestamppb.Now()},
+						},
+					},
+				},
+			},
 		})
 		return err
 	})

@@ -31,7 +31,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   // )
 
   const [hiddenReplies, setHiddenReplies] = useState<{
-    [parentCommentId: number]: boolean
+    [parentCommentId: string]: boolean
   }>({})
 
   const toggleReplies = (commentId: string) => {
@@ -43,23 +43,33 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
   if (!rootComment) return null
 
   return (
-    <Flex direction='column'>
+    <Flex direction='column' as='li'>
       <CommentBlock comment={rootComment} />
       <Flex ml='56px' direction='column' mt='l' gap='l'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink onClick={() => toggleReplies(rootComment.id)}>
-            {hiddenReplies[rootComment.id] ? (
-              <IconCaretUp color='subdued' size='m' />
-            ) : (
-              <IconCaretDown color='subdued' size='m' />
-            )}
-            {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
-          </TextLink>
+          <Box alignSelf='flex-start'>
+            <PlainButton
+              onClick={() => toggleReplies(rootComment.id)}
+              variant='subdued'
+              iconLeft={
+                hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
+              }
+            >
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies
+                : messages.hideReplies}
+            </PlainButton>
+          </Box>
         ) : null}
         {hiddenReplies[rootComment.id] ? null : (
-          <Flex direction='column' gap='l'>
+          <Flex
+            direction='column'
+            gap='l'
+            as='ul'
+            aria-label={messages.replies}
+          >
             {rootComment?.replies?.map((reply: ReplyComment) => (
-              <Flex w='100%' key={reply.id}>
+              <Flex w='100%' key={reply.id} as='li'>
                 <CommentBlock
                   comment={reply}
                   parentCommentId={rootComment.id}

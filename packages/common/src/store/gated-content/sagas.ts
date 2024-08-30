@@ -8,7 +8,11 @@ import {
   fork
 } from 'typed-redux-saga'
 
-import { userTrackMetadataFromSDK } from '~/adapters'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK,
+  userTrackMetadataFromSDK
+} from '~/adapters'
 import {
   Chain,
   Collectible,
@@ -445,7 +449,6 @@ export function* pollGatedContent({
   isSourceTrack?: boolean
 }) {
   const analytics = yield* getContext('analytics')
-  const apiClient = yield* getContext('apiClient')
   const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
@@ -466,10 +469,13 @@ export function* pollGatedContent({
   // poll for access until it is granted
   while (true) {
     const apiEntity = isAlbum
-      ? (yield* call([apiClient, 'getPlaylist'], {
-          playlistId: contentId,
-          currentUserId
-        }))[0]
+      ? yield* call(async () => {
+          const { data = [] } = await sdk.full.playlists.getPlaylist({
+            playlistId: Id.parse(contentId),
+            userId: OptionalId.parse(currentUserId)
+          })
+          return transformAndCleanList(data, userCollectionMetadataFromSDK)[0]
+        })
       : yield* call(async () => {
           const { data } = await sdk.full.tracks.getTrack({
             trackId: Id.parse(contentId),

@@ -541,7 +541,7 @@ export const TrackScreenDetailsTile = ({
         ) : null}
         {imageElement}
         <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s'>
+          <Text variant='heading' size='s' textAlign='center'>
             {title}
           </Text>
           {user ? (

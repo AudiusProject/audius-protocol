@@ -32,7 +32,7 @@ export const trackSegmentFromSDK = ({
 })
 
 export const userTrackMetadataFromSDK = (
-  input: full.TrackFull
+  input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
   const decodedTrackId = decodeHashId(input.id)
   const decodedOwnerId = decodeHashId(input.userId)
@@ -57,6 +57,7 @@ export const userTrackMetadataFromSDK = (
     // Conversions
     track_id: decodedTrackId,
     owner_id: decodedOwnerId,
+    // TODO: Remove this when api is fixed to return UTC dates
     release_date: input.releaseDate
       ? dayjs
           .utc(input.releaseDate)

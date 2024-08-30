@@ -16,6 +16,7 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_feed_item,
     extend_purchase,
     extend_supporter,
     extend_supporting,
@@ -59,7 +60,9 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
+from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
+from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
 from src.api.v1.models.support import (
     supporter_response,
@@ -75,6 +78,7 @@ from src.api.v1.models.users import (
     decoded_user_token,
     encoded_user_id,
     purchase,
+    sales_aggregate,
     user_model,
     user_model_full,
     user_subscribers,
@@ -101,6 +105,7 @@ from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
 )
+from src.queries.get_feed import get_feed
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
@@ -118,6 +123,7 @@ from src.queries.get_purchasers import (
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_remixers import GetRemixersArgs, get_remixers, get_remixers_count
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
+from src.queries.get_sales_aggregate import GetSalesAggregateArgs, get_sales_aggregate
 from src.queries.get_saves import get_saves
 from src.queries.get_subscribers import (
     get_subscribers_for_user,
@@ -147,6 +153,10 @@ from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_mo
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
+)
+from src.queries.get_user_tracks_remixed import (
+    GetUserTracksRemixedArgs,
+    get_user_tracks_remixed,
 )
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
@@ -2335,6 +2345,37 @@ class FullSalesCount(Resource):
         return success_response(count)
 
 
+sales_aggregate_parser = pagination_with_current_user_parser.copy()
+
+sales_aggregate_response = make_response(
+    "sales_aggregate_response", ns, fields.List(fields.Nested(sales_aggregate))
+)
+
+
+@ns.route("/<string:id>/sales/aggregate")
+class SalesAggregate(Resource):
+    @ns.doc(
+        id="Get Sales Aggregate",
+        description="Gets the aggregated sales data for the user",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(sales_aggregate_parser)
+    @auth_middleware(sales_aggregate_parser)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        args = sales_aggregate_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = GetSalesAggregateArgs(
+            seller_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+        )
+        sales_aggregate = get_sales_aggregate(args)
+        return success_response(list(sales_aggregate))
+
+
 purchases_download_parser = current_user_parser.copy()
 
 
@@ -2617,3 +2658,121 @@ class FullPurchasersUsersCount(Resource):
         )
         count = get_purchasers_count(args)
         return success_response(count)
+
+
+USER_TRACKS_REMIXED_ROUTE = USER_TRACKS_ROUTE + "/remixed"
+
+
+@ns.route(USER_TRACKS_REMIXED_ROUTE)
+class UserTracksRemixed(Resource):
+    @ns.doc(
+        id="""Get User Tracks Remixed""",
+        description="Gets tracks owned by the user which have been remixed by another track",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = pagination_with_current_user_parser.parse_args()
+        query_args = GetUserTracksRemixedArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        tracks = get_user_tracks_remixed(query_args)
+        return success_response(list(map(extend_track, tracks)))
+
+
+@full_ns.route(USER_TRACKS_REMIXED_ROUTE)
+class FullUserTracksRemixed(Resource):
+    @full_ns.doc(
+        id="""Get User Tracks Remixed""",
+        description="Gets tracks owned by the user which have been remixed by another track",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        query_args = GetUserTracksRemixedArgs(
+            user_id=decoded_id,
+            current_user_id=get_current_user_id(args),
+            limit=get_default_max(args.get("limit"), 10, 100),
+            offset=get_default_max(args.get("offset"), 0),
+        )
+        tracks = get_user_tracks_remixed(query_args)
+        return success_response(list(map(extend_track, tracks)))
+
+
+USER_FEED_ROUTE = "/<string:id>/feed"
+user_feed_parser = pagination_with_current_user_parser.copy()
+user_feed_parser.add_argument(
+    "filter",
+    description="Controls whether the feed is limited to reposts, original content, or all items",
+    required=False,
+    type=str,
+    choices=["all", "repost", "original"],
+    default="all",
+)
+user_feed_parser.add_argument(
+    "tracks_only",
+    description="Limit feed to only tracks",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "with_users",
+    description="Include user data with feed items",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "followee_user_id",
+    description="A list of followed users to prioritize in feed generation",
+    action="append",
+    type=int,
+    required=False,
+)
+
+user_feed_response = make_full_response(
+    "user_feed_response", full_ns, fields.List(NestedOneOf(user_feed_item))
+)
+
+
+@full_ns.route(USER_FEED_ROUTE)
+class FullUserFeed(Resource):
+    @log_duration(logger)
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        parsedArgs = user_feed_parser.parse_args()
+        args = {
+            "user_id": decoded_id,
+            "filter": parsedArgs.get("filter"),
+            "tracks_only": parsedArgs.get("tracks_only"),
+            "with_users": parsedArgs.get("with_users"),
+            "followee_user_ids": parsedArgs.get("followee_user_id"),
+            "limit": parsedArgs.get("limit"),
+            "offset": parsedArgs.get("offset"),
+        }
+
+        feed_results = get_feed(args)
+        return success_response(list(map(extend_feed_item, feed_results)))
+
+    @full_ns.doc(
+        id="""Get User Feed""",
+        description="Gets the feed for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_feed_parser)
+    @full_ns.marshal_with(user_feed_response)
+    @auth_middleware(user_feed_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        return self._get(id, authed_user_id)

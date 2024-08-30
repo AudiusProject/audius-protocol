@@ -10,7 +10,7 @@ import {
 } from '@reduxjs/toolkit'
 import AsyncRetry from 'async-retry'
 
-import { Kind, Status } from '~/models'
+import { Kind, PaginatedStatus, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
@@ -165,7 +165,7 @@ export type PaginatedQueryHookOptions = QueryHookOptions & {
   /**
    * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
    */
-  singlePageData?: boolean //
+  singlePageData?: boolean
 }
 
 export type QueryHookResults<Data> = {
@@ -175,30 +175,30 @@ export type QueryHookResults<Data> = {
   forceRefresh: () => void
 }
 
-export type PaginatedQueryHookResults<Data extends []> =
-  QueryHookResults<Data> & {
-    /**
-     * Tracks load state for new pages loading in (not the initial page; initial page can be tracked via status).
-     * Only used after calling loadMore() first
-     */
-    isLoadingMore: boolean
-    /**
-     * Returns false if we get data back that is less than the page size
-     */
-    hasMore: boolean
-    /**
-     * Load the next page
-     */
-    loadMore: () => void
-    /**
-     * A soft reset to go back to the first page. Doesn't clear the data from the store
-     */
-    softReset: () => void
-    /**
-     * A hard reset that goes back to the first page AND clears all the data from the store
-     */
-    hardReset: () => void
-  }
+export type PaginatedQueryHookResults<Data extends []> = Omit<
+  QueryHookResults<Data>,
+  'status'
+> & {
+  /**
+   * Is true whenever the endpoint may have more data to load.
+   * Note: there is an edge case where this is true but there is no more data to load. This occurs when the data matches a perfect page size interval (e.g. 25 ).
+   */
+  hasMore: boolean
+  /**
+   * Load the next page
+   */
+  loadMore: () => void
+  /**
+   * Resets current page data & load state.
+   * By default this is considered a "soft" reset and as long as the args didnt change the cached data will still be used.
+   * Alternatively, setting hardReset to true will force a reset of the cached store data and reset the status.
+   */
+  reset: (hardReset?: boolean) => void
+  /**
+   * Status can include a LOADING_MORE status specific to paginated queries
+   */
+  status: PaginatedStatus | Status
+}
 
 export type MutationHookResponse<Data> = {
   data: Data

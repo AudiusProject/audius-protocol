@@ -532,9 +532,9 @@ information about the tracks as described below.
 
 ---
 
-## streamTrack
+## getTrackStreamUrl
 
-> #### streamTrack(`params`)
+> #### getTrackStreamUrl(`params`)
 
 Get the url of the track's streamable mp3 file.
 
@@ -560,7 +560,7 @@ example above.
 <TabItem value="example">
 
 ```ts
-const url = await audiusSdk.tracks.streamTrack({
+const url = await audiusSdk.tracks.getTrackStreamUrl({
   trackId: 'PjdWN',
 })
 const audio = new Audio(url)

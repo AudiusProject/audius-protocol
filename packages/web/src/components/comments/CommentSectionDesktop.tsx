@@ -1,8 +1,5 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { chatSelectors } from '@audius/common/store'
 import { Button, Divider, Flex, Paper } from '@audius/harmony'
-
-import { useSelector } from 'utils/reducer'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
@@ -11,11 +8,9 @@ import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
-const { getCanCreateChat } = chatSelectors
-
 export const CommentSectionDesktop = () => {
   const {
-    artistId,
+    currentUserId,
     comments,
     commentSectionLoading,
     isLoadingMorePages,
@@ -24,9 +19,7 @@ export const CommentSectionDesktop = () => {
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
 
-  const { canCreateChat: commentPostAllowed } = useSelector((state) =>
-    getCanCreateChat(state, { userId: artistId })
-  )
+  const commentPostAllowed = currentUserId !== null
 
   if (commentSectionLoading) {
     return <CommentSkeletons />
@@ -43,7 +36,7 @@ export const CommentSectionDesktop = () => {
         Refresh{' '}
       </Button>
       <Paper w='100%' direction='column'>
-        {commentPostAllowed ? (
+        {commentPostAllowed !== null ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
               <CommentForm />
@@ -54,7 +47,7 @@ export const CommentSectionDesktop = () => {
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
           <CommentSortBar />
-          <Flex direction='column' gap='m' pt='m'>
+          <Flex direction='column' gap='xl' pt='m'>
             {comments.length === 0 ? <NoComments /> : null}
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />

@@ -15,6 +15,13 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  Reactions,
+} from '../models';
+import {
+    ReactionsFromJSON,
+    ReactionsToJSON,
+} from '../models';
 
 export interface BulkGetReactionsRequest {
     reactedToIds: Array<string>;
@@ -30,7 +37,7 @@ export class ReactionsApi extends runtime.BaseAPI {
      * @hidden
      * Gets reactions by reacted_to_id and type
      */
-    async bulkGetReactionsRaw(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async bulkGetReactionsRaw(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Reactions>> {
         if (params.reactedToIds === null || params.reactedToIds === undefined) {
             throw new runtime.RequiredError('reactedToIds','Required parameter params.reactedToIds was null or undefined when calling bulkGetReactions.');
         }
@@ -54,14 +61,15 @@ export class ReactionsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ReactionsFromJSON(jsonValue));
     }
 
     /**
      * Gets reactions by reacted_to_id and type
      */
-    async bulkGetReactions(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.bulkGetReactionsRaw(params, initOverrides);
+    async bulkGetReactions(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Reactions> {
+        const response = await this.bulkGetReactionsRaw(params, initOverrides);
+        return await response.value();
     }
 
 }

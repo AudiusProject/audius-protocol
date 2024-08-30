@@ -64,7 +64,7 @@ union all (
     concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
-    created_at as last_message_at,
+		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
     true as last_message_is_plaintext,
     '' as invite_code,
     created_at as last_active_at,
@@ -76,6 +76,7 @@ union all (
 		audience_content_id
   FROM chat_blast b
   WHERE from_user_id = $1
+    AND concat_ws(':', audience, audience_content_type, audience_content_id) = $2
   ORDER BY
     audience,
     audience_content_type,
@@ -124,7 +125,7 @@ union all (
     concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
-    created_at as last_message_at,
+		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
     true as last_message_is_plaintext,
     '' as invite_code,
     created_at as last_active_at,

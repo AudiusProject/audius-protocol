@@ -7,8 +7,6 @@ from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_thread import CommentThread
-from src.models.tracks.track import Track
-from src.models.users.chat_blocked_users import ChatBlockedUser
 from src.utils import redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
@@ -79,14 +77,6 @@ def get_track_comments(args, track_id):
     CommentThreadAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        # Subquery to get blocked users for the track's owner
-        blocked_users_subquery = (
-            session.query(ChatBlockedUser.blockee_user_id)
-            .join(Track, Track.owner_id == ChatBlockedUser.blocker_user_id)
-            .filter(Track.track_id == track_id)
-            .all()
-        )
-
         track_comments = (
             session.query(Comment)
             .outerjoin(
@@ -99,7 +89,6 @@ def get_track_comments(args, track_id):
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
-                ~Comment.user_id.in_(blocked_users_subquery),  # Exclude blocked users
             )
             .order_by(asc(Comment.created_at))
             .offset(offset)

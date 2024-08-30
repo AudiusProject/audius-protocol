@@ -104,7 +104,7 @@ staking_bridge_usdc_payout_wallet = shared_config["solana"][
 
 def calculate_split_amounts(
     price: int | None, splits: List[Split], include_network_cut=False
-):
+) -> List[ExtendedSplit]:
     """
     Deterministically calculates the USDC amounts to pay to each person,
     adjusting for rounding errors and ensuring the total matches the price.
@@ -164,7 +164,7 @@ def calculate_split_amounts(
                 "payout_wallet": staking_bridge_usdc_payout_wallet,
             }
         )
-    return new_splits
+    return [cast(ExtendedSplit, split) for split in new_splits]
 
 
 def add_wallet_info_to_splits(
@@ -234,10 +234,10 @@ def _get_extended_purchase_gate(
     session: Session, gate: PurchaseGate, include_network_cut=False
 ):
     price = gate.get("usdc_purchase", {}).get("price", None)
-    splits = gate.get("usdc_purchase", {}).get("splits", [])
+    original_splits = gate.get("usdc_purchase", {}).get("splits", [])
+    splits = [orig.copy() for orig in original_splits]
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
-    splits = calculate_split_amounts(price, splits, include_network_cut)
-    extended_splits = [cast(ExtendedSplit, split) for split in splits]
+    extended_splits = calculate_split_amounts(price, splits, include_network_cut)
     extended_gate: ExtendedPurchaseGate = {
         "usdc_purchase": {"price": price, "splits": extended_splits}
     }

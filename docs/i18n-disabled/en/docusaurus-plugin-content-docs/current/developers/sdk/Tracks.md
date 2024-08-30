@@ -8,15 +8,16 @@ Example:
 
 ```typescript
 const { data: track } = await audiusSdk.tracks.getTrack({
-  trackId: "D7KyD",
-});
+  trackId: 'D7KyD',
+})
 
-console.log(track);
+console.log(track)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -24,7 +25,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` contains information about the track as described below.
+Returns a `Promise` containing an object with a `data` field. `data` contains information about the
+track as described below.
 
 Return type:
 
@@ -32,62 +34,62 @@ Return type:
 Promise<{
   data: {
     artwork?: {
-      _1000x1000?: string;
-      _150x150?: string;
-      _480x480?: string;
-    };
-    description?: string;
-    downloadable?: boolean;
-    duration: number;
-    favoriteCount: number;
-    genre?: string;
-    id: string;
-    isStreamable?: string;
-    mood?: string;
-    permalink?: string;
-    playCount: number;
-    releaseDate: string;
+      _1000x1000?: string
+      _150x150?: string
+      _480x480?: string
+    }
+    description?: string
+    downloadable?: boolean
+    duration: number
+    favoriteCount: number
+    genre?: string
+    id: string
+    isStreamable?: string
+    mood?: string
+    permalink?: string
+    playCount: number
+    releaseDate: string
     remixOf?: {
-      tracks: { parentTrackId: string }[];
-    };
-    repostCount: number;
-    tags?: string[];
-    title: string;
-    trackCid?: string;
+      tracks: { parentTrackId: string }[]
+    }
+    repostCount: number
+    tags?: string[]
+    title: string
+    trackCid?: string
     user: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
+      albumCount: number
+      artistPickTrackId?: string
+      bio?: string
       coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
+        _2000?: string
+        _640?: string
+      }
+      doesFollowCurrentUser?: boolean
+      ercWallet: string
+      followeeCount: number
+      followerCount: number
+      handle: string
+      id: string
+      isAvailable: boolean
+      isDeactivated: boolean
+      isVerified: boolean
+      location?: string
+      name: string
+      playlistCount: number
       profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
-    };
-  };
-}>;
+        _1000x1000?: string
+        _150x150?: string
+        _480x480?: string
+      }
+      repostCount: number
+      splWallet: string
+      supporterCount: number
+      supportingCount: number
+      totalAudioBalance: number
+      trackCount: number
+    }
+  }
+}>
 ```
 
 ---
@@ -102,14 +104,15 @@ Example:
 
 ```typescript
 const { data: tracks } = await audiusSdk.tracks.getBulkTracks({
-  id: ["D7KyD", "PjdWN", "Jwo2A"],
-});
-console.log(tracks);
+  id: ['D7KyD', 'PjdWN', 'Jwo2A'],
+})
+console.log(tracks)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name        | Type       | Description                      | Required?  |
 | :---------- | :--------- | :------------------------------- | :--------- |
@@ -118,7 +121,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the tracks as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the tracks as described below.
 
 Return type:
 
@@ -126,62 +130,62 @@ Return type:
 Promise<{
   data: {
     artwork?: {
-      _1000x1000?: string;
-      _150x150?: string;
-      _480x480?: string;
-    };
-    description?: string;
-    downloadable?: boolean;
-    duration: number;
-    favoriteCount: number;
-    genre?: string;
-    id: string;
-    isStreamable?: string;
-    mood?: string;
-    permalink?: string;
-    playCount: number;
-    releaseDate: string;
+      _1000x1000?: string
+      _150x150?: string
+      _480x480?: string
+    }
+    description?: string
+    downloadable?: boolean
+    duration: number
+    favoriteCount: number
+    genre?: string
+    id: string
+    isStreamable?: string
+    mood?: string
+    permalink?: string
+    playCount: number
+    releaseDate: string
     remixOf?: {
-      tracks: { parentTrackId: string }[];
-    };
-    repostCount: number;
-    tags?: string[];
-    title: string;
-    trackCid?: string;
+      tracks: { parentTrackId: string }[]
+    }
+    repostCount: number
+    tags?: string[]
+    title: string
+    trackCid?: string
     user: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
+      albumCount: number
+      artistPickTrackId?: string
+      bio?: string
       coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
+        _2000?: string
+        _640?: string
+      }
+      doesFollowCurrentUser?: boolean
+      ercWallet: string
+      followeeCount: number
+      followerCount: number
+      handle: string
+      id: string
+      isAvailable: boolean
+      isDeactivated: boolean
+      isVerified: boolean
+      location?: string
+      name: string
+      playlistCount: number
       profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
-    };
-  }[];
-}>;
+        _1000x1000?: string
+        _150x150?: string
+        _480x480?: string
+      }
+      repostCount: number
+      splWallet: string
+      supporterCount: number
+      supportingCount: number
+      totalAudioBalance: number
+      trackCount: number
+    }
+  }[]
+}>
 ```
 
 ---
@@ -195,8 +199,8 @@ Get the top 100 trending (most popular) tracks on Audius.
 Example:
 
 ```typescript
-const { data: tracks } = await audiusSdk.tracks.getTrendingTracks();
-console.log(tracks);
+const { data: tracks } = await audiusSdk.tracks.getTrendingTracks()
+console.log(tracks)
 ```
 
 #### Params
@@ -221,8 +225,8 @@ Get the top 100 trending underground tracks on Audius.
 Example:
 
 ```typescript
-const { data: tracks } = await audiusSdk.tracks.getUndergroundTrendingTracks();
-console.log(tracks);
+const { data: tracks } = await audiusSdk.tracks.getUndergroundTrendingTracks()
+console.log(tracks)
 ```
 
 #### Params
@@ -250,14 +254,15 @@ Example:
 
 ```typescript
 const { data: tracks } = await audiusSdk.tracks.searchTracks({
-  query: "skrillex",
-});
-console.log(tracks);
+  query: 'skrillex',
+})
+console.log(tracks)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name    | Type     | Description             | Required?    |
 | :------ | :------- | :---------------------- | :----------- |
@@ -269,25 +274,26 @@ The return type is the same as [`getBulkTracks`](#getbulktracks)
 
 ---
 
-### streamTrack
+### getTrackStreamUrl
 
-#### streamTrack(`params`)
+#### getTrackStreamUrl(`params`)
 
 Get the url of the track's streamable mp3 file.
 
 Example:
 
 ```typescript
-const url = await audiusSdk.tracks.streamTrack({
-  trackId: "PjdWN",
-});
-const audio = new Audio(url);
-audio.play();
+const url = await audiusSdk.tracks.getTrackStreamUrl({
+  trackId: 'PjdWN',
+})
+const audio = new Audio(url)
+audio.play()
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -300,7 +306,7 @@ Returns a `Promise` containing a `string` url which can be used to stream the tr
 Return type:
 
 ```ts
-Promise<string>;
+Promise<string>
 ```
 
 ---
@@ -314,34 +320,35 @@ Upload a track.
 Example:
 
 ```typescript
-import { Mood, Genre } from "@audius/sdk";
-import fs from "fs";
+import { Mood, Genre } from '@audius/sdk'
+import fs from 'fs'
 
-const coverArtBuffer = fs.readFileSync("path/to/cover-art.png");
-const trackBuffer = fs.readFileSync("path/to/track.mp3");
+const coverArtBuffer = fs.readFileSync('path/to/cover-art.png')
+const trackBuffer = fs.readFileSync('path/to/track.mp3')
 
 const { trackId } = await audiusSdk.tracks.uploadTrack({
-  userId: "7eP5n",
+  userId: '7eP5n',
   coverArtFile: {
     buffer: Buffer.from(coverArtBuffer),
-    name: "coverArt",
+    name: 'coverArt',
   },
   metadata: {
-    title: "Monstera",
-    description: "Dedicated to my favorite plant",
+    title: 'Monstera',
+    description: 'Dedicated to my favorite plant',
     genre: Genre.METAL,
     mood: Mood.DEVOTIONAL,
   },
   trackFile: {
     buffer: Buffer.from(trackArtBuffer),
-    name: "monsteraAudio",
+    name: 'monsteraAudio',
   },
-});
+})
 ```
 
 #### `parameters`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name           | Type                                                     | Description                                                             | Required?    |
 | :------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
@@ -353,20 +360,22 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block
+hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-  trackId: string;
-}>;
+  blockHash: string
+  blockNumber: number
+  trackId: string
+}>
 ```
 
 ---
@@ -375,36 +384,38 @@ Promise<{
 
 #### updateTrack(`params`, `advancedOptions?`)
 
-Update a track. If cover art or any metadata fields are not provided, their values will be kept the same as before.
+Update a track. If cover art or any metadata fields are not provided, their values will be kept the
+same as before.
 
 Example:
 
 ```typescript
-import fs from "fs";
-import { Mood } from "@audius/sdk";
+import fs from 'fs'
+import { Mood } from '@audius/sdk'
 
-const coverArtBuffer = fs.readFileSync("path/to/updated-cover-art.png");
+const coverArtBuffer = fs.readFileSync('path/to/updated-cover-art.png')
 
 const { trackId } = await audiusSdk.tracks.updateTrack({
-  trackId: "h5pJ3Bz",
+  trackId: 'h5pJ3Bz',
   coverArtFile: {
     buffer: Buffer.from(coverArtBuffer),
-    name: "coverArt",
+    name: 'coverArt',
   },
   metadata: {
-    description: "Dedicated to my favorite plant... new cover art!",
+    description: 'Dedicated to my favorite plant... new cover art!',
     mood: Mood.YEARNING,
   },
   onProgress: (progress) => {
-    console.log("Progress: ", progress / 100);
+    console.log('Progress: ', progress / 100)
   },
-  userId: "7eP5n",
-});
+  userId: '7eP5n',
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name           | Type                                                                  | Description                                                                   | Required?    |
 | :------------- | :-------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
@@ -416,19 +427,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---
@@ -443,14 +456,15 @@ Example:
 
 ```typescript
 await audiusSdk.tracks.deleteTrack({
-  trackId: "h5pJ3Bz",
-  userId: "7eP5n",
-});
+  trackId: 'h5pJ3Bz',
+  userId: '7eP5n',
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -459,19 +473,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---
@@ -493,7 +509,8 @@ await audiusSdk.tracks.favoriteTrack({
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name       | Type                    | Description                                                          | Required?    |
 | :--------- | :---------------------- | :------------------------------------------------------------------- | :----------- |
@@ -509,19 +526,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---
@@ -543,7 +562,8 @@ await audiusSdk.tracks.unfavoriteTrack({
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -552,19 +572,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---
@@ -586,7 +608,8 @@ await audiusSdk.tracks.repostTrack({
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name       | Type                    | Description                                                           | Required?    |
 | :--------- | :---------------------- | :-------------------------------------------------------------------- | :----------- |
@@ -602,19 +625,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---
@@ -636,7 +661,8 @@ await audiusSdk.tracks.unrepostTrack({
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -645,19 +671,21 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 Return type:
 
 ```ts
 Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
+  blockHash: string
+  blockNumber: number
+}>
 ```
 
 ---

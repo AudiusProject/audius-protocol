@@ -17,6 +17,7 @@
 import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
+  StreamUrlResponse,
   TopListener,
   TrackCommentsResponse,
   TrackInspect,
@@ -27,6 +28,8 @@ import type {
 import {
     AccessInfoResponseFromJSON,
     AccessInfoResponseToJSON,
+    StreamUrlResponseFromJSON,
+    StreamUrlResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
     TrackCommentsResponseFromJSON,
@@ -513,7 +516,7 @@ export class TracksApi extends runtime.BaseAPI {
      * Stream an mp3 track This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
-    async streamTrackRaw(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async streamTrackRaw(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreamUrlResponse>> {
         if (params.trackId === null || params.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling streamTrack.');
         }
@@ -565,15 +568,16 @@ export class TracksApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => StreamUrlResponseFromJSON(jsonValue));
     }
 
     /**
      * Stream an mp3 track This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
-    async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.streamTrackRaw(params, initOverrides);
+    async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreamUrlResponse> {
+        const response = await this.streamTrackRaw(params, initOverrides);
+        return await response.value();
     }
 
     /**

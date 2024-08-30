@@ -48,6 +48,7 @@ export * from './RemixParent';
 export * from './RemixersResponse';
 export * from './ReplyComment';
 export * from './Reposts';
+export * from './StreamUrlResponse';
 export * from './SubscribersResponse';
 export * from './Supporter';
 export * from './Supporting';

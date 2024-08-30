@@ -25,7 +25,7 @@ import {
 } from '~/models/Collection'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { Kind } from '~/models/Kind'
-import { Status } from '~/models/Status'
+import { PaginatedStatus, Status } from '~/models/Status'
 import { User, UserMetadata } from '~/models/User'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
@@ -561,31 +561,30 @@ const buildEndpointHooks = <
     baseArgs: Omit<ArgsType, 'limit' | 'offset'>,
     options: PaginatedQueryHookOptions
   ): PaginatedQueryHookResults<Data> => {
-    const [loadingMore, setLoadingMore] = useState(false)
     const dispatch = useDispatch()
     const { pageSize = 5, singlePageData, ...queryHookOptions } = options
     const [forceLoad, setForceLoad] = useState(false)
     const [page, setPage] = useState(0)
-    const [status, setStatus] = useState<Status>(Status.IDLE)
+    const [status, setStatus] = useState<Status | PaginatedStatus>(Status.IDLE)
 
-    // A soft reset resets our current page and loading state, but the data is still held in store (which means cache hits will still return as expected)
+    // Resets current page and loading state, but the data is still held in store (which means cache hits will still return as expected)
     // This is triggered below when the args or page size changes
-    const softReset = useCallback(() => {
-      setPage(0)
-      setLoadingMore(false)
-    }, [])
+    const reset = useCallback(
+      (hardReset?: boolean) => {
+        setPage(0)
+        setStatus(Status.LOADING)
 
-    // Includes softReset above BUT also hard resets cached data in store; also resets loading status
-    // Can be used to hard refresh all data and reset the page
-    const hardReset = useCallback(() => {
-      softReset()
-      setStatus(Status.LOADING)
-      // @ts-ignore - Unclear whats wrong with they type here
-      dispatch(actions[`reset${capitalize(endpointName)}`]())
-    }, [dispatch, softReset])
+        // If requesting a hard refresh we also reset the cached data in the store
+        if (hardReset) {
+          // @ts-ignore - Unclear whats wrong with the type here
+          dispatch(actions[`reset${capitalize(endpointName)}`]())
+        }
+      },
+      [dispatch]
+    )
 
     // Only need to soft reset when args or pagesize changes - leaves all cached data intact
-    useCustomCompareEffect(softReset, [baseArgs], isEqual)
+    useCustomCompareEffect(reset, [baseArgs], isEqual)
 
     const args = {
       ...baseArgs,
@@ -602,13 +601,15 @@ const buildEndpointHooks = <
       }
 
       // By default, select data for every page up to the current page and aggregate the results
-      const pageAccumulator = []
+      const pageAccumulator: Data[] = []
 
       for (let i = 0; i <= page; i++) {
+        const key = getKeyFromFetchArgs({
+          ...args,
+          offset: i * pageSize
+        })
         const normalizedPageData =
-          state?.api?.[reducerPath]?.[endpointName]?.[
-            getKeyFromFetchArgs({ ...args, offset: i * pageSize })
-          ]?.normalizedData
+          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData
         if (normalizedPageData) {
           pageAccumulator.push(...normalizedPageData)
         }
@@ -632,21 +633,15 @@ const buildEndpointHooks = <
     useCustomCompareEffect(
       () => {
         setStatus(result.status)
-        if (result.status === Status.ERROR) {
-          setLoadingMore(false)
-          return
-        }
-        if (result.status === Status.SUCCESS) {
-          setLoadingMore(false)
-        }
       },
-      [result.status, args],
+      [result.status],
       isEqual
     )
 
     const notError = result.status !== Status.ERROR
     const stillLoadingCurrentPage =
-      loadingMore || result.status === Status.LOADING
+      status === PaginatedStatus.LOADING_MORE ||
+      result.status === Status.LOADING
     const notStarted = result.status === Status.IDLE && allPageData.length === 0
     const hasNotFetched = !result.data && result.status !== Status.SUCCESS
     // If fetchedFullPreviousPage is less than the pageSize we can infer that there are no more pages to fetch
@@ -661,7 +656,7 @@ const buildEndpointHooks = <
       if (stillLoadingCurrentPage || !hasMore) {
         return
       }
-      setLoadingMore(true)
+      setStatus(PaginatedStatus.LOADING_MORE)
       setPage(page + 1)
     }, [stillLoadingCurrentPage, hasMore, page])
 
@@ -671,9 +666,7 @@ const buildEndpointHooks = <
         // If not in singlePageData mode, we treat the status based on whether the first page succeeded. After that, use isLoadingMore for load statuses
         allPageData?.length > 0 && !singlePageData ? Status.SUCCESS : status,
       data: allPageData,
-      isLoadingMore: stillLoadingCurrentPage,
-      hardReset,
-      softReset,
+      reset,
       loadMore,
       hasMore
     }

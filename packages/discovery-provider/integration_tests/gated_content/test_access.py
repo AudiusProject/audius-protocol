@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from integration_tests.utils import populate_mock_db
@@ -217,19 +217,19 @@ usdc_purchases = [
         "buyer_user_id": 3,
         "content_id": 2,
         "content_type": "album",
-        "created_at": datetime.utcfromtimestamp(1711485198),
+        "created_at": datetime.fromtimestamp(1711485198, timezone.utc),
     },
     {
         "buyer_user_id": 5,
         "content_id": 2,
         "content_type": "album",
-        "created_at": datetime.utcfromtimestamp(1711485200),
+        "created_at": datetime.fromtimestamp(1711485200, timezone.utc),
     },
     {
         "buyer_user_id": 6,
         "content_id": usdc_stream_gated_track["track_id"],
         "content_type": "track",
-        "created_at": datetime.utcfromtimestamp(1711485200),
+        "created_at": datetime.fromtimestamp(1711485200, timezone.utc),
     },
 ]
 user_1 = {"user_id": 1}

@@ -183,7 +183,9 @@ export const ChatTextInput = ({
     const matches = getMatches(value)
     if (!matches) {
       const text = splitOnNewline(value)
-      return text.map((t, i) => <Text key={i}>{`${t}\n`}</Text>)
+      return text.map((t, i) => (
+        <Text key={i}>{`${t === '\n' ? '\n\n' : t}`}</Text>
+      ))
     }
     const parts: JSX.Element[] = []
     let lastIndex = 0
@@ -198,7 +200,7 @@ export const ChatTextInput = ({
         const text = splitOnNewline(value.slice(lastIndex, index))
         parts.push(
           ...text.map((t, i) => (
-            <Text key={`${lastIndex}${i}`}>{`${t}\n`}</Text>
+            <Text key={`${lastIndex}${i}`}>{`${t === '\n' ? '\n\n' : t}`}</Text>
           ))
         )
       }
