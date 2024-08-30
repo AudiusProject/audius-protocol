@@ -1,4 +1,5 @@
 import { useCurrentCommentSection } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import type { TextInput as RNTextInput } from 'react-native'
@@ -20,11 +21,6 @@ type CommentFormProps = {
   TextInputComponent?: typeof RNTextInput
 }
 
-const messages = {
-  beFirstComment: 'Be the first to comment',
-  addComment: 'Add a comment'
-}
-
 type CommentFormContentProps = Omit<
   CommentFormProps,
   'onSubmit' | 'initialValue'
@@ -35,9 +31,7 @@ const CommentFormContent = (props: CommentFormContentProps) => {
   const { currentUserId, comments } = useCurrentCommentSection()
   const { submitForm } = useFormikContext()
 
-  const message = comments?.length
-    ? messages.addComment
-    : messages.beFirstComment
+  const message = comments?.length ? messages.addComment : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
