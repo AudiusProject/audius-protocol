@@ -12,31 +12,19 @@
           "default": null
         },
         "track_cid": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "preview_cid": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "orig_file_cid": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "orig_filename": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "is_downloadable": {
@@ -48,10 +36,7 @@
           "default": false
         },
         "audio_upload_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "duration": {
@@ -66,103 +51,61 @@
           }
         },
         "preview_start_seconds": {
-          "type": [
-            "float",
-            "null"
-          ],
+          "type": ["float", "null"],
           "default": null
         },
         "cover_art": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "cover_art_sizes": {
           "$comment": "type can be null if attached as a stem",
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "tags": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "genre": {
           "$comment": "genre can be null if attached as a stem",
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "mood": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "credits_splits": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "create_date": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "release_date": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "file_type": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "description": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "license": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "isrc": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "iswc": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "track_segments": {
@@ -195,18 +138,12 @@
           }
         },
         "stem_of": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "$ref": "#/definitions/StemOf",
           "default": null
         },
         "remix_of": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "$ref": "#/definitions/RemixOf",
           "default": null
         },
@@ -215,10 +152,7 @@
           "default": false
         },
         "stream_conditions": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "items": {
             "oneOf": [
               {
@@ -245,10 +179,7 @@
           "default": false
         },
         "download_conditions": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "items": {
             "anyOf": [
               {
@@ -271,98 +202,65 @@
           "default": null
         },
         "ai_attribution_user_id": {
-          "type": [
-            "integer",
-            "null"
-          ],
+          "type": ["integer", "null"],
           "default": null
         },
         "ddex_release_ids": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "default": null
         },
         "ddex_app": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "artists": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": ["array", "null"],
           "items": {
             "$ref": "#/definitions/ResourceContributor"
           },
           "default": null
         },
         "resource_contributors": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": ["array", "null"],
           "items": {
             "$ref": "#/definitions/ResourceContributor"
           },
           "default": null
         },
         "indirect_resource_contributors": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": ["array", "null"],
           "items": {
             "$ref": "#/definitions/ResourceContributor"
           },
           "default": null
         },
         "rights_controller": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "items": {
             "$ref": "#/definitions/RightsController"
           },
           "default": null
         },
         "copyright_line": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "items": {
             "$ref": "#/definitions/Copyright"
           },
           "default": null
         },
         "producer_copyright_line": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": ["object", "null"],
           "items": {
             "$ref": "#/definitions/Copyright"
           },
           "default": null
         },
         "parental_warning_type": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "bpm": {
-          "type": [
-            "float",
-            "null"
-          ],
+          "type": ["float", "null"],
           "default": null
         },
         "is_custom_bpm": {
@@ -370,20 +268,19 @@
           "default": false
         },
         "musical_key": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "is_custom_musical_key": {
           "type": ["boolean"],
           "default": false
         },
+        "is_comments_disabled": {
+          "type": ["boolean"],
+          "default": false
+        },
         "audio_analysis_error_count": {
-          "type": [
-            "integer"
-          ],
+          "type": ["integer"],
           "default": 0
         }
       },
@@ -415,10 +312,7 @@
       "title": "Track"
     },
     "RemixOf": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "additionalProperties": false,
       "properties": {
         "tracks": {
@@ -429,9 +323,7 @@
           }
         }
       },
-      "required": [
-        "tracks"
-      ],
+      "required": ["tracks"],
       "title": "RemixOf"
     },
     "TrackElement": {
@@ -442,9 +334,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "parent_track_id"
-      ],
+      "required": ["parent_track_id"],
       "title": "TrackElement"
     },
     "FieldVisibility": {
@@ -475,10 +365,7 @@
       "title": "FieldVisibility"
     },
     "StemOf": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "additionalProperties": false,
       "properties": {
         "category": {
@@ -488,10 +375,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "category",
-        "parent_track_id"
-      ],
+      "required": ["category", "parent_track_id"],
       "title": "StemOf"
     },
     "TrackSegment": {
@@ -506,17 +390,11 @@
           "$ref": "#/definitions/CID"
         }
       },
-      "required": [
-        "duration",
-        "multihash"
-      ],
+      "required": ["duration", "multihash"],
       "title": "TrackSegment"
     },
     "CID": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "minLength": 46,
       "maxLength": 46,
       "pattern": "^Qm[a-zA-Z0-9]{44}$",
@@ -540,9 +418,7 @@
           }
         }
       },
-      "required": [
-        "nft_collection"
-      ],
+      "required": ["nft_collection"],
       "title": "CollectibleGatedConditions"
     },
     "EthCollectibleGatedConditions": {
@@ -557,10 +433,7 @@
           "type": "string"
         },
         "standard": {
-          "enum": [
-            "ERC721",
-            "ERC1155"
-          ]
+          "enum": ["ERC721", "ERC1155"]
         },
         "name": {
           "type": "string"
@@ -569,27 +442,15 @@
           "type": "string"
         },
         "imageUrl": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "externalLink": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         }
       },
-      "required": [
-        "chain",
-        "address",
-        "standard",
-        "name",
-        "slug"
-      ],
+      "required": ["chain", "address", "standard", "name", "slug"],
       "title": "EthCollectibleGatedConditions"
     },
     "SolCollectibleGatedConditions": {
@@ -607,25 +468,15 @@
           "type": "string"
         },
         "imageUrl": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         },
         "externalLink": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null
         }
       },
-      "required": [
-        "chain",
-        "address",
-        "name"
-      ],
+      "required": ["chain", "address", "name"],
       "title": "SolCollectibleGatedConditions"
     },
     "FollowGatedConditions": {
@@ -636,9 +487,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "follow_user_id"
-      ],
+      "required": ["follow_user_id"],
       "title": "FollowGatedConditions"
     },
     "TipGatedConditions": {
@@ -649,9 +498,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "tip_user_id"
-      ],
+      "required": ["tip_user_id"],
       "title": "TipGatedConditions"
     },
     "USDCPurchaseConditions": {
@@ -672,10 +519,7 @@
           }
         }
       },
-      "required": [
-        "price",
-        "splits"
-      ]
+      "required": ["price", "splits"]
     },
     "Role": {
       "type": "string"
@@ -695,11 +539,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "name",
-        "roles",
-        "sequence_number"
-      ],
+      "required": ["name", "roles", "sequence_number"],
       "title": "ResourceContributor"
     },
     "RightsController": {
@@ -717,10 +557,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "roles"
-      ],
+      "required": ["name", "roles"],
       "title": "RightsController"
     },
     "Copyright": {
@@ -734,10 +571,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "year",
-        "text"
-      ],
+      "required": ["year", "text"],
       "title": "Copyright"
     }
   }

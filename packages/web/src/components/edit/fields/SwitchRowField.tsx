@@ -1,11 +1,9 @@
 import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 
-import { Switch, Text } from '@audius/harmony'
+import { Flex, IconInfo, Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Tooltip } from 'components/tooltip'
-
-import styles from './SwitchRowField.module.css'
 
 type ToggleFieldProps = PropsWithChildren & {
   name: string
@@ -42,20 +40,25 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   const descriptionId = `${name}-description`
 
   return (
-    <div className={styles.root}>
-      <div className={styles.content}>
-        <Tooltip text={tooltipText} disabled={!tooltipText}>
-          <Text tag='label' htmlFor={inputId} variant='title' size='l'>
-            {header}
-          </Text>
-        </Tooltip>
+    <Flex justifyContent='space-between'>
+      <Flex column gap='l' w='100%'>
+        <Text tag='label' htmlFor={inputId} variant='title' size='l'>
+          {header}
+        </Text>
         {description ? (
-          <Text id={descriptionId} variant='body'>
-            {description}
-          </Text>
+          <Flex gap='s' alignItems='center'>
+            <Text id={descriptionId} variant='body'>
+              {description}
+            </Text>
+            {tooltipText ? (
+              <Tooltip text={tooltipText}>
+                <IconInfo size='s' color='default' />
+              </Tooltip>
+            ) : null}
+          </Flex>
         ) : null}
         {(inverted ? !field.checked : field.checked) ? children : null}
-      </div>
+      </Flex>
       <Switch
         {...field}
         id={inputId}
@@ -64,6 +67,6 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
         onChange={onChange}
         {...inputOverrides}
       />
-    </div>
+    </Flex>
   )
 }

@@ -244,6 +244,7 @@ export type TrackMetadata = {
   is_custom_musical_key?: boolean
   musical_key?: string | null
   audio_analysis_error_count?: number
+  is_comments_disabled?: boolean
 
   // Optional Fields
   is_playlist_upload?: boolean

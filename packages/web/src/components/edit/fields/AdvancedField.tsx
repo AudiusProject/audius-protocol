@@ -1,5 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { advancedTrackMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   creativeCommons,
   parseMusicalKey,
@@ -45,67 +48,6 @@ import { SwitchRowField } from './SwitchRowField'
 const { computeLicense, ALL_RIGHTS_RESERVED_TYPE, computeLicenseVariables } =
   creativeCommons
 
-const messages = {
-  title: 'Advanced',
-  description:
-    'Provide detailed metadata to help identify and manage your music.',
-  isAiGenerated: 'AI-Generated',
-  bpm: {
-    header: 'Tempo',
-    label: 'BPM',
-    validError: 'Must be a valid decimal number'
-  },
-  musicalKey: 'Key',
-  aiGenerated: {
-    header: 'Mark this track as AI generated',
-    tooltip:
-      'If your AI-generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
-    placeholder: 'Search for Users',
-    requiredError: 'Valid user must be selected.'
-  },
-  apiAllowed: {
-    header: 'Disallow Streaming via the API',
-    description:
-      'Keep your track from being streamed on third-party apps or services that utilize the Audius API.'
-  },
-  isrcTooltip: `ISRC is used to identify individual sound recordings and music videos. ISWC is used to identify the underlying musical composition – the music and lyrics`,
-  isrc: {
-    header: 'ISRC',
-    placeholder: 'CC-XXX-YY-NNNNN',
-    validError: 'Must be valid ISRC format.'
-  },
-  iswc: {
-    header: 'ISWC',
-    placeholder: 'T-345246800-1',
-    validError: 'Must be valid ISWC format.'
-  },
-  licenseType: 'License Type',
-  allowAttribution: {
-    header: 'Allow Attribution?',
-    options: {
-      false: 'No Attribution',
-      true: 'Allow Attribution'
-    }
-  },
-  commercialUse: {
-    header: 'Commercial Use?',
-    options: {
-      false: 'Non-Commercial Use',
-      true: 'Commercial Use'
-    }
-  },
-  derivativeWorks: {
-    header: 'Derivative Works?',
-    options: {
-      false: 'Not-Allowed',
-      true: 'Share-Alike',
-      null: 'Allowed'
-    }
-  },
-  noLicense: 'All Rights Reserved',
-  releaseDate: 'Release Date'
-}
-
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const BLOCK_THIRD_PARTY_STREAMING = 'blockThirdPartyStreaming'
 const ALLOWED_API_KEYS = 'allowed_api_keys'
@@ -121,6 +63,7 @@ const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
 const IS_UNLISTED = 'is_unlisted'
+const IS_COMMENTS_DISABLED = 'is_comments_disabled'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -206,6 +149,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
   const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
   const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
+  const [{ value: isCommentsDisabled }, , { setValue: setIsCommentsDisabled }] =
+    useTrackField<boolean>(IS_COMMENTS_DISABLED)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -222,6 +167,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)
     set(initialValues, IS_UNLISTED, isHidden)
+    set(initialValues, IS_COMMENTS_DISABLED, isCommentsDisabled)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -232,7 +178,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     bpm,
     musicalKey,
     releaseDate,
-    isHidden
+    isHidden,
+    isCommentsDisabled
   ])
 
   const onSubmit = useCallback(
@@ -260,6 +207,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       setBpm(typeof bpmValue !== 'undefined' ? Number(bpmValue) : bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
+      setIsCommentsDisabled(
+        get(values, IS_COMMENTS_DISABLED) ?? isCommentsDisabled
+      )
     },
     [
       setIsrc,
@@ -273,6 +223,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       musicalKey,
       setReleaseDate,
       releaseDate,
+      setIsCommentsDisabled,
+      isCommentsDisabled,
       setAiUserId,
       aiUserId,
       setAllowedApiKeys
@@ -372,6 +324,10 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
 
   const dropdownHasError =
     aiUserHelperFields.touched && aiUserHelperFields.error
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -527,6 +483,16 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
         ) : null}
       </div>
       <Divider />
+      {isCommentsEnabled ? (
+        <>
+          <SwitchRowField
+            name={IS_COMMENTS_DISABLED}
+            header={messages.disableComments.header}
+            description={messages.disableComments.description}
+          />
+          <Divider />
+        </>
+      ) : null}
       <SwitchRowField
         name={BLOCK_THIRD_PARTY_STREAMING}
         header={messages.apiAllowed.header}
@@ -536,6 +502,7 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}
         header={messages.aiGenerated.header}
+        description={messages.aiGenerated.description}
         tooltipText={messages.aiGenerated.tooltip}
       >
         <AiAttributionDropdown
