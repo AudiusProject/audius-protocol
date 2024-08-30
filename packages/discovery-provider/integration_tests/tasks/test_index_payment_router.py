@@ -93,21 +93,21 @@ test_entries = {
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
-            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "splits": [{"user_id": 1, "amount": 1000000, "percentage": 100}],
             "total_price_cents": 100,
             "access": PurchaseAccessType.stream,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
-            "splits": {
-                "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000,
-                "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
-            },
+            "splits": [
+                {"user_id": 1, "amount": 1000000, "percentage": 50},
+                {"user_id": 3, "amount": 1000000, "percentage": 50},
+            ],
             "total_price_cents": 200,
         },
         {  # download access type
             "track_id": 3,
-            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "splits": [{"user_id": 1, "amount": 1000000, "percentage": 100}],
             "total_price_cents": 100,
             "access": PurchaseAccessType.download,
         },
@@ -115,7 +115,7 @@ test_entries = {
     "album_price_history": [
         {  # pay full price to albumOwner
             "playlist_id": 1,
-            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "splits": [{"user_id": 1, "amount": 1000000, "percentage": 100}],
             "total_price_cents": 100,
         },
     ],
