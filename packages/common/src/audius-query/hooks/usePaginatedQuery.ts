@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { isEqual } from 'lodash'
-import { useSelector } from 'react-redux'
 import { useCustomCompareEffect } from 'react-use'
 
 import { Status } from '~/models/Status'
-import { CommonState } from '~/store'
 
 import { QueryHookOptions, QueryHookResults } from '../types'
-import { getKeyFromFetchArgs } from '../utils'
 
 /**
  * @deprecated This hook is deprecated in favor of using the 'paginatedQuery' type inside the createApi() method. See comments.ts for an example.
