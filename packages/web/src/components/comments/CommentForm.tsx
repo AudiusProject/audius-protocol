@@ -5,6 +5,7 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { SquareSizes, Status } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import {
@@ -16,9 +17,12 @@ import {
 } from '@audius/harmony'
 import { Form, Formik, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
+import { usePrevious, useToggle } from 'react-use'
 
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { TextField } from 'components/form-fields'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { audioPlayer } from 'services/audio-player'
 
@@ -59,7 +63,10 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { currentUserId, entityId, comments } = useCurrentCommentSection()
+  const isMobile = useIsMobile()
+  const isFirstComment = comments.length === 0
+  const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [editComment] = useEditComment()
   const currentlyPlayingTrackId = useSelector(getTrackId)
@@ -80,6 +87,12 @@ export const CommentForm = ({
       editComment(commentId, commentMessage)
     }
   }
+
+  const handleClickInput = useAuthenticatedCallback(() => {
+    if (isMobile) {
+      toggleIsMobileAppDrawer()
+    }
+  }, [isMobile, toggleIsMobileAppDrawer])
 
   const profileImage = useProfilePicture(
     currentUserId ?? null,
@@ -112,20 +125,30 @@ export const CommentForm = ({
           ) : null}
           <TextField
             name='commentMessage'
-            label='Add a comment'
+            label={
+              isFirstComment && isMobile
+                ? messages.firstComment
+                : messages.addComment
+            }
+            readOnly={isMobile}
+            onClick={handleClickInput}
             disabled={isLoading}
           />
           {isLoading ? (
             <LoadingSpinner />
           ) : (
             <IconButton
-              aria-label='Post comment'
+              aria-label={messages.postComment}
               icon={IconSend}
               color='accent'
               type='submit'
             />
           )}
         </Flex>
+        <DownloadMobileAppDrawer
+          isOpen={isMobileAppDrawerOpen}
+          onClose={toggleIsMobileAppDrawer}
+        />
       </Form>
     </Formik>
   )

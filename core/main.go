@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -31,11 +28,15 @@ func main() {
 		return
 	}
 
+	logger.Info("configuration created")
+
 	// db migrations
 	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
 		logger.Errorf("running migrations: %v", err)
 		return
 	}
+
+	logger.Info("db migrations successful")
 
 	pool, err := pgxpool.New(context.Background(), config.PSQLConn)
 	if err != nil {
@@ -50,13 +51,19 @@ func main() {
 		return
 	}
 
+	logger.Info("new node created")
+
 	rpc := local.New(node)
+
+	logger.Info("local rpc initialized")
 
 	server, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
 		logger.Errorf("grpc init error: %v", err)
 		return
 	}
+
+	logger.Info("grpc server created")
 
 	e := echo.New()
 	e.HideBanner = true
@@ -67,53 +74,35 @@ func main() {
 		return
 	}
 
+	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
+	if err != nil {
+		logger.Errorf("grpc listener not created: %v", err)
+		return
+	}
+
 	eg, ctx := errgroup.WithContext(context.Background())
 
+	// close all services if app exits
+	defer e.Shutdown(ctx)
+	defer node.Stop()
+	defer grpcLis.Close()
+
+	// console
 	eg.Go(func() error {
-		return e.Start("0.0.0.0:26659")
+		logger.Info("core http server starting")
+		return e.Start(config.CoreServerAddr)
 	})
 
+	// cometbft
 	eg.Go(func() error {
-		nodeStarted := make(chan struct{})
-		go func() {
-			node.Start()
-			close(nodeStarted)
-		}()
-
-		select {
-		case <-nodeStarted:
-			defer func() {
-				node.Stop()
-				node.Wait()
-			}()
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-
-		// Listen for OS signals to gracefully shut down the node
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-		select {
-		case <-c:
-			return nil
-		case <-ctx.Done():
-			return ctx.Err()
-		}
+		logger.Info("core comet server starting")
+		return node.Start()
 	})
 
+	// grpc
 	eg.Go(func() error {
-		lis, err := net.Listen("tcp", "0.0.0.0:50051")
-		if err != nil {
-			return err
-		}
-		defer lis.Close()
-
-		go func() {
-			<-ctx.Done()
-			lis.Close()
-		}()
-
-		return server.Serve(lis)
+		logger.Info("core grpc server starting")
+		return server.Serve(grpcLis)
 	})
 
 	if err := eg.Wait(); err != nil {
