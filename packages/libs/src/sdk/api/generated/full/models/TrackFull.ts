@@ -437,6 +437,12 @@ export interface TrackFull {
     audioAnalysisErrorCount?: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    isCommentsDisabled?: boolean;
+    /**
+     * 
      * @type {object}
      * @memberof TrackFull
      */
@@ -618,6 +624,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'musicalKey': !exists(json, 'musical_key') ? undefined : json['musical_key'],
         'isCustomMusicalKey': !exists(json, 'is_custom_musical_key') ? undefined : json['is_custom_musical_key'],
         'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
+        'isCommentsDisabled': !exists(json, 'is_comments_disabled') ? undefined : json['is_comments_disabled'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'artists': !exists(json, 'artists') ? undefined : json['artists'],
         'resourceContributors': !exists(json, 'resource_contributors') ? undefined : json['resource_contributors'],
@@ -700,6 +707,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'musical_key': value.musicalKey,
         'is_custom_musical_key': value.isCustomMusicalKey,
         'audio_analysis_error_count': value.audioAnalysisErrorCount,
+        'is_comments_disabled': value.isCommentsDisabled,
         'ddex_release_ids': value.ddexReleaseIds,
         'artists': value.artists,
         'resource_contributors': value.resourceContributors,
