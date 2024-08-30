@@ -601,7 +601,7 @@ const buildEndpointHooks = <
       }
 
       // By default, select data for every page up to the current page and aggregate the results
-      const pageAccumulator = []
+      const pageAccumulator: Data[] = []
 
       for (let i = 0; i <= page; i++) {
         const key = getKeyFromFetchArgs({
