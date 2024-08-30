@@ -29,6 +29,13 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
           Parameters<EndpointDefinitions[Property]['fetch']>[0],
           Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
         >
+      : EndpointDefinitions[Property]['options']['type'] extends 'paginatedQuery'
+      ? (
+          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          options: PaginatedQueryHookOptions
+        ) => PaginatedQueryHookResults<
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
       : (
           fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
           options?: QueryHookOptions
@@ -81,7 +88,7 @@ type EndpointOptions = {
   kind?: Kind
   retry?: boolean
   retryConfig?: RetryConfig
-  type?: 'query' | 'mutation'
+  type?: 'query' | 'mutation' | 'paginatedQuery'
 }
 
 export type EndpointConfig<Args, Data> = {
@@ -138,6 +145,8 @@ export type PerKeyState<NormalizedData> = {
   errorMessage?: string
 }
 
+export type PaginatedQueryArgs = { limit: number; offset: number }
+
 export type QueryHookOptions = {
   disabled?: boolean
   shallow?: boolean
@@ -147,12 +156,49 @@ export type QueryHookOptions = {
   debounce?: number
 }
 
+export type PaginatedQueryHookOptions = QueryHookOptions & {
+  /**
+   * Page size to use.
+   * NOTE: if you change this value after the hook was initialized you will cause a cache miss and it will re-fetch data.
+   */
+  pageSize: number
+  /**
+   * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
+   */
+  singlePageData?: boolean //
+}
+
 export type QueryHookResults<Data> = {
   data: Data
   status: Status
   errorMessage?: string
   forceRefresh: () => void
 }
+
+export type PaginatedQueryHookResults<Data extends []> =
+  QueryHookResults<Data> & {
+    /**
+     * Tracks load state for new pages loading in (not the initial page; initial page can be tracked via status).
+     * Only used after calling loadMore() first
+     */
+    isLoadingMore: boolean
+    /**
+     * Returns false if we get data back that is less than the page size
+     */
+    hasMore: boolean
+    /**
+     * Load the next page
+     */
+    loadMore: () => void
+    /**
+     * A soft reset to go back to the first page. Doesn't clear the data from the store
+     */
+    softReset: () => void
+    /**
+     * A hard reset that goes back to the first page AND clears all the data from the store
+     */
+    hardReset: () => void
+  }
 
 export type MutationHookResponse<Data> = {
   data: Data
