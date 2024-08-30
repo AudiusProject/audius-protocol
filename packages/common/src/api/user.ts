@@ -1,4 +1,4 @@
-import { full, HashId } from '@audius/sdk'
+import { full } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -219,6 +219,17 @@ const userApi = createApi({
         kind: Kind.TRACKS,
         schemaKey: 'tracks'
       }
+    },
+    getSalesAggegrate: {
+      fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
+        const sdk = await audiusSdk()
+        const response = await sdk.users.getSalesAggregate({
+          id: Id.parse(userId)
+        })
+        window.alert('getSalesAggegrate response: ' + JSON.stringify(response))
+        return response
+      },
+      options: {}
     }
   }
 })
@@ -232,7 +243,8 @@ export const {
   useGetUSDCTransactionsCount,
   useGetRemixers,
   useGetRemixersCount,
-  useGetRemixedTracks
+  useGetRemixedTracks,
+  useGetSalesAggegrate
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

@@ -2356,7 +2356,8 @@ class SalesAggregate(Resource):
         params={"id": "A User ID"},
     )
     @ns.expect(sales_aggregate_parser)
-    @auth_middleware(sales_aggregate_parser)
+    @auth_middleware(sales_aggregate_parser, require_auth=True)
+    @ns.marshal_with(sales_aggregate_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)

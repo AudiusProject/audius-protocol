@@ -5,6 +5,7 @@ import {
   useGetCurrentUserId,
   useGetRemixedTracks,
   useGetRemixersCount,
+  useGetSalesAggegrate,
   useGetUserTracksByHandle
 } from '@audius/common/api'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
@@ -221,6 +222,10 @@ const PastPurchasersMessageField = () => {
     type: 'select'
   })
 
+  const { data: salesAggregate } = useGetSalesAggegrate({
+    userId: currentUserId
+  })
+
   const isSelected = value === ChatBlastAudience.CUSTOMERS
 
   const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
@@ -252,6 +257,7 @@ const PastPurchasersMessageField = () => {
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.purchasers.description}</Text>
+            <Text>{JSON.stringify(salesAggregate)}</Text>
             <Select
               {...purchasedTrackField}
               options={premiumTrackOptions}

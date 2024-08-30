@@ -175,7 +175,7 @@ purchase = ns.model(
 sales_aggregate = ns.model(
     "sales_aggregate",
     {
-        "content_type": StringEnumToLower(required=True, discriminator=True),
+        "content_type": StringEnumToLower(required=True),
         "content_id": fields.String(required=True),
         "purchase_count": fields.Integer(required=True),
     },
