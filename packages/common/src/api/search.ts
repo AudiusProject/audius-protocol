@@ -136,7 +136,7 @@ const searchApi = createApi({
               })
             )
           }
-          const { data } = await sdk.full.search.search()
+          const { data } = await sdk.full.search.search(searchParams)
           const { tracks, playlists, albums, users } =
             searchResultsFromSDK(data)
           const results = { tracks, playlists, albums, users }
