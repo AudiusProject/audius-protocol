@@ -15,12 +15,18 @@ import {
 
 import { CommentBlock } from './CommentBlock'
 
-export const CommentThread = ({ commentId }: { commentId: string }) => {
+type CommentThreadProps = {
+  commentId: string
+}
+
+export const CommentThread = (props: CommentThreadProps) => {
+  const { commentId } = props
   const { data: rootComment } = useGetCommentById({
     id: commentId
   })
+
   const { handleLoadMoreReplies } = useCurrentCommentSection()
-  // TODO: this feels sub-optimal? Maybe fine
+
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})
