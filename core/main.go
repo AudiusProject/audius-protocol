@@ -28,11 +28,15 @@ func main() {
 		return
 	}
 
+	logger.Info("configuration created")
+
 	// db migrations
 	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
 		logger.Errorf("running migrations: %v", err)
 		return
 	}
+
+	logger.Info("db migrations successful")
 
 	pool, err := pgxpool.New(context.Background(), config.PSQLConn)
 	if err != nil {
@@ -47,13 +51,19 @@ func main() {
 		return
 	}
 
+	logger.Info("new node created")
+
 	rpc := local.New(node)
+
+	logger.Info("local rpc initialized")
 
 	server, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
 		logger.Errorf("grpc init error: %v", err)
 		return
 	}
+
+	logger.Info("grpc server created")
 
 	e := echo.New()
 	e.HideBanner = true
