@@ -10,9 +10,11 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/console"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
+	"github.com/AudiusProject/audius-protocol/core/server"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -57,7 +59,7 @@ func main() {
 
 	logger.Info("local rpc initialized")
 
-	server, err := grpc.NewGRPCServer(logger, config, rpc, pool)
+	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
 		logger.Errorf("grpc init error: %v", err)
 		return
@@ -66,7 +68,14 @@ func main() {
 	logger.Info("grpc server created")
 
 	e := echo.New()
+	e.Pre(middleware.RemoveTrailingSlash())
 	e.HideBanner = true
+
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
+	if err != nil {
+		logger.Errorf("server init error: %v", err)
+		return
+	}
 
 	_, err = console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
@@ -102,7 +111,7 @@ func main() {
 	// grpc
 	eg.Go(func() error {
 		logger.Info("core grpc server starting")
-		return server.Serve(grpcLis)
+		return grpcServer.Serve(grpcLis)
 	})
 
 	if err := eg.Wait(); err != nil {
