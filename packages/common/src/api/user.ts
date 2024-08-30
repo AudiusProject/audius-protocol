@@ -207,6 +207,25 @@ const userApi = createApi({
       },
       options: {}
     },
+    getPurchasersCount: {
+      fetch: async (
+        {
+          userId,
+          contentId,
+          contentType
+        }: { userId: ID; contentId?: string; contentType: string },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data } = await sdk.full.users.getPurchasersCount({
+          id: encodeHashId(userId),
+          contentId: Id.parse(contentId),
+          contentType
+        })
+        return data ?? 0
+      },
+      options: {}
+    },
     getRemixedTracks: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
         const sdk = await audiusSdk()
@@ -223,11 +242,10 @@ const userApi = createApi({
     getSalesAggegrate: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
         const sdk = await audiusSdk()
-        const response = await sdk.users.getSalesAggregate({
+        const { data } = await sdk.users.getSalesAggregate({
           id: Id.parse(userId)
         })
-        window.alert('getSalesAggegrate response: ' + JSON.stringify(response))
-        return response
+        return data
       },
       options: {}
     }
@@ -243,6 +261,7 @@ export const {
   useGetUSDCTransactionsCount,
   useGetRemixers,
   useGetRemixersCount,
+  useGetPurchasersCount,
   useGetRemixedTracks,
   useGetSalesAggegrate
 } = userApi.hooks
