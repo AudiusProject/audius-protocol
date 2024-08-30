@@ -22,9 +22,14 @@ export const prepareSplits = async ({
   claimableTokensClient: ClaimableTokensClient
   logger: LoggerService
 }) => {
+  const userSplitCount = splits.filter((s) => !s.userId).length
   // Convert splits to big int and spread extra amount to every split
-  let amountSplits = splits.map((split, index, arr) => {
-    const amountToAdd = extraAmount / BigInt(arr.length - index)
+  let amountSplits = splits.map((split, index) => {
+    // Only give extra payments to users
+    if (!split.userId) {
+      return { ...split, amount: BigInt(split.amount) }
+    }
+    const amountToAdd = extraAmount / BigInt(userSplitCount - index)
     extraAmount = USDC(extraAmount - amountToAdd).value
     return {
       ...split,
