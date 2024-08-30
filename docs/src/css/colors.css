@@ -54,8 +54,6 @@
 
   --accent-purple: #8e51cf;
 
-  --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
-  --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient-color-1: #5b23e1;
   --page-header-gradient-color-2: #a22feb;
@@ -98,7 +96,7 @@
   --nav-column-link: var(--neutral-dark-2);
   --nav-column-link-hover: var(--neutral-dark-3);
 
-  --scrubber-hover: var(--primary-gradient-alt-1);
+  --scrubber-hover: var(--primary-gradient);
   --stems-token-value-slider-background: var(--page-header-gradient);
   --stems-token-value-slider-background-error: var(--accent-red-gradient);
 
