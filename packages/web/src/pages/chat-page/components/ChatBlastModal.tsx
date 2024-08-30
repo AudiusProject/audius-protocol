@@ -8,15 +8,9 @@ import {
   useGetRemixedTracks,
   useGetRemixersCount,
   useGetSalesAggegrate,
-  useGetTracksByIds,
-  useGetUserTracksByHandle
+  useGetTracksByIds
 } from '@audius/common/api'
-import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import {
-  useChatBlastModal,
-  chatActions,
-  PurchaseableContentType
-} from '@audius/common/src/store'
+import { useChatBlastModal, chatActions } from '@audius/common/src/store'
 import { removeNullable } from '@audius/common/utils'
 import {
   Flex,

@@ -219,7 +219,7 @@ const userApi = createApi({
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getPurchasersCount({
           id: encodeHashId(userId),
-          contentId: Id.parse(contentId),
+          contentId: contentId ? Id.parse(contentId) : undefined,
           contentType
         })
         return data ?? 0
