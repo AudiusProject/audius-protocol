@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import { full, HashId } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -9,6 +9,7 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
+import { encodeHashId } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
@@ -193,17 +194,31 @@ const userApi = createApi({
     },
     getRemixersCount: {
       fetch: async (
-        { userId, trackId }: { userId: ID; trackId?: string },
+        { userId, trackId }: { userId: ID; trackId?: number },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getRemixersCount({
           id: Id.parse(userId),
-          trackId
+          userId: Id.parse(userId),
+          trackId: trackId ? encodeHashId(trackId) : undefined
         })
         return data
       },
       options: {}
+    },
+    getRemixedTracks: {
+      fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getUserTracksRemixed({
+          id: Id.parse(userId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
+      },
+      options: {
+        kind: Kind.TRACKS,
+        schemaKey: 'tracks'
+      }
     }
   }
 })
@@ -216,7 +231,8 @@ export const {
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   useGetRemixers,
-  useGetRemixersCount
+  useGetRemixersCount,
+  useGetRemixedTracks
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 
 import {
   useGetCurrentUser,
+  useGetCurrentUserId,
+  useGetRemixedTracks,
   useGetRemixersCount,
   useGetUserTracksByHandle
 } from '@audius/common/api'
@@ -75,10 +77,14 @@ export const ChatBlastModal = () => {
 
   const handleSubmit = (values: ChatBlastFormValues) => {
     onClose()
+    const audienceContentId =
+      values.target_audience === ChatBlastAudience.CUSTOMERS
+        ? values.purchased_content_id
+        : values.remixed_track_id
     dispatch(
       createChatBlast({
         audience: values.target_audience,
-        audienceContentId: values.purchased_content_id,
+        audienceContentId,
         // TODO: collection support
         audienceContentType: values.purchased_content_id ? 'track' : undefined
       })
@@ -251,6 +257,7 @@ const PastPurchasersMessageField = () => {
               options={premiumTrackOptions}
               label={messages.purchasers.placeholder}
               onChange={setPurchasedTrackId}
+              clearable
             />
           </Flex>
         ) : null}
@@ -260,32 +267,32 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  const { handle, user_id: currentUserId } = user ?? {}
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
   const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId,
+    userId: currentUserId!,
     trackId: remixedTrackField.value
+      ? parseInt(remixedTrackField.value)
+      : undefined
+  })
+
+  const { data: remixedTracks } = useGetRemixedTracks({
+    userId: currentUserId!
   })
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
-  const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
   const premiumTrackOptions = useMemo(
     () =>
-      (tracks ?? [])
-        .filter((track) => {
-          return true
-        })
-        .map((track) => ({
-          value: track.track_id.toString(),
-          label: track.title
-        })),
-    [tracks]
+      (remixedTracks ?? []).map((track) => ({
+        value: track.track_id.toString(),
+        label: track.title
+      })),
+    [remixedTracks]
   )
 
   return (
@@ -294,7 +301,7 @@ const RemixCreatorsMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.remixCreators.label}
-          count={remixersCount}
+          count={remixersCount ?? 0}
           isSelected={isSelected}
         />
         {isSelected ? (
@@ -305,6 +312,7 @@ const RemixCreatorsMessageField = () => {
               options={premiumTrackOptions}
               label={messages.remixCreators.placeholder}
               onChange={setRemixedTrackId}
+              clearable
             />
           </Flex>
         ) : null}
