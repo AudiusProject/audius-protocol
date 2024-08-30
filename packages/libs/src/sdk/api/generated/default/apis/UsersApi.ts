@@ -184,6 +184,15 @@ export interface GetRepostsRequest {
     userId?: string;
 }
 
+export interface GetSalesAggregateRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface GetSubscribersRequest {
     id: string;
     offset?: number;
@@ -888,6 +897,56 @@ export class UsersApi extends runtime.BaseAPI {
     async getReposts(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Reposts> {
         const response = await this.getRepostsRaw(params, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the aggregated sales data for the user
+     */
+    async getSalesAggregateRaw(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesAggregate.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/aggregate`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets the aggregated sales data for the user
+     */
+    async getSalesAggregate(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.getSalesAggregateRaw(params, initOverrides);
     }
 
     /**
