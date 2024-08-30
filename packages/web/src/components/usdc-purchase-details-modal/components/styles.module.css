@@ -1,10 +1,3 @@
-.content > div:first-child {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--harmony-unit-6);
-}
-
 .trackRow {
   align-items: center∂;
   display: flex;
@@ -35,7 +28,12 @@
   border-radius: var(--harmony-unit-1);
   border: 1px solid var(--harmony-border-default);
   overflow: hidden;
-  width: var(--harmony-unit-24);
-  height: var(--harmony-unit-24);
-  flex: 0 0 var(--harmony-unit-24);
+  width: var(--harmony-unit-16);
+  height: var(--harmony-unit-16);
+  flex: 0 0 var(--harmony-unit-16);
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+  border-radius: 8px;
+  padding: 12px 24px;
 }

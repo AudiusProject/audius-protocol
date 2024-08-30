@@ -5,26 +5,35 @@ import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '@audius/common/models'
-import { formatUSDCWeiToUSDString } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
+import { Flex, IconInfo, Text } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { Tooltip } from 'components/tooltip'
+
+import styles from './styles.module.css'
 
 const messages = {
   payExtra: 'Pay Extra',
   downloadable: (count: number) => `Downloadable Files (${count})`,
-  title: 'Transaction Summary',
   total: 'Total',
-  albumCost: 'Album Cost',
-  trackCost: 'Track Cost'
+  subtotal: 'Subtotal',
+  networkFee: 'Network Fee',
+  networkFeeRate: '(10%)',
+  networkFeeHelp:
+    'This fee flows to the community treasury to support the Audius network.'
 }
 
 export const TransactionSummary = ({
-  transaction
+  transaction,
+  isSale = false
 }: {
   transaction: USDCPurchaseDetails
+  isSale?: boolean
 }) => {
-  const amountBN = new BN(transaction.amount)
+  const amount = BigInt(transaction.amount)
+  const extraAmount = BigInt(transaction.extraAmount)
   const { contentId, contentType } = transaction
   const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { data: track } = useGetTrackById({ id: contentId })
@@ -34,39 +43,82 @@ export const TransactionSummary = ({
   const downloadableCount =
     stemTracks.length + (track?.is_original_available ? 1 : 0)
 
+  let creatorTotal = BigInt(0)
+  let networkFee = BigInt(0)
+  for (const split of transaction.splits) {
+    if (split.userId) {
+      creatorTotal += BigInt(split.amount)
+    } else {
+      networkFee += BigInt(split.amount)
+    }
+  }
+  const subtotal = isSale ? amount : creatorTotal
+  const total = isSale ? extraAmount + creatorTotal : extraAmount + amount
+
   const items: SummaryTableItem[] = []
   if (transaction.access === PurchaseAccess.STREAM) {
     items.push({
       id: 'cost',
-      label: isTrack ? messages.trackCost : messages.albumCost,
-      value: `$${formatUSDCWeiToUSDString(amountBN)}`
+      label: messages.subtotal,
+      value: USDC(subtotal).toLocaleString()
     })
   } else if (transaction.access === PurchaseAccess.DOWNLOAD) {
     items.push({
       id: 'download',
       label: messages.downloadable(downloadableCount),
-      value: `$${formatUSDCWeiToUSDString(amountBN)}`
+      value: USDC(subtotal).toLocaleString('en-US', { roundingMode: 'floor' })
     })
   }
 
-  const extraAmountBN = new BN(transaction.extraAmount)
-  if (!extraAmountBN.isZero()) {
+  if (extraAmount !== BigInt(0)) {
     items.push({
       id: 'payExtra',
       label: messages.payExtra,
-      value: `$${formatUSDCWeiToUSDString(extraAmountBN)}`
+      value: USDC(extraAmount).toLocaleString()
+    })
+  }
+
+  if (networkFee > 0) {
+    items.push({
+      id: 'networkFee',
+      label: (
+        <Flex gap='s' alignItems='center'>
+          <Text>
+            {messages.networkFee + ' '}
+            <Text color='subdued'>{messages.networkFeeRate}</Text>
+          </Text>
+          <Tooltip
+            className={styles.tooltip}
+            color='secondary'
+            shouldWrapContent={false}
+            text={
+              <Text variant='body' size='m'>
+                {messages.networkFeeHelp}
+              </Text>
+            }
+            mount='body'
+          >
+            <IconInfo color='subdued' size='s' />
+          </Tooltip>
+        </Flex>
+      ),
+      value: USDC(isSale ? BigInt(0) - networkFee : networkFee).toLocaleString(
+        'en-US',
+        { roundingMode: 'ceil' }
+      )
     })
   }
 
   return (
     <SummaryTable
-      title={messages.title}
+      collapsible={true}
+      title={messages.total}
+      secondaryTitle={
+        <Text tag='span' color='accent'>
+          {USDC(total).toLocaleString()}
+        </Text>
+      }
       items={items}
-      summaryItem={{
-        id: 'total',
-        label: messages.total,
-        value: `$${formatUSDCWeiToUSDString(amountBN.add(extraAmountBN))}`
-      }}
     />
   )
 }
