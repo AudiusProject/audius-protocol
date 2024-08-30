@@ -96,7 +96,6 @@
   --nav-column-link: var(--neutral-dark-2);
   --nav-column-link-hover: var(--neutral-dark-3);
 
-  --scrubber-hover: var(--primary-gradient);
   --stems-token-value-slider-background: var(--page-header-gradient);
   --stems-token-value-slider-background-error: var(--accent-red-gradient);
 
