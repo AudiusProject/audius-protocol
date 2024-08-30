@@ -4,6 +4,7 @@ from sqlalchemy import desc, func
 
 from src.models.tracks.track import Track
 from src.utils import db_session
+from src.utils.hardcoded_data import genre_allowlist
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def _get_genre_metrics(session, args):
         .filter(
             Track.genre != None,
             Track.genre != "",
+            Track.genre.in_(genre_allowlist),
             Track.is_current == True,
             Track.created_at > args.get("start_time"),
         )

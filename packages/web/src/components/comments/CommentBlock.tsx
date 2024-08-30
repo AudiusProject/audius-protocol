@@ -26,10 +26,11 @@ const { getUser } = cacheUsersSelectors
 export type CommentBlockProps = {
   comment: Comment
   parentCommentId?: string
+  hideActions?: boolean
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { comment, parentCommentId } = props
+  const { comment, parentCommentId, hideActions } = props
   const {
     isPinned,
     message,
@@ -120,13 +121,15 @@ export const CommentBlock = (props: CommentBlockProps) => {
         ) : (
           <Text color='default'>{message}</Text>
         )}
-        <CommentActionBar
-          comment={comment}
-          onClickReply={() => setShowReplyInput((prev) => !prev)}
-          onClickEdit={() => setShowEditInput((prev) => !prev)}
-          onClickDelete={() => deleteComment(commentId)}
-          isDisabled={isDeleting}
-        />
+        {hideActions ? null : (
+          <CommentActionBar
+            comment={comment}
+            onClickReply={() => setShowReplyInput((prev) => !prev)}
+            onClickEdit={() => setShowEditInput((prev) => !prev)}
+            onClickDelete={() => deleteComment(commentId)}
+            isDisabled={isDeleting}
+          />
+        )}
 
         {showReplyInput ? (
           <CommentForm

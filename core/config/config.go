@@ -41,6 +41,8 @@ type Config struct {
 	DelegatePrivateKey string
 	WalletAddress      string
 	ProposerAddress    string
+	GRPCladdr          string
+	CoreServerAddr     string
 
 	/* System Config */
 	RunDownMigration bool
@@ -65,6 +67,9 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.RootDir = os.Getenv("audius_core_root_dir")
 	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
 	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
+
+	cfg.GRPCladdr = getEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
+	cfg.CoreServerAddr = getEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""

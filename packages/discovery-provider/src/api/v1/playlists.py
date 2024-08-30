@@ -113,6 +113,7 @@ def get_playlist(
     playlists = get_playlists(args)
     if playlists:
         extendedPlaylist = extend_playlist(playlists[0])
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
         extendedPlaylist["playlist_contents"] = extendedPlaylist["added_timestamps"]
         return extendedPlaylist
     return None
@@ -151,6 +152,7 @@ def get_bulk_playlists(
     if playlists:
         extendedPlaylists = list(map(extend_playlist, playlists))
 
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
         def add_playlist_contents(playlist):
             playlist["playlist_contents"] = playlist["added_timestamps"]
             return playlist
