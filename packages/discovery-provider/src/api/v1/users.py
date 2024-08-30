@@ -2703,11 +2703,11 @@ user_feed_response = make_full_response(
     "user_feed_response", full_ns, fields.List(NestedOneOf(user_feed_item))
 )
 
-# TODO: log_duration, record_metrics
-
 
 @full_ns.route(USER_FEED_ROUTE)
 class FullUserFeed(Resource):
+    @log_duration(logger)
+    @record_metrics
     @full_ns.doc(
         id="""Get User Feed""",
         description="Gets the feed for the user",
