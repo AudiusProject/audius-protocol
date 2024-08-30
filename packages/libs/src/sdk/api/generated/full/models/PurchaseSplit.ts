@@ -25,7 +25,13 @@ export interface PurchaseSplit {
      * @type {number}
      * @memberof PurchaseSplit
      */
-    userId: number;
+    userId?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof PurchaseSplit
+     */
+    payoutWallet: string;
     /**
      * 
      * @type {string}
@@ -39,7 +45,7 @@ export interface PurchaseSplit {
  */
 export function instanceOfPurchaseSplit(value: object): value is PurchaseSplit {
     let isInstance = true;
-    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "payoutWallet" in value && value["payoutWallet"] !== undefined;
     isInstance = isInstance && "amount" in value && value["amount"] !== undefined;
 
     return isInstance;
@@ -55,7 +61,8 @@ export function PurchaseSplitFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
-        'userId': json['user_id'],
+        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
+        'payoutWallet': json['payout_wallet'],
         'amount': json['amount'],
     };
 }
@@ -70,6 +77,7 @@ export function PurchaseSplitToJSON(value?: PurchaseSplit | null): any {
     return {
         
         'user_id': value.userId,
+        'payout_wallet': value.payoutWallet,
         'amount': value.amount,
     };
 }

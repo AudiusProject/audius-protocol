@@ -157,7 +157,11 @@ user_subscribers = ns.model(
 
 split = ns.model(
     "purchase_split",
-    {"user_id": fields.Integer(required=True), "amount": fields.String(required=True)},
+    {
+        "user_id": fields.Integer(),
+        "payout_wallet": fields.String(required=True),
+        "amount": fields.String(required=True),
+    },
 )
 
 purchase = ns.model(
