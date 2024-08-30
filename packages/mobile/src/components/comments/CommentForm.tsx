@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import type { TextInput as RNTextInput } from 'react-native'
@@ -21,11 +22,6 @@ type CommentFormProps = {
   initialValue?: string
   isLoading?: boolean
   TextInputComponent?: typeof RNTextInput
-}
-
-const messages = {
-  beFirstComment: 'Be the first to comment!',
-  addComment: 'Add a comment'
 }
 
 type CommentFormContentProps = Omit<
@@ -70,9 +66,7 @@ const CommentFormContent = (props: CommentFormContentProps) => {
     }
   }, [editingComment, setFieldValue])
 
-  const message = comments?.length
-    ? messages.addComment
-    : messages.beFirstComment
+  const message = comments?.length ? messages.addComment : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
