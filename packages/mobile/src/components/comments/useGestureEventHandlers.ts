@@ -11,11 +11,7 @@ import {
   useBottomSheetInternal
 } from '@gorhom/bottom-sheet'
 import { Keyboard, Platform } from 'react-native'
-import {
-  runOnJS,
-  useSharedValue,
-  useWorkletCallback
-} from 'react-native-reanimated'
+import { runOnJS, useWorkletCallback } from 'react-native-reanimated'
 
 export const clamp = (
   value: number,
