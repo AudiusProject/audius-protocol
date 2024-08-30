@@ -26,10 +26,6 @@ import { tracksActions } from '../store/pages/track/lineup/actions'
 import { playerSelectors } from '../store/player'
 import { Nullable } from '../utils'
 
-/**
- * Context object to avoid prop drilling and share a common API with web/native code
- */
-
 export enum CommentSortMethod {
   top = 'top',
   newest = 'newest',
