@@ -10,14 +10,16 @@ SELECT
     follower_user_id
 from
     follows
-    left outer join aggregate_user on follower_user_id = user_id
+    join users on users.user_id = follows.follower_user_id
+    left outer join aggregate_user on follower_user_id = aggregate_user.user_id
 where
-    is_current = true
-    and is_delete = false
+    follows.is_current = true
+    and follows.is_delete = false
+    and users.is_deactivated = false
     and followee_user_id = :followee_user_id
 order by
     follower_count desc,
-    user_id asc
+    aggregate_user.user_id asc
 offset :offset
 limit :limit;
 """
