@@ -138,7 +138,7 @@ class TrackMetadata(TypedDict):
     musical_key: Optional[str]
     is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
-    is_comments_disabled: Optional[bool]
+    is_comments_disabled: bool
 
 
 track_metadata_format: TrackMetadata = {
