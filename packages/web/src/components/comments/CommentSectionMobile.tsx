@@ -1,9 +1,5 @@
 import { useGetTrackById } from '@audius/common/api'
-import {
-  useCurrentCommentSection,
-  usePostComment
-} from '@audius/common/context'
-import { Status } from '@audius/common/models'
+import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Flex,
   IconCaretRight,
@@ -31,11 +27,6 @@ const CommentSectionHeader = () => {
 
   const { data: track } = useGetTrackById({ id: entityId })
 
-  const handleClickViewAll = () => {
-    // TODO open the page
-    // openDrawer({ userId: currentUserId, entityId, isEntityOwner, artistId })
-  }
-
   const isShowingComments = !isLoading && comments?.length
 
   return (
@@ -52,12 +43,7 @@ const CommentSectionHeader = () => {
         ) : null}
       </Text>
       {isShowingComments ? (
-        <PlainButton
-          onClick={handleClickViewAll}
-          iconRight={IconCaretRight}
-          variant='subdued'
-          asChild
-        >
+        <PlainButton iconRight={IconCaretRight} variant='subdued' asChild>
           <Link to={`${track?.permalink}/comments`}>{messages.viewAll}</Link>
         </PlainButton>
       ) : null}
@@ -66,14 +52,11 @@ const CommentSectionHeader = () => {
 }
 
 const CommentSectionContent = () => {
-  const { commentSectionLoading: isLoading, comments } =
-    useCurrentCommentSection()
-
-  const [postComment, { status: postCommentStatus }] = usePostComment()
-
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
-  }
+  const {
+    currentUserId,
+    commentSectionLoading: isLoading,
+    comments
+  } = useCurrentCommentSection()
 
   // Loading state
   if (isLoading) {
@@ -91,12 +74,9 @@ const CommentSectionContent = () => {
   // Empty state
   if (!comments || !comments.length) {
     return (
-      <Flex gap='m'>
+      <Flex gap='m' column alignItems='flex-start'>
         <Text variant='body'>{messages.noComments}</Text>
-        <CommentForm
-          onSubmit={handlePostComment}
-          isLoading={postCommentStatus === Status.LOADING}
-        />
+        <CommentForm hideAvatar={!currentUserId} />
       </Flex>
     )
   }
