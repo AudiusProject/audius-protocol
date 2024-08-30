@@ -74,7 +74,7 @@ func main() {
 		return
 	}
 
-	grpcLis, err := net.Listen("tcp", "0.0.0.0:50051")
+	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
 	if err != nil {
 		logger.Errorf("grpc listener not created: %v", err)
 		return
@@ -82,21 +82,26 @@ func main() {
 
 	eg, ctx := errgroup.WithContext(context.Background())
 
+	// close all services if app exits
+	defer e.Shutdown(ctx)
+	defer node.Stop()
+	defer grpcLis.Close()
+
 	// console
 	eg.Go(func() error {
-		defer e.Shutdown(ctx)
-		return e.Start("0.0.0.0:26659")
+		logger.Info("core http server starting")
+		return e.Start(config.CoreServerAddr)
 	})
 
 	// cometbft
 	eg.Go(func() error {
-		defer node.Stop()
+		logger.Info("core comet server starting")
 		return node.Start()
 	})
 
 	// grpc
 	eg.Go(func() error {
-		defer grpcLis.Close()
+		logger.Info("core grpc server starting")
 		return server.Serve(grpcLis)
 	})
 
