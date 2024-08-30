@@ -1,5 +1,6 @@
 import { useGetTrackById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
   Flex,
   IconCaretRight,
@@ -12,11 +13,6 @@ import { Link } from 'react-router-dom'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
-
-const messages = {
-  noComments: 'Nothing here yet',
-  viewAll: 'View All'
-}
 
 const CommentSectionHeader = () => {
   const {

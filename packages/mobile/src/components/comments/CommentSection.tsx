@@ -3,6 +3,7 @@ import {
   useCurrentCommentSection,
   usePostComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
@@ -20,11 +21,6 @@ import Skeleton from '../skeleton'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
-
-const messages = {
-  noComments: 'Nothing here yet',
-  viewAll: 'View All'
-}
 
 const CommentSectionHeader = () => {
   const {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
   Box,
   Flex,
@@ -13,13 +14,6 @@ import {
 import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
-
-const messages = {
-  showMoreReplies: 'Show More Replies',
-  replies: 'Replies',
-  showReplies: 'Show Replies',
-  hideReplies: 'Hide Replies'
-}
 
 export const CommentThread = ({ commentId }: { commentId: string }) => {
   const { data: rootComment } = useGetCommentById({
@@ -50,7 +44,6 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
               iconLeft={
                 hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
               }
-              fullWidth={false}
             >
               {hiddenReplies[rootComment.id]
                 ? messages.showReplies

@@ -5,6 +5,7 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { SquareSizes, Status } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import {
@@ -24,12 +25,6 @@ import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { audioPlayer } from 'services/audio-player'
-
-const messages = {
-  postComment: 'Post Comment',
-  addComment: 'Add a comment',
-  firstComment: 'Be the first to comment!'
-}
 
 type CommentFormValues = {
   commentMessage: string
