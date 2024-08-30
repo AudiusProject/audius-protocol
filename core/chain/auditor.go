@@ -2,21 +2,21 @@ package chain
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"reflect"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
-	rollupProposalInterval        = time.Hour * 24 * 7
-	firstRollupMinimumChainHeight = 1000
+	rollupProposalInterval        = time.Minute * 3
+	firstRollupMinimumChainHeight = 10
 )
 
 func (app *KVStoreApplication) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
@@ -41,7 +41,7 @@ func (app *KVStoreApplication) createRollup(ctx context.Context, timestamp time.
 	}
 
 	reports, err := appDb.GetInProgressRollupReports(ctx)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return rollup, err
 	}
 
@@ -76,10 +76,16 @@ func (app *KVStoreApplication) isValidRollup(ctx context.Context, timestamp time
 		return false, err
 	}
 
-	if reflect.DeepEqual(myRollup, rollup) {
-		return true, nil
+	if myRollup.Timestamp.GetSeconds() != rollup.Timestamp.GetSeconds() || myRollup.Timestamp.GetNanos() != rollup.Timestamp.GetNanos() {
+		return false, nil
+	} else if myRollup.BlockStart != rollup.BlockStart {
+		return false, nil
+	} else if myRollup.BlockEnd != rollup.BlockEnd {
+		return false, nil
+	} else if !reflect.DeepEqual(myRollup.Reports, rollup.Reports) {
+		return false, nil
 	}
-	return false, nil
+	return true, nil
 }
 
 func (app *KVStoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.Time, height int64) bool {
@@ -89,7 +95,7 @@ func (app *KVStoreApplication) shouldProposeNewRollup(ctx context.Context, ts ti
 
 	appDb := app.getDb()
 	latestRollup, err := appDb.GetLatestSlaRollup(ctx)
-	if errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return true
 	} else if err != nil {
 		app.logger.Error("Error retrieving latest SLA rollup", "error", err)

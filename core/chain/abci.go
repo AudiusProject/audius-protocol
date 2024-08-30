@@ -98,6 +98,8 @@ func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitCh
 
 func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
 	proposalTxs := proposal.Txs
+
+	app.startInProgressTx(ctx)
 	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
 		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
 		if err != nil {
@@ -105,6 +107,10 @@ func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcit
 		} else {
 			proposalTxs = append(proposalTxs, rollupTx)
 		}
+	}
+	if err := app.commitInProgressTx(ctx); err != nil {
+		app.logger.Error("Failure closing db while preparing proposal", "error", err)
+		return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, err
 	}
 	return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, nil
 }
@@ -146,8 +152,6 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)
 
-			qtx := app.getDb()
-
 			hash := sha256.Sum256(tx)
 			txHash := hex.EncodeToString(hash[:])
 
@@ -157,7 +161,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 				TxHash: txHash,
 			}
 
-			record, err := qtx.InsertKVStore(ctx, params)
+			record, err := app.getDb().InsertKVStore(ctx, params)
 			if err != nil {
 				logger.Errorf("failed to persisted kv entry %v", err)
 			}
@@ -283,6 +287,7 @@ func (app *KVStoreApplication) isValidSlaRollup(tx []byte) bool {
 
 func (app *KVStoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
+	app.startInProgressTx(ctx)
 	for _, tx := range txs {
 		valid, err := app.isValidRollupTx(ctx, blockTime, blockHeight, tx)
 		if err != nil {
@@ -298,6 +303,10 @@ func (app *KVStoreApplication) validateBlockTxs(ctx context.Context, blockTime t
 		} else {
 			return false, nil
 		}
+	}
+	if err := app.commitInProgressTx(ctx); err != nil {
+		app.logger.Error("Failure closing db while validating txs", "error", err)
+		return false, err
 	}
 	return true, nil
 }

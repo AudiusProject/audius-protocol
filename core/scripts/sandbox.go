@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func checkErr(e error) {
 	if e != nil {
@@ -16,7 +18,18 @@ func checkErr(e error) {
 	}
 }
 
+func generateRandomString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
+
 func main() {
+	rand.Seed(time.Now().UnixNano())
+	length := 10
+	randomString := generateRandomString(length)
 	ctx := context.Background()
 
 	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
@@ -25,77 +38,9 @@ func main() {
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
 
-	g, ctx := errgroup.WithContext(ctx)
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "batman",
-			Value: "bruce wayne",
-		})
-		return err
+	_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+		Key:   "randomString",
+		Value: randomString,
 	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "superman",
-			Value: "clark kent",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "wonder woman",
-			Value: "diana prince",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "spiderman",
-			Value: "peter parker",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "thanos",
-			Value: "did nothing wrong",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "i am",
-			Value: "iron man",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
-			Event: &proto.Event{
-				Signature: "test signature",
-				Body: &proto.Event_Plays{
-					Plays: &proto.PlaysEvent{
-						Listens: []*proto.Listen{
-							{TrackId: "track one",
-								UserId:    "user one",
-								Signature: "inside sig",
-								Timestamp: timestamppb.Now()},
-						},
-					},
-				},
-			},
-		})
-		return err
-	})
-
-	// Wait for all goroutines to complete
-	if err := g.Wait(); err != nil {
-		checkErr(err)
-	}
+	checkErr(err)
 }
