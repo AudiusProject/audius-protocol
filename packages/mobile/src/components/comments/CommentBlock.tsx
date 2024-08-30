@@ -8,6 +8,8 @@ import {
 import type { Comment } from '@audius/sdk'
 
 import {
+  ArtistPick,
+  Box,
   CommentText,
   Flex,
   IconPencil,
@@ -22,6 +24,7 @@ import { ProfilePicture } from '../core/ProfilePicture'
 import { FavoriteButton } from '../favorite-button'
 import { UserLink } from '../user-link'
 
+import { CommentBadges } from './CommentBadges'
 import { CommentOverflowMenu } from './CommentOverflowMenu'
 
 const messages = {
@@ -38,7 +41,7 @@ export type CommentBlockProps = {
 
 export const CommentBlock = (props: CommentBlockProps) => {
   const { comment, hideActions } = props
-  const { setReplyingToComment } = useCurrentCommentSection()
+  const { artistId, setReplyingToComment } = useCurrentCommentSection()
   const {
     isPinned,
     message,
@@ -46,15 +49,17 @@ export const CommentBlock = (props: CommentBlockProps) => {
     trackTimestampS,
     id: commentId,
     createdAt,
-    userId: userIdStr
+    userId: commentUserIdStr
   } = comment
 
   const [reactToComment] = useReactToComment()
-  const userId = Number(userIdStr)
-  useGetUserById({ id: userId })
+  const commentUserId = Number(commentUserIdStr)
+  useGetUserById({ id: commentUserId })
 
   const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
+  const isCommentByArtist = commentUserId === artistId
+
+  const isLikedByArtist = false // TODO: need to add this to backend metadata
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -65,44 +70,38 @@ export const CommentBlock = (props: CommentBlockProps) => {
     <Flex direction='row' w='100%' gap='s'>
       <ProfilePicture
         style={{ width: 32, height: 32, flexShrink: 0 }}
-        userId={userId}
+        userId={commentUserId}
       />
-      <Flex gap='xs' w='100%' alignItems='flex-start'>
-        <Flex>
-          {isPinned || hasBadges ? (
-            <Flex direction='row' justifyContent='space-between' w='100%'>
-              {isPinned ? (
-                <Flex direction='row' gap='xs'>
-                  <IconPencil color='subdued' size='xs' />
-                  <Text color='subdued' size='xs'>
-                    {messages.pinned}
-                  </Text>
-                </Flex>
-              ) : null}
-              {hasBadges ? (
-                <Text color='accent'>{messages.topSupporters}</Text>
-              ) : null}
-            </Flex>
-          ) : null}
-          <Flex direction='row' gap='s' alignItems='center'>
-            <UserLink size='s' userId={userId} strength='strong' />
-            <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-              <Timestamp time={new Date(createdAt)} />
-              {trackTimestampS !== undefined ? (
-                <>
-                  <Text color='subdued' size='xs'>
-                    •
-                  </Text>
-
-                  <TextLink size='xs' variant='active'>
-                    {formatCommentTrackTimestamp(trackTimestampS)}
-                  </TextLink>
-                </>
-              ) : null}
-            </Flex>
+      <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
+        <Box style={{ position: 'absolute', top: 0, right: 0 }}>
+          <CommentBadges
+            isArtist={isCommentByArtist}
+            commentUserId={commentUserId}
+          />
+        </Box>
+        {isPinned || isLikedByArtist ? (
+          <Flex direction='row' justifyContent='space-between' w='100%'>
+            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
           </Flex>
-          <CommentText>{message}</CommentText>
+        ) : null}
+        <Flex direction='row' gap='s' alignItems='center'>
+          <UserLink size='s' userId={commentUserId} strength='strong' />
+          <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+            <Timestamp time={new Date(createdAt)} />
+            {trackTimestampS !== undefined ? (
+              <>
+                <Text color='subdued' size='xs'>
+                  •
+                </Text>
+
+                <TextLink size='xs' variant='active'>
+                  {formatCommentTrackTimestamp(trackTimestampS)}
+                </TextLink>
+              </>
+            ) : null}
+          </Flex>
         </Flex>
+        <CommentText>{message}</CommentText>
 
         {!hideActions ? (
           <>

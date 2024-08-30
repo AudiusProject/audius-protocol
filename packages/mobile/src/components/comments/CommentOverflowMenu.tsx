@@ -12,16 +12,22 @@ import type { Comment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 
 import { IconButton, IconKebabHorizontal } from '@audius/harmony-native'
+import { useToast } from 'app/hooks/useToast'
 
 import {
   ActionDrawerWithoutRedux,
   type ActionDrawerRow
 } from '../action-drawer'
+import { ConfirmationDrawerWithoutRedux } from '../drawers'
 
 const messages = {
   pin: 'Pin',
+  pinned: 'Comment pinned',
+  unpin: 'Unpin',
+  unpinned: 'Comment unpinned',
   flagAndRemove: 'Flag & Remove',
   muteUser: 'Mute User',
+  turnOnNotifications: 'Turn On Notifications',
   turnOffNotifications: 'Turn Off Notifications',
   edit: 'Edit',
   delete: 'Delete',
@@ -36,10 +42,17 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
     comment: { id, userId, isPinned }
   } = props
+  const { toast } = useToast()
 
   // Need isOpen and isVisible to account for the closing animation
+  // TODO: refactor into a custom hook
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false)
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] =
+    useState(false)
 
   const { entityId, isEntityOwner, currentUserId, setEditingComment } =
     useCurrentCommentSection()
@@ -51,8 +64,14 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
-      text: messages.pin,
-      callback: () => pinComment(id, isPinned)
+      text: isPinned ? messages.unpin : messages.pin,
+      callback: () => {
+        pinComment(id, !isPinned)
+        toast({
+          content: isPinned ? messages.unpinned : messages.pinned,
+          type: 'info'
+        })
+      }
     },
     isEntityOwner &&
       !isCommentOwner && {
@@ -74,7 +93,10 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     },
     isCommentOwner && {
       text: messages.delete,
-      callback: () => deleteComment(id),
+      callback: () => {
+        setIsDeleteConfirmationOpen(true)
+        setIsDeleteConfirmationVisible(true)
+      },
       isDestructive: true
     }
   ].filter(removeNullable)
@@ -92,8 +114,8 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         }}
       />
 
-      {isVisible ? (
-        <Portal hostName='DrawerPortal'>
+      <Portal hostName='DrawerPortal'>
+        {isVisible ? (
           <CommentSectionProvider entityId={entityId}>
             <ActionDrawerWithoutRedux
               rows={rows}
@@ -102,8 +124,24 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
               onClosed={() => setIsVisible(false)}
             />
           </CommentSectionProvider>
-        </Portal>
-      ) : null}
+        ) : null}
+
+        {isDeleteConfirmationVisible ? (
+          <ConfirmationDrawerWithoutRedux
+            isOpen={isDeleteConfirmationOpen}
+            onClose={() => setIsDeleteConfirmationOpen(false)}
+            onClosed={() => setIsDeleteConfirmationVisible(false)}
+            messages={{
+              header: 'Delete Comment',
+              description: 'Delete your comment permanently?',
+              confirm: 'Delete',
+              cancel: 'Cancel'
+            }}
+            icon={undefined}
+            onConfirm={() => deleteComment(id)}
+          />
+        ) : null}
+      </Portal>
     </>
   )
 }
