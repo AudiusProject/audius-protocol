@@ -2,8 +2,7 @@ export enum Status {
   IDLE = 'IDLE',
   LOADING = 'LOADING',
   SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR',
-  RELOADING = 'RELOADING'
+  ERROR = 'ERROR'
 }
 
 export enum PaginatedStatus {
