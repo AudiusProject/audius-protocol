@@ -22,10 +22,10 @@ import { exists, mapValues } from '../runtime';
 export interface PurchaseSplit {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof PurchaseSplit
      */
-    userId: string;
+    userId: number;
     /**
      * 
      * @type {string}
