@@ -172,7 +172,7 @@
 
 .currentTier {
   position: absolute;
-  top: -35px;
+  top: -44px;
   right: calc(50% - 60px);
   display: flex;
   color: var(--harmony-secondary);
