@@ -2677,7 +2677,7 @@ class FullUserTracksRemixed(Resource):
 
 
 USER_FEED_ROUTE = "/<string:id>/feed"
-user_feed_parser = current_user_parser.copy()
+user_feed_parser = pagination_with_current_user_parser.copy()
 user_feed_parser.add_argument(
     "filter",
     required=False,
@@ -2707,17 +2707,7 @@ user_feed_response = make_full_response(
 @full_ns.route(USER_FEED_ROUTE)
 class FullUserFeed(Resource):
     @log_duration(logger)
-    @record_metrics
-    @full_ns.doc(
-        id="""Get User Feed""",
-        description="Gets the feed for the user",
-        params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.expect(user_feed_parser)
-    @full_ns.marshal_with(user_feed_response)
-    @auth_middleware(user_feed_parser, require_auth=True)
-    def get(self, id, authed_user_id):
+    def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
 
@@ -2728,7 +2718,21 @@ class FullUserFeed(Resource):
             "tracks_only": parsedArgs.get("tracks_only"),
             "with_users": parsedArgs.get("with_users"),
             "followee_user_ids": parsedArgs.get("followee_user_id"),
+            "limit": parsedArgs.get("limit"),
+            "offset": parsedArgs.get("offset"),
         }
 
         feed_results = get_feed(args)
         return success_response(list(map(extend_feed_item, feed_results)))
+
+    @full_ns.doc(
+        id="""Get User Feed""",
+        description="Gets the feed for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_feed_parser)
+    @full_ns.marshal_with(user_feed_response)
+    @auth_middleware(user_feed_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        return self._get(id, authed_user_id)

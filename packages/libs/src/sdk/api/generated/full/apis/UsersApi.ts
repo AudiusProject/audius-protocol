@@ -387,6 +387,8 @@ export interface GetUserByHandleRequest {
 
 export interface GetUserFeedRequest {
     id: string;
+    offset?: number;
+    limit?: number;
     userId?: string;
     filter?: GetUserFeedFilterEnum;
     tracksOnly?: boolean;
@@ -2125,6 +2127,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
