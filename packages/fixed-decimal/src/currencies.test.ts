@@ -62,4 +62,9 @@ describe('Currency tests', function () {
     // Don't throw for correct BN brand
     USDC(new BN(3) as BNUSDC)
   })
+
+  it('defaults to two decimals', function () {
+    expect(USDC(1.234567).toLocaleString()).toBe('$1.23')
+    expect(USDC(-1.234567).toLocaleString()).toBe('-$1.23')
+  })
 })
