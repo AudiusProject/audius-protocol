@@ -275,7 +275,7 @@
           "type": ["boolean"],
           "default": false
         },
-        "is_comments_disabled": {
+        "comments_disabled": {
           "type": ["boolean"],
           "default": false
         },

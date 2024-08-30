@@ -36,7 +36,7 @@ export const AdvancedScreen = () => {
         {isUpload ? <></> : <KeyBpmField />}
         {isCommentsEnabled ? (
           <SwitchRowField
-            name='is_comments_disabled'
+            name='comments_disabled'
             label={messages.disableComments.header}
             description={messages.disableComments.description}
           />

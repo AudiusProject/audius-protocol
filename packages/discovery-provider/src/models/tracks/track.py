@@ -106,7 +106,7 @@ class Track(Base, RepresentableMixin):
     audio_analysis_error_count = Column(
         Integer, nullable=False, server_default=text("0")
     )
-    is_comments_disabled = Column(Boolean, nullable=False, server_default=text("false"))
+    comments_disabled = Column(Boolean, nullable=False, server_default=text("false"))
 
     # From DDEX
     ddex_release_ids = Column(JSONB())

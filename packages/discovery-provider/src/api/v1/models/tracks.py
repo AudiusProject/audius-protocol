@@ -179,7 +179,7 @@ track_full = ns.clone(
         "musical_key": fields.String,
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
-        "is_comments_disabled": fields.Boolean,
+        "comments_disabled": fields.Boolean,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),

@@ -63,7 +63,7 @@ const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
 const IS_UNLISTED = 'is_unlisted'
-const IS_COMMENTS_DISABLED = 'is_comments_disabled'
+const COMMENTS_DISABLED = 'comments_disabled'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -149,8 +149,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
   const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
   const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
-  const [{ value: isCommentsDisabled }, , { setValue: setIsCommentsDisabled }] =
-    useTrackField<boolean>(IS_COMMENTS_DISABLED)
+  const [{ value: commentsDisabled }, , { setValue: setIsCommentsDisabled }] =
+    useTrackField<boolean>(COMMENTS_DISABLED)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -167,7 +167,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     set(initialValues, MUSICAL_KEY, parseMusicalKey(musicalKey ?? ''))
     set(initialValues, RELEASE_DATE, releaseDate)
     set(initialValues, IS_UNLISTED, isHidden)
-    set(initialValues, IS_COMMENTS_DISABLED, isCommentsDisabled)
+    set(initialValues, COMMENTS_DISABLED, commentsDisabled)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -179,7 +179,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     musicalKey,
     releaseDate,
     isHidden,
-    isCommentsDisabled
+    commentsDisabled
   ])
 
   const onSubmit = useCallback(
@@ -207,9 +207,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       setBpm(typeof bpmValue !== 'undefined' ? Number(bpmValue) : bpm)
       setMusicalKey(get(values, MUSICAL_KEY) ?? musicalKey)
       setReleaseDate(get(values, RELEASE_DATE) ?? releaseDate)
-      setIsCommentsDisabled(
-        get(values, IS_COMMENTS_DISABLED) ?? isCommentsDisabled
-      )
+      setIsCommentsDisabled(get(values, COMMENTS_DISABLED) ?? commentsDisabled)
     },
     [
       setIsrc,
@@ -224,7 +222,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       setReleaseDate,
       releaseDate,
       setIsCommentsDisabled,
-      isCommentsDisabled,
+      commentsDisabled,
       setAiUserId,
       aiUserId,
       setAllowedApiKeys
@@ -486,7 +484,7 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
       {isCommentsEnabled ? (
         <>
           <SwitchRowField
-            name={IS_COMMENTS_DISABLED}
+            name={COMMENTS_DISABLED}
             header={messages.disableComments.header}
             description={messages.disableComments.description}
           />

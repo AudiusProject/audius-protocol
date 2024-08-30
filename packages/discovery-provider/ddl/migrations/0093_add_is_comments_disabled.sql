@@ -1,5 +1,6 @@
 begin;
 
-alter table tracks add column if not exists is_comments_disabled boolean default false;
+alter table tracks
+add column if not exists comments_disabled boolean default false;
 
 commit;
