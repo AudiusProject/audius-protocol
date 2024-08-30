@@ -2680,6 +2680,7 @@ USER_FEED_ROUTE = "/<string:id>/feed"
 user_feed_parser = pagination_with_current_user_parser.copy()
 user_feed_parser.add_argument(
     "filter",
+    description="Controls whether the feed is limited to reposts, original content, or all items",
     required=False,
     type=str,
     choices=["all", "repost", "original"],
@@ -2687,16 +2688,22 @@ user_feed_parser.add_argument(
 )
 user_feed_parser.add_argument(
     "tracks_only",
+    description="Limit feed to only tracks",
     type=inputs.boolean,
     required=False,
 )
 user_feed_parser.add_argument(
     "with_users",
+    description="Include user data with feed items",
     type=inputs.boolean,
     required=False,
 )
 user_feed_parser.add_argument(
-    "followee_user_id", action="append", type=int, required=False
+    "followee_user_id",
+    description="A list of followed users to prioritize in feed generation",
+    action="append",
+    type=int,
+    required=False,
 )
 
 user_feed_response = make_full_response(
