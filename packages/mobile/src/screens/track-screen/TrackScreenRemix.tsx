@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 
 import CoSign, { Size } from 'app/components/co-sign'
 import { ProfilePicture } from 'app/components/core'
-import { TrackImage } from 'app/components/image/TrackImage'
+import { TrackImageV2 } from 'app/components/image/TrackImageV2'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -34,16 +34,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     justifyContent: 'center',
     marginBottom: spacing(2)
   },
-
-  coverArt: {
-    width: 121,
-    height: 121,
-    borderWidth: 1,
-    borderColor: palette.neutralLight8,
-    borderRadius: 4,
-    overflow: 'hidden'
-  },
-
   artist: {
     marginTop: spacing(2),
     ...flexRowCentered(),
@@ -98,7 +88,7 @@ const TrackScreenRemixComponent = ({
   user
 }: TrackScreenRemixComponentProps) => {
   const styles = useStyles()
-  const { spacing } = useTheme()
+  const { spacing, color } = useTheme()
 
   const { _co_sign, track_id } = track
   const { name, handle } = user
@@ -113,7 +103,27 @@ const TrackScreenRemixComponent = ({
   }, [handle, navigation])
 
   const images = (
-    <>
+    <View
+      style={{
+        width: 121,
+        height: 121,
+        position: 'relative'
+      }}
+    >
+      <TrackImageV2
+        trackId={track.track_id}
+        style={css({
+          zIndex: 0,
+          position: 'absolute',
+          height: '100%',
+          width: '100%',
+          borderWidth: 1,
+          borderColor: color.neutral.n100,
+          borderRadius: 4,
+          overflow: 'hidden'
+        })}
+        size={SquareSizes.SIZE_480_BY_480}
+      />
       <ProfilePicture
         userId={user.user_id}
         style={css({
@@ -125,12 +135,7 @@ const TrackScreenRemixComponent = ({
           width: spacing.unit9
         })}
       />
-      <TrackImage
-        track={track}
-        style={styles.coverArt}
-        size={SquareSizes.SIZE_480_BY_480}
-      />
-    </>
+    </View>
   )
 
   return (

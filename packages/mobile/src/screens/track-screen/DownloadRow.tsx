@@ -20,15 +20,13 @@ type DownloadRowProps = {
   hideDownload?: boolean
   index: number
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
-  isOriginal: boolean
 }
 
 export const DownloadRow = ({
   trackId,
   hideDownload,
   index,
-  onDownload,
-  isOriginal = true
+  onDownload
 }: DownloadRowProps) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
@@ -67,7 +65,7 @@ export const DownloadRow = ({
           >
             {getDownloadFilename({
               filename: track?.orig_filename,
-              isOriginal
+              isOriginal: true
             })}
           </Text>
         </Flex>

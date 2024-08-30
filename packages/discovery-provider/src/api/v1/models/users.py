@@ -171,3 +171,12 @@ purchase = ns.model(
         "access": StringEnumToLower(required=True),
     },
 )
+
+sales_aggregate = ns.model(
+    "sales_aggregate",
+    {
+        "content_type": StringEnumToLower(required=True, discriminator=True),
+        "content_id": fields.String(required=True),
+        "purchase_count": fields.Integer(required=True),
+    },
+)
