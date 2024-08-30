@@ -90,6 +90,7 @@ models/Notifications.ts
 models/NotificationsResponse.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
+models/PlaylistFeedItem.ts
 models/PlaylistFull.ts
 models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
@@ -172,6 +173,7 @@ models/TrackAddedToPurchasedAlbumNotificationAction.ts
 models/TrackAddedToPurchasedAlbumNotificationActionData.ts
 models/TrackArtwork.ts
 models/TrackFavoritesResponseFull.ts
+models/TrackFeedItem.ts
 models/TrackFull.ts
 models/TrackId.ts
 models/TrackLibraryResponseFull.ts
@@ -199,6 +201,8 @@ models/UsdcPurchaseBuyerNotificationActionData.ts
 models/UsdcPurchaseSellerNotification.ts
 models/UsdcPurchaseSellerNotificationAction.ts
 models/UsdcPurchaseSellerNotificationActionData.ts
+models/UserFeedItem.ts
+models/UserFeedResponse.ts
 models/UserFull.ts
 models/UserManager.ts
 models/UserMilestoneNotificationActionData.ts
