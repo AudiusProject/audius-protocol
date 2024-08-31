@@ -2,6 +2,11 @@
 -- Required to populate purchase details modal
 BEGIN;
 
+-- sets all splits to an empty jsonb if they are null
+UPDATE usdc_purchases
+SET splits = '[]'::JSONB
+WHERE splits IS NULL;
+
 ALTER TABLE
     usdc_purchases
 ADD
