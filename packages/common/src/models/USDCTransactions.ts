@@ -1,3 +1,5 @@
+import type { PurchaseSplit } from '@audius/sdk/dist/sdk/api/generated/full'
+
 import { Nullable } from '../utils/typeUtils'
 
 import { PurchaseAccess } from './PurchaseContent'
@@ -30,6 +32,7 @@ export type USDCPurchaseDetails = {
   contentId: number
   createdAt: string
   access: PurchaseAccess
+  splits: PurchaseSplit[]
 }
 
 export type USDCTransactionDetails = {
