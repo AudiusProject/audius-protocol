@@ -352,6 +352,8 @@ workflows:
             packages/fixed-decimal/.* run-web-workflow true
             packages/fixed-decimal/.* run-mobile-workflow true
             packages/fixed-decimal/.* run-common-workflow true
+            packages/spl/.* run-sdk-workflow true
+            packages/spl/.* run-identity-workflow true
           requires:
             - generate-config
             - init
@@ -411,6 +413,8 @@ workflows:
             packages/fixed-decimal/.* run-web-workflow true
             packages/fixed-decimal/.* run-mobile-workflow true
             packages/fixed-decimal/.* run-common-workflow true
+            packages/spl/.* run-sdk-workflow true
+            packages/spl/.* run-identity-workflow true
           requires:
             - generate-config
             - init
