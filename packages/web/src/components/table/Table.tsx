@@ -707,7 +707,9 @@ export const Table = ({
                   className={cn(styles.table, tableClassName)}
                   {...getTableProps()}
                 >
-                  <thead className={styles.tableHead}>{renderHeaders()}</thead>
+                  <thead className={cn(styles.tableHead, tableHeaderClassName)}>
+                    {renderHeaders()}
+                  </thead>
                   <tbody>{loading ? <TableLoadingSpinner /> : null}</tbody>
                 </table>
                 <div
@@ -766,7 +768,8 @@ export const Table = ({
     scrollRef,
     tableClassName,
     totalRowCount,
-    wrapperClassName
+    wrapperClassName,
+    tableHeaderClassName
   ])
 
   return isVirtualized ? renderVirtualizedContent() : renderContent()
