@@ -348,6 +348,10 @@ workflows:
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
+            packages/fixed-decimal/.* run-sdk-workflow true
+            packages/fixed-decimal/.* run-web-workflow true
+            packages/fixed-decimal/.* run-mobile-workflow true
+            packages/fixed-decimal/.* run-common-workflow true
           requires:
             - generate-config
             - init
@@ -403,6 +407,10 @@ workflows:
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
+            packages/fixed-decimal/.* run-sdk-workflow true
+            packages/fixed-decimal/.* run-web-workflow true
+            packages/fixed-decimal/.* run-mobile-workflow true
+            packages/fixed-decimal/.* run-common-workflow true
           requires:
             - generate-config
             - init
