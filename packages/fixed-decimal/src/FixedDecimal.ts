@@ -360,18 +360,16 @@ export class FixedDecimal<
     if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
-    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
-    const dividend = signMultiplier * this.value
     const divisor = BigInt(10 ** digitsToRemove)
-    const quotient = dividend / divisor
-    const remainder = dividend - quotient * divisor
+    const remainder = this.value % divisor
     // If whole number, do nothing
     if (remainder === BigInt(0)) {
       return this
     }
-    // If not, truncate, add 1 to the place we're rounding to and convert sign
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
+    // If not, truncate and add/sub 1 to the place we're rounding to
     return new FixedDecimal<BigIntBrand, BNBrand>(
-      signMultiplier * (quotient * divisor + divisor),
+      (this.value / divisor) * divisor + divisor * signMultiplier,
       this.decimalPlaces
     )
   }
