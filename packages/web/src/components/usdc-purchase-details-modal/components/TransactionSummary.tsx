@@ -7,7 +7,6 @@ import {
 } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex, IconInfo, Text } from '@audius/harmony'
-import BN from 'bn.js'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Tooltip } from 'components/tooltip'
