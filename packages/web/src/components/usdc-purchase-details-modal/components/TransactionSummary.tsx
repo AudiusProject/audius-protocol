@@ -59,7 +59,9 @@ export const TransactionSummary = ({
     items.push({
       id: 'cost',
       label: messages.subtotal,
-      value: USDC(subtotal).toLocaleString()
+      value: USDC(subtotal).toLocaleString('en-US', {
+        roundingMode: isSale ? 'floor' : 'ceil'
+      })
     })
   } else if (transaction.access === PurchaseAccess.DOWNLOAD) {
     items.push({
@@ -103,7 +105,7 @@ export const TransactionSummary = ({
       ),
       value: USDC(isSale ? BigInt(0) - networkFee : networkFee).toLocaleString(
         'en-US',
-        { roundingMode: 'ceil' }
+        { roundingMode: 'floor' }
       )
     })
   }
