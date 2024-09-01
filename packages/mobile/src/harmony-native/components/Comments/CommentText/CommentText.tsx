@@ -29,7 +29,7 @@ export const CommentText = ({ children }: CommentTextProps) => {
       <Text
         variant='body'
         size='s'
-        color='default'
+        lineHeight='multi'
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
       >

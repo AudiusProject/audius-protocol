@@ -119,7 +119,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
             hideAvatar
           />
         ) : (
-          <Text color='default'>{message}</Text>
+          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
+            {message}
+          </Text>
         )}
         {hideActions ? null : (
           <CommentActionBar
