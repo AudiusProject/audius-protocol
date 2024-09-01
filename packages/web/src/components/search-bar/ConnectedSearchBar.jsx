@@ -8,6 +8,7 @@ import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { Box } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -25,8 +26,6 @@ import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { collectionPage, getPathname } from 'utils/route'
-
-import styles from './ConnectedSearchBar.module.css'
 
 const { profilePage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions
@@ -318,7 +317,7 @@ class ConnectedSearchBar extends Component {
       ? SearchBarV2
       : SearchBar
     return (
-      <div className={styles.search}>
+      <Box ml='unit10' mt='l'>
         <SearchBarComponent
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
@@ -335,7 +334,7 @@ class ConnectedSearchBar extends Component {
           addRecentSearch={this.props.addRecentSearch}
           onClear={this.onClear}
         />
-      </div>
+      </Box>
     )
   }
 }
