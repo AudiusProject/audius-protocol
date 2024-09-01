@@ -39,3 +39,18 @@ func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (C
 	)
 	return i, err
 }
+
+const upsertAppState = `-- name: UpsertAppState :exec
+insert into core_app_state (block_height, app_hash)
+values ($1, $2)
+`
+
+type UpsertAppStateParams struct {
+	BlockHeight int64
+	AppHash     []byte
+}
+
+func (q *Queries) UpsertAppState(ctx context.Context, arg UpsertAppStateParams) error {
+	_, err := q.db.Exec(ctx, upsertAppState, arg.BlockHeight, arg.AppHash)
+	return err
+}

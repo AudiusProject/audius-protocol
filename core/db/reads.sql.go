@@ -9,6 +9,25 @@ import (
 	"context"
 )
 
+const getAppStateAtHeight = `-- name: GetAppStateAtHeight :one
+select block_height, app_hash
+from core_app_state
+where block_height = $1
+limit 1
+`
+
+type GetAppStateAtHeightRow struct {
+	BlockHeight int64
+	AppHash     []byte
+}
+
+func (q *Queries) GetAppStateAtHeight(ctx context.Context, blockHeight int64) (GetAppStateAtHeightRow, error) {
+	row := q.db.QueryRow(ctx, getAppStateAtHeight, blockHeight)
+	var i GetAppStateAtHeightRow
+	err := row.Scan(&i.BlockHeight, &i.AppHash)
+	return i, err
+}
+
 const getKey = `-- name: GetKey :one
 select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
 `
@@ -24,6 +43,25 @@ func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
+	return i, err
+}
+
+const getLatestAppState = `-- name: GetLatestAppState :one
+select block_height, app_hash
+from core_app_state
+order by block_height desc
+limit 1
+`
+
+type GetLatestAppStateRow struct {
+	BlockHeight int64
+	AppHash     []byte
+}
+
+func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, error) {
+	row := q.db.QueryRow(ctx, getLatestAppState)
+	var i GetLatestAppStateRow
+	err := row.Scan(&i.BlockHeight, &i.AppHash)
 	return i, err
 }
 

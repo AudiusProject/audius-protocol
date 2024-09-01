@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/cometbft/cometbft/types"
 	"github.com/joho/godotenv"
 )
 
@@ -46,6 +47,8 @@ type Config struct {
 
 	/* System Config */
 	RunDownMigration bool
+
+	GenesisFile *types.GenesisDoc
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -109,13 +112,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	// Disable ssl for local postgres db connection
 	if !strings.HasSuffix(cfg.PSQLConn, "?sslmode=disable") && isLocalDbUrlRegex.MatchString(cfg.PSQLConn) {
 		cfg.PSQLConn += "?sslmode=disable"
-	}
-
-	// only allow down migration in dev env
-	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && (cfg.Environment == "dev" || cfg.Environment == "sandbox")
-
-	if err := InitComet(logger, &cfg); err != nil {
-		return nil, fmt.Errorf("initializing comet %v", err)
 	}
 
 	return &cfg, nil

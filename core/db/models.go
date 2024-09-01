@@ -18,6 +18,12 @@ type BlockEvent struct {
 	Value        pgtype.Text
 }
 
+type CoreAppState struct {
+	BlockHeight int64
+	AppHash     []byte
+	CreatedAt   pgtype.Timestamp
+}
+
 type CoreAttribute struct {
 	EventID      int64
 	Key          string
