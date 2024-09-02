@@ -9,9 +9,20 @@ func (r *Registry) Start() error {
 	if r.config.Environment == "dev" {
 		timeToWait = 10 * time.Second
 	}
+
+	r.stopChan = make(chan struct{})
+
 	for {
 		r.updateRegisteredNodes()
 
-		time.Sleep(timeToWait)
+		select {
+		case <-time.After(timeToWait):
+		case <-r.stopChan:
+			return nil
+		}
 	}
+}
+
+func (r *Registry) Stop() {
+	close(r.stopChan)
 }
