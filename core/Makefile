@@ -11,6 +11,7 @@ deps:
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go mod tidy
 
+.PHONY: gen
 gen: $(SQL_SRCS)
 	@which sqlc || ( \
 		echo "ERROR: sqlc command not found." \

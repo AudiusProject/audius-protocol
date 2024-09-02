@@ -64,11 +64,7 @@ export const AddressTile = ({
           </Box>
         </Flex>
         <Text variant='title' size='l' strength='strong'>
-          {`$${USDC(balanceBN ?? new BN(0)).toLocaleString('en-us', {
-            roundingMode: 'floor',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          })}`}
+          {USDC(balanceBN ?? new BN(0)).toLocaleString()}
         </Text>
       </Flex>
       <Flex

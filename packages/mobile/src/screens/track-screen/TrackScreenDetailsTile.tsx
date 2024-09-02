@@ -461,7 +461,12 @@ export const TrackScreenDetailsTile = ({
   ])
 
   const renderBottomContent = () => {
-    return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
+    return hasDownloadableAssets ? (
+      <>
+        <Divider />
+        <DownloadSection trackId={trackId} />
+      </>
+    ) : null
   }
 
   const renderDogEar = () => {
@@ -541,7 +546,7 @@ export const TrackScreenDetailsTile = ({
         ) : null}
         {imageElement}
         <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s'>
+          <Text variant='heading' size='s' textAlign='center'>
             {title}
           </Text>
           {user ? (
@@ -631,8 +636,7 @@ export const TrackScreenDetailsTile = ({
         {renderTags()}
         <OfflineStatusRow contentId={trackId} isCollection={false} />
       </Flex>
-      <Divider />
-      {renderBottomContent?.()}
+      {renderBottomContent()}
     </Paper>
   )
 }

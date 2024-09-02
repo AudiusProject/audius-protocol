@@ -16,6 +16,7 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_feed_item,
     extend_purchase,
     extend_supporter,
     extend_supporting,
@@ -59,7 +60,9 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
+from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
+from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
 from src.api.v1.models.support import (
     supporter_response,
@@ -102,6 +105,7 @@ from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
 )
+from src.queries.get_feed import get_feed
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
@@ -2703,3 +2707,72 @@ class FullUserTracksRemixed(Resource):
         )
         tracks = get_user_tracks_remixed(query_args)
         return success_response(list(map(extend_track, tracks)))
+
+
+USER_FEED_ROUTE = "/<string:id>/feed"
+user_feed_parser = pagination_with_current_user_parser.copy()
+user_feed_parser.add_argument(
+    "filter",
+    description="Controls whether the feed is limited to reposts, original content, or all items",
+    required=False,
+    type=str,
+    choices=["all", "repost", "original"],
+    default="all",
+)
+user_feed_parser.add_argument(
+    "tracks_only",
+    description="Limit feed to only tracks",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "with_users",
+    description="Include user data with feed items",
+    type=inputs.boolean,
+    required=False,
+)
+user_feed_parser.add_argument(
+    "followee_user_id",
+    description="A list of followed users to prioritize in feed generation",
+    action="append",
+    type=int,
+    required=False,
+)
+
+user_feed_response = make_full_response(
+    "user_feed_response", full_ns, fields.List(NestedOneOf(user_feed_item))
+)
+
+
+@full_ns.route(USER_FEED_ROUTE)
+class FullUserFeed(Resource):
+    @log_duration(logger)
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        parsedArgs = user_feed_parser.parse_args()
+        args = {
+            "user_id": decoded_id,
+            "filter": parsedArgs.get("filter"),
+            "tracks_only": parsedArgs.get("tracks_only"),
+            "with_users": parsedArgs.get("with_users"),
+            "followee_user_ids": parsedArgs.get("followee_user_id"),
+            "limit": parsedArgs.get("limit"),
+            "offset": parsedArgs.get("offset"),
+        }
+
+        feed_results = get_feed(args)
+        return success_response(list(map(extend_feed_item, feed_results)))
+
+    @full_ns.doc(
+        id="""Get User Feed""",
+        description="Gets the feed for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_feed_parser)
+    @full_ns.marshal_with(user_feed_response)
+    @auth_middleware(user_feed_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        return self._get(id, authed_user_id)

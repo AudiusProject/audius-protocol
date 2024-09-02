@@ -1,6 +1,7 @@
 import enum
 
 from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, String, text
+from sqlalchemy.dialects.postgresql import JSONB
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -38,6 +39,7 @@ class USDCPurchase(Base, RepresentableMixin):
     region = Column(String, nullable=True)
     country = Column(String, nullable=True)
     vendor = Column(Enum(PurchaseVendor), nullable=True)
+    splits = Column(JSONB, nullable=False)
 
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")

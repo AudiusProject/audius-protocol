@@ -1,4 +1,8 @@
+import { useEffect, useRef } from 'react'
+
+import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import type { TextInput as RNTextInput } from 'react-native'
@@ -20,11 +24,6 @@ type CommentFormProps = {
   TextInputComponent?: typeof RNTextInput
 }
 
-const messages = {
-  beFirstComment: 'Be the first to comment',
-  addComment: 'Add a comment'
-}
-
 type CommentFormContentProps = Omit<
   CommentFormProps,
   'onSubmit' | 'initialValue'
@@ -32,12 +31,42 @@ type CommentFormContentProps = Omit<
 
 const CommentFormContent = (props: CommentFormContentProps) => {
   const { isLoading, TextInputComponent } = props
-  const { currentUserId, comments } = useCurrentCommentSection()
+  const { currentUserId, comments, replyingToComment, editingComment } =
+    useCurrentCommentSection()
+  const ref = useRef<RNTextInput>(null)
+
+  const replyingToUserId = Number(replyingToComment?.userId)
+  const { data: replyingToUser } = useGetUserById(
+    {
+      id: replyingToUserId
+    },
+    { disabled: !replyingToComment }
+  )
+
+  const { setFieldValue } = useFormikContext()
   const { submitForm } = useFormikContext()
 
-  const message = comments?.length
-    ? messages.addComment
-    : messages.beFirstComment
+  /**
+   * Populate and focus input when replying to a comment
+   */
+  useEffect(() => {
+    if (replyingToComment && replyingToUser) {
+      setFieldValue('commentMessage', `@${replyingToUser.handle} `)
+      ref.current?.focus()
+    }
+  }, [replyingToComment, replyingToUser, setFieldValue])
+
+  /**
+   * Populate and focus input when editing a comment
+   */
+  useEffect(() => {
+    if (editingComment) {
+      setFieldValue('commentMessage', editingComment.message)
+      ref.current?.focus()
+    }
+  }, [editingComment, setFieldValue])
+
+  const message = comments?.length ? messages.addComment : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
@@ -51,6 +80,7 @@ const CommentFormContent = (props: CommentFormContentProps) => {
         style={{ flex: 1 }}
         name='commentMessage'
         label={messages.addComment}
+        ref={ref}
         hideLabel
         placeholder={message}
         endAdornment={

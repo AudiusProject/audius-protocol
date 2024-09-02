@@ -14,6 +14,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { PurchaseSplit } from './PurchaseSplit';
+import {
+    PurchaseSplitFromJSON,
+    PurchaseSplitFromJSONTyped,
+    PurchaseSplitToJSON,
+} from './PurchaseSplit';
+
 import {
 } from './';
 
@@ -89,6 +96,12 @@ export interface Purchase {
      * @memberof Purchase
      */
     access: string;
+    /**
+     * 
+     * @type {Array<PurchaseSplit>}
+     * @memberof Purchase
+     */
+    splits: Array<PurchaseSplit>;
 }
 
 /**
@@ -107,6 +120,7 @@ export function instanceOfPurchase(value: object): value is Purchase {
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
     isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
     isInstance = isInstance && "access" in value && value["access"] !== undefined;
+    isInstance = isInstance && "splits" in value && value["splits"] !== undefined;
 
     return isInstance;
 }
@@ -134,6 +148,7 @@ export function PurchaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'createdAt': json['created_at'],
         'updatedAt': json['updated_at'],
         'access': json['access'],
+        'splits': ((json['splits'] as Array<any>).map(PurchaseSplitFromJSON)),
     };
 }
 
@@ -157,6 +172,7 @@ export function PurchaseToJSON(value?: Purchase | null): any {
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'access': value.access,
+        'splits': ((value.splits as Array<any>).map(PurchaseSplitToJSON)),
     };
 }
 

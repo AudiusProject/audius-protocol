@@ -504,6 +504,7 @@ def extend_activity(item):
         extended_playlist = extend_playlist(item)
         # Wee hack to make sure this marshals correctly. The marshaller for
         # playlist_model expects these two values to be the same type.
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
         extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
@@ -589,6 +590,23 @@ def extend_purchase(purchase):
     new_purchase["content_id"] = encode_int_id(purchase["content_id"])
     new_purchase["access"] = purchase["access"]
     return new_purchase
+
+
+def extend_feed_item(item):
+    if item.get("track_id"):
+        return {
+            "type": "track",
+            "item": extend_track(item),
+        }
+    if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        return {
+            "type": "playlist",
+            "item": extended_playlist,
+        }
+    return None
 
 
 def abort_bad_path_param(param, namespace):
