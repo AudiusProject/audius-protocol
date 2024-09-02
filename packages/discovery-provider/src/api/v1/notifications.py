@@ -89,11 +89,12 @@ def extend_playlist_update(playlist_seen: PlaylistUpdate):
     }
 
 
-@full_ns.route("/<string:user_id>/playlist_updates", doc=False)
+@full_ns.route("/<string:user_id>/playlist_updates")
 class GetPlaylistUpdates(Resource):
     @full_ns.doc(
-        id="""Get playlists the user has saved that have been updated for user ID""",
+        id="""Get Playlist Updates""",
         description="""Get playlists the user has saved that have been updated for user ID""",
+        params={"user_id": "A User ID"},
     )
     @full_ns.marshal_with(playlist_updates_response)
     def get(self, user_id):

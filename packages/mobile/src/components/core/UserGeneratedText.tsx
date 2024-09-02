@@ -165,13 +165,17 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   )
 
   const renderText = useCallback(
-    (text: string) => <Text {...other}>{text}</Text>,
+    (text: string) => (
+      <Text suppressHighlighting {...other}>
+        {text}
+      </Text>
+    ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
   return (
-    <>
+    <View>
       <View
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
@@ -205,12 +209,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
               }}
               url={match.getAnchorHref()}
               source={source}
+              {...linkProps}
             >
               {text}
             </Link>
           ) : null
         })}
       </View>
-    </>
+    </View>
   )
 }

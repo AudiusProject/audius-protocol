@@ -1,33 +1,30 @@
 /* eslint-disable no-console */
-import { PropsWithChildren, createContext, useContext, useState } from 'react'
+import {
+  PropsWithChildren,
+  createContext,
+  useCallback,
+  useContext,
+  useState
+} from 'react'
 
 import { EntityType, Comment } from '@audius/sdk'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { usePaginatedQuery } from '..//audius-query'
-import { ID, Status } from '..//models'
-import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
   useEditCommentById,
   useGetCommentsByTrackId,
   usePinCommentById,
   usePostComment as useAQueryPostComment,
-  useReactToCommentById
+  useReactToCommentById,
+  useGetCurrentUserId,
+  useGetTrackById
 } from '../api'
-
-/**
- * Context object to avoid prop drilling and share a common API with web/native code
- */
-
-// Props passed in from above (also get forwarded thru)
-type CommentSectionContextProps = {
-  currentUserId: Nullable<ID>
-  artistId: ID
-  entityId: ID
-  entityType?: EntityType.TRACK
-  isEntityOwner: boolean
-  playTrack: () => void
-}
+import { usePaginatedQuery } from '../audius-query'
+import { ID, Status } from '../models'
+import { tracksActions } from '../store/pages/track/lineup/actions'
+import { playerSelectors } from '../store/player'
+import { Nullable } from '../utils'
 
 export enum CommentSortMethod {
   top = 'top',
@@ -35,8 +32,23 @@ export enum CommentSortMethod {
   timestamp = 'timestamp'
 }
 
-// Props sent down to context (some are handled inside the context component)
-type CommentSectionContextType = CommentSectionContextProps & {
+type CommentSectionProviderProps = {
+  entityId: ID
+  entityType?: EntityType.TRACK
+
+  // These are optional because they are only used on mobile
+  // and provided for the components in CommentDrawer
+  replyingToComment?: Comment
+  setReplyingToComment?: (comment: Comment) => void
+  editingComment?: Comment
+  setEditingComment?: (comment: Comment) => void
+}
+
+type CommentSectionContextType = {
+  currentUserId: Nullable<ID>
+  artistId: ID
+  isEntityOwner: boolean
+  playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
   currentSort: CommentSortMethod
@@ -44,21 +56,25 @@ type CommentSectionContextType = CommentSectionContextProps & {
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
   handleMuteEntityNotifications: () => void
-}
+} & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
   CommentSectionContextType | undefined
 >(undefined)
 
-export const CommentSectionProvider = ({
-  currentUserId,
-  artistId,
-  entityId,
-  isEntityOwner,
-  entityType = EntityType.TRACK,
-  children,
-  playTrack
-}: PropsWithChildren<CommentSectionContextProps>) => {
+export const CommentSectionProvider = (
+  props: PropsWithChildren<CommentSectionProviderProps>
+) => {
+  const {
+    entityId,
+    entityType = EntityType.TRACK,
+    children,
+    replyingToComment,
+    setReplyingToComment,
+    editingComment,
+    setEditingComment
+  } = props
+  const { data: track } = useGetTrackById({ id: entityId })
   const {
     data: comments = [],
     status,
@@ -72,9 +88,15 @@ export const CommentSectionProvider = ({
       disabled: entityId === 0
     }
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
     CommentSortMethod.top
   )
+  const dispatch = useDispatch()
+  const playerUid = useSelector(playerSelectors.getUid) ?? undefined
+  const playTrack = useCallback(() => {
+    dispatch(tracksActions.play(playerUid))
+  }, [dispatch, playerUid])
 
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
@@ -89,17 +111,27 @@ export const CommentSectionProvider = ({
     console.log('Muting all notifs for ', entityId)
   }
 
+  if (!track) {
+    return null
+  }
+
+  const { owner_id } = track
+
   return (
     <CommentSectionContext.Provider
       value={{
         currentUserId,
-        artistId,
+        artistId: owner_id,
         entityId,
         entityType,
         comments,
         commentSectionLoading,
-        isEntityOwner,
+        isEntityOwner: currentUserId === owner_id,
         currentSort,
+        replyingToComment,
+        setReplyingToComment,
+        editingComment,
+        setEditingComment,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,

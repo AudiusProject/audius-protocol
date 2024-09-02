@@ -155,6 +155,15 @@ user_subscribers = ns.model(
     },
 )
 
+split = ns.model(
+    "purchase_split",
+    {
+        "user_id": fields.Integer(),
+        "payout_wallet": fields.String(required=True),
+        "amount": fields.String(required=True),
+    },
+)
+
 purchase = ns.model(
     "purchase",
     {
@@ -169,5 +178,15 @@ purchase = ns.model(
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=True),
         "access": StringEnumToLower(required=True),
+        "splits": fields.List(fields.Nested(split), required=True),
+    },
+)
+
+sales_aggregate = ns.model(
+    "sales_aggregate",
+    {
+        "content_type": StringEnumToLower(required=True, discriminator=True),
+        "content_id": fields.String(required=True),
+        "purchase_count": fields.Integer(required=True),
     },
 )

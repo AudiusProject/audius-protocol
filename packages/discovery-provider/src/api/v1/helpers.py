@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, Union, cast
 
 import requests
-from flask_restx import reqparse
+from flask_restx import inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
@@ -504,6 +504,7 @@ def extend_activity(item):
         extended_playlist = extend_playlist(item)
         # Wee hack to make sure this marshals correctly. The marshaller for
         # playlist_model expects these two values to be the same type.
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
         extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
@@ -589,6 +590,23 @@ def extend_purchase(purchase):
     new_purchase["content_id"] = encode_int_id(purchase["content_id"])
     new_purchase["access"] = purchase["access"]
     return new_purchase
+
+
+def extend_feed_item(item):
+    if item.get("track_id"):
+        return {
+            "type": "track",
+            "item": extend_track(item),
+        }
+    if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        return {
+            "type": "playlist",
+            "item": extended_playlist,
+        }
+    return None
 
 
 def abort_bad_path_param(param, namespace):
@@ -954,7 +972,7 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "includePurchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Whether or not to include purchaseable content",
 )
 full_search_parser.add_argument(
@@ -974,19 +992,19 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "is_verified",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include verified users in the user results",
 )
 full_search_parser.add_argument(
     "has_downloads",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include tracks that have downloads in the track results",
 )
 full_search_parser.add_argument(
     "is_purchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include purchaseable tracks and albums in the track and album results",
 )
 full_search_parser.add_argument(
@@ -999,13 +1017,13 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "bpm_min",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm greater than or equal to",
 )
 full_search_parser.add_argument(
     "bpm_max",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm less than or equal to",
 )
 full_search_parser.add_argument(

@@ -16,7 +16,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
@@ -371,6 +373,68 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		"timestamp":    signatureData.Timestamp,
 		"signature":    signatureData.Signature,
 	}
+
+	// fire and forget core play record
+	go func() {
+		ctx := context.Background()
+		defer func() {
+			if r := recover(); r != nil {
+				ss.logger.Error("core panic recovered in goroutine", "err", r)
+			}
+		}()
+
+		sdk, err := ss.getCoreSdk()
+		if err != nil {
+			return
+		}
+
+		// parse out time as proto object from legacy listen sig
+		parsedTime, err := time.Parse(time.RFC3339, signatureData.Timestamp)
+		if err != nil {
+			ss.logger.Error("core error parsing time:", "err", err)
+			return
+		}
+
+		// construct listen data into event
+		listen := &proto.Listen{
+			UserId:    userId,
+			TrackId:   fmt.Sprint(sig.Data.TrackId),
+			Timestamp: timestamppb.New(parsedTime),
+			Signature: signatureData.Signature,
+		}
+
+		// form actual proto event for signing
+		playsEvent := &proto.PlaysEvent{
+			Listens: []*proto.Listen{listen},
+		}
+
+		// sign plays event payload with mediorum priv key
+		signedPlaysEvent, err := signature.SignCoreBytes(playsEvent, ss.Config.privateKey)
+		if err != nil {
+			ss.logger.Error("core error signing listen proto event", "err", err)
+			return
+		}
+
+		// construct proto listen event alongside signature of plays event
+		event := &proto.Event{
+			Signature: signedPlaysEvent,
+			Body: &proto.Event_Plays{
+				Plays: playsEvent,
+			},
+		}
+
+		// submit to configured core node
+		res, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
+			Event: event,
+		})
+
+		if err != nil {
+			ss.logger.Error("core error submitting listen event", "err", err)
+			return
+		}
+
+		ss.logger.Info("core listen recorded", "tx", res.Txhash)
+	}()
 
 	buf, err := json.Marshal(body)
 	if err != nil {

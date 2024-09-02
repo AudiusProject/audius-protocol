@@ -610,5 +610,9 @@ describe('FixedDecimal', function () {
         })
       ).toBe('0')
     })
+
+    it('handles fractional negatives correctly', function () {
+      expect(new FixedDecimal('-0.123').toLocaleString('en-US')).toBe('-0.123')
+    })
   })
 })

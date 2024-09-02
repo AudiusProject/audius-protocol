@@ -1,11 +1,10 @@
-import { CommentSectionProvider } from '@audius/common/context'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
-import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'
+import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -250,19 +249,9 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled && heroTrack?.owner_id ? (
+          {isCommentingEnabled ? (
             <Flex flex='3'>
-              <CommentSectionProvider
-                currentUserId={userId}
-                entityId={defaults.trackId}
-                playTrack={() => {
-                  play(currentQueueItem.uid ?? undefined)
-                }}
-                isEntityOwner={isOwner}
-                artistId={heroTrack.owner_id}
-              >
-                <CommentSectionDesktop />
-              </CommentSectionProvider>
+              <CommentSection entityId={defaults.trackId} />
             </Flex>
           ) : null}
           {hasMoreByTracks ? (

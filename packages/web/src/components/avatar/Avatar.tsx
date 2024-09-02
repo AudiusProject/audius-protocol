@@ -8,6 +8,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
+import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
@@ -27,6 +28,7 @@ type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   userId: Maybe<ID>
   onClick?: () => void
   imageSize?: SquareSizes
+  popover?: boolean
 }
 
 export const Avatar = (props: AvatarProps) => {
@@ -35,6 +37,7 @@ export const Avatar = (props: AvatarProps) => {
     onClick,
     'aria-hidden': ariaHidden,
     imageSize = SquareSizes.SIZE_150_BY_150,
+    popover,
     ...other
   } = props
   const profileImage = useProfilePicture(userId ?? null, imageSize)
@@ -74,7 +77,11 @@ export const Avatar = (props: AvatarProps) => {
     )
   }
 
-  return (
+  return typeof userId === 'number' ? (
+    <UserLink userId={userId} popover={popover} noText aria-label={label}>
+      <HarmonyAvatar src={image} {...other} />
+    </UserLink>
+  ) : (
     <Link to={userLink} aria-label={label}>
       <HarmonyAvatar src={image} {...other} />
     </Link>

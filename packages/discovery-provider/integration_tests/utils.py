@@ -742,6 +742,18 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
                 access=usdc_purchase.get("access", PurchaseAccessType.stream),
+                splits=usdc_purchase.get(
+                    "splits",
+                    [
+                        {
+                            "user_id": 2,
+                            "amount": 1000000,
+                            "percentage": 100.0,
+                            "eth_wallet": "",
+                            "payout_wallet": "",
+                        }
+                    ],
+                ),
             )
             session.add(purchase)
         for i, cid_data in enumerate(cid_datas):

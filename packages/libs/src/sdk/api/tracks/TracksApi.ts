@@ -78,8 +78,7 @@ export class TracksApi extends GeneratedTracksApi {
   /**
    * Get the url of the track's streamable mp3 file
    */
-  // @ts-expect-error
-  override async streamTrack(params: StreamTrackRequest): Promise<string> {
+  async getTrackStreamUrl(params: StreamTrackRequest): Promise<string> {
     if (params.trackId === null || params.trackId === undefined) {
       throw new RequiredError(
         'trackId',

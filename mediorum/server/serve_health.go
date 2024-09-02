@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )
@@ -20,6 +22,14 @@ type healthCheckResponse struct {
 	Signature string                  `json:"signature"`
 	Timestamp time.Time               `json:"timestamp"`
 }
+
+type coreHealthResponseData struct {
+	CoreStatus      *coretypes.ResultStatus  `json:"status"`
+	CoreHeatlh      *coretypes.ResultHealth  `json:"health"`
+	CoreNetInfo     *coretypes.ResultNetInfo `json:"net_info"`
+	CoreGRPCHealthy bool                     `json:"grpc_healthy"`
+}
+
 type healthCheckResponseData struct {
 	Healthy                   bool                       `json:"healthy"`
 	Version                   string                     `json:"version"`
@@ -59,6 +69,7 @@ type healthCheckResponseData struct {
 	IsDbLocalhost             bool                       `json:"isDbLocalhost"`
 	DiskHasSpace              bool                       `json:"diskHasSpace"`
 	IsDiscoveryListensEnabled bool                       `json:"isDiscoveryListensEnabled"`
+	CoreHealthResponse        *coreHealthResponseData    `json:"core_health"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -124,6 +135,42 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		DiskHasSpace:              ss.diskHasSpace(),
 	}
 
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				ss.logger.Error("panic recovered in getting core sdk status", "err", r)
+			}
+		}()
+
+		// only display core status if it doesn't error
+		sdk, err := ss.getCoreSdk()
+
+		ctx := c.Request().Context()
+		coreHealthResponse := &coreHealthResponseData{}
+
+		if err == nil {
+			status, err := sdk.Status(ctx)
+			if err == nil {
+				coreHealthResponse.CoreStatus = status
+			}
+
+			health, err := sdk.Health(ctx)
+			if err == nil {
+				coreHealthResponse.CoreHeatlh = health
+			}
+
+			netInfo, err := sdk.NetInfo(ctx)
+			if err == nil {
+				coreHealthResponse.CoreNetInfo = netInfo
+			}
+
+			_, err = sdk.Ping(ctx, &proto.PingRequest{})
+			coreHealthResponse.CoreGRPCHealthy = err == nil
+		}
+
+		data.CoreHealthResponse = coreHealthResponse
+
+	}()
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to marshal health check data: " + err.Error()})
