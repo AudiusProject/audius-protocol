@@ -75,13 +75,6 @@ func run(logger *common.Logger) error {
 		return fmt.Errorf("contracts init error: %v", err)
 	}
 
-	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)
-	if err != nil {
-		return fmt.Errorf("grpc init error: %v", err)
-	}
-
-	logger.Info("grpc server created")
-
 	e := echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
@@ -96,6 +89,13 @@ func run(logger *common.Logger) error {
 	if err != nil {
 		return fmt.Errorf("console init error: %v", err)
 	}
+
+	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)
+	if err != nil {
+		return fmt.Errorf("grpc init error: %v", err)
+	}
+
+	logger.Info("grpc server created")
 
 	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
 	if err != nil {

@@ -63,6 +63,15 @@ type CoreTxResult struct {
 	TxResult  []byte
 }
 
+type CoreValidator struct {
+	Rowid        int32
+	PubKey       []byte
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+	TxHash       string
+}
+
 type EventAttribute struct {
 	BlockID      int64
 	TxID         pgtype.Int8
