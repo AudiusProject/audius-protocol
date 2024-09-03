@@ -211,8 +211,14 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           ) : null}
           {!hideMessage ? (
             <UserGeneratedText
+              lineHeight='multi'
               className={styles.text}
               color={isAuthor ? 'staticWhite' : 'default'}
+              textAlign='left'
+              linkProps={{
+                variant: isAuthor ? 'inverted' : 'visible',
+                showUnderline: true
+              }}
             >
               {message.message}
             </UserGeneratedText>
