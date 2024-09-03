@@ -44,6 +44,7 @@ def create_comment(params: ManageEntityParameters):
         is_delete=False,
     )
 
+    update_entity_comment_count(params, comment_record)
     params.add_record(comment_id, comment_record)
 
     if params.metadata["parent_comment_id"]:
@@ -52,7 +53,6 @@ def create_comment(params: ManageEntityParameters):
             comment_id=comment_id,
         )
         params.session.add(remix)
-    update_entity_comment_count(params, comment_record)
 
 
 def update_comment(params: ManageEntityParameters):
@@ -73,9 +73,9 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.is_edited = True
     edited_comment.text = params.metadata["body"]
 
+    update_entity_comment_count(params, edited_comment)
     params.add_record(comment_id, edited_comment)
 
-    update_entity_comment_count(params, edited_comment)
 
 
 def delete_comment(params: ManageEntityParameters):
@@ -95,9 +95,9 @@ def delete_comment(params: ManageEntityParameters):
     )
     deleted_comment.is_delete = True
 
+    update_entity_comment_count(params, deleted_comment)
     params.add_record(comment_id, deleted_comment)
 
-    update_entity_comment_count(params, deleted_comment)
 
 
 def validate_comment_reaction_tx(params: ManageEntityParameters):
@@ -158,13 +158,13 @@ def unreact_comment(params: ManageEntityParameters):
 
 
 def update_entity_comment_count(params: ManageEntityParameters, comment_record: Comment):
-    track_id = params.entity_id
+    track_id = params.metadata.get('entity_id')
     existing_comment = params.existing_records[EntityType.COMMENT.value].get(track_id)
     track = params.session.query(Track).filter(Track.track_id == track_id).first()
     if not track:
-        raise IndexingValidationError(f"Track {params.entity_id} does not exist")
+        raise IndexingValidationError(f"Track {track_id} does not exist")
     if not existing_comment:
-        track.coment_count += 1
+        track.comment_count += 1
 
     else:
         is_now_hidden = not comment_record.is_visible or existing_comment.is_delete
@@ -174,7 +174,7 @@ def update_entity_comment_count(params: ManageEntityParameters, comment_record: 
         was_hidden = not was_not_hidden
 
         if is_now_hidden and was_not_hidden:
-            track.coment_count -= 1
+            track.comment_count -= 1
         elif is_now_visible and was_hidden:
             track.comment_count += 1
     params.session.add(track)
