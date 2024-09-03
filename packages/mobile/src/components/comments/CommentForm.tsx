@@ -24,11 +24,6 @@ type CommentFormProps = {
   TextInputComponent?: typeof RNTextInput
 }
 
-const messages = {
-  beFirstComment: 'Be the first to comment!',
-  addComment: 'Add a comment'
-}
-
 type CommentFormContentProps = Omit<
   CommentFormProps,
   'onSubmit' | 'initialValue'
@@ -71,9 +66,7 @@ const CommentFormContent = (props: CommentFormContentProps) => {
     }
   }, [editingComment, setFieldValue])
 
-  const message = comments?.length
-    ? messages.addComment
-    : messages.beFirstComment
+  const message = comments?.length ? messages.addComment : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
