@@ -44,9 +44,7 @@ const messages = {
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
   remixAccessError: 'Must have access to the original track',
-  enterLink: 'Enter an Audius Link',
-  changeAvailbilityPrefix: 'Availablity is set to',
-  changeAvailbilitySuffix: 'To enable these options, make your track free.'
+  enterLink: 'Enter an Audius Link'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({

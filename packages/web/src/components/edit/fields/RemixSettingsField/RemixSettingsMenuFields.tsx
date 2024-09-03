@@ -29,11 +29,7 @@ const messages = {
     description:
       'Link your remix to the original track to increase visibility and credit the original artist.',
     linkLabel: 'Link to original track'
-  },
-  changeAvailabilityPrefix: 'Availablity is set to ',
-  changeAvailabilitySuffix: '. To enable these options, make your track free.',
-  collectibleGated: 'Collectible Gated',
-  specialAccess: 'Special Access'
+  }
 }
 
 export const RemixSettingsMenuFields = () => {
