@@ -286,7 +286,15 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       )
     }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
-  }, [license, isrcValue, iswcValue, aiUserId, bpm, musicalKey])
+  }, [
+    license,
+    isrcValue,
+    iswcValue,
+    aiUserId,
+    bpm,
+    musicalKey,
+    commentsDisabled
+  ])
 
   return (
     <ContextualMenu
