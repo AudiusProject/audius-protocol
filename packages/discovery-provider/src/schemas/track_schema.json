@@ -389,6 +389,10 @@
         "comments_disabled": {
           "type": ["boolean"],
           "default": false
+        },
+        "comment_count": {
+          "type": ["integer"],
+          "default": 0
         }
       },
       "required": [

@@ -107,6 +107,7 @@ class Track(Base, RepresentableMixin):
         Integer, nullable=False, server_default=text("0")
     )
     comments_disabled = Column(Boolean, nullable=False, server_default=text("false"))
+    comment_count = Column(Integer, nullable=False, server_default=text("0"))
 
     # From DDEX
     ddex_release_ids = Column(JSONB())

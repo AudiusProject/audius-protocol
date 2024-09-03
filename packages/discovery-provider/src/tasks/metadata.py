@@ -139,6 +139,7 @@ class TrackMetadata(TypedDict):
     is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
     comments_disabled: bool
+    comment_count: int
 
 
 track_metadata_format: TrackMetadata = {
@@ -197,6 +198,7 @@ track_metadata_format: TrackMetadata = {
     "is_custom_musical_key": False,
     "audio_analysis_error_count": 0,
     "comments_disabled": False,
+    "comment_count": 0
 }
 
 # Required format for user metadata retrieved from the content system

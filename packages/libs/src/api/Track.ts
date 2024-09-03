@@ -659,6 +659,7 @@ export class Track extends Base {
       is_custom_musical_key,
       audio_analysis_error_count,
       comments_disabled,
+      comment_count,
       field_visibility,
       ...other
     } = trackMetadata
@@ -720,6 +721,7 @@ export class Track extends Base {
       is_custom_musical_key,
       audio_analysis_error_count,
       comments_disabled,
+      comment_count,
       field_visibility
     }
   }

@@ -184,6 +184,7 @@ export type TrackMetadata = {
   is_download_gated: boolean
   download_conditions: Nullable<GatedConditions>
   comments_disabled?: boolean
+  comment_count?: number
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>

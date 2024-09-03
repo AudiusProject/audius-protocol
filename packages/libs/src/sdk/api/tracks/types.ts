@@ -175,7 +175,8 @@ export const createUploadTrackMetadataSchema = () =>
     musicalKey: z.optional(z.string().nullable()),
     isCustomMusicalKey: z.optional(z.boolean()),
     audioAnalysisErrorCount: z.optional(z.number()),
-    commentsDisabled: z.optional(z.boolean())
+    commentsDisabled: z.optional(z.boolean()),
+    commentCount: z.optional(z.number())
   })
 
 export type TrackMetadata = z.input<
