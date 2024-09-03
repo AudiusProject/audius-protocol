@@ -20,7 +20,6 @@ import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import { ExternalTextLink } from 'components/link'
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
