@@ -81,11 +81,16 @@ type FixedDecimalFormatOptions = Omit<
    *    > Ties away from 0. Values above the half-increment round away from
    *      zero, and below towards 0. Does what Math.round() does.
    *
-   * Note: Does not support `'expand'`, `'halfCeil'`, `'halfFloor'`,
-   * `'halfTrunc'` or `'halfEven'`
+   * `'expand'`
+   *    > round away from 0. The magnitude of the value is always increased by
+   *      rounding. Positive values round up.
+   *      Negative values round "more negative".
+   *
+   * Note: Does not support `'halfCeil'`, `'halfFloor'`, `'halfTrunc'`
+   * or `'halfEven'`
    * @defaultValue `'trunc'`
    */
-  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand'
+  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand' | 'expand'
   /**
    * The strategy for displaying trailing zeros on whole numbers.
    *
@@ -342,6 +347,34 @@ export class FixedDecimal<
   }
 
   /**
+   * Rounds away from zero. (Opposite of trunc())
+   * @param decimalPlaces The number of decimal places to round to.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
+   */
+  public expand(decimalPlaces?: number) {
+    const digits = this.decimalPlaces - (decimalPlaces ?? 0)
+    return this._expand(digits)
+  }
+
+  private _expand(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
+      throw new RangeError('Digits must be non-negative')
+    }
+    const divisor = BigInt(10 ** digitsToRemove)
+    const remainder = this.value % divisor
+    // If whole number, do nothing
+    if (remainder === BigInt(0)) {
+      return this
+    }
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
+    // If not, truncate and add/sub 1 to the place we're rounding to
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (this.value / divisor) * divisor + divisor * signMultiplier,
+      this.decimalPlaces
+    )
+  }
+
+  /**
    * Number.toPrecision() but for {@link FixedDecimal}.
    * @param significantDigits The number of significant digits to keep.
    * @returns The number truncated to the significant digits specified as a string.
@@ -430,6 +463,9 @@ export class FixedDecimal<
         break
       case 'halfExpand':
         str = this.round(mergedOptions.maximumFractionDigits).toString()
+        break
+      case 'expand':
+        str = this.expand(mergedOptions.maximumFractionDigits).toString()
         break
     }
 
