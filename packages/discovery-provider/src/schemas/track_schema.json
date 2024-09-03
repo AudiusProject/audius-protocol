@@ -385,6 +385,10 @@
             "integer"
           ],
           "default": 0
+        },
+        "comments_disabled": {
+          "type": ["boolean"],
+          "default": false
         }
       },
       "required": [

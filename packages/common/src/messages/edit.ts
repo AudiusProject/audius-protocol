@@ -66,6 +66,73 @@ export const priceAndAudienceMessages = {
   }
 }
 
+export const advancedTrackMessages = {
+  title: 'Advanced',
+  description:
+    'Provide detailed metadata to help identify and manage your music.',
+  isAiGenerated: 'AI-Generated',
+  bpm: {
+    header: 'Tempo',
+    label: 'BPM',
+    validError: 'Must be a valid decimal number'
+  },
+  musicalKey: 'Key',
+  aiGenerated: {
+    header: 'AI Generated',
+    description: 'Mark this track as AI generated',
+    tooltip:
+      'If your AI-generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
+    placeholder: 'Search for Users',
+    requiredError: 'Valid user must be selected.'
+  },
+  apiAllowed: {
+    header: 'Disallow Streaming via the API',
+    description:
+      'Keep your track from being streamed on third-party apps or services that utilize the Audius API.'
+  },
+  disableComments: {
+    header: 'Turn Off Commenting',
+    description: 'Prevent anyone from leaving a comment on your track.',
+    value: 'Comments Disabled'
+  },
+  isrcTooltip: `ISRC is used to identify individual sound recordings and music videos. ISWC is used to identify the underlying musical composition – the music and lyrics`,
+  isrc: {
+    header: 'ISRC',
+    placeholder: 'CC-XXX-YY-NNNNN',
+    validError: 'Must be valid ISRC format.'
+  },
+  iswc: {
+    header: 'ISWC',
+    placeholder: 'T-345246800-1',
+    validError: 'Must be valid ISWC format.'
+  },
+  licenseType: 'License Type',
+  allowAttribution: {
+    header: 'Allow Attribution?',
+    options: {
+      false: 'No Attribution',
+      true: 'Allow Attribution'
+    }
+  },
+  commercialUse: {
+    header: 'Commercial Use?',
+    options: {
+      false: 'Non-Commercial Use',
+      true: 'Commercial Use'
+    }
+  },
+  derivativeWorks: {
+    header: 'Derivative Works?',
+    options: {
+      false: 'Not-Allowed',
+      true: 'Share-Alike',
+      null: 'Allowed'
+    }
+  },
+  noLicense: 'All Rights Reserved',
+  releaseDate: 'Release Date'
+}
+
 export const advancedAlbumMessages = {
   title: 'Advanced',
   description:
