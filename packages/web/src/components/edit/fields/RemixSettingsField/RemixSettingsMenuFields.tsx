@@ -2,13 +2,8 @@ import { useEffect } from 'react'
 
 import { useGetTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { getPathFromTrackUrl } from '@audius/common/utils'
-import { Hint, IconQuestionCircle } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 import { useThrottle } from 'react-use'
@@ -17,7 +12,6 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 
 import { SwitchRowField } from '../SwitchRowField'
-import { IS_STREAM_GATED, STREAM_CONDITIONS } from '../types'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
@@ -43,8 +37,6 @@ const messages = {
 }
 
 export const RemixSettingsMenuFields = () => {
-  const [{ value: isStreamGated }] = useField(IS_STREAM_GATED)
-  const [{ value: streamConditions }] = useField(STREAM_CONDITIONS)
   const [{ value: trackUrl }] = useField(REMIX_LINK)
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
@@ -61,8 +53,6 @@ export const RemixSettingsMenuFields = () => {
   )
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
-
-  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   useEffect(() => {
     setParentTrackId(trackId)
@@ -82,23 +72,11 @@ export const RemixSettingsMenuFields = () => {
 
       <Divider />
 
-      {isStreamGated && !isUSDCPurchaseGated ? (
-        <Hint icon={IconQuestionCircle}>{`${
-          messages.changeAvailabilityPrefix
-        } ${
-          isContentCollectibleGated(streamConditions)
-            ? messages.collectibleGated
-            : messages.specialAccess
-        }${messages.changeAvailabilitySuffix}`}</Hint>
-      ) : null}
       <SwitchRowField
         name={SHOW_REMIXES}
         header={messages.hideRemix.header}
         description={messages.hideRemix.description}
         inverted
-        {...(isStreamGated && !isUSDCPurchaseGated
-          ? { checked: true, disabled: true }
-          : {})}
       />
     </div>
   )

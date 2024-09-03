@@ -264,7 +264,6 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
-              isDisabled={isStreamGated && !isUsdcGated}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>
