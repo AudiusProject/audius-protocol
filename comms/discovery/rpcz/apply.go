@@ -441,7 +441,7 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 	if chatId := gjson.GetBytes(rpcJson, "params.chat_id").String(); chatId != "" {
 
 		var userIds []int32
-		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
+		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1 and is_hidden = false`, chatId)
 		if err != nil {
 			logger.Warn("failed to load chat members for websocket push " + err.Error())
 			return
