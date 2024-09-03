@@ -122,7 +122,10 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 		}
 		audience := parts[0]
 
-		if schema.ChatBlastAudience(audience) == schema.FollowerAudience {
+		if schema.ChatBlastAudience(audience) == schema.FollowerAudience ||
+			schema.ChatBlastAudience(audience) == schema.TipperAudience ||
+			schema.ChatBlastAudience(audience) == schema.CustomerAudience ||
+			schema.ChatBlastAudience(audience) == schema.RemixerAudience {
 			const outgoingBlastMessages = `
 			SELECT
 				b.blast_id as message_id,
