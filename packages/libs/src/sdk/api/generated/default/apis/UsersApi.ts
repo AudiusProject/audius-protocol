@@ -29,6 +29,7 @@ import type {
   RelatedArtistResponse,
   RemixersResponse,
   Reposts,
+  SalesAggregateResponse,
   SubscribersResponse,
   TagsResponse,
   TracksResponse,
@@ -65,6 +66,8 @@ import {
     RemixersResponseToJSON,
     RepostsFromJSON,
     RepostsToJSON,
+    SalesAggregateResponseFromJSON,
+    SalesAggregateResponseToJSON,
     SubscribersResponseFromJSON,
     SubscribersResponseToJSON,
     TagsResponseFromJSON,
@@ -903,7 +906,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets the aggregated sales data for the user
      */
-    async getSalesAggregateRaw(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async getSalesAggregateRaw(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SalesAggregateResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesAggregate.');
         }
@@ -939,14 +942,15 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => SalesAggregateResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets the aggregated sales data for the user
      */
-    async getSalesAggregate(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getSalesAggregateRaw(params, initOverrides);
+    async getSalesAggregate(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SalesAggregateResponse> {
+        const response = await this.getSalesAggregateRaw(params, initOverrides);
+        return await response.value();
     }
 
     /**

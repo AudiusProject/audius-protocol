@@ -2,11 +2,16 @@ import { useMemo } from 'react'
 
 import {
   useGetCurrentUser,
+  useGetCurrentUserId,
+  useGetPlaylistsByIds,
+  useGetPurchasersCount,
+  useGetRemixedTracks,
   useGetRemixersCount,
-  useGetUserTracksByHandle
+  useGetSalesAggegrate,
+  useGetTracksByIds
 } from '@audius/common/api'
-import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { useChatBlastModal, chatActions } from '@audius/common/src/store'
+import { removeNullable } from '@audius/common/utils'
 import {
   Flex,
   IconTowerBroadcast,
@@ -24,6 +29,7 @@ import {
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, useField } from 'formik'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 const { createChatBlast } = chatActions
@@ -56,10 +62,14 @@ const messages = {
 
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
+type PurchasableContentOption = {
+  contentId: string
+  contentType: 'track' | 'album'
+}
+
 type ChatBlastFormValues = {
   target_audience: ChatBlastAudience
-  purchased_content_id?: string
-  // TODO: purchased_content_type
+  purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: string
 }
 
@@ -69,18 +79,21 @@ export const ChatBlastModal = () => {
 
   const initialValues: ChatBlastFormValues = {
     target_audience: ChatBlastAudience.FOLLOWERS,
-    purchased_content_id: undefined,
+    purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
 
   const handleSubmit = (values: ChatBlastFormValues) => {
     onClose()
+    const audienceContentId =
+      values.target_audience === ChatBlastAudience.CUSTOMERS
+        ? values.purchased_content_metadata?.contentId
+        : values.remixed_track_id
     dispatch(
       createChatBlast({
         audience: values.target_audience,
-        audienceContentId: values.purchased_content_id,
-        // TODO: collection support
-        audienceContentType: values.purchased_content_id ? 'track' : undefined
+        audienceContentId,
+        audienceContentType: values.purchased_content_metadata?.contentType
       })
     )
   }
@@ -207,31 +220,63 @@ const TipSupportersMessageField = () => {
 }
 
 const PastPurchasersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  const { handle, user_id: currentUserId } = user ?? {}
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
-  const [purchasedTrackField, , { setValue: setPurchasedTrackId }] = useField({
-    name: 'purchased_content_id',
+  const [
+    purchasedContentMetadataField,
+    ,
+    { setValue: setPurchasedContentMetadata }
+  ] = useField({
+    name: 'purchased_content_metadata',
     type: 'select'
   })
-
   const isSelected = value === ChatBlastAudience.CUSTOMERS
 
-  const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
-  const premiumTrackOptions = useMemo(
-    () =>
-      (tracks ?? [])
-        .filter(
-          (track) =>
-            isContentUSDCPurchaseGated(track.stream_conditions) ||
-            isContentUSDCPurchaseGated(track.download_conditions)
-        )
-        .map((track) => ({
-          value: track.track_id.toString(),
-          label: track.title
-        })),
-    [tracks]
+  const { data: salesAggregate } = useGetSalesAggegrate({
+    userId: currentUserId!
+  })
+
+  const trackAggregates = salesAggregate?.filter(
+    (sale) => sale.contentType === 'track'
   )
+  const albumAggregates = salesAggregate?.filter(
+    (sale) => sale.contentType === 'album'
+  )
+
+  const { data: tracks } = useGetTracksByIds({
+    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
+    currentUserId
+  })
+  const { data: albums } = useGetPlaylistsByIds({
+    ids: albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
+    currentUserId
+  })
+  const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
+  const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
+
+  const premiumContentOptions = useMemo(
+    () =>
+      (salesAggregate ?? [])
+        .map((sale) => {
+          const content =
+            sale.contentType === 'track'
+              ? tracksById[sale.contentId]
+              : albumsById[sale.contentId]
+          if (!content) return null
+          return {
+            value: { contentId: sale.contentId, contentType: sale.contentType },
+            label: 'title' in content ? content?.title : content?.playlist_name
+          }
+        })
+        .filter(removeNullable),
+    [salesAggregate, tracksById, albumsById]
+  )
+
+  const { data: purchasersCount } = useGetPurchasersCount({
+    userId: currentUserId!,
+    contentId: purchasedContentMetadataField.value?.contentId,
+    contentType: purchasedContentMetadataField.value?.contentType
+  })
 
   return (
     <Flex as='label' gap='l'>
@@ -239,18 +284,18 @@ const PastPurchasersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.purchasers.label}
-          // TODO: Need to add a new endpoint to get the list of past purchasers
-          count={user.supporter_count ?? 0}
+          count={purchasersCount}
           isSelected={isSelected}
         />
         {isSelected ? (
           <Flex direction='column' gap='l'>
             <Text size='s'>{messages.purchasers.description}</Text>
             <Select
-              {...purchasedTrackField}
-              options={premiumTrackOptions}
+              {...purchasedContentMetadataField}
+              options={premiumContentOptions}
               label={messages.purchasers.placeholder}
-              onChange={setPurchasedTrackId}
+              onChange={setPurchasedContentMetadata}
+              clearable
             />
           </Flex>
         ) : null}
@@ -260,32 +305,32 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: user } = useGetCurrentUser()
-  const { handle, user_id: currentUserId } = user ?? {}
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
   const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId,
+    userId: currentUserId!,
     trackId: remixedTrackField.value
+      ? parseInt(remixedTrackField.value)
+      : undefined
+  })
+
+  const { data: remixedTracks } = useGetRemixedTracks({
+    userId: currentUserId!
   })
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
-  const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
   const premiumTrackOptions = useMemo(
     () =>
-      (tracks ?? [])
-        .filter((track) => {
-          return true
-        })
-        .map((track) => ({
-          value: track.track_id.toString(),
-          label: track.title
-        })),
-    [tracks]
+      (remixedTracks ?? []).map((track) => ({
+        value: track.track_id.toString(),
+        label: track.title
+      })),
+    [remixedTracks]
   )
 
   return (
@@ -294,7 +339,7 @@ const RemixCreatorsMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.remixCreators.label}
-          count={remixersCount}
+          count={remixersCount ?? 0}
           isSelected={isSelected}
         />
         {isSelected ? (
@@ -305,6 +350,7 @@ const RemixCreatorsMessageField = () => {
               options={premiumTrackOptions}
               label={messages.remixCreators.placeholder}
               onChange={setRemixedTrackId}
+              clearable
             />
           </Flex>
         ) : null}
