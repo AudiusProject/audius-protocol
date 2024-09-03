@@ -12,7 +12,6 @@ import {
   Box,
   CommentText,
   Flex,
-  IconPencil,
   PlainButton,
   Text,
   TextLink,

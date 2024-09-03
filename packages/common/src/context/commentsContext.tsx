@@ -207,9 +207,7 @@ export const usePinComment = () => {
   const { currentUserId } = useCurrentCommentSection()
   const [pinComment, pinCommentResponse] = usePinCommentById()
   const wrappedHandler = (commentId: string, isPinned: boolean) => {
-    console.log('here')
     if (currentUserId) {
-      console.log('here2')
       pinComment({ id: commentId, userId: currentUserId, isPinned })
     }
   }

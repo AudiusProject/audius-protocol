@@ -20,6 +20,7 @@ export const ConfirmationDrawerWithoutRedux = (
     variant,
     icon,
     addBottomInset,
+    children,
     ...other
   } = props
   const { onClose } = other
@@ -34,7 +35,9 @@ export const ConfirmationDrawerWithoutRedux = (
         variant={variant}
         icon={icon}
         addBottomInset={addBottomInset}
-      />
+      >
+        {children}
+      </ConfirmationDrawerContent>
     </Drawer>
   )
 }
