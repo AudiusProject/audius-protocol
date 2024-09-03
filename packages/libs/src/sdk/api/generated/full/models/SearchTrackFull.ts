@@ -443,6 +443,12 @@ export interface SearchTrackFull {
     commentsDisabled?: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof SearchTrackFull
+     */
+    commentCount?: number;
+    /**
+     * 
      * @type {object}
      * @memberof SearchTrackFull
      */
@@ -623,6 +629,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'isCustomMusicalKey': !exists(json, 'is_custom_musical_key') ? undefined : json['is_custom_musical_key'],
         'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
         'commentsDisabled': !exists(json, 'comments_disabled') ? undefined : json['comments_disabled'],
+        'commentCount': !exists(json, 'comment_count') ? undefined : json['comment_count'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'artists': !exists(json, 'artists') ? undefined : json['artists'],
         'resourceContributors': !exists(json, 'resource_contributors') ? undefined : json['resource_contributors'],
@@ -706,6 +713,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'is_custom_musical_key': value.isCustomMusicalKey,
         'audio_analysis_error_count': value.audioAnalysisErrorCount,
         'comments_disabled': value.commentsDisabled,
+        'comment_count': value.commentCount,
         'ddex_release_ids': value.ddexReleaseIds,
         'artists': value.artists,
         'resource_contributors': value.resourceContributors,
