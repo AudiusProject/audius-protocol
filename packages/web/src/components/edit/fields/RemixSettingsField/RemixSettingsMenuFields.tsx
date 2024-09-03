@@ -38,7 +38,6 @@ const messages = {
   },
   changeAvailabilityPrefix: 'Availablity is set to ',
   changeAvailabilitySuffix: '. To enable these options, make your track free.',
-  premium: 'Premium (Pay-to-Unlock)',
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access'
 }
@@ -72,16 +71,10 @@ export const RemixSettingsMenuFields = () => {
 
   return (
     <div className={styles.fields}>
-      {isUSDCPurchaseGated ? (
-        <Hint icon={IconQuestionCircle}>
-          {`${messages.changeAvailabilityPrefix} ${messages.premium}${messages.changeAvailabilitySuffix}`}
-        </Hint>
-      ) : null}
       <SwitchRowField
         name={IS_REMIX}
         header={messages.remixOf.header}
         description={messages.remixOf.description}
-        disabled={isStreamGated}
       >
         <TextField name={REMIX_LINK} label={messages.remixOf.linkLabel} />
         {track ? <TrackInfo trackId={track.track_id} /> : null}
