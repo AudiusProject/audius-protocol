@@ -181,9 +181,16 @@ const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.FOLLOWERS
+  const isDisabled = user.follower_count === 0
   return (
-    <Flex as='label' gap='l'>
-      <Radio value={ChatBlastAudience.FOLLOWERS} />
+    <Flex
+      as='label'
+      gap='l'
+      css={{
+        opacity: isDisabled ? 0.5 : 1
+      }}
+    >
+      <Radio value={ChatBlastAudience.FOLLOWERS} disabled={isDisabled} />
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.followers.label}
@@ -202,9 +209,16 @@ const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.TIPPERS
+  const isDisabled = user.supporter_count === 0
   return (
-    <Flex as='label' gap='l'>
-      <Radio value={ChatBlastAudience.TIPPERS} />
+    <Flex
+      as='label'
+      gap='l'
+      css={{
+        opacity: isDisabled ? 0.5 : 1
+      }}
+    >
+      <Radio value={ChatBlastAudience.TIPPERS} disabled={isDisabled} />
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.supporters.label}
@@ -231,10 +245,10 @@ const PastPurchasersMessageField = () => {
     type: 'select'
   })
   const isSelected = value === ChatBlastAudience.CUSTOMERS
-
   const { data: salesAggregate } = useGetSalesAggegrate({
     userId: currentUserId!
   })
+  const isDisabled = salesAggregate?.length === 0
 
   const trackAggregates = salesAggregate?.filter(
     (sale) => sale.contentType === 'track'
@@ -279,8 +293,14 @@ const PastPurchasersMessageField = () => {
   })
 
   return (
-    <Flex as='label' gap='l'>
-      <Radio value={ChatBlastAudience.CUSTOMERS} />
+    <Flex
+      as='label'
+      gap='l'
+      css={{
+        opacity: isDisabled ? 0.5 : 1
+      }}
+    >
+      <Radio value={ChatBlastAudience.CUSTOMERS} disabled={isDisabled} />
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.purchasers.label}
@@ -321,6 +341,7 @@ const RemixCreatorsMessageField = () => {
   const { data: remixedTracks } = useGetRemixedTracks({
     userId: currentUserId!
   })
+  const isDisabled = remixedTracks.length === 0
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
@@ -334,8 +355,14 @@ const RemixCreatorsMessageField = () => {
   )
 
   return (
-    <Flex as='label' gap='l'>
-      <Radio value={ChatBlastAudience.REMIXERS} />
+    <Flex
+      as='label'
+      gap='l'
+      css={{
+        opacity: isDisabled ? 0.5 : 1
+      }}
+    >
+      <Radio value={ChatBlastAudience.REMIXERS} disabled={isDisabled} />
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.remixCreators.label}
