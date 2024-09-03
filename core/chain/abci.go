@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
@@ -18,16 +19,18 @@ import (
 type CoreApplication struct {
 	logger       *common.Logger
 	queries      *db.Queries
+	contracts    *contracts.AudiusContracts
 	pool         *pgxpool.Pool
 	onGoingBlock pgx.Tx
 }
 
 var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool) *CoreApplication {
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts) *CoreApplication {
 	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
+		contracts:    contracts,
 		pool:         pool,
 		onGoingBlock: nil,
 	}

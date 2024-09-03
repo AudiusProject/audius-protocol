@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/contracts"
 	cfg "github.com/cometbft/cometbft/config"
 	nm "github.com/cometbft/cometbft/node"
 	"github.com/cometbft/cometbft/p2p"
@@ -13,8 +14,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewNode(logger *common.Logger, cometConfig *cfg.Config, pool *pgxpool.Pool) (*nm.Node, error) {
-	app := NewCoreApplication(logger, pool)
+func NewNode(logger *common.Logger, cometConfig *cfg.Config, pool *pgxpool.Pool, contracts *contracts.AudiusContracts) (*nm.Node, error) {
+	app := NewCoreApplication(logger, pool, contracts)
 
 	pv := privval.LoadFilePV(
 		cometConfig.PrivValidatorKeyFile(),
@@ -35,7 +36,7 @@ func NewNode(logger *common.Logger, cometConfig *cfg.Config, pool *pgxpool.Pool)
 		nm.DefaultGenesisDocProviderFunc(cometConfig),
 		cfg.DefaultDBProvider,
 		nm.DefaultMetricsProvider(cometConfig.Instrumentation),
-		logger,
+		logger.Child("chain"),
 	)
 
 	if err != nil {

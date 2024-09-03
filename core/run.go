@@ -48,17 +48,6 @@ func run(logger *common.Logger) error {
 		return fmt.Errorf("couldn't set initial app state: %v", err)
 	}
 
-	node, err := chain.NewNode(logger, cometConfig, pool)
-	if err != nil {
-		return fmt.Errorf("node init error: %v", err)
-	}
-
-	logger.Info("new node created")
-
-	rpc := local.New(node)
-
-	logger.Info("local rpc initialized")
-
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
 		return fmt.Errorf("eth client dial err: %v", err)
@@ -70,9 +59,20 @@ func run(logger *common.Logger) error {
 	}
 	logger.Info("initialized contracts")
 
-	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c)
+	node, err := chain.NewNode(logger, cometConfig, pool, c)
 	if err != nil {
-		return fmt.Errorf("contracts init error: %v", err)
+		return fmt.Errorf("node init error: %v", err)
+	}
+
+	logger.Info("new node created")
+
+	rpc := local.New(node)
+
+	logger.Info("local rpc initialized")
+
+	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
+	if err != nil {
+		return fmt.Errorf("registry bridge init error: %v", err)
 	}
 
 	e := echo.New()
@@ -109,6 +109,7 @@ func run(logger *common.Logger) error {
 	defer node.Stop()
 	defer grpcLis.Close()
 	defer registryBridge.Stop()
+	defer ethrpc.Close()
 
 	// console
 	eg.Go(func() error {

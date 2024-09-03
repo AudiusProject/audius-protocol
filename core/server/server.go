@@ -23,7 +23,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		config:  config,
 		cconfig: cconfig,
 		rpc:     rpc,
-		logger:  logger,
+		logger:  logger.Child("http_server"),
 		db:      db.New(pool),
 	}
 

@@ -27,5 +27,11 @@ services:
     networks:
       - sandbox-core-net
 
+  eth-ganache:
+    image: audius/eth-ganache
+    container_name: eth-ganache
+    networks:
+      - sandbox-core-net
+
 networks:
   sandbox-core-net:

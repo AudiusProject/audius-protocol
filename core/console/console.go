@@ -27,7 +27,7 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 		config: config,
 		rpc:    rpc,
 		e:      e,
-		logger: logger,
+		logger: logger.Child("console"),
 		db:     db.New(pool),
 		c:      components.NewComponents(config, rpc, db.New(pool)),
 	}

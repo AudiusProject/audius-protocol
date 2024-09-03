@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/ecdsa"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
 	"github.com/joho/godotenv"
 )
@@ -65,7 +67,11 @@ type Config struct {
 	/* System Config */
 	RunDownMigration bool
 
+	/* Derived Config */
 	GenesisFile *types.GenesisDoc
+	EthereumKey *ecdsa.PrivateKey
+	CometKey    *ed25519.PrivKey
+	NodeType    NodeType
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -99,6 +105,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
 		cfg.EthRegistryAddress = os.Getenv("audius_contracts_registry")
+		cfg.NodeType = Discovery
 	} else {
 		// isContent
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
@@ -106,6 +113,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.EthRegistryAddress = os.Getenv("ethRegistryAddress")
+		cfg.NodeType = Content
 	}
 
 	if cfg.Environment == "" {

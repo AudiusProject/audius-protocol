@@ -7,7 +7,9 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
+	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // registry oversees what this node believes to be validators
@@ -16,11 +18,12 @@ type Registry struct {
 	config    *config.Config
 	rpc       *local.Local
 	contracts *contracts.AudiusContracts
+	queries   *db.Queries
 	state     *State
 	stopChan  chan struct{}
 }
 
-func NewRegistryBridge(logger *common.Logger, cfg *config.Config, rpc *local.Local, contracts *contracts.AudiusContracts) (*Registry, error) {
+func NewRegistryBridge(logger *common.Logger, cfg *config.Config, rpc *local.Local, contracts *contracts.AudiusContracts, pool *pgxpool.Pool) (*Registry, error) {
 	ctx := context.Background()
 
 	// check eth status
@@ -36,10 +39,11 @@ func NewRegistryBridge(logger *common.Logger, cfg *config.Config, rpc *local.Loc
 	}
 
 	return &Registry{
-		logger:    logger,
+		logger:    logger.Child("registry_bridge"),
 		config:    cfg,
 		rpc:       rpc,
 		contracts: contracts,
+		queries:   db.New(pool),
 		state:     NewState(),
 	}, nil
 }

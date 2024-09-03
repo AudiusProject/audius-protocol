@@ -8,7 +8,7 @@ func main() {
 	// run forever, no crashloops
 	logger := common.NewLogger(nil)
 	if err := run(logger); err != nil {
-		logger.Errorf("fatal: %v", err)
+		logger.Errorf("fatal core error: %v", err)
 	}
 	select {}
 }

@@ -18,6 +18,7 @@ message Event {
   string signature = 1;
   oneof body {
     PlaysEvent plays = 1000;
+    RegisterNodeEvent registerNode = 1001;
   }
 }
 
@@ -39,6 +40,11 @@ message GetEventResponse {
 
 message PlaysEvent {
   repeated Listen listens = 1;
+}
+
+message RegisterNodeEvent {
+  string endpoint = 1;
+  string comet_address = 2;
 }
 
 message Listen {

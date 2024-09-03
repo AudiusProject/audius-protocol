@@ -40,6 +40,30 @@ func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (C
 	return i, err
 }
 
+const insertRegisteredNode = `-- name: InsertRegisteredNode :exec
+insert into core_validators(pub_key, endpoint, eth_address, comet_address, tx_hash)
+values ($1, $2, $3, $4, $5)
+`
+
+type InsertRegisteredNodeParams struct {
+	PubKey       []byte
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+	TxHash       string
+}
+
+func (q *Queries) InsertRegisteredNode(ctx context.Context, arg InsertRegisteredNodeParams) error {
+	_, err := q.db.Exec(ctx, insertRegisteredNode,
+		arg.PubKey,
+		arg.Endpoint,
+		arg.EthAddress,
+		arg.CometAddress,
+		arg.TxHash,
+	)
+	return err
+}
+
 const upsertAppState = `-- name: UpsertAppState :exec
 insert into core_app_state (block_height, app_hash)
 values ($1, $2)
