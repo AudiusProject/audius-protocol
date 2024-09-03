@@ -277,6 +277,14 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         />
       )
     }
+    if (commentsDisabled) {
+      value.push(
+        <SelectedValue
+          key={messages.disableComments.value}
+          label={messages.disableComments.value}
+        />
+      )
+    }
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [license, isrcValue, iswcValue, aiUserId, bpm, musicalKey])
 

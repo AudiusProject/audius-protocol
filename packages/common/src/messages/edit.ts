@@ -92,7 +92,8 @@ export const advancedTrackMessages = {
   },
   disableComments: {
     header: 'Turn Off Commenting',
-    description: 'Prevent anyone from leaving a comment on your track.'
+    description: 'Prevent anyone from leaving a comment on your track.',
+    value: 'Comments Disabled'
   },
   isrcTooltip: `ISRC is used to identify individual sound recordings and music videos. ISWC is used to identify the underlying musical composition – the music and lyrics`,
   isrc: {
