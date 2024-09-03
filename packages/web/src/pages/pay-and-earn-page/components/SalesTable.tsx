@@ -1,6 +1,8 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { BN } from 'bn.js'
 import moment from 'moment'
@@ -139,6 +141,10 @@ export const SalesTable = ({
   scrollRef,
   fetchBatchSize
 }: SalesTableProps) => {
+  const { isEnabled: isNetworkCutEnabled } = useFeatureFlag(
+    FeatureFlags.NETWORK_CUT_ENABLED
+  )
+
   const tableColumns = useMemo(
     () => columns.map((id) => tableColumnMap[id]),
     [columns]
@@ -169,6 +175,9 @@ export const SalesTable = ({
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
       wrapperClassName={styles.tableWrapper}
+      tableHeaderClassName={
+        isNetworkCutEnabled ? styles.tableHeaderSmallPadding : undefined
+      }
     />
   )
 }
