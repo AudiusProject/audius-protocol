@@ -141,7 +141,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	// Formulate chat rpc messages for recipients who have an existing chat with sender
 	var outgoingMessages []OutgoingChatMessage
 	for _, result := range results {
-		messageID := result.ChatID + params.BlastID
+		messageID := params.BlastID + result.ChatID
 
 		outgoingMessages = append(outgoingMessages, OutgoingChatMessage{
 			ChatMessageRPC: schema.ChatMessageRPC{
