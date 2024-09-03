@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  Status,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
+import { Status, isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { createRemixOfMetadata } from '@audius/common/schemas'
 import {
@@ -51,9 +47,7 @@ const messages = {
   enterLink: 'Enter an Audius Link',
   changeAvailbilityPrefix: 'Availablity is set to',
   changeAvailbilitySuffix: 'To enable these options, make your track free.',
-  premium: 'Premium (Pay-To-Unlock). ',
-  collectibleGated: 'Collectible Gated. ',
-  specialAccess: 'Special Access. '
+  premium: 'Premium (Pay-To-Unlock). '
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -104,7 +98,6 @@ export const RemixSettingsScreen = () => {
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
-  const isCollectibleGated = isContentCollectibleGated(streamConditions)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
@@ -231,21 +224,15 @@ export const RemixSettingsScreen = () => {
     >
       <View>
         <View style={styles.setting}>
-          {isStreamGated ? (
-            <Hint mb='xl'>{`${messages.changeAvailbilityPrefix} ${
-              isUsdcGated
-                ? messages.premium
-                : isCollectibleGated
-                ? messages.collectibleGated
-                : messages.specialAccess
-            } ${messages.changeAvailbilitySuffix}`}</Hint>
+          {isUsdcGated ? (
+            <Hint mb='xl'>{`${messages.changeAvailbilityPrefix} ${messages.premium} ${messages.changeAvailbilitySuffix}`}</Hint>
           ) : null}
           <View style={styles.option}>
             <Text {...labelProps}>{messages.markRemix}</Text>
             <Switch
               value={isTrackRemix}
               onValueChange={handleChangeIsRemix}
-              isDisabled={isStreamGated}
+              isDisabled={isUsdcGated}
             />
           </View>
           {isTrackRemix ? (
@@ -285,7 +272,6 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
-              isDisabled={isStreamGated && !isUsdcGated}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>
