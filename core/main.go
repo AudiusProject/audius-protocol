@@ -8,9 +8,12 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console"
+	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
+	"github.com/AudiusProject/audius-protocol/core/registry_bridge"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/sync/errgroup"
@@ -57,6 +60,25 @@ func main() {
 
 	logger.Info("local rpc initialized")
 
+	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
+	if err != nil {
+		logger.Errorf("eth client dial err: %v", err)
+		return
+	}
+
+	c, err := contracts.NewAudiusContracts(ethrpc, config.EthRegistryAddress)
+	if err != nil {
+		logger.Errorf("contracts init error: %v", err)
+		return
+	}
+	logger.Info("initialized contracts")
+
+	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c)
+	if err != nil {
+		logger.Errorf("contracts init error: %v", err)
+		return
+	}
+
 	server, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
 		logger.Errorf("grpc init error: %v", err)
@@ -86,6 +108,7 @@ func main() {
 	defer e.Shutdown(ctx)
 	defer node.Stop()
 	defer grpcLis.Close()
+	defer registryBridge.Stop()
 
 	// console
 	eg.Go(func() error {
@@ -103,6 +126,12 @@ func main() {
 	eg.Go(func() error {
 		logger.Info("core grpc server starting")
 		return server.Serve(grpcLis)
+	})
+
+	// registry bridge
+	eg.Go(func() error {
+		logger.Info("registry bridge starting")
+		return registryBridge.Start()
 	})
 
 	if err := eg.Wait(); err != nil {

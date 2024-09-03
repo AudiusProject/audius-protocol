@@ -15,7 +15,7 @@ import { CommentForm } from './CommentForm'
 export const CommentDrawerForm = () => {
   const { editingComment, replyingToComment } = useCurrentCommentSection()
   const [postComment, { status: postCommentStatus }] = usePostComment()
-  const [editComment, { status: editCommentStatus }] = useEditComment()
+  const [editComment] = useEditComment()
 
   const handlePostComment = (message: string) => {
     if (editingComment) {
@@ -26,8 +26,7 @@ export const CommentDrawerForm = () => {
     postComment(message, replyingToComment?.id)
   }
 
-  const isLoading =
-    (editingComment ? editCommentStatus : postCommentStatus) === Status.LOADING
+  const isLoading = postCommentStatus === Status.LOADING
 
   return (
     <Box p='l' backgroundColor='white'>

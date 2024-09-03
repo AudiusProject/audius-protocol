@@ -83,6 +83,7 @@ describe('formatUtil', function () {
     const expected = '1,234,567.90'
     expect(
       USDC(cents / 100).toLocaleString('en-US', {
+        style: undefined,
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
         roundingMode: 'halfExpand'

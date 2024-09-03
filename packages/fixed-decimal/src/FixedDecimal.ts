@@ -38,7 +38,10 @@ type FixedDecimalCtorArgs<T extends bigint> = {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat MDN documentation for Intl.NumberFormat}
  */
-type FixedDecimalFormatOptions = {
+type FixedDecimalFormatOptions = Omit<
+  BigIntToLocaleStringOptions,
+  'minimumFractionDigits' | 'maximumFractionDigits'
+> & {
   /**
    * Whether to use grouping separators, such as thousands separators or thousand/lakh/crore separators.
    *
@@ -78,11 +81,16 @@ type FixedDecimalFormatOptions = {
    *    > Ties away from 0. Values above the half-increment round away from
    *      zero, and below towards 0. Does what Math.round() does.
    *
-   * Note: Does not support `'expand'`, `'halfCeil'`, `'halfFloor'`,
-   * `'halfTrunc'` or `'halfEven'`
+   * `'expand'`
+   *    > round away from 0. The magnitude of the value is always increased by
+   *      rounding. Positive values round up.
+   *      Negative values round "more negative".
+   *
+   * Note: Does not support `'halfCeil'`, `'halfFloor'`, `'halfTrunc'`
+   * or `'halfEven'`
    * @defaultValue `'trunc'`
    */
-  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand'
+  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand' | 'expand'
   /**
    * The strategy for displaying trailing zeros on whole numbers.
    *
@@ -113,7 +121,7 @@ type FixedDecimalFormatOptions = {
  * @see {@link FixedDecimalFormatOptions}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision MDN Documentation for Intl.NumberFormat}
  */
-const defaultFormatOptions = (value: FixedDecimal) =>
+const getDefaultFormatOptions = (value: FixedDecimal) =>
   ({
     useGrouping: true,
     minimumFractionDigits: 0,
@@ -160,6 +168,7 @@ export class FixedDecimal<
 > {
   public value: BigIntBrand
   public decimalPlaces: number
+  private _defaultFormatOptions: FixedDecimalFormatOptions
 
   /**
    * Constructs a {@link FixedDecimal}.
@@ -181,7 +190,8 @@ export class FixedDecimal<
       | string
       | BNBrand
       | NoBrand<BN>,
-    decimalPlaces?: number
+    decimalPlaces?: number,
+    defaultFormatOptions: FixedDecimalFormatOptions = {}
   ) {
     switch (typeof value) {
       case 'number': {
@@ -232,6 +242,10 @@ export class FixedDecimal<
       default:
         this.value = value as BigIntBrand
         this.decimalPlaces = decimalPlaces ?? 0
+    }
+    this._defaultFormatOptions = {
+      ...getDefaultFormatOptions(this),
+      ...defaultFormatOptions
     }
   }
 
@@ -333,6 +347,34 @@ export class FixedDecimal<
   }
 
   /**
+   * Rounds away from zero. (Opposite of trunc())
+   * @param decimalPlaces The number of decimal places to round to.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
+   */
+  public expand(decimalPlaces?: number) {
+    const digits = this.decimalPlaces - (decimalPlaces ?? 0)
+    return this._expand(digits)
+  }
+
+  private _expand(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
+      throw new RangeError('Digits must be non-negative')
+    }
+    const divisor = BigInt(10 ** digitsToRemove)
+    const remainder = this.value % divisor
+    // If whole number, do nothing
+    if (remainder === BigInt(0)) {
+      return this
+    }
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
+    // If not, truncate and add/sub 1 to the place we're rounding to
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (this.value / divisor) * divisor + divisor * signMultiplier,
+      this.decimalPlaces
+    )
+  }
+
+  /**
    * Number.toPrecision() but for {@link FixedDecimal}.
    * @param significantDigits The number of significant digits to keep.
    * @returns The number truncated to the significant digits specified as a string.
@@ -378,12 +420,19 @@ export class FixedDecimal<
    * @see {@link toLocaleString} for UI appropriate strings.
    */
   public toString() {
-    const str = this.value.toString().padStart(this.decimalPlaces + 1, '0')
-    return this.decimalPlaces > 0
-      ? `${str.substring(0, str.length - this.decimalPlaces)}.${str.substring(
-          str.length - this.decimalPlaces
-        )}`
-      : str
+    const str = this.value
+      .toString()
+      // temp remove "-" to allow padding the decimal
+      .replace('-', '')
+      // ensure there's enough padding to include "-0.{decimal part}"
+      .padStart(this.decimalPlaces + 1, '0')
+    return `${this.value < 0 ? '-' : ''}${
+      this.decimalPlaces > 0
+        ? `${str.substring(0, str.length - this.decimalPlaces)}.${str.substring(
+            str.length - this.decimalPlaces
+          )}`
+        : str
+    }`
   }
 
   /**
@@ -397,7 +446,7 @@ export class FixedDecimal<
   public toLocaleString(locale?: string, options?: FixedDecimalFormatOptions) {
     // Apply defaults
     const mergedOptions = {
-      ...defaultFormatOptions(this),
+      ...this._defaultFormatOptions,
       ...options
     }
     // Apply rounding method
@@ -414,6 +463,9 @@ export class FixedDecimal<
         break
       case 'halfExpand':
         str = this.round(mergedOptions.maximumFractionDigits).toString()
+        break
+      case 'expand':
+        str = this.expand(mergedOptions.maximumFractionDigits).toString()
         break
     }
 
@@ -432,9 +484,9 @@ export class FixedDecimal<
     }
 
     // Localize with a decimal to extract the separator
-    const wholeInt = BigInt(whole)
+    const wholeInt = BigInt(whole.replace('-', ''))
     whole = wholeInt.toLocaleString(locale, {
-      ...options,
+      ...mergedOptions,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     })
@@ -446,7 +498,10 @@ export class FixedDecimal<
       maximumFractionDigits: 1
     })[1]
 
-    return decimal.length > 0 ? `${whole}${decimalSeparator}${decimal}` : whole
+    return (
+      (this.value < 0 ? '-' : '') +
+      (decimal.length > 0 ? `${whole}${decimalSeparator}${decimal}` : whole)
+    )
   }
 
   /**

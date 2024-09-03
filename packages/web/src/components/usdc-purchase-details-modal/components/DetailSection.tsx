@@ -16,7 +16,7 @@ export const DetailSection = ({
     alignItems={actionButton ? undefined : 'center'}
     css={{ overflow: 'hidden' }}
   >
-    <Flex gap='s' direction='column' w='100%'>
+    <Flex gap='s' direction='column' w='100%' p='s'>
       <Text variant='label' size='l' color='subdued'>
         {label}
       </Text>

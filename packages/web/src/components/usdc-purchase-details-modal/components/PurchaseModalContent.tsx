@@ -1,19 +1,21 @@
+import { useCallback } from 'react'
+
 import { USDCPurchaseDetails } from '@audius/common/models'
-import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
   ModalHeader,
   ModalTitle,
   ModalFooter,
   Button,
+  Text,
   Flex,
-  IconExternalLink,
-  Text
+  IconArrowRight
 } from '@audius/harmony'
 import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { ExternalLink, UserLink } from 'components/link'
+import { UserLink } from 'components/link'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -22,11 +24,10 @@ import styles from './styles.module.css'
 
 const messages = {
   by: 'by',
-  date: 'Date',
-  transactionDate: 'Transaction Date',
+  transactionDate: 'Date',
   done: 'Done',
   purchaseDetails: 'Purchase Details',
-  visitTrack: 'Visit Track',
+  visit: 'Visit',
   transaction: 'Explore Transaction'
 }
 
@@ -47,59 +48,65 @@ export const PurchaseModalContent = ({
   artwork,
   onClose
 }: PurchaseModalContentProps) => {
+  const navigate = useNavigateToPage()
+  const onVisitClicked = useCallback(() => {
+    navigate(link)
+    onClose()
+  }, [link, navigate, onClose])
   return (
     <>
       <ModalHeader>
         <ModalTitle title={messages.purchaseDetails} />
       </ModalHeader>
-      <ModalContent className={styles.content}>
-        <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <DynamicImage
-            image={artwork}
-            wrapperClassName={styles.artworkContainer}
-          />
-          <DetailSection label={contentLabel}>
-            <ContentLink onClick={onClose} title={contentTitle} link={link} />
-            <Flex gap='xs'>
-              <Text variant='body' size='l'>
-                {messages.by}
-              </Text>
-              <UserLink
-                userId={purchaseDetails.sellerUserId}
-                popover
-                size='l'
-                onClick={onClose}
+      <ModalContent>
+        <Flex gap='l' direction='column'>
+          <DetailSection
+            label={contentLabel}
+            actionButton={
+              <DynamicImage
+                image={artwork}
+                wrapperClassName={styles.artworkContainer}
               />
-            </Flex>
+            }
+          >
+            <ContentLink
+              variant='visible'
+              onClick={onClose}
+              title={contentTitle}
+              link={link}
+            />
           </DetailSection>
+          <DetailSection label={messages.by}>
+            <UserLink
+              variant='visible'
+              userId={purchaseDetails.sellerUserId}
+              popover
+              size='l'
+              onClick={onClose}
+            />
+          </DetailSection>
+          <DetailSection label={messages.transactionDate}>
+            <Text variant='body' size='l'>
+              {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+            </Text>
+          </DetailSection>
+          <TransactionSummary transaction={purchaseDetails} />
         </Flex>
-        <DetailSection
-          label={messages.transactionDate}
-          actionButton={
-            <Button
-              iconLeft={IconExternalLink}
-              variant='secondary'
-              size='small'
-              asChild
-            >
-              <ExternalLink
-                to={makeSolanaTransactionLink(purchaseDetails.signature)}
-              >
-                {messages.transaction}
-              </ExternalLink>
-            </Button>
-          }
-        >
-          <Text variant='body' size='l'>
-            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
-          </Text>
-        </DetailSection>
-        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter style={{ paddingTop: 0 }}>
-        <Button onClick={onClose} fullWidth>
-          {messages.done}
-        </Button>
+        <Flex w='100%' gap='s'>
+          <Button
+            onClick={onVisitClicked}
+            fullWidth
+            variant='secondary'
+            iconRight={IconArrowRight}
+          >
+            {messages.visit} {contentLabel}
+          </Button>
+          <Button onClick={onClose} fullWidth>
+            {messages.done}
+          </Button>
+        </Flex>
       </ModalFooter>
     </>
   )
