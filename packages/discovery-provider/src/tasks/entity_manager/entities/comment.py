@@ -52,6 +52,7 @@ def create_comment(params: ManageEntityParameters):
             comment_id=comment_id,
         )
         params.session.add(remix)
+    update_entity_comment_count(params, comment_record)
 
 
 def update_comment(params: ManageEntityParameters):
@@ -74,6 +75,8 @@ def update_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, edited_comment)
 
+    update_entity_comment_count(params, edited_comment)
+
 
 def delete_comment(params: ManageEntityParameters):
     validate_signer(params)
@@ -93,6 +96,8 @@ def delete_comment(params: ManageEntityParameters):
     deleted_comment.is_delete = True
 
     params.add_record(comment_id, deleted_comment)
+
+    update_entity_comment_count(params, deleted_comment)
 
 
 def validate_comment_reaction_tx(params: ManageEntityParameters):
