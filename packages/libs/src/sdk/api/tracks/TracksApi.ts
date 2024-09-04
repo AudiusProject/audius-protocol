@@ -415,6 +415,120 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /**
+   * Gets the Solana instructions for a purchase as a gift
+   *
+   * @hidden
+   */
+  public async getGiftTrackInstructions(
+    params: GetPurchaseTrackTransactionRequest
+  ) {
+    const {
+      userId,
+      trackId,
+      price: priceNumber,
+      extraAmount: extraAmountNumber = 0,
+      includeNetworkCut
+    } = await parseParams(
+      'getPurchaseTrackTransaction',
+      GetPurchaseTrackTransactionSchema
+    )(params)
+
+    const contentType = 'track'
+    const mint = 'USDC'
+
+    // Fetch track
+    this.logger.debug('Fetching track purchase info...', { trackId })
+    const { data: track } = await this.getTrackAccessInfo({
+      trackId: params.trackId, // use hashed trackId
+      userId: params.userId, // use hashed userId
+      includeNetworkCut
+    })
+
+    // Validate purchase attempt
+    if (!track) {
+      throw new Error('Track not found.')
+    }
+
+    if (!track.isStreamGated && !track.isDownloadGated) {
+      throw new Error('Attempted to purchase free track.')
+    }
+
+    if (track.userId === params.userId) {
+      throw new Error('Attempted to purchase own track.')
+    }
+
+    let numberSplits: ExtendedPaymentSplit[] = []
+    let centPrice: number
+    let accessType: 'stream' | 'download' = 'stream'
+
+    // Get conditions
+    if (
+      track.streamConditions &&
+      instanceOfExtendedPurchaseGate(track.streamConditions)
+    ) {
+      centPrice = track.streamConditions.usdcPurchase.price
+      numberSplits = track.streamConditions.usdcPurchase.splits
+    } else if (
+      track.downloadConditions &&
+      instanceOfExtendedPurchaseGate(track.downloadConditions)
+    ) {
+      centPrice = track.downloadConditions.usdcPurchase.price
+      numberSplits = track.downloadConditions.usdcPurchase.splits
+      accessType = 'download'
+    } else {
+      throw new Error('Track is not available for purchase.')
+    }
+
+    // Check if already purchased
+    if (
+      (accessType === 'download' && track.access?.download) ||
+      (accessType === 'stream' && track.access?.stream)
+    ) {
+      throw new Error('Track already purchased')
+    }
+
+    // Check if price changed
+    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
+      throw new Error('Track price increased.')
+    }
+
+    const extraAmount = USDC(extraAmountNumber).value
+    const total = USDC(centPrice / 100.0).value + extraAmount
+    this.logger.debug('Purchase total:', total)
+
+    const splits = await prepareSplits({
+      splits: numberSplits,
+      extraAmount,
+      claimableTokensClient: this.claimableTokensClient,
+      logger: this.logger
+    })
+    this.logger.debug('Calculated splits:', splits)
+
+    const routeInstruction =
+      await this.paymentRouterClient.createRouteInstruction({
+        splits,
+        total,
+        mint
+      })
+    const memoInstruction =
+      await this.paymentRouterClient.createPurchaseMemoInstruction({
+        contentId: trackId,
+        contentType,
+        blockNumber: track.blocknumber,
+        buyerUserId: userId,
+        accessType
+      })
+    const locationMemoInstruction =
+      await this.solanaRelay.getLocationInstruction()
+
+    return {
+      routeInstruction,
+      memoInstruction,
+      locationMemoInstruction
+    }
+  }
+
+  /**
    * Gets the Solana transaction that purchases the track
    *
    * @hidden
