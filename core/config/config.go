@@ -25,7 +25,7 @@ const (
 
 const (
 	ProdRegistryAddress  = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
-	StageRegistryAddress = "0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3"
+	StageRegistryAddress = "0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0"
 	DevRegistryAddress   = "0xABbfF712977dB51f9f212B85e8A4904c818C2b63"
 
 	ProdAcdcAddress  = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
@@ -106,7 +106,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
-		cfg.EthRegistryAddress = os.Getenv("audius_eth_contracts_registry")
 		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
 		cfg.NodeType = Content
@@ -114,7 +113,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
-		cfg.EthRegistryAddress = os.Getenv("ethRegistryAddress")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
@@ -132,20 +130,16 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
+		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc
-		}
-		if cfg.EthRegistryAddress == "" {
-			cfg.EthRegistryAddress = ProdRegistryAddress
 		}
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
+		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
-		}
-		if cfg.EthRegistryAddress == "" {
-			cfg.EthRegistryAddress = StageRegistryAddress
 		}
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
