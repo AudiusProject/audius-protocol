@@ -20,6 +20,7 @@ gen: $(SQL_SRCS)
 	)
 	go generate ./...
 	cd db && sqlc generate
+	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
 build-native:
