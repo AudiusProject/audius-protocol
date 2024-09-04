@@ -4,7 +4,7 @@ import {
   usePinCommentById,
   usePostComment as useAQueryPostComment,
   useReactToCommentById
-} from '../api'
+} from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
 

@@ -10,15 +10,15 @@ import {
 import { EntityType, Comment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ID, PaginatedStatus, Status } from '..//models'
-import { Nullable } from '..//utils'
 import {
   useGetCommentsByTrackId,
   useGetCurrentUserId,
   useGetTrackById
-} from '../api'
-import { tracksActions } from '../store/pages/track/lineup/actions'
-import { playerSelectors } from '../store/player'
+} from '../../api'
+import { ID, PaginatedStatus, Status } from '../../models'
+import { tracksActions } from '../../store/pages/track/lineup/actions'
+import { playerSelectors } from '../../store/player'
+import { Nullable } from '../../utils'
 
 export enum CommentSortMethod {
   top = 'top',

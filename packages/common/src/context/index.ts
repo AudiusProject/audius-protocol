@@ -1,3 +1,3 @@
 export * from './appContext'
-export * from './commentsContext'
-export * from './hooks'
+export * from './comments/commentsContext'
+export * from './comments/commentsHooks'
