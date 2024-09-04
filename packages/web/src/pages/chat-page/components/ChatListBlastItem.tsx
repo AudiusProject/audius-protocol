@@ -1,9 +1,15 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUser } from '@audius/common/api'
+import {
+  useGetCurrentUser,
+  useGetPlaylistById,
+  useGetTrackById
+} from '@audius/common/api'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
+
+import { decodeHashId } from 'utils/hashIds'
 
 import styles from './ChatListItem.module.css'
 
@@ -13,15 +19,13 @@ const messages = {
     title: 'All Followers'
   },
   [ChatBlastAudience.TIPPERS]: {
-    title: 'All Supporters'
+    title: 'Tip Supporters'
   },
   [ChatBlastAudience.CUSTOMERS]: {
-    // TODO: per track messages
-    title: 'All Purchasers'
+    title: 'Purchasers'
   },
   [ChatBlastAudience.REMIXERS]: {
-    // TODO: per track messages
-    title: 'All Remix Creators'
+    title: 'Remix Creators'
   }
 }
 
@@ -33,10 +37,31 @@ type ChatListBlastItemProps = {
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
   const { chat, onChatClicked, currentChatId } = props
-  const { chat_id: chatId, audience } = chat
+  const {
+    chat_id: chatId,
+    audience,
+    audience_content_id: audienceContentId,
+    audience_content_type: audienceContentType
+  } = chat
   const isCurrentChat = currentChatId && currentChatId === chatId
+  const decodedContentId = audienceContentId
+    ? decodeHashId(audienceContentId)
+    : undefined
 
   const { data: user } = useGetCurrentUser()
+  const { data: track } = useGetTrackById(
+    {
+      id: decodedContentId!
+    },
+    { disabled: !audienceContentId || audienceContentType !== 'track' }
+  )
+  const { data: album } = useGetPlaylistById(
+    {
+      playlistId: decodedContentId!
+    },
+    { disabled: !audienceContentId || audienceContentType !== 'album' }
+  )
+
   const audienceCount = user?.follower_count ?? 0
 
   const handleClick = useCallback(() => {
@@ -58,6 +83,13 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
         <Text size='l' strength='strong'>
           {messages[audience].title}
         </Text>
+        {audienceContentId ? (
+          <Text size='l' color='subdued'>
+            {audienceContentType === 'track'
+              ? track?.title
+              : album?.playlist_name}
+          </Text>
+        ) : null}
       </Flex>
       <Flex justifyContent='space-between' w='100%'>
         <Text variant='label' textTransform='capitalize' color='subdued'>

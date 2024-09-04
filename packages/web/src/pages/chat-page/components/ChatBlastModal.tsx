@@ -341,7 +341,7 @@ const RemixCreatorsMessageField = () => {
   const { data: remixedTracks } = useGetRemixedTracks({
     userId: currentUserId!
   })
-  const isDisabled = remixedTracks.length === 0
+  const isDisabled = remixedTracks?.length === 0
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
