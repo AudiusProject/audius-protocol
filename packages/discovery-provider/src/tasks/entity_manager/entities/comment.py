@@ -2,7 +2,6 @@ from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_thread import CommentThread
-from src.models.tracks.track import Track
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -44,7 +43,6 @@ def create_comment(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_entity_comment_count(params, comment_record)
     params.add_record(comment_id, comment_record)
 
     if params.metadata["parent_comment_id"]:
@@ -73,9 +71,7 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.is_edited = True
     edited_comment.text = params.metadata["body"]
 
-    update_entity_comment_count(params, edited_comment)
     params.add_record(comment_id, edited_comment)
-
 
 
 def delete_comment(params: ManageEntityParameters):
@@ -95,9 +91,7 @@ def delete_comment(params: ManageEntityParameters):
     )
     deleted_comment.is_delete = True
 
-    update_entity_comment_count(params, deleted_comment)
     params.add_record(comment_id, deleted_comment)
-
 
 
 def validate_comment_reaction_tx(params: ManageEntityParameters):
@@ -155,26 +149,3 @@ def unreact_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), deleted_comment_reaction, EntityType.COMMENT_REACTION
     )
-
-
-def update_entity_comment_count(params: ManageEntityParameters, comment_record: Comment):
-    track_id = params.metadata.get('entity_id')
-    existing_comment = params.existing_records[EntityType.COMMENT.value].get(track_id)
-    track = params.session.query(Track).filter(Track.track_id == track_id).first()
-    if not track:
-        raise IndexingValidationError(f"Track {track_id} does not exist")
-    if not existing_comment:
-        track.comment_count += 1
-
-    else:
-        is_now_hidden = not comment_record.is_visible or existing_comment.is_delete
-        was_not_hidden = existing_comment.is_visible and not existing_comment.is_delete
-
-        is_now_visible = not is_now_hidden
-        was_hidden = not was_not_hidden
-
-        if is_now_hidden and was_not_hidden:
-            track.comment_count -= 1
-        elif is_now_visible and was_hidden:
-            track.comment_count += 1
-    params.session.add(track)
