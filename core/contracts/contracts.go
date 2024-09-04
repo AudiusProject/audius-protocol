@@ -11,6 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// valid service types
+var (
+	DiscoveryNode = common.Utf8ToHex("discovery-node")
+	ContentNode   = common.Utf8ToHex("content-node")
+)
+
 // contract keys
 var (
 	RegistryKey               = common.Utf8ToHex("Registry")

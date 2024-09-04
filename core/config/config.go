@@ -60,6 +60,7 @@ type Config struct {
 	ProposerAddress    string
 	GRPCladdr          string
 	CoreServerAddr     string
+	NodeEndpoint       string
 
 	EthRPCUrl          string
 	EthRegistryAddress string
@@ -100,20 +101,21 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
 	if isDiscovery {
+		cfg.NodeType = Discovery
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
 		cfg.EthRegistryAddress = os.Getenv("audius_contracts_registry")
-		cfg.NodeType = Discovery
+		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
-		// isContent
+		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.EthRegistryAddress = os.Getenv("ethRegistryAddress")
-		cfg.NodeType = Content
+		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
 	if cfg.Environment == "" {

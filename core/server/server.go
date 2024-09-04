@@ -33,7 +33,8 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 }
 
 func (s *Server) registerSystemRoutes(e *echo.Echo) {
-	g := e.Group("/system")
+	g := e.Group("/net")
 
 	g.GET("/genesis.json", s.getGenesisJSON)
+	g.GET("/nodes", s.getRegisteredNodes)
 }

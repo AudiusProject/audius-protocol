@@ -9,6 +9,37 @@ import (
 	"context"
 )
 
+const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
+select endpoint, eth_address, comet_address
+from core_validators
+`
+
+type GetAllRegisteredNodesRow struct {
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+}
+
+func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]GetAllRegisteredNodesRow, error) {
+	rows, err := q.db.Query(ctx, getAllRegisteredNodes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllRegisteredNodesRow
+	for rows.Next() {
+		var i GetAllRegisteredNodesRow
+		if err := rows.Scan(&i.Endpoint, &i.EthAddress, &i.CometAddress); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAppStateAtHeight = `-- name: GetAppStateAtHeight :one
 select block_height, app_hash
 from core_app_state
@@ -62,6 +93,26 @@ func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, 
 	row := q.db.QueryRow(ctx, getLatestAppState)
 	var i GetLatestAppStateRow
 	err := row.Scan(&i.BlockHeight, &i.AppHash)
+	return i, err
+}
+
+const getNodeByEndpoint = `-- name: GetNodeByEndpoint :one
+select endpoint, eth_address, comet_address
+from core_validators
+where endpoint = $1
+limit 1
+`
+
+type GetNodeByEndpointRow struct {
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+}
+
+func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (GetNodeByEndpointRow, error) {
+	row := q.db.QueryRow(ctx, getNodeByEndpoint, endpoint)
+	var i GetNodeByEndpointRow
+	err := row.Scan(&i.Endpoint, &i.EthAddress, &i.CometAddress)
 	return i, err
 }
 

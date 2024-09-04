@@ -75,7 +75,8 @@ func (app *CoreApplication) Query(ctx context.Context, req *abcitypes.QueryReque
 
 func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
 	// check if protobuf event
-	if app.isValidProtoEvent(check.Tx) {
+	_, err := app.isValidProtoEvent(check.Tx)
+	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
 	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
@@ -109,12 +110,15 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
-		// just store events in blocks, no indexing yet
-		if app.isValidProtoEvent(tx) {
-			// TODO: index plays straight from here
+		protoEvent, err := app.isValidProtoEvent(tx)
+		if err == nil {
+			if err := app.finalizeEvent(ctx, protoEvent); err != nil {
+				txs[i] = &abcitypes.ExecTxResult{Code: 2}
+			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
 			continue
 		}
+
 		if code := app.isValid(tx); code != 0 {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
@@ -215,8 +219,11 @@ func (app *CoreApplication) isValid(tx []byte) uint32 {
 	return 0
 }
 
-func (app *CoreApplication) isValidProtoEvent(tx []byte) bool {
+func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
 	var msg gen_proto.Event
 	err := proto.Unmarshal(tx, &msg)
-	return err == nil
+	if err != nil {
+		return nil, err
+	}
+	return &msg, nil
 }

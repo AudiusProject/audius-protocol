@@ -12,6 +12,10 @@ func (r *Registry) Start() error {
 
 	r.stopChan = make(chan struct{})
 
+	if err := r.RegisterSelf(); err != nil {
+		r.logger.Errorf("node registration failed: %v", err)
+	}
+
 	for {
 		r.updateRegisteredNodes()
 

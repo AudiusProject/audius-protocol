@@ -18,3 +18,13 @@ select block_height, app_hash
 from core_app_state
 where block_height = $1
 limit 1;
+
+-- name: GetAllRegisteredNodes :many
+select endpoint, eth_address, comet_address
+from core_validators;
+
+-- name: GetNodeByEndpoint :one
+select endpoint, eth_address, comet_address
+from core_validators
+where endpoint = $1
+limit 1;
