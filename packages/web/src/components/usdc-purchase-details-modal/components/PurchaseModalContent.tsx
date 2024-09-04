@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { USDCPurchaseDetails } from '@audius/common/models'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
   ModalHeader,
@@ -9,12 +10,13 @@ import {
   Button,
   Text,
   Flex,
-  IconArrowRight
+  IconArrowRight,
+  IconExternalLink
 } from '@audius/harmony'
 import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { UserLink } from 'components/link'
+import { ExternalLink, UserLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { ContentLink } from './ContentLink'
@@ -85,7 +87,23 @@ export const PurchaseModalContent = ({
               onClick={onClose}
             />
           </DetailSection>
-          <DetailSection label={messages.transactionDate}>
+          <DetailSection
+            label={messages.transactionDate}
+            actionButton={
+              <Button
+                iconLeft={IconExternalLink}
+                variant='secondary'
+                size='small'
+                asChild
+              >
+                <ExternalLink
+                  to={makeSolanaTransactionLink(purchaseDetails.signature)}
+                >
+                  {messages.transaction}
+                </ExternalLink>
+              </Button>
+            }
+          >
             <Text variant='body' size='l'>
               {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
             </Text>
