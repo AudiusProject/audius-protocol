@@ -139,7 +139,7 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 			WHERE b.from_user_id = $1
 				AND concat_ws(':', audience, audience_content_type, 
 					CASE 
-						WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id) 
+						WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id, 'azowernasdfoia') 
 						ELSE NULL 
 					END) = $2
 			  AND b.created_at < $3
