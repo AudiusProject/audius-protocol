@@ -80,6 +80,10 @@ export const UsdcPurchaseGatedRadioField = (
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
+  const { isEnabled: isNetworkCutEnabled } = useFeatureFlag(
+    FeatureFlags.NETWORK_CUT_ENABLED
+  )
+  const isPremiumUploadEnabled = isUsdcUploadEnabled || isNetworkCutEnabled
 
   const { disableUsdcGate } = useAccessAndRemixSettings({
     isEditableAccessEnabled: !!isEditableAccessEnabled,
@@ -90,7 +94,7 @@ export const UsdcPurchaseGatedRadioField = (
     isInitiallyUnlisted: !!isInitiallyUnlisted,
     isPublishDisabled
   })
-  const disabled = disableUsdcGate || !isUsdcUploadEnabled
+  const disabled = disableUsdcGate || !isPremiumUploadEnabled
 
   const waitlistHint = (
     <Hint
@@ -123,8 +127,8 @@ export const UsdcPurchaseGatedRadioField = (
       description={messages.usdcPurchaseSubtitle(isAlbum ? 'album' : 'track')}
       value={StreamTrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
-      hint={!isUsdcUploadEnabled ? waitlistHint : undefined}
-      tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
+      hint={!isPremiumUploadEnabled ? waitlistHint : undefined}
+      tag={!isPremiumUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={
         <UsdcPurchaseFields
           disabled={disabled}
