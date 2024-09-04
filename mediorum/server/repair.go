@@ -321,7 +321,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	// don't delete if we replicated the blob within the past week
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+2 && !wasReplicatedThisWeek {
+	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		tracker.Counters["delete_over_replicated_needed"]++
 		err = ss.dropFromMyBucket(cid)

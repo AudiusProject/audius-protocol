@@ -120,6 +120,21 @@ func (ss *MediorumServer) startTranscoder() {
 		go ss.startTranscodeWorker(i, work)
 	}
 
+	// hash-migration: the findMissedJobs was using the og `mirrors` list
+	// to determine if this server should transocde the file
+	// with the assumption that if server was in mirrors list it would have the orig upload.
+	// but hash migration changed that assumption...
+	// so hosts would try to transcode and would not have the orig
+	// which would issue a crudr update to put transcode job in error state.
+	//
+	// This is a temporary fix in prod to only find missing transcode jobs on StoreAll nodes
+	// which will have the orig.
+	//
+	// long term fix is to move transcode inline to upload...
+	if ss.Config.Env == "prod" && !ss.Config.StoreAll {
+		return
+	}
+
 	// finally... poll periodically for uploads that slipped thru the cracks
 	for {
 		time.Sleep(time.Minute)
