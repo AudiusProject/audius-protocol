@@ -31,7 +31,7 @@ const messages = {
   viewOtherRemixes: 'View Other Remixes'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   buttonContainer: {
     padding: spacing(6)
   }

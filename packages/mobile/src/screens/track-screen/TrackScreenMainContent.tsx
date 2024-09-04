@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import type {
@@ -9,14 +9,28 @@ import type {
   User
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  lineupSelectors,
+  reachabilitySelectors,
+  remixesPageActions,
+  remixesPageSelectors,
+  remixesPageLineupActions as tracksActions
+} from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
+import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
-import { TrackScreenRemixes } from './TrackScreenRemixes'
+
+const { fetchTrack, reset } = remixesPageActions
+const { getLineup } = remixesPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
+const { getIsReachable } = reachabilitySelectors
 
 type TrackScreenMainContentProps = {
   lineup: LineupState<Track>
@@ -36,9 +50,13 @@ export const TrackScreenMainContent = ({
   user
 }: TrackScreenMainContentProps) => {
   const navigation = useNavigation()
+  const dispatch = useDispatch()
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+
+  const remixesLineup = useSelector(getRemixesTracksLineup)
+  const isReachable = useSelector(getIsReachable)
 
   const {
     track_id,
@@ -50,9 +68,23 @@ export const TrackScreenMainContent = ({
 
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
+  useEffect(() => {
+    dispatch(
+      tracksActions.fetchLineupMetadatas(0, 10, false, {
+        trackId: track.track_id
+      })
+    )
+
+    return function cleanup() {
+      dispatch(reset())
+      dispatch(tracksActions.reset())
+    }
+  }, [dispatch, track])
+
   const handlePressGoToRemixes = () => {
     navigation.push('TrackRemixes', { id: track_id })
   }
+
   return (
     <Flex p='m' pb={0}>
       <Flex gap='2xl'>
@@ -63,21 +95,22 @@ export const TrackScreenMainContent = ({
           isLineupLoading={!lineup?.entries?.[0]}
         />
 
-        {field_visibility?.remixes &&
-          remixTrackIds &&
-          remixTrackIds.length > 0 && (
-            <TrackScreenRemixes
-              trackIds={remixTrackIds}
-              onPressGoToRemixes={handlePressGoToRemixes}
-              count={_remixes_count ?? null}
-            />
-          )}
-
         {isCommentingEnabled && !comments_disabled ? (
           <Flex flex={3}>
             <CommentSection entityId={track_id} />
           </Flex>
         ) : null}
+
+        {field_visibility?.remixes &&
+          remixTrackIds &&
+          remixTrackIds.length > 0 && (
+            <Lineup
+              lineup={remixesLineup}
+              actions={tracksActions}
+              count={isReachable ? 6 : 0}
+            />
+          )}
+
         {lineupHeader}
       </Flex>
     </Flex>
