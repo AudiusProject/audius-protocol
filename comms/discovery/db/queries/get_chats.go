@@ -61,7 +61,11 @@ WHERE chat_member.user_id = $1 AND chat_member.chat_id = $2
 union all (
 
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
-    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
+    concat_ws(':', audience, audience_content_type, 
+			CASE 
+				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id) 
+				ELSE NULL 
+			END) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
 		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
@@ -76,7 +80,11 @@ union all (
 		audience_content_id
   FROM chat_blast b
   WHERE from_user_id = $1
-    AND concat_ws(':', audience, audience_content_type, audience_content_id) = $2
+    AND concat_ws(':', audience, audience_content_type, 
+			CASE 
+				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id) 
+				ELSE NULL 
+			END) = $2
   ORDER BY
     audience,
     audience_content_type,
@@ -122,7 +130,11 @@ WHERE chat_member.user_id = $1
 union all (
 
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
-    concat_ws(':', audience, audience_content_type, audience_content_id) as chat_id,
+    concat_ws(':', audience, audience_content_type, 
+			CASE 
+				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id) 
+				ELSE NULL 
+			END) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
     plaintext as last_message,
 		max(created_at) over (partition by audience, audience_content_type, audience_content_id) as last_message_at,
@@ -142,7 +154,6 @@ union all (
     audience_content_type,
     audience_content_id,
     created_at DESC
-
 )
 
 ORDER BY last_message_at DESC, chat_id
