@@ -40,7 +40,7 @@ type CommentSectionContextType = {
   hasMorePages: boolean
   reset: (hard?: boolean) => void
   setCurrentSort: (sort: CommentSortMethod) => void
-  handleLoadMoreRootComments: () => void
+  loadMorePages: () => void
   handleLoadMoreReplies: (commentId: string) => void
   handleMuteEntityNotifications: () => void
 }
@@ -115,7 +115,7 @@ export const CommentSectionProvider = (
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,
-        handleLoadMoreRootComments: loadMore,
+        loadMorePages: loadMore,
         handleMuteEntityNotifications
       }}
     >

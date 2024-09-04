@@ -577,7 +577,7 @@ const buildEndpointHooks = <
     const reset = useCallback(
       (hardReset?: boolean) => {
         setPage(0)
-        setStatus(Status.LOADING)
+        setStatus(Status.IDLE)
 
         // If requesting a hard refresh we also reset the cached data in the store
         if (hardReset) {
@@ -588,7 +588,7 @@ const buildEndpointHooks = <
       [dispatch]
     )
 
-    // Only need to soft reset when args or pagesize changes - leaves all cached data intact
+    // Should reset if args change - (soft reset - leaves all cached data intact)
     useCustomCompareEffect(reset, [baseArgs], isEqual)
 
     const args = {
@@ -649,7 +649,8 @@ const buildEndpointHooks = <
             status === PaginatedStatus.LOADING_MORE &&
             (result.status === Status.LOADING || result.status === Status.IDLE)
           )
-        )
+        ) &&
+        status !== result.status // redudant changes
       ) {
         setStatus(result.status)
       }

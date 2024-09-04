@@ -99,7 +99,6 @@ export const useAllPaginatedQuery = <
         setLoadingMore(false)
         return
       }
-      // what if we just selected the data instead of accumulating it
       if (result.status === Status.SUCCESS) {
         setAllData((allData) => [
           ...allData,
