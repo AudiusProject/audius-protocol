@@ -96,6 +96,7 @@ track = ns.model(
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
+        "comment_count": fields.Integer(required=True),
         "tags": fields.String,
         "title": fields.String(required=True),
         "user": fields.Nested(user_model, required=True),
@@ -180,7 +181,6 @@ track_full = ns.clone(
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
         "comments_disabled": fields.Boolean,
-        "comment_count": fields.Integer,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),

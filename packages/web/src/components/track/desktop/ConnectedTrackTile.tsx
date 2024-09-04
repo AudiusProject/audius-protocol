@@ -123,6 +123,7 @@ const ConnectedTrackTile = ({
     permalink,
     repost_count,
     save_count,
+    comment_count,
     field_visibility: fieldVisibility,
     followee_reposts,
     followee_saves,
@@ -266,6 +267,15 @@ const ConnectedTrackTile = ({
           contentTitle={contentTitle}
           size={statSize}
           onClick={onClickStatFavorite}
+          flavor={Flavor.FAVORITE}
+          isOwner={isOwner}
+        />
+        <Stats
+          count={comment_count}
+          followeeActions={followee_saves}
+          contentTitle={'comments'}
+          size={statSize}
+          onClick={onClickStatRepost}
           flavor={Flavor.FAVORITE}
           isOwner={isOwner}
         />
