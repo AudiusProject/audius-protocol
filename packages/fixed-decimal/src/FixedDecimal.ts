@@ -286,12 +286,16 @@ export class FixedDecimal<
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    const signOffset =
-      this.value < 0 && this.value % divisor !== BigInt(0)
-        ? BigInt(-1 * 10 ** digitsToRemove)
-        : BigInt(0)
+    // Subtract one if negative w/ remainder
+    if (this.value < 0 && this.value % divisor !== BigInt(0)) {
+      return new FixedDecimal<BigIntBrand, BNBrand>({
+        value: ((this.value / divisor) * divisor - divisor) as BigIntBrand,
+        decimalPlaces: this.decimalPlaces
+      })
+    }
+    // Truncate otherwise
     return new FixedDecimal<BigIntBrand, BNBrand>({
-      value: ((this.value / divisor) * divisor + signOffset) as BigIntBrand,
+      value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
   }
