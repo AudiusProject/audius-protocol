@@ -146,6 +146,7 @@ func (ss *MediorumServer) startTranscoder() {
 }
 
 func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
+	ctx := context.Background()
 	newStatus := JobStatusNew
 	busyStatus := JobStatusBusy
 	errorStatus := JobStatusError
@@ -163,73 +164,15 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 			continue
 		}
 
-		mirrors := upload.Mirrors
-		if retranscode {
-			if upload.TranscodedMirrors == nil {
-				ss.logger.Warn("missing full transcoded mp3 mirrors in retranscode job. skipping", "id", upload.ID)
-				continue
-			}
-			mirrors = upload.TranscodedMirrors
-		}
-
-		myIdx := slices.Index(mirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
-		// normally this job of mine would start via callback
-		// but just in case we could enqueue it here.
-		// there's a chance it would be processed twice if the callback and this loop
-		// ran at the same instant...
-		// but I'm not too worried about that race condition
-
-		if myRank == 1 && upload.Status == newStatus {
-			logger.Info("my upload not started")
-			work <- upload
+		// don't re-process if it was updated recently
+		if time.Since(upload.TranscodedAt) < time.Minute {
 			continue
 		}
 
-		// determine if #1 rank worker dropped ball
-		timedOut := false
-		neverStarted := false
-
-		// for #2 rank worker:
-		if myRank == 2 {
-			// no recent update?
-			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*3
-
-			// never started?
-			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*6
-		}
-
-		// for #3 rank worker:
-		if myRank == 3 {
-			// no recent update?
-			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*7
-
-			// never started?
-			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*14
-		}
-
-		if timedOut {
-			logger.Info("upload timed out... starting")
+		// if we have orig file... try to reprocess
+		if ok, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); ok {
 			work <- upload
-		} else if neverStarted {
-			logger.Info("upload never started")
-			work <- upload
-		}
-
-		// take turns retrying errors
-		if upload.Status == errorStatus && upload.ErrorCount%len(mirrors) == myIdx {
-			logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
-			work <- upload
+			continue
 		}
 	}
 }
