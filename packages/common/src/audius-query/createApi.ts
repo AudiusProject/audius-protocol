@@ -562,7 +562,12 @@ const buildEndpointHooks = <
     options: PaginatedQueryHookOptions
   ): PaginatedQueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const { pageSize = 5, singlePageData, ...queryHookOptions } = options
+    const {
+      pageSize = 5,
+      startOffset = 0,
+      singlePageData,
+      ...queryHookOptions
+    } = options
     const [forceLoad, setForceLoad] = useState(false)
     const [page, setPage] = useState(0)
     const [status, setStatus] = useState<Status | PaginatedStatus>(Status.IDLE)
@@ -589,29 +594,35 @@ const buildEndpointHooks = <
     const args = {
       ...baseArgs,
       limit: pageSize,
-      offset: page * pageSize
+      offset: startOffset + page * pageSize
     } as ArgsType & PaginatedQueryArgs
 
     const allPageData = useSelector((state: CommonState) => {
       // If in single page mode we only return the current page of data (no aggregation)
       if (singlePageData) {
-        return state?.api?.[reducerPath]?.[endpointName]?.[
-          getKeyFromFetchArgs(args)
-        ]?.normalizedData
+        return (
+          state?.api?.[reducerPath]?.[endpointName]?.[getKeyFromFetchArgs(args)]
+            ?.normalizedData ?? []
+        )
       }
 
       // By default, select data for every page up to the current page and aggregate the results
-      const pageAccumulator: Data[] = []
+      let pageAccumulator: Data[] = []
 
       for (let i = 0; i <= page; i++) {
         const key = getKeyFromFetchArgs({
           ...args,
-          offset: i * pageSize
+          offset: startOffset + i * pageSize
         })
         const normalizedPageData =
-          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData
+          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData ?? []
         if (normalizedPageData) {
-          pageAccumulator.push(...normalizedPageData)
+          // If an endpoint is paginated it "should" be in an array format but in case it's not we just append it to the accumulator
+          if (!Array.isArray(normalizedPageData)) {
+            pageAccumulator.push(normalizedPageData)
+          } else {
+            pageAccumulator = [...pageAccumulator, ...normalizedPageData]
+          }
         }
       }
       return pageAccumulator
@@ -629,14 +640,20 @@ const buildEndpointHooks = <
       }
     }, [result, forceLoad])
 
-    // Track status of the latest page fetches in order to update loadingMore
-    useCustomCompareEffect(
-      () => {
+    // Track status of the latest page fetches
+    useEffect(() => {
+      if (
+        !(
+          // If the status was set to LOADING_MORE, we've requested a new page; in which case we don't want to reset the status to IDLE or LOADING
+          (
+            status === PaginatedStatus.LOADING_MORE &&
+            (result.status === Status.LOADING || result.status === Status.IDLE)
+          )
+        )
+      ) {
         setStatus(result.status)
-      },
-      [result.status],
-      isEqual
-    )
+      }
+    }, [result.status, status])
 
     const notError = result.status !== Status.ERROR
     const stillLoadingCurrentPage =
@@ -657,14 +674,12 @@ const buildEndpointHooks = <
         return
       }
       setStatus(PaginatedStatus.LOADING_MORE)
-      setPage(page + 1)
-    }, [stillLoadingCurrentPage, hasMore, page])
+      setPage((page) => page + 1)
+    }, [stillLoadingCurrentPage, hasMore])
 
     return {
       ...result,
-      status:
-        // If not in singlePageData mode, we treat the status based on whether the first page succeeded. After that, use isLoadingMore for load statuses
-        allPageData?.length > 0 && !singlePageData ? Status.SUCCESS : status,
+      status,
       data: allPageData,
       reset,
       loadMore,

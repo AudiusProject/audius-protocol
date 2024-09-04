@@ -10,15 +10,10 @@ import {
 import { EntityType, Comment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ID, Status } from '..//models'
+import { ID, PaginatedStatus, Status } from '..//models'
 import { Nullable } from '..//utils'
 import {
-  useDeleteCommentById,
-  useEditCommentById,
   useGetCommentsByTrackId,
-  usePinCommentById,
-  usePostComment as useAQueryPostComment,
-  useReactToCommentById,
   useGetCurrentUserId,
   useGetTrackById
 } from '../api'
@@ -43,7 +38,7 @@ type CommentSectionContextType = {
   currentSort: CommentSortMethod
   isLoadingMorePages: boolean
   hasMorePages: boolean
-  forceRefresh: () => void
+  reset: (hard?: boolean) => void
   setCurrentSort: (sort: CommentSortMethod) => void
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
@@ -68,15 +63,13 @@ export const CommentSectionProvider = (
     data: comments = [],
     status,
     loadMore,
-    hardReset: reset,
-    isLoadingMore: isLoadingMorePages,
+    reset,
     hasMore: hasMorePages
   } = useGetCommentsByTrackId(
     { entityId },
     {
       pageSize: 5,
-      disabled: entityId === 0,
-      singlePageData: true
+      disabled: entityId === 0
     }
   )
   const { data: currentUserId } = useGetCurrentUserId({})
@@ -92,9 +85,6 @@ export const CommentSectionProvider = (
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
 
-  const handleLoadMoreRootComments = () => {
-    loadMore()
-  }
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
   }
@@ -118,14 +108,14 @@ export const CommentSectionProvider = (
         comments,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
-        isLoadingMorePages,
-        forceRefresh: reset,
+        isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        reset,
         hasMorePages,
         currentSort,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,
-        handleLoadMoreRootComments,
+        handleLoadMoreRootComments: loadMore,
         handleMuteEntityNotifications
       }}
     >

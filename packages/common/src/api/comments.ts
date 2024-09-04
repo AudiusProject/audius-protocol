@@ -71,6 +71,8 @@ const commentsApi = createApi({
     },
     getCommentById: {
       async fetch({ id: _id }: { id: string }): Promise<Comment | undefined> {
+        // NOTE: we currently do not have an endpoint for this
+        // We ultimately only use this query expecting to hit the cache
         return undefined
       },
       options: { type: 'query' }
@@ -86,9 +88,10 @@ const commentsApi = createApi({
           limit,
           offset
         })
-        return commentsRes?.data
+        // TODO: type issue here?
+        return commentsRes?.data as unknown as Comment[]
       },
-      options: { type: 'query' }
+      options: { type: 'paginatedQuery' }
     },
     // Non-optimistically updated mutations (updates after confirmation)
     postComment: {

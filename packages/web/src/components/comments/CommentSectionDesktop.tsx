@@ -1,5 +1,9 @@
+import { useEffect, useRef } from 'react'
+
 import { useCurrentCommentSection } from '@audius/common/context'
-import { Button, Divider, Flex, Paper } from '@audius/harmony'
+import { Button, Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
+import { debounce } from 'lodash'
+import { useEffectOnce } from 'react-use'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
@@ -14,23 +18,61 @@ export const CommentSectionDesktop = () => {
     comments,
     commentSectionLoading,
     isLoadingMorePages,
-    forceRefresh,
+    reset,
     hasMorePages,
     handleLoadMoreRootComments
   } = useCurrentCommentSection()
 
   const commentPostAllowed = currentUserId !== null
+  const commentSectionRef = useRef<HTMLDivElement | null>(null)
+
+  // Need refs for these values because the scroll handler will not be able to access state changes
+  const isLoadingMorePagesRef = useRef(isLoadingMorePages)
+  const hasMorePagesRef = useRef(hasMorePages)
+  useEffect(() => {
+    // Keep the ref values up to date
+    isLoadingMorePagesRef.current = isLoadingMorePages
+    hasMorePagesRef.current = hasMorePages
+  }, [isLoadingMorePages, hasMorePages])
+
+  // Endless scroll pagination logic
+  useEffectOnce(() => {
+    const handleScroll = (e: Event) => {
+      if (
+        !isLoadingMorePagesRef.current &&
+        hasMorePagesRef.current &&
+        commentSectionRef.current
+      ) {
+        const scrollTopPosition = (e.target as HTMLElement)?.scrollTop ?? 0 // How far along the window has scrolled
+        const containerOffsetHeight = commentSectionRef.current.offsetHeight // How tall our container is
+        // Start loading more at 75% of the way scrolled to the bottom
+        const shouldLoadMore = scrollTopPosition >= containerOffsetHeight * 0.75
+        if (shouldLoadMore) {
+          handleLoadMoreRootComments()
+        }
+      }
+    }
+    const listenerFn = debounce(handleScroll, 50) // small debounce to avoid a race condition between scroll handler and state updates to isLoadingMorePages/hasMorePages
+    window.addEventListener('scroll', listenerFn, true) // Note: 3rd true argument is to make sure we capture the event at the window level (otherwise it gets captured elsewhere)
+    return () => window.removeEventListener('scroll', listenerFn)
+  })
 
   if (commentSectionLoading) {
     return <CommentSkeletons />
   }
 
   return (
-    <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
+    <Flex
+      gap='l'
+      direction='column'
+      w='100%'
+      alignItems='flex-start'
+      ref={commentSectionRef}
+    >
       <CommentHeader commentCount={comments.length} />
       <Button
         onClick={() => {
-          forceRefresh()
+          reset(true)
         }}
       >
         Refresh{' '}
@@ -52,20 +94,12 @@ export const CommentSectionDesktop = () => {
             {comments.map(({ id }) => (
               <CommentThread commentId={id} key={id} />
             ))}
+            {isLoadingMorePages ? (
+              <LoadingSpinner
+                css={{ width: 20, height: 20, alignSelf: 'center' }}
+              />
+            ) : null}
           </Flex>
-          {/* TODO: this button is temporary; will be replaced with endless scroll */}
-          {hasMorePages ? (
-            <Button
-              onClick={() => {
-                handleLoadMoreRootComments()
-              }}
-              size='small'
-              css={{ width: 'max-content', marginTop: '16px' }}
-              disabled={isLoadingMorePages}
-            >
-              Load more comments
-            </Button>
-          ) : null}
         </Flex>
       </Paper>
     </Flex>

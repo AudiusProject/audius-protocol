@@ -1,34 +1,29 @@
 import { useState } from 'react'
 
-import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
+import { useGetCommentById } from '@audius/common/api'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
-  Divider,
+  Box,
   Flex,
   IconCaretDown,
   IconCaretUp,
-  TextLink
+  PlainButton
 } from '@audius/harmony'
 import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
 
-const COMMENT_THREAD_PAGE_SIZE = 3
-
-const messages = {
-  showMoreReplies: 'Show More Replies'
-}
-
 export const CommentThread = ({ commentId }: { commentId: string }) => {
   const { data: rootComment } = useGetCommentById({
     id: commentId
   })
-  // const { data: replies, loadMore } = useAllPaginatedQuery(
-  //   // @ts-ignore
-  //   useGetCommentRepliesById,
-  //   { id: commentId },
-  //   { pageSize: COMMENT_THREAD_PAGE_SIZE, disabled: true }
-  // )
+  const [hasLoadedMore, setHasLoadedMore] = useState(false)
+  const {
+    data: moreReplies,
+    loadMore,
+    hasMore
+  } = { data: [], loadMore: () => {}, hasMore: false }
+  const hasMoreReplies = hasMore && (rootComment?.replies?.length ?? 0) >= 3
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
@@ -39,6 +34,16 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
+
+  const handleLoadMoreReplies = () => {
+    if (hasLoadedMore) {
+      loadMore()
+    } else {
+      setHasLoadedMore(true)
+    }
+  }
+
+  const allReplies = [...(rootComment?.replies ?? []), ...(moreReplies ?? [])]
 
   if (!rootComment) return null
 
@@ -68,7 +73,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             as='ul'
             aria-label={messages.replies}
           >
-            {rootComment?.replies?.map((reply: ReplyComment) => (
+            {allReplies.map((reply: ReplyComment) => (
               <Flex w='100%' key={reply.id} as='li'>
                 <CommentBlock
                   comment={reply}
@@ -79,8 +84,14 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
           </Flex>
         )}
         {/* TODO: need a way to hide this when no more to load */}
-        {(rootComment?.replies?.length ?? 0) > 0 ? (
-          <TextLink>{messages.showMoreReplies}</TextLink>
+        {hasMoreReplies ? (
+          <PlainButton
+            onClick={handleLoadMoreReplies}
+            variant='subdued'
+            css={{ width: 'max-content' }}
+          >
+            {messages.showMoreReplies}
+          </PlainButton>
         ) : null}
       </Flex>
     </Flex>
