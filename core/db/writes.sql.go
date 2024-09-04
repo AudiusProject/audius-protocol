@@ -46,7 +46,7 @@ values ($1, $2, $3, $4, $5)
 `
 
 type InsertRegisteredNodeParams struct {
-	PubKey       []byte
+	PubKey       string
 	Endpoint     string
 	EthAddress   string
 	CometAddress string

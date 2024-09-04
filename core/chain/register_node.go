@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AudiusProject/audius-protocol/core/accounts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // checks if the register node event is valid
@@ -30,15 +32,38 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 		return fmt.Errorf("invalid register node event: %v", err)
 	}
 
+	core.logger.Info("finalizing register node")
+
 	qtx := core.getDb()
 
-	qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
-		PubKey:       []byte("derive pubkey json"),
+	event := e.GetRegisterNode()
+	sig := e.GetSignature()
+	eventBytes, err := proto.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal event bytes: %v", err)
+	}
+
+	pubKey, address, err := accounts.EthRecover(sig, eventBytes)
+	if err != nil {
+		return fmt.Errorf("could not recover signer: %v", err)
+	}
+
+	serializedPubKey, err := accounts.SerializePublicKey(pubKey)
+	if err != nil {
+		return fmt.Errorf("could not serialize pubkey: %v", err)
+	}
+
+	err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
+		PubKey:       serializedPubKey,
 		Endpoint:     e.GetRegisterNode().GetEndpoint(),
-		EthAddress:   "derive eth address from pubkey",
-		CometAddress: "derive comet address from pubkey",
-		TxHash:       "maybe tx hash from ethereum?",
+		EthAddress:   address,
+		CometAddress: e.GetRegisterNode().GetCometAddress(),
+		TxHash:       "not implemented",
 	})
+
+	if err != nil {
+		return fmt.Errorf("error inserting registered node: %v", err)
+	}
 
 	return nil
 }

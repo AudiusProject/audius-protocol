@@ -1,7 +1,7 @@
 -- +migrate Up
 create table core_validators(
   rowid serial primary key,
-  pub_key jsonb not null,
+  pub_key text not null,
   endpoint text not null,
   eth_address text not null,
   comet_address text not null,

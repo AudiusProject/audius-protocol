@@ -65,7 +65,7 @@ type CoreTxResult struct {
 
 type CoreValidator struct {
 	Rowid        int32
-	PubKey       []byte
+	PubKey       string
 	Endpoint     string
 	EthAddress   string
 	CometAddress string

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
@@ -113,6 +114,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err == nil {
 			if err := app.finalizeEvent(ctx, protoEvent); err != nil {
+				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
@@ -159,7 +161,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	}
 
 	prevAppState, err := app.getDb().GetAppStateAtHeight(ctx, req.Height-1)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		app.logger.Errorf("prev app state not found: %v", err)
 		return &abcitypes.FinalizeBlockResponse{}, nil
 	}

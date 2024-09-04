@@ -105,7 +105,7 @@ func (r *Registry) registerSelfOnComet() error {
 		return fmt.Errorf("send register tx failed: %v", err)
 	}
 
-	r.logger.Info("registered node %s in tx %s", r.config.NodeEndpoint, txhash)
+	r.logger.Infof("registered node %s in tx %s", r.config.NodeEndpoint, txhash)
 
 	return nil
 }
