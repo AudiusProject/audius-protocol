@@ -73,7 +73,7 @@ const renderValueCell = (cellInfo: PurchaseCell) => {
     BigInt(
       transaction.splits.find((s) => s.userId === transaction.sellerUserId)
         ?.amount || 0
-    )
+    ) + BigInt(transaction.extraAmount)
   ).toLocaleString()
   return total
 }
