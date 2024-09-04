@@ -39,8 +39,6 @@ func NewNode(logger *common.Logger, cometConfig *cfg.Config, pool *pgxpool.Pool,
 		logger.Child("chain"),
 	)
 
-	node.OnStart()
-
 	if err != nil {
 		return nil, fmt.Errorf("creating node: %v", err)
 	}
