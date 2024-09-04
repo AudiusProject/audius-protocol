@@ -27,14 +27,20 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		db:      db.New(pool),
 	}
 
-	s.registerSystemRoutes(e)
+	g := e.Group("/core")
+	s.registerRoutes(g)
 
 	return s, nil
 }
 
-func (s *Server) registerSystemRoutes(e *echo.Echo) {
-	g := e.Group("/net")
+func (s *Server) registerRoutes(e *echo.Group) {
 
-	g.GET("/genesis.json", s.getGenesisJSON)
-	g.GET("/nodes", s.getRegisteredNodes)
+	e.GET("/genesis.json", s.getGenesisJSON)
+
+	e.GET("/nodes", s.getRegisteredNodes)
+	e.GET("/nodes/verbose", s.getRegisteredNodes)
+	e.GET("/nodes/discovery", s.getRegisteredNodes)
+	e.GET("/nodes/discovery/verbose", s.getRegisteredNodes)
+	e.GET("/nodes/content", s.getRegisteredNodes)
+	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 }

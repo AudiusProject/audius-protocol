@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
+	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
@@ -60,10 +61,12 @@ func (r *Registry) RegisterSelf() error {
 		return fmt.Errorf("node %s is claiming to be %s but that endpoint is owned by %s", nodeAddress.Hex(), nodeEndpoint, info.DelegateOwnerWallet.Hex())
 	}
 
+	ethBlock := info.BlockNumber.String()
+
 	nodeRecord, err := queries.GetNodeByEndpoint(ctx, nodeEndpoint)
 	if err != nil {
 		logger.Infof("node %s not found on comet but found on eth, registering", nodeEndpoint)
-		if err := r.registerSelfOnComet(); err != nil {
+		if err := r.registerSelfOnComet(ethBlock, spID.String()); err != nil {
 			return fmt.Errorf("could not register on comet: %v", err)
 		}
 		return r.RegisterSelf()
@@ -73,15 +76,23 @@ func (r *Registry) RegisterSelf() error {
 	return nil
 }
 
-func (r *Registry) registerSelfOnComet() error {
+func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 	privKey, err := accounts.EthToEthKey(r.config.DelegatePrivateKey)
 	if err != nil {
 		return fmt.Errorf("invalid privkey: %v", err)
 	}
 
+	serviceType, err := contracts.ServiceType(r.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
 	registerEvent := &gen_proto.RegisterNodeEvent{
 		Endpoint:     r.config.NodeEndpoint,
 		CometAddress: r.config.ProposerAddress,
+		EthBlock:     ethBlock,
+		NodeType:     common.HexToUtf8(serviceType),
+		SpId:         spID,
 	}
 
 	eventBytes, err := proto.Marshal(registerEvent)

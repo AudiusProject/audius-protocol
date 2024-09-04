@@ -46,6 +46,9 @@ message PlaysEvent {
 message RegisterNodeEvent {
   string endpoint = 1;
   string comet_address = 2;
+  string eth_block = 3;
+  string node_type = 4;
+  string sp_id = 5;
 }
 
 message Listen {

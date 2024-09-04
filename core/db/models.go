@@ -69,7 +69,9 @@ type CoreValidator struct {
 	Endpoint     string
 	EthAddress   string
 	CometAddress string
-	TxHash       string
+	EthBlock     string
+	NodeType     string
+	SpID         string
 }
 
 type EventAttribute struct {

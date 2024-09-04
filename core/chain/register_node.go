@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
+	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"google.golang.org/protobuf/proto"
@@ -12,7 +13,7 @@ import (
 
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (core *CoreApplication) isValidRegisterNodeEvent(e *gen_proto.Event) error {
+func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_proto.Event) error {
 	sig := e.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
@@ -23,12 +24,60 @@ func (core *CoreApplication) isValidRegisterNodeEvent(e *gen_proto.Event) error 
 		return fmt.Errorf("unknown event fell into finalizeRegisterNode: %v", e)
 	}
 
+	spf, err := core.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return fmt.Errorf("could not get spf contract to validate node event: %v", err)
+	}
+
+	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, event.GetEndpoint())
+	if err != nil {
+		return fmt.Errorf("node attempted to register but not SP: %v", err)
+	}
+
+	serviceType := common.Utf8ToHex(event.GetNodeType())
+
+	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
+	if err != nil {
+		return fmt.Errorf("node info not available %v: %v", spID, err)
+	}
+
+	// compare on chain info to requested comet data
+	onChainOwnerWallet := info.DelegateOwnerWallet.Hex()
+	onChainBlockNumber := info.BlockNumber.String()
+	onChainEndpoint := info.Endpoint
+
+	data, err := proto.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("could not marshal event: %v", err)
+	}
+
+	_, address, err := accounts.EthRecover(e.GetSignature(), data)
+	if err != nil {
+		return fmt.Errorf("could not recover msg sig: %v", err)
+	}
+
+	eventOwnerWallet := address
+	eventEndpoint := event.GetEndpoint()
+	eventEthBlock := event.GetEthBlock()
+
+	if onChainOwnerWallet != eventOwnerWallet {
+		return fmt.Errorf("wallet %s tried to register %s as %s", eventOwnerWallet, onChainOwnerWallet, event.Endpoint)
+	}
+
+	if onChainBlockNumber != eventEthBlock {
+		return fmt.Errorf("block number mismatch: %s %s", onChainBlockNumber, eventEthBlock)
+	}
+
+	if onChainEndpoint != eventEndpoint {
+		return fmt.Errorf("endpoints don't match: %s %s", onChainEndpoint, eventEndpoint)
+	}
+
 	return nil
 }
 
 // persists the register node request should it pass validation
 func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.Event) error {
-	if err := core.isValidRegisterNodeEvent(e); err != nil {
+	if err := core.isValidRegisterNodeEvent(ctx, e); err != nil {
 		return fmt.Errorf("invalid register node event: %v", err)
 	}
 
@@ -53,12 +102,16 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 		return fmt.Errorf("could not serialize pubkey: %v", err)
 	}
 
+	registerNode := e.GetRegisterNode()
+
 	err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
 		PubKey:       serializedPubKey,
-		Endpoint:     e.GetRegisterNode().GetEndpoint(),
 		EthAddress:   address,
-		CometAddress: e.GetRegisterNode().GetCometAddress(),
-		TxHash:       "not implemented",
+		Endpoint:     registerNode.GetEndpoint(),
+		CometAddress: registerNode.GetCometAddress(),
+		EthBlock:     registerNode.GetEthBlock(),
+		NodeType:     registerNode.GetNodeType(),
+		SpID:         registerNode.GetSpId(),
 	})
 
 	if err != nil {

@@ -33,9 +33,8 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 	}
 
 	consoleBase := e.Group("/console")
-	coreBase := e.Group("/core")
 
-	c.registerRoutes(logger, consoleBase, coreBase)
+	c.registerRoutes(logger, consoleBase)
 
 	return c, nil
 }

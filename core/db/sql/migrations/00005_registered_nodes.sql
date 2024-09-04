@@ -5,7 +5,9 @@ create table core_validators(
   endpoint text not null,
   eth_address text not null,
   comet_address text not null,
-  tx_hash text not null
+  eth_block text not null,
+  node_type text not null,
+  sp_id text not null
 );
 
 create index idx_core_validators_eth_address on core_validators(eth_address);

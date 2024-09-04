@@ -10,26 +10,29 @@ import (
 )
 
 const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
-select endpoint, eth_address, comet_address
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
 from core_validators
 `
 
-type GetAllRegisteredNodesRow struct {
-	Endpoint     string
-	EthAddress   string
-	CometAddress string
-}
-
-func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]GetAllRegisteredNodesRow, error) {
+func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]CoreValidator, error) {
 	rows, err := q.db.Query(ctx, getAllRegisteredNodes)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllRegisteredNodesRow
+	var items []CoreValidator
 	for rows.Next() {
-		var i GetAllRegisteredNodesRow
-		if err := rows.Scan(&i.Endpoint, &i.EthAddress, &i.CometAddress); err != nil {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -97,23 +100,61 @@ func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, 
 }
 
 const getNodeByEndpoint = `-- name: GetNodeByEndpoint :one
-select endpoint, eth_address, comet_address
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
 from core_validators
 where endpoint = $1
 limit 1
 `
 
-type GetNodeByEndpointRow struct {
-	Endpoint     string
-	EthAddress   string
-	CometAddress string
+func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getNodeByEndpoint, endpoint)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
 }
 
-func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (GetNodeByEndpointRow, error) {
-	row := q.db.QueryRow(ctx, getNodeByEndpoint, endpoint)
-	var i GetNodeByEndpointRow
-	err := row.Scan(&i.Endpoint, &i.EthAddress, &i.CometAddress)
-	return i, err
+const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+from core_validators
+where node_type = $1
+`
+
+func (q *Queries) GetRegisteredNodesByType(ctx context.Context, nodeType string) ([]CoreValidator, error) {
+	rows, err := q.db.Query(ctx, getRegisteredNodesByType, nodeType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreValidator
+	for rows.Next() {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTx = `-- name: GetTx :one

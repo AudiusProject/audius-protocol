@@ -41,8 +41,8 @@ func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (C
 }
 
 const insertRegisteredNode = `-- name: InsertRegisteredNode :exec
-insert into core_validators(pub_key, endpoint, eth_address, comet_address, tx_hash)
-values ($1, $2, $3, $4, $5)
+insert into core_validators(pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id)
+values ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type InsertRegisteredNodeParams struct {
@@ -50,7 +50,9 @@ type InsertRegisteredNodeParams struct {
 	Endpoint     string
 	EthAddress   string
 	CometAddress string
-	TxHash       string
+	EthBlock     string
+	NodeType     string
+	SpID         string
 }
 
 func (q *Queries) InsertRegisteredNode(ctx context.Context, arg InsertRegisteredNodeParams) error {
@@ -59,7 +61,9 @@ func (q *Queries) InsertRegisteredNode(ctx context.Context, arg InsertRegistered
 		arg.Endpoint,
 		arg.EthAddress,
 		arg.CometAddress,
-		arg.TxHash,
+		arg.EthBlock,
+		arg.NodeType,
+		arg.SpID,
 	)
 	return err
 }
