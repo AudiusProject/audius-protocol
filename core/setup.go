@@ -1,21 +1,15 @@
 package main
 
 import (
-	"context"
-	"crypto/sha256"
-	"errors"
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/config/genesis"
-	"github.com/AudiusProject/audius-protocol/core/db"
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 /*
@@ -44,7 +38,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	chainID := genDoc.ChainID
 
 	// assemble comet paths
-	cometRootDir := fmt.Sprintf("%s-%s", envConfig.RootDir, chainID)
+	cometRootDir := fmt.Sprintf("%s/%s", envConfig.RootDir, chainID)
 	cometConfigDir := fmt.Sprintf("%s/config", cometRootDir)
 	cometDataDir := fmt.Sprintf("%s/data", cometRootDir)
 
@@ -160,27 +154,4 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	}
 
 	return envConfig, cometConfig, nil
-}
-
-func insertInitialAppState(initialState []byte, pool *pgxpool.Pool) error {
-	ctx := context.Background()
-	queries := db.New(pool)
-
-	_, err := queries.GetAppStateAtHeight(ctx, 1)
-	if err == nil {
-		return nil
-	}
-
-	// initial state not present, persist in db
-	if errors.Is(err, pgx.ErrNoRows) {
-		appHash := sha256.Sum256(initialState)
-		if err := queries.UpsertAppState(ctx, db.UpsertAppStateParams{
-			BlockHeight: 1,
-			AppHash:     appHash[:],
-		}); err != nil {
-			return fmt.Errorf("inserting initial state: %v", err)
-		}
-	}
-
-	return nil
 }

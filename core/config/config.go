@@ -106,7 +106,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
-		cfg.EthRegistryAddress = os.Getenv("audius_contracts_registry")
+		cfg.EthRegistryAddress = os.Getenv("audius_eth_contracts_registry")
 		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
 		cfg.NodeType = Content
