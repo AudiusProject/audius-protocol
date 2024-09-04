@@ -1,10 +1,4 @@
-import { useGetTrackById } from '@audius/common/api'
-import { useCurrentStems } from '@audius/common/hooks'
-import {
-  PurchaseAccess,
-  USDCContentPurchaseType,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex, IconInfo, Text } from '@audius/harmony'
 
@@ -18,6 +12,7 @@ const messages = {
   downloadable: (count: number) => `Downloadable Files (${count})`,
   total: 'Total',
   subtotal: 'Subtotal',
+  paidToArtist: 'Paid to Artist',
   networkFee: 'Network Fee',
   networkFeeRate: '(10%)',
   networkFeeHelp:
@@ -33,15 +28,6 @@ export const TransactionSummary = ({
 }) => {
   const amount = BigInt(transaction.amount)
   const extraAmount = BigInt(transaction.extraAmount)
-  const { contentId, contentType } = transaction
-  const isTrack = contentType === USDCContentPurchaseType.TRACK
-  const { data: track } = useGetTrackById({ id: contentId })
-  const { stemTracks } = useCurrentStems({
-    trackId: isTrack && track ? track.track_id : 0
-  })
-  const downloadableCount =
-    stemTracks.length + (track?.is_original_available ? 1 : 0)
-
   let creatorTotal = BigInt(0)
   let networkFee = BigInt(0)
   for (const split of transaction.splits) {
@@ -55,29 +41,13 @@ export const TransactionSummary = ({
   const total = isSale ? extraAmount + creatorTotal : extraAmount + amount
 
   const items: SummaryTableItem[] = []
-  if (transaction.access === PurchaseAccess.STREAM) {
-    items.push({
-      id: 'cost',
-      label: messages.subtotal,
-      value: USDC(subtotal).toLocaleString('en-US', {
-        roundingMode: isSale ? 'floor' : 'ceil'
-      })
+  items.push({
+    id: 'cost',
+    label: isSale ? messages.subtotal : messages.paidToArtist,
+    value: USDC(subtotal).toLocaleString('en-US', {
+      roundingMode: isSale ? 'floor' : 'ceil'
     })
-  } else if (transaction.access === PurchaseAccess.DOWNLOAD) {
-    items.push({
-      id: 'download',
-      label: messages.downloadable(downloadableCount),
-      value: USDC(subtotal).toLocaleString('en-US', { roundingMode: 'floor' })
-    })
-  }
-
-  if (extraAmount !== BigInt(0)) {
-    items.push({
-      id: 'payExtra',
-      label: messages.payExtra,
-      value: USDC(extraAmount).toLocaleString()
-    })
-  }
+  })
 
   if (networkFee > 0) {
     items.push({
@@ -110,15 +80,25 @@ export const TransactionSummary = ({
     })
   }
 
+  if (extraAmount !== BigInt(0)) {
+    items.push({
+      id: 'payExtra',
+      label: messages.payExtra,
+      value: USDC(extraAmount).toLocaleString()
+    })
+  }
+
   return (
     <SummaryTable
-      collapsible={true}
-      title={messages.total}
-      secondaryTitle={
-        <Text tag='span' color='accent'>
-          {USDC(total).toLocaleString()}
-        </Text>
-      }
+      summaryItem={{
+        id: 'total',
+        label: messages.total,
+        value: (
+          <Text tag='span' color='accent'>
+            {USDC(total).toLocaleString()}
+          </Text>
+        )
+      }}
       items={items}
     />
   )
