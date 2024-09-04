@@ -21,6 +21,10 @@ from src.utils.db_session import get_db_read_replica
 
 env = shared_config["discprov"]["env"]
 
+staking_bridge_usdc_payout_wallet = shared_config["solana"][
+    "staking_bridge_usdc_payout_wallet"
+]
+
 
 class DownloadPurchasesArgs(TypedDict):
     buyer_user_id: int
@@ -46,8 +50,10 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.created_at.label("created_at"),
                     USDCPurchase.amount.label("amount"),
                     USDCPurchase.extra_amount.label("extra_amount"),
+                    USDCPurchase.splits.label("splits"),
                     User.handle.label("seller_handle"),
                     User.name.label("seller_name"),
+                    USDCPurchase.seller_user_id,
                 )
                 .join(User, User.user_id == USDCPurchase.seller_user_id)
                 .filter(USDCPurchase.buyer_user_id == user_id)
@@ -61,6 +67,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.created_at.label("created_at"),
                     USDCPurchase.amount.label("amount"),
                     USDCPurchase.extra_amount.label("extra_amount"),
+                    USDCPurchase.splits.label("splits"),
                     USDCPurchase.country.label("country"),
                     User.name.label("buyer_name"),
                 )
@@ -141,8 +148,33 @@ def download_purchases(args: DownloadPurchasesArgs):
                 ),
                 "artist": result.seller_name,
                 "date": result.created_at,
-                "value": get_dollar_amount(result.amount),
+                "paid to artist": next(
+                    (
+                        get_dollar_amount(item["amount"])
+                        for item in result.splits
+                        if item["user_id"] == result.seller_user_id
+                    ),
+                    None,
+                ),
+                "network fee": next(
+                    (
+                        get_dollar_amount(item["amount"])
+                        for item in result.splits
+                        if item["payout_wallet"] == staking_bridge_usdc_payout_wallet
+                    ),
+                    None,
+                ),
                 "pay extra": get_dollar_amount(result.extra_amount),
+                "total": next(
+                    (
+                        get_dollar_amount(
+                            str(int(result.amount) + int(result.extra_amount))
+                        )
+                        for item in result.splits
+                        if item["user_id"] == result.seller_user_id
+                    ),
+                    None,
+                ),
             },
             results,
         )
@@ -178,8 +210,26 @@ def download_sales(args: DownloadSalesArgs):
                 "link": get_link(result.content_type, seller_handle, result.slug),
                 "purchased by": result.buyer_name,
                 "date": result.created_at,
-                "value": get_dollar_amount(result.amount),
+                "sale price": get_dollar_amount(result.amount),
+                "network fee": next(
+                    (
+                        0 - get_dollar_amount(item["amount"])
+                        for item in result.splits
+                        if item["payout_wallet"] == staking_bridge_usdc_payout_wallet
+                    ),
+                    None,
+                ),
                 "pay extra": get_dollar_amount(result.extra_amount),
+                "total": next(
+                    (
+                        get_dollar_amount(
+                            str(int(item["amount"]) + int(result.extra_amount))
+                        )
+                        for item in result.splits
+                        if item["user_id"] == seller_user_id
+                    ),
+                    None,
+                ),
                 "country": result.country,
             },
             results,

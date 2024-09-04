@@ -1,4 +1,5 @@
 export const commentsMessages = {
+  title: 'Comments',
   postComment: 'Post Comment',
   addComment: 'Add a comment',
   firstComment: 'Be the first to comment!',
@@ -8,5 +9,6 @@ export const commentsMessages = {
   showMoreReplies: 'Show More Replies',
   replies: 'Replies',
   showReplies: 'Show Replies',
-  hideReplies: 'Hide Replies'
+  hideReplies: 'Hide Replies',
+  commentsDisabled: 'Comments are disabled for this track'
 }

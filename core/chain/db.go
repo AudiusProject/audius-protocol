@@ -9,11 +9,11 @@ import (
 )
 
 // returns in current postgres tx for this block
-func (c *KVStoreApplication) getDb() *db.Queries {
+func (c *CoreApplication) getDb() *db.Queries {
 	return c.queries.WithTx(c.onGoingBlock)
 }
 
-func (c *KVStoreApplication) startInProgressTx(ctx context.Context) error {
+func (c *CoreApplication) startInProgressTx(ctx context.Context) error {
 	dbTx, err := c.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func (c *KVStoreApplication) startInProgressTx(ctx context.Context) error {
 }
 
 // commits the current tx that's finished indexing
-func (c *KVStoreApplication) commitInProgressTx(ctx context.Context) error {
+func (c *CoreApplication) commitInProgressTx(ctx context.Context) error {
 	if c.onGoingBlock != nil {
 		err := c.onGoingBlock.Commit(ctx)
 		if err != nil {

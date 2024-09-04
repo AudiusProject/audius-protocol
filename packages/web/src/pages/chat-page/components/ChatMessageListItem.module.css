@@ -29,11 +29,6 @@
   overflow: hidden;
 }
 
-.text a {
-  color: var(--harmony-neutral);
-  text-decoration: underline !important;
-}
-
 .bubble:not(.nonInteractive):hover {
   --bubble-color: var(--harmony-n-25);
   filter: var(--drop-shadow-far);
@@ -41,10 +36,6 @@
 
 .isAuthor .bubble {
   --bubble-color: var(--harmony-s-100);
-}
-
-.isAuthor .text a {
-  color: var(--harmony-static-white);
 }
 
 .isAuthor .bubble:hover {
@@ -67,8 +58,6 @@
   padding: var(--harmony-unit-4);
   white-space: pre-wrap;
   word-break: break-word;
-  text-align: left;
-  line-height: 150%;
   user-select: text;
   background-color: var(--bubble-color);
 }

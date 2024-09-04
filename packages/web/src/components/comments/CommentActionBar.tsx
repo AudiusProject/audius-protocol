@@ -151,6 +151,7 @@ export const CommentActionBar = ({
   return (
     <Flex gap='l' alignItems='center'>
       <Flex alignItems='center'>
+        {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
           color={reactionState ? 'active' : 'subdued'}

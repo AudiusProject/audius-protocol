@@ -20,7 +20,7 @@ export const ActionDrawerWithoutRedux = (
     children,
     ...other
   } = props
-  const { onClose } = props
+  const { onClose } = other
 
   return (
     <Drawer {...other}>

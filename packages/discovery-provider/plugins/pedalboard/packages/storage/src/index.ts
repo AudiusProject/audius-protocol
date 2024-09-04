@@ -715,6 +715,7 @@ export type Playlists = {
   copyright_line: unknown | null;
   producer_copyright_line: unknown | null;
   parental_warning_type: string | null;
+  comments_disabled: boolean;
 };
 
 export type Plays = {

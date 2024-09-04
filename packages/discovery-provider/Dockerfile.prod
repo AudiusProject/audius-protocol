@@ -39,6 +39,7 @@ RUN apk update && \
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup default 1.79.0
 
 RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
   mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \

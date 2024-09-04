@@ -44,7 +44,7 @@ SET
 FROM
     usdc_purchases AS up
     JOIN users ON users.user_id = up.seller_user_id
-    JOIN usdc_user_bank_accounts ON users.wallet = usdc_user_bank_accounts.ethereum_address
+    LEFT JOIN usdc_user_bank_accounts ON users.wallet = usdc_user_bank_accounts.ethereum_address
     LEFT JOIN relevant_timestamps ON relevant_timestamps.user_id = users.user_id
     AND relevant_timestamps.signature = up.signature
     LEFT JOIN user_payout_wallet_history ON user_payout_wallet_history.user_id = users.user_id

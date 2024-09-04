@@ -21,6 +21,7 @@ export type BaseTextProps<TextComponentType extends ElementType = 'p'> = {
   ellipses?: boolean
   maxLines?: number
   textTransform?: CSSProperties['textTransform']
+  lineHeight?: 'single' | 'multi'
 }
 
 export type TextProps<TextComponentType extends ElementType = 'p'> =

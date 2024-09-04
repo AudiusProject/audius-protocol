@@ -162,7 +162,7 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<{
         audience: ChatBlastAudience
-        audienceContentId?: string
+        audienceContentId?: number
         audienceContentType?: 'track' | 'album'
         skipNavigation?: boolean
         presetMessage?: string

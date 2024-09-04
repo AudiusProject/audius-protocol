@@ -87,7 +87,7 @@ export default function App() {
     if (trackId === playingTrackId) {
       setIsPlaying((prev) => !prev)
     } else {
-      setPlayingTrackSrc(await audiusSdk.tracks.getTrackStreamUrl({ trackId }))
+      setPlayingTrackSrc(await audiusSdk.tracks.streamTrack({ trackId }))
       setPlayingTrackId(trackId)
       setIsPlaying(true)
     }

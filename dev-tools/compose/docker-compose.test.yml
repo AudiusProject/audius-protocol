@@ -63,6 +63,7 @@ services:
     deploy:
       mode: global
     profiles:
+      - core-tests
       - tests
       - chain
       - eth
@@ -159,6 +160,8 @@ services:
         condition: service_started
       core-content-3:
         condition: service_started
+      eth-ganache:
+        condition: service_healthy
 
   # libs
 

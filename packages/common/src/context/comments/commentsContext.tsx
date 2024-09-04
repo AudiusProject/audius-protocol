@@ -26,11 +26,21 @@ export enum CommentSortMethod {
   timestamp = 'timestamp'
 }
 
+type CommentSectionProviderProps = {
+  entityId: ID
+  entityType?: EntityType.TRACK
+
+  // These are optional because they are only used on mobile
+  // and provided for the components in CommentDrawer
+  replyingToComment?: Comment
+  setReplyingToComment?: (comment: Comment) => void
+  editingComment?: Comment
+  setEditingComment?: (comment: Comment) => void
+}
+
 type CommentSectionContextType = {
   currentUserId: Nullable<ID>
   artistId: ID
-  entityId: ID
-  entityType?: EntityType.TRACK
   isEntityOwner: boolean
   playTrack: () => void
   commentSectionLoading: boolean
@@ -43,21 +53,24 @@ type CommentSectionContextType = {
   loadMorePages: () => void
   handleLoadMoreReplies: (commentId: string) => void
   handleMuteEntityNotifications: () => void
-}
+} & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
   CommentSectionContextType | undefined
 >(undefined)
 
-type CommentSectionProviderProps = {
-  entityId: ID
-  entityType?: EntityType.TRACK
-}
-
 export const CommentSectionProvider = (
   props: PropsWithChildren<CommentSectionProviderProps>
 ) => {
-  const { entityId, entityType = EntityType.TRACK, children } = props
+  const {
+    entityId,
+    entityType = EntityType.TRACK,
+    children,
+    replyingToComment,
+    setReplyingToComment,
+    editingComment,
+    setEditingComment
+  } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
     data: comments = [],
@@ -112,6 +125,10 @@ export const CommentSectionProvider = (
         reset,
         hasMorePages,
         currentSort,
+        replyingToComment,
+        setReplyingToComment,
+        editingComment,
+        setEditingComment,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,

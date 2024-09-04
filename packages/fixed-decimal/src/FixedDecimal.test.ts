@@ -130,6 +130,12 @@ describe('FixedDecimal', function () {
       expect(new FixedDecimal(4, 3).floor().toString()).toBe('4.000')
     })
 
+    it('floors no-op correctly', function () {
+      expect(new FixedDecimal(BigInt(-100000), 6).floor(2).toString()).toBe(
+        '-0.100000'
+      )
+    })
+
     it('floors large numbers correctly', function () {
       expect(
         new FixedDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
@@ -335,6 +341,60 @@ describe('FixedDecimal', function () {
     it('throws when decimal places are out of range', function () {
       expect(() => new FixedDecimal('1').round(20)).toThrow(
         'Digits must be non-negative'
+      )
+    })
+  })
+
+  describe('expand', function () {
+    it('expands positive decimals correctly', function () {
+      expect(new FixedDecimal(1.2345).expand().toString()).toBe('2.0000')
+    })
+
+    it('expands negative decimals correctly', function () {
+      expect(new FixedDecimal(-1.2345).expand().toString()).toBe('-2.0000')
+    })
+
+    it('expands 0 correctly', function () {
+      expect(new FixedDecimal(0, 3).expand().toString()).toBe('0.000')
+    })
+
+    it('expands whole numbers correctly', function () {
+      expect(new FixedDecimal(4, 3).expand().toString()).toBe('4.000')
+    })
+
+    it('expands large numbers correctly', function () {
+      expect(
+        new FixedDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .expand()
+          .toString()
+      ).toBe('12345678901234567891.00000000000000000000')
+    })
+
+    it('expands tiny numbers correctly', function () {
+      expect(new FixedDecimal(BigInt('1'), 20).expand().toString()).toBe(
+        '1.00000000000000000000'
+      )
+    })
+
+    it('expands to arbitrary decimal places correctly', function () {
+      expect(
+        new FixedDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .expand(2)
+          .toString()
+      ).toBe('12345678901234567891.00000000000000000000')
+    })
+
+    it('throws when decimal places are out of range', function () {
+      expect(() =>
+        new FixedDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .expand(50)
+          .toString()
+      ).toThrow('Digits must be non-negative')
+    })
+
+    it('expands to 1s place of represented place if decimal places is beyond number', function () {
+      expect(new FixedDecimal(BigInt('12345'), 3).expand(-10).toString()).toBe(
+        '10000000000.000'
       )
     })
   })
@@ -609,6 +669,10 @@ describe('FixedDecimal', function () {
           trailingZeroDisplay: 'stripIfInteger'
         })
       ).toBe('0')
+    })
+
+    it('handles fractional negatives correctly', function () {
+      expect(new FixedDecimal('-0.123').toLocaleString('en-US')).toBe('-0.123')
     })
   })
 })

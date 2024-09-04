@@ -915,7 +915,7 @@ export class ChatsApi
             message: {
               message_id: data.rpc.params.blast_id,
               message: data.rpc.params.message,
-              sender_user_id: userId,
+              sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
               is_plaintext: true
