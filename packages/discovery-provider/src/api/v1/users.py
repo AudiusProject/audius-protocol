@@ -78,6 +78,7 @@ from src.api.v1.models.users import (
     decoded_user_token,
     encoded_user_id,
     purchase,
+    sales_aggregate,
     user_model,
     user_model_full,
     user_subscribers,
@@ -122,6 +123,7 @@ from src.queries.get_purchasers import (
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_remixers import GetRemixersArgs, get_remixers, get_remixers_count
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
+from src.queries.get_sales_aggregate import GetSalesAggregateArgs, get_sales_aggregate
 from src.queries.get_saves import get_saves
 from src.queries.get_subscribers import (
     get_subscribers_for_user,
@@ -2341,6 +2343,38 @@ class FullSalesCount(Resource):
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)
+
+
+sales_aggregate_parser = pagination_with_current_user_parser.copy()
+
+sales_aggregate_response = make_response(
+    "sales_aggregate_response", ns, fields.List(fields.Nested(sales_aggregate))
+)
+
+
+@ns.route("/<string:id>/sales/aggregate")
+class SalesAggregate(Resource):
+    @ns.doc(
+        id="Get Sales Aggregate",
+        description="Gets the aggregated sales data for the user",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(sales_aggregate_parser)
+    @auth_middleware(sales_aggregate_parser, require_auth=True)
+    @ns.marshal_with(sales_aggregate_response)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        args = sales_aggregate_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = GetSalesAggregateArgs(
+            seller_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+        )
+        sales_aggregate = get_sales_aggregate(args)
+        return success_response(list(sales_aggregate))
 
 
 purchases_download_parser = current_user_parser.copy()

@@ -5,6 +5,7 @@ import { EntityType } from '@audius/sdk'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { CommentSectionDesktop } from './CommentSectionDesktop'
+import { CommentSectionMobile } from './CommentSectionMobile'
 
 type CommentSectionProps = {
   entityId: ID
@@ -17,7 +18,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 
   return (
     <CommentSectionProvider entityId={entityId} entityType={entityType}>
-      {isMobile ? null : <CommentSectionDesktop />}
+      {isMobile ? <CommentSectionMobile /> : <CommentSectionDesktop />}
     </CommentSectionProvider>
   )
 }

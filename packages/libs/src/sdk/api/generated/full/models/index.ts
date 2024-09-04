@@ -91,6 +91,7 @@ export * from './PlaylistUpdatesResponse';
 export * from './ProfilePicture';
 export * from './Purchase';
 export * from './PurchaseGate';
+export * from './PurchaseSplit';
 export * from './PurchasersCountResponse';
 export * from './PurchasesCountResponse';
 export * from './PurchasesResponse';

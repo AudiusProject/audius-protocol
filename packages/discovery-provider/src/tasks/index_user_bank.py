@@ -3,7 +3,7 @@ import re
 import time
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Tuple, TypedDict, Union, cast
+from typing import List, Optional, Tuple, TypedDict, cast
 
 import base58
 from redis import Redis
@@ -19,18 +19,10 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
-from src.models.playlists.album_price_history import AlbumPriceHistory
-from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
     TransactionMethod,
     TransactionType,
-)
-from src.models.users.usdc_purchase import (
-    PurchaseAccessType,
-    PurchaseType,
-    PurchaseVendor,
-    USDCPurchase,
 )
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
@@ -41,16 +33,10 @@ from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.queries.get_extended_purchase_gate import (
-    add_wallet_info_to_splits,
-    calculate_split_amounts,
-    to_wallet_amount_map,
-)
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
-    USDC_DECIMALS,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
@@ -286,280 +272,6 @@ def get_transfer_type_from_memo(memos: List[str]) -> USDCTransactionType:
     return USDCTransactionType.transfer
 
 
-class PurchaseMetadataDict(TypedDict):
-    price: int
-    splits: dict[str, int]
-    type: PurchaseType
-    id: int
-    purchaser_user_id: Optional[int]
-    access: PurchaseAccessType
-
-
-def get_purchase_metadata_from_memo(
-    session: Session, memos: List[str], timestamp: datetime
-) -> Union[PurchaseMetadataDict, None]:
-    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
-    for memo in memos:
-        try:
-            content_metadata = memo.split(":")
-            if len(content_metadata) == 3:
-                type_str, id_str, blocknumber_str = content_metadata
-                purchaser_user_id_str = None
-                access_str = "stream"  # default to stream access
-            elif len(content_metadata) == 4:
-                (
-                    type_str,
-                    id_str,
-                    blocknumber_str,
-                    purchaser_user_id_str,
-                ) = content_metadata
-                access_str = "stream"  # default to stream access
-            elif len(content_metadata) == 5:
-                (
-                    type_str,
-                    id_str,
-                    blocknumber_str,
-                    purchaser_user_id_str,
-                    access_str,
-                ) = content_metadata
-            else:
-                logger.debug(
-                    f"index_user_bank.py | Ignoring memo, no content metadata found: {memo}"
-                )
-                continue
-
-            type = PurchaseType[type_str.lower()]
-            id = int(id_str)
-            blocknumber = int(blocknumber_str)
-            purchaser_user_id = (
-                int(purchaser_user_id_str) if purchaser_user_id_str else None
-            )
-            access = PurchaseAccessType[access_str.lower()]
-
-            # TODO: Wait for blocknumber to be indexed by ACDC
-            logger.debug(
-                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}, access={access}"
-            )
-
-            price = None
-            splits = None
-            if type == PurchaseType.track:
-                env = shared_config["discprov"]["env"]
-                query = session.query(TrackPriceHistory)
-                if env != "dev":
-                    # In local stack, the blocktime of solana-test-validator is offset.
-                    # The start time of the validator is baked into the prebuilt container.
-                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                result = (
-                    query.filter(
-                        TrackPriceHistory.track_id == id,
-                        TrackPriceHistory.access == access,
-                    )
-                    .order_by(desc(TrackPriceHistory.block_timestamp))
-                    .first()
-                )
-                if result is not None:
-                    price = result.total_price_cents
-                    splits = result.splits
-            elif type == PurchaseType.album:
-                env = shared_config["discprov"]["env"]
-                query = session.query(AlbumPriceHistory)
-                if env != "dev":
-                    # See above comment
-                    query.filter(AlbumPriceHistory.block_timestamp < timestamp)
-                result = (
-                    query.filter(AlbumPriceHistory.playlist_id == id)
-                    .order_by(desc(AlbumPriceHistory.block_timestamp))
-                    .first()
-                )
-                if result is not None:
-                    price = result.total_price_cents
-                    splits = result.splits
-            else:
-                logger.error(f"index_user_bank.py | Unknown content type {type}")
-                continue
-
-            # Convert the new splits format to the old splits format for
-            # maximal backwards compatibility
-            if price is not None and splits is not None and isinstance(splits, list):
-                wallet_splits = add_wallet_info_to_splits(session, splits, timestamp)
-                amount_splits = calculate_split_amounts(price, wallet_splits)
-                splits = to_wallet_amount_map(amount_splits)
-            if price is not None and splits is not None and isinstance(splits, dict):
-                purchase_metadata: PurchaseMetadataDict = {
-                    "type": type,
-                    "id": id,
-                    "price": price * USDC_PER_USD_CENT,
-                    "splits": splits,
-                    "purchaser_user_id": purchaser_user_id,
-                    "access": access,
-                }
-                logger.debug(
-                    f"index_user_bank.py | Got purchase metadata {content_metadata}"
-                )
-                return purchase_metadata
-            else:
-                logger.error(
-                    f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
-                )
-                continue
-
-        except (ValueError, KeyError) as e:
-            logger.debug(
-                f"index_user_bank.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
-            )
-    logger.error("index_user_bank.py | Failed to find any content metadata")
-    return None
-
-
-def validate_purchase(
-    purchase_metadata: PurchaseMetadataDict, balance_changes: dict[str, BalanceChange]
-):
-    """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    # Check that the recipients all got the correct split
-    for account, split in purchase_metadata["splits"].items():
-        if account not in balance_changes:
-            logger.error(
-                f"index_payment_router.py | No split given to account={account}, expected={split}"
-            )
-            return False
-        if balance_changes[account]["change"] < split:
-            logger.error(
-                f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
-            )
-            return False
-    return True
-
-
-def index_purchase(
-    session: Session,
-    receiver_user_id: int,
-    receiver_account: str,
-    sender_user_id: int,
-    sender_account: str,
-    balance_changes: dict[str, BalanceChange],
-    purchase_metadata: PurchaseMetadataDict,
-    slot: int,
-    timestamp: datetime,
-    tx_sig: str,
-):
-    # Detect "pay extra" amount (difference between sender's balance change and price
-    # of the content)
-    extra_amount = max(
-        0, -(balance_changes[sender_account]["change"]) - purchase_metadata["price"]
-    )
-    usdc_purchase = USDCPurchase(
-        slot=slot,
-        signature=tx_sig,
-        seller_user_id=receiver_user_id,
-        buyer_user_id=sender_user_id,
-        amount=purchase_metadata["price"],
-        extra_amount=extra_amount,
-        content_type=purchase_metadata["type"],
-        content_id=purchase_metadata["id"],
-        access=purchase_metadata["access"],
-        vendor=PurchaseVendor.user_bank,
-    )
-    logger.debug(
-        f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"
-    )
-    session.add(usdc_purchase)
-
-    usdc_tx_sent = USDCTransactionsHistory(
-        user_bank=sender_account,
-        slot=slot,
-        signature=tx_sig,
-        transaction_type=USDCTransactionType.purchase_content,
-        method=USDCTransactionMethod.send,
-        transaction_created_at=timestamp,
-        change=Decimal(balance_changes[sender_account]["change"]),
-        balance=Decimal(balance_changes[sender_account]["post_balance"]),
-        tx_metadata=str(receiver_user_id),
-    )
-    logger.debug(
-        f"index_user_bank.py | Creating usdc_tx_history send tx for purchase {usdc_tx_sent}"
-    )
-    session.add(usdc_tx_sent)
-    usdc_tx_received = USDCTransactionsHistory(
-        user_bank=receiver_account,
-        slot=slot,
-        signature=tx_sig,
-        transaction_type=USDCTransactionType.purchase_content,
-        method=USDCTransactionMethod.receive,
-        transaction_created_at=timestamp,
-        change=Decimal(balance_changes[receiver_account]["change"]),
-        balance=Decimal(balance_changes[receiver_account]["post_balance"]),
-        tx_metadata=str(sender_user_id),
-    )
-    session.add(usdc_tx_received)
-    logger.debug(
-        f"index_user_bank.py | Creating usdc_tx_history received tx for purchase {usdc_tx_received}"
-    )
-
-
-def validate_and_index_purchase(
-    session: Session,
-    receiver_user_id: int,
-    receiver_account: str,
-    sender_user_id: int,
-    sender_account: str,
-    balance_changes: dict[str, BalanceChange],
-    purchase_metadata: Union[PurchaseMetadataDict, None],
-    slot: int,
-    timestamp: datetime,
-    tx_sig: str,
-):
-    """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
-    if purchase_metadata is not None and validate_purchase(
-        purchase_metadata=purchase_metadata, balance_changes=balance_changes
-    ):
-        index_purchase(
-            session=session,
-            receiver_user_id=receiver_user_id,
-            receiver_account=receiver_account,
-            sender_user_id=sender_user_id,
-            sender_account=sender_account,
-            balance_changes=balance_changes,
-            purchase_metadata=purchase_metadata,
-            slot=slot,
-            timestamp=timestamp,
-            tx_sig=tx_sig,
-        )
-    else:
-        # Both non-purchases and invalid purchases will be treated as transfers
-        usdc_tx_sent = USDCTransactionsHistory(
-            user_bank=sender_account,
-            slot=slot,
-            signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
-            method=USDCTransactionMethod.send,
-            transaction_created_at=timestamp,
-            change=Decimal(balance_changes[sender_account]["change"]),
-            balance=Decimal(balance_changes[sender_account]["post_balance"]),
-            tx_metadata=receiver_account,
-        )
-        logger.debug(f"index_user_bank.py | Creating transfer sent tx {usdc_tx_sent}")
-        session.add(usdc_tx_sent)
-        usdc_tx_received = USDCTransactionsHistory(
-            user_bank=receiver_account,
-            slot=slot,
-            signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
-            method=USDCTransactionMethod.receive,
-            transaction_created_at=timestamp,
-            change=Decimal(balance_changes[receiver_account]["change"]),
-            balance=Decimal(balance_changes[receiver_account]["post_balance"]),
-            tx_metadata=sender_account,
-        )
-        session.add(usdc_tx_received)
-        logger.debug(
-            f"index_user_bank.py | Creating transfer received tx {usdc_tx_received}"
-        )
-
-
 def index_user_tip(
     session: Session,
     receiver_user_id: int,
@@ -762,46 +474,35 @@ def process_transfer_instruction(
                 ChallengeEvent.send_tip, slot, timestamp, sender_user_id
             )
         elif is_usdc:
-            # Index as a purchase of some content
-            purchase_metadata = get_purchase_metadata_from_memo(
-                session=session, memos=memos, timestamp=timestamp
-            )
-            validate_and_index_purchase(
-                session=session,
-                receiver_user_id=receiver_user_id,
-                receiver_account=receiver_account,
-                sender_user_id=sender_user_id,
-                sender_account=sender_account,
-                balance_changes=balance_changes,
-                purchase_metadata=purchase_metadata,
+            usdc_tx_sent = USDCTransactionsHistory(
+                user_bank=sender_account,
                 slot=slot,
-                timestamp=timestamp,
-                tx_sig=tx_sig,
+                signature=tx_sig,
+                transaction_type=USDCTransactionType.transfer,
+                method=USDCTransactionMethod.send,
+                transaction_created_at=timestamp,
+                change=Decimal(balance_changes[sender_account]["change"]),
+                balance=Decimal(balance_changes[sender_account]["post_balance"]),
+                tx_metadata=receiver_account,
             )
-            if purchase_metadata is None:
-                logger.error(
-                    "index_user_bank.py | Found purchase event but purchase_metadata is None"
-                )
-                return
-
-            amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
-            challenge_event_bus.dispatch(
-                ChallengeEvent.audio_matching_buyer,
-                slot,
-                timestamp,
-                sender_user_id,
-                {"track_id": purchase_metadata["id"], "amount": amount},
+            logger.debug(
+                f"index_user_bank.py | Creating USDC transfer sent tx {usdc_tx_sent}"
             )
-            challenge_event_bus.dispatch(
-                ChallengeEvent.audio_matching_seller,
-                slot,
-                timestamp,
-                receiver_user_id,
-                {
-                    "track_id": purchase_metadata["id"],
-                    "sender_user_id": sender_user_id,
-                    "amount": amount,
-                },
+            session.add(usdc_tx_sent)
+            usdc_tx_received = USDCTransactionsHistory(
+                user_bank=receiver_account,
+                slot=slot,
+                signature=tx_sig,
+                transaction_type=USDCTransactionType.transfer,
+                method=USDCTransactionMethod.receive,
+                transaction_created_at=timestamp,
+                change=Decimal(balance_changes[receiver_account]["change"]),
+                balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+                tx_metadata=sender_account,
+            )
+            session.add(usdc_tx_received)
+            logger.debug(
+                f"index_user_bank.py | Creating USDC transfer received tx {usdc_tx_received}"
             )
 
 

@@ -695,6 +695,7 @@ export interface UsdcPurchaseRow {
   signature: string
   slot: number
   updated_at?: Date
+  splits: any
 }
 export interface UsdcTransactionsHistoryRow {
   balance: string

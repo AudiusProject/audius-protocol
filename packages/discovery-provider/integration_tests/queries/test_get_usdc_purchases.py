@@ -96,6 +96,7 @@ test_entities = {
             "content_type": PurchaseType.track,
             "content_id": 4,
             "created_at": datetime(2023, 8, 11),
+            "splits": [{"user_id": 10, "amount": 3500000, "percentage": 100}],
         },
         {
             "slot": 4,
@@ -106,6 +107,7 @@ test_entities = {
             "content_type": PurchaseType.track,
             "content_id": 3,
             "created_at": datetime(2023, 8, 10),
+            "splits": [{"user_id": 10, "amount": 1990000, "percentage": 100}],
         },
         {
             "slot": 8,
@@ -116,6 +118,7 @@ test_entities = {
             "content_type": PurchaseType.track,
             "content_id": 5,
             "created_at": datetime(2023, 8, 14),
+            "splits": [{"user_id": 20, "amount": 1000000, "percentage": 100}],
         },
         {
             "slot": 7,
@@ -125,7 +128,8 @@ test_entities = {
             "extra_amount": 0,
             "content_type": PurchaseType.track,
             "content_id": 3,
-            "created_at": datetime(2023, 8, 13),
+            "created_at": datetime(2023, 8, 13, 12),
+            "splits": [{"user_id": 10, "amount": 1990000, "percentage": 100}],
         },
         {
             "slot": 6,
@@ -136,6 +140,7 @@ test_entities = {
             "content_type": PurchaseType.track,
             "content_id": 2,
             "created_at": datetime(2023, 8, 12),
+            "splits": [{"user_id": 10, "amount": 2990000, "percentage": 100}],
         },
         {
             "slot": 9,
@@ -146,6 +151,7 @@ test_entities = {
             "content_type": PurchaseType.track,
             "content_id": 2,
             "created_at": datetime(2023, 8, 13),
+            "splits": [{"user_id": 10, "amount": 2990000, "percentage": 100}],
         },
     ],
 }

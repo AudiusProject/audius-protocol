@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  Status,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
+import { Status, isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { createRemixOfMetadata } from '@audius/common/schemas'
 import {
@@ -19,7 +15,7 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Hint, IconCaretLeft, IconRemix, Button } from '@audius/harmony-native'
+import { IconCaretLeft, IconRemix, Button } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
@@ -48,12 +44,7 @@ const messages = {
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
   remixAccessError: 'Must have access to the original track',
-  enterLink: 'Enter an Audius Link',
-  changeAvailbilityPrefix: 'Availablity is set to',
-  changeAvailbilitySuffix: 'To enable these options, make your track free.',
-  premium: 'Premium (Pay-To-Unlock). ',
-  collectibleGated: 'Collectible Gated. ',
-  specialAccess: 'Special Access. '
+  enterLink: 'Enter an Audius Link'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -104,7 +95,6 @@ export const RemixSettingsScreen = () => {
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
   const isUsdcGated = isContentUSDCPurchaseGated(streamConditions)
-  const isCollectibleGated = isContentCollectibleGated(streamConditions)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
@@ -231,22 +221,9 @@ export const RemixSettingsScreen = () => {
     >
       <View>
         <View style={styles.setting}>
-          {isStreamGated ? (
-            <Hint mb='xl'>{`${messages.changeAvailbilityPrefix} ${
-              isUsdcGated
-                ? messages.premium
-                : isCollectibleGated
-                ? messages.collectibleGated
-                : messages.specialAccess
-            } ${messages.changeAvailbilitySuffix}`}</Hint>
-          ) : null}
           <View style={styles.option}>
             <Text {...labelProps}>{messages.markRemix}</Text>
-            <Switch
-              value={isTrackRemix}
-              onValueChange={handleChangeIsRemix}
-              isDisabled={isStreamGated}
-            />
+            <Switch value={isTrackRemix} onValueChange={handleChangeIsRemix} />
           </View>
           {isTrackRemix ? (
             <View>
@@ -285,7 +262,6 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
-              isDisabled={isStreamGated && !isUsdcGated}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>

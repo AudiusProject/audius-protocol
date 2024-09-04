@@ -9,6 +9,7 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
+import { encodeHashId } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
@@ -193,13 +194,56 @@ const userApi = createApi({
     },
     getRemixersCount: {
       fetch: async (
-        { userId, trackId }: { userId: ID; trackId?: string },
+        { userId, trackId }: { userId: ID; trackId?: number },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getRemixersCount({
           id: Id.parse(userId),
-          trackId
+          userId: Id.parse(userId),
+          trackId: trackId ? encodeHashId(trackId) : undefined
+        })
+        return data
+      },
+      options: {}
+    },
+    getPurchasersCount: {
+      fetch: async (
+        {
+          userId,
+          contentId,
+          contentType
+        }: { userId: ID; contentId?: string; contentType: string },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data } = await sdk.full.users.getPurchasersCount({
+          id: encodeHashId(userId),
+          contentId: contentId ? Id.parse(contentId) : undefined,
+          contentType
+        })
+        return data ?? 0
+      },
+      options: {}
+    },
+    getRemixedTracks: {
+      fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getUserTracksRemixed({
+          id: Id.parse(userId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
+      },
+      options: {
+        kind: Kind.TRACKS,
+        schemaKey: 'tracks'
+      }
+    },
+    getSalesAggegrate: {
+      fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
+        const sdk = await audiusSdk()
+        const { data } = await sdk.users.getSalesAggregate({
+          id: Id.parse(userId)
         })
         return data
       },
@@ -216,7 +260,10 @@ export const {
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   useGetRemixers,
-  useGetRemixersCount
+  useGetRemixersCount,
+  useGetPurchasersCount,
+  useGetRemixedTracks,
+  useGetSalesAggegrate
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

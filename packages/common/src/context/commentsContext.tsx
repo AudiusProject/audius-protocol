@@ -10,9 +10,6 @@ import {
 import { EntityType, Comment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { usePaginatedQuery } from '..//audius-query'
-import { ID, Status } from '..//models'
-import { Nullable } from '..//utils'
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -23,8 +20,11 @@ import {
   useGetCurrentUserId,
   useGetTrackById
 } from '../api'
+import { usePaginatedQuery } from '../audius-query'
+import { ID, Status } from '../models'
 import { tracksActions } from '../store/pages/track/lineup/actions'
 import { playerSelectors } from '../store/player'
+import { Nullable } from '../utils'
 
 export enum CommentSortMethod {
   top = 'top',
@@ -32,11 +32,21 @@ export enum CommentSortMethod {
   timestamp = 'timestamp'
 }
 
+type CommentSectionProviderProps = {
+  entityId: ID
+  entityType?: EntityType.TRACK
+
+  // These are optional because they are only used on mobile
+  // and provided for the components in CommentDrawer
+  replyingToComment?: Comment
+  setReplyingToComment?: (comment: Comment) => void
+  editingComment?: Comment
+  setEditingComment?: (comment: Comment) => void
+}
+
 type CommentSectionContextType = {
   currentUserId: Nullable<ID>
   artistId: ID
-  entityId: ID
-  entityType?: EntityType.TRACK
   isEntityOwner: boolean
   playTrack: () => void
   commentSectionLoading: boolean
@@ -46,21 +56,24 @@ type CommentSectionContextType = {
   handleLoadMoreRootComments: () => void
   handleLoadMoreReplies: (commentId: string) => void
   handleMuteEntityNotifications: () => void
-}
+} & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
   CommentSectionContextType | undefined
 >(undefined)
 
-type CommentSectionProviderProps = {
-  entityId: ID
-  entityType?: EntityType.TRACK
-}
-
 export const CommentSectionProvider = (
   props: PropsWithChildren<CommentSectionProviderProps>
 ) => {
-  const { entityId, entityType = EntityType.TRACK, children } = props
+  const {
+    entityId,
+    entityType = EntityType.TRACK,
+    children,
+    replyingToComment,
+    setReplyingToComment,
+    editingComment,
+    setEditingComment
+  } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
     data: comments = [],
@@ -115,6 +128,10 @@ export const CommentSectionProvider = (
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         currentSort,
+        replyingToComment,
+        setReplyingToComment,
+        editingComment,
+        setEditingComment,
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,

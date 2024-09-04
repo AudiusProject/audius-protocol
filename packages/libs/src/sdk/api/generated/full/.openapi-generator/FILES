@@ -101,6 +101,7 @@ models/PlaylistUpdatesResponse.ts
 models/ProfilePicture.ts
 models/Purchase.ts
 models/PurchaseGate.ts
+models/PurchaseSplit.ts
 models/PurchasersCountResponse.ts
 models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts

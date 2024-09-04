@@ -26,7 +26,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
-import { SegmentedControl } from 'app/components/core'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -43,14 +42,11 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
-  choose: 'Choose File Quality',
-  mp3: 'MP3',
-  lossless: 'Lossless',
-  unlockAll: (price: string) => `Unlock All $${price}`,
+  unlockAll: (price: string) => `Unlock All ${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of $${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -59,7 +55,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
-  const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [isExpanded, setIsExpanded] = useState(false)
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
@@ -72,15 +67,10 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     shouldDisplayDownloadFollowGated,
     shouldDisplayOwnerPremiumDownloads
   } = useDownloadableContentAccess({ trackId })
-  const formattedPrice = price
-    ? USDC(price / 100).toLocaleString('en-us', {
-        roundingMode: 'floor',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-    : undefined
+  const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
+  const downloadQuality = DownloadQuality.ORIGINAL
 
   const onToggleExpand = useCallback(() => {
     LayoutAnimation.configureNext(
@@ -105,7 +95,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         openWaitForDownloadModal({
           parentTrackId,
           trackIds,
-          quality
+          quality: downloadQuality
         })
 
         // Track download attempt event
@@ -128,8 +118,8 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
       }
     },
     [
+      downloadQuality,
       openWaitForDownloadModal,
-      quality,
       shouldDisplayDownloadFollowGated,
       toast,
       track
@@ -203,17 +193,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     )
   }
 
-  const options = [
-    {
-      key: DownloadQuality.MP3,
-      text: messages.mp3
-    },
-    {
-      key: DownloadQuality.ORIGINAL,
-      text: messages.lossless
-    }
-  ]
-
   return (
     <Flex>
       <Expandable
@@ -221,24 +200,12 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         expanded={isExpanded}
         onToggleExpand={onToggleExpand}
       >
-        {track?.is_original_available ? (
-          <Flex p='l' borderTop='default' gap='l' alignItems='flex-start'>
-            <Text variant='title'>{messages.choose}</Text>
-            <SegmentedControl
-              options={options}
-              selected={quality}
-              onSelectOption={(quality) => setQuality(quality)}
-              equalWidth
-            />
-          </Flex>
-        ) : null}
         {track?.is_downloadable ? (
           <DownloadRow
             trackId={trackId}
             index={ORIGINAL_TRACK_INDEX}
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
-            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ) : null}
         {stemTracks?.map((s, i) => (
@@ -253,7 +220,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             }
             hideDownload={shouldHideDownload}
             onDownload={handleDownload}
-            isOriginal={quality === DownloadQuality.ORIGINAL}
           />
         ))}
       </Expandable>
