@@ -9,7 +9,6 @@ import styles from './styles.module.css'
 
 const messages = {
   payExtra: 'Pay Extra',
-  downloadable: (count: number) => `Downloadable Files (${count})`,
   total: 'Total',
   subtotal: 'Subtotal',
   paidToArtist: 'Paid to Artist',
