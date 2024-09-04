@@ -18,7 +18,7 @@ import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
 import { CommentActionBar } from './CommentActionBar'
-import { CommentBadges } from './CommentBadges'
+import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
@@ -26,10 +26,11 @@ const { getUser } = cacheUsersSelectors
 export type CommentBlockProps = {
   comment: Comment
   parentCommentId?: string
+  hideActions?: boolean
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { comment, parentCommentId } = props
+  const { comment, parentCommentId, hideActions } = props
   const {
     isPinned,
     message,
@@ -82,7 +83,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadges
+          <CommentBadge
             isArtist={isCommentByArtist}
             commentUserId={commentUserId}
           />
@@ -118,15 +119,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
             hideAvatar
           />
         ) : (
-          <Text color='default'>{message}</Text>
+          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
+            {message}
+          </Text>
         )}
-        <CommentActionBar
-          comment={comment}
-          onClickReply={() => setShowReplyInput((prev) => !prev)}
-          onClickEdit={() => setShowEditInput((prev) => !prev)}
-          onClickDelete={() => deleteComment(commentId)}
-          isDisabled={isDeleting}
-        />
+        {hideActions ? null : (
+          <CommentActionBar
+            comment={comment}
+            onClickReply={() => setShowReplyInput((prev) => !prev)}
+            onClickEdit={() => setShowEditInput((prev) => !prev)}
+            onClickDelete={() => deleteComment(commentId)}
+            isDisabled={isDeleting}
+          />
+        )}
 
         {showReplyInput ? (
           <CommentForm

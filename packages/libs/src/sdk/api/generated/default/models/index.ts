@@ -48,6 +48,8 @@ export * from './RemixParent';
 export * from './RemixersResponse';
 export * from './ReplyComment';
 export * from './Reposts';
+export * from './SalesAggregate';
+export * from './SalesAggregateResponse';
 export * from './Stem';
 export * from './StemsResponse';
 export * from './StreamUrlResponse';

@@ -19,7 +19,7 @@ const messages = {
 
 type ChatBlastFormValues = {
   target_audience: ChatBlastAudience
-  purchased_content_id?: string
+  purchased_content_id?: number
   remixed_track_id?: string
 }
 

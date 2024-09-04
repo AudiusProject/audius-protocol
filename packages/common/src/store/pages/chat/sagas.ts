@@ -470,9 +470,12 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
+    const encodedContentId = audienceContentId
+      ? encodeHashId(audienceContentId)
+      : undefined
     const chatId = makeBlastChatId({
       audience,
-      audienceContentId,
+      audienceContentId: encodedContentId,
       audienceContentType
     })
 
@@ -481,14 +484,12 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       yield* put(goToChat({ chatId, presetMessage, replaceNavigation }))
     }
 
-    // TODO: fetch chat history
-    // try {
-    //   yield* call(doFetchChatIfNecessary, { chatId })
-    // } catch {}
     const existingChat = yield* select((state) => getChat(state, chatId))
     if (!existingChat) {
       const newBlast: ChatBlast = {
         chat_id: chatId,
+        audience_content_id: encodedContentId,
+        audience_content_type: audienceContentType,
         is_blast: true,
         last_message_at: dayjs().toISOString(),
         audience

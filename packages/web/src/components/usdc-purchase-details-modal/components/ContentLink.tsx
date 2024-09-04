@@ -1,12 +1,13 @@
 import { Text } from '@audius/harmony'
 
-import { TextLink } from 'components/link'
+import { TextLink, type TextLinkProps } from 'components/link'
 
-export const ContentLink = (props: {
-  link: string
-  title: string
-  onClick: () => void
-}) => {
+export const ContentLink = (
+  props: {
+    link: string
+    title: string
+  } & Omit<TextLinkProps, 'to' | 'size'>
+) => {
   const { link, title, ...other } = props
   return (
     <TextLink to={link} size='l' {...other}>

@@ -9,10 +9,11 @@ import { Brand } from './utilityTypes'
  */
 const createTokenConstructor =
   <T extends bigint, K extends BN = BN>(
-    decimalPlaces: ConstructorParameters<typeof FixedDecimal<T, K>>[1]
+    decimalPlaces: ConstructorParameters<typeof FixedDecimal<T, K>>[1],
+    defaultFormatOptions?: ConstructorParameters<typeof FixedDecimal<T, K>>[2]
   ) =>
   (value: ConstructorParameters<typeof FixedDecimal<T, K>>[0]) =>
-    new FixedDecimal<T, K>(value, decimalPlaces)
+    new FixedDecimal<T, K>(value, decimalPlaces, defaultFormatOptions)
 
 /**
  * A `bigint` representing an amount of Ethereum ERC-20 AUDIO tokens, which have
@@ -83,4 +84,10 @@ export type BNUSDC = Brand<BN, 'BNUSDC'>
  * USDC is used for purchasing content in-app, and getting "USD" prices via
  * Jupiter for the wAUDIO token and SOL.
  */
-export const USDC = createTokenConstructor<UsdcWei, BNUSDC>(6)
+export const USDC = createTokenConstructor<UsdcWei, BNUSDC>(6, {
+  style: 'currency',
+  currency: 'USD',
+  currencyDisplay: 'narrowSymbol',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+})

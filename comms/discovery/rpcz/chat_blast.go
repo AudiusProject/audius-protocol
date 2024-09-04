@@ -21,7 +21,6 @@ type ChatBlastResult struct {
 }
 
 type OutgoingChatMessage struct {
-	ToUserId       int32                 `json:"to_user_id"`
 	ChatMessageRPC schema.ChatMessageRPC `json:"chat_message_rpc"`
 }
 
@@ -131,7 +130,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 		FROM targ
 		ON conflict do nothing
 	)
-	SELECT chat_id, to_user_id FROM targ;
+	SELECT chat_id FROM targ;
 	`
 
 	err = tx.Select(&results, fanOutSql, params.BlastID, ts)
@@ -142,10 +141,9 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	// Formulate chat rpc messages for recipients who have an existing chat with sender
 	var outgoingMessages []OutgoingChatMessage
 	for _, result := range results {
-		messageID := result.ChatID + params.BlastID
+		messageID := params.BlastID + result.ChatID
 
 		outgoingMessages = append(outgoingMessages, OutgoingChatMessage{
-			ToUserId: result.ToUserID,
 			ChatMessageRPC: schema.ChatMessageRPC{
 				Method: schema.MethodChatMessage,
 				Params: schema.ChatMessageRPCParams{

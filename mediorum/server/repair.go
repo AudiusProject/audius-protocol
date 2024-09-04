@@ -319,9 +319,20 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 	// check all healthy nodes ahead of me in the preferred order to ensure they have it.
 	// if R+1 healthy nodes in front of me have it, I can safely delete.
 	// don't delete if we replicated the blob within the past week
-	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
+	wasReplicatedThisWeek := attrs.ModTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor+2 && !wasReplicatedThisWeek {
+	// by default retain blob if our rank < ReplicationFactor+2
+	// but nodes with more free disk space will use a higher threshold
+	// to accomidate "spill over" from nodes that might be full or down.
+	rankThreshold := ss.Config.ReplicationFactor + 2
+	diskPercentFree := float64(ss.mediorumPathFree) / float64(ss.mediorumPathSize)
+	if diskPercentFree > 0.4 {
+		rankThreshold = ss.Config.ReplicationFactor * 3
+	} else if diskPercentFree > 0.2 {
+		rankThreshold = ss.Config.ReplicationFactor * 2
+	}
+
+	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > rankThreshold && !wasReplicatedThisWeek {
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		tracker.Counters["delete_over_replicated_needed"]++
 		err = ss.dropFromMyBucket(cid)

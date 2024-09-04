@@ -18,6 +18,12 @@ type BlockEvent struct {
 	Value        pgtype.Text
 }
 
+type CoreAppState struct {
+	BlockHeight int64
+	AppHash     []byte
+	CreatedAt   pgtype.Timestamp
+}
+
 type CoreAttribute struct {
 	EventID      int64
 	Key          string
@@ -55,6 +61,17 @@ type CoreTxResult struct {
 	CreatedAt pgtype.Timestamptz
 	TxHash    string
 	TxResult  []byte
+}
+
+type CoreValidator struct {
+	Rowid        int32
+	PubKey       string
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+	EthBlock     string
+	NodeType     string
+	SpID         string
 }
 
 type EventAttribute struct {

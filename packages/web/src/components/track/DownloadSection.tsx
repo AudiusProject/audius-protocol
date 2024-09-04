@@ -54,11 +54,11 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
-  unlockAll: (price: string) => `Unlock All $${price}`,
+  unlockAll: (price: string) => `Unlock All ${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
-    `Fans can unlock & download these files for a one time purchase of $${price}`
+    `Fans can unlock & download these files for a one time purchase of ${price}`
 }
 
 type DownloadSectionProps = {
@@ -86,13 +86,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
-  const formattedPrice = price
-    ? USDC(price / 100).toLocaleString('en-us', {
-        roundingMode: 'floor',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
-    : undefined
+  const formattedPrice = price ? USDC(price / 100).toLocaleString() : undefined
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
