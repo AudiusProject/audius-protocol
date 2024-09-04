@@ -23,7 +23,7 @@ import { ProfilePicture } from '../core/ProfilePicture'
 import { FavoriteButton } from '../favorite-button'
 import { UserLink } from '../user-link'
 
-import { CommentBadges } from './CommentBadges'
+import { CommentBadge } from './CommentBadge'
 import { CommentOverflowMenu } from './CommentOverflowMenu'
 
 const messages = {
@@ -73,7 +73,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
       />
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadges
+          <CommentBadge
             isArtist={isCommentByArtist}
             commentUserId={commentUserId}
           />

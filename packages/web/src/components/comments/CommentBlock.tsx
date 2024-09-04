@@ -18,7 +18,7 @@ import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
 import { CommentActionBar } from './CommentActionBar'
-import { CommentBadges } from './CommentBadges'
+import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
@@ -83,7 +83,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadges
+          <CommentBadge
             isArtist={isCommentByArtist}
             commentUserId={commentUserId}
           />

@@ -1,15 +1,16 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { ID } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { tippingSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
+
+import type { IconComponent } from '@audius/harmony-native'
 import {
   Flex,
-  IconComponent,
   IconStar,
   IconTipping,
   IconTrophy,
   Text
-} from '@audius/harmony'
-import { useSelector } from 'react-redux'
+} from '@audius/harmony-native'
 
 const { getSupporters } = tippingSelectors
 
@@ -26,12 +27,12 @@ const messages: Record<BadgeType, string> = {
   tipSupporter: 'Tip Supporter'
 }
 
-const CommentBadge = ({ type }: { type: BadgeType | null }) => {
+const Badge = ({ type }: { type: BadgeType | null }) => {
   if (type === null) return null
 
   const Icon = iconMap[type]
   return (
-    <Flex gap='xs'>
+    <Flex direction='row' gap='xs'>
       <Icon color='accent' size='xs' />
       <Text color='accent' variant='body' size='xs'>
         {messages[type]}
@@ -40,15 +41,15 @@ const CommentBadge = ({ type }: { type: BadgeType | null }) => {
   )
 }
 
-type CommentBadgesProps = {
+type CommentBadgeProps = {
   isArtist: boolean
   commentUserId: ID
 }
 
-export const CommentBadges = ({
+export const CommentBadge = ({
   commentUserId,
   isArtist
-}: CommentBadgesProps) => {
+}: CommentBadgeProps) => {
   const { artistId } = useCurrentCommentSection()
   const supporters = useSelector(getSupporters)
   const tipSupporterData = supporters?.[artistId]?.[commentUserId]
@@ -61,5 +62,5 @@ export const CommentBadges = ({
     : isTipSupporter
     ? 'tipSupporter'
     : null
-  return <CommentBadge type={badgeType} />
+  return <Badge type={badgeType} />
 }
