@@ -199,10 +199,11 @@ export const SalesTab = ({
           <IconMoneyBracket width={16} height={16} fill={color.neutral.n800} />
           <Text variant='body' size='s' textAlign='left'>
             {messages.networkSplitExplainer + ' '}
-            <ExternalTextLink to='' variant='visible'>
-              <Text variant='body' size='s' textAlign='left'>
-                {messages.learnMore}
-              </Text>
+            <ExternalTextLink
+              to='https://help.audius.co/help/network-fee'
+              variant='visible'
+            >
+              {messages.learnMore}
             </ExternalTextLink>
           </Text>
         </Flex>
