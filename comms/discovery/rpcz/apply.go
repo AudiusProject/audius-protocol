@@ -250,7 +250,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatReactMessage(tx, userId, params.MessageID, params.Reaction, messageTs)
+			err = chatReactMessage(tx, userId, params.ChatID, params.MessageID, params.Reaction, messageTs)
 			if err != nil {
 				return err
 			}
