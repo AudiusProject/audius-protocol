@@ -76,6 +76,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
     } = props
 
     const rootRef = useRef<HTMLDivElement>(null)
+    const textContainerRef = useRef<HTMLDivElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const characterCount = value ? `${value}`.length : 0
     const nearCharacterLimit =
@@ -131,11 +132,12 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
             className={styles.scrollArea}
             style={{ maxHeight }}
           >
-            <div className={styles.left}>
+            <div ref={textContainerRef} className={styles.left}>
               <textarea
                 className={
                   renderDisplayElement ? styles.transparentTextArea : undefined
                 }
+                spellCheck={!renderDisplayElement}
                 ref={mergeRefs([textareaRef, forwardedRef])}
                 maxLength={maxLength ?? undefined}
                 value={value}

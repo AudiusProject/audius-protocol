@@ -7,6 +7,13 @@ export type Origin = {
   horizontal: 'left' | 'center' | 'right'
 }
 
+enum Status {
+  IDLE = 'IDLE',
+  LOADING = 'LOADING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR'
+}
+
 export type PopupProps = {
   className?: string
   /**
@@ -86,6 +93,11 @@ export type PopupProps = {
    * are automatically considered inside
    */
   checkIfClickInside?: (target: EventTarget) => boolean
+
+  /**
+   * Status prop to trigger rerenders on status updates for loading and error states
+   */
+  status?: Status
 
   /**
    * Portal location
