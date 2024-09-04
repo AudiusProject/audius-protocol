@@ -44,9 +44,9 @@ func run(logger *common.Logger) error {
 	}
 	defer pool.Close()
 
-	if err := insertInitialAppState(config.GenesisFile.AppState, pool); err != nil {
-		return fmt.Errorf("couldn't set initial app state: %v", err)
-	}
+	// if err := insertInitialAppState(config.GenesisFile.AppState, pool); err != nil {
+	// 	return fmt.Errorf("couldn't set initial app state: %v", err)
+	// }
 
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {

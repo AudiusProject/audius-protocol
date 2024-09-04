@@ -11,6 +11,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -95,6 +96,7 @@ func (r *Registry) registerSelfOnComet() error {
 
 	event := &gen_proto.Event{
 		Signature: sig,
+		RequestId: uuid.NewString(),
 		Body: &gen_proto.Event_RegisterNode{
 			RegisterNode: registerEvent,
 		},

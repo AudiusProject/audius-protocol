@@ -16,6 +16,7 @@ service Protocol {
 
 message Event {
   string signature = 1;
+  string request_id = 2;
   oneof body {
     PlaysEvent plays = 1000;
     RegisterNodeEvent registerNode = 1001;

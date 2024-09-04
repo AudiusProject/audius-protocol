@@ -39,7 +39,7 @@ func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *co
 
 func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {
 	latest, err := app.queries.GetLatestAppState(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		// Log the error and return a default response
 		app.logger.Errorf("Error retrieving app state: %v", err)
 		return nil, err
@@ -49,6 +49,8 @@ func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoReques
 	if latest.BlockHeight < 2 {
 		return &abcitypes.InfoResponse{}, nil
 	}
+
+	app.logger.Infof("app starting at block %d with hash %s", latest.BlockHeight, hex.EncodeToString(latest.AppHash))
 
 	res := &abcitypes.InfoResponse{
 		LastBlockHeight:  latest.BlockHeight,
@@ -100,13 +102,6 @@ func (app *CoreApplication) ProcessProposal(_ context.Context, proposal *abcityp
 func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
-
-	// early out if empty block
-	if len(txs) == 0 {
-		return &abcitypes.FinalizeBlockResponse{
-			TxResults: txs,
-		}, nil
-	}
 
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
@@ -166,6 +161,14 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		return &abcitypes.FinalizeBlockResponse{}, nil
 	}
 
+	// use last app hash on empty blocks since state didn't change
+	if len(txs) == 0 {
+		return &abcitypes.FinalizeBlockResponse{
+			TxResults: txs,
+			AppHash:   prevAppState.AppHash,
+		}, nil
+	}
+
 	// persist latest app state when commited
 	nextAppHash := app.serializeAppState(prevAppState.AppHash, req.GetTxs())
 	app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
@@ -175,6 +178,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 
 	return &abcitypes.FinalizeBlockResponse{
 		TxResults: txs,
+		AppHash:   nextAppHash,
 	}, nil
 }
 
