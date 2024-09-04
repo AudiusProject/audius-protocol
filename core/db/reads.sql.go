@@ -9,6 +9,59 @@ import (
 	"context"
 )
 
+const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+from core_validators
+`
+
+func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]CoreValidator, error) {
+	rows, err := q.db.Query(ctx, getAllRegisteredNodes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreValidator
+	for rows.Next() {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAppStateAtHeight = `-- name: GetAppStateAtHeight :one
+select block_height, app_hash
+from core_app_state
+where block_height = $1
+limit 1
+`
+
+type GetAppStateAtHeightRow struct {
+	BlockHeight int64
+	AppHash     []byte
+}
+
+func (q *Queries) GetAppStateAtHeight(ctx context.Context, blockHeight int64) (GetAppStateAtHeightRow, error) {
+	row := q.db.QueryRow(ctx, getAppStateAtHeight, blockHeight)
+	var i GetAppStateAtHeightRow
+	err := row.Scan(&i.BlockHeight, &i.AppHash)
+	return i, err
+}
+
 const getKey = `-- name: GetKey :one
 select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
 `
@@ -25,6 +78,83 @@ func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getLatestAppState = `-- name: GetLatestAppState :one
+select block_height, app_hash
+from core_app_state
+order by block_height desc
+limit 1
+`
+
+type GetLatestAppStateRow struct {
+	BlockHeight int64
+	AppHash     []byte
+}
+
+func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, error) {
+	row := q.db.QueryRow(ctx, getLatestAppState)
+	var i GetLatestAppStateRow
+	err := row.Scan(&i.BlockHeight, &i.AppHash)
+	return i, err
+}
+
+const getNodeByEndpoint = `-- name: GetNodeByEndpoint :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+from core_validators
+where endpoint = $1
+limit 1
+`
+
+func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getNodeByEndpoint, endpoint)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
+}
+
+const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+from core_validators
+where node_type = $1
+`
+
+func (q *Queries) GetRegisteredNodesByType(ctx context.Context, nodeType string) ([]CoreValidator, error) {
+	rows, err := q.db.Query(ctx, getRegisteredNodesByType, nodeType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreValidator
+	for rows.Next() {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTx = `-- name: GetTx :one

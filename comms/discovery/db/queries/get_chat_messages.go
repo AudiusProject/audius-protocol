@@ -120,15 +120,7 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 		if len(parts) < 1 {
 			return nil, errors.New("bad request: invalid blast id")
 		}
-		var audience, audience_content_type, audience_content_id string
-
-		audience = parts[0]
-		if len(parts) > 1 {
-			audience_content_type = parts[1]
-		}
-		if len(parts) > 2 {
-			audience_content_id = parts[2]
-		}
+		audience := parts[0]
 
 		if schema.ChatBlastAudience(audience) == schema.FollowerAudience ||
 			schema.ChatBlastAudience(audience) == schema.TipperAudience ||
@@ -145,21 +137,20 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 				'[]'::json AS reactions
 			FROM chat_blast b
 			WHERE b.from_user_id = $1
-			  AND b.audience = $3
-				AND b.audience_content_type = $4
-				AND b.audience_content_id = $5
-			  AND b.created_at < $6
-			  AND b.created_at > $7
+				AND concat_ws(':', audience, audience_content_type, 
+					CASE 
+						WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
+						ELSE NULL 
+					END) = $2
+			  AND b.created_at < $3
+			  AND b.created_at > $4
 			ORDER BY b.created_at DESC
-			LIMIT $8
+			LIMIT $5
 			`
 
 			err := q.SelectContext(ctx, &rows, outgoingBlastMessages,
 				arg.UserID,
 				arg.ChatID,
-				audience,
-				audience_content_type,
-				audience_content_id,
 				arg.Before,
 				arg.After,
 				arg.Limit,
