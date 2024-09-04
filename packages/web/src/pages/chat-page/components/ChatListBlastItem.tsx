@@ -8,7 +8,6 @@ import {
   useGetRemixersCount,
   useGetTrackById
 } from '@audius/common/api'
-import { usersSocialActions } from '@audius/common/store'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
