@@ -287,7 +287,7 @@ export class FixedDecimal<
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const signOffset =
-      this.value < 0 && digitsToRemove > 0
+      this.value < 0 && this.value % divisor !== BigInt(0)
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
     return new FixedDecimal<BigIntBrand, BNBrand>({
