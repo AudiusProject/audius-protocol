@@ -130,6 +130,12 @@ describe('FixedDecimal', function () {
       expect(new FixedDecimal(4, 3).floor().toString()).toBe('4.000')
     })
 
+    it('floors no-op correctly', function () {
+      expect(new FixedDecimal(BigInt(-100000), 6).floor(2).toString()).toBe(
+        '-0.100000'
+      )
+    })
+
     it('floors large numbers correctly', function () {
       expect(
         new FixedDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
