@@ -1,10 +1,14 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   useGetCurrentUser,
+  useGetCurrentUserId,
   useGetPlaylistById,
+  useGetPurchasersCount,
+  useGetRemixersCount,
   useGetTrackById
 } from '@audius/common/api'
+import { usersSocialActions } from '@audius/common/store'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
@@ -45,9 +49,10 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
   } = chat
   const isCurrentChat = currentChatId && currentChatId === chatId
   const decodedContentId = audienceContentId
-    ? decodeHashId(audienceContentId)
+    ? decodeHashId(audienceContentId) ?? undefined
     : undefined
 
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: user } = useGetCurrentUser()
   const { data: track } = useGetTrackById(
     {
@@ -62,7 +67,46 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
     { disabled: !audienceContentId || audienceContentType !== 'album' }
   )
 
-  const audienceCount = user?.follower_count ?? 0
+  const { data: purchasersCount } = useGetPurchasersCount(
+    {
+      userId: currentUserId!,
+      contentId: decodedContentId,
+      contentType: audienceContentType
+    },
+    {
+      disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
+    }
+  )
+  const { data: remixersCount } = useGetRemixersCount(
+    {
+      userId: currentUserId!,
+      trackId: decodedContentId
+    },
+    {
+      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
+    }
+  )
+
+  const audienceCount = useMemo(() => {
+    switch (audience) {
+      case ChatBlastAudience.FOLLOWERS:
+        return user.follower_count
+      case ChatBlastAudience.TIPPERS:
+        return user.supporter_count
+      case ChatBlastAudience.CUSTOMERS:
+        return purchasersCount
+      case ChatBlastAudience.REMIXERS:
+        return remixersCount
+      default:
+        return 0
+    }
+  }, [
+    audience,
+    user.follower_count,
+    user.supporter_count,
+    purchasersCount,
+    remixersCount
+  ])
 
   const handleClick = useCallback(() => {
     onChatClicked(chatId)
