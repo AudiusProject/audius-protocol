@@ -63,7 +63,7 @@ union all (
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
     concat_ws(':', audience, audience_content_type, 
 			CASE 
-				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id, 'azowernasdfoia') 
+				WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
 				ELSE NULL 
 			END) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
@@ -82,7 +82,7 @@ union all (
   WHERE from_user_id = $1
     AND concat_ws(':', audience, audience_content_type, 
 			CASE 
-				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id, 'azowernasdfoia') 
+				WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
 				ELSE NULL 
 			END) = $2
   ORDER BY
@@ -132,7 +132,7 @@ union all (
   SELECT DISTINCT ON (audience, audience_content_type, audience_content_id)
     concat_ws(':', audience, audience_content_type, 
 			CASE 
-				WHEN audience_content_id IS NOT NULL THEN hashids.encode(audience_content_id, 'azowernasdfoia') 
+				WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
 				ELSE NULL 
 			END) as chat_id,
     min(created_at) over (partition by audience, audience_content_type, audience_content_id) as created_at,
