@@ -3,7 +3,7 @@ import type { ComponentType, ReactElement } from 'react'
 import type { Kind, ID, UID, Lineup as LineupData } from '@audius/common/models'
 import type { LineupBaseActions, CommonState } from '@audius/common/store'
 import type { Maybe } from '@audius/common/utils'
-import type { SectionListProps } from 'react-native'
+import type { SectionListProps, ViewStyle } from 'react-native'
 
 import type { PlaybackSource } from 'app/types/analytics'
 
@@ -168,6 +168,11 @@ export type LineupProps = {
   onPressItem?: (id: ID) => void
 
   EndOfLineupComponent?: ComponentType<any> | ReactElement
+
+  /**
+   * Styles to apply to the items, can be used to override the padding for example
+   */
+  itemStyles?: ViewStyle
 } & Pick<
   SectionListProps<unknown>,
   | 'showsVerticalScrollIndicator'
@@ -184,7 +189,10 @@ export type TogglePlayConfig = {
 
 export type LineupItemTileProps = Pick<
   LineupProps,
-  'isTrending' | 'showLeadingElementArtistPick' | 'leadingElementId'
+  | 'isTrending'
+  | 'showLeadingElementArtistPick'
+  | 'leadingElementId'
+  | 'itemStyles'
 > & {
   rankIconCount: number
   item: LineupItem | LoadingLineupItem

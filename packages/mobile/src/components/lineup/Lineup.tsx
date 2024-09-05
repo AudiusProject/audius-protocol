@@ -4,7 +4,7 @@ import type { PlaybackSource, ID, UID } from '@audius/common/models'
 import { Kind, Status } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
-import type { SectionList as RNSectionList } from 'react-native'
+import type { SectionList as RNSectionList, ViewStyle } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -124,9 +124,17 @@ const getLineupTileComponent = (item: LineupItem) => {
   return null
 }
 
-const SkeletonTrackTileView = memo(function SkeletonTrackTileView() {
+const SkeletonTrackTileView = memo(function SkeletonTrackTileView(props: {
+  itemStyles?: ViewStyle
+}) {
+  const { itemStyles } = props
   return (
-    <View style={styles.item}>
+    <View
+      style={{
+        ...styles.item,
+        ...itemStyles
+      }}
+    >
       <LineupTileSkeleton />
     </View>
   )
@@ -140,12 +148,18 @@ const LineupTileView = memo(function LineupTileView({
   leadingElementId,
   rankIconCount,
   togglePlay,
-  onPress
+  onPress,
+  itemStyles
 }: LineupTileViewProps) {
   const TrackOrCollectionTile = getLineupTileComponent(item)
   if (TrackOrCollectionTile) {
     return (
-      <View style={styles.item}>
+      <View
+        style={{
+          ...styles.item,
+          ...itemStyles
+        }}
+      >
         <TrackOrCollectionTile
           {...item}
           index={index}
@@ -173,12 +187,13 @@ const LineupItemTile = memo(function LineupItemTile({
   leadingElementId,
   rankIconCount,
   togglePlay,
-  onPress
+  onPress,
+  itemStyles
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
     if (item._loading) {
-      return <SkeletonTrackTileView />
+      return <SkeletonTrackTileView itemStyles={itemStyles} />
     }
   } else {
     return (
@@ -191,6 +206,7 @@ const LineupItemTile = memo(function LineupItemTile({
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
         onPress={onPress}
+        itemStyles={itemStyles}
       />
     )
   }
@@ -231,6 +247,7 @@ export const Lineup = ({
   ListFooterComponent,
   EndOfLineupComponent,
   onPressItem,
+  itemStyles,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -392,6 +409,7 @@ export const Lineup = ({
           showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
           onPress={onPressItem}
+          itemStyles={itemStyles}
         />
       )
     },
@@ -401,7 +419,8 @@ export const Lineup = ({
       rankIconCount,
       showLeadingElementArtistPick,
       togglePlay,
-      onPressItem
+      onPressItem,
+      itemStyles
     ]
   )
 

@@ -126,6 +126,7 @@ export const TrackScreen = () => {
   }
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
+
   const showMoreByArtistTitle =
     isReachable &&
     ((remixParentTrackId && lineup.entries.length > 2) ||
@@ -144,7 +145,7 @@ export const TrackScreen = () => {
   ) : null
 
   const originalTrackTitle = (
-    <Text variant='title' size='l'>
+    <Text variant='title' size='m'>
       {messages.originalTrack}
     </Text>
   )
@@ -172,67 +173,76 @@ export const TrackScreen = () => {
                 <CommentSection entityId={track_id} />
               </Flex>
             ) : null}
-          </Flex>
 
-          {/* Remixes */}
-          {field_visibility?.remixes &&
-            remixTrackIds &&
-            remixTrackIds.length > 0 && (
-              <>
-                <Flex ph='m'>
+            {/* Remixes */}
+            {field_visibility?.remixes &&
+              remixTrackIds &&
+              remixTrackIds.length > 0 && (
+                <Flex>
                   <Text variant='title'>{messages.remixes}</Text>
+                  <Lineup
+                    lineup={remixesLineup}
+                    actions={remixesPageLineupActions}
+                    count={
+                      isReachable
+                        ? Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)
+                        : 0
+                    }
+                    itemStyles={{
+                      padding: 0,
+                      paddingVertical: 12
+                    }}
+                  />
+                  {/* {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? ( */}
+                  <Flex pt='m'>
+                    <Button
+                      iconRight={IconArrowRight}
+                      variant='secondary'
+                      size='small'
+                      onPress={handlePressGoToAllRemixes}
+                    >
+                      {messages.viewAllRemixes}
+                    </Button>
+                  </Flex>
+                  {/* ) : null} */}
                 </Flex>
-                <Lineup
-                  lineup={remixesLineup}
-                  actions={remixesPageLineupActions}
-                  count={
-                    isReachable
-                      ? Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)
-                      : 0
-                  }
-                />
-                {/* {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? ( */}
-                <Flex ph='m'>
-                  <Button
-                    iconRight={IconArrowRight}
-                    size='small'
-                    onPress={handlePressGoToAllRemixes}
-                  >
-                    {messages.viewAllRemixes}
-                  </Button>
-                </Flex>
-                {/* ) : null} */}
-              </>
-            )}
+              )}
 
-          {/* More by Artist / Remix Parent */}
-          {hasValidRemixParent ? originalTrackTitle : moreByArtistTitle}
-          <Lineup
-            actions={tracksActions}
-            keyboardShouldPersistTaps='handled'
-            // When offline, we don't want to render any tiles here and the
-            // current solution is to hard-code a count to show skeletons
-            count={isReachable ? MAX_RELATED_TRACKS_TO_DISPLAY : 0}
-            lineup={lineup}
-            start={1}
-            includeLineupStatus
-          />
+            {/* More by Artist / Remix Parent */}
+            <Flex>
+              {hasValidRemixParent ? originalTrackTitle : moreByArtistTitle}
+              <Lineup
+                actions={tracksActions}
+                keyboardShouldPersistTaps='handled'
+                // When offline, we don't want to render any tiles here and the
+                // current solution is to hard-code a count to show skeletons
+                count={isReachable ? MAX_RELATED_TRACKS_TO_DISPLAY : 0}
+                lineup={lineup}
+                start={1}
+                includeLineupStatus
+                itemStyles={{
+                  padding: 0,
+                  paddingVertical: 12
+                }}
+              />
 
-          {hasValidRemixParent ? (
-            <>
-              <View style={styles.buttonContainer}>
-                <Button
-                  iconRight={IconArrowRight}
-                  variant='primary'
-                  size='small'
-                  onPress={handlePressGoToOtherRemixes}
-                  fullWidth
-                >
-                  {messages.viewOtherRemixes}
-                </Button>
-              </View>
-            </>
-          ) : null}
+              {hasValidRemixParent ? (
+                <>
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      iconRight={IconArrowRight}
+                      variant='primary'
+                      size='small'
+                      onPress={handlePressGoToOtherRemixes}
+                      fullWidth
+                    >
+                      {messages.viewOtherRemixes}
+                    </Button>
+                  </View>
+                </>
+              ) : null}
+            </Flex>
+          </Flex>
         </ScrollView>
       </ScreenContent>
     </Screen>
