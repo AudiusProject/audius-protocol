@@ -19,7 +19,6 @@ type Registry struct {
 	rpc       *local.Local
 	contracts *contracts.AudiusContracts
 	queries   *db.Queries
-	stopChan  chan struct{}
 }
 
 func NewRegistryBridge(logger *common.Logger, cfg *config.Config, rpc *local.Local, contracts *contracts.AudiusContracts, pool *pgxpool.Pool) (*Registry, error) {

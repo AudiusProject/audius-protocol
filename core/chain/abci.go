@@ -161,16 +161,14 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		return &abcitypes.FinalizeBlockResponse{}, nil
 	}
 
+	var nextAppHash []byte
 	// use last app hash on empty blocks since state didn't change
 	if len(txs) == 0 {
-		return &abcitypes.FinalizeBlockResponse{
-			TxResults: txs,
-			AppHash:   prevAppState.AppHash,
-		}, nil
+		nextAppHash = prevAppState.AppHash
+	} else {
+		nextAppHash = app.serializeAppState(prevAppState.AppHash, req.GetTxs())
 	}
 
-	// persist latest app state when commited
-	nextAppHash := app.serializeAppState(prevAppState.AppHash, req.GetTxs())
 	app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
 		BlockHeight: req.Height,
 		AppHash:     nextAppHash,
