@@ -1682,6 +1682,18 @@ USER_ACCOUNT_ROUTE = "/account/<string:wallet>"
 @full_ns.route(USER_ACCOUNT_ROUTE)
 class FullUserAccount(Resource):
     @record_metrics
+    @log_duration(logger)
+    def _get(self, wallet, authed_user_id):
+        try:
+            result = get_account(
+                GetAccountArgs(wallet=wallet, authed_user_id=authed_user_id)
+            )
+            if result is None:
+                abort_not_found(wallet, full_ns)
+            return success_response(extend_account(result))
+        except PermissionError:
+            abort_forbidden(full_ns)
+
     @full_ns.doc(
         id="""Get User Account""",
         description="Gets the account for a given user",
@@ -1693,20 +1705,11 @@ class FullUserAccount(Resource):
             500: "Server error",
         },
     )
-    @log_duration(logger)
     @full_ns.expect(user_account_parser)
     @full_ns.marshal_with(user_account_response_full)
     @auth_middleware(user_account_parser, require_auth=True)
     def get(self, wallet, authed_user_id):
-        try:
-            result = get_account(
-                GetAccountArgs(wallet=wallet, authed_user_id=authed_user_id)
-            )
-            if result is None:
-                abort_not_found(wallet, full_ns)
-            return success_response(extend_account(result))
-        except PermissionError:
-            abort_forbidden(full_ns)
+        return self._get(wallet, authed_user_id)
 
 
 connected_wallets_response = make_response(

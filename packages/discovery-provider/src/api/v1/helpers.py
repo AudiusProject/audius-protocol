@@ -306,14 +306,14 @@ def extend_user(user, current_user_id=None):
 
 
 def extend_account(account):
+    user = account["user"]
     # Extract before extend_user as it will delete this
-    playlist_library = account["user"].get("playlist_library", {})
+    playlist_library = user.get("playlist_library", {})
     return {
-        "user": extend_user(account["user"]),
+        "user": extend_user(user),
         "playlist_library": playlist_library,
         "playlists": account.get("playlists", []),
-        "track_save_count": account.get("track_save_count", 0),
-        "spl_usdc_payout_wallet": account.get("spl_usdc_payout_wallet"),
+        "track_save_count": user.get("track_save_count", 0),
     }
 
 

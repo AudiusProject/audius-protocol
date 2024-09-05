@@ -43,6 +43,7 @@ import type {
   TrackLibraryResponseFull,
   TransactionHistoryCountResponse,
   TransactionHistoryResponse,
+  UserAccountResponseFull,
   UserFeedResponse,
 } from '../models';
 import {
@@ -100,6 +101,8 @@ import {
     TransactionHistoryCountResponseToJSON,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
+    UserAccountResponseFullFromJSON,
+    UserAccountResponseFullToJSON,
     UserFeedResponseFromJSON,
     UserFeedResponseToJSON,
 } from '../models';
@@ -378,6 +381,12 @@ export interface GetUSDCTransactionsRequest {
 export interface GetUserRequest {
     id: string;
     userId?: string;
+}
+
+export interface GetUserAccountRequest {
+    wallet: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserByHandleRequest {
@@ -2079,6 +2088,45 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUser(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getUserRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the account for a given user
+     */
+    async getUserAccountRaw(params: GetUserAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserAccountResponseFull>> {
+        if (params.wallet === null || params.wallet === undefined) {
+            throw new runtime.RequiredError('wallet','Required parameter params.wallet was null or undefined when calling getUserAccount.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/account/{wallet}`.replace(`{${"wallet"}}`, encodeURIComponent(String(params.wallet))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserAccountResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the account for a given user
+     */
+    async getUserAccount(params: GetUserAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAccountResponseFull> {
+        const response = await this.getUserAccountRaw(params, initOverrides);
         return await response.value();
     }
 
