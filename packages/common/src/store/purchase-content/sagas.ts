@@ -1,11 +1,7 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient } from '@jup-ag/api'
-import {
-  createTransferInstruction,
-  getAccount,
-  getAssociatedTokenAddressSync
-} from '@solana/spl-token'
+import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
   PublicKey,
   VersionedTransaction,
@@ -921,37 +917,42 @@ function* purchaseWithAnything({
       throw new Error('No solana provider / wallet found')
     }
     const sourceWallet = yield* call(provider.connect)
-    const paymentRouterTokenAccount = yield* call(
-      [
-        sdk.services.paymentRouterClient,
-        sdk.services.paymentRouterClient.getOrCreateProgramTokenAccount
-      ],
-      {
-        mint: 'USDC'
-      }
-    )
-    const externalTokenAccountPublicKey = getAssociatedTokenAddressSync(
-      new PublicKey(inputMint),
-      sourceWallet.publicKey
-    )
 
     let transaction: VersionedTransaction
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
+      const instruction = yield* call(
+        [
+          sdk.services.paymentRouterClient,
+          sdk.services.paymentRouterClient.createTransferInstruction
+        ],
+        {
+          sourceWallet: sourceWallet.publicKey,
+          total: totalAmountWithDecimals,
+          mint: 'USDC'
+        }
+      )
       transaction = yield* call(
         [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
         {
           feePayer: sourceWallet.publicKey,
-          instructions: [
-            createTransferInstruction(
-              externalTokenAccountPublicKey,
-              paymentRouterTokenAccount.address,
-              sourceWallet.publicKey,
-              totalAmountWithDecimals
-            )
-          ]
+          instructions: [instruction]
         }
       )
     } else {
+      const paymentRouterTokenAccount = yield* call(
+        [
+          sdk.services.paymentRouterClient,
+          sdk.services.paymentRouterClient.getOrCreateProgramTokenAccount
+        ],
+        {
+          mint: 'USDC'
+        }
+      )
+      const externalTokenAccountPublicKey = getAssociatedTokenAddressSync(
+        new PublicKey(inputMint),
+        sourceWallet.publicKey
+      )
+
       console.info('Calling jupiter API to get a quote')
       const jup = yield* call(getJupiterInstance)
       const quote = yield* call([jup, jup.quoteGet], {
