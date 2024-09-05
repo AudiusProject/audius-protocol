@@ -1,6 +1,6 @@
 create or replace function handle_comment() returns trigger as $$
 begin
-  if new.repost_type = 'track' then
+  if new.entity_type = 'Track' then
     insert into aggregate_track (track_id) values (new.entity_id) on conflict do nothing;
   end if;
 
