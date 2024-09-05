@@ -108,7 +108,6 @@ func run(logger *common.Logger) error {
 	defer e.Shutdown(ctx)
 	defer node.Stop()
 	defer grpcLis.Close()
-	defer registryBridge.Stop()
 	defer ethrpc.Close()
 
 	// console
