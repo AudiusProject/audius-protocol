@@ -5,7 +5,13 @@ import { removeNullable } from '@audius/common/utils'
 import { LayoutAnimation } from 'react-native'
 
 import type { TextColors } from '@audius/harmony-native'
-import { Flex, Text, TextLink } from '@audius/harmony-native'
+import {
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  PlainButton,
+  Text
+} from '@audius/harmony-native'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { makeStyles } from 'app/styles'
 
@@ -44,6 +50,9 @@ export type SummaryTableProps = {
   /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
   onHideExtraItems?: () => void
+  showExtraItemsCopy?: string
+  hideExtraItemsCopy?: string
+  disableExtraItemsToggle?: boolean
 }
 
 export const SummaryTable = ({
@@ -56,7 +65,10 @@ export const SummaryTable = ({
   summaryValueColor = 'accent',
   renderBody: renderBodyProp,
   collapsible = false,
-  onHideExtraItems
+  onHideExtraItems,
+  showExtraItemsCopy,
+  hideExtraItemsCopy,
+  disableExtraItemsToggle
 }: SummaryTableProps) => {
   const styles = useStyles()
   const nonNullItems = items.filter(removeNullable)
@@ -153,16 +165,16 @@ export const SummaryTable = ({
 
   const renderMoreOptionsToggle = () => {
     return (
-      <Flex p='xs'>
-        <TextLink
+      <Flex p='xs' alignSelf='flex-start'>
+        <PlainButton
           onPress={onToggleExtraItems}
-          variant='visible'
-          textVariant='body'
-          size='s'
-          strength='strong'
+          iconRight={showExtraItems ? IconCaretUp : IconCaretDown}
+          disabled={disableExtraItemsToggle}
         >
-          {showExtraItems ? messages.hideAdvanced : messages.showAdvanced}
-        </TextLink>
+          {showExtraItems
+            ? hideExtraItemsCopy || messages.hideAdvanced
+            : showExtraItemsCopy || messages.showAdvanced}
+        </PlainButton>
       </Flex>
     )
   }
@@ -198,7 +210,7 @@ export const SummaryTable = ({
   }
 
   return (
-    <Flex direction='column'>
+    <Flex direction='column' gap='l'>
       {collapsible ? (
         <Expandable
           style={styles.container}
