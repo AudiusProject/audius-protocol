@@ -104,14 +104,10 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
 	// open in progres pg transaction
-	err := app.startInProgressTx(ctx)
-	if err != nil {
-		app.logger.Errorf("start in progress tx fail: %v", err)
-	}
+	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err == nil {
-			app.logger.Info("found proto event")
 			if err := app.finalizeEvent(ctx, protoEvent); err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
@@ -164,8 +160,6 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		app.logger.Errorf("prev app state not found: %v", err)
 		return &abcitypes.FinalizeBlockResponse{}, nil
 	}
-
-	app.logger.Infof("prev app state %v", prevAppState)
 
 	nextAppHash := app.serializeAppState(prevAppState.AppHash, req.GetTxs())
 	// if empty block and previous was not genesis, use prior state
