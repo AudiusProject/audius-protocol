@@ -39,7 +39,7 @@ func main() {
 	checkErr(err)
 
 	for {
-		time.sleep(1 * time.Seconds)
+		time.Sleep(1 * time.Second)
 		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
 			Key:   "randomString",
 			Value: randomString,

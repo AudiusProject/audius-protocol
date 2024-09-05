@@ -55,7 +55,7 @@ $(GEN_ARTIFACTS): $(GEN_SRCS)
 .PHONY: dev
 dev: gen
 	audius-compose down
-	audius-compose up db core core-content-1 core-content-2 core-content-3
+	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache
 
 .PHONY: sandbox-node
 sandbox-node:
