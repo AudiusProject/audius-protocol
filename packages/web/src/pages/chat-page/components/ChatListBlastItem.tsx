@@ -1,111 +1,28 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
-import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetPurchasersCount,
-  useGetRemixersCount,
-  useGetTrackById
-} from '@audius/common/api'
+import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 import cn from 'classnames'
-
-import { decodeHashId } from 'utils/hashIds'
 
 import styles from './ChatListItem.module.css'
 
 const messages = {
-  audience: 'AUDIENCE',
-  [ChatBlastAudience.FOLLOWERS]: {
-    title: 'All Followers'
-  },
-  [ChatBlastAudience.TIPPERS]: {
-    title: 'Tip Supporters'
-  },
-  [ChatBlastAudience.CUSTOMERS]: {
-    title: 'Purchasers'
-  },
-  [ChatBlastAudience.REMIXERS]: {
-    title: 'Remix Creators'
-  }
+  audience: 'AUDIENCE'
 }
 
 type ChatListBlastItemProps = {
-  chat: ChatBlast
+  chatId: string
   currentChatId?: string
   onChatClicked: (chatId: string) => void
 }
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
-  const { chat, onChatClicked, currentChatId } = props
-  const {
-    chat_id: chatId,
-    audience,
-    audience_content_id: audienceContentId,
-    audience_content_type: audienceContentType
-  } = chat
+  const { chatId, onChatClicked, currentChatId } = props
   const isCurrentChat = currentChatId && currentChatId === chatId
-  const decodedContentId = audienceContentId
-    ? decodeHashId(audienceContentId) ?? undefined
-    : undefined
-
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: user } = useGetCurrentUser()
-  const { data: track } = useGetTrackById(
-    {
-      id: decodedContentId!
-    },
-    { disabled: !audienceContentId || audienceContentType !== 'track' }
-  )
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: decodedContentId!
-    },
-    { disabled: !audienceContentId || audienceContentType !== 'album' }
-  )
-
-  const { data: purchasersCount } = useGetPurchasersCount(
-    {
-      userId: currentUserId!,
-      contentId: decodedContentId,
-      contentType: audienceContentType
-    },
-    {
-      disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
-    }
-  )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
-    }
-  )
-
-  const audienceCount = useMemo(() => {
-    switch (audience) {
-      case ChatBlastAudience.FOLLOWERS:
-        return user.follower_count
-      case ChatBlastAudience.TIPPERS:
-        return user.supporter_count
-      case ChatBlastAudience.CUSTOMERS:
-        return purchasersCount
-      case ChatBlastAudience.REMIXERS:
-        return remixersCount
-      default:
-        return 0
-    }
-  }, [
-    audience,
-    user.follower_count,
-    user.supporter_count,
-    purchasersCount,
-    remixersCount
-  ])
+  const { chatBlastTitle, contentTitle, audienceCount } =
+    useChatBlastAudienceContent({
+      chatId
+    })
 
   const handleClick = useCallback(() => {
     onChatClicked(chatId)
@@ -121,16 +38,22 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       onClick={handleClick}
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
-      <Flex gap='s'>
+      <Flex gap='s' css={{ overflow: 'hidden' }}>
         <IconTowerBroadcast size='l' color='default' />
-        <Text size='l' strength='strong'>
-          {messages[audience].title}
+        <Text size='l' strength='strong' css={{ whiteSpace: 'nowrap' }}>
+          {chatBlastTitle}
         </Text>
-        {audienceContentId ? (
-          <Text size='l' color='subdued'>
-            {audienceContentType === 'track'
-              ? track?.title
-              : album?.playlist_name}
+        {contentTitle ? (
+          <Text
+            size='l'
+            color='subdued'
+            css={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
+            {contentTitle}
           </Text>
         ) : null}
       </Flex>

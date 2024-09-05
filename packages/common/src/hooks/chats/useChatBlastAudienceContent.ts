@@ -1,0 +1,99 @@
+import { useMemo } from 'react'
+
+import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+
+import {
+  useGetCurrentUser,
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetPurchasersCount,
+  useGetRemixersCount,
+  useGetTrackById
+} from '~/api'
+import { getChat } from '~/store/pages/chat/selectors'
+import { decodeHashId, getChatBlastTitle } from '~/utils'
+
+import { useProxySelector } from '../useProxySelector'
+
+export const useChatBlastAudienceContent = ({ chatId }: { chatId: string }) => {
+  const chat = useProxySelector((state) => getChat(state, chatId), [chatId])
+  const {
+    audience,
+    audience_content_id: audienceContentId,
+    audience_content_type: audienceContentType
+  } = chat as ChatBlast
+
+  const decodedContentId = audienceContentId
+    ? decodeHashId(audienceContentId) ?? undefined
+    : undefined
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: user } = useGetCurrentUser()
+  const { data: track } = useGetTrackById(
+    {
+      id: decodedContentId!
+    },
+    { disabled: !audienceContentId || audienceContentType !== 'track' }
+  )
+  const { data: album } = useGetPlaylistById(
+    {
+      playlistId: decodedContentId!
+    },
+    { disabled: !audienceContentId || audienceContentType !== 'album' }
+  )
+
+  const { data: purchasersCount } = useGetPurchasersCount(
+    {
+      userId: currentUserId!,
+      contentId: decodedContentId,
+      contentType: audienceContentType
+    },
+    {
+      disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
+    }
+  )
+  const { data: remixersCount } = useGetRemixersCount(
+    {
+      userId: currentUserId!,
+      trackId: decodedContentId
+    },
+    {
+      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
+    }
+  )
+
+  const audienceCount = useMemo(() => {
+    switch (audience) {
+      case ChatBlastAudience.FOLLOWERS:
+        return user.follower_count
+      case ChatBlastAudience.TIPPERS:
+        return user.supporter_count
+      case ChatBlastAudience.CUSTOMERS:
+        return purchasersCount
+      case ChatBlastAudience.REMIXERS:
+        return remixersCount
+      default:
+        return 0
+    }
+  }, [
+    audience,
+    user.follower_count,
+    user.supporter_count,
+    purchasersCount,
+    remixersCount
+  ])
+
+  const contentTitle = audienceContentId
+    ? audienceContentType === 'track'
+      ? track?.title
+      : album?.playlist_name
+    : undefined
+
+  const chatBlastTitle = getChatBlastTitle(audience)
+
+  return {
+    chatBlastTitle,
+    contentTitle,
+    audienceCount
+  }
+}

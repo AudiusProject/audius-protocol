@@ -19,6 +19,7 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
 
+import { ChatListBlastItem } from './ChatListBlastItem'
 import { ChatListItem } from './ChatListItem'
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
 
@@ -147,6 +148,13 @@ export const ChatListScreen = () => {
     refresh()
   }, [refresh])
 
+  const renderItem = useCallback(({ item }) => {
+    if (item.is_blast) {
+      return <ChatListBlastItem chatId={item.chat_id} />
+    }
+    return <ChatListItem chatId={item.chat_id} />
+  }, [])
+
   return (
     <Screen
       url='/chat'
@@ -174,7 +182,7 @@ export const ChatListScreen = () => {
               onRefresh={refresh}
               data={nonEmptyChats}
               contentContainerStyle={styles.listContainer}
-              renderItem={({ item }) => <ChatListItem chatId={item.chat_id} />}
+              renderItem={renderItem}
               keyExtractor={(chat) => chat.chat_id}
               ListEmptyComponent={() => (
                 <ChatsEmpty onPress={navigateToChatUserList} />
