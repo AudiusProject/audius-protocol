@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { Button, Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
@@ -33,15 +33,6 @@ export const CommentSectionDesktop = () => {
   const mainContentRef = useMainContentRef()
   const commentPostAllowed = currentUserId !== null
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
-
-  // Need refs for these values because the scroll handler will not be able to access state changes
-  const isLoadingMorePagesRef = useRef(isLoadingMorePages)
-  const hasMorePagesRef = useRef(hasMorePages)
-  useEffect(() => {
-    // Keep the ref values up to date
-    isLoadingMorePagesRef.current = isLoadingMorePages
-    hasMorePagesRef.current = hasMorePages
-  }, [isLoadingMorePages, hasMorePages])
 
   if (commentSectionLoading) {
     return <CommentSkeletons />
