@@ -32,6 +32,7 @@ export const LineupTile = ({
   hasPreview,
   hidePlays,
   hideShare,
+  hideComments,
   id,
   index,
   isTrending,
@@ -46,6 +47,7 @@ export const LineupTile = ({
   onPressPublish,
   onPressEdit,
   playCount,
+  commentCount,
   renderImage,
   repostType,
   showArtistPick,
@@ -124,6 +126,7 @@ export const LineupTile = ({
           favoriteType={favoriteType}
           repostType={repostType}
           hidePlays={hidePlays}
+          hideComments={hideComments}
           id={id}
           index={index}
           isCollection={isCollection}
@@ -133,6 +136,7 @@ export const LineupTile = ({
           playCount={playCount}
           repostCount={repost_count}
           saveCount={save_count}
+          commentCount={commentCount}
           showRankIcon={showRankIcon}
           hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}

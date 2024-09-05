@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -10,7 +11,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -114,8 +115,14 @@ export const TrackTileComponent = ({
     stream_conditions: streamConditions,
     preview_cid,
     ddex_app: ddexApp,
-    is_unlisted: isUnlisted
+    is_unlisted: isUnlisted,
+    comment_count,
+    comments_disabled
   } = track
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const { artist_pick_track_id } = user
   const isArtistPick = isOwner && artist_pick_track_id === track_id
@@ -254,6 +261,7 @@ export const TrackTileComponent = ({
 
   const hideShare = !isOwner && field_visibility?.share === false
   const hidePlays = !isOwner && field_visibility?.play_count === false
+  const hideComments = comments_disabled || !isCommentsEnabled
 
   return (
     <LineupTile
@@ -265,6 +273,7 @@ export const TrackTileComponent = ({
       hasPreview={hasPreview}
       hideShare={hideShare}
       hidePlays={hidePlays}
+      hideComments={hideComments}
       id={track_id}
       renderImage={renderImage}
       isUnlisted={is_unlisted}
@@ -277,6 +286,7 @@ export const TrackTileComponent = ({
       onPressPublish={handlePressPublish}
       onPressEdit={onPressEdit}
       playCount={play_count}
+      commentCount={comment_count}
       title={title}
       item={track}
       user={user}
