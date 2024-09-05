@@ -26,7 +26,7 @@ comment_response = make_response(
 class CommentReplies(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Comment""",
+        id="""Get Comment Replies""",
         description="Gets replies to a parent comment",
         params={"comment_id": "A Comment ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},

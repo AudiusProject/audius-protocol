@@ -83,7 +83,7 @@ const commentsApi = createApi({
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
-        const commentsRes = await sdk.comments.getComment({
+        const commentsRes = await sdk.comments.getCommentReplies({
           commentId: id,
           limit,
           offset
