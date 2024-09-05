@@ -11,7 +11,6 @@ export const SendIcon = ({ disabled = false, onClick }: SendIconProps) => {
   return (
     <IconButton
       aria-label='Send'
-      type={'submit'}
       icon={IconPaperAirplane}
       size='2xl'
       onClick={onClick}

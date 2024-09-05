@@ -4,13 +4,13 @@ import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
 import { splitOnNewline } from '@audius/common/utils'
 import {
-  Box,
   LoadingSpinner,
   SendIcon,
   Text,
   TextProps,
   useTheme
 } from '@audius/harmony'
+
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
