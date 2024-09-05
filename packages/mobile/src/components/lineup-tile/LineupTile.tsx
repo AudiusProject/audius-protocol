@@ -6,7 +6,7 @@ import {
   accountSelectors,
   gatedContentActions
 } from '@audius/common/store'
-import { Genre, getDogEarType } from '@audius/common/utils'
+import { Genre, getDogEarType, isLongFormContent } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -92,10 +92,6 @@ export const LineupTile = ({
     }
   }, [contentId, hasStreamAccess, hasPreview, dispatch, onPress])
 
-  const isLongFormContent =
-    isTrack &&
-    (item.genre === Genre.PODCASTS || item.genre === Genre.AUDIOBOOKS)
-
   const isReadonly = variant === 'readonly'
   const scale = isReadonly ? 1 : undefined
 
@@ -111,7 +107,7 @@ export const LineupTile = ({
         <LineupTileTopRight
           duration={duration}
           trackId={id}
-          isLongFormContent={isLongFormContent}
+          isLongFormContent={isTrack && isLongFormContent(item)}
           isCollection={isCollection}
         />
         <LineupTileMetadata

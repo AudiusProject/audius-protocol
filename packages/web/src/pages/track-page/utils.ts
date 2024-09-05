@@ -29,6 +29,8 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   repostCount: heroTrack?.repost_count ?? 0,
   // @ts-expect-error
   saveCount: heroTrack?.save_count ?? heroTrack?.favorite_count ?? 0,
+  commentCount: heroTrack?.comment_count ?? 0,
+  commentsDisabled: heroTrack?.comments_disabled ?? false,
   isUnlisted: heroTrack?.is_unlisted ?? false,
   isScheduledRelease: heroTrack?.is_scheduled_release ?? false,
   isStreamGated: heroTrack?.is_stream_gated ?? false,

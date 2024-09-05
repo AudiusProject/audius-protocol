@@ -60,6 +60,7 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import { PlayPauseButton } from './PlayPauseButton'
 import { TrackMetadataList } from './TrackMetadataList'
+import { TrackStats } from './TrackStats'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -395,24 +396,6 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderStatsRow = () => {
-    const isLongFormContent =
-      genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
-
-    return (
-      <>
-        <RepostFavoritesStats
-          isUnlisted={isUnlisted}
-          repostCount={repostCount}
-          saveCount={saveCount}
-          onClickReposts={onClickReposts}
-          onClickFavorites={onClickFavorites}
-        />
-        {isLongFormContent ? renderListenCount() : null}
-      </>
-    )
-  }
-
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
@@ -527,7 +510,7 @@ export const GiantTrackTile = ({
             </div>
 
             <div className={cn(styles.statsSection, fadeIn)}>
-              {renderStatsRow()}
+              <TrackStats trackId={trackId} />
             </div>
 
             {isUnlisted && !isOwner ? null : (

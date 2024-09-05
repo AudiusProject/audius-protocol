@@ -121,6 +121,8 @@ const ConnectedTrackTile = ({
     permalink,
     repost_count,
     save_count,
+    comment_count,
+    comments_disabled,
     field_visibility,
     followee_reposts,
     followee_saves,
@@ -237,6 +239,8 @@ const ConnectedTrackTile = ({
       genre={genre as Genre}
       repostCount={repost_count}
       saveCount={save_count}
+      commentCount={comment_count}
+      commentsDisabled={comments_disabled}
       followeeReposts={followee_reposts}
       followeeSaves={followee_saves}
       hasCurrentUserReposted={has_current_user_reposted}

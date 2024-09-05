@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -8,6 +8,7 @@ import {
   ID,
   UID
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -124,6 +125,7 @@ const ConnectedTrackTile = ({
     repost_count,
     save_count,
     comment_count,
+    comments_disabled,
     field_visibility: fieldVisibility,
     followee_reposts,
     followee_saves,
@@ -144,6 +146,10 @@ const ConnectedTrackTile = ({
     handle,
     is_deactivated: isOwnerDeactivated
   } = getUserWithFallback(user)
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isActive = uid === playingUid
   const isTrackBuffering = isActive && isBuffering
@@ -270,15 +276,15 @@ const ConnectedTrackTile = ({
           flavor={Flavor.FAVORITE}
           isOwner={isOwner}
         />
-        <Stats
-          count={comment_count}
-          followeeActions={followee_saves}
-          contentTitle={'comments'}
-          size={statSize}
-          onClick={onClickStatRepost}
-          flavor={Flavor.FAVORITE}
-          isOwner={isOwner}
-        />
+        {!isCommentsEnabled || comments_disabled ? null : (
+          <Stats
+            count={comment_count}
+            contentTitle={contentTitle}
+            size={statSize}
+            flavor={Flavor.COMMENT}
+            isOwner={isOwner}
+          />
+        )}
       </div>
     )
   }
