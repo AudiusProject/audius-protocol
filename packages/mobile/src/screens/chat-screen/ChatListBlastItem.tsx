@@ -8,7 +8,8 @@ import {
   Text,
   Flex,
   IconTowerBroadcast,
-  IconUser
+  IconUser,
+  useTheme
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -19,6 +20,7 @@ const messages = {
 }
 
 export const ChatListBlastItem = ({ chatId }: { chatId: string }) => {
+  const { spacing } = useTheme()
   const navigation = useNavigation<AppTabScreenParamList>()
 
   const handlePress = useCallback(() => {
@@ -38,19 +40,16 @@ export const ChatListBlastItem = ({ chatId }: { chatId: string }) => {
         gap='s'
       >
         <Flex row gap='s' w='100%' style={css({ overflow: 'hidden' })}>
-          <IconTowerBroadcast width={24} height={24} color='default' />
+          <IconTowerBroadcast
+            width={spacing.xl}
+            height={spacing.xl}
+            color='default'
+          />
           <Text variant='body' size='l' strength='strong'>
             {chatBlastTitle}
           </Text>
           {contentTitle ? (
-            <Text
-              variant='body'
-              size='l'
-              color='subdued'
-              strength='strong'
-              // numberOfLines={1}
-              // ellipses
-            >
+            <Text variant='body' size='l' color='subdued' strength='strong'>
               {contentTitle}
             </Text>
           ) : null}
@@ -61,7 +60,7 @@ export const ChatListBlastItem = ({ chatId }: { chatId: string }) => {
           </Text>
           {audienceCount ? (
             <Flex row gap='xs'>
-              <IconUser width={16} height={16} color='subdued' />
+              <IconUser width={spacing.l} height={spacing.l} color='subdued' />
               <Text variant='label' color='subdued'>
                 {audienceCount}
               </Text>
