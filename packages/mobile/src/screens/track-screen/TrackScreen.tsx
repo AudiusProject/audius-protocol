@@ -8,7 +8,8 @@ import {
   trackPageSelectors,
   reachabilitySelectors,
   lineupSelectors,
-  remixesPageLineupActions
+  remixesPageLineupActions,
+  remixesPageSelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { ScrollView, View } from 'react-native'
@@ -27,11 +28,12 @@ import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
+const { getLineup: getRemixesLineup } = remixesPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const { makeGetLineupMetadatas } = lineupSelectors
 
-const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
+const getRemixesTracksLineup = makeGetLineupMetadatas(getRemixesLineup)
 
 const messages = {
   moreBy: 'More By',
@@ -227,19 +229,16 @@ export const TrackScreen = () => {
               />
 
               {hasValidRemixParent ? (
-                <>
-                  <View style={styles.buttonContainer}>
-                    <Button
-                      iconRight={IconArrowRight}
-                      variant='primary'
-                      size='small'
-                      onPress={handlePressGoToOtherRemixes}
-                      fullWidth
-                    >
-                      {messages.viewOtherRemixes}
-                    </Button>
-                  </View>
-                </>
+                <Flex pt='m'>
+                  <Button
+                    iconRight={IconArrowRight}
+                    variant='secondary'
+                    size='small'
+                    onPress={handlePressGoToOtherRemixes}
+                  >
+                    {messages.viewOtherRemixes}
+                  </Button>
+                </Flex>
               ) : null}
             </Flex>
           </Flex>
