@@ -45,6 +45,8 @@ func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoReques
 		return nil, err
 	}
 
+	app.logger.Infof("info called: %v", latest)
+
 	// if at genesis, tell comet there's no blocks indexed
 	if latest.BlockHeight < 2 {
 		return &abcitypes.InfoResponse{}, nil
@@ -103,15 +105,23 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
+	logger.Infof("finalize: %v", req)
+
 	// open in progres pg transaction
-	app.startInProgressTx(ctx)
+	err := app.startInProgressTx(ctx)
+	if err != nil {
+		app.logger.Errorf("start in progress tx fail: %v", err)
+	}
 	for i, tx := range req.Txs {
+		app.logger.Infof("processing tx %d", i)
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err == nil {
+			app.logger.Info("found proto event")
 			if err := app.finalizeEvent(ctx, protoEvent); err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
+			app.logger.Infof("proto event success %d", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
 			continue
 		}
@@ -120,6 +130,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
 		} else {
+			logger.Infof("found kv store tx %d", i)
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)
@@ -161,18 +172,20 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		return &abcitypes.FinalizeBlockResponse{}, nil
 	}
 
-	var nextAppHash []byte
-	// use last app hash on empty blocks since state didn't change
-	if len(txs) == 0 {
+	app.logger.Infof("prev app state %v", prevAppState)
+
+	nextAppHash := app.serializeAppState(prevAppState.AppHash, req.GetTxs())
+	// if empty block and previous was not genesis, use prior state
+	if len(txs) == 0 && req.Height > 2 {
 		nextAppHash = prevAppState.AppHash
-	} else {
-		nextAppHash = app.serializeAppState(prevAppState.AppHash, req.GetTxs())
 	}
 
-	app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
+	if err = app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
 		BlockHeight: req.Height,
 		AppHash:     nextAppHash,
-	})
+	}); err != nil {
+		app.logger.Errorf("error upserting app state %v", err)
+	}
 
 	return &abcitypes.FinalizeBlockResponse{
 		TxResults: txs,
