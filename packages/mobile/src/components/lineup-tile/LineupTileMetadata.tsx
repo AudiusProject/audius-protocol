@@ -35,10 +35,6 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-const messages = {
-  coSign: 'Co-Sign'
-}
-
 type Props = {
   coSign?: Remix | null
   onPressTitle?: GestureResponderHandler

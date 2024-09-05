@@ -1,4 +1,4 @@
-import type { ComponentType, ReactElement } from 'react'
+import type { ReactElement } from 'react'
 
 import type { Kind, ID, UID, Lineup as LineupData } from '@audius/common/models'
 import type { LineupBaseActions, CommonState } from '@audius/common/store'
