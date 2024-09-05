@@ -163,18 +163,6 @@ def validate_user_metadata(
         if str(pubkey) != wallet:
             raise IndexingValidationError(f"Invalid spl address {wallet}")
 
-        account_info = solana_client_manager.get_account_info_json_parsed(pubkey)
-
-        if account_info.owner != SPL_TOKEN_PUBKEY:
-            raise IndexingValidationError(
-                f"Spl address is not a token account {wallet}"
-            )
-
-        if account_info.data.parsed["info"]["mint"] != USDC_MINT:
-            raise IndexingValidationError(
-                f"Spl address is not a USDC token account {wallet}"
-            )
-
 
 def validate_user_handle(handle: Union[str, None]):
     if not handle:
