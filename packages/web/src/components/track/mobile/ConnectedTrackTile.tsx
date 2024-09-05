@@ -61,6 +61,7 @@ type OwnProps = Omit<
   | 'artistHandle'
   | 'repostCount'
   | 'saveCount'
+  | 'commentCount'
   | 'coverArtSizes'
   | 'followeeReposts'
   | 'followeeSaves'

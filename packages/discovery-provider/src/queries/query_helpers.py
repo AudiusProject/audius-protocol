@@ -121,7 +121,6 @@ class SortMethod(str, enum.Enum):
     plays = "plays"
     reposts = "reposts"
     saves = "saves"
-    comments = "comments"
     most_listens_by_user = "most_listens_by_user"
 
 

@@ -6,7 +6,7 @@ import {
   accountSelectors,
   gatedContentActions
 } from '@audius/common/store'
-import { Genre, getDogEarType, isLongFormContent } from '@audius/common/utils'
+import { getDogEarType, isLongFormContent } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 

@@ -43,7 +43,6 @@ import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
-import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'

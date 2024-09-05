@@ -13,7 +13,6 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import * as userListActions from 'store/application/ui/userListModal/slice'
 import {
   UserListEntityType,

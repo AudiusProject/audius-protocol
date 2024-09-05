@@ -100,7 +100,7 @@ new_aggregate_track as (
     ap.track_id,
     coalesce(ps.save_count, 0) as save_count,
     coalesce(pr.repost_count, 0) as repost_count
-    coalesce(pc.comment_count, 0) as _count
+    coalesce(pc.comment_count, 0) as comment_count
   from
     aggregate_track ap
     left join track_saves ps on ap.track_id = ps.save_item_id

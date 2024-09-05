@@ -202,10 +202,6 @@ def _get_tracks(session, args):
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
                 sort_fn(AggregateTrack.save_count), TrackWithAggregates.track_id
             )
-        elif sort_method == SortMethod.comments:
-            base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-                sort_fn(AggregateTrack.comment_count), TrackWithAggregates.track_id
-            )
     else:
         # Return the user's pinned track first if there is no specified sort_method
         if "user_id" in args and args.get("user_id") is not None:
