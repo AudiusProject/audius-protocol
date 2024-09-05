@@ -1,5 +1,5 @@
 import type { User } from '@audius/common/models'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, removeNullable } from '@audius/common/utils'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
 
@@ -114,6 +114,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
     <View style={[styles.root, style]}>
       {users
         .filter((u) => !u.is_deactivated)
+        .filter(removeNullable)
         .slice(0, sliceLimit)
         .map((user, idx) => (
           <NotificationProfilePicture
