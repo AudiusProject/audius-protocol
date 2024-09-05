@@ -12,7 +12,7 @@ import {
   remixesPageSelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
-import { ScrollView, View } from 'react-native'
+import { ScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
@@ -21,7 +21,6 @@ import { Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
@@ -46,17 +45,7 @@ const messages = {
 const MAX_REMIXES_TO_DISPLAY = 6
 const MAX_RELATED_TRACKS_TO_DISPLAY = 6
 
-const useStyles = makeStyles(({ spacing }) => ({
-  buttonContainer: {
-    padding: spacing(6)
-  }
-}))
-
-/**
- * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
- */
 export const TrackScreen = () => {
-  const styles = useStyles()
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
