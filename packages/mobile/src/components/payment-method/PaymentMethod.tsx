@@ -15,12 +15,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   IconCreditCard,
   IconDonate,
-  IconTransaction,
-  IconMerch,
   Text,
-  Flex
+  Flex,
+  IconQrCode,
+  IconPhantomPlain
 } from '@audius/harmony-native'
-import { Divider, GradientText, RadioButton } from 'app/components/core'
+import { Divider, RadioButton } from 'app/components/core'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -34,13 +34,14 @@ import { CardSelectionButton } from './CardSelectionButton'
 import { TokenPicker } from './TokenPicker'
 
 const messages = {
-  title: 'Payment Method',
-  existingBalance: 'Existing balance',
-  withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer',
-  payWith: 'Pay with',
-  anything: 'anything',
-  requiresPhantom: 'Phantom wallet required'
+  title: 'Payment Options',
+  existingBalance: 'Balance (USDC)',
+  withCard: 'Credit/Debit Card',
+  withCrypto: 'USDC Transfer',
+  withAnything: 'Pay with Anything',
+  requiresPhantom: 'Phantom wallet required',
+  showAdvanced: 'Show advanced options',
+  hideAdvanced: 'Hide advanced options'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -173,7 +174,7 @@ export const PaymentMethod = ({
       id: PurchaseMethod.CRYPTO,
       value: PurchaseMethod.CRYPTO,
       label: <Text size='m'>{messages.withCrypto}</Text>,
-      icon: IconTransaction
+      icon: IconQrCode
     }
   ]
   if (
@@ -188,20 +189,7 @@ export const PaymentMethod = ({
         <Flex flex={1}>
           <Flex direction='row' justifyContent='space-between'>
             <Flex direction='row' gap='xs' alignItems='center'>
-              <Text>{`${messages.payWith}`}</Text>
-              <GradientText
-                colors={[
-                  'red',
-                  'orange',
-                  'yellow',
-                  'green',
-                  'blue',
-                  'indigo',
-                  'violet'
-                ]}
-              >
-                {messages.anything}
-              </GradientText>
+              <Text>{messages.withAnything}</Text>
             </Flex>
             <TokenPicker
               selectedTokenAddress={selectedPurchaseMethodMintAddress}
@@ -214,7 +202,7 @@ export const PaymentMethod = ({
           </Text>
         </Flex>
       ),
-      icon: IconMerch
+      icon: IconPhantomPlain
     })
   }
 
@@ -246,6 +234,12 @@ export const PaymentMethod = ({
       title={messages.title}
       items={items}
       extraItems={extraItems}
+      showExtraItemsCopy={messages.showAdvanced}
+      disableExtraItemsToggle={
+        selectedMethod === PurchaseMethod.WALLET ||
+        selectedMethod === PurchaseMethod.CRYPTO
+      }
+      hideExtraItemsCopy={messages.hideAdvanced}
       renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}

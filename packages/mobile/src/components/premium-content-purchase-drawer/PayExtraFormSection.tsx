@@ -45,7 +45,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 const messages = {
-  payExtra: 'PAY EXTRA',
+  payExtra: 'Pay Extra',
   other: 'Other',
   customAmount: 'Custom Amount',
   placeholder: 'Enter a value'
@@ -73,9 +73,9 @@ export const PayExtraFormSection = ({
   return (
     <View style={styles.container}>
       <Text
-        weight='heavy'
-        fontSize='small'
-        color='neutralLight4'
+        weight='bold'
+        fontSize='medium'
+        color='neutral'
         style={styles.title}
         noGutter
       >
