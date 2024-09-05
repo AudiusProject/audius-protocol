@@ -123,7 +123,8 @@ export const LineupTile = ({
           isPlayingUid={isPlayingUid}
           type={contentType}
         />
-        {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
+        {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
+        {/* {coSign ? <LineupTileCoSign coSign={coSign} /> : null} */}
         <LineupTileStats
           favoriteType={favoriteType}
           repostType={repostType}

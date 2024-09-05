@@ -114,7 +114,8 @@ export const TrackTileComponent = ({
     stream_conditions: streamConditions,
     preview_cid,
     ddex_app: ddexApp,
-    is_unlisted: isUnlisted
+    is_unlisted: isUnlisted,
+    _co_sign: coSign
   } = track
 
   const { artist_pick_track_id } = user
@@ -258,6 +259,7 @@ export const TrackTileComponent = ({
   return (
     <LineupTile
       {...lineupTileProps}
+      coSign={coSign}
       duration={duration}
       isPlayingUid={isPlayingUid}
       favoriteType={FavoriteType.TRACK}
