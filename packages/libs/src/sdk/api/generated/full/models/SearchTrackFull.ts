@@ -173,6 +173,12 @@ export interface SearchTrackFull {
     favoriteCount: number;
     /**
      * 
+     * @type {number}
+     * @memberof SearchTrackFull
+     */
+    commentCount: number;
+    /**
+     * 
      * @type {string}
      * @memberof SearchTrackFull
      */
@@ -443,12 +449,6 @@ export interface SearchTrackFull {
     commentsDisabled?: boolean;
     /**
      * 
-     * @type {number}
-     * @memberof SearchTrackFull
-     */
-    commentCount?: number;
-    /**
-     * 
      * @type {object}
      * @memberof SearchTrackFull
      */
@@ -533,6 +533,7 @@ export function instanceOfSearchTrackFull(value: object): value is SearchTrackFu
     isInstance = isInstance && "remixOf" in value && value["remixOf"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "commentCount" in value && value["commentCount"] !== undefined;
     isInstance = isInstance && "title" in value && value["title"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
@@ -584,6 +585,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'remixOf': FullRemixParentFromJSON(json['remix_of']),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
+        'commentCount': json['comment_count'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'title': json['title'],
         'user': UserFullFromJSON(json['user']),
@@ -629,7 +631,6 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'isCustomMusicalKey': !exists(json, 'is_custom_musical_key') ? undefined : json['is_custom_musical_key'],
         'audioAnalysisErrorCount': !exists(json, 'audio_analysis_error_count') ? undefined : json['audio_analysis_error_count'],
         'commentsDisabled': !exists(json, 'comments_disabled') ? undefined : json['comments_disabled'],
-        'commentCount': !exists(json, 'comment_count') ? undefined : json['comment_count'],
         'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'artists': !exists(json, 'artists') ? undefined : json['artists'],
         'resourceContributors': !exists(json, 'resource_contributors') ? undefined : json['resource_contributors'],
@@ -668,6 +669,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'remix_of': FullRemixParentToJSON(value.remixOf),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,
+        'comment_count': value.commentCount,
         'tags': value.tags,
         'title': value.title,
         'user': UserFullToJSON(value.user),
@@ -713,7 +715,6 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'is_custom_musical_key': value.isCustomMusicalKey,
         'audio_analysis_error_count': value.audioAnalysisErrorCount,
         'comments_disabled': value.commentsDisabled,
-        'comment_count': value.commentCount,
         'ddex_release_ids': value.ddexReleaseIds,
         'artists': value.artists,
         'resource_contributors': value.resourceContributors,

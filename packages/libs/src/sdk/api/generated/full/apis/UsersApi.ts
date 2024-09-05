@@ -2515,6 +2515,7 @@ export const GetAIAttributedTracksByUserHandleSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetAIAttributedTracksByUserHandleSortMethodEnum = typeof GetAIAttributedTracksByUserHandleSortMethodEnum[keyof typeof GetAIAttributedTracksByUserHandleSortMethodEnum];
@@ -2563,6 +2564,7 @@ export const GetFavoritesSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetFavoritesSortMethodEnum = typeof GetFavoritesSortMethodEnum[keyof typeof GetFavoritesSortMethodEnum];
@@ -2630,6 +2632,7 @@ export const GetTracksByUserSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetTracksByUserSortMethodEnum = typeof GetTracksByUserSortMethodEnum[keyof typeof GetTracksByUserSortMethodEnum];
@@ -2670,6 +2673,7 @@ export const GetTracksByUserHandleSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetTracksByUserHandleSortMethodEnum = typeof GetTracksByUserHandleSortMethodEnum[keyof typeof GetTracksByUserHandleSortMethodEnum];
@@ -2821,6 +2825,7 @@ export const GetUserLibraryTracksSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetUserLibraryTracksSortMethodEnum = typeof GetUserLibraryTracksSortMethodEnum[keyof typeof GetUserLibraryTracksSortMethodEnum];
@@ -2854,6 +2859,7 @@ export const GetUsersTrackHistorySortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
+    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetUsersTrackHistorySortMethodEnum = typeof GetUsersTrackHistorySortMethodEnum[keyof typeof GetUsersTrackHistorySortMethodEnum];
