@@ -105,15 +105,12 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
-	logger.Infof("finalize: %v", req)
-
 	// open in progres pg transaction
 	err := app.startInProgressTx(ctx)
 	if err != nil {
 		app.logger.Errorf("start in progress tx fail: %v", err)
 	}
 	for i, tx := range req.Txs {
-		app.logger.Infof("processing tx %d", i)
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err == nil {
 			app.logger.Info("found proto event")
@@ -121,7 +118,6 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
-			app.logger.Infof("proto event success %d", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
 			continue
 		}
@@ -130,7 +126,6 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
 		} else {
-			logger.Infof("found kv store tx %d", i)
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)

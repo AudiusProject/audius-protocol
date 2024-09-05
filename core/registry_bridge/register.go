@@ -2,8 +2,10 @@ package registry_bridge
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -13,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -20,6 +23,11 @@ import (
 // already in the comet state will register itself on comet
 func (r *Registry) RegisterSelf() error {
 	ctx := context.Background()
+
+	if r.isSelfAlreadyRegistered(ctx) {
+		return nil
+	}
+
 	logger := r.logger
 
 	web3 := r.contracts
@@ -121,6 +129,44 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 	r.logger.Infof("registered node %s in tx %s", r.config.NodeEndpoint, txhash)
 
 	return nil
+}
+
+func (r *Registry) awaitNodeCatchup(ctx context.Context) error {
+	retries := 60
+	for tries := retries; tries >= 0; tries-- {
+		res, err := r.rpc.Status(ctx)
+		if err != nil {
+			r.logger.Errorf("error getting comet health: %v", err)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		if res.SyncInfo.CatchingUp {
+			r.logger.Infof("comet catching up %d", res.SyncInfo.LatestBlockHeight)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		// no health error nor catching up
+		return nil
+	}
+	return errors.New("timeout waiting for comet to catch up")
+}
+
+func (r *Registry) isSelfAlreadyRegistered(ctx context.Context) bool {
+	res, err := r.queries.GetNodeByEndpoint(ctx, r.config.NodeEndpoint)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false
+	}
+
+	if err != nil {
+		r.logger.Errorf("error getting registered nodes: %v", err)
+		return false
+	}
+
+	// return if owner wallets match
+	return res.EthAddress == r.config.WalletAddress
 }
 
 func (r *Registry) registerSelfOnEth() error {
