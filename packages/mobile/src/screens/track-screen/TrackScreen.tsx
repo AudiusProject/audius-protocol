@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
@@ -12,12 +13,21 @@ import {
   remixesPageSelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
-import { ScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
+import {
+  IconArrowRight,
+  Button,
+  Text,
+  Flex,
+  IconRemix
+} from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
-import { Screen, ScreenContent } from 'app/components/core'
+import {
+  Screen,
+  ScreenContent,
+  VirtualizedScrollView
+} from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -148,7 +158,7 @@ export const TrackScreen = () => {
   return (
     <Screen url={track?.permalink}>
       <ScreenContent isOfflineCapable>
-        <ScrollView>
+        <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
             {/* Track Details */}
             <TrackScreenDetailsTile
@@ -170,7 +180,10 @@ export const TrackScreen = () => {
               remixTrackIds &&
               remixTrackIds.length > 0 && (
                 <Flex>
-                  <Text variant='title'>{messages.remixes}</Text>
+                  <Flex row alignItems='center' gap='s'>
+                    <IconRemix color='default' />
+                    <Text variant='title'>{messages.remixes}</Text>
+                  </Flex>
                   <Lineup
                     lineup={remixesLineup}
                     actions={remixesPageLineupActions}
@@ -184,18 +197,17 @@ export const TrackScreen = () => {
                       paddingVertical: 12
                     }}
                   />
-                  {/* {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? ( */}
-                  <Flex pt='m'>
-                    <Button
-                      iconRight={IconArrowRight}
-                      variant='secondary'
-                      size='small'
-                      onPress={handlePressGoToAllRemixes}
-                    >
-                      {messages.viewAllRemixes}
-                    </Button>
-                  </Flex>
-                  {/* ) : null} */}
+                  {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
+                    <Flex pt='m' alignItems='flex-start'>
+                      <Button
+                        iconRight={IconArrowRight}
+                        size='xs'
+                        onPress={handlePressGoToAllRemixes}
+                      >
+                        {messages.viewAllRemixes}
+                      </Button>
+                    </Flex>
+                  ) : null}
                 </Flex>
               )}
 
@@ -215,23 +227,27 @@ export const TrackScreen = () => {
                   padding: 0,
                   paddingVertical: 12
                 }}
+                leadingElementId={remixParentTrack?.track_id}
+                leadingElementDelineator={
+                  <Flex>
+                    {lineup.status === Status.SUCCESS ? (
+                      <Flex pt='m' alignItems='flex-start'>
+                        <Button
+                          iconRight={IconArrowRight}
+                          size='xs'
+                          onPress={handlePressGoToOtherRemixes}
+                        >
+                          {messages.viewOtherRemixes}
+                        </Button>
+                      </Flex>
+                    ) : null}
+                    <Flex mt='2xl'>{moreByArtistTitle}</Flex>
+                  </Flex>
+                }
               />
-
-              {hasValidRemixParent ? (
-                <Flex pt='m'>
-                  <Button
-                    iconRight={IconArrowRight}
-                    variant='secondary'
-                    size='small'
-                    onPress={handlePressGoToOtherRemixes}
-                  >
-                    {messages.viewOtherRemixes}
-                  </Button>
-                </Flex>
-              ) : null}
             </Flex>
           </Flex>
-        </ScrollView>
+        </VirtualizedScrollView>
       </ScreenContent>
     </Screen>
   )
