@@ -93,9 +93,6 @@ export const ChatTextInput = ({
   const [selection, setSelection] = useState<{ start: number; end: number }>()
 
   const {
-    // trackId,
-    // collectionId,
-    // clearLinks,
     linkEntities,
     resolveLinks,
     restoreLinks,
@@ -111,6 +108,7 @@ export const ChatTextInput = ({
     const track = linkEntities.find((e) => e.type === 'track')
     return track ? decodeHashId(track.data.id) : null
   }, [linkEntities])
+
   const collectionId = useMemo(() => {
     const collection = linkEntities.find((e) => e.type === 'collection')
     return collection ? decodeHashId(collection.data.id) : null

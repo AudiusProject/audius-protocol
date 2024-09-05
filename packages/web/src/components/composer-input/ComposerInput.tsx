@@ -18,14 +18,12 @@ import { env } from 'services/env'
 import { AutocompleteText } from './components/AutocompleteText'
 import { ComposerInputProps } from './types'
 
-// TODO: Need to update to remove mentions when they are no longer present in the text area value
-// TODO: Update to close autocomplete popup on click outside
-
 const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
 }
 
+const MAX_LENGTH_DISPLAY_PERCENT = 0.85
 const ENTER_KEY = 'Enter'
 const TAB_KEY = 'Tab'
 const BACKSPACE_KEY = 'Backspace'
@@ -105,12 +103,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
     }
   }, [messageId])
 
-  // useEffect(() => {
-  //   if (!focused && isUserAutocompleteActive) {
-  //     setIsUserAutocompleteActive(false)
-  //   }
-  // }, [focused, isUserAutocompleteActive])
-
   const getUserMentions = useCallback(
     (value: string) => {
       const regexString = [...userMentions]
@@ -132,10 +124,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      const textarea = e.target as HTMLTextAreaElement
-      const cursorPosition = textarea.selectionStart
       setValue(e.target.value)
-      const editedValue = await resolveLinks(e.target.value, cursorPosition)
+      const editedValue = await resolveLinks(e.target.value)
       setValue(editedValue)
       // TODO: Need to update this to move to the proper position affect link change to human text
       // setTimeout(() => {
@@ -167,7 +157,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
           const textarea = e.target as HTMLTextAreaElement
           const cursorPosition = textarea.selectionStart
           const deletedChar = textarea.value[cursorPosition - 1]
-          if (deletedChar === '@') {
+          if (deletedChar === AT_KEY) {
             setIsUserAutocompleteActive(false)
           }
         }
@@ -213,20 +203,20 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       const cursorPosition = ref.current?.selectionStart || 0
+      const atPosition = value.slice(0, cursorPosition).lastIndexOf(AT_KEY)
       const autocompleteRange = isUserAutocompleteActive
-        ? [value.slice(0, cursorPosition).lastIndexOf('@'), cursorPosition]
+        ? [atPosition, cursorPosition]
         : [0, 1]
       const mentionText = `@${user.handle}`
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
       }
-      setValue(
-        (value) =>
-          `${value.slice(0, autocompleteRange[0])}${mentionText}${value.slice(
-            autocompleteRange[1]
-          )}`
-      )
+      setValue((value) => {
+        const textBeforeMention = value.slice(0, autocompleteRange[0])
+        const textAfterMention = value.slice(autocompleteRange[1])
+        return `${textBeforeMention}${mentionText}${textAfterMention}`
+      })
       const textarea = ref.current
       if (textarea) {
         setTimeout(() => {
@@ -240,7 +230,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [isUserAutocompleteActive, userMentions, value]
   )
 
-  const renderChatDisplay = (value: string) => {
+  const renderDisplayText = (value: string) => {
     const cursorPosition = ref.current?.selectionStart || 0
     const matches = getMatches(value) ?? []
     const mentions = getUserMentions(value) ?? []
@@ -252,8 +242,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
     }
 
     const renderedTextSections = []
+    const atPosition = value.slice(0, cursorPosition).lastIndexOf(AT_KEY)
     const autocompleteRange = isUserAutocompleteActive
-      ? [value.slice(0, cursorPosition).lastIndexOf('@'), cursorPosition]
+      ? [atPosition, cursorPosition]
       : null
 
     // Filter out matches split by an autocomplete section
@@ -272,8 +263,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
       autocompleteRange[1] >= autocompleteRange[0]
     ) {
       filteredMatches.push({
-        // TODO: Fix this - type prop issue
-        // @ts-ignore
         type: 'autocomplete',
         text: value.slice(autocompleteRange[0], autocompleteRange[1]),
         index: autocompleteRange[0],
@@ -288,8 +277,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
     let lastIndex = 0
     for (const match of sortedMatches) {
-      // TODO: Fix this - type prop issue
-      // @ts-ignore
       const { type, text, index } = match
       if (index === undefined) continue
 
@@ -345,8 +332,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
       value={value}
       maxVisibleRows={10}
       maxLength={maxLength}
-      showMaxLength={!!value && value.length > maxLength * 0.85}
-      renderDisplayElement={renderChatDisplay}
+      showMaxLength={
+        !!value && value.length > maxLength * MAX_LENGTH_DISPLAY_PERCENT
+      }
+      renderDisplayElement={renderDisplayText}
       grows
       {...other}
     >

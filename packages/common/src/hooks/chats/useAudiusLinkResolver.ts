@@ -112,7 +112,7 @@ export const useAudiusLinkResolver = ({
    * Resolves Audius links in the provided text to their display text equivalent.
    */
   const resolveLinks = useCallback(
-    async (value: string, _cursorPosition = 0) => {
+    async (value: string) => {
       const sdk = await audiusSdk()
       const { matches } = matchAudiusLinks({
         text: value,
