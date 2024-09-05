@@ -44,7 +44,7 @@ export const PremiumTracksScreen = () => {
           actions={premiumTracksPageLineupActions}
           selfLoad
           pullToRefresh
-          EndOfLineupComponent={
+          ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfLineup} />
           }
         />

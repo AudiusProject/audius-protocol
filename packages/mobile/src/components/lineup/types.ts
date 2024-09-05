@@ -167,8 +167,6 @@ export type LineupProps = {
    */
   onPressItem?: (id: ID) => void
 
-  EndOfLineupComponent?: ComponentType<any> | ReactElement
-
   /**
    * Styles to apply to the items, can be used to override the padding for example
    */

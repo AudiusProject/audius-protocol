@@ -152,6 +152,7 @@ const LineupTileView = memo(function LineupTileView({
   itemStyles
 }: LineupTileViewProps) {
   const TrackOrCollectionTile = getLineupTileComponent(item)
+
   if (TrackOrCollectionTile) {
     return (
       <View
@@ -245,7 +246,6 @@ export const Lineup = ({
   limit = Infinity,
   extraFetchOptions,
   ListFooterComponent,
-  EndOfLineupComponent,
   onPressItem,
   itemStyles,
   ...listProps
@@ -555,13 +555,7 @@ export const Lineup = ({
         ListHeaderComponent={
           hideHeaderOnEmpty && areSectionsEmpty ? undefined : header
         }
-        ListFooterComponent={
-          lineup.hasMore ? (
-            <View style={{ height: 16 }} />
-          ) : (
-            EndOfLineupComponent ?? ListFooterComponent
-          )
-        }
+        ListFooterComponent={lineup.hasMore ? null : ListFooterComponent}
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleEndReached}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
