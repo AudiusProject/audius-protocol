@@ -15,10 +15,8 @@ const trackApi = createApi({
         { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
+        if (!id || id === -1) return null
         const sdk = await audiusSdk()
-        if (!id || id === -1) {
-          return null
-        }
         const { data } = await sdk.full.tracks.getTrack({
           trackId: Id.parse(id),
           userId: OptionalId.parse(currentUserId)
