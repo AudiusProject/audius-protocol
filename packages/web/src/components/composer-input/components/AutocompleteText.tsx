@@ -108,7 +108,6 @@ export const AutocompleteText = ({
   return (
     <Box ref={popupAnchorRef} css={{ display: 'inline' }}>
       <Popup
-        status={status}
         isVisible
         anchorRef={popupAnchorRef}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
