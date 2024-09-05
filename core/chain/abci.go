@@ -279,13 +279,13 @@ func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, erro
 	return &msg, nil
 }
 
-func (app *KVStoreApplication) isValidSlaRollup(tx []byte) bool {
+func (app *CoreApplication) isValidSlaRollup(tx []byte) bool {
 	var msg gen_proto.SlaRollup
 	err := proto.Unmarshal(tx, &msg)
 	return err == nil
 }
 
-func (app *KVStoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
+func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
 	app.startInProgressTx(ctx)
 	for _, tx := range txs {
@@ -296,7 +296,7 @@ func (app *KVStoreApplication) validateBlockTxs(ctx context.Context, blockTime t
 			return false, nil
 		} else if valid {
 			alreadyContainsRollup = true
-		} else if app.isValidProtoEvent(tx) {
+		} else if _, err := app.isValidProtoEvent(tx); err == nil {
 			continue
 		} else if app.isValidKVTx(tx) {
 			continue

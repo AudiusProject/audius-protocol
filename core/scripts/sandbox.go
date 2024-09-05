@@ -38,9 +38,12 @@ func main() {
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
 
-	_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-		Key:   "randomString",
-		Value: randomString,
-	})
-	checkErr(err)
+	for {
+		time.sleep(1 * time.Seconds)
+		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "randomString",
+			Value: randomString,
+		})
+		checkErr(err)
+	}
 }

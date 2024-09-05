@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	rollupProposalInterval        = time.Minute * 3
-	firstRollupMinimumChainHeight = 10
+	almostOneDay                  = 23 * time.Hour
+	firstRollupMinimumChainHeight = 100
 )
 
-func (app *KVStoreApplication) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
+func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
 	rollup, err := app.createRollup(ctx, ts, height)
 	if err != nil {
 		return []byte{}, err
@@ -31,7 +31,7 @@ func (app *KVStoreApplication) createRollupTx(ctx context.Context, ts time.Time,
 	return rollupTx, nil
 }
 
-func (app *KVStoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (gen_proto.SlaRollup, error) {
+func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (gen_proto.SlaRollup, error) {
 	var rollup gen_proto.SlaRollup
 	var start int64 = 0
 	appDb := app.getDb()
@@ -63,7 +63,7 @@ func (app *KVStoreApplication) createRollup(ctx context.Context, timestamp time.
 }
 
 // Checks if the given sla rollup matches our local tallies
-func (app *KVStoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup gen_proto.SlaRollup) (bool, error) {
+func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup gen_proto.SlaRollup) (bool, error) {
 	if !app.shouldProposeNewRollup(ctx, timestamp, height) {
 		return false, nil
 	}
@@ -88,7 +88,7 @@ func (app *KVStoreApplication) isValidRollup(ctx context.Context, timestamp time
 	return true, nil
 }
 
-func (app *KVStoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.Time, height int64) bool {
+func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.Time, height int64) bool {
 	if height < firstRollupMinimumChainHeight {
 		return false
 	}
@@ -102,13 +102,14 @@ func (app *KVStoreApplication) shouldProposeNewRollup(ctx context.Context, ts ti
 		return false
 	}
 
-	if ts.Sub(latestRollup.Time.Time) >= rollupProposalInterval {
+	// Propose rollup daily around UTC midnight
+	if ts.Sub(latestRollup.Time.Time) >= almostOneDay && ts.Hour() == 0 {
 		return true
 	}
 	return false
 }
 
-func (app *KVStoreApplication) indexRollupTx(ctx context.Context, rollupTx []byte) error {
+func (app *CoreApplication) indexRollupTx(ctx context.Context, rollupTx []byte) error {
 	appDb := app.getDb()
 	var rollup gen_proto.SlaRollup
 	if err := proto.Unmarshal(rollupTx, &rollup); err != nil {
@@ -149,7 +150,7 @@ func (app *KVStoreApplication) indexRollupTx(ctx context.Context, rollupTx []byt
 	return nil
 }
 
-func (app *KVStoreApplication) isRollupTx(tx []byte) bool {
+func (app *CoreApplication) isRollupTx(tx []byte) bool {
 	var rollup gen_proto.SlaRollup
 	if err := proto.Unmarshal(tx, &rollup); err != nil { // not a rollup tx
 		return false
@@ -157,7 +158,7 @@ func (app *KVStoreApplication) isRollupTx(tx []byte) bool {
 	return true
 }
 
-func (app *KVStoreApplication) isValidRollupTx(ctx context.Context, timestamp time.Time, height int64, tx []byte) (bool, error) {
+func (app *CoreApplication) isValidRollupTx(ctx context.Context, timestamp time.Time, height int64, tx []byte) (bool, error) {
 	var rollup gen_proto.SlaRollup
 	if err := proto.Unmarshal(tx, &rollup); err != nil {
 		return false, nil

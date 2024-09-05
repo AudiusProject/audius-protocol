@@ -1,8 +1,8 @@
-GO_SRCS := $(shell find ./ -type f -name *.go) go.sum go.mod $(wildcard config/genesis/*.json)
+GO_SRCS := $(shell find . -type f -name '*.go') go.sum go.mod $(wildcard config/genesis/*.json)
 NATIVE_BIN := ./tmp/core
 AMD64_BIN := ./tmp/core-amd64
 
-SQL_SRCS := $(shell find db/sql/ -type f -name '*.sql') db/sqlc.yaml db/models.go
+SQL_SRCS := $(shell find db/sql -type f -name '*.sql') db/sqlc.yaml
 SQL_ARTIFACTS := $(wildcard db/*.sql.go)
 
 PROTO_SRCS := protocol.proto
