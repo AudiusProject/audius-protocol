@@ -102,7 +102,7 @@ account_full = ns.model(
         "user": fields.Nested(user_model_full, required=True),
         "playlists": fields.List(fields.Raw, required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
-        "saved_track_count": fields.Integer(required=True),
+        "track_save_count": fields.Integer(required=True),
     },
 )
 

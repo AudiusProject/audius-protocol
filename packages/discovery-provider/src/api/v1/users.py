@@ -1703,7 +1703,7 @@ class FullUserAccount(Resource):
                 GetAccountArgs(wallet=wallet, authed_user_id=authed_user_id)
             )
             if result is None:
-                abort_not_found(full_ns)
+                abort_not_found(wallet, full_ns)
             return success_response(extend_account(result))
         except PermissionError:
             abort_forbidden(full_ns)

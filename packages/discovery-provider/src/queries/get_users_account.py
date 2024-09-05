@@ -120,9 +120,10 @@ def get_account(args: GetAccountArgs) -> GetAccountResponse | None:
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user = _get_user_from_wallet(session, args["wallet"])
-        user_id = user["user_id"]
         if not user:
             return None
+
+        user_id = user["user_id"]
 
         if user_id != authed_user_id and not is_active_manager(user_id, authed_user_id):
             raise exceptions.PermissionError(
@@ -144,6 +145,9 @@ def get_users_account(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user = _get_user_from_wallet(session, args["wallet"])
+        if not user:
+            return None
+
         user_id = user["user_id"]
 
         # bundle peripheral info into user results
