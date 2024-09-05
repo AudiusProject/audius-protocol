@@ -9,7 +9,7 @@ import {
   useReportComment
 } from '@audius/common/context'
 import { removeNullable } from '@audius/common/utils'
-import type { Comment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
@@ -49,14 +49,15 @@ const messages = {
 }
 
 type CommentOverflowMenuProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
-    comment: { id, userId, isPinned }
+    comment: { id, userId }
   } = props
 
+  const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })

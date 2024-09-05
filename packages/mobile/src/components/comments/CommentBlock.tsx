@@ -5,7 +5,7 @@ import {
   useCurrentCommentSection,
   useReactToComment
 } from '@audius/common/context'
-import type { Comment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/sdk'
 
 import {
   ArtistPick,
@@ -33,7 +33,7 @@ const messages = {
 }
 
 export type CommentBlockProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
   parentCommentId?: string
   hideActions?: boolean
 }
@@ -42,7 +42,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const { comment, hideActions } = props
   const { artistId, setReplyingToComment } = useCurrentCommentSection()
   const {
-    isPinned,
     message,
     reactCount = 0,
     trackTimestampS,
@@ -50,6 +49,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
     createdAt,
     userId: commentUserIdStr
   } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   const [reactToComment] = useReactToComment()
   const commentUserId = Number(commentUserIdStr)

@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { EntityType, Comment } from '@audius/sdk'
+import { EntityType, Comment, ReplyComment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -32,10 +32,10 @@ type CommentSectionProviderProps = {
 
   // These are optional because they are only used on mobile
   // and provided for the components in CommentDrawer
-  replyingToComment?: Comment
-  setReplyingToComment?: (comment: Comment) => void
-  editingComment?: Comment
-  setEditingComment?: (comment: Comment) => void
+  replyingToComment?: Comment | ReplyComment
+  setReplyingToComment?: (comment: Comment | ReplyComment) => void
+  editingComment?: Comment | ReplyComment
+  setEditingComment?: (comment: Comment | ReplyComment) => void
 }
 
 type CommentSectionContextType = {
