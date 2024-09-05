@@ -32,8 +32,8 @@ import {
   getAlbumRequest,
   getAlbumsRequest,
   getAlbumTracksRequest,
-  GetPurchaseAlbumTransactionRequest,
-  GetPurchaseAlbumTransactionSchema,
+  GetPurchaseAlbumInstructionsRequest,
+  GetPurchaseAlbumInstructionsSchema,
   PurchaseAlbumRequest,
   PurchaseAlbumSchema,
   RepostAlbumRequest,
@@ -244,122 +244,22 @@ export class AlbumsApi {
   }
 
   /**
-   * Gets the Solana instructions for a purchase as a gift
+   * Gets the Solana instructions that purchase the album
    *
    * @hidden
    */
-  async getGiftAlbumInstructions(params: GetPurchaseAlbumTransactionRequest) {
-    const {
-      userId,
-      albumId,
-      price: priceNumber,
-      extraAmount: extraAmountNumber = 0,
-      includeNetworkCut
-    } = await parseParams(
-      'getPurchaseAlbumTransaction',
-      GetPurchaseAlbumTransactionSchema
-    )(params)
-
-    const contentType = 'album'
-    const mint = 'USDC'
-
-    // Fetch album
-    this.logger.debug('Fetching album...', { albumId })
-    const { data: album } = await this.playlistsApi.getPlaylistAccessInfo({
-      userId: params.userId, // use hashed userId
-      playlistId: params.albumId, // use hashed albumId
-      includeNetworkCut
-    })
-
-    // Validate purchase attempt
-    if (!album) {
-      throw new Error('Album not found.')
-    }
-
-    if (!album.isStreamGated) {
-      throw new Error('Attempted to purchase free album.')
-    }
-
-    if (album.userId === params.userId) {
-      throw new Error('Attempted to purchase own album.')
-    }
-
-    let numberSplits: ExtendedPaymentSplit[] = []
-    let centPrice: number
-    const accessType: 'stream' | 'download' = 'stream'
-
-    // Get conditions
-    if (
-      album.streamConditions &&
-      instanceOfExtendedPurchaseGate(album.streamConditions)
-    ) {
-      centPrice = album.streamConditions.usdcPurchase.price
-      numberSplits = album.streamConditions.usdcPurchase.splits
-    } else {
-      this.logger.debug(album.streamConditions)
-      throw new Error('Album is not available for purchase.')
-    }
-
-    // Check if already purchased
-    if (accessType === 'stream' && album.access?.stream) {
-      throw new Error('Album already purchased')
-    }
-
-    // Check if price changed
-    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
-      throw new Error('Track price increased.')
-    }
-
-    const extraAmount = USDC(extraAmountNumber).value
-    const total = USDC(centPrice / 100.0).value + extraAmount
-    this.logger.debug('Purchase total:', total)
-
-    const splits = await prepareSplits({
-      splits: numberSplits,
-      extraAmount,
-      claimableTokensClient: this.claimableTokensClient,
-      logger: this.logger
-    })
-    this.logger.debug('Calculated splits:', splits)
-
-    const routeInstruction =
-      await this.paymentRouterClient.createRouteInstruction({
-        splits,
-        total,
-        mint
-      })
-    const memoInstruction =
-      await this.paymentRouterClient.createPurchaseMemoInstruction({
-        contentId: albumId,
-        contentType,
-        blockNumber: album.blocknumber,
-        buyerUserId: userId,
-        accessType
-      })
-    const locationMemoInstruction =
-      await this.solanaRelay.getLocationInstruction()
-
-    return { routeInstruction, memoInstruction, locationMemoInstruction }
-  }
-
-  /**
-   * Gets the Solana transaction that purchases the album
-   *
-   * @hidden
-   */
-  async getPurchaseAlbumTransaction(
-    params: GetPurchaseAlbumTransactionRequest
+  async getPurchaseAlbumInstructions(
+    params: GetPurchaseAlbumInstructionsRequest
   ) {
     const {
       userId,
       albumId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet,
       includeNetworkCut
     } = await parseParams(
-      'getPurchaseAlbumTransaction',
-      GetPurchaseAlbumTransactionSchema
+      'getPurchaseAlbumInstructions',
+      GetPurchaseAlbumInstructionsSchema
     )(params)
 
     const contentType = 'album'
@@ -440,6 +340,38 @@ export class AlbumsApi {
       })
     const locationMemoInstruction =
       await this.solanaRelay.getLocationInstruction()
+
+    return {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    }
+  }
+
+  /**
+   * Purchases stream access to an album
+   *
+   * @hidden
+   */
+  public async purchaseAlbum(params: PurchaseAlbumRequest) {
+    const { wallet } = await parseParams(
+      'purchaseAlbum',
+      PurchaseAlbumSchema
+    )(params)
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseAlbumInstructions(params)
+
+    let transaction
+    const mint = 'USDC'
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -452,7 +384,7 @@ export class AlbumsApi {
           total,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -461,7 +393,6 @@ export class AlbumsApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -490,7 +421,9 @@ export class AlbumsApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -499,18 +432,8 @@ export class AlbumsApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream access to an album
-   *
-   * @hidden
-   */
-  public async purchaseAlbum(params: PurchaseAlbumRequest) {
-    await parseParams('purchaseAlbum', PurchaseAlbumSchema)(params)
-    const transaction = await this.getPurchaseAlbumTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(

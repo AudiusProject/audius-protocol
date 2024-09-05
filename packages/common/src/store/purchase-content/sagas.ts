@@ -2,19 +2,15 @@ import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient } from '@jup-ag/api'
 import {
-  createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
-  Transaction,
   VersionedTransaction,
   AddressLookupTableAccount,
-  TransactionMessage,
-  Connection,
-  TransactionInstruction
+  TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { sumBy } from 'lodash'
@@ -36,7 +32,6 @@ import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
-  getRecentBlockhash,
   getRootSolanaAccount,
   getSolanaConnection,
   getTokenAccountInfo
@@ -363,13 +358,39 @@ function* purchaseTrackWithCoinflow(args: {
     extraAmount: args.extraAmount,
     trackId: encodeHashId(trackId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey,
     includeNetworkCut
   }
-  const transaction = yield* call(
-    [sdk.tracks, sdk.tracks.getPurchaseTrackTransaction],
-    params
+  const mint = 'USDC'
+  const {
+    instructions: {
+      routeInstruction,
+      memoInstruction,
+      locationMemoInstruction
+    },
+    total: amount
+  } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], params)
+
+  const transferInstruction = yield* call(
+    [
+      sdk.services.paymentRouterClient,
+      sdk.services.paymentRouterClient.createTransferInstruction
+    ],
+    { sourceWallet: wallet.publicKey, total: amount, mint }
   )
+
+  const transaction = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+    {
+      feePayer: wallet.publicKey,
+      instructions: [
+        transferInstruction,
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      ]
+    }
+  )
+
   const serializedTransaction = Buffer.from(transaction.serialize()).toString(
     'base64'
   )
@@ -440,10 +461,37 @@ function* purchaseAlbumWithCoinflow(args: {
     includeNetworkCut
   }
 
-  const transaction = yield* call(
-    [sdk.albums, sdk.albums.getPurchaseAlbumTransaction],
-    params
+  const mint = 'USDC'
+  const {
+    instructions: {
+      routeInstruction,
+      memoInstruction,
+      locationMemoInstruction
+    },
+    total: amount
+  } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], params)
+
+  const transferInstruction = yield* call(
+    [
+      sdk.services.paymentRouterClient,
+      sdk.services.paymentRouterClient.createTransferInstruction
+    ],
+    { sourceWallet: wallet.publicKey, total: amount, mint }
   )
+
+  const transaction = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+    {
+      feePayer: wallet.publicKey,
+      instructions: [
+        transferInstruction,
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      ]
+    }
+  )
+
   const serializedTransaction = Buffer.from(transaction.serialize()).toString(
     'base64'
   )
@@ -889,25 +937,20 @@ function* purchaseWithAnything({
 
     let transaction: VersionedTransaction
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const recentBlockhash = yield* call(
-        getRecentBlockhash,
-        audiusBackendInstance
+      transaction = yield* call(
+        [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+        {
+          feePayer: sourceWallet.publicKey,
+          instructions: [
+            createTransferInstruction(
+              externalTokenAccountPublicKey,
+              paymentRouterTokenAccount.address,
+              sourceWallet.publicKey,
+              totalAmountWithDecimals
+            )
+          ]
+        }
       )
-      const message = new TransactionMessage({
-        recentBlockhash,
-        payerKey: sourceWallet.publicKey,
-        instructions: [
-          createTransferInstruction(
-            externalTokenAccountPublicKey,
-            paymentRouterTokenAccount.address,
-            sourceWallet.publicKey,
-            totalAmountWithDecimals
-          )
-        ].filter(Boolean) as TransactionInstruction[]
-      })
-
-      transaction = new VersionedTransaction(message.compileToV0Message())
     } else {
       console.info('Calling jupiter API to get a quote')
       const jup = yield* call(getJupiterInstance)
@@ -986,26 +1029,36 @@ function* purchaseWithAnything({
     })
 
     if (contentType === PurchaseableContentType.TRACK) {
-      const { routeInstruction, memoInstruction, locationMemoInstruction } =
-        yield* call([sdk.tracks, sdk.tracks.getGiftTrackInstructions], {
-          userId: encodeHashId(purchaserUserId),
-          trackId: encodeHashId(contentId),
-          price: price / 100.0,
-          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-        })
+      const {
+        instructions: {
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
+        }
+      } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
+        userId: encodeHashId(purchaserUserId),
+        trackId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
       message.instructions.push(
         routeInstruction,
         memoInstruction,
         locationMemoInstruction
       )
     } else {
-      const { routeInstruction, memoInstruction, locationMemoInstruction } =
-        yield* call([sdk.albums, sdk.albums.getGiftAlbumInstructions], {
-          userId: encodeHashId(purchaserUserId),
-          albumId: encodeHashId(contentId),
-          price: price / 100.0,
-          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-        })
+      const {
+        instructions: {
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
+        }
+      } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
+        userId: encodeHashId(purchaserUserId),
+        albumId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
       message.instructions.push(
         routeInstruction,
         memoInstruction,

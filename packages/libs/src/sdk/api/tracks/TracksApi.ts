@@ -48,8 +48,8 @@ import {
   UploadTrackRequest,
   PurchaseTrackRequest,
   PurchaseTrackSchema,
-  GetPurchaseTrackTransactionRequest,
-  GetPurchaseTrackTransactionSchema,
+  GetPurchaseTrackInstructionsRequest,
+  GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema
 } from './types'
@@ -415,12 +415,12 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /**
-   * Gets the Solana instructions for a purchase as a gift
+   * Gets the Solana instructions that purchase the track
    *
    * @hidden
    */
-  public async getGiftTrackInstructions(
-    params: GetPurchaseTrackTransactionRequest
+  public async getPurchaseTrackInstructions(
+    params: GetPurchaseTrackInstructionsRequest
   ) {
     const {
       userId,
@@ -429,8 +429,8 @@ export class TracksApi extends GeneratedTracksApi {
       extraAmount: extraAmountNumber = 0,
       includeNetworkCut
     } = await parseParams(
-      'getPurchaseTrackTransaction',
-      GetPurchaseTrackTransactionSchema
+      'getPurchaseTrackInstructions',
+      GetPurchaseTrackInstructionsSchema
     )(params)
 
     const contentType = 'track'
@@ -522,119 +522,37 @@ export class TracksApi extends GeneratedTracksApi {
       await this.solanaRelay.getLocationInstruction()
 
     return {
-      routeInstruction,
-      memoInstruction,
-      locationMemoInstruction
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
     }
   }
 
   /**
-   * Gets the Solana transaction that purchases the track
+   * Purchases stream or download access to a track
    *
    * @hidden
    */
-  public async getPurchaseTrackTransaction(
-    params: GetPurchaseTrackTransactionRequest
-  ) {
-    const {
-      userId,
-      trackId,
-      price: priceNumber,
-      extraAmount: extraAmountNumber = 0,
-      wallet,
-      includeNetworkCut
-    } = await parseParams(
-      'getPurchaseTrackTransaction',
-      GetPurchaseTrackTransactionSchema
+  public async purchaseTrack(params: PurchaseTrackRequest) {
+    const { wallet } = await parseParams(
+      'purchaseTrack',
+      PurchaseTrackSchema
     )(params)
 
-    const contentType = 'track'
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseTrackInstructions(params)
+
+    let transaction
     const mint = 'USDC'
-
-    // Fetch track
-    this.logger.debug('Fetching track purchase info...', { trackId })
-    const { data: track } = await this.getTrackAccessInfo({
-      trackId: params.trackId, // use hashed trackId
-      userId: params.userId, // use hashed userId
-      includeNetworkCut
-    })
-
-    // Validate purchase attempt
-    if (!track) {
-      throw new Error('Track not found.')
-    }
-
-    if (!track.isStreamGated && !track.isDownloadGated) {
-      throw new Error('Attempted to purchase free track.')
-    }
-
-    if (track.userId === params.userId) {
-      throw new Error('Attempted to purchase own track.')
-    }
-
-    let numberSplits: ExtendedPaymentSplit[] = []
-    let centPrice: number
-    let accessType: 'stream' | 'download' = 'stream'
-
-    // Get conditions
-    if (
-      track.streamConditions &&
-      instanceOfExtendedPurchaseGate(track.streamConditions)
-    ) {
-      centPrice = track.streamConditions.usdcPurchase.price
-      numberSplits = track.streamConditions.usdcPurchase.splits
-    } else if (
-      track.downloadConditions &&
-      instanceOfExtendedPurchaseGate(track.downloadConditions)
-    ) {
-      centPrice = track.downloadConditions.usdcPurchase.price
-      numberSplits = track.downloadConditions.usdcPurchase.splits
-      accessType = 'download'
-    } else {
-      throw new Error('Track is not available for purchase.')
-    }
-
-    // Check if already purchased
-    if (
-      (accessType === 'download' && track.access?.download) ||
-      (accessType === 'stream' && track.access?.stream)
-    ) {
-      throw new Error('Track already purchased')
-    }
-
-    // Check if price changed
-    if (USDC(priceNumber).value < USDC(centPrice / 100).value) {
-      throw new Error('Track price increased.')
-    }
-
-    const extraAmount = USDC(extraAmountNumber).value
-    const total = USDC(centPrice / 100.0).value + extraAmount
-    this.logger.debug('Purchase total:', total)
-
-    const splits = await prepareSplits({
-      splits: numberSplits,
-      extraAmount,
-      claimableTokensClient: this.claimableTokensClient,
-      logger: this.logger
-    })
-    this.logger.debug('Calculated splits:', splits)
-
-    const routeInstruction =
-      await this.paymentRouterClient.createRouteInstruction({
-        splits,
-        total,
-        mint
-      })
-    const memoInstruction =
-      await this.paymentRouterClient.createPurchaseMemoInstruction({
-        contentId: trackId,
-        contentType,
-        blockNumber: track.blocknumber,
-        buyerUserId: userId,
-        accessType
-      })
-    const locationMemoInstruction =
-      await this.solanaRelay.getLocationInstruction()
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -647,7 +565,7 @@ export class TracksApi extends GeneratedTracksApi {
           total,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -656,7 +574,6 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -685,7 +602,9 @@ export class TracksApi extends GeneratedTracksApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -694,18 +613,8 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream or download access to a track
-   *
-   * @hidden
-   */
-  public async purchaseTrack(params: PurchaseTrackRequest) {
-    await parseParams('purchaseTrack', PurchaseTrackSchema)(params)
-    const transaction = await this.getPurchaseTrackTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(
