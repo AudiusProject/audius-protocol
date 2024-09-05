@@ -9,7 +9,7 @@ import {
 import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
-import { Comment } from '@audius/sdk'
+import { Comment, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
@@ -24,7 +24,7 @@ import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
 export type CommentBlockProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
   parentCommentId?: string
   hideActions?: boolean
 }
@@ -32,13 +32,13 @@ export type CommentBlockProps = {
 export const CommentBlock = (props: CommentBlockProps) => {
   const { comment, parentCommentId, hideActions } = props
   const {
-    isPinned,
     message,
     id: commentId,
     trackTimestampS,
     createdAt,
     userId: commentUserIdStr
   } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const commentUserId = Number(commentUserIdStr)
