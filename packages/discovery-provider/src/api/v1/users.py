@@ -9,10 +9,12 @@ from flask_restx import Namespace, Resource, fields, inputs, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
+    abort_forbidden,
     abort_not_found,
     current_user_parser,
     decode_ids_array,
     decode_with_abort,
+    extend_account,
     extend_activity,
     extend_challenge_response,
     extend_favorite,
@@ -72,6 +74,7 @@ from src.api.v1.models.support import (
 )
 from src.api.v1.models.tracks import track, track_full
 from src.api.v1.models.users import (
+    account_full,
     associated_wallets,
     challenge_response,
     connected_wallets,
@@ -85,6 +88,7 @@ from src.api.v1.models.users import (
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.exceptions import PermissionError
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -160,6 +164,7 @@ from src.queries.get_user_tracks_remixed import (
 )
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
+from src.queries.get_users_account import GetAccountArgs, get_account
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     PurchaseSortMethod,
@@ -1666,6 +1671,44 @@ class UserIdByAssociatedWallet(Resource):
         )
 
 
+user_account_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+user_account_response_full = make_response(
+    "user_account_response_full", full_ns, fields.Nested(account_full)
+)
+
+USER_ACCOUNT_ROUTE = "/account/<string:wallet>"
+
+
+@full_ns.route(USER_ACCOUNT_ROUTE)
+class FullUserAccount(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get User Account""",
+        description="Gets the account for a given user",
+        responses={
+            200: "Success",
+            401: "Unauthorized",
+            403: "Forbidden",
+            404: "Not Found",
+            500: "Server error",
+        },
+    )
+    @log_duration(logger)
+    @full_ns.expect(user_account_parser)
+    @full_ns.marshal_with(user_account_response_full)
+    @auth_middleware(user_account_parser, require_auth=True)
+    def get(self, wallet, authed_user_id):
+        try:
+            result = get_account(
+                GetAccountArgs(wallet=wallet, authed_user_id=authed_user_id)
+            )
+            if result is None:
+                abort_not_found(full_ns)
+            return success_response(extend_account(result))
+        except PermissionError:
+            abort_forbidden(full_ns)
+
+
 connected_wallets_response = make_response(
     "connected_wallets_response", ns, fields.Nested(connected_wallets)
 )
@@ -2748,6 +2791,7 @@ user_feed_response = make_full_response(
 @full_ns.route(USER_FEED_ROUTE)
 class FullUserFeed(Resource):
     @log_duration(logger)
+    @record_metrics
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
