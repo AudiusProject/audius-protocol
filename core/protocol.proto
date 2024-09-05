@@ -16,8 +16,10 @@ service Protocol {
 
 message Event {
   string signature = 1;
+  string request_id = 2;
   oneof body {
     PlaysEvent plays = 1000;
+    RegisterNodeEvent registerNode = 1001;
   }
 }
 
@@ -39,6 +41,14 @@ message GetEventResponse {
 
 message PlaysEvent {
   repeated Listen listens = 1;
+}
+
+message RegisterNodeEvent {
+  string endpoint = 1;
+  string comet_address = 2;
+  string eth_block = 3;
+  string node_type = 4;
+  string sp_id = 5;
 }
 
 message Listen {

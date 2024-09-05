@@ -11,6 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// valid service types
+var (
+	DiscoveryNode = common.Utf8ToHex("discovery-node")
+	ContentNode   = common.Utf8ToHex("content-node")
+)
+
 // contract keys
 var (
 	RegistryKey               = common.Utf8ToHex("Registry")
@@ -26,7 +32,20 @@ var (
 // manager struct so contracts get loaded lazily upon usage
 // and don't spam rpcs for contracts a developer may not need
 type AudiusContracts struct {
-	Rpc                    *ethclient.Client
+	Rpc *ethclient.Client
+
+	/** contract addresses */
+	RegistryAddress               *geth.Address
+	GovernanceAddress             *geth.Address
+	StakingAddress                *geth.Address
+	ServiceProviderFactoryAddress *geth.Address
+	ClaimsManagerAddress          *geth.Address
+	DelegateManagerAddress        *geth.Address
+	AudioTokenAddress             *geth.Address
+	RewardsManagerAddress         *geth.Address
+	ServiceTypeManagerAddress     *geth.Address
+
+	/** contract instances */
 	Registry               *gen.Registry
 	Governance             *gen.Governance
 	Staking                *gen.Staking
@@ -115,6 +134,7 @@ func (ac *AudiusContracts) GetAudioTokenContract() (*gen.AudiusToken, error) {
 	if err != nil {
 		return nil, err
 	}
+	ac.AudioTokenAddress = &addr
 
 	contract, err := gen.NewAudiusToken(addr, ac.Rpc)
 	if err != nil {
@@ -134,6 +154,7 @@ func (ac *AudiusContracts) GetGovernanceContract() (*gen.Governance, error) {
 	if err != nil {
 		return nil, err
 	}
+	ac.GovernanceAddress = &addr
 
 	contract, err := gen.NewGovernance(addr, ac.Rpc)
 	if err != nil {
@@ -153,6 +174,7 @@ func (ac *AudiusContracts) GetStakingContract() (*gen.Staking, error) {
 	if err != nil {
 		return nil, err
 	}
+	ac.StakingAddress = &addr
 
 	contract, err := gen.NewStaking(addr, ac.Rpc)
 	if err != nil {
@@ -172,6 +194,7 @@ func (ac *AudiusContracts) GetServiceProviderFactoryContract() (*gen.ServiceProv
 	if err != nil {
 		return nil, err
 	}
+	ac.ServiceProviderFactoryAddress = &addr
 
 	contract, err := gen.NewServiceProviderFactory(addr, ac.Rpc)
 	if err != nil {
@@ -191,6 +214,7 @@ func (ac *AudiusContracts) GetClaimsManagerContract() (*gen.ClaimsManager, error
 	if err != nil {
 		return nil, err
 	}
+	ac.ClaimsManagerAddress = &addr
 
 	contract, err := gen.NewClaimsManager(addr, ac.Rpc)
 	if err != nil {
@@ -210,6 +234,7 @@ func (ac *AudiusContracts) GetDelegateManagerContract() (*gen.DelegateManager, e
 	if err != nil {
 		return nil, err
 	}
+	ac.DelegateManagerAddress = &addr
 
 	contract, err := gen.NewDelegateManager(addr, ac.Rpc)
 	if err != nil {
@@ -229,6 +254,7 @@ func (ac *AudiusContracts) GetRewardsManagerContract() (*gen.EthRewardsManager, 
 	if err != nil {
 		return nil, err
 	}
+	ac.RewardsManagerAddress = &addr
 
 	contract, err := gen.NewEthRewardsManager(addr, ac.Rpc)
 	if err != nil {
@@ -253,6 +279,7 @@ func (ac *AudiusContracts) GetServiceTypeManagerContract() (*gen.ServiceTypeMana
 	if err != nil {
 		return nil, err
 	}
+	ac.ServiceTypeManagerAddress = &addr
 
 	contract, err := gen.NewServiceTypeManager(addr, ac.Rpc)
 	if err != nil {

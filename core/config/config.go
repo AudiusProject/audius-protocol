@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/ecdsa"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/cometbft/cometbft/crypto/ed25519"
+	"github.com/cometbft/cometbft/types"
 	"github.com/joho/godotenv"
 )
 
@@ -22,7 +25,7 @@ const (
 
 const (
 	ProdRegistryAddress  = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
-	StageRegistryAddress = "0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3"
+	StageRegistryAddress = "0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0"
 	DevRegistryAddress   = "0xABbfF712977dB51f9f212B85e8A4904c818C2b63"
 
 	ProdAcdcAddress  = "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64"
@@ -57,12 +60,19 @@ type Config struct {
 	ProposerAddress    string
 	GRPCladdr          string
 	CoreServerAddr     string
+	NodeEndpoint       string
 
 	EthRPCUrl          string
 	EthRegistryAddress string
 
 	/* System Config */
 	RunDownMigration bool
+
+	/* Derived Config */
+	GenesisFile *types.GenesisDoc
+	EthereumKey *ecdsa.PrivateKey
+	CometKey    *ed25519.PrivKey
+	NodeType    NodeType
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -91,18 +101,19 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
 	if isDiscovery {
+		cfg.NodeType = Discovery
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
-		cfg.EthRegistryAddress = os.Getenv("audius_contracts_registry")
+		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
-		// isContent
+		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
-		cfg.EthRegistryAddress = os.Getenv("ethRegistryAddress")
+		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
 	if cfg.Environment == "" {
@@ -119,20 +130,16 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
+		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc
-		}
-		if cfg.EthRegistryAddress == "" {
-			cfg.EthRegistryAddress = ProdRegistryAddress
 		}
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
+		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
-		}
-		if cfg.EthRegistryAddress == "" {
-			cfg.EthRegistryAddress = StageRegistryAddress
 		}
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
@@ -149,13 +156,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	// Disable ssl for local postgres db connection
 	if !strings.HasSuffix(cfg.PSQLConn, "?sslmode=disable") && isLocalDbUrlRegex.MatchString(cfg.PSQLConn) {
 		cfg.PSQLConn += "?sslmode=disable"
-	}
-
-	// only allow down migration in dev env
-	cfg.RunDownMigration = os.Getenv("runDownMigration") == "true" && (cfg.Environment == "dev" || cfg.Environment == "sandbox")
-
-	if err := InitComet(logger, &cfg); err != nil {
-		return nil, fmt.Errorf("initializing comet %v", err)
 	}
 
 	return &cfg, nil

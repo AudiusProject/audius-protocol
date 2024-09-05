@@ -63,14 +63,14 @@ const messages = {
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
 type PurchasableContentOption = {
-  contentId: string
+  contentId: number
   contentType: 'track' | 'album'
 }
 
 type ChatBlastFormValues = {
   target_audience: ChatBlastAudience
   purchased_content_metadata?: PurchasableContentOption
-  remixed_track_id?: string
+  remixed_track_id?: number
 }
 
 export const ChatBlastModal = () => {
@@ -341,7 +341,7 @@ const RemixCreatorsMessageField = () => {
   const { data: remixedTracks } = useGetRemixedTracks({
     userId: currentUserId!
   })
-  const isDisabled = remixedTracks.length === 0
+  const isDisabled = remixedTracks?.length === 0
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
