@@ -32,7 +32,7 @@ def get_replies(session, parent_comment_id, offset=0, limit=COMMENT_REPLIES_LIMI
     return [
         {
             "id": encode_int_id(reply.comment_id),
-            "userId": reply.user_id,  # Assuming user_id is an attribute of Comment
+            "user_id": reply.user_id,
             "message": reply.text,
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": (

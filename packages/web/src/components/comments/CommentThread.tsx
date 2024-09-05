@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { useGetCommentById } from '@audius/common/api'
+import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { commentsMessages as messages } from '@audius/common/messages'
 import {
   Box,
@@ -22,7 +22,17 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     data: moreReplies,
     loadMore,
     hasMore
-  } = { data: [], loadMore: () => {}, hasMore: false }
+  } = useGetCommentRepliesById(
+    { id: commentId },
+    {
+      // Root comments already have the first 3 replies so we only need to load more when the user requests them
+      disabled: (rootComment?.replies?.length ?? 0) < 3 || !hasLoadedMore,
+      pageSize: 3,
+      // Start at the 4th reply
+      startOffset: 3
+    }
+  )
+
   const hasMoreReplies = hasMore && (rootComment?.replies?.length ?? 0) >= 3
 
   const [hiddenReplies, setHiddenReplies] = useState<{
@@ -39,10 +49,13 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     if (hasLoadedMore) {
       loadMore()
     } else {
+      // If hasLoadedMore is false, this is the first time the user is requesting more replies
+      // In this case audius-query will automatically fetch the first page of replies, no need to trigger via loadMore()
       setHasLoadedMore(true)
     }
   }
 
+  // Combine the replies from the root comment and the additional loaded replies
   const allReplies = [...(rootComment?.replies ?? []), ...(moreReplies ?? [])]
 
   if (!rootComment) return null

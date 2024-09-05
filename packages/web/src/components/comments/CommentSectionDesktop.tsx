@@ -75,14 +75,14 @@ export const CommentSectionDesktop = () => {
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
           <CommentSortBar />
-          <Flex direction='column' gap='xl' pt='m'>
-            <InfiniteScroll
-              hasMore={hasMorePages}
-              loadMore={loadMorePages}
-              getScrollParent={() => mainContentRef.current ?? null}
-              useWindow={false}
-              threshold={-250}
-            >
+          <InfiniteScroll
+            hasMore={hasMorePages}
+            loadMore={loadMorePages}
+            getScrollParent={() => mainContentRef.current ?? null}
+            useWindow={false}
+            threshold={-250}
+          >
+            <Flex direction='column' gap='xl' pt='m'>
               {comments.length === 0 ? <NoComments /> : null}
               {comments.map(({ id }) => (
                 <CommentThread commentId={id} key={id} />
@@ -92,8 +92,8 @@ export const CommentSectionDesktop = () => {
                   <LoadingSpinner css={{ width: 20, height: 20 }} />
                 </Flex>
               ) : null}
-            </InfiniteScroll>
-          </Flex>
+            </Flex>
+          </InfiniteScroll>
         </Flex>
       </Paper>
     </Flex>
