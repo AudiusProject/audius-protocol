@@ -89,11 +89,15 @@ export const ChatBlastModal = () => {
       values.target_audience === ChatBlastAudience.CUSTOMERS
         ? values.purchased_content_metadata?.contentId
         : values.remixed_track_id
+    const audienceContentType =
+      values.target_audience === ChatBlastAudience.REMIXERS
+        ? 'track'
+        : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
         audience: values.target_audience,
         audienceContentId,
-        audienceContentType: values.purchased_content_metadata?.contentType
+        audienceContentType
       })
     )
   }
