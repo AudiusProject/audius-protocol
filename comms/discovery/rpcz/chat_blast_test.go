@@ -55,7 +55,8 @@ func TestChatBlast(t *testing.T) {
 		(100, 69, true, false, $1, ''),
 		(101, 69, true, false, $1, ''),
 		(102, 69, true, false, $1, ''),
-		(103, 69, true, false, $1, '')
+		(103, 69, true, false, $1, ''),
+		(104, 69, true, false, $1, '')
 	`, t0)
 	assert.NoError(t, err)
 
@@ -332,7 +333,7 @@ func TestChatBlast(t *testing.T) {
 		// user 101 reacts
 		{
 			heart := "heart"
-			chatReactMessage(tx, 101, messages[0].MessageID, &heart, t5)
+			chatReactMessage(tx, 101, chatId, messages[0].MessageID, &heart, t5)
 
 			// reaction shows up
 			messages = mustGetMessagesAndReactions(69, chatId)
@@ -585,12 +586,13 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	{
+		blastChatId := "remixer_audience:track:" + misc.MustEncodeHashID(1)
 		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
 			UserID: 69,
-			ChatID: "remixer_audience:track:1",
+			ChatID: blastChatId,
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, "remixer_audience:track:1", chat.ChatID)
+		assert.Equal(t, blastChatId, chat.ChatID)
 	}
 
 	{
@@ -605,9 +607,9 @@ func TestChatBlast(t *testing.T) {
 	// ------------- PURCHASE
 	tx.MustExec(`
 	insert into usdc_purchases
-	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id)
+	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id, splits)
 	values
-	(0, '', 203, 69, 5.99, 'track', 1);
+	(0, '', 203, 69, 5.99, 'track', 1, 'null');
 	`)
 
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
