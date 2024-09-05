@@ -90,7 +90,7 @@ from src.utils.rendezvous import RendezvousHash
 
 from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
-from .models.tracks import stem_full, track, track_access_info, track_full
+from .models.tracks import stem, stem_full, track, track_access_info, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -1368,7 +1368,7 @@ class TrackTopListeners(Resource):
         return success_response(top_listeners)
 
 
-track_stems_response = make_full_response(
+full_track_stems_response = make_full_response(
     "stems_response", full_ns, fields.List(fields.Nested(stem_full))
 )
 
@@ -1380,10 +1380,31 @@ class FullTrackStems(Resource):
         description="""Get the remixable stems of a track""",
         params={"track_id": "A Track ID"},
     )
-    @full_ns.marshal_with(track_stems_response)
+    @full_ns.marshal_with(full_track_stems_response)
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
+        stems = get_stems_of(decoded_id)
+        stems = list(map(stem_from_track, stems))
+        return success_response(stems)
+
+
+track_stems_response = make_response(
+    "stems_response", ns, fields.List(fields.Nested(stem))
+)
+
+
+@ns.route("/<string:track_id>/stems")
+class TrackStems(Resource):
+    @ns.doc(
+        id="""Get Track Stems""",
+        description="""Get the remixable stems of a track""",
+        params={"track_id": "A Track ID"},
+    )
+    @ns.marshal_with(track_stems_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, ns)
         stems = get_stems_of(decoded_id)
         stems = list(map(stem_from_track, stems))
         return success_response(stems)

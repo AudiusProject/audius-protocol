@@ -17,6 +17,7 @@
 import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
+  StemsResponse,
   StreamUrlResponse,
   TopListener,
   TrackCommentsResponse,
@@ -28,6 +29,8 @@ import type {
 import {
     AccessInfoResponseFromJSON,
     AccessInfoResponseToJSON,
+    StemsResponseFromJSON,
+    StemsResponseToJSON,
     StreamUrlResponseFromJSON,
     StreamUrlResponseToJSON,
     TopListenerFromJSON,
@@ -67,6 +70,10 @@ export interface GetTrackAccessInfoRequest {
     trackId: string;
     userId?: string;
     includeNetworkCut?: boolean;
+}
+
+export interface GetTrackStemsRequest {
+    trackId: string;
 }
 
 export interface GetTrackTopListenersRequest {
@@ -287,6 +294,37 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackAccessInfo(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
         const response = await this.getTrackAccessInfoRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the remixable stems of a track
+     */
+    async getTrackStemsRaw(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StemsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackStems.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/stems`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StemsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the remixable stems of a track
+     */
+    async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
+        const response = await this.getTrackStemsRaw(params, initOverrides);
         return await response.value();
     }
 

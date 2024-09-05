@@ -60,6 +60,8 @@ models/ReplyComment.ts
 models/Reposts.ts
 models/SalesAggregate.ts
 models/SalesAggregateResponse.ts
+models/Stem.ts
+models/StemsResponse.ts
 models/StreamUrlResponse.ts
 models/SubscribersResponse.ts
 models/Supporter.ts
