@@ -32,8 +32,8 @@ import {
   getAlbumRequest,
   getAlbumsRequest,
   getAlbumTracksRequest,
-  GetPurchaseAlbumTransactionRequest,
-  GetPurchaseAlbumTransactionSchema,
+  GetPurchaseAlbumInstructionsRequest,
+  GetPurchaseAlbumInstructionsSchema,
   PurchaseAlbumRequest,
   PurchaseAlbumSchema,
   RepostAlbumRequest,
@@ -244,23 +244,22 @@ export class AlbumsApi {
   }
 
   /**
-   * Gets the Solana transaction that purchases the album
+   * Gets the Solana instructions that purchase the album
    *
    * @hidden
    */
-  async getPurchaseAlbumTransaction(
-    params: GetPurchaseAlbumTransactionRequest
+  async getPurchaseAlbumInstructions(
+    params: GetPurchaseAlbumInstructionsRequest
   ) {
     const {
       userId,
       albumId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet,
       includeNetworkCut
     } = await parseParams(
-      'getPurchaseAlbumTransaction',
-      GetPurchaseAlbumTransactionSchema
+      'getPurchaseAlbumInstructions',
+      GetPurchaseAlbumInstructionsSchema
     )(params)
 
     const contentType = 'album'
@@ -342,6 +341,38 @@ export class AlbumsApi {
     const locationMemoInstruction =
       await this.solanaRelay.getLocationInstruction()
 
+    return {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    }
+  }
+
+  /**
+   * Purchases stream access to an album
+   *
+   * @hidden
+   */
+  public async purchaseAlbum(params: PurchaseAlbumRequest) {
+    const { wallet } = await parseParams(
+      'purchaseAlbum',
+      PurchaseAlbumSchema
+    )(params)
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseAlbumInstructions(params)
+
+    let transaction
+    const mint = 'USDC'
+
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
         wallet: wallet.toBase58()
@@ -353,7 +384,7 @@ export class AlbumsApi {
           total,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -362,7 +393,6 @@ export class AlbumsApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -391,7 +421,9 @@ export class AlbumsApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -400,18 +432,8 @@ export class AlbumsApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream access to an album
-   *
-   * @hidden
-   */
-  public async purchaseAlbum(params: PurchaseAlbumRequest) {
-    await parseParams('purchaseAlbum', PurchaseAlbumSchema)(params)
-    const transaction = await this.getPurchaseAlbumTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(
