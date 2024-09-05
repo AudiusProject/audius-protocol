@@ -1697,6 +1697,7 @@ class FullUserAccount(Resource):
     @full_ns.doc(
         id="""Get User Account""",
         description="Gets the account for a given user",
+        params={"wallet": "Wallet address for the account"},
         responses={
             200: "Success",
             401: "Unauthorized",
