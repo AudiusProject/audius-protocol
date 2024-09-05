@@ -45,8 +45,6 @@ func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoReques
 		return nil, err
 	}
 
-	app.logger.Infof("info called: %v", latest)
-
 	// if at genesis, tell comet there's no blocks indexed
 	if latest.BlockHeight < 2 {
 		return &abcitypes.InfoResponse{}, nil
