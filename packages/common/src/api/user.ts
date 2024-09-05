@@ -213,7 +213,7 @@ const userApi = createApi({
           userId,
           contentId,
           contentType
-        }: { userId: ID; contentId?: number; contentType: string },
+        }: { userId: ID; contentId?: number; contentType?: string },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
