@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
+import type { ChatBlast } from '@audius/sdk'
 import { css } from '@emotion/native'
 import { TouchableHighlight } from 'react-native'
 
@@ -19,16 +20,17 @@ const messages = {
   audience: 'audience'
 }
 
-export const ChatListBlastItem = ({ chatId }: { chatId: string }) => {
+export const ChatListBlastItem = ({ chat }: { chat: ChatBlast }) => {
   const { spacing } = useTheme()
   const navigation = useNavigation<AppTabScreenParamList>()
+  const { chat_id: chatId } = chat
 
   const handlePress = useCallback(() => {
     navigation.push('Chat', { chatId })
   }, [navigation, chatId])
 
   const { audienceCount, contentTitle, chatBlastTitle } =
-    useChatBlastAudienceContent({ chatId })
+    useChatBlastAudienceContent({ chat })
 
   return (
     <TouchableHighlight onPress={handlePress}>

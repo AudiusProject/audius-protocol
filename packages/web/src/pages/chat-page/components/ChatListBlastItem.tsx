@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
+import { ChatBlast } from '@audius/sdk'
 import cn from 'classnames'
 
 import styles from './ChatListItem.module.css'
@@ -11,17 +12,18 @@ const messages = {
 }
 
 type ChatListBlastItemProps = {
-  chatId: string
+  chat: ChatBlast
   currentChatId?: string
   onChatClicked: (chatId: string) => void
 }
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
-  const { chatId, onChatClicked, currentChatId } = props
+  const { chat, onChatClicked, currentChatId } = props
+  const { chat_id: chatId } = chat
   const isCurrentChat = currentChatId && currentChatId === chatId
   const { chatBlastTitle, contentTitle, audienceCount } =
     useChatBlastAudienceContent({
-      chatId
+      chat
     })
 
   const handleClick = useCallback(() => {

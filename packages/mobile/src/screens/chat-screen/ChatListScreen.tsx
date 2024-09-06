@@ -150,7 +150,7 @@ export const ChatListScreen = () => {
 
   const renderItem = useCallback(({ item }) => {
     if (item.is_blast) {
-      return <ChatListBlastItem chatId={item.chat_id} />
+      return <ChatListBlastItem chat={item} />
     }
     return <ChatListItem chatId={item.chat_id} />
   }, [])

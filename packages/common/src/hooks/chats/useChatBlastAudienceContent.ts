@@ -10,18 +10,14 @@ import {
   useGetRemixersCount,
   useGetTrackById
 } from '~/api'
-import { getChat } from '~/store/pages/chat/selectors'
 import { decodeHashId, getChatBlastTitle } from '~/utils'
 
-import { useProxySelector } from '../useProxySelector'
-
-export const useChatBlastAudienceContent = ({ chatId }: { chatId: string }) => {
-  const chat = useProxySelector((state) => getChat(state, chatId), [chatId])
+export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   const {
     audience,
     audience_content_id: audienceContentId,
     audience_content_type: audienceContentType
-  } = chat as ChatBlast
+  } = chat
 
   const decodedContentId = audienceContentId
     ? decodeHashId(audienceContentId) ?? undefined

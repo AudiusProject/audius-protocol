@@ -72,7 +72,7 @@ export const ChatList = (props: ChatListProps) => {
             chat.is_blast ? (
               <ChatListBlastItem
                 key={chat.chat_id}
-                chatId={chat.chat_id}
+                chat={chat}
                 onChatClicked={onChatClicked}
                 currentChatId={currentChatId}
               />
