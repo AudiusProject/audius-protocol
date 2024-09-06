@@ -266,7 +266,7 @@ const commentsApi = createApi({
         optimisticUpdateComment(
           id,
           (comment) => {
-            if (comment) {
+            if (comment && 'isPinned' in comment) {
               comment.isPinned = isPinned
             }
           },
