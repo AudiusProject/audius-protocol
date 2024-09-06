@@ -8,10 +8,12 @@ import (
 )
 
 func (core *CoreApplication) finalizeEvent(ctx context.Context, msg *gen_proto.Event) error {
-	switch msg.Body.(type) {
+	switch t := msg.Body.(type) {
 	case *gen_proto.Event_Plays:
+		return nil
 	case *gen_proto.Event_RegisterNode:
 		return core.finalizeRegisterNode(ctx, msg)
+	default:
+		return fmt.Errorf("unhandled proto event: %v %T", msg, t)
 	}
-	return fmt.Errorf("unhandled proto event: %v", msg)
 }
