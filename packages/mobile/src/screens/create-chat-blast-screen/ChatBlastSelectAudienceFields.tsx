@@ -70,7 +70,7 @@ const FollowersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.followers.label}
-          count={user.follower_count}
+          count={user?.follower_count}
           isSelected={isSelected}
         />
       }
@@ -90,7 +90,7 @@ const TipSupportersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.supporters.label}
-          count={user.supporter_count}
+          count={user?.supporter_count}
           isSelected={isSelected}
         />
       }
@@ -111,7 +111,7 @@ const PastPurchasersMessageField = () => {
         <LabelWithCount
           label={messages.purchasers.label}
           // TODO: need purchasers count endpoint
-          count={user.supporter_count}
+          count={user?.supporter_count}
           isSelected={isSelected}
         />
       }
@@ -132,7 +132,7 @@ const RemixCreatorsMessageField = () => {
         <LabelWithCount
           label={messages.remixCreators.label}
           // TODO: need remixers count endpoint
-          count={user.supporter_count}
+          count={user?.supporter_count}
           isSelected={isSelected}
         />
       }
