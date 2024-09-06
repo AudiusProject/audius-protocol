@@ -20,6 +20,7 @@ message Event {
   oneof body {
     PlaysEvent plays = 1000;
     RegisterNodeEvent registerNode = 1001;
+    SlaRollupEvent slaRollup = 1002;
   }
 }
 
@@ -78,4 +79,16 @@ message KeyValueResponse {
   string key = 1;
   string value = 2;
   string txhash = 3;
+}
+
+message SlaRollupEvent {
+  google.protobuf.Timestamp timestamp = 1;
+  int64 block_start = 2;
+  int64 block_end = 3;
+  repeated SlaNodeReport reports = 4;
+}
+
+message SlaNodeReport {
+  string address = 1;
+  int32 num_blocks_proposed = 2;
 }

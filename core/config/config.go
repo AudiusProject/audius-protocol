@@ -23,6 +23,10 @@ const (
 	Identity
 )
 
+type RollupInterval struct {
+	BlockInterval int
+}
+
 const (
 	ProdRegistryAddress  = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
 	StageRegistryAddress = "0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0"
@@ -69,10 +73,11 @@ type Config struct {
 	RunDownMigration bool
 
 	/* Derived Config */
-	GenesisFile *types.GenesisDoc
-	EthereumKey *ecdsa.PrivateKey
-	CometKey    *ed25519.PrivKey
-	NodeType    NodeType
+	GenesisFile       *types.GenesisDoc
+	EthereumKey       *ecdsa.PrivateKey
+	CometKey          *ed25519.PrivKey
+	NodeType          NodeType
+	SlaRollupInterval int
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -135,12 +140,16 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = ProdEthRpc
 		}
 
+		cfg.SlaRollupInterval = 3600 * 24
+
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
 		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
 		}
+		cfg.SlaRollupInterval = 3600 * 24
+
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
 		cfg.ExternalAddress = os.Getenv("externalAddress")
@@ -151,6 +160,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRegistryAddress == "" {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
+		cfg.SlaRollupInterval = 12
+
 	}
 
 	// Disable ssl for local postgres db connection
