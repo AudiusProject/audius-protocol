@@ -31,7 +31,7 @@ def validate_comment_tx(params: ManageEntityParameters):
         raise IndexingValidationError(f"entity_id is required to create comment")
     if params.user_id is None:
         raise IndexingValidationError(f"user_id is required to create comment")
-    if params.metadata["body"]:
+    if params.metadata["body"] is None or params.metadata["body"] == "":
         raise IndexingValidationError("Comment body is empty")
 
 
