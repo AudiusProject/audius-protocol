@@ -110,12 +110,6 @@
   font-weight: var(--harmony-font-medium);
 }
 
-.statsSection .numberOfListens,
-.statsSection .listenText,
-.statsSection .firstListen {
-  font-size: var(--harmony-font-m);
-}
-
 .progressText,
 .completeText {
   color: var(--harmony-n-400);

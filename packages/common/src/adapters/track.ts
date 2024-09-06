@@ -183,6 +183,7 @@ export const stemTrackMetadataFromSDK = (
     release_date: null,
     repost_count: 0,
     save_count: 0,
+    comment_count: 0,
     tags: null,
     title: '',
     track_segments: [],

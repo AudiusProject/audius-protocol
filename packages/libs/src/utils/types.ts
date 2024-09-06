@@ -171,6 +171,7 @@ export type TrackMetadata = {
   release_date: Nullable<string>
   repost_count: number
   save_count: number
+  comment_count: number
   tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
