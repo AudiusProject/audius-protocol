@@ -75,7 +75,7 @@ const commentsApi = createApi({
         // We ultimately only use this query expecting to hit the cache
         return undefined
       },
-      options: { type: 'query' }
+      options: {}
     },
     getCommentRepliesById: {
       async fetch(
