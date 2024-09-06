@@ -34,10 +34,15 @@ export const usePostComment = () => {
 
 export const useReactToComment = () => {
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
-  const { currentUserId } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const wrappedHandler = async (commentId: string, isLiked: boolean) => {
     if (currentUserId) {
-      reactToComment({ id: commentId, userId: currentUserId, isLiked })
+      reactToComment({
+        id: commentId,
+        userId: currentUserId,
+        isLiked,
+        isEntityOwner
+      })
     }
     // TODO: trigger auth flow here
   }

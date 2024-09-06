@@ -276,7 +276,17 @@ const commentsApi = createApi({
     },
     reactToCommentById: {
       async fetch(
-        { id, userId, isLiked }: { id: string; userId: ID; isLiked: boolean },
+        {
+          id,
+          userId,
+          isLiked,
+          isEntityOwner
+        }: {
+          id: string
+          userId: ID
+          isLiked: boolean
+          isEntityOwner?: boolean
+        },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
@@ -290,12 +300,13 @@ const commentsApi = createApi({
         await sdk.comments.reactComment(userId, decodedId, isLiked)
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id, isLiked }, { dispatch }) {
+      async onQueryStarted({ id, isLiked, isEntityOwner }, { dispatch }) {
         optimisticUpdateComment(
           id,
           (comment) => ({
             ...(comment as Comment),
-            reactCount: (comment?.reactCount ?? 0) + (isLiked ? 1 : -1)
+            reactCount: (comment?.reactCount ?? 0) + (isLiked ? 1 : -1),
+            isArtistReacted: isEntityOwner && isLiked
           }),
           dispatch
         )
