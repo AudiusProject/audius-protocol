@@ -73,7 +73,7 @@
       .ant-select-selection-search.expanded
       .ant-select-selection-search-input
   ) {
-  background-color: var(--search-bar-expanded);
+  background-color: var(--harmony-white);
   width: 280px;
 }
 
