@@ -30,6 +30,7 @@ func TestChatBlast(t *testing.T) {
 
 	var count = 0
 	var messages []queries.ChatMessageAndReactionsRow
+	var err error
 
 	// helper funcs
 	mustGetMessagesAndReactions := func(userID int32, chatID string) []queries.ChatMessageAndReactionsRow {
@@ -47,7 +48,7 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// create some follower audiuence
-	_, err := tx.Exec(`insert into follows
+	tx.MustExec(`insert into follows
 		(follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
 	values
 		(68, 69, true, false, $1, ''),
@@ -56,9 +57,15 @@ func TestChatBlast(t *testing.T) {
 		(101, 69, true, false, $1, ''),
 		(102, 69, true, false, $1, ''),
 		(103, 69, true, false, $1, ''),
-		(104, 69, true, false, $1, '')
+		(900, 69, true, false, $1, ''),
+		(901, 69, true, false, $1, '')
 	`, t0)
-	assert.NoError(t, err)
+
+	// user 900 sets permissions to tippers only
+	tx.MustExec(`insert into chat_permissions values (900, 'tippers', $1)`, t0)
+
+	// user 901 follows 69, but has explicitly blocked in chat
+	tx.MustExec(`insert into chat_blocked_users values (901, 69, $1)`, t0)
 
 	// ----------------- some threads already exist -------------
 	// user 100 starts a thread with 69 before first blast
@@ -207,6 +214,24 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, blasts, 1)
+	}
+
+	// user 900 has set permissions to tippers-only... does not see blast
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 900,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 0)
+	}
+
+	// user 901 has blocked sender... does not see blast
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 901,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 0)
 	}
 
 	// user 999 does not

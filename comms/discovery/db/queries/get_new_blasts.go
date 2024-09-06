@@ -28,59 +28,66 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 	// see also: subtly different inverse query exists in chat_blast.go
 	// to fan out messages to existing chat
 	var findNewBlasts = `
-	select *
-	from chat_blast blast
-	where
-	from_user_id in (
-		-- follower_audience
-		SELECT followee_user_id AS from_user_id
-		FROM follows
-		WHERE blast.audience = 'follower_audience'
-			AND follows.followee_user_id = blast.from_user_id
-			AND follows.follower_user_id = $1
-			AND follows.is_delete = false
-			AND follows.created_at < blast.created_at
-	)
-	OR from_user_id in (
-		-- tipper_audience
-		SELECT receiver_user_id
-		FROM user_tips tip
-		WHERE blast.audience = 'tipper_audience'
-		AND receiver_user_id = blast.from_user_id
-		AND sender_user_id = $1
-		AND tip.created_at < blast.created_at
-	)
-	OR from_user_id IN  (
-		-- remixer_audience
-		SELECT og.owner_id
-		FROM tracks t
-		JOIN remixes ON remixes.child_track_id = t.track_id
-		JOIN tracks og ON remixes.parent_track_id = og.track_id
-		WHERE blast.audience = 'remixer_audience'
-			AND og.owner_id = blast.from_user_id
-			AND t.owner_id = $1
-			AND (
-				blast.audience_content_id IS NULL
-				OR (
-					blast.audience_content_type = 'track'
-					AND blast.audience_content_id = og.track_id
+	SELECT *
+	FROM chat_blast blast
+	WHERE
+	NOT EXISTS (SELECT 1 FROM chat_blocked_users WHERE blocker_user_id = $1 AND blockee_user_id = from_user_id)
+	AND (
+		from_user_id in (
+			-- follower_audience
+			SELECT followee_user_id AS from_user_id
+			FROM follows
+			LEFT JOIN chat_permissions ON follower_user_id = user_id
+			WHERE blast.audience = 'follower_audience'
+				AND follows.followee_user_id = blast.from_user_id
+				AND follows.follower_user_id = $1
+				AND follows.is_delete = false
+				AND follows.created_at < blast.created_at
+				AND (permits IS NULL OR permits = 'all' OR permits = 'followees')
+		)
+		OR from_user_id in (
+			-- tipper_audience
+			SELECT receiver_user_id
+			FROM user_tips tip
+			LEFT JOIN chat_permissions ON sender_user_id = user_id
+			WHERE blast.audience = 'tipper_audience'
+			AND receiver_user_id = blast.from_user_id
+			AND sender_user_id = $1
+			AND tip.created_at < blast.created_at
+			AND (permits IS NULL OR permits = 'all' OR permits = 'tippers')
+		)
+		OR from_user_id IN  (
+			-- remixer_audience
+			SELECT og.owner_id
+			FROM tracks t
+			JOIN remixes ON remixes.child_track_id = t.track_id
+			JOIN tracks og ON remixes.parent_track_id = og.track_id
+			WHERE blast.audience = 'remixer_audience'
+				AND og.owner_id = blast.from_user_id
+				AND t.owner_id = $1
+				AND (
+					blast.audience_content_id IS NULL
+					OR (
+						blast.audience_content_type = 'track'
+						AND blast.audience_content_id = og.track_id
+					)
 				)
-			)
-	)
-	OR from_user_id IN (
-		-- customer_audience
-		SELECT seller_user_id
-		FROM usdc_purchases p
-		WHERE blast.audience = 'customer_audience'
-			AND p.seller_user_id = blast.from_user_id
-			AND p.buyer_user_id = $1
-			AND (
-				audience_content_id IS NULL
-				OR (
-					blast.audience_content_type = p.content_type::text
-					AND blast.audience_content_id = p.content_id
+		)
+		OR from_user_id IN (
+			-- customer_audience
+			SELECT seller_user_id
+			FROM usdc_purchases p
+			WHERE blast.audience = 'customer_audience'
+				AND p.seller_user_id = blast.from_user_id
+				AND p.buyer_user_id = $1
+				AND (
+					audience_content_id IS NULL
+					OR (
+						blast.audience_content_type = p.content_type::text
+						AND blast.audience_content_id = p.content_id
+					)
 				)
-			)
+		)
 	)
 	order by created_at
 	`
