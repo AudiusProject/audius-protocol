@@ -29,13 +29,13 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     {
       id: decodedContentId!
     },
-    { disabled: !audienceContentId || audienceContentType !== 'track' }
+    { disabled: !decodedContentId || audienceContentType !== 'track' }
   )
   const { data: album } = useGetPlaylistById(
     {
       playlistId: decodedContentId!
     },
-    { disabled: !audienceContentId || audienceContentType !== 'album' }
+    { disabled: !decodedContentId || audienceContentType !== 'album' }
   )
 
   const { data: purchasersCount } = useGetPurchasersCount(
