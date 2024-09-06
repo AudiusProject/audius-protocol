@@ -43,7 +43,12 @@ func (r *Registry) RegisterSelf() error {
 	}
 
 	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, nodeEndpoint)
-	if err != nil || spID.Uint64() == 0 {
+	if err != nil {
+		return fmt.Errorf("issue getting sp data: %v", err)
+	}
+
+	// contract returns 0 if endpoint not registered
+	if spID.Uint64() == 0 {
 		logger.Infof("node %s : %s not registered on mainnet", nodeAddress.Hex(), nodeEndpoint)
 		if r.config.Environment == "dev" || r.config.Environment == "sandbox" {
 			if err := r.registerSelfOnEth(); err != nil {
@@ -52,7 +57,8 @@ func (r *Registry) RegisterSelf() error {
 			// call again but registered this time
 			return r.RegisterSelf()
 		}
-		return fmt.Errorf("could not get sp id from chain: %v", err)
+		logger.Info("continuing unregistered")
+		return nil
 	}
 
 	serviceType, err := contracts.ServiceType(r.config.NodeType)
@@ -142,7 +148,7 @@ func (r *Registry) awaitNodeCatchup(ctx context.Context) error {
 		}
 
 		if res.SyncInfo.CatchingUp {
-			r.logger.Infof("comet catching up %d", res.SyncInfo.LatestBlockHeight)
+			r.logger.Infof("comet catching up: latest seen block %d", res.SyncInfo.LatestBlockHeight)
 			time.Sleep(10 * time.Second)
 			continue
 		}
