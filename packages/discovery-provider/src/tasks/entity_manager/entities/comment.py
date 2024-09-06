@@ -43,7 +43,7 @@ def create_comment(params: ManageEntityParameters):
         comment_id=comment_id,
         user_id=params.user_id,
         text=params.metadata["body"],
-        entity_type=params.metadata["entity_type"] or EntityType.TRACK.value,
+        entity_type=params.metadata.get("entity_type", EntityType.TRACK.value),
         entity_id=params.metadata["entity_id"],
         track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
