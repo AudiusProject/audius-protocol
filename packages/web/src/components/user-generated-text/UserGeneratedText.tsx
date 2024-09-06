@@ -14,7 +14,7 @@ import {
   formatTrackName,
   formatUserName
 } from '@audius/common/utils'
-import { Text, TextProps } from '@audius/harmony'
+import { Text, TextLinkProps, TextProps } from '@audius/harmony'
 import { ResolveApi } from '@audius/sdk'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
@@ -41,6 +41,7 @@ const LinkifyText = forwardRef((props: LinkifyTextProps, ref) => {
 })
 
 type UserGeneratedTextProps<T extends ElementType> = TextProps<T> & {
+  linkProps?: Partial<TextLinkProps>
   linkSource?: 'profile page' | 'track page' | 'collection page'
   onClickLink?: (event: MouseEvent<HTMLAnchorElement>) => void
 }
@@ -101,9 +102,11 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
     color,
     size,
     strength,
+    lineHeight,
     tag = 'p',
     linkSource,
     onClickLink,
+    linkProps: textLinkProps,
     ...other
   } = props
 
@@ -115,10 +118,20 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
         onClick: onClickLink,
         textVariant: variant,
         size,
-        strength
+        strength,
+        lineHeight,
+        ...textLinkProps
       }
     }),
-    [linkSource, onClickLink, variant, size, strength]
+    [
+      linkSource,
+      onClickLink,
+      variant,
+      size,
+      strength,
+      lineHeight,
+      textLinkProps
+    ]
   )
 
   const children =
@@ -135,6 +148,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
       color={color}
       size={size}
       strength={strength}
+      lineHeight={lineHeight}
       css={{ whiteSpace: 'pre-line' }}
       {...other}
     >

@@ -1,15 +1,11 @@
+import { Theme } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import { themeSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 const { getTheme, getSystemAppearance } = themeSelectors
 
-export enum Theme {
-  DEFAULT = 'default',
-  DARK = 'dark',
-  AUTO = 'auto',
-  MATRIX = 'matrix'
-}
+export { Theme } from '@audius/common/models'
 
 export const defaultTheme = {
   aiPrimary: '#1FD187',
@@ -201,6 +197,8 @@ export const matrixTheme = {
   focus: '#184F17'
 }
 
+export const debugTheme = defaultTheme
+
 export type ThemeColors = {
   aiPrimary: string
   aiSecondary: string
@@ -268,12 +266,14 @@ export type ThemeColors = {
 }
 
 const themeColorsByThemeVariant: Record<
-  Theme.DARK | Theme.DEFAULT | Theme.MATRIX,
+  Theme.DARK | Theme.DEFAULT | Theme.MATRIX | Theme.DEBUG,
   ThemeColors
 > = {
   [Theme.DEFAULT]: defaultTheme,
   [Theme.DARK]: darkTheme,
-  [Theme.MATRIX]: matrixTheme
+  [Theme.MATRIX]: matrixTheme,
+  // TODO: could use debug theme, but keeping it as default to aide in harmony transition
+  [Theme.DEBUG]: defaultTheme
 }
 
 export const selectSystemTheme = (state: CommonState) => {

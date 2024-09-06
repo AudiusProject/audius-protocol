@@ -1,28 +1,15 @@
-import type { AudiusLibs, Genre, Mood } from '@audius/sdk'
+import type { AudiusLibs } from '@audius/sdk'
 
 import { ID } from '../../models'
-import {
-  SearchKind,
-  SearchSortMethod
-} from '../../store/pages/search-results/types'
-import { decodeHashId, encodeHashId } from '../../utils/hashIds'
-import { Nullable, removeNullable } from '../../utils/typeUtils'
+import { encodeHashId } from '../../utils/hashIds'
+import { Nullable } from '../../utils/typeUtils'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
 import { RemoteConfigInstance } from '../remote-config'
 
-import * as adapter from './ResponseAdapter'
-import { processSearchResults } from './helper'
-import {
-  APIBlockConfirmation,
-  APIResponse,
-  APISearch,
-  APISearchAutocomplete,
-  GetTipsResponse,
-  OpaqueID
-} from './types'
+import { APIBlockConfirmation, APIResponse, OpaqueID } from './types'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
@@ -38,93 +25,12 @@ enum PathType {
 }
 
 const ROOT_ENDPOINT_MAP = {
-  feed: `/feed`,
   healthCheck: '/health_check',
   blockConfirmation: '/block_confirmation'
 }
 
-const FULL_ENDPOINT_MAP = {
-  playlistUpdates: (userId: OpaqueID) =>
-    `/notifications/${userId}/playlist_updates`,
-  getTrackStreamUrl: (trackId: OpaqueID) => `/tracks/${trackId}/stream`,
-  searchFull: `/search/full`,
-  searchAutocomplete: `/search/autocomplete`,
-  getReaction: '/reactions',
-  getTips: '/tips'
-}
-
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
-}
-
-type GetTrackStreamUrlArgs = {
-  id: ID
-  currentUserId?: Nullable<ID>
-  queryParams: QueryParams
-  unlistedArgs?: {
-    urlTitle: string
-    handle: string
-  }
-  abortOnUnreachable?: boolean
-}
-
-type GetSearchArgs = {
-  currentUserId: Nullable<ID>
-  query: string
-  kind?: SearchKind
-  limit?: number
-  offset?: number
-  includePurchaseable?: boolean
-  genre?: Genre
-  mood?: Mood
-  bpmMin?: number
-  bpmMax?: number
-  key?: string
-  isVerified?: boolean
-  hasDownloads?: boolean
-  isPremium?: boolean
-  sortMethod?: SearchSortMethod
-}
-
-export type AssociatedWalletsResponse = {
-  wallets: string[]
-  sol_wallets: string[]
-}
-
-export type GetSocialFeedArgs = QueryParams & {
-  filter: string
-  with_users?: boolean
-  tracks_only?: boolean
-  followee_user_ids?: ID[]
-  current_user_id?: ID
-}
-
-type GetSocialFeedResponse = {}
-
-type GetReactionArgs = {
-  reactedToIds: string[]
-}
-
-type GetReactionResponse = [
-  {
-    reaction_value: string
-    reaction_type: string
-    sender_user_id: string
-    reacted_to: string
-  }
-]
-
-export type GetTipsArgs = {
-  userId: ID
-  limit?: number
-  offset?: number
-  receiverMinFollowers?: number
-  receiverIsVerified?: boolean
-  currentUserFollows?: 'sender' | 'receiver' | 'sender_or_receiver'
-  uniqueBy?: 'sender' | 'receiver'
-  minSlot?: number
-  maxSlot?: number
-  txSignatures?: string[]
 }
 
 type InitializationState =
@@ -141,19 +47,6 @@ type InitializationState =
       // Requests are dispatched and handled via libs
       type: 'libs'
     }
-
-const emptySearchResponse: APIResponse<APISearch> = {
-  data: {
-    users: [],
-    followed_users: [],
-    tracks: [],
-    saved_tracks: [],
-    playlists: [],
-    saved_playlists: [],
-    saved_albums: [],
-    albums: []
-  }
-}
 
 type AudiusAPIClientConfig = {
   audiusBackendInstance: AudiusBackend
@@ -209,115 +102,6 @@ export class AudiusAPIClient {
     this.isReachable = isReachable
   }
 
-  async getTrackStreamUrl(
-    {
-      id,
-      currentUserId,
-      queryParams,
-      abortOnUnreachable
-    }: GetTrackStreamUrlArgs,
-    retry = true
-  ) {
-    const encodedTrackId = this._encodeOrThrow(id)
-    const encodedCurrentUserId =
-      encodeHashId(currentUserId ?? null) || undefined
-
-    this._assertInitialized()
-
-    const trackUrl = await this._getResponse<APIResponse<string>>(
-      FULL_ENDPOINT_MAP.getTrackStreamUrl(encodedTrackId),
-      {
-        ...queryParams,
-        no_redirect: true,
-        user_id: encodedCurrentUserId
-      },
-      retry,
-      PathType.VersionPath,
-      undefined,
-      abortOnUnreachable
-    )
-
-    return trackUrl?.data
-  }
-
-  async getSearchFull({
-    currentUserId,
-    query,
-    kind,
-    offset,
-    limit,
-    includePurchaseable,
-    genre,
-    mood,
-    bpmMin,
-    bpmMax,
-    key,
-    isVerified,
-    hasDownloads,
-    isPremium,
-    sortMethod
-  }: GetSearchArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      query,
-      kind,
-      offset,
-      limit,
-      includePurchaseable,
-      genre,
-      mood,
-      bpm_min: bpmMin,
-      bpm_max: bpmMax,
-      key,
-      is_verified: isVerified,
-      has_downloads: hasDownloads,
-      is_purchaseable: isPremium,
-      sort_method: sortMethod
-    }
-
-    const searchResponse =
-      (await this._getResponse<APIResponse<APISearch>>(
-        FULL_ENDPOINT_MAP.searchFull,
-        params
-      )) ?? emptySearchResponse
-
-    const adapted = adapter.adaptSearchResponse(searchResponse)
-    return processSearchResults(adapted)
-  }
-
-  async getSearchAutocomplete({
-    currentUserId,
-    query,
-    kind,
-    offset,
-    limit,
-    includePurchaseable
-  }: GetSearchArgs) {
-    this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
-    const params = {
-      user_id: encodedUserId,
-      query,
-      kind,
-      offset,
-      limit,
-      includePurchaseable
-    }
-
-    const searchResponse =
-      (await this._getResponse<APIResponse<APISearchAutocomplete>>(
-        FULL_ENDPOINT_MAP.searchAutocomplete,
-        params
-      )) ?? emptySearchResponse
-    const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
-    return processSearchResults({
-      isAutocomplete: true,
-      ...adapted
-    })
-  }
-
   async getBlockConfirmation(
     blockhash: string,
     blocknumber: number
@@ -336,147 +120,6 @@ export class AudiusAPIClient {
     )
     if (!response) return {}
     return response.data
-  }
-
-  async getSocialFeed({
-    offset,
-    limit,
-    with_users,
-    filter,
-    tracks_only,
-    followee_user_ids,
-    current_user_id
-  }: GetSocialFeedArgs) {
-    this._assertInitialized()
-    const headers = current_user_id
-      ? {
-          'X-User-ID': current_user_id.toString()
-        }
-      : undefined
-    const response = await this._getResponse<
-      APIResponse<GetSocialFeedResponse>
-    >(
-      ROOT_ENDPOINT_MAP.feed,
-      {
-        offset,
-        limit,
-        with_users,
-        filter,
-        tracks_only,
-        followee_user_id: followee_user_ids
-          ? followee_user_ids.map((id) => id.toString())
-          : undefined
-      },
-      true,
-      PathType.RootPath,
-      headers
-    )
-    if (!response) return null
-    return response.data
-  }
-
-  async getReaction({ reactedToIds }: GetReactionArgs) {
-    const params = {
-      reacted_to_ids: reactedToIds
-    }
-    const response = await this._getResponse<APIResponse<GetReactionResponse>>(
-      FULL_ENDPOINT_MAP.getReaction,
-      params,
-      false,
-      PathType.VersionFullPath,
-      {},
-      true
-    ) // Perform without retries, using 'split' approach for multiple query params
-
-    if (!response || !response.data.length) return null
-
-    const adapted = response.data.map((item) => ({
-      reactionValue: parseInt(item.reaction_value),
-      reactionType: item.reaction_type,
-      senderUserId: decodeHashId(item.sender_user_id),
-      reactedTo: item.reacted_to
-    }))[0]
-
-    return adapted
-  }
-
-  async getTips({
-    userId,
-    limit,
-    offset,
-    receiverMinFollowers,
-    receiverIsVerified,
-    currentUserFollows,
-    uniqueBy,
-    minSlot,
-    maxSlot,
-    txSignatures
-  }: GetTipsArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedUserId,
-      limit,
-      offset,
-      receiver_min_followers: receiverMinFollowers,
-      receiver_is_verififed: receiverIsVerified,
-      current_user_follows: currentUserFollows,
-      unique_by: uniqueBy,
-      min_slot: minSlot,
-      max_slot: maxSlot,
-      tx_signatures: txSignatures
-    }
-
-    const response = await this._getResponse<APIResponse<GetTipsResponse[]>>(
-      FULL_ENDPOINT_MAP.getTips,
-      params
-    )
-    if (response && response.data) {
-      return response.data
-        .map((u) => {
-          const sender = adapter.makeUser(u.sender)
-          const receiver = adapter.makeUser(u.receiver)
-          // Should never happen
-          if (!sender && receiver) return null
-
-          return {
-            ...u,
-            sender: adapter.makeUser(u.sender)!,
-            receiver: adapter.makeUser(u.receiver)!,
-            // Hack alert:
-            // Don't show followee supporters yet, because they take too
-            // long to load in (requires a subsequent call to DN)
-            // followee_supporter_ids: u.followee_supporters.map(({ user_id }) =>
-            //   decodeHashId(user_id)
-            // )
-            followee_supporter_ids: []
-          }
-        })
-        .filter(removeNullable)
-    }
-    return null
-  }
-
-  async getPlaylistUpdates(userId: number) {
-    type ApiPlaylistUpdate = {
-      playlist_id: string
-      updated_at: string
-      last_seen_at: string
-    }
-    type PlaylistUpdatesResponse = { playlist_updates: ApiPlaylistUpdate[] }
-    const response = await this._getResponse<
-      APIResponse<PlaylistUpdatesResponse>
-    >(FULL_ENDPOINT_MAP.playlistUpdates(encodeHashId(userId)))
-    const playlistUpdates = response?.data?.playlist_updates
-
-    if (!playlistUpdates) {
-      return null
-    }
-
-    return playlistUpdates.map((playlistUpdate) => ({
-      ...playlistUpdate,
-      playlist_id: decodeHashId(playlistUpdate.playlist_id) as number
-    }))
   }
 
   async init() {

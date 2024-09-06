@@ -9,7 +9,7 @@ import {
 import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
-import { Comment } from '@audius/sdk'
+import { Comment, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
@@ -18,26 +18,27 @@ import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
 import { CommentActionBar } from './CommentActionBar'
-import { CommentBadges } from './CommentBadges'
+import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
 export type CommentBlockProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
   parentCommentId?: string
+  hideActions?: boolean
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { comment, parentCommentId } = props
+  const { comment, parentCommentId, hideActions } = props
   const {
-    isPinned,
     message,
     id: commentId,
     trackTimestampS,
     createdAt,
     userId: commentUserIdStr
   } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const commentUserId = Number(commentUserIdStr)
@@ -82,7 +83,7 @@ export const CommentBlock = (props: CommentBlockProps) => {
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadges
+          <CommentBadge
             isArtist={isCommentByArtist}
             commentUserId={commentUserId}
           />
@@ -118,15 +119,19 @@ export const CommentBlock = (props: CommentBlockProps) => {
             hideAvatar
           />
         ) : (
-          <Text color='default'>{message}</Text>
+          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
+            {message}
+          </Text>
         )}
-        <CommentActionBar
-          comment={comment}
-          onClickReply={() => setShowReplyInput((prev) => !prev)}
-          onClickEdit={() => setShowEditInput((prev) => !prev)}
-          onClickDelete={() => deleteComment(commentId)}
-          isDisabled={isDeleting}
-        />
+        {hideActions ? null : (
+          <CommentActionBar
+            comment={comment}
+            onClickReply={() => setShowReplyInput((prev) => !prev)}
+            onClickEdit={() => setShowEditInput((prev) => !prev)}
+            onClickDelete={() => deleteComment(commentId)}
+            isDisabled={isDeleting}
+          />
+        )}
 
         {showReplyInput ? (
           <CommentForm

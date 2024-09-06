@@ -40,7 +40,13 @@ export const TrackScreenMainContent = ({
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const { track_id, _remixes, field_visibility, _remixes_count } = track
+  const {
+    track_id,
+    _remixes,
+    field_visibility,
+    _remixes_count,
+    comments_disabled
+  } = track
 
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
@@ -67,7 +73,7 @@ export const TrackScreenMainContent = ({
             />
           )}
 
-        {isCommentingEnabled ? (
+        {isCommentingEnabled && !comments_disabled ? (
           <Flex flex={3}>
             <CommentSection entityId={track_id} />
           </Flex>

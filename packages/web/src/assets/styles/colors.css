@@ -16,7 +16,6 @@
 
   --page-header-gradient-color-1: #5b23e1;
   --page-header-gradient-color-2: #a22feb;
-  --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
   --page-header-gradient: linear-gradient(
     -22deg,
     var(--page-header-gradient-color-1) 0%,
@@ -50,11 +49,11 @@
   --input-background: rgba(255, 255, 255, 0.8);
 
   --search-bar-background: rgba(255, 255, 255, 0.8);
-  --search-bar-expanded: rgba(255, 255, 255, 1);
+  --search-bar-expanded: var(--harmony-white);
   --search-bar-border: rgba(143, 149, 152, 0.1);
   --search-bar-shadow: rgba(133, 129, 153, 0.15);
 
-  --scrubber-hover: var(--primary-gradient-alt-1);
+  --scrubber-hover: var(--harmony-gradient);
   --stems-token-value-slider-background: var(--harmony-gradient);
   --stems-token-value-slider-background-error: var(--accent-red-gradient);
 
@@ -283,12 +282,6 @@ html[data-theme='matrix'] {
   --page-header-text-shadow-color: rgba(20, 255, 0, 0.25);
   --page-header-text-shadow: 0px 0px 5px rgba(225, 255, 234, 0.25),
     0px 0px 15px var(--page-header-text-shadow-color);
-  --primary-gradient: linear-gradient(
-    135deg,
-    var(--harmony-primary) 0%,
-    var(--harmony-primary) 100%
-  );
-  --primary-gradient-alt-1: var(--harmony-primary-gradient);
   --next-and-previous-buttons: var(--harmony-n-400);
   --secondary-gradient: linear-gradient(0deg, #2f8b27 0%, #00ff29 95.45%);
   --segmented-progress-bar-segment-1: var(--harmony-gradient);
@@ -310,4 +303,10 @@ html[data-theme='matrix'] {
     #4ff069 36.13%,
     #09bd51 133.51%
   );
+}
+
+html[data-theme='debug'] {
+  --page-header-text-shadow-color: var(--harmony-white);
+  --search-bar-background: var(--harmony-white);
+  --search-bar-expanded: var(--harmony-white);
 }

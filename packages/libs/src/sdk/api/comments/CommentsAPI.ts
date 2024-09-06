@@ -6,6 +6,7 @@ import {
   EntityManagerService,
   EntityType
 } from '../../services/EntityManager/types'
+import { encodeHashId } from '../../utils/hashId'
 import {
   Configuration,
   CommentsApi as GeneratedCommentsApi
@@ -44,7 +45,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
     this.logger.info('Successfully posted a comment')
-    return newCommentId
+    return encodeHashId(newCommentId)
   }
 
   async editComment(metadata: CommentMetadata) {

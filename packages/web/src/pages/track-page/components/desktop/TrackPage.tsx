@@ -249,7 +249,7 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled && heroTrack?.owner_id ? (
+          {isCommentingEnabled && !heroTrack?.comments_disabled ? (
             <Flex flex='3'>
               <CommentSection entityId={defaults.trackId} />
             </Flex>

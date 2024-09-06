@@ -1,7 +1,10 @@
 import { forwardRef, useContext } from 'react'
 
 import type { BaseTextProps } from '@audius/harmony/src/components/text'
-import { variantStylesMap } from '@audius/harmony/src/components/text/constants'
+import {
+  variantStylesMap,
+  bodyLineHeightMap
+} from '@audius/harmony/src/components/text/constants'
 import { TextContext } from '@audius/harmony/src/components/text/textContext'
 import { css } from '@emotion/native'
 import type { TextProps as NativeTextProps, TextStyle } from 'react-native'
@@ -28,6 +31,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     textTransform,
     shadow,
     flexShrink,
+    lineHeight,
     ...other
   } = props
   const theme = useTheme()
@@ -50,7 +54,13 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const textStyles: TextStyle = css({
     ...(variantStyles && {
       fontSize: size && t.size[variantStyles.fontSize[size]],
-      lineHeight: size && t.lineHeight[variantStyles.lineHeight[size]],
+      lineHeight:
+        size &&
+        t.lineHeight[
+          lineHeight && variant === 'body'
+            ? bodyLineHeightMap[size][lineHeight]
+            : variantStyles.lineHeight[size]
+        ],
       fontFamily:
         strength && t.fontByWeight[variantStyles.fontWeight[strength]],
       ...('css' in variantStyles ? variantStyles.css ?? {} : {})
@@ -88,5 +98,5 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   )
 })
 
-export { variantStylesMap }
+export { variantStylesMap, bodyLineHeightMap }
 export type { TextSize } from '@audius/harmony/src/components/text/types'

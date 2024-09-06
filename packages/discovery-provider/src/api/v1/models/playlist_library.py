@@ -13,6 +13,16 @@ playlist_identifier = ns.model(
     },
 )
 
+
+playlist_string_identifier = ns.model(
+    "playlist_string_identifier",
+    {
+        "type": fields.FormattedString("playlist"),
+        "playlist_id": fields.String(required=True),
+    },
+)
+
+
 explore_playlist_identifier = ns.model(
     "explore_playlist_identifier",
     {
@@ -26,14 +36,18 @@ class PlaylistLibraryIdentifier(fields.Raw):
     def format(self, value):
         try:
             if value.get("type") == "playlist":
-                return marshal(value, playlist_identifier)
+                return (
+                    marshal(value, playlist_string_identifier)
+                    if isinstance(value.get("playlist_id"), str)
+                    else marshal(value, playlist_identifier)
+                )
             if value.get("type") == "explore_playlist":
                 return marshal(value, explore_playlist_identifier)
             if value.get("type") == "folder":
                 return marshal(value, playlist_library_folder)
         except Exception as e:
             raise MarshallingError(
-                f"Unable to marshal as playlist library identifier: {str(value)}"
+                f"Unable to marshal as playlist library identifier: {str(value)}\n{str(e)}"
             ) from e
 
     def output(self, key, obj, **kwargs):

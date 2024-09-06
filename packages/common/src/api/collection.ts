@@ -28,7 +28,7 @@ const collectionApi = createApi({
         }: { playlistId: Nullable<ID>; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
-        if (!playlistId) return null
+        if (!playlistId || playlistId === -1) return null
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.playlists.getPlaylist({
           playlistId: Id.parse(playlistId),
@@ -44,7 +44,7 @@ const collectionApi = createApi({
       ) => {
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
-          id: ids.map((id) => Id.parse(id)),
+          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
           userId: OptionalId.parse(currentUserId)
         })
         return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -53,6 +53,24 @@ const collectionApi = createApi({
         idArgKey: 'playlistId',
         kind: Kind.COLLECTIONS,
         schemaKey: 'collection'
+      }
+    },
+    getPlaylistsByIds: {
+      fetch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.playlists.getBulkPlaylists({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userCollectionMetadataFromSDK)
+      },
+      options: {
+        idListArgKey: 'ids',
+        kind: Kind.COLLECTIONS,
+        schemaKey: 'collections'
       }
     },
     // Note: Please do not use this endpoint yet as it depends on further changes on the DN side.
@@ -83,6 +101,9 @@ const collectionApi = createApi({
   }
 })
 
-export const { useGetPlaylistByPermalink, useGetPlaylistById } =
-  collectionApi.hooks
+export const {
+  useGetPlaylistByPermalink,
+  useGetPlaylistById,
+  useGetPlaylistsByIds
+} = collectionApi.hooks
 export const collectionApiReducer = collectionApi.reducer

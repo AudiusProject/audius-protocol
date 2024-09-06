@@ -15,7 +15,13 @@ type Logger struct {
 func NewLogger(opts *slog.HandlerOptions) *Logger {
 	logger := *slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	return &Logger{
-		logger,
+		log: logger,
+	}
+}
+
+func (l *Logger) Child(serviceName string) *Logger {
+	return &Logger{
+		log: *l.log.With("service", serviceName),
 	}
 }
 

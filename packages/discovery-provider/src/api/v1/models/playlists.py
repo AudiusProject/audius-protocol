@@ -96,6 +96,19 @@ full_playlist_without_tracks_model = ns.clone(
     },
 )
 
+
+# Search results may exclude these fields if populated for auto-complete
+# TODO: Search results should be entirely different types
+# https://linear.app/audius/issue/PAY-3390/split-search-types-out-from-entity-types
+search_playlist_full = ns.clone(
+    "search_playlist_full",
+    full_playlist_without_tracks_model,
+    {
+        "followee_reposts": fields.List(fields.Nested(repost), required=False),
+        "followee_favorites": fields.List(fields.Nested(favorite), required=False),
+    },
+)
+
 full_playlist_model = ns.clone(
     "playlist_full",
     full_playlist_without_tracks_model,

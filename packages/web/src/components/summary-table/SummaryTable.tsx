@@ -33,7 +33,7 @@ export type SummaryTableProps = {
   hideExtraItemsCopy?: string
   disableExtraItemsToggle?: boolean
   summaryItem?: SummaryTableItem
-  title: ReactNode
+  title?: ReactNode
   secondaryTitle?: ReactNode
   summaryLabelColor?: TextColors
   summaryValueColor?: TextColors
@@ -133,8 +133,8 @@ export const SummaryTable = ({
           disabled={disableExtraItemsToggle}
         >
           {showExtraItems
-            ? hideExtraItemsCopy || messages.hideAdvanced
-            : showExtraItemsCopy || messages.showAdvanced}
+            ? hideExtraItemsCopy ?? messages.hideAdvanced
+            : showExtraItemsCopy ?? messages.showAdvanced}
         </PlainButton>
       </Flex>
     )
@@ -156,7 +156,10 @@ export const SummaryTable = ({
                   justifyContent='space-between'
                   pv='m'
                   ph='xl'
-                  css={{ opacity: disabled ? 0.5 : 1 }}
+                  css={{
+                    opacity: disabled ? 0.5 : 1,
+                    '&:first-child': { borderTop: '0' }
+                  }}
                   borderTop='default'
                 >
                   <Flex
@@ -196,7 +199,7 @@ export const SummaryTable = ({
         borderRadius='s'
         css={{ overflow: 'hidden' }}
       >
-        {renderHeader()}
+        {title || secondaryTitle ? renderHeader() : null}
         {collapsible ? (
           <Expandable expanded={isExpanded}>{renderContent()}</Expandable>
         ) : (

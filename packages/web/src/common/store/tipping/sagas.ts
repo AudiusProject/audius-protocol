@@ -1,4 +1,8 @@
 import {
+  transformAndCleanList,
+  userTipWithUsersFromSDK
+} from '@audius/common/adapters'
+import {
   Name,
   Kind,
   ID,
@@ -12,7 +16,7 @@ import {
   supporterMetadataListFromSDK,
   supporterMetadataFromSDK
 } from '@audius/common/models'
-import { LocalStorage, GetTipsArgs } from '@audius/common/services'
+import { LocalStorage } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
@@ -591,7 +595,7 @@ function* fetchSupportingForUserAsync({
 // in case 2, we initally show nothing and then directly snap to the tip tile, with no loading state, to avoid 3 states.
 // in case 3, we never show anything
 function* fetchRecentTipsAsync() {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const localStorage = yield* getContext('localStorage')
 
   const account: User = yield* call(waitForValue, getAccountUser)
@@ -605,14 +609,14 @@ function* fetchRecentTipsAsync() {
     yield put(setShowTip({ show: true }))
   }
 
-  const params: GetTipsArgs = {
-    userId: account.user_id,
+  const { data = [] } = yield* call([sdk.full.tips, sdk.full.tips.getTips], {
+    userId: Id.parse(account.user_id),
+    limit: 1,
     currentUserFollows: 'receiver',
-    uniqueBy: 'receiver',
-    limit: 1
-  }
+    uniqueBy: 'receiver'
+  })
 
-  const userTips = yield* call([apiClient, apiClient.getTips], params)
+  const userTips = transformAndCleanList(data, userTipWithUsersFromSDK)
 
   if (!(userTips && userTips.length)) {
     yield put(setShowTip({ show: false }))

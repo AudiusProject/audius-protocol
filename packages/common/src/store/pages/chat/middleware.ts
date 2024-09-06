@@ -53,18 +53,21 @@ export const chatMiddleware =
             const currentUserId = getUserId(store.getState())
             const isSelfMessage =
               message.sender_user_id === encodeHashId(currentUserId)
-            store.dispatch(
-              addMessage({
-                chatId: makeBlastChatId({
-                  audience,
-                  audienceContentType,
-                  audienceContentId
-                }),
-                message,
-                status: Status.SUCCESS,
-                isSelfMessage
-              })
-            )
+            // Only add blasts that current user sent as blast UI should only be visible to sender.
+            if (isSelfMessage) {
+              store.dispatch(
+                addMessage({
+                  chatId: makeBlastChatId({
+                    audience,
+                    audienceContentType,
+                    audienceContentId
+                  }),
+                  message,
+                  status: Status.SUCCESS,
+                  isSelfMessage
+                })
+              )
+            }
           }
           reactionListener = ({ chatId, messageId, reaction }) => {
             store.dispatch(

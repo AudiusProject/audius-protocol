@@ -50,14 +50,6 @@ def get_remixes_of(args):
                 raise exceptions.ArgumentError("Invalid track_id provided")
 
             parent_track = parent_track_res[0]
-
-            # Return empty list of remixes if track is gated on conditions other than USDC purchase
-            if (
-                parent_track["is_stream_gated"]
-                and "usdc_purchase" not in parent_track["stream_conditions"]
-            ):
-                return ([], [], 0)
-
             track_owner_id = parent_track["owner_id"]
 
             # Get the 'children' remix tracks

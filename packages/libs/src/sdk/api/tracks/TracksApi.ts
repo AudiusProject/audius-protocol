@@ -48,8 +48,8 @@ import {
   UploadTrackRequest,
   PurchaseTrackRequest,
   PurchaseTrackSchema,
-  GetPurchaseTrackTransactionRequest,
-  GetPurchaseTrackTransactionSchema,
+  GetPurchaseTrackInstructionsRequest,
+  GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema
 } from './types'
@@ -78,8 +78,7 @@ export class TracksApi extends GeneratedTracksApi {
   /**
    * Get the url of the track's streamable mp3 file
    */
-  // @ts-expect-error
-  override async streamTrack(params: StreamTrackRequest): Promise<string> {
+  async getTrackStreamUrl(params: StreamTrackRequest): Promise<string> {
     if (params.trackId === null || params.trackId === undefined) {
       throw new RequiredError(
         'trackId',
@@ -416,23 +415,22 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /**
-   * Gets the Solana transaction that purchases the track
+   * Gets the Solana instructions that purchase the track
    *
    * @hidden
    */
-  public async getPurchaseTrackTransaction(
-    params: GetPurchaseTrackTransactionRequest
+  public async getPurchaseTrackInstructions(
+    params: GetPurchaseTrackInstructionsRequest
   ) {
     const {
       userId,
       trackId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet,
       includeNetworkCut
     } = await parseParams(
-      'getPurchaseTrackTransaction',
-      GetPurchaseTrackTransactionSchema
+      'getPurchaseTrackInstructions',
+      GetPurchaseTrackInstructionsSchema
     )(params)
 
     const contentType = 'track'
@@ -523,6 +521,39 @@ export class TracksApi extends GeneratedTracksApi {
     const locationMemoInstruction =
       await this.solanaRelay.getLocationInstruction()
 
+    return {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    }
+  }
+
+  /**
+   * Purchases stream or download access to a track
+   *
+   * @hidden
+   */
+  public async purchaseTrack(params: PurchaseTrackRequest) {
+    const { wallet } = await parseParams(
+      'purchaseTrack',
+      PurchaseTrackSchema
+    )(params)
+
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseTrackInstructions(params)
+
+    let transaction
+    const mint = 'USDC'
+
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
         wallet: wallet.toBase58()
@@ -534,7 +565,7 @@ export class TracksApi extends GeneratedTracksApi {
           total,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
@@ -543,7 +574,6 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -572,7 +602,9 @@ export class TracksApi extends GeneratedTracksApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
@@ -581,18 +613,8 @@ export class TracksApi extends GeneratedTracksApi {
           locationMemoInstruction
         ]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream or download access to a track
-   *
-   * @hidden
-   */
-  public async purchaseTrack(params: PurchaseTrackRequest) {
-    await parseParams('purchaseTrack', PurchaseTrackSchema)(params)
-    const transaction = await this.getPurchaseTrackTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(

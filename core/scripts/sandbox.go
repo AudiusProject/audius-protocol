@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"golang.org/x/sync/errgroup"
+	"github.com/google/uuid"
 )
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func checkErr(e error) {
 	if e != nil {
@@ -16,6 +20,7 @@ func checkErr(e error) {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	ctx := context.Background()
 
 	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
@@ -24,58 +29,14 @@ func main() {
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
 
-	g, ctx := errgroup.WithContext(ctx)
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "batman",
-			Value: "bruce wayne",
+	for {
+		randString := uuid.NewString()
+		log.Printf("Setting 'randomString' to '%s'", randString)
+		time.Sleep(1 * time.Second)
+		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "randomString",
+			Value: randString,
 		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "superman",
-			Value: "clark kent",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "wonder woman",
-			Value: "diana prince",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "spiderman",
-			Value: "peter parker",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "thanos",
-			Value: "did nothing wrong",
-		})
-		return err
-	})
-
-	g.Go(func() error {
-		_, err := sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "i am",
-			Value: "iron man",
-		})
-		return err
-	})
-
-	// Wait for all goroutines to complete
-	if err := g.Wait(); err != nil {
 		checkErr(err)
 	}
 }

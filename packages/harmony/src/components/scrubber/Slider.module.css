@@ -58,7 +58,7 @@
   content: '';
   position: absolute;
   border-radius: var(--harmony-unit-half);
-  background: var(--harmony-primary-gradient);
+  background: var(--harmony-gradient);
   width: 100%;
   height: 100%;
   left: 0;

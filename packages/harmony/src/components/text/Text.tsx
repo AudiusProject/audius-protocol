@@ -5,7 +5,7 @@ import { Slot } from '@radix-ui/react-slot'
 
 import { typography } from '../../foundations/typography'
 
-import { variantStylesMap, variantTagMap } from './constants'
+import { bodyLineHeightMap, variantStylesMap, variantTagMap } from './constants'
 import { TextContext } from './textContext'
 import type { TextProps } from './types'
 
@@ -27,6 +27,7 @@ export const Text = forwardRef(
       textTransform,
       ellipses,
       maxLines,
+      lineHeight,
       ...other
     } = props
 
@@ -56,8 +57,16 @@ export const Text = forwardRef(
       ...(variantConfig && {
         // @ts-ignore
         fontSize: typography.size[variantConfig.fontSize[size]],
-        // @ts-ignore
-        lineHeight: typography.lineHeight[variantConfig.lineHeight[size]],
+
+        lineHeight:
+          // @ts-ignore
+          typography.lineHeight[
+            lineHeight && variant === 'body' && size
+              ? // @ts-ignore
+                bodyLineHeightMap[size][lineHeight]
+              : // @ts-ignore
+                variantConfig.lineHeight[size]
+          ],
         // @ts-ignore
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
         ...('css' in variantConfig && variantConfig.css)

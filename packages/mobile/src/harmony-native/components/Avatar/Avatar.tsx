@@ -43,7 +43,7 @@ export const Avatar = (props: AvatarProps) => {
     children,
     source,
     size = 'auto',
-    strokeWidth = 'default',
+    strokeWidth = size === 'small' ? 'thin' : 'default',
     variant = 'default',
     style,
     ...other

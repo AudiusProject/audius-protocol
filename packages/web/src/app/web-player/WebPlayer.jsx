@@ -84,6 +84,7 @@ import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
+import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
@@ -135,6 +136,7 @@ const {
   PLAYLIST_PAGE,
   ALBUM_PAGE,
   TRACK_PAGE,
+  TRACK_COMMENTS_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
@@ -909,6 +911,13 @@ class WebPlayer extends Component {
                   exact
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
+                />
+                <Route exact path={TRACK_PAGE} component={TrackPage} />
+                <MobileRoute
+                  exact
+                  path={TRACK_COMMENTS_PAGE}
+                  isMobile={isMobile}
+                  component={TrackCommentsPage}
                 />
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
                 <DesktopRoute

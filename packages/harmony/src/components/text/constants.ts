@@ -54,3 +54,10 @@ export const variantStylesMap = {
     fontWeight: { default: 'medium', strong: 'demiBold' }
   }
 }
+
+export const bodyLineHeightMap = {
+  xs: { single: 'xs', multi: 's' },
+  s: { single: 's', multi: 'l' },
+  m: { single: 's', multi: 'l' },
+  l: { single: 'm', multi: 'bl' }
+}

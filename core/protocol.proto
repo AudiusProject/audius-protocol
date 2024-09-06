@@ -16,8 +16,11 @@ service Protocol {
 
 message Event {
   string signature = 1;
+  string request_id = 2;
   oneof body {
     PlaysEvent plays = 1000;
+    RegisterNodeEvent registerNode = 1001;
+    SlaRollupEvent slaRollup = 1002;
   }
 }
 
@@ -39,6 +42,14 @@ message GetEventResponse {
 
 message PlaysEvent {
   repeated Listen listens = 1;
+}
+
+message RegisterNodeEvent {
+  string endpoint = 1;
+  string comet_address = 2;
+  string eth_block = 3;
+  string node_type = 4;
+  string sp_id = 5;
 }
 
 message Listen {
@@ -68,4 +79,16 @@ message KeyValueResponse {
   string key = 1;
   string value = 2;
   string txhash = 3;
+}
+
+message SlaRollupEvent {
+  google.protobuf.Timestamp timestamp = 1;
+  int64 block_start = 2;
+  int64 block_end = 3;
+  repeated SlaNodeReport reports = 4;
+}
+
+message SlaNodeReport {
+  string address = 1;
+  int32 num_blocks_proposed = 2;
 }

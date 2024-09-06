@@ -165,7 +165,11 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   )
 
   const renderText = useCallback(
-    (text: string) => <Text {...other}>{text}</Text>,
+    (text: string) => (
+      <Text suppressHighlighting {...other}>
+        {text}
+      </Text>
+    ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )

@@ -272,6 +272,7 @@ const CollectionTileComponent = ({
       user={user}
       variant={variant}
       isUnlisted={isPrivate}
+      hideComments
     >
       <CollectionTileTrackList
         tracks={tracks}

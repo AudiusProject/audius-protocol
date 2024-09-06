@@ -9,12 +9,15 @@ import {
 } from 'react'
 
 import { Nullable } from '@audius/common/utils'
+import { Flex, useTheme } from '@audius/harmony'
 import cn from 'classnames'
+import Color from 'color'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
+import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
 
@@ -47,49 +50,41 @@ const HeaderContainer = (props: HeaderContainerProps) => {
     refreshScrollWidth()
   }, [refreshScrollWidth])
 
-  // Only Safari & Chrome support the CSS
-  // frosted glasss effect.
-  const [isChromeOrSafari, setIsChromeOrSafari] = useState(false)
-  useEffect(() => {
-    const chromeOrSafari = () => {
-      const userAgent = navigator.userAgent.toLowerCase()
-      return (
-        userAgent.indexOf('chrome') > -1 || userAgent.indexOf('safari') > -1
-      )
-    }
-    setIsChromeOrSafari(chromeOrSafari)
-  }, [])
-
   const headerContainerRef = useRef<HTMLDivElement>(null)
+
+  const { color, type } = useTheme()
+
+  const background =
+    type === 'debug'
+      ? color.background.white
+      : `linear-gradient(180deg, ${color.background.white} 0%, ${
+          color.background.white
+        } 20%, ${Color(color.background.white).alpha(0.85)} 65%)`
 
   return (
     <div
       className={styles.headerContainer}
       ref={containerRef}
-      style={{
-        right: `${scrollBarWidth}px`
-      }}
+      css={{ right: scrollBarWidth }}
     >
-      <div
-        ref={headerContainerRef}
-        className={styles.frosted}
-        style={{
-          // Need to set a different gradient for
-          // browsers that don't support the
-          // backdrop-filter frosted glass effect.
-          paddingLeft: `${scrollBarWidth}px`,
-          background: isChromeOrSafari
-            ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
-            : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
+      <Flex
+        css={{
+          backdropFilter: 'blur(10px)',
+          position: 'relative',
+          zIndex: 10,
+          paddingLeft: scrollBarWidth,
+          background
         }}
+        ref={headerContainerRef}
       >
+        <HeaderGutter
+          headerContainerRef={headerContainerRef}
+          scrollBarWidth={scrollBarWidth}
+        />
         {cloneElement(header as any, {
-          isChromeOrSafari,
-          scrollBarWidth,
-          headerContainerRef,
           topLeftElement: showSearch ? <SearchBar /> : null
         })}
-      </div>
+      </Flex>
       {/* We attach the box shadow as a separate element to
           avoid overlapping the scroll bar.
       */}

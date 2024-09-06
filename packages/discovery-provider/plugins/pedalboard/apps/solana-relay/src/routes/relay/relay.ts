@@ -9,7 +9,7 @@ import { Request, Response, NextFunction } from 'express'
 
 import { config } from '../../config'
 import { BadRequestError, UnauthorizedError } from '../../errors'
-import { connections, getConnection } from '../../utils/connections'
+import { connections } from '../../utils/connections'
 import {
   broadcastTransaction,
   sendTransactionWithRetries
@@ -43,7 +43,7 @@ export const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
 const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
   return await Promise.all(
     lookupTableKeys.map(async (accountKey) => {
-      const res = await getConnection().getAddressLookupTable(accountKey)
+      const res = await connections[0].getAddressLookupTable(accountKey)
       if (res.value === null) {
         throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
       }
@@ -72,7 +72,7 @@ export const relay = async (
       sendOptions
     } = req.body
     const commitment = confirmationOptions?.commitment ?? 'processed'
-    const connection = getConnection()
+    const connection = connections[0]
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')

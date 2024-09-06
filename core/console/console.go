@@ -27,15 +27,14 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 		config: config,
 		rpc:    rpc,
 		e:      e,
-		logger: logger,
+		logger: logger.Child("console"),
 		db:     db.New(pool),
 		c:      components.NewComponents(config, rpc, db.New(pool)),
 	}
 
 	consoleBase := e.Group("/console")
-	coreBase := e.Group("/core")
 
-	c.registerRoutes(logger, consoleBase, coreBase)
+	c.registerRoutes(logger, consoleBase)
 
 	return c, nil
 }
@@ -49,6 +48,7 @@ func (c *Console) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
 		g.GET("/block/:block", c.blockPage)
 		g.GET("/node", c.networkPage)
 		g.GET("/node/:node", c.nodePage)
+		g.GET("/sla/:rollup", c.slaPage)
 
 		g.GET("/headerinfo", c.headerInfo)
 	}
