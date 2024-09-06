@@ -27,15 +27,15 @@ insert into sla_node_reports (address, blocks_proposed, sla_rollup_id)
 select $1, 1, null
 where not exists (select 1 from updated);
 
--- name: ClearUnindexedSlaNodeReports :exec
+-- name: ClearUncommittedSlaNodeReports :exec
 delete from sla_node_reports
 where sla_rollup_id is null;
 
--- name: IndexSlaNodeReport :exec
+-- name: CommitSlaNodeReport :exec
 insert into sla_node_reports (sla_rollup_id, address, blocks_proposed)
 values ($1, $2, $3);
 
--- name: IndexSlaRollup :one
-insert into sla_rollups (time, block_start, block_end)
-values ($1, $2, $3)
+-- name: CommitSlaRollup :one
+insert into sla_rollups (time, tx_hash, block_start, block_end)
+values ($1, $2, $3, $4)
 returning id;

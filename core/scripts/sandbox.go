@@ -8,6 +8,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"github.com/google/uuid"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -18,18 +19,8 @@ func checkErr(e error) {
 	}
 }
 
-func generateRandomString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
-}
-
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	length := 10
-	randomString := generateRandomString(length)
 	ctx := context.Background()
 
 	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
@@ -39,10 +30,12 @@ func main() {
 	checkErr(err)
 
 	for {
+		randString := uuid.NewString()
+		log.Printf("Setting 'randomString' to '%s'", randString)
 		time.Sleep(1 * time.Second)
 		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
 			Key:   "randomString",
-			Value: randomString,
+			Value: randString,
 		})
 		checkErr(err)
 	}

@@ -14,38 +14,37 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const (
-	almostOneDay                  = 23 * time.Hour
-	firstRollupMinimumChainHeight = 100
-)
-
 func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
 	rollup, err := app.createRollup(ctx, ts, height)
 	if err != nil {
 		return []byte{}, err
 	}
-	rollupTx, err := proto.Marshal(&rollup)
+	e := gen_proto.Event{
+		Body: &gen_proto.Event_SlaRollup{
+			SlaRollup: rollup,
+		},
+	}
+	rollupTx, err := proto.Marshal(&e)
 	if err != nil {
 		return []byte{}, err
 	}
 	return rollupTx, nil
 }
 
-func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (gen_proto.SlaRollup, error) {
-	var rollup gen_proto.SlaRollup
+func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*gen_proto.SlaRollupEvent, error) {
+	var rollup *gen_proto.SlaRollupEvent
 	var start int64 = 0
-	appDb := app.getDb()
-	latestRollup, err := appDb.GetLatestSlaRollup(ctx)
+	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
 	if err == nil {
 		start = latestRollup.BlockEnd + 1
 	}
 
-	reports, err := appDb.GetInProgressRollupReports(ctx)
+	reports, err := app.queries.GetInProgressRollupReports(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return rollup, err
 	}
 
-	rollup = gen_proto.SlaRollup{
+	rollup = &gen_proto.SlaRollupEvent{
 		Timestamp:  timestamppb.New(timestamp),
 		BlockStart: start,
 		BlockEnd:   height - 1, // exclude current block
@@ -63,7 +62,7 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 }
 
 // Checks if the given sla rollup matches our local tallies
-func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup gen_proto.SlaRollup) (bool, error) {
+func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *gen_proto.SlaRollupEvent) (bool, error) {
 	if !app.shouldProposeNewRollup(ctx, timestamp, height) {
 		return false, nil
 	}
@@ -89,40 +88,29 @@ func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Ti
 }
 
 func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.Time, height int64) bool {
-	if height < firstRollupMinimumChainHeight {
-		return false
-	}
-
-	appDb := app.getDb()
-	latestRollup, err := appDb.GetLatestSlaRollup(ctx)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return true
-	} else if err != nil {
+	previousHeight := int64(0)
+	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		app.logger.Error("Error retrieving latest SLA rollup", "error", err)
 		return false
+	} else {
+		previousHeight = latestRollup.BlockEnd
 	}
-
-	// Propose rollup daily around UTC midnight
-	if ts.Sub(latestRollup.Time.Time) >= almostOneDay && ts.Hour() == 0 {
-		return true
-	}
-	return false
+	return height-previousHeight == int64(app.config.SlaRollupInterval)
 }
 
-func (app *CoreApplication) indexRollupTx(ctx context.Context, rollupTx []byte) error {
+func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.Event, txHash string) error {
 	appDb := app.getDb()
-	var rollup gen_proto.SlaRollup
-	if err := proto.Unmarshal(rollupTx, &rollup); err != nil {
-		return err
-	}
+	rollup := event.GetSlaRollup()
 
-	id, err := appDb.IndexSlaRollup(
+	id, err := appDb.CommitSlaRollup(
 		ctx,
-		db.IndexSlaRollupParams{
+		db.CommitSlaRollupParams{
 			Time: pgtype.Timestamp{
 				Time:  rollup.Timestamp.AsTime(),
 				Valid: true,
 			},
+			TxHash:     txHash,
 			BlockStart: rollup.BlockStart,
 			BlockEnd:   rollup.BlockEnd,
 		},
@@ -131,14 +119,14 @@ func (app *CoreApplication) indexRollupTx(ctx context.Context, rollupTx []byte) 
 		return err
 	}
 
-	if err = appDb.ClearUnindexedSlaNodeReports(ctx); err != nil {
+	if err = appDb.ClearUncommittedSlaNodeReports(ctx); err != nil {
 		return err
 	}
 
 	for _, r := range rollup.Reports {
-		if err = appDb.IndexSlaNodeReport(
+		if err = appDb.CommitSlaNodeReport(
 			ctx,
-			db.IndexSlaNodeReportParams{
+			db.CommitSlaNodeReportParams{
 				Address:        r.Address,
 				SlaRollupID:    pgtype.Int4{Int32: id, Valid: true},
 				BlocksProposed: r.NumBlocksProposed,
@@ -148,20 +136,4 @@ func (app *CoreApplication) indexRollupTx(ctx context.Context, rollupTx []byte) 
 		}
 	}
 	return nil
-}
-
-func (app *CoreApplication) isRollupTx(tx []byte) bool {
-	var rollup gen_proto.SlaRollup
-	if err := proto.Unmarshal(tx, &rollup); err != nil { // not a rollup tx
-		return false
-	}
-	return true
-}
-
-func (app *CoreApplication) isValidRollupTx(ctx context.Context, timestamp time.Time, height int64, tx []byte) (bool, error) {
-	var rollup gen_proto.SlaRollup
-	if err := proto.Unmarshal(tx, &rollup); err != nil {
-		return false, nil
-	}
-	return app.isValidRollup(ctx, timestamp, height, rollup)
 }

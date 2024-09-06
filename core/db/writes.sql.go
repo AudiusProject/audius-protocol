@@ -11,46 +11,52 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const clearUnindexedSlaNodeReports = `-- name: ClearUnindexedSlaNodeReports :exec
+const clearUncommittedSlaNodeReports = `-- name: ClearUncommittedSlaNodeReports :exec
 delete from sla_node_reports
 where sla_rollup_id is null
 `
 
-func (q *Queries) ClearUnindexedSlaNodeReports(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, clearUnindexedSlaNodeReports)
+func (q *Queries) ClearUncommittedSlaNodeReports(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, clearUncommittedSlaNodeReports)
 	return err
 }
 
-const indexSlaNodeReport = `-- name: IndexSlaNodeReport :exec
+const commitSlaNodeReport = `-- name: CommitSlaNodeReport :exec
 insert into sla_node_reports (sla_rollup_id, address, blocks_proposed)
 values ($1, $2, $3)
 `
 
-type IndexSlaNodeReportParams struct {
+type CommitSlaNodeReportParams struct {
 	SlaRollupID    pgtype.Int4
 	Address        string
 	BlocksProposed int32
 }
 
-func (q *Queries) IndexSlaNodeReport(ctx context.Context, arg IndexSlaNodeReportParams) error {
-	_, err := q.db.Exec(ctx, indexSlaNodeReport, arg.SlaRollupID, arg.Address, arg.BlocksProposed)
+func (q *Queries) CommitSlaNodeReport(ctx context.Context, arg CommitSlaNodeReportParams) error {
+	_, err := q.db.Exec(ctx, commitSlaNodeReport, arg.SlaRollupID, arg.Address, arg.BlocksProposed)
 	return err
 }
 
-const indexSlaRollup = `-- name: IndexSlaRollup :one
-insert into sla_rollups (time, block_start, block_end)
-values ($1, $2, $3)
+const commitSlaRollup = `-- name: CommitSlaRollup :one
+insert into sla_rollups (time, tx_hash, block_start, block_end)
+values ($1, $2, $3, $4)
 returning id
 `
 
-type IndexSlaRollupParams struct {
+type CommitSlaRollupParams struct {
 	Time       pgtype.Timestamp
+	TxHash     string
 	BlockStart int64
 	BlockEnd   int64
 }
 
-func (q *Queries) IndexSlaRollup(ctx context.Context, arg IndexSlaRollupParams) (int32, error) {
-	row := q.db.QueryRow(ctx, indexSlaRollup, arg.Time, arg.BlockStart, arg.BlockEnd)
+func (q *Queries) CommitSlaRollup(ctx context.Context, arg CommitSlaRollupParams) (int32, error) {
+	row := q.db.QueryRow(ctx, commitSlaRollup,
+		arg.Time,
+		arg.TxHash,
+		arg.BlockStart,
+		arg.BlockEnd,
+	)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

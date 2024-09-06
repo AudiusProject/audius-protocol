@@ -1,6 +1,7 @@
 -- +migrate Up
 create table sla_rollups(
   id serial primary key,
+  tx_hash text not null,
   block_start bigint not null,
   block_end bigint not null,
   time timestamp not null

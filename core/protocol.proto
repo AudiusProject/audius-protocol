@@ -20,6 +20,7 @@ message Event {
   oneof body {
     PlaysEvent plays = 1000;
     RegisterNodeEvent registerNode = 1001;
+    SlaRollupEvent slaRollup = 1002;
   }
 }
 
@@ -80,7 +81,7 @@ message KeyValueResponse {
   string txhash = 3;
 }
 
-message SlaRollup {
+message SlaRollupEvent {
   google.protobuf.Timestamp timestamp = 1;
   int64 block_start = 2;
   int64 block_end = 3;

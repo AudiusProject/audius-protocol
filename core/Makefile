@@ -47,7 +47,6 @@ $(GEN_ARTIFACTS): $(GEN_SRCS)
 		&& false \
 	)
 	go generate ./...
-	protoc --go_out=gen/ --go-grpc_out=gen/ protocol.proto
 	cd db && sqlc generate
 	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy

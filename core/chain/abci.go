@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
@@ -25,17 +26,19 @@ type CoreApplication struct {
 	contracts    *contracts.AudiusContracts
 	pool         *pgxpool.Pool
 	onGoingBlock pgx.Tx
+	config       *config.Config
 }
 
 var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts) *CoreApplication {
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config) *CoreApplication {
 	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
 		contracts:    contracts,
 		pool:         pool,
 		onGoingBlock: nil,
+		config:       envConfig,
 	}
 }
 
@@ -99,7 +102,6 @@ func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitCh
 func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
 	proposalTxs := proposal.Txs
 
-	app.startInProgressTx(ctx)
 	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
 		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
 		if err != nil {
@@ -107,10 +109,6 @@ func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcit
 		} else {
 			proposalTxs = append(proposalTxs, rollupTx)
 		}
-	}
-	if err := app.commitInProgressTx(ctx); err != nil {
-		app.logger.Error("Failure closing db while preparing proposal", "error", err)
-		return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, err
 	}
 	return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, nil
 }
@@ -135,30 +133,20 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	for i, tx := range req.Txs {
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err == nil {
-			if err := app.finalizeEvent(ctx, protoEvent); err != nil {
+			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-		} else if app.isRollupTx(tx) {
-			if err := app.indexRollupTx(ctx, tx); err != nil {
-				logger.Error("Failed to index rollup", "error", err)
-				txs[i] = &abcitypes.ExecTxResult{Code: 1}
-			} else {
-				txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-			}
 		} else if app.isValidKVTx(tx) {
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)
 
-			hash := sha256.Sum256(tx)
-			txHash := hex.EncodeToString(hash[:])
-
 			params := db.InsertKVStoreParams{
 				Key:    string(key),
 				Value:  string(value),
-				TxHash: txHash,
+				TxHash: app.toTxHash(tx),
 			}
 
 			record, err := app.getDb().InsertKVStore(ctx, params)
@@ -280,33 +268,45 @@ func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, erro
 }
 
 func (app *CoreApplication) isValidSlaRollup(tx []byte) bool {
-	var msg gen_proto.SlaRollup
+	var msg gen_proto.SlaRollupEvent
 	err := proto.Unmarshal(tx, &msg)
 	return err == nil
 }
 
 func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
-	app.startInProgressTx(ctx)
 	for _, tx := range txs {
-		valid, err := app.isValidRollupTx(ctx, blockTime, blockHeight, tx)
+		protoEvent, err := app.isValidProtoEvent(tx)
 		if err != nil {
-			return false, err
-		} else if valid && alreadyContainsRollup {
-			return false, nil
-		} else if valid {
+			if app.isValidKVTx(tx) {
+				continue
+			} else {
+				app.logger.Error(" **** Invalid block bcz not proto event or KVp")
+				return false, nil
+			}
+		}
+
+		switch protoEvent.Body.(type) {
+		case *gen_proto.Event_Plays:
+		case *gen_proto.Event_RegisterNode:
+		case *gen_proto.Event_SlaRollup:
+			if alreadyContainsRollup {
+				return false, nil
+				app.logger.Error(" **** Invalid block already have rollup")
+			} else if valid, err := app.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
+				app.logger.Error(" **** Invalid block bcuz err", "error", err)
+				return false, err
+			} else if !valid {
+				app.logger.Error(" **** Invalid block bcuz invalid rollup")
+				return false, nil
+			}
 			alreadyContainsRollup = true
-		} else if _, err := app.isValidProtoEvent(tx); err == nil {
-			continue
-		} else if app.isValidKVTx(tx) {
-			continue
-		} else {
-			return false, nil
 		}
 	}
-	if err := app.commitInProgressTx(ctx); err != nil {
-		app.logger.Error("Failure closing db while validating txs", "error", err)
-		return false, err
-	}
 	return true, nil
+}
+
+func (app *CoreApplication) toTxHash(tx []byte) string {
+	hash := sha256.Sum256(tx)
+	return hex.EncodeToString(hash[:])
 }

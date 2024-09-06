@@ -133,7 +133,7 @@ func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, 
 }
 
 const getLatestSlaRollup = `-- name: GetLatestSlaRollup :one
-select id, block_start, block_end, time from sla_rollups order by time desc limit 1
+select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 1
 `
 
 func (q *Queries) GetLatestSlaRollup(ctx context.Context) (SlaRollup, error) {
@@ -141,6 +141,7 @@ func (q *Queries) GetLatestSlaRollup(ctx context.Context) (SlaRollup, error) {
 	var i SlaRollup
 	err := row.Scan(
 		&i.ID,
+		&i.TxHash,
 		&i.BlockStart,
 		&i.BlockEnd,
 		&i.Time,
@@ -172,7 +173,7 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 }
 
 const getRecentRollups = `-- name: GetRecentRollups :many
-select id, block_start, block_end, time from sla_rollups order by time desc limit 10
+select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
 `
 
 func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
@@ -186,6 +187,7 @@ func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
 		var i SlaRollup
 		if err := rows.Scan(
 			&i.ID,
+			&i.TxHash,
 			&i.BlockStart,
 			&i.BlockEnd,
 			&i.Time,
@@ -267,7 +269,7 @@ func (q *Queries) GetRollupReportsForId(ctx context.Context, slaRollupID pgtype.
 }
 
 const getSlaRollupWithId = `-- name: GetSlaRollupWithId :one
-select id, block_start, block_end, time from sla_rollups where id = $1
+select id, tx_hash, block_start, block_end, time from sla_rollups where id = $1
 `
 
 func (q *Queries) GetSlaRollupWithId(ctx context.Context, id int32) (SlaRollup, error) {
@@ -275,6 +277,7 @@ func (q *Queries) GetSlaRollupWithId(ctx context.Context, id int32) (SlaRollup, 
 	var i SlaRollup
 	err := row.Scan(
 		&i.ID,
+		&i.TxHash,
 		&i.BlockStart,
 		&i.BlockEnd,
 		&i.Time,

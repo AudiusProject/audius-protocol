@@ -92,6 +92,7 @@ type SlaNodeReport struct {
 
 type SlaRollup struct {
 	ID         int32
+	TxHash     string
 	BlockStart int64
 	BlockEnd   int64
 	Time       pgtype.Timestamp
