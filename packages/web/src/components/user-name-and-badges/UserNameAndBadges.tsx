@@ -69,6 +69,7 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
 const LoadUserAndRender = (props: UserNameAndBadgesWithIdProps) => {
   const currentUserId: number = useSelector(getUserId)!
   const { data: user } = useGetUserById({ id: props.userId, currentUserId })
+  if (!user) return null
   return <UserNameAndBadgesImpl {...props} user={user} />
 }
 
