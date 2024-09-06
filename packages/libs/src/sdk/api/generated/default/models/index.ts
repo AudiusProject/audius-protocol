@@ -50,6 +50,8 @@ export * from './ReplyComment';
 export * from './Reposts';
 export * from './SalesAggregate';
 export * from './SalesAggregateResponse';
+export * from './Stem';
+export * from './StemsResponse';
 export * from './StreamUrlResponse';
 export * from './SubscribersResponse';
 export * from './Supporter';

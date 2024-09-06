@@ -8,7 +8,9 @@ const {
   SEARCH_PAGE,
   PROFILE_PAGE_COLLECTIBLE_DETAILS,
   CHANGE_EMAIL_SETTINGS_PAGE,
-  CHANGE_PASSWORD_SETTINGS_PAGE
+  CHANGE_PASSWORD_SETTINGS_PAGE,
+  CHATS_PAGE,
+  CHAT_PAGE
 } = route
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
@@ -20,7 +22,9 @@ const nonSsrPaths = [
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
-  CHANGE_PASSWORD_SETTINGS_PAGE
+  CHANGE_PASSWORD_SETTINGS_PAGE,
+  CHATS_PAGE,
+  CHAT_PAGE
 ]
 
 export const makePageRoute =

@@ -129,7 +129,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
-		cfg.PersistentPeers = os.Getenv("persistentPeers")
+		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.193.73.250:26656")
 		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc

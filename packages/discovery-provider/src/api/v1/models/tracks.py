@@ -233,6 +233,19 @@ stem_full = ns.model(
     },
 )
 
+stem = ns.model(
+    "stem",
+    {
+        "id": fields.String(required=True),
+        "parent_id": fields.String(required=True),
+        "category": fields.String(required=True),
+        "cid": fields.String(required=True),
+        "user_id": fields.String(required=True),
+        "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
+    },
+)
+
 remixes_response = ns.model(
     "remixes_response",
     {

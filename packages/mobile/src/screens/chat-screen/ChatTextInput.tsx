@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { chatActions, playerSelectors } from '@audius/common/store'
-import { splitOnNewline } from '@audius/common/utils'
+import { decodeHashId, splitOnNewline } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
@@ -93,18 +93,26 @@ export const ChatTextInput = ({
   const [selection, setSelection] = useState<{ start: number; end: number }>()
 
   const {
-    trackId,
-    collectionId,
+    linkEntities,
     resolveLinks,
     restoreLinks,
     getMatches,
-    handleBackspace,
-    clearLinks
+    handleBackspace
   } = useAudiusLinkResolver({
     value: inputMessage,
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+
+  const trackId = useMemo(() => {
+    const track = linkEntities.find((e) => e.type === 'track')
+    return track ? decodeHashId(track.data.id) : null
+  }, [linkEntities])
+
+  const collectionId = useMemo(() => {
+    const collection = linkEntities.find((e) => e.type === 'collection')
+    return collection ? decodeHashId(collection.data.id) : null
+  }, [linkEntities])
 
   useEffect(() => {
     const fn = async () => {
@@ -137,7 +145,8 @@ export const ChatTextInput = ({
       if (e.nativeEvent.key === BACKSPACE_KEY && selection) {
         const textBeforeCursor = inputMessage.slice(0, selection.start)
         const cursorPosition = selection.start
-        const editValue = handleBackspace({
+        // TODO: KJ - Update caret position if not handled natively
+        const { editValue } = handleBackspace({
           cursorPosition,
           textBeforeCursor
         })
@@ -161,9 +170,8 @@ export const ChatTextInput = ({
       dispatch(sendMessage({ chatId, message: restoreLinks(inputMessage) }))
       setInputMessage('')
       onMessageSent()
-      clearLinks()
     }
-  }, [inputMessage, chatId, dispatch, onMessageSent, restoreLinks, clearLinks])
+  }, [inputMessage, chatId, dispatch, onMessageSent, restoreLinks])
 
   const renderIcon = () => (
     <TouchableOpacity

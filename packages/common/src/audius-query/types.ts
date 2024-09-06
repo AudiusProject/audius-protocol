@@ -166,6 +166,10 @@ export type PaginatedQueryHookOptions = QueryHookOptions & {
    * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
    */
   singlePageData?: boolean
+  /**
+   * Optional option to start with a custom offset (e.g. starting on a later page)
+   */
+  startOffset?: number
 }
 
 export type QueryHookResults<Data> = {
