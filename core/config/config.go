@@ -130,6 +130,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656")
+		cfg.Seeds = cfg.PersistentPeers
 		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc
@@ -137,6 +138,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
+		cfg.Seeds = cfg.PersistentPeers
 		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc

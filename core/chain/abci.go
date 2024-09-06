@@ -92,7 +92,8 @@ func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitCh
 }
 
 func (app *CoreApplication) PrepareProposal(_ context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
-	return &abcitypes.PrepareProposalResponse{Txs: proposal.Txs}, nil
+	txs := removeDuplicateTxs(proposal.Txs)
+	return &abcitypes.PrepareProposalResponse{Txs: txs}, nil
 }
 
 func (app *CoreApplication) ProcessProposal(_ context.Context, proposal *abcitypes.ProcessProposalRequest) (*abcitypes.ProcessProposalResponse, error) {

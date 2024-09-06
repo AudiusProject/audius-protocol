@@ -33,3 +33,11 @@ limit 1;
 select *
 from core_validators
 where node_type = $1;
+
+-- name: CheckNodeRegistration :one
+select exists(
+  select 1
+  from core_validators
+  where endpoint = $1 and comet_address = $2
+);
+

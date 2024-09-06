@@ -2,18 +2,20 @@ package chain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/accounts"
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/proto"
 )
 
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_proto.Event) error {
+func (core *CoreApplication) isValidRegisterNodeEvent(ctx context.Context, e *gen_proto.Event) error {
 	sig := e.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
@@ -22,6 +24,23 @@ func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_
 	event := e.GetRegisterNode()
 	if event == nil {
 		return fmt.Errorf("unknown event fell into finalizeRegisterNode: %v", e)
+	}
+
+	exists, err := core.queries.CheckNodeRegistration(ctx, db.CheckNodeRegistrationParams{
+		Endpoint:     event.GetEndpoint(),
+		CometAddress: event.GetCometAddress(),
+	})
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		exists = false
+	}
+
+	if err != nil {
+		return fmt.Errorf("db error: %v", err)
+	}
+
+	if exists {
+		return nil
 	}
 
 	spf, err := core.contracts.GetServiceProviderFactoryContract()

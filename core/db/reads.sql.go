@@ -9,6 +9,26 @@ import (
 	"context"
 )
 
+const checkNodeRegistration = `-- name: CheckNodeRegistration :one
+select exists(
+  select 1
+  from core_validators
+  where endpoint = $1 and comet_address = $2
+)
+`
+
+type CheckNodeRegistrationParams struct {
+	Endpoint     string
+	CometAddress string
+}
+
+func (q *Queries) CheckNodeRegistration(ctx context.Context, arg CheckNodeRegistrationParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkNodeRegistration, arg.Endpoint, arg.CometAddress)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
 select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
 from core_validators

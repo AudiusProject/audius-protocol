@@ -82,6 +82,14 @@ func gatherTxMetadata(txResult []byte) (string, map[string]string) {
 			data["Signature"] = listen.Signature
 			data["Timestamp"] = listen.Timestamp.String()
 		}
+	case *gen_proto.Event_RegisterNode:
+		registration := event.GetRegisterNode()
+		txType = "Node Registration Event"
+
+		data["Comet Address"] = registration.CometAddress
+		data["Endpoint"] = registration.Endpoint
+		data["Eth Block"] = registration.EthBlock
+		data["SP ID"] = registration.SpId
 	}
 
 	return txType, data
