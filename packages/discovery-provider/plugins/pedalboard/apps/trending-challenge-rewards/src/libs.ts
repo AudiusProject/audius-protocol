@@ -25,9 +25,18 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
         process.env.claimDistributionContractAddress,
       wormholeContractAddress: process.env.wormholeContractAddress,
     },
+
     identityServiceConfig: {
       url: process.env.identityUrl,
       useHedgehogLocalStorage: false,
+    },
+    web3Config: {
+      entityManagerAddress: process.env.audius_contracts_entity_manager_address,
+      registryAddress: process.env.audius_eth_contracts_registry,
+      internalWeb3Config: {
+        web3ProviderEndpoints: [process.env.audius_web3_localhost]
+      },
+      useExternalWeb3: false,
     }
   };
 
