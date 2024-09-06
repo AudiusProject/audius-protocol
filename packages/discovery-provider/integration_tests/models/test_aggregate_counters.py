@@ -74,6 +74,9 @@ test_social_feature_entities = {
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
     ],
+    "comments": [
+        {"entity_type": "Track", "entity_id": 1, "text": "Test comment", "user_id": 2},
+    ]
 }
 
 
@@ -130,10 +133,10 @@ def test_aggregate_counters(app):
             session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
         )
         compare_rows(
-            agg_tracks[0], AggregateTrack(track_id=1, repost_count=1, save_count=1)
+            agg_tracks[0], AggregateTrack(track_id=1, repost_count=1, save_count=1, comment_count=1)
         )
         compare_rows(
-            agg_tracks[1], AggregateTrack(track_id=2, repost_count=0, save_count=0)
+            agg_tracks[1], AggregateTrack(track_id=2, repost_count=0, save_count=0, comment_count=0)
         )
 
         # is_available is update in place
