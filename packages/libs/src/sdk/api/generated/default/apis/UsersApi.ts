@@ -1461,7 +1461,6 @@ export const GetAIAttributedTracksByUserHandleSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
-    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetAIAttributedTracksByUserHandleSortMethodEnum = typeof GetAIAttributedTracksByUserHandleSortMethodEnum[keyof typeof GetAIAttributedTracksByUserHandleSortMethodEnum];
@@ -1502,7 +1501,6 @@ export const GetTracksByUserSortMethodEnum = {
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
-    Comments: 'comments',
     MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetTracksByUserSortMethodEnum = typeof GetTracksByUserSortMethodEnum[keyof typeof GetTracksByUserSortMethodEnum];
