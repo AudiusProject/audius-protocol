@@ -22,10 +22,15 @@ def validate_comment_tx(params: ManageEntityParameters):
         and comment_id in params.existing_records[EntityType.COMMENT.value]
     ):
         raise IndexingValidationError(f"Comment {comment_id} already exists")
+    # Entity type only supports track at the moment
     if params.metadata["entity_type"] != "Track":
         raise IndexingValidationError(
-            f"Entity type {params.metadata['entity_type']}  does not exist"
+            f"Entity type {params.metadata['entity_type']} does not exist"
         )
+    if params.metadata["entity_id"] is None:
+        raise IndexingValidationError(f"entity_id is required to create comment")
+    if params.user_id is None:
+        raise IndexingValidationError(f"user_id is required to create comment")
     if params.metadata["body"]:
         raise IndexingValidationError("Comment body is empty")
 
@@ -39,7 +44,7 @@ def create_comment(params: ManageEntityParameters):
         user_id=params.user_id,
         text=params.metadata["body"],
         entity_type=params.metadata["entity_type"],
-        entity_id=params.entity_id,
+        entity_id=params.metadata["entity_id"],
         track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
         blockhash=params.event_blockhash,
