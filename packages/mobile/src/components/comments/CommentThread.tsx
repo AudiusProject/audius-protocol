@@ -41,7 +41,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 
   return (
     <>
-      <CommentBlock comment={rootComment} />
+      <CommentBlock commentId={rootComment.id} />
       <Flex pl={40} direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
           <Box mv='xs'>
@@ -62,7 +62,7 @@ export const CommentThread = (props: CommentThreadProps) => {
               {rootComment?.replies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    comment={reply}
+                    commentId={reply.id}
                     parentCommentId={rootComment.id}
                   />
                 </Flex>

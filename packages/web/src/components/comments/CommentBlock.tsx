@@ -148,10 +148,10 @@ const CommentBlockInternal = (
   )
 }
 
-const CommentBlockUndefinedWrapper = (props: CommentBlockProps) => {
+// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// There's no way to return early in the above component due to rules of hooks ordering
+export const CommentBlock = (props: CommentBlockProps) => {
   const { data: comment } = useGetCommentById({ id: props.commentId })
   if (!comment) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }
-
-export const CommentBlock = CommentBlockUndefinedWrapper
