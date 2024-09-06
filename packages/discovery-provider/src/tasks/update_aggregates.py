@@ -99,7 +99,7 @@ new_aggregate_track as (
   select
     ap.track_id,
     coalesce(ps.save_count, 0) as save_count,
-    coalesce(pr.repost_count, 0) as repost_count
+    coalesce(pr.repost_count, 0) as repost_count,
     coalesce(pc.comment_count, 0) as comment_count
   from
     aggregate_track ap
@@ -111,7 +111,7 @@ update
   aggregate_track at
 set
   save_count = nat.save_count,
-  repost_count = nat.repost_count
+  repost_count = nat.repost_count,
   comment_count = nat.comment_count
 from
   new_aggregate_track nat
