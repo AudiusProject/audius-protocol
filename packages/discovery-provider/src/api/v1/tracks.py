@@ -470,6 +470,18 @@ track_comments_response = make_response(
 
 
 # Comment
+
+track_comments_parser = pagination_with_current_user_parser.copy()
+track_comments_parser.add_argument(
+    "sort_method",
+    required=False,
+    default="top",
+    choices=("top", "newest", "timestamp"),
+    type=str,
+    description="The sort method",
+)
+
+
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
     @record_metrics
@@ -483,11 +495,12 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
-    @ns.expect(pagination_parser)
+    @ns.expect(track_comments_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        args = pagination_parser.parse_args()
+        args = track_comments_parser.parse_args()
+        print('darggs', args)
         decoded_id = decode_with_abort(track_id, ns)
         track_comments = get_track_comments(args, decoded_id)
         return success_response(track_comments)

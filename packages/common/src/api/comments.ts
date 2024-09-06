@@ -1,4 +1,4 @@
-import { EntityType, Comment } from '@audius/sdk'
+import { EntityType, Comment, TrackCommentsSortMethodEnum } from '@audius/sdk'
 import { CommentMetadata } from '@audius/sdk/dist/sdk/api/comments/CommentsAPI'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
@@ -50,15 +50,23 @@ const commentsApi = createApi({
         {
           entityId,
           offset,
-          limit
-        }: { entityId: ID; offset?: number; limit?: number },
+          limit,
+          sortMethod
+        }: {
+          entityId: ID
+          offset?: number
+          limit?: number
+          sortMethod?: TrackCommentsSortMethodEnum
+        },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
+        console.log('sortMethod??', sortMethod)
         const commentsRes = await sdk.tracks.trackComments({
           trackId: encodeHashId(entityId),
           offset,
-          limit
+          limit,
+          sortMethod
         })
         return commentsRes?.data ?? []
       },

@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import asc, func
+from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -47,18 +47,6 @@ def get_replies(session, parent_comment_id, offset=0, limit=COMMENT_REPLIES_LIMI
     ]
 
 
-def get_reaction_count(session, parent_comment_id):
-    reaction_count = (
-        session.query(func.count(CommentReaction.comment_id))
-        .filter(
-            CommentReaction.comment_id == parent_comment_id,
-            CommentReaction.is_delete == False,
-        )
-        .first()
-    )
-    return reaction_count[0]
-
-
 def get_comment_replies(args, comment_id):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
@@ -70,6 +58,13 @@ def get_comment_replies(args, comment_id):
 
 def get_track_comments(args, track_id):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    sort_method = args.get("sort_method", "top")
+    if sort_method == "top":
+        order_by = desc(func.count(CommentReaction.comment_id))
+    elif sort_method == "newest":
+        order_by = desc(Comment.created_at)
+    elif sort_method == "timestamp":
+        order_by = asc(Comment.track_timestamp_s).nullslast()
 
     track_comments = []
     db = get_db_read_replica()
@@ -78,11 +73,13 @@ def get_track_comments(args, track_id):
 
     with db.scoped_session() as session:
         track_comments = (
-            session.query(Comment)
+            session.query(Comment, func.count(CommentReaction.comment_id).label("react_count"))
             .outerjoin(
                 CommentThreadAlias,
                 Comment.comment_id == CommentThreadAlias.comment_id,
             )
+            .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+            .group_by(Comment.comment_id)
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
@@ -90,7 +87,7 @@ def get_track_comments(args, track_id):
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
             )
-            .order_by(asc(Comment.created_at))
+            .order_by(order_by)
             .offset(offset)
             .limit(limit)
             .all()
@@ -98,15 +95,15 @@ def get_track_comments(args, track_id):
 
         return [
             {
-                "id": encode_int_id(track_comment.comment_id),
-                "user_id": track_comment.user_id,
-                "message": track_comment.text,
-                "is_pinned": track_comment.is_pinned,
-                "track_timestamp_s": track_comment.track_timestamp_s,
-                "react_count": get_reaction_count(session, track_comment.comment_id),
-                "replies": get_replies(session, track_comment.comment_id),
-                "created_at": str(track_comment.created_at),
-                "updated_at": str(track_comment.updated_at),
+                "id": encode_int_id(track_comment[0].comment_id),
+                "user_id": track_comment[0].user_id,
+                "message": track_comment[0].text,
+                "is_pinned": track_comment[0].is_pinned,
+                "track_timestamp_s": track_comment[0].track_timestamp_s,
+                "react_count": track_comment[1],
+                "replies": get_replies(session, track_comment[0].comment_id),
+                "created_at": str(track_comment[0].created_at),
+                "updated_at": str(track_comment[0].updated_at),
             }
             for track_comment in track_comments
         ]
