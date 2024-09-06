@@ -6,7 +6,6 @@ import axios, {
   ResponseType
 } from 'axios'
 import fetch from 'cross-fetch'
-import { cloneDeep } from 'lodash'
 // @ts-ignore
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
@@ -19,7 +18,7 @@ import {
   Mood,
   ResponseError
 } from '../../sdk'
-import type { CurrentUser, UserStateManager } from '../../userStateManager'
+import { CurrentUser } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
 import type { EthContracts } from '../ethContracts'
@@ -29,11 +28,7 @@ import {
   DiscoveryProviderSelection,
   DiscoveryProviderSelectionConfig
 } from './DiscoveryProviderSelection'
-import {
-  DEFAULT_UNHEALTHY_BLOCK_DIFF,
-  DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE,
-  REQUEST_TIMEOUT_MS
-} from './constants'
+import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
 import * as Requests from './requests'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
@@ -68,7 +63,6 @@ type DiscoveryResponse<Response> = {
 export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
-  userStateManager: UserStateManager
   ethContracts: Nullable<EthContracts>
   web3Manager?: Nullable<Web3Manager>
   reselectTimeout?: number
@@ -77,7 +71,7 @@ export type DiscoveryProviderConfig = {
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   discoveryNodeSelector?: DiscoveryNodeSelector
-  enableUserWalletOverride?: boolean
+  userId?: number
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -109,16 +103,17 @@ type DiscoveryNodeChallenge = {
   disbursed_amount: number
 }
 
-const getUserWalletOverride = async (localStorage?: LocalStorage) => {
-  try {
-    const userIdOverride = await localStorage?.getItem(
-      DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE
-    )
-    return userIdOverride == null ? undefined : userIdOverride
-  } catch {
-    return undefined
-  }
-}
+// TODO-NOW: Move this logic to common
+// const getUserWalletOverride = async (localStorage?: LocalStorage) => {
+//   try {
+//     const userIdOverride = await localStorage?.getItem(
+//       DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE
+//     )
+//     return userIdOverride == null ? undefined : userIdOverride
+//   } catch {
+//     return undefined
+//   }
+// }
 
 export type DiscoveryRelayBody = {
   contractRegistryKey?: string | null
@@ -150,7 +145,6 @@ export type DiscoveryRelayBody = {
 export class DiscoveryProvider {
   whitelist: Set<string> | undefined
   blacklist: Set<string> | undefined
-  userStateManager: UserStateManager
   ethContracts: Nullable<EthContracts>
   web3Manager?: Nullable<Web3Manager>
   unhealthyBlockDiff: number
@@ -172,11 +166,11 @@ export class DiscoveryProvider {
   discoveryNodeMiddleware?: Middleware
   selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
   localStorage?: LocalStorage
+  userId?: number
 
   constructor({
     whitelist,
     blacklist,
-    userStateManager,
     ethContracts,
     web3Manager,
     reselectTimeout,
@@ -188,16 +182,15 @@ export class DiscoveryProvider {
     unhealthySlotDiffPlays,
     unhealthyBlockDiff,
     discoveryNodeSelector,
-    enableUserWalletOverride = false
+    userId
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
-    this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
     this.selectionCallback = selectionCallback
     this.localStorage = localStorage
-    this.enableUserWalletOverride = enableUserWalletOverride
+    this.userId = userId
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -250,42 +243,43 @@ export class DiscoveryProvider {
       this.setEndpoint(endpoint)
     }
 
-    if (
-      this.discoveryProviderEndpoint &&
-      this.web3Manager &&
-      this.web3Manager.web3
-    ) {
-      const walletOverride = this.enableUserWalletOverride
-        ? await getUserWalletOverride(this.localStorage)
-        : undefined
+    // TODO-NOW: Make sure this is duplicated in sagas and then remove
+    // if (
+    //   this.discoveryProviderEndpoint &&
+    //   this.web3Manager &&
+    //   this.web3Manager.web3
+    // ) {
+    //   const walletOverride = this.enableUserWalletOverride
+    //     ? await getUserWalletOverride(this.localStorage)
+    //     : undefined
 
-      const web3AccountPromise = this.getUserAccount(
-        this.web3Manager.getWalletAddress()
-      )
+    //   const web3AccountPromise = this.getUserAccount(
+    //     this.web3Manager.getWalletAddress()
+    //   )
 
-      if (walletOverride) {
-        const overrideAccountPromise = this.getUserAccount(walletOverride)
-        const [web3User, currentUser] = await Promise.all([
-          web3AccountPromise,
-          overrideAccountPromise
-        ])
+    //   if (walletOverride) {
+    //     const overrideAccountPromise = this.getUserAccount(walletOverride)
+    //     const [web3User, currentUser] = await Promise.all([
+    //       web3AccountPromise,
+    //       overrideAccountPromise
+    //     ])
 
-        if (web3User) {
-          this.userStateManager.setWeb3User(web3User)
-        }
-        if (currentUser) {
-          await this.userStateManager.setCurrentUser(currentUser)
-        }
-      } else {
-        const currentUser = await web3AccountPromise
-        if (currentUser) {
-          if (this.enableUserWalletOverride) {
-            this.userStateManager.setWeb3User(cloneDeep(currentUser))
-          }
-          await this.userStateManager.setCurrentUser(currentUser)
-        }
-      }
-    }
+    //     if (web3User) {
+    //       this.userStateManager.setWeb3User(web3User)
+    //     }
+    //     if (currentUser) {
+    //       await this.userStateManager.setCurrentUser(currentUser)
+    //     }
+    //   } else {
+    //     const currentUser = await web3AccountPromise
+    //     if (currentUser) {
+    //       if (this.enableUserWalletOverride) {
+    //         this.userStateManager.setWeb3User(cloneDeep(currentUser))
+    //       }
+    //       await this.userStateManager.setCurrentUser(currentUser)
+    //     }
+    //   }
+    // }
   }
 
   setEndpoint(endpoint: string) {
@@ -564,37 +558,6 @@ export class DiscoveryProvider {
 
   async getFullPlaylist(encodedPlaylistId: string, encodedUserId: string) {
     const req = Requests.getFullPlaylist(encodedPlaylistId, encodedUserId)
-    return await this._makeRequest(req)
-  }
-
-  /**
-   * Return social feed for current user
-   * @param filter - filter by "all", "original", or "repost"
-   * @param limit - max # of items to return
-   * @param offset - offset into list to return from (for pagination)
-   * @returns Array of track and playlist metadata objects
-   * additional metadata fields on track and playlist objects:
-   *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
-   *    used for sorting feed
-   *  {Integer} repost_count - repost count of given track/playlist
-   *  {Integer} save_count - save count of given track/playlist
-   *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
-   *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
-   */
-  async getSocialFeed(
-    filter: string,
-    limit = 100,
-    offset = 0,
-    withUsers = false,
-    tracksOnly = false
-  ) {
-    const req = Requests.getSocialFeed(
-      filter,
-      limit,
-      offset,
-      withUsers,
-      tracksOnly
-    )
     return await this._makeRequest(req)
   }
 
@@ -1724,9 +1687,8 @@ export class DiscoveryProvider {
     if (requestObj.headers) {
       headers = requestObj.headers
     }
-    const currentUserId = this.userStateManager.getCurrentUserId()
-    if (currentUserId) {
-      headers['X-User-ID'] = currentUserId as unknown as string
+    if (this.userId) {
+      headers['X-User-ID'] = `${this.userId}`
     }
 
     // x-trpc-hint is used by the python server to skip expensive fields

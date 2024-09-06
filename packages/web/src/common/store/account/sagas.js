@@ -101,6 +101,7 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
   if (account && account.handle) {
+    // TODO-NOW: Use audius-query fetch functions for these.
     const libs = yield call(audiusBackendInstance.getAudiusLibs)
     const web3User = yield call([libs.Account, libs.Account.getWeb3User])
 
@@ -167,6 +168,8 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
 
   yield put(accountActions.fetchAccountRequested())
+
+  // TODO-NOW: Update this to use SDK
 
   const account = yield call(audiusBackendInstance.getAccount)
   if (!account) {

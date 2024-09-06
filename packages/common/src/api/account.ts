@@ -33,6 +33,7 @@ const accountApi = createApi({
     getCurrentUserId: {
       async fetch(_, context) {
         const { audiusBackend } = context
+        // TODO-NOW: Use sdk instead
         const account = await audiusBackend.getAccount()
         return account?.user_id || null
       },
@@ -41,8 +42,11 @@ const accountApi = createApi({
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
         const libs = await audiusBackend.getAudiusLibsTyped()
+        // TODO-NOW: Use sdk instead
         return libs.Account?.getWeb3User() as UserMetadata | null
       },
+      // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
+      // Can probably remove the web3User concept and just use a single getAccount hook for both web3 and managed users
       options: {
         // Note that this schema key is used to prevent caching of the
         // web3 user as it does not match the standard user schema.

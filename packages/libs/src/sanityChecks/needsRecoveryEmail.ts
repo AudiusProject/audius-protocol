@@ -6,15 +6,17 @@ import type { AudiusLibs } from '../AudiusLibs'
  * to be sent an email on their next log-in just in case they get logged
  * out of their account.
  */
-export const needsRecoveryEmail = async (libs: AudiusLibs) => {
+export const needsRecoveryEmail = async (
+  libs: AudiusLibs,
+  { wallet, handle }: { wallet: string; handle: string }
+) => {
   console.debug('Sanity Check - needsRecoveryEmail')
-  const user = libs.userStateManager?.getCurrentUser()
-  if (!user || !user.wallet) return
+  if (!wallet) return
 
-  const events = await libs.identityService?.getUserEvents(user.wallet)
+  const events = await libs.identityService?.getUserEvents(wallet)
   if (events?.needsRecoveryEmail) {
     console.debug('Sanity Check - needsRecoveryEmail - Sending Email')
     // Send email
-    await libs.Account?.generateRecoveryLink()
+    await libs.Account?.generateRecoveryLink({ handle })
   }
 }

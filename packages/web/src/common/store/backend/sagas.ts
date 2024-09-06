@@ -81,6 +81,7 @@ export function* setupBackend() {
   // Fire-and-forget init fp
   fingerprintClient.init()
   yield* put(accountActions.fetchAccount())
+  // TODO-NOW: Need to wait on the account fetch so we can pass values in here
   const { web3Error, libsError } = yield* call(audiusBackendInstance.setup)
   if (libsError) {
     yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))

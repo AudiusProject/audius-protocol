@@ -207,6 +207,9 @@ type WithEagerOption = (
 
 type WaitForLibsInit = () => Promise<unknown>
 
+// TODO-NOW: Remove
+type CurrentUser = any
+
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
   imagePreloader: (url: string) => Promise<boolean>
@@ -512,7 +515,14 @@ export const audiusBackend = ({
     }
   }
 
-  async function setup() {
+  // TODO-NOW: Pass wallet/userId to setup when calling from saga
+  async function setup({
+    wallet,
+    userId
+  }: {
+    wallet?: string
+    userId?: number
+  }) {
     // Wait for web3 to load if necessary
     await waitForWeb3()
     // Wait for optimizely to load if necessary
@@ -546,10 +556,6 @@ export const audiusBackend = ({
 
     const useSdkDiscoveryNodeSelector = await getFeatureEnabled(
       FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
-    )
-
-    const isManagerModeEnabled = await getFeatureEnabled(
-      FeatureFlags.MANAGER_MODE
     )
 
     let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
@@ -607,12 +613,15 @@ export const audiusBackend = ({
             getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
 
           discoveryNodeSelector,
-          enableUserWalletOverride: isManagerModeEnabled
+          wallet,
+          userId
         },
         identityServiceConfig:
           AudiusLibs.configIdentityService(identityServiceUrl),
         creatorNodeConfig: {
           ...baseCreatorNodeConfig,
+          wallet,
+          userId,
           storageNodeSelector: await getStorageNodeSelector()
         },
         // Electron cannot use captcha until it serves its assets from
@@ -2040,20 +2049,24 @@ export const audiusBackend = ({
     return notification
   }
 
+  // TODO-NOW: For all instances of account?: CurrentUser in this file, remove the parameter and the check here and
+  // update call sites to just not call it if no account is present
+
   // TODO(C-2719)
   async function getDiscoveryNotifications({
+    account,
     timestamp,
     groupIdOffset,
     limit,
     validTypes
   }: {
+    account?: CurrentUser
     timestamp?: number
     groupIdOffset?: string
     limit?: number
     validTypes?: string[]
   }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account?.getCurrentUser()
     if (!account)
       return {
         message: 'error',
@@ -2093,15 +2106,16 @@ export const audiusBackend = ({
   }
 
   async function getNotifications({
+    account,
     limit,
     timeOffset
   }: {
+    account?: CurrentUser
     limit: number
     // unix timestamp
     timeOffset?: number
   }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
     if (!account)
       return {
         message: 'error',
@@ -2172,9 +2186,12 @@ export const audiusBackend = ({
     }
   }
 
-  async function markAllNotificationAsViewed() {
+  async function markAllNotificationAsViewed({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
     let notificationsReadResponse
     try {
@@ -2204,9 +2221,12 @@ export const audiusBackend = ({
     return notificationsReadResponse
   }
 
-  async function clearNotificationBadges() {
+  async function clearNotificationBadges({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2223,9 +2243,13 @@ export const audiusBackend = ({
     }
   }
 
-  async function getEmailNotificationSettings() {
+  async function getEmailNotificationSettings({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2243,9 +2267,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateEmailNotificationSettings(emailFrequency: string) {
+  async function updateEmailNotificationSettings({
+    emailFrequency,
+    account
+  }: {
+    emailFrequency: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2267,11 +2297,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateNotificationSettings(
+  async function updateNotificationSettings({
+    settings,
+    account
+  }: {
     settings: Partial<Record<BrowserNotificationSetting, boolean>>
-  ) {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2292,11 +2326,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updatePushNotificationSettings(
+  async function updatePushNotificationSettings({
+    settings,
+    account
+  }: {
     settings: Partial<Record<PushNotificationSetting, boolean>>
-  ) {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2337,9 +2375,13 @@ export const audiusBackend = ({
     return { data, signature }
   }
 
-  async function getBrowserPushNotificationSettings() {
+  async function getBrowserPushNotificationSettings({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2360,9 +2402,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function getBrowserPushSubscription(pushEndpoint: string) {
+  async function getBrowserPushSubscription({
+    pushEndpoint,
+    account
+  }: {
+    pushEndpoint: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2384,9 +2432,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSafariBrowserPushEnabled(deviceToken: string) {
+  async function getSafariBrowserPushEnabled({
+    deviceToken,
+    account
+  }: {
+    deviceToken: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2451,9 +2505,13 @@ export const audiusBackend = ({
     ).then((res) => res.json())
   }
 
-  async function getPushNotificationSettings() {
+  async function getPushNotificationSettings({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2471,9 +2529,17 @@ export const audiusBackend = ({
     }
   }
 
-  async function registerDeviceToken(deviceToken: string, deviceType: string) {
+  async function registerDeviceToken({
+    deviceToken,
+    deviceType,
+    account
+  }: {
+    deviceToken: string
+    deviceType: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2497,9 +2563,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function deregisterDeviceToken(deviceToken: string) {
+  async function deregisterDeviceToken({
+    deviceToken,
+    account
+  }: {
+    deviceToken: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2526,9 +2598,15 @@ export const audiusBackend = ({
    * Returns whether the current user is subscribed to userId.
    */
   // TODO(C-2719)
-  async function getUserSubscribed(userId: ID) {
+  async function getUserSubscribed({
+    userId,
+    account
+  }: {
+    userId: ID
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
 
     try {
@@ -2544,10 +2622,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function subscribeToUser(userId: ID) {
+  async function subscribeToUser({
+    userId,
+    account
+  }: {
+    userId: ID
+    account?: CurrentUser
+  }) {
     try {
       await waitForLibsInit()
-      const account = audiusLibs.Account.getCurrentUser()
       if (!account) return
       return await audiusLibs.User.addUserSubscribe(userId)
     } catch (err) {
@@ -2556,10 +2639,16 @@ export const audiusBackend = ({
     }
   }
 
-  async function unsubscribeFromUser(userId: ID) {
+  async function unsubscribeFromUser({
+    userId,
+    account
+  }: {
+    userId: ID
+    account?: CurrentUser
+  }) {
     try {
       await waitForLibsInit()
-      const account = audiusLibs.Account.getCurrentUser()
+
       if (!account) return
       return await audiusLibs.User.deleteUserSubscribe(userId)
     } catch (err) {
@@ -2568,9 +2657,13 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateUserLocationTimezone() {
+  async function updateUserLocationTimezone({
+    account
+  }: {
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2590,9 +2683,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function sendWelcomeEmail({ name }: { name: string }) {
+  async function sendWelcomeEmail({
+    name,
+    account
+  }: {
+    name: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2611,12 +2710,14 @@ export const audiusBackend = ({
   }
 
   async function updateUserEvent({
-    hasSignedInNativeMobile
+    hasSignedInNativeMobile,
+    account
   }: {
     hasSignedInNativeMobile: boolean
+    account?: CurrentUser
   }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
     try {
       const { data, signature } = await signData()
@@ -2639,9 +2740,15 @@ export const audiusBackend = ({
    * Sets the playlist as viewed to reset the playlist updates notifications timer
    * @param {playlistId} playlistId playlist id or folder id
    */
-  async function updatePlaylistLastViewedAt(playlistId: ID) {
+  async function updatePlaylistLastViewedAt({
+    playlistId,
+    account
+  }: {
+    playlistId: ID
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return
 
     try {
@@ -2651,9 +2758,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateHCaptchaScore(token: string) {
+  async function updateHCaptchaScore({
+    token,
+    account
+  }: {
+    token: string
+    account?: CurrentUser
+  }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+
     if (!account) return { error: true }
 
     try {

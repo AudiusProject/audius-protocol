@@ -37,7 +37,6 @@ import {
   ProxyWormhole,
   ProxyWormholeConfig
 } from './services/wormhole/ProxyWormhole'
-import { UserStateManager } from './userStateManager'
 import { Utils, getNStorageNodes } from './utils'
 import type { Logger, Nullable } from './utils'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
@@ -60,7 +59,7 @@ type LibsSolanaWeb3Config = SolanaWeb3Config & {
 
 type LibsDiscoveryProviderConfig = Omit<
   DiscoveryProviderConfig,
-  'userStateManager' | 'ethContracts' | 'web3Manager'
+  'ethContracts' | 'web3Manager'
 >
 
 type LibsComstockConfig = {
@@ -281,7 +280,6 @@ export class AudiusLibs {
   logger: Logger
 
   // Services to initialize. Initialized in .init().
-  userStateManager: Nullable<UserStateManager>
   identityService: Nullable<IdentityService>
   hedgehog: Nullable<HedgehogBase>
   discoveryProvider: Nullable<DiscoveryProvider>
@@ -356,7 +354,6 @@ export class AudiusLibs {
     this.logger = logger
 
     // Services to initialize. Initialized in .init().
-    this.userStateManager = null
     this.identityService = null
     this.hedgehog = null
     this.discoveryProvider = null
@@ -397,9 +394,6 @@ export class AudiusLibs {
       this.localStorage = await getPlatformLocalStorage()
     }
 
-    this.userStateManager = new UserStateManager({
-      localStorage: this.localStorage
-    })
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
@@ -501,7 +495,6 @@ export class AudiusLibs {
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
-        userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
         localStorage: this.localStorage,
@@ -513,15 +506,13 @@ export class AudiusLibs {
 
     /** Creator Node */
     if (this.creatorNodeConfig) {
-      const currentUser = this.userStateManager.getCurrentUser()
-
       // Use rendezvous to select creatorNodeEndpoint
       let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
-      if (currentUser?.wallet) {
+      if (this.creatorNodeConfig.wallet) {
         if (this.creatorNodeConfig.storageNodeSelector) {
           const [storageNode] =
             this.creatorNodeConfig.storageNodeSelector.getNodes(
-              currentUser.wallet
+              this.creatorNodeConfig.wallet
             )
           if (storageNode) {
             creatorNodeEndpoint = storageNode
@@ -534,7 +525,7 @@ export class AudiusLibs {
           const randomNodes = await getNStorageNodes(
             storageV2Nodes,
             1,
-            currentUser.wallet,
+            this.creatorNodeConfig.wallet,
             this.logger
           )
           creatorNodeEndpoint = randomNodes[0]!
@@ -545,7 +536,6 @@ export class AudiusLibs {
         this.web3Manager,
         creatorNodeEndpoint,
         this.isServer,
-        this.userStateManager,
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
@@ -562,7 +552,6 @@ export class AudiusLibs {
 
     // Initialize apis
     const services = [
-      this.userStateManager,
       this.identityService,
       this.hedgehog,
       this.discoveryProvider,

@@ -185,15 +185,12 @@ function isCreateUserBankIfNeededError(
  * Returns the userbank account info for the given address and mint. If the
  * userbank does not exist, returns null.
  */
+// TODO-NOW: Find calls to this and make sure they explicitly pass ethAddress
 export const getUserbankAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
-  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
+  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
   commitment?: Commitment
 ): Promise<Account | null> => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const ethAddress =
-    sourceEthAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
-
   if (!ethAddress) {
     throw new Error(
       `getUserbankAccountInfo: unexpected error getting eth address`
@@ -227,8 +224,7 @@ export const createUserBankIfNeeded = async (
 ) => {
   const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
 
-  const recipientEthAddress =
-    ethAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
+  const recipientEthAddress = ethAddress
 
   if (!recipientEthAddress) {
     throw new Error(
