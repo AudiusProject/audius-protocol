@@ -417,7 +417,7 @@ def populate_track_metadata(
             track_id: {
                 response_name_constants.repost_count: repost_count,
                 response_name_constants.save_count: save_count,
-                response_name_constants.comment_count: comment_count
+                response_name_constants.comment_count: comment_count,
             }
             for (track_id, repost_count, save_count, comment_count) in counts
         }
