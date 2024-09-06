@@ -44,6 +44,7 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
     solanaWeb3Config: config.solanaWeb3Config,
     ethWeb3Config: config.ethWeb3Config,
     identityServiceConfig: config.identityServiceConfig,
+    web3Config: config.web3Config,
     discoveryProviderConfig: {},
     logger: console,
     isDebug: false,
