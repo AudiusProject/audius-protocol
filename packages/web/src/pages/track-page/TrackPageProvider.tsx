@@ -463,11 +463,11 @@ class TrackPageProvider extends Component<
     }
 
     const childProps = {
+      id: track?.track_id,
       title,
       description,
       canonicalUrl,
       structuredData,
-      heroTrack: track,
       hasValidRemixParent,
       user,
       heroPlaying,

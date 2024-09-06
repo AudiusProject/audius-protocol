@@ -1,16 +1,21 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
+  useGetCurrentUserId,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import {
   isContentUSDCPurchaseGated,
   ID,
   CoverArtSizes,
   FieldVisibility,
   Remix,
-  AccessConditions
+  AccessConditions,
+  Track
 } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
-  CommonState,
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
@@ -39,7 +44,6 @@ import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
@@ -50,6 +54,7 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { getTrackDefaults } from 'pages/track-page/utils'
 
 import { AiTrackSection } from './AiTrackSection'
 import { CardTitle } from './CardTitle'
@@ -66,8 +71,6 @@ const DownloadSection = lazy(() =>
     default: module.DownloadSection
   }))
 )
-
-const { getTrack } = cacheTracksSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -94,10 +97,9 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
-export type GiantTrackTileProps = {
+export type GiantTrackTilePropsOld = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
-  trendingBadgeLabel: Nullable<string>
   coSign: Nullable<Remix>
   coverArtSizes: Nullable<CoverArtSizes>
   credits: string
@@ -106,7 +108,6 @@ export type GiantTrackTileProps = {
   hasStreamAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
-  following: boolean
   genre: string
   isArtistPick: boolean
   isOwner: boolean
@@ -131,8 +132,7 @@ export type GiantTrackTileProps = {
   onSave: () => void
   onShare: () => void
   onUnfollow: () => void
-  playing: boolean
-  previewing: boolean
+
   streamConditions: Nullable<AccessConditions>
   downloadConditions: Nullable<AccessConditions>
   releaseDate: string
@@ -145,51 +145,83 @@ export type GiantTrackTileProps = {
   ddexApp?: string | null
 }
 
-export const GiantTrackTile = ({
-  aiAttributionUserId,
-  artistHandle,
-  trendingBadgeLabel,
-  coSign,
-  coverArtSizes,
-  description,
-  hasStreamAccess,
-  duration,
-  fieldVisibility,
-  following,
-  genre,
-  isArtistPick,
-  isOwner,
-  isStreamGated,
-  isRemix,
-  isReposted,
-  isPublishing,
-  isSaved,
-  isScheduledRelease,
-  isUnlisted,
-  listenCount,
-  loading,
-  onClickFavorites,
-  onClickReposts,
-  onFollow,
-  onMakePublic,
-  onPlay,
-  onPreview,
-  onSave,
-  onShare,
-  onRepost,
-  onUnfollow,
-  releaseDate,
-  repostCount,
-  saveCount,
-  playing,
-  previewing,
-  streamConditions,
-  tags,
-  trackId,
-  trackTitle,
-  userId,
-  ddexApp
-}: GiantTrackTileProps) => {
+export type GiantTrackTileProps = {
+  id: ID
+  trendingBadgeLabel: Nullable<string>
+  following: boolean
+  onMakePublic: (trackId: ID) => void
+  onFollow: () => void
+  onPlay: () => void
+  onPreview: () => void
+  onRepost: () => void
+  onSave: () => void
+  onShare: () => void
+  onUnfollow: () => void
+  playing: boolean
+  previewing: boolean
+}
+
+export const GiantTrackTile = (props: GiantTrackTileProps) => {
+  const {
+    id,
+    trendingBadgeLabel,
+    following,
+    onFollow,
+    onMakePublic,
+    onPlay,
+    onPreview,
+    onSave,
+    onShare,
+    onRepost,
+    onUnfollow,
+    playing,
+    previewing
+  } = props
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const track = (useGetTrackById({ id, currentUserId }).data ??
+    undefined) as unknown as Track | undefined
+  const { data: user } = useGetUserById(
+    { id: track?.owner_id ?? 0 },
+    { disabled: !track?.owner_id }
+  )
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
+    track ?? null
+  )
+
+  const {
+    aiAttributionUserId,
+    coSign,
+    coverArtSizes,
+    ddexApp,
+    description,
+    duration,
+    fieldVisibility,
+    genre,
+    isPublishing,
+    isReposted,
+    isSaved,
+    isScheduledRelease,
+    isStreamGated,
+    isUnlisted,
+    ownerId,
+    releaseDate,
+    remixParentTrackId,
+    streamConditions,
+    tags,
+    title,
+    trackId,
+    saveCount,
+    listenCount,
+    repostCount
+  } = getTrackDefaults(track ?? null)
+
+  const isOwner = ownerId === currentUserId
+  const isRemix = !!remixParentTrackId
+  const isArtistPick =
+    user && track && user.artist_pick_track_id === track.track_id
+
+  const loading = !track || isFetchingNFTAccess
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
@@ -198,10 +230,7 @@ export const GiantTrackTile = ({
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
+
   const hasDownloadableAssets =
     track?.is_downloadable || (track?._stems?.length ?? 0) > 0
   // Preview button is shown for USDC-gated tracks if user does not have access
@@ -367,7 +396,7 @@ export const GiantTrackTile = ({
         ) : (
           <>
             <span className={styles.numberOfListens}>
-              {listenCount.toLocaleString()}
+              {listenCount?.toLocaleString() ?? 0}
             </span>
             <span className={styles.listenText}>
               {listenCount === 1 ? 'Play' : 'Plays'}
@@ -416,10 +445,10 @@ export const GiantTrackTile = ({
     menu: {
       type: 'track',
       trackId,
-      trackTitle,
+      trackTitle: title,
       ddexApp,
       genre,
-      handle: artistHandle,
+      handle: user?.handle,
       isFavorited: isSaved,
       mount: 'page',
       isOwner,
@@ -461,7 +490,7 @@ export const GiantTrackTile = ({
               {renderCardTitle(cn(fadeIn))}
               <div className={styles.title}>
                 <Text variant='heading' size='xl' className={cn(fadeIn)}>
-                  {trackTitle}
+                  {title}
                 </Text>
                 {isLoading && <Skeleton className={styles.skeleton} />}
               </div>
@@ -473,7 +502,7 @@ export const GiantTrackTile = ({
                   className={cn(fadeIn)}
                 >
                   <Text color='subdued'>By </Text>
-                  <UserLink userId={userId} popover />
+                  {ownerId ? <UserLink userId={ownerId} popover /> : null}
                 </Text>
                 {isLoading && (
                   <Skeleton className={styles.skeleton} width='60%' />
@@ -577,7 +606,7 @@ export const GiantTrackTile = ({
               streamConditions={streamConditions}
               hasStreamAccess={hasStreamAccess}
               isOwner={isOwner}
-              ownerId={userId}
+              ownerId={ownerId}
             />
           </Box>
         ) : null}

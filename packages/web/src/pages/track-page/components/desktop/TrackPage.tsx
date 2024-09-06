@@ -1,4 +1,9 @@
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useGetCurrentUserId,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
@@ -14,7 +19,7 @@ import SectionButton from 'components/section-button/SectionButton'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
-import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
+import { getTrackDefaults } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
@@ -28,6 +33,7 @@ const messages = {
 }
 
 export type OwnProps = {
+  id: ID
   title: string
   description: string
   canonicalUrl: string
@@ -67,52 +73,56 @@ export type OwnProps = {
   pause: () => void
 }
 
-const TrackPage = ({
-  title,
-  description,
-  canonicalUrl,
-  structuredData,
-  hasValidRemixParent,
-  // Hero Track Props
-  heroTrack,
-  user,
-  heroPlaying,
-  previewing,
-  userId,
-  trendingBadgeLabel,
-  onHeroPlay,
-  goToAllRemixesPage,
-  goToParentRemixesPage,
-  onHeroShare,
-  onHeroRepost,
-  onSaveTrack,
-  onFollow,
-  onUnfollow,
-  makePublic,
-  onClickReposts,
-  onClickFavorites,
+const TrackPage = (props: OwnProps) => {
+  const {
+    id,
+    canonicalUrl,
+    structuredData,
+    hasValidRemixParent,
+    heroPlaying,
+    previewing,
+    trendingBadgeLabel,
+    onHeroPlay,
+    goToAllRemixesPage,
+    goToParentRemixesPage,
+    onHeroShare,
+    onHeroRepost,
+    onSaveTrack,
+    onFollow,
+    onUnfollow,
+    makePublic,
 
-  // Tracks Lineup Props
-  tracks,
-  currentQueueItem,
-  isPlaying,
-  isBuffering,
-  play,
-  pause
-}: OwnProps) => {
-  const { entries } = tracks
-  const isOwner = heroTrack?.owner_id === userId
-  const following = user?.does_current_user_follow ?? false
-  const isSaved = heroTrack?.has_current_user_saved ?? false
-  const isReposted = heroTrack?.has_current_user_reposted ?? false
-
-  const { isFetchingNFTAccess, hasStreamAccess } =
-    useGatedContentAccess(heroTrack)
-
+    // Tracks Lineup Props
+    tracks,
+    currentQueueItem,
+    isPlaying,
+    isBuffering,
+    play,
+    pause
+  } = props
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const track = (useGetTrackById({ id, currentUserId }).data ??
+    undefined) as unknown as Track | undefined
+  const { data: user } = useGetUserById(
+    { id: track?.owner_id ?? 0 },
+    { disabled: !track }
+  )
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  const loading = !heroTrack || isFetchingNFTAccess
+
+  if (!track) {
+    // TODO: return not found page
+    return null
+  }
+
+  const { title, description } = track
+
+  const { entries } = tracks
+  const isOwner = track?.owner_id === currentUserId
+  const following = user?.does_current_user_follow ?? false
+  const isSaved = track?.has_current_user_saved ?? false
+  const isReposted = track?.has_current_user_reposted ?? false
 
   const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
@@ -122,56 +132,17 @@ const TrackPage = ({
 
   const onSave = isOwner
     ? () => {}
-    : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
-  const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
+    : () => track && onSaveTrack(isSaved, track.track_id)
+  const onShare = () => (track ? onHeroShare(track.track_id) : null)
   const onRepost = () =>
-    heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
-
-  const defaults = getTrackDefaults(heroTrack)
+    track ? onHeroRepost(isReposted, track.track_id) : null
 
   const renderGiantTrackTile = () => (
     <GiantTrackTile
-      loading={loading}
+      id={id}
       playing={heroPlaying}
       previewing={previewing}
-      trackTitle={defaults.title}
-      trackId={defaults.trackId}
-      aiAttributionUserId={defaults.aiAttributionUserId}
-      userId={user?.user_id ?? 0}
-      artistHandle={emptyStringGuard(user?.handle)}
-      coverArtSizes={defaults.coverArtSizes}
-      tags={defaults.tags}
-      description={defaults.description}
-      listenCount={defaults.playCount}
-      duration={defaults.duration}
-      releaseDate={defaults.releaseDate}
-      credits={defaults.credits}
-      genre={defaults.genre}
-      mood={defaults.mood}
-      repostCount={defaults.repostCount}
-      saveCount={defaults.saveCount}
-      isReposted={isReposted}
-      isOwner={isOwner}
-      currentUserId={userId}
-      isArtistPick={
-        heroTrack && user
-          ? user.artist_pick_track_id === heroTrack.track_id
-          : false
-      }
-      ddexApp={heroTrack?.ddex_app}
-      isSaved={isSaved}
       trendingBadgeLabel={trendingBadgeLabel}
-      isUnlisted={defaults.isUnlisted}
-      isScheduledRelease={defaults.isScheduledRelease}
-      isStreamGated={defaults.isStreamGated}
-      streamConditions={defaults.streamConditions}
-      isDownloadGated={defaults.isDownloadGated}
-      downloadConditions={defaults.downloadConditions}
-      hasStreamAccess={hasStreamAccess}
-      isRemix={!!defaults.remixParentTrackId}
-      isPublishing={defaults.isPublishing}
-      fieldVisibility={defaults.fieldVisibility}
-      coSign={defaults.coSign}
       // Actions
       onPlay={onPlay}
       onPreview={onPreview}
@@ -182,8 +153,6 @@ const TrackPage = ({
       onFollow={onFollow}
       onUnfollow={onUnfollow}
       onMakePublic={makePublic}
-      onClickReposts={onClickReposts}
-      onClickFavorites={onClickFavorites}
     />
   )
 
@@ -192,6 +161,8 @@ const TrackPage = ({
       {messages.originalTrack}
     </Text>
   )
+
+  const defaults = getTrackDefaults(track)
 
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
@@ -206,7 +177,7 @@ const TrackPage = ({
   return (
     <Page
       title={title}
-      description={description}
+      description={description ?? undefined}
       ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
@@ -216,7 +187,7 @@ const TrackPage = ({
       noIndex={defaults.isUnlisted}
     >
       <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
-        <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
+        <CoverPhoto loading={!track} userId={user ? user.user_id : null} />
         <StatBanner isEmpty />
         <NavBanner empty />
       </Box>
@@ -249,7 +220,7 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled && !heroTrack?.comments_disabled ? (
+          {isCommentingEnabled && !track?.comments_disabled ? (
             <Flex flex='3'>
               <CommentSection entityId={defaults.trackId} />
             </Flex>

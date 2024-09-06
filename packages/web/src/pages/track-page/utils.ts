@@ -13,6 +13,7 @@ export const defaultFieldVisibility = {
 }
 
 export const getTrackDefaults = (heroTrack: Track | null) => ({
+  ...heroTrack,
   title: emptyStringGuard(heroTrack?.title),
   trackId: heroTrack?.track_id ?? 0,
   coverArtSizes: heroTrack?._cover_art_sizes ?? null,
@@ -47,5 +48,9 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   coSign: heroTrack?._co_sign ?? null,
   remixTrackIds: heroTrack?._remixes?.map(({ track_id }) => track_id) ?? null,
   remixesCount: heroTrack?._remixes_count ?? null,
-  remixParentTrackId: heroTrack?.remix_of?.tracks?.[0]?.parent_track_id
+  remixParentTrackId: heroTrack?.remix_of?.tracks?.[0]?.parent_track_id,
+  isReposted: heroTrack?.has_current_user_reposted ?? false,
+  isSaved: heroTrack?.has_current_user_saved ?? false,
+  ownerId: heroTrack?.owner_id ?? null,
+  ddexApp: heroTrack?.ddex_app ?? null
 })
