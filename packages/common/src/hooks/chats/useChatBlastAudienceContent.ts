@@ -61,9 +61,9 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   const audienceCount = useMemo(() => {
     switch (audience) {
       case ChatBlastAudience.FOLLOWERS:
-        return user.follower_count
+        return user?.follower_count
       case ChatBlastAudience.TIPPERS:
-        return user.supporter_count
+        return user?.supporter_count
       case ChatBlastAudience.CUSTOMERS:
         return purchasersCount
       case ChatBlastAudience.REMIXERS:
@@ -73,8 +73,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     }
   }, [
     audience,
-    user.follower_count,
-    user.supporter_count,
+    user?.follower_count,
+    user?.supporter_count,
     purchasersCount,
     remixersCount
   ])
