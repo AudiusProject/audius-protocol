@@ -11,6 +11,7 @@ deps:
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go mod tidy
 
+.PHONY: gen
 gen: $(SQL_SRCS)
 	@which sqlc || ( \
 		echo "ERROR: sqlc command not found." \
@@ -19,6 +20,7 @@ gen: $(SQL_SRCS)
 	)
 	go generate ./...
 	cd db && sqlc generate
+	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
 build-native:

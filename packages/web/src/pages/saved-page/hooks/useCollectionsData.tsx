@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { Status } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -55,8 +54,7 @@ export const useCollectionsData = ({
 
   const {
     data: fetchedCollections,
-    status: apiStatus,
-    isLoadingMore,
+    status,
     hasMore,
     loadMore: fetchMore
   } = useAllPaginatedQuery(
@@ -79,8 +77,6 @@ export const useCollectionsData = ({
       'playlist_id'
     )
   }, [locallyAddedCollections, fetchedCollections, locallyRemovedCollections])
-
-  const status = isLoadingMore || hasMore ? Status.LOADING : apiStatus
 
   return {
     status,

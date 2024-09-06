@@ -23,7 +23,12 @@ const borderWidthMap = {
 }
 
 export const Avatar = (props: AvatarProps) => {
-  const { variant, size = 'auto', borderWidth = 'default', ...other } = props
+  const {
+    variant,
+    size = 'auto',
+    borderWidth = size === 'small' ? 'thin' : 'default',
+    ...other
+  } = props
 
   return (
     <Artwork

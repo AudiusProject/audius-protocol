@@ -8,6 +8,7 @@ import {
   useInboxUnavailableModal,
   type CommonState
 } from '@audius/common/store'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
   ModalHeader,
@@ -16,13 +17,14 @@ import {
   Button,
   Text,
   Flex,
-  IconMessage
+  IconMessage,
+  IconExternalLink
 } from '@audius/harmony'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { UserLink } from 'components/link'
+import { ExternalLink, UserLink } from 'components/link'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -113,7 +115,23 @@ export const SaleModalContent = ({
               onClick={onClose}
             />
           </DetailSection>
-          <DetailSection label={messages.transactionDate}>
+          <DetailSection
+            label={messages.transactionDate}
+            actionButton={
+              <Button
+                iconLeft={IconExternalLink}
+                variant='secondary'
+                size='small'
+                asChild
+              >
+                <ExternalLink
+                  to={makeSolanaTransactionLink(purchaseDetails.signature)}
+                >
+                  {messages.transaction}
+                </ExternalLink>
+              </Button>
+            }
+          >
             <Text variant='body' size='l'>
               {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
             </Text>

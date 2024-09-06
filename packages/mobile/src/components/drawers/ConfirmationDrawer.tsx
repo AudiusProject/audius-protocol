@@ -1,26 +1,20 @@
+import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import type { Modals } from '@audius/common/store'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Text, IconInfo, Button, Flex, useTheme } from '@audius/harmony-native'
+import { Text, Button, Flex, useTheme, Divider } from '@audius/harmony-native'
 import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { Drawer } from 'app/store/drawers/slice'
-import { makeStyles } from 'app/styles'
 
 const defaultMessages = {
-  cancel: 'Nevermind'
+  cancel: 'Cancel'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    paddingHorizontal: spacing(4)
-  }
-}))
-
-type BaseConfirmationDrawerProps = {
+export type BaseConfirmationDrawerProps = {
   messages: {
     header: string
     description: string
@@ -32,6 +26,7 @@ type BaseConfirmationDrawerProps = {
   variant?: 'destructive' | 'affirmative'
   icon?: IconComponent
   addBottomInset?: boolean
+  children?: ReactNode | ReactNode[]
 }
 
 type NativeConfirmationDrawerProps = BaseConfirmationDrawerProps & {
@@ -50,15 +45,16 @@ type DrawerContentProps = BaseConfirmationDrawerProps & {
   onClose: () => void
 }
 
-const ConfirmationDrawerContent = (props: DrawerContentProps) => {
+export const ConfirmationDrawerContent = (props: DrawerContentProps) => {
   const {
     messages: messagesProp,
     onConfirm,
     onCancel,
     onClose,
     variant = 'destructive',
-    icon: Icon = IconInfo,
-    addBottomInset
+    icon: Icon,
+    addBottomInset,
+    children
   } = props
   const messages = { ...defaultMessages, ...messagesProp }
   const insets = useSafeAreaInsets()
@@ -75,22 +71,18 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
   }, [onClose, onCancel])
 
   return (
-    <Flex gap='xl' pv='xl'>
-      <Flex
-        direction='row'
-        gap='s'
-        pb='l'
-        alignItems='center'
-        justifyContent='center'
-      >
-        <Icon size='xl' color='subdued' />
+    <Flex gap='xl' pv='xl' ph='l'>
+      <Flex direction='row' gap='s' alignItems='center' justifyContent='center'>
+        {Icon ? <Icon size='xl' color='subdued' /> : null}
         <Text variant='label' size='xl' strength='strong' color='subdued'>
           {messages.header}
         </Text>
       </Flex>
+      <Divider />
       <Text size='l' textAlign='center'>
         {messages.description}
       </Text>
+      {children}
       <Flex gap='l'>
         <Button
           variant={variant === 'destructive' ? 'destructive' : 'primary'}
@@ -109,17 +101,12 @@ const ConfirmationDrawerContent = (props: DrawerContentProps) => {
 }
 
 const NativeConfirmationDrawer = (props: NativeConfirmationDrawerProps) => {
-  const styles = useStyles()
   const { drawerName, ...other } = props
   const { onCancel } = other
   const { onClose } = useDrawer(drawerName)
 
   return (
-    <NativeDrawer
-      drawerName={drawerName}
-      drawerStyle={styles.root}
-      onClose={onCancel}
-    >
+    <NativeDrawer drawerName={drawerName} onClose={onCancel}>
       <ConfirmationDrawerContent onClose={onClose} {...other} />
     </NativeDrawer>
   )
@@ -136,15 +123,10 @@ export const ConfirmationDrawer = (props: ConfirmationDrawerProps) => {
 const CommonConfirmationDrawer = (props: CommonConfirmationDrawerProps) => {
   const { modalName, ...other } = props
   const { onCancel } = other
-  const styles = useStyles()
   const { onClose } = useDrawerState(modalName)
 
   return (
-    <AppDrawer
-      modalName={modalName}
-      drawerStyle={styles.root}
-      onClose={onCancel}
-    >
+    <AppDrawer modalName={modalName} onClose={onCancel}>
       <ConfirmationDrawerContent onClose={onClose} {...other} />
     </AppDrawer>
   )

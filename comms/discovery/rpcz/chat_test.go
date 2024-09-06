@@ -106,30 +106,30 @@ func TestChat(t *testing.T) {
 	// user1Id reacts to user2Id's message
 	reactTs := time.Now().Add(-time.Second)
 	reaction := "fire"
-	err = chatReactMessage(tx, user1Id, replyMessageId, &reaction, reactTs)
+	err = chatReactMessage(tx, user1Id, chatId, replyMessageId, &reaction, reactTs)
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, &reaction)
 
 	// user1Id changes reaction to user2Id's message
 	changedReactTs := time.Now()
 	newReaction := "heart"
-	err = chatReactMessage(tx, user1Id, replyMessageId, &newReaction, changedReactTs)
+	err = chatReactMessage(tx, user1Id, chatId, replyMessageId, &newReaction, changedReactTs)
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, &newReaction)
 
 	// if an "older" reaction arrives late... it will not overwrite newer reaction
-	err = chatReactMessage(tx, user1Id, replyMessageId, &reaction, reactTs)
+	err = chatReactMessage(tx, user1Id, chatId, replyMessageId, &reaction, reactTs)
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, &newReaction)
 
 	// if an "older" delete arrives late... it is ignored
-	err = chatReactMessage(tx, user1Id, replyMessageId, nil, reactTs)
+	err = chatReactMessage(tx, user1Id, chatId, replyMessageId, nil, reactTs)
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, &newReaction)
 
 	// user1Id removes reaction to user2Id's message
 	removedReactTs := time.Now()
-	err = chatReactMessage(tx, user1Id, replyMessageId, nil, removedReactTs)
+	err = chatReactMessage(tx, user1Id, chatId, replyMessageId, nil, removedReactTs)
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, nil)
 

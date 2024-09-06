@@ -179,6 +179,7 @@ track_full = ns.clone(
         "musical_key": fields.String,
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
+        "comments_disabled": fields.Boolean,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),
@@ -221,6 +222,19 @@ search_track_full = ns.clone(
 
 stem_full = ns.model(
     "stem_full",
+    {
+        "id": fields.String(required=True),
+        "parent_id": fields.String(required=True),
+        "category": fields.String(required=True),
+        "cid": fields.String(required=True),
+        "user_id": fields.String(required=True),
+        "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
+    },
+)
+
+stem = ns.model(
+    "stem",
     {
         "id": fields.String(required=True),
         "parent_id": fields.String(required=True),

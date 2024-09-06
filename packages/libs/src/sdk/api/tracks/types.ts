@@ -174,7 +174,8 @@ export const createUploadTrackMetadataSchema = () =>
     isCustomBpm: z.optional(z.boolean()),
     musicalKey: z.optional(z.string().nullable()),
     isCustomMusicalKey: z.optional(z.boolean()),
-    audioAnalysisErrorCount: z.optional(z.number())
+    audioAnalysisErrorCount: z.optional(z.number()),
+    commentsDisabled: z.optional(z.boolean())
   })
 
 export type TrackMetadata = z.input<
@@ -317,16 +318,13 @@ const PurchaseTrackSchemaBase = z.object({
   includeNetworkCut: z.boolean().optional()
 })
 
-export const GetPurchaseTrackTransactionSchema = z
-  .object({
-    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
-    wallet: PublicKeySchema.optional()
-  })
+export const GetPurchaseTrackInstructionsSchema = z
+  .object({})
   .merge(PurchaseTrackSchemaBase)
   .strict()
 
-export type GetPurchaseTrackTransactionRequest = z.input<
-  typeof GetPurchaseTrackTransactionSchema
+export type GetPurchaseTrackInstructionsRequest = z.input<
+  typeof GetPurchaseTrackInstructionsSchema
 >
 
 export const PurchaseTrackSchema = z
@@ -334,7 +332,9 @@ export const PurchaseTrackSchema = z
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
     walletAdapter: z
       .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
-      .optional()
+      .optional(),
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    wallet: PublicKeySchema.optional()
   })
   .merge(PurchaseTrackSchemaBase)
   .strict()

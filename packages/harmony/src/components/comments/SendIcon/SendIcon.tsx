@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react'
 
+import { IconButton } from 'components/button'
 import { IconPaperAirplane } from 'icons'
 
 import { SendIconProps } from './types'
@@ -8,7 +9,9 @@ export const SendIcon = ({ disabled = false, onClick }: SendIconProps) => {
   const { color, motion } = useTheme()
 
   return (
-    <IconPaperAirplane
+    <IconButton
+      aria-label='Send'
+      icon={IconPaperAirplane}
       size='2xl'
       onClick={onClick}
       css={{

@@ -21,7 +21,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { Comment } from '@audius/sdk'
+import { Comment, ReplyComment } from '@audius/sdk'
 import { useToggle } from 'react-use'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
@@ -38,7 +38,7 @@ const messages = {
 }
 
 type CommentActionBarProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
   isDisabled: boolean
   onClickEdit: () => void
   onClickReply: () => void
@@ -52,7 +52,8 @@ export const CommentActionBar = ({
   onClickDelete
 }: CommentActionBarProps) => {
   // comment from props
-  const { reactCount, id: commentId, isPinned } = comment
+  const { reactCount, id: commentId } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
@@ -151,6 +152,7 @@ export const CommentActionBar = ({
   return (
     <Flex gap='l' alignItems='center'>
       <Flex alignItems='center'>
+        {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
           color={reactionState ? 'active' : 'subdued'}

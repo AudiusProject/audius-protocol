@@ -2,15 +2,13 @@ import { useContext, useEffect } from 'react'
 
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
+import { Flex, Text } from '@audius/harmony'
 import { useParams } from 'react-router-dom'
 
 import { CommentList } from 'components/comments/CommentList'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext from 'components/nav/mobile/NavContext'
-
-const messages = {
-  title: 'Comments'
-}
 
 type TrackCommentsParams = {
   slug: string
@@ -34,14 +32,22 @@ export const TrackCommentsPage = () => {
 
   if (!track) return null
 
+  const { track_id, comments_disabled } = track
+
   return (
     <MobilePageContainer
       title={messages.title}
       css={(theme) => ({ backgroundColor: theme.color.background.white })}
     >
-      <CommentSectionProvider entityId={track?.track_id}>
-        <CommentList />
-      </CommentSectionProvider>
+      {comments_disabled ? (
+        <Flex p='2xl' justifyContent='center'>
+          <Text variant='title'>{messages.commentsDisabled}</Text>
+        </Flex>
+      ) : (
+        <CommentSectionProvider entityId={track_id}>
+          <CommentList />
+        </CommentSectionProvider>
+      )}
     </MobilePageContainer>
   )
 }

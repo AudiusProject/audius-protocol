@@ -4,7 +4,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { Comment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/sdk'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -72,8 +72,10 @@ export const CommentDrawer = () => {
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
 
-  const [replyingToComment, setReplyingToComment] = useState<Comment>()
-  const [editingComment, setEditingComment] = useState<Comment>()
+  const [replyingToComment, setReplyingToComment] = useState<
+    Comment | ReplyComment
+  >()
+  const [editingComment, setEditingComment] = useState<Comment | ReplyComment>()
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {

@@ -40,23 +40,16 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 
 	time.Sleep(time.Minute)
 
+	// in prod... only look for old work on StoreAll nodes
+	// see transcode.go line 123 for longer comment
+	if ss.Config.Env == "prod" && !ss.Config.StoreAll {
+		return
+	}
+
 	// find old work from backlog
-	ticker := time.NewTicker(15 * time.Minute)
-	defer ticker.Stop()
-
 	for {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
-		go func() {
-			defer cancel()
-			ss.findMissedAudioAnalysisJobs(ctx, work)
-		}()
-
-		select {
-		case <-ticker.C:
-			cancel()
-		}
-
-		time.Sleep(time.Minute)
+		ss.findMissedAudioAnalysisJobs(context.Background(), work)
+		time.Sleep(time.Minute * 5)
 	}
 }
 

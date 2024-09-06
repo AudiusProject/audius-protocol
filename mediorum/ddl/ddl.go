@@ -50,6 +50,14 @@ func Migrate(db *sql.DB, myHost string) {
 	runMigration(db, qmSyncTable)
 
 	runMigration(db, cleanUploadsAudioAnalysesDDL)
+
+	// cleanup crudr spam from blob not found errors
+	runMigration(db, `
+	delete from ops where
+	data->0->>'error' like 'blob (key%NotFound%'
+	`)
+
+	runMigration(db, `vacuum full`)
 }
 
 func runMigration(db *sql.DB, ddl string) {

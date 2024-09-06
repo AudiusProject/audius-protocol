@@ -81,11 +81,16 @@ type FixedDecimalFormatOptions = Omit<
    *    > Ties away from 0. Values above the half-increment round away from
    *      zero, and below towards 0. Does what Math.round() does.
    *
-   * Note: Does not support `'expand'`, `'halfCeil'`, `'halfFloor'`,
-   * `'halfTrunc'` or `'halfEven'`
+   * `'expand'`
+   *    > round away from 0. The magnitude of the value is always increased by
+   *      rounding. Positive values round up.
+   *      Negative values round "more negative".
+   *
+   * Note: Does not support `'halfCeil'`, `'halfFloor'`, `'halfTrunc'`
+   * or `'halfEven'`
    * @defaultValue `'trunc'`
    */
-  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand'
+  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand' | 'expand'
   /**
    * The strategy for displaying trailing zeros on whole numbers.
    *
@@ -281,12 +286,16 @@ export class FixedDecimal<
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    const signOffset =
-      this.value < 0 && digitsToRemove > 0
-        ? BigInt(-1 * 10 ** digitsToRemove)
-        : BigInt(0)
+    // Subtract one if negative w/ remainder
+    if (this.value < 0 && this.value % divisor !== BigInt(0)) {
+      return new FixedDecimal<BigIntBrand, BNBrand>({
+        value: ((this.value / divisor) * divisor - divisor) as BigIntBrand,
+        decimalPlaces: this.decimalPlaces
+      })
+    }
+    // Truncate otherwise
     return new FixedDecimal<BigIntBrand, BNBrand>({
-      value: ((this.value / divisor) * divisor + signOffset) as BigIntBrand,
+      value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -337,6 +346,34 @@ export class FixedDecimal<
     // Multiply by the original divisor and 10 to get the number of digits back
     return new FixedDecimal<BigIntBrand, BNBrand>(
       (quotient * divisor * BigInt(10)) as BigIntBrand,
+      this.decimalPlaces
+    )
+  }
+
+  /**
+   * Rounds away from zero. (Opposite of trunc())
+   * @param decimalPlaces The number of decimal places to round to.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
+   */
+  public expand(decimalPlaces?: number) {
+    const digits = this.decimalPlaces - (decimalPlaces ?? 0)
+    return this._expand(digits)
+  }
+
+  private _expand(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
+      throw new RangeError('Digits must be non-negative')
+    }
+    const divisor = BigInt(10 ** digitsToRemove)
+    const remainder = this.value % divisor
+    // If whole number, do nothing
+    if (remainder === BigInt(0)) {
+      return this
+    }
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
+    // If not, truncate and add/sub 1 to the place we're rounding to
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (this.value / divisor) * divisor + divisor * signMultiplier,
       this.decimalPlaces
     )
   }
@@ -430,6 +467,9 @@ export class FixedDecimal<
         break
       case 'halfExpand':
         str = this.round(mergedOptions.maximumFractionDigits).toString()
+        break
+      case 'expand':
+        str = this.expand(mergedOptions.maximumFractionDigits).toString()
         break
     }
 
