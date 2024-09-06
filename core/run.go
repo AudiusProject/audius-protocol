@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/chain"
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -32,7 +33,7 @@ func run(logger *common.Logger) error {
 	logger.Info("configuration created")
 
 	// db migrations
-	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
+	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration, false); err != nil {
 		return fmt.Errorf("running migrations: %v", err)
 	}
 
@@ -43,10 +44,6 @@ func run(logger *common.Logger) error {
 		return fmt.Errorf("couldn't create pgx pool: %v", err)
 	}
 	defer pool.Close()
-
-	// if err := insertInitialAppState(config.GenesisFile.AppState, pool); err != nil {
-	// 	return fmt.Errorf("couldn't set initial app state: %v", err)
-	// }
 
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
@@ -109,6 +106,27 @@ func run(logger *common.Logger) error {
 	defer node.Stop()
 	defer grpcLis.Close()
 	defer ethrpc.Close()
+
+	eg.Go(func() error {
+		logger.Info("awaiting node sync for remaining migrations")
+		for {
+			status, err := rpc.Status(ctx)
+			if err != nil {
+				return fmt.Errorf("chain error, not performing post sync migrations: %v", err)
+			}
+
+			if !status.SyncInfo.CatchingUp {
+				break
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+		logger.Info("node synced, performing post sync migrations")
+		if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration, true); err != nil {
+			return fmt.Errorf("running post sync migrations: %v", err)
+		}
+		return nil
+	})
 
 	// console
 	eg.Go(func() error {

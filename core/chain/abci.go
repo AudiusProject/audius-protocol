@@ -156,25 +156,9 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		}
 	}
 
-	lastBlock := req.Height - 1
-	prevAppState, err := app.getDb().GetAppStateAtHeight(ctx, req.Height-1)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		app.logger.Errorf("prev app state not found: %v", err)
-		return &abcitypes.FinalizeBlockResponse{}, nil
-	}
-
 	nextAppHash := []byte{}
-	if lastBlock == 1 {
-		nextAppHash = app.serializeAppState([]byte{}, req.GetTxs())
-	} else {
-		app.serializeAppState(prevAppState.AppHash, req.GetTxs())
-	}
-	// if empty block and previous was not genesis, use prior state
-	if len(txs) == 0 && req.Height > 2 {
-		nextAppHash = prevAppState.AppHash
-	}
 
-	if err = app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
+	if err := app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
 		BlockHeight: req.Height,
 		AppHash:     nextAppHash,
 	}); err != nil {
