@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { ReplyComment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/sdk'
 
 import {
   Box,
@@ -39,6 +39,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <>
       <CommentBlock comment={rootComment} />
@@ -52,7 +54,9 @@ export const CommentThread = (props: CommentThreadProps) => {
                 hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
               }
             >
-              {hiddenReplies[rootComment.id] ? 'Show Replies' : 'Hide Replies'}
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies(replyCount)
+                : messages.hideReplies}
             </PlainButton>
           </Box>
         ) : null}
@@ -62,7 +66,8 @@ export const CommentThread = (props: CommentThreadProps) => {
               {rootComment?.replies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    comment={reply}
+                    // TODO: Determine proper typing for comments and replies
+                    comment={reply as Comment}
                     parentCommentId={rootComment.id}
                   />
                 </Flex>

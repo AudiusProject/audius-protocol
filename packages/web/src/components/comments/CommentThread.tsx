@@ -9,7 +9,7 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony'
-import { ReplyComment } from '@audius/sdk'
+import { Comment, ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -60,6 +60,8 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <Flex direction='column' as='li'>
       <CommentBlock comment={rootComment} />
@@ -74,7 +76,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
               }
             >
               {hiddenReplies[rootComment.id]
-                ? messages.showReplies
+                ? messages.showReplies(replyCount)
                 : messages.hideReplies}
             </PlainButton>
           </Box>
@@ -89,7 +91,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             {allReplies.map((reply: ReplyComment) => (
               <Flex w='100%' key={reply.id} as='li'>
                 <CommentBlock
-                  comment={reply}
+                  comment={reply as Comment}
                   parentCommentId={rootComment.id}
                 />
               </Flex>
