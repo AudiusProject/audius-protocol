@@ -174,7 +174,7 @@ const FollowersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.followers.label}
-          count={user.follower_count}
+          count={user?.follower_count}
           isSelected={selected}
         />
         {selected ? (
@@ -195,7 +195,7 @@ const TipSupportersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.supporters.label}
-          count={user.supporter_count ?? 0}
+          count={user?.supporter_count ?? 0}
           isSelected={selected}
         />
         {selected ? (
@@ -217,7 +217,10 @@ const PastPurchasersMessageField = () => {
 
   const isSelected = value === ChatBlastAudience.CUSTOMERS
 
-  const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
+  const { data: tracks } = useGetUserTracksByHandle({
+    handle: handle ?? '',
+    currentUserId
+  })
   const premiumTrackOptions = useMemo(
     () =>
       (tracks ?? [])
@@ -240,7 +243,7 @@ const PastPurchasersMessageField = () => {
         <LabelWithCount
           label={messages.purchasers.label}
           // TODO: Need to add a new endpoint to get the list of past purchasers
-          count={user.supporter_count ?? 0}
+          count={user?.supporter_count ?? 0}
           isSelected={isSelected}
         />
         {isSelected ? (
@@ -268,13 +271,16 @@ const RemixCreatorsMessageField = () => {
     type: 'select'
   })
   const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId,
+    userId: currentUserId!,
     trackId: remixedTrackField.value
   })
 
   const isSelected = value === ChatBlastAudience.REMIXERS
 
-  const { data: tracks } = useGetUserTracksByHandle({ handle, currentUserId })
+  const { data: tracks } = useGetUserTracksByHandle({
+    handle: handle ?? '',
+    currentUserId
+  })
   const premiumTrackOptions = useMemo(
     () =>
       (tracks ?? [])
