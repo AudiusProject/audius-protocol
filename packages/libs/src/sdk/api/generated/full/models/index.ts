@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './Access';
 export * from './AccessGate';
+export * from './AccountFull';
 export * from './ActivityFull';
 export * from './AnnouncementNotification';
 export * from './AnnouncementNotificationAction';
@@ -192,6 +193,7 @@ export * from './UsdcPurchaseBuyerNotificationActionData';
 export * from './UsdcPurchaseSellerNotification';
 export * from './UsdcPurchaseSellerNotificationAction';
 export * from './UsdcPurchaseSellerNotificationActionData';
+export * from './UserAccountResponseFull';
 export * from './UserFeedItem';
 export * from './UserFeedResponse';
 export * from './UserFull';

@@ -44,7 +44,7 @@ type CollectionCardProps = Omit<CardProps, 'id'> & {
 
 const cardSizeToCoverArtSizeMap = {
   xs: SquareSizes.SIZE_150_BY_150,
-  s: SquareSizes.SIZE_150_BY_150,
+  s: SquareSizes.SIZE_480_BY_480,
   m: SquareSizes.SIZE_480_BY_480,
   l: SquareSizes.SIZE_480_BY_480
 }

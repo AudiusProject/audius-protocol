@@ -76,7 +76,9 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
     } = props
 
     const rootRef = useRef<HTMLDivElement>(null)
+    const textContainerRef = useRef<HTMLDivElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const displayElementContainerRef = useRef<HTMLDivElement>(null)
     const characterCount = value ? `${value}`.length : 0
     const nearCharacterLimit =
       maxLength &&
@@ -93,7 +95,10 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
     }
 
     const growTextArea = useCallback(() => {
-      if (textareaRef.current) {
+      if (displayElementContainerRef.current && textareaRef.current) {
+        textareaRef.current.style.height =
+          displayElementContainerRef.current.scrollHeight + 'px'
+      } else if (textareaRef.current) {
         const textarea = textareaRef.current
         textarea.style.height = 'inherit'
         textarea.style.height = `${
@@ -131,11 +136,12 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
             className={styles.scrollArea}
             style={{ maxHeight }}
           >
-            <div className={styles.left}>
+            <div ref={textContainerRef} className={styles.left}>
               <textarea
                 className={
                   renderDisplayElement ? styles.transparentTextArea : undefined
                 }
+                spellCheck={!renderDisplayElement}
                 ref={mergeRefs([textareaRef, forwardedRef])}
                 maxLength={maxLength ?? undefined}
                 value={value}
@@ -144,7 +150,10 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
                 {...other}
               />
               {renderDisplayElement ? (
-                <div className={styles.displayElementContainer}>
+                <div
+                  ref={displayElementContainerRef}
+                  className={styles.displayElementContainer}
+                >
                   {renderDisplayElement(value?.toString() ?? '')}
                 </div>
               ) : null}

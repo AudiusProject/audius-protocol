@@ -156,7 +156,7 @@ union all (
     created_at DESC
 )
 
-ORDER BY last_message_at DESC, chat_id
+ORDER BY last_message_at DESC, is_blast DESC, chat_id ASC
 LIMIT $2
 `
 

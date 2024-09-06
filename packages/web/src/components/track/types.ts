@@ -59,6 +59,8 @@ export type TrackTileProps = TileProps & {
   userSignedIn?: boolean
   listenCount?: number
   saveCount: number
+  commentCount: number
+  commentsDisabled?: boolean
   fieldVisibility?: FieldVisibility
   artistName: string
   artistHandle: string

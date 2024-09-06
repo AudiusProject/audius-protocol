@@ -17,6 +17,7 @@ import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 
 import {
+  Flex,
   IconCart,
   IconCollectible,
   IconSpecialAccess
@@ -35,7 +36,8 @@ const { getTrack } = cacheTracksSelectors
 const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
-  premiumTrack: 'PREMIUM TRACK'
+  premiumTrack: 'PREMIUM TRACK',
+  earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -81,11 +83,13 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 type TrackDetailsTileProps = {
   trackId: ID
   showLabel?: boolean
+  earnAmount?: string
 }
 
 export const TrackDetailsTile = ({
   trackId,
-  showLabel = true
+  showLabel = true,
+  earnAmount
 }: TrackDetailsTileProps) => {
   const styles = useStyles()
   const { accentBlue, specialLightGreen } = useThemeColors()
@@ -168,7 +172,7 @@ export const TrackDetailsTile = ({
             </View>
           ) : null}
           <Text
-            fontSize='xl'
+            fontSize='medium'
             weight='bold'
             textTransform='capitalize'
             numberOfLines={1}
@@ -176,11 +180,17 @@ export const TrackDetailsTile = ({
             {track.title}
           </Text>
           <View style={styles.trackOwnerContainer}>
-            <Text color='secondary' weight='demiBold' fontSize='small'>
-              {owner.name}
-            </Text>
+            <Text fontSize='medium'>{owner.name}</Text>
             <UserBadges badgeSize={spacing(4)} user={owner} hideName />
           </View>
+          {earnAmount ? (
+            <Flex direction='row' alignItems='center' gap='xs' pt='xs'>
+              <IconCart size='s' color='premium' />
+              <Text fontSize='xs' color='specialLightGreen'>
+                {messages.earn(earnAmount)}
+              </Text>
+            </Flex>
+          ) : null}
         </View>
       </View>
     </View>

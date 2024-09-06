@@ -448,7 +448,7 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
-            style={{ paddingRight: spacing.s }}
+            css={{ paddingRight: spacing.s }}
             prefix={
               <IconSearch
                 color='subdued'

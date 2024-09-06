@@ -69,26 +69,26 @@ export const DefaultStates: Story = {
         <TextInput label='Disabled' disabled />
       </Flex>
       <Flex flex='1 1' direction='column' gap='2xl'>
-        <TextInput label='Default' value='Input Value' />
+        <TextInput label='Default' value='Input value' />
         <TextInput
           label='Hover'
-          value='Input Value'
+          value='Input value'
           _isHovered
           _disablePointerEvents
         />
         <TextInput
           label='Focus'
-          value='Input Value'
+          value='Input value'
           _isFocused
           _disablePointerEvents
         />
         <TextInput
           label='Error'
-          value='Input Value'
+          value='Input value'
           error
           _disablePointerEvents
         />
-        <TextInput label='Disabled' value='Input Value' disabled />
+        <TextInput label='Disabled' value='Input value' disabled />
       </Flex>
     </Flex>
   )
@@ -136,13 +136,13 @@ export const SmallStates: Story = {
           size={TextInputSize.SMALL}
           label='Default'
           placeholder='Default'
-          value='Input Value'
+          value='Input value'
         />
         <TextInput
           size={TextInputSize.SMALL}
           label='Hover'
           placeholder='Default'
-          value='Input Value'
+          value='Input value'
           _isHovered
           _disablePointerEvents
         />
@@ -150,7 +150,7 @@ export const SmallStates: Story = {
           size={TextInputSize.SMALL}
           label='Focus'
           placeholder='Focus'
-          value='Input Value'
+          value='Input value'
           _isFocused
           _disablePointerEvents
         />
@@ -158,7 +158,7 @@ export const SmallStates: Story = {
           size={TextInputSize.SMALL}
           label='Error'
           placeholder='Error'
-          value='Input Value'
+          value='Input value'
           error
           _disablePointerEvents
         />
@@ -166,7 +166,7 @@ export const SmallStates: Story = {
           size={TextInputSize.SMALL}
           label='Disabled'
           placeholder='Disabled'
-          value='Input Value'
+          value='Input value'
           disabled
         />
       </Flex>

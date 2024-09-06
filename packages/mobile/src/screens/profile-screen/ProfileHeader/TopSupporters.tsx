@@ -6,7 +6,10 @@ import {
   tippingSelectors,
   tippingActions
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import {
+  MAX_PROFILE_TOP_SUPPORTERS,
+  removeNullable
+} from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -27,8 +30,6 @@ const messages = {
   topSupporters: 'Top Supporters',
   buttonTitle: 'View'
 }
-
-const MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS = 6
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
@@ -126,7 +127,7 @@ export const TopSupporters = () => {
           <ProfilePictureList
             users={topSupporters}
             totalUserCount={supporter_count}
-            limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
+            limit={MAX_PROFILE_TOP_SUPPORTERS}
             style={styles.profilePictureList}
             navigationType='push'
             interactive={false}
@@ -135,7 +136,7 @@ export const TopSupporters = () => {
         ) : (
           <ProfilePictureListSkeleton
             count={supporter_count}
-            limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
+            limit={MAX_PROFILE_TOP_SUPPORTERS}
           />
         )}
         <View style={styles.alignRowCenter}>
