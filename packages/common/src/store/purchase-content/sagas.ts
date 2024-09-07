@@ -1122,7 +1122,7 @@ function* purchaseWithAnything({
       )
       return yield* call(signAndSendTransaction, {
         transaction,
-        dappKeyPair,
+        dappKeyPair: deserializeKeyPair(dappKeyPair),
         sharedSecret: new Uint8Array(bs58.decode(sharedSecret)),
         session
       })
