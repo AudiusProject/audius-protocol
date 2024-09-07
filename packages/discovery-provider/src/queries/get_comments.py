@@ -94,7 +94,7 @@ def get_replies(
     ]
 
 
-def get_comment_replies(args, comment_id, current_user_id):
+def get_comment_replies(args, comment_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -103,7 +103,7 @@ def get_comment_replies(args, comment_id, current_user_id):
     return replies
 
 
-def get_track_comments(args, track_id, current_user_id):
+def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
 
     track_comments = []
