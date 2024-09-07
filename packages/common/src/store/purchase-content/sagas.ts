@@ -9,8 +9,10 @@ import {
   TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
+import bs58 from 'bs58'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
+import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
@@ -66,6 +68,7 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
+import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
@@ -109,6 +112,23 @@ type RaceStatusResult = {
 type GetPurchaseConfigArgs = {
   contentId: ID
   contentType: PurchaseableContentType
+}
+
+const serializeKeyPair = (value: BoxKeyPair) => {
+  const { publicKey, secretKey } = value
+  const encodedKeyPair = {
+    publicKey: bs58.encode(publicKey),
+    secretKey: bs58.encode(secretKey)
+  }
+  return JSON.stringify(encodedKeyPair)
+}
+
+const deserializeKeyPair = (value: string): BoxKeyPair => {
+  const { publicKey, secretKey } = JSON.parse(value)
+  return {
+    publicKey: bs58.decode(publicKey),
+    secretKey: bs58.decode(secretKey)
+  }
 }
 
 function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
@@ -911,12 +931,30 @@ function* purchaseWithAnything({
       throw new Error('Failed to fetch USDC user bank token account info')
     }
 
-    // Get the solana wallet provider
-    const provider = window.solana
-    if (!provider) {
-      throw new Error('No solana provider / wallet found')
+    let sourceWallet: PublicKey
+
+    const isNativeMobile = yield* getContext('isNativeMobile')
+    const mobileWalletActions = yield* getContext('mobileWalletActions')
+    if (isNativeMobile && mobileWalletActions) {
+      const { connect } = mobileWalletActions
+      const getWalletConnectPublicKey = (state: any) =>
+        state.walletConnect.publicKey
+      const dappKeyPair = nacl.box.keyPair()
+      yield* put({
+        type: 'walletConnect/setDappKeyPair',
+        payload: { dappKeyPair: serializeKeyPair(dappKeyPair) }
+      })
+      yield* call(connect, dappKeyPair)
+      yield* call(waitForValue, getWalletConnectPublicKey)
+      sourceWallet = new PublicKey(yield* select(getWalletConnectPublicKey))
+    } else {
+      // Get the solana wallet provider
+      const provider = window.solana
+      if (!provider) {
+        throw new Error('No solana provider / wallet found')
+      }
+      sourceWallet = (yield* call(provider.connect)).publicKey
     }
-    const sourceWallet = yield* call(provider.connect)
 
     let transaction: VersionedTransaction
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
@@ -926,7 +964,7 @@ function* purchaseWithAnything({
           sdk.services.paymentRouterClient.createTransferInstruction
         ],
         {
-          sourceWallet: sourceWallet.publicKey,
+          sourceWallet,
           total: totalAmountWithDecimals,
           mint: 'USDC'
         }
@@ -934,7 +972,7 @@ function* purchaseWithAnything({
       transaction = yield* call(
         [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
         {
-          feePayer: sourceWallet.publicKey,
+          feePayer: sourceWallet,
           instructions: [instruction]
         }
       )
@@ -950,7 +988,7 @@ function* purchaseWithAnything({
       )
       const externalTokenAccountPublicKey = getAssociatedTokenAddressSync(
         new PublicKey(inputMint),
-        sourceWallet.publicKey
+        sourceWallet
       )
 
       console.info('Calling jupiter API to get a quote')
@@ -984,7 +1022,7 @@ function* purchaseWithAnything({
         if (inputMint === TOKEN_LISTING_MAP.SOL.address) {
           const amount = yield* call(
             [connection, connection.getBalance],
-            sourceWallet.publicKey
+            sourceWallet
           )
           hasEnoughTokens = amount >= BigInt(quote.inAmount)
         }
@@ -1000,7 +1038,7 @@ function* purchaseWithAnything({
       const { swapTransaction } = yield* call([jup, jup.swapPost], {
         swapRequest: {
           quoteResponse: quote,
-          userPublicKey: sourceWallet.publicKey.toString(),
+          userPublicKey: sourceWallet.toString(),
           destinationTokenAccount: paymentRouterTokenAccount.address.toString()
         }
       })
@@ -1076,7 +1114,25 @@ function* purchaseWithAnything({
     transaction.message = message.compileToV0Message(addressLookupTableAccounts)
 
     // Execute the swap by signing and sending the transaction
-    return yield* call([provider, provider.signAndSendTransaction], transaction)
+    if (isNativeMobile && mobileWalletActions) {
+      const { signAndSendTransaction } = mobileWalletActions
+      const getWalletConnectState = (state: any) => state.walletConnect
+      const { dappKeyPair, sharedSecret, session } = yield* select(
+        getWalletConnectState
+      )
+      return yield* call(signAndSendTransaction, {
+        transaction,
+        dappKeyPair,
+        sharedSecret: new Uint8Array(bs58.decode(sharedSecret)),
+        session
+      })
+    } else {
+      const provider = window.solana
+      return yield* call(
+        [provider, provider.signAndSendTransaction],
+        transaction
+      )
+    }
   } catch (e) {
     console.error(`handlePayWithAnything | Error: ${e}`)
     throw e

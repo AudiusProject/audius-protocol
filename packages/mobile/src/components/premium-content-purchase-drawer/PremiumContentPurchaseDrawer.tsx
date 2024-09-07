@@ -248,11 +248,9 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
-  // TODO Re-enable pay with anything (mobile) when fully working
-  // const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
-  //   FeatureFlags.PAY_WITH_ANYTHING_ENABLED
-  // )
-  const isPayWithAnythingEnabledFlag = false
+  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
+    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
+  )
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
