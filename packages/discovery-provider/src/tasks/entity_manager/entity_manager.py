@@ -40,7 +40,9 @@ from src.queries.get_skipped_transactions import (
 from src.tasks.entity_manager.entities.comment import (
     create_comment,
     delete_comment,
+    pin_comment,
     react_comment,
+    unpin_comment,
     unreact_comment,
     update_comment,
 )
@@ -377,6 +379,16 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         unreact_comment(params)
+                    elif (
+                        params.action == Action.PIN
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        pin_comment(params)
+                    elif (
+                        params.action == Action.UNPIN
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        unpin_comment(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:

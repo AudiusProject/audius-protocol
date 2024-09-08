@@ -75,6 +75,8 @@ class Action(str, Enum):
     DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    PIN = "Pin"
+    UNPIN = "Unpin"
 
     def __str__(self) -> str:
         return str.__str__(self)
