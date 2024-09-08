@@ -39,6 +39,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <>
       <CommentBlock comment={rootComment} />
@@ -52,7 +54,9 @@ export const CommentThread = (props: CommentThreadProps) => {
                 hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
               }
             >
-              {hiddenReplies[rootComment.id] ? 'Show Replies' : 'Hide Replies'}
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies(replyCount)
+                : messages.hideReplies}
             </PlainButton>
           </Box>
         ) : null}

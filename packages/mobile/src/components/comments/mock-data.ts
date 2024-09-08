@@ -20,6 +20,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
     isEdited: false,
     trackTimestampS: 12,
     reactCount: 28,
+    replyCount: 2,
     isLikedByCurrentUser: true,
     isLikedByArtist: true,
     replies: [
@@ -47,6 +48,7 @@ export const MOCK_COMMENT_DATA: CommentWithUnimplementedFeatures[] = [
     isLikedByCurrentUser: false,
     trackTimestampS: undefined,
     reactCount: 8,
+    replyCount: 2,
     replies: undefined,
     createdAt: '2021-01-01T00:00:00Z',
     updatedAt: undefined
