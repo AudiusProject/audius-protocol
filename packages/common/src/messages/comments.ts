@@ -10,5 +10,7 @@ export const commentsMessages = {
   replies: 'Replies',
   showReplies: 'Show Replies',
   hideReplies: 'Hide Replies',
-  commentsDisabled: 'Comments are disabled for this track'
+  commentsDisabled: 'Comments are disabled for this track',
+  edited: 'edited',
+  reply: 'Reply'
 }

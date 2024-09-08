@@ -119,6 +119,7 @@ const commentsApi = createApi({
           userId: `${userId}`,
           message: body,
           isPinned: false,
+          isEdited: false,
           trackTimestampS,
           reactCount: 0,
           replies: undefined,

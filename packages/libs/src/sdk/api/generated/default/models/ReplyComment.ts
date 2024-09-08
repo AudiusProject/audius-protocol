@@ -52,6 +52,12 @@ export interface ReplyComment {
     reactCount: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof ReplyComment
+     */
+    isEdited: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ReplyComment
      */
@@ -73,6 +79,7 @@ export function instanceOfReplyComment(value: object): value is ReplyComment {
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
+    isInstance = isInstance && "isEdited" in value && value["isEdited"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
     return isInstance;
@@ -93,6 +100,7 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'message': json['message'],
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
+        'isEdited': json['is_edited'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
     };
@@ -112,6 +120,7 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
         'message': value.message,
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
+        'is_edited': value.isEdited,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
     };

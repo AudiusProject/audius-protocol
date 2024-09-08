@@ -65,6 +65,12 @@ export interface Comment {
     isPinned: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isEdited: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof Comment
      */
@@ -93,6 +99,7 @@ export function instanceOfComment(value: object): value is Comment {
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "isPinned" in value && value["isPinned"] !== undefined;
+    isInstance = isInstance && "isEdited" in value && value["isEdited"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
     return isInstance;
@@ -114,6 +121,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
         'isPinned': json['is_pinned'],
+        'isEdited': json['is_edited'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
@@ -135,6 +143,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
         'is_pinned': value.isPinned,
+        'is_edited': value.isEdited,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),

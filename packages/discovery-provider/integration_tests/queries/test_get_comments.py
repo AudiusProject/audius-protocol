@@ -16,6 +16,7 @@ test_entities = {
             "entity_id": 1,
             "entity_type": "Track",
             "created_at": datetime(2022, 1, i),
+            "is_edited": i == 10
         }
         for i in range(1, 11)
     ]
@@ -61,6 +62,7 @@ def test_get_comments_default(app):
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
                 assert comment["react_count"] == 1
+                assert comment["is_edited"] == True
             else:
                 assert len(comment["replies"]) == 0
 
