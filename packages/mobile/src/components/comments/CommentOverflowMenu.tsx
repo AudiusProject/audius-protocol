@@ -141,7 +141,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const handleFlagComment = useCallback(() => {
     reportComment(id)
     toast({
-      content: messages.flagged,
+      content: messages.flaggedConfirmation,
       type: 'info'
     })
   }, [reportComment, id, toast])

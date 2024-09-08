@@ -49,7 +49,9 @@ export const ConfirmationModal = (props: ConfirmationModalProps) => {
         <ModalTitle title={messages.header} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>{messages.description}</ModalContentText>
+        <ModalContentText css={{ textAlign: 'center' }}>
+          {messages.description}
+        </ModalContentText>
       </ModalContent>
       <ModalFooter>
         <Button

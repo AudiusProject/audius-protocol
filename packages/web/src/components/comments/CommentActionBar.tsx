@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -28,6 +28,7 @@ import { useToggle } from 'react-use'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 type CommentActionBarProps = {
@@ -53,12 +54,13 @@ export const CommentActionBar = ({
 
   const [reactToComment] = useReactToComment()
 
-  const [reportComemnt] = useReportComment()
+  const [reportComment] = useReportComment()
   const [isFlagConfirmationOpen, toggleFlagConfirmationOpen] = useToggle(false)
 
   const [pinComment] = usePinComment()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
   const isMobile = useIsMobile()
+  const { toast } = useContext(ToastContext)
 
   // component state
   const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
@@ -79,6 +81,11 @@ export const CommentActionBar = ({
   const handleCommentPin = useCallback(() => {
     pinComment(commentId, !isPinned)
   }, [commentId, isPinned, pinComment])
+
+  const handleCommentReport = useCallback(() => {
+    reportComment(commentId)
+    toast(messages.flaggedConfirmation)
+  }, [commentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
     if (isMobile) {
@@ -202,7 +209,7 @@ export const CommentActionBar = ({
         onClose={toggleFlagConfirmationOpen}
         title={messages.flagComment}
         description={messages.flagCommentDescription}
-        onConfirm={() => reportComemnt(commentId)}
+        onConfirm={handleCommentReport}
       />
     </Flex>
   )

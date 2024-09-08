@@ -3,7 +3,7 @@ import logging  # pylint: disable=C0302
 from sqlalchemy import asc, func
 from sqlalchemy.orm import aliased
 
-from src.api.v1.helpers import format_limit, format_offset
+from src.api.v1.helpers import format_limit, format_offset, get_current_user_id
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
@@ -80,7 +80,7 @@ def get_comment_replies(args, comment_id):
 
 def get_track_comments(args, track_id):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
-    user_id = args.user_id
+    user_id = get_current_user_id(args)
 
     track_comments = []
     db = get_db_read_replica()

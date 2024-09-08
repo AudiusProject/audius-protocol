@@ -14,6 +14,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -162,6 +163,7 @@ class ExistingRecordDict(TypedDict):
     PlaylistRoute: Dict[int, PlaylistRoute]
     Comment: Dict[int, Comment]
     CommentReaction: Dict[Tuple, CommentReaction]
+    CommentReport: Dict[Tuple, CommentReport]
 
 
 class EntitiesToFetchDict(TypedDict):

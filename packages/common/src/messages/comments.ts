@@ -26,6 +26,7 @@ export const commentsMessages = {
   flagAndRemove: 'Flag & Remove',
   flagComment: 'Flag Comment',
   flagged: 'Flagged comment',
+  flaggedConfirmation: 'Comment flagged and hidden',
   removed: 'Comment removed',
   muteUser: 'Mute User',
   muteUserHint:
