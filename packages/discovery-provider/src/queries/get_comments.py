@@ -60,6 +60,15 @@ def get_reaction_count(session, parent_comment_id):
     return reaction_count[0]
 
 
+def get_reply_count(session, parent_comment_id):
+    reply_count = (
+        session.query(func.count(CommentThread.comment_id)).filter(
+            CommentThread.parent_comment_id == parent_comment_id,
+        )
+    ).first()
+    return reply_count[0]
+
+
 def get_comment_replies(args, comment_id):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
@@ -111,6 +120,7 @@ def get_track_comments(args, track_id):
                 "is_pinned": track_comment.is_pinned,
                 "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": get_reaction_count(session, track_comment.comment_id),
+                "reply_count": get_reply_count(session, track_comment.comment_id),
                 "replies": get_replies(session, track_comment.comment_id),
                 "created_at": str(track_comment.created_at),
                 "updated_at": str(track_comment.updated_at),

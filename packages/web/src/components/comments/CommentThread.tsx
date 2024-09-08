@@ -60,6 +60,8 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <Flex direction='column' as='li'>
       <CommentBlock comment={rootComment} />
@@ -74,7 +76,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
               }
             >
               {hiddenReplies[rootComment.id]
-                ? messages.showReplies
+                ? messages.showReplies(replyCount)
                 : messages.hideReplies}
             </PlainButton>
           </Box>
