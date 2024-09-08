@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useGetCommentById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/sdk'
+import type { ReplyComment } from '@audius/sdk'
 
 import {
   Box,
@@ -66,8 +66,7 @@ export const CommentThread = (props: CommentThreadProps) => {
               {rootComment?.replies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    // TODO: Determine proper typing for comments and replies
-                    comment={reply as Comment}
+                    comment={reply}
                     parentCommentId={rootComment.id}
                   />
                 </Flex>

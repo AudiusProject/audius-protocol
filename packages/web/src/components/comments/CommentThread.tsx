@@ -9,7 +9,7 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony'
-import { Comment, ReplyComment } from '@audius/sdk'
+import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -91,7 +91,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             {allReplies.map((reply: ReplyComment) => (
               <Flex w='100%' key={reply.id} as='li'>
                 <CommentBlock
-                  comment={reply as Comment}
+                  comment={reply}
                   parentCommentId={rootComment.id}
                 />
               </Flex>
