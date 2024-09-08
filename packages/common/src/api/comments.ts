@@ -290,6 +290,38 @@ const commentsApi = createApi({
           dispatch
         )
       }
+    },
+    reportCommentById: {
+      async fetch(
+        { id, userId }: { id: string; userId: ID; entityId: ID },
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to react to comment. Id ${id} could not be decoded`
+          )
+          return
+        }
+        await sdk.comments.reportComment(userId, decodedId)
+      },
+      options: { type: 'mutation' },
+      async onQueryStarted({ id, entityId }, { dispatch }) {
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            const indexToRemove = prevState?.findIndex(
+              (comment: Comment) => comment.id === id
+            )
+            if (indexToRemove !== undefined && indexToRemove >= 0) {
+              prevState?.splice(indexToRemove, 1)
+            }
+            return prevState
+          },
+          dispatch
+        )
+      }
     }
   }
 })
@@ -302,7 +334,8 @@ export const {
   usePostComment,
   usePinCommentById,
   useReactToCommentById,
-  useGetCommentRepliesById
+  useGetCommentRepliesById,
+  useReportCommentById
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

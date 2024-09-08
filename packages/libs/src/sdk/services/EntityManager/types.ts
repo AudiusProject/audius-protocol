@@ -65,7 +65,8 @@ export enum Action {
   REJECT = 'Reject',
   DOWNLOAD = 'Download',
   REACT = 'React',
-  UNREACT = 'Unreact'
+  UNREACT = 'Unreact',
+  REPORT = 'Report'
 }
 
 export enum EntityType {

@@ -6,6 +6,7 @@ from sqlalchemy.orm import aliased
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.utils import redis_connection
 from src.utils.db_session import get_db_read_replica
@@ -70,6 +71,7 @@ def get_comment_replies(args, comment_id):
 
 def get_track_comments(args, track_id):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    user_id = args.user_id
 
     track_comments = []
     db = get_db_read_replica()
@@ -83,12 +85,17 @@ def get_track_comments(args, track_id):
                 CommentThreadAlias,
                 Comment.comment_id == CommentThreadAlias.comment_id,
             )
+            .outerjoin(
+                CommentReport,
+                Comment.comment_id == CommentReport.comment_id,
+            )
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
+                CommentReport.user_id != user_id,
             )
             .order_by(asc(Comment.created_at))
             .offset(offset)

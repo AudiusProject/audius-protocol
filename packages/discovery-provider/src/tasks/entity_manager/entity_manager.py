@@ -41,6 +41,7 @@ from src.tasks.entity_manager.entities.comment import (
     create_comment,
     delete_comment,
     react_comment,
+    report_comment,
     unreact_comment,
     update_comment,
 )
@@ -377,6 +378,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         unreact_comment(params)
+                    elif (
+                        params.action == Action.REPORT
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        report_comment(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:

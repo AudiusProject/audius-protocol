@@ -88,4 +88,16 @@ export class CommentsApi extends GeneratedCommentsApi {
     })
     return response
   }
+
+  async reportComment(userId: number, entityId: number) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.REPORT,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
 }
