@@ -320,15 +320,15 @@ export class Users extends Base {
       newMetadata.wallet = this.web3Manager.getWalletAddress()
       newMetadata.user_id = userId
       // TODO-NOW: Make sure this is returned and used by calling location
-      this.userStateManager.setCurrentUser({
-        ...newMetadata,
-        // Initialize counts to be 0. We don't want to write this data to backends ever really
-        // (hence the cleanUserMetadata above), but we do want to make sure clients
-        // can properly "do math" on these numbers.
-        followee_count: 0,
-        follower_count: 0,
-        repost_count: 0
-      })
+      // this.userStateManager.setCurrentUser({
+      //   ...newMetadata,
+      //   // Initialize counts to be 0. We don't want to write this data to backends ever really
+      //   // (hence the cleanUserMetadata above), but we do want to make sure clients
+      //   // can properly "do math" on these numbers.
+      //   followee_count: 0,
+      //   follower_count: 0,
+      //   repost_count: 0
+      // })
 
       // Upload images
       if (profilePictureFile) {
@@ -360,7 +360,7 @@ export class Users extends Base {
       )
       // Update libs instance with new user metadata object
       // TODO-NOW: Don't need this, but make sure user updated in calling location
-      this.userStateManager.setCurrentUser({ ...newMetadata })
+      // this.userStateManager.setCurrentUser({ ...newMetadata })
 
       return {
         newMetadata,
@@ -406,7 +406,7 @@ export class Users extends Base {
         )
         // Update libs instance with new user metadata object
         // TODO-NOW: Don't need this, but make sure user is updated in calling location
-        this.userStateManager.setCurrentUser({ ...newMetadata })
+        // this.userStateManager.setCurrentUser({ ...newMetadata })
       } catch (e) {
         const errorMsg = `repairEntityManagerUserV2() error: ${e}`
         if (e instanceof Error) {
@@ -516,10 +516,10 @@ export class Users extends Base {
     this.IS_OBJECT(newMetadata)
 
     // TODO-NOW: require passing of oldMetadata?
-    const oldMetadata = this.userStateManager.getCurrentUser()
-    if (!oldMetadata) {
-      throw new Error('No current user.')
-    }
+    // const oldMetadata = this.userStateManager.getCurrentUser()
+    // if (!oldMetadata) {
+    //   throw new Error('No current user.')
+    // }
 
     newMetadata = this.cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
@@ -542,7 +542,7 @@ export class Users extends Base {
 
       // Update libs instance with new user metadata object
       // TODO-NOW: If needed, return this and make sure calling location is using it
-      this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+      // this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
       return {
         blockHash: txReceipt.blockHash,
         blockNumber

@@ -418,6 +418,54 @@ export class AudiusLibs {
     this.schemas = schemaValidator.getSchemas()
   }
 
+  private async determineCreatorNodeEndpointForWallet(wallet?: string) {
+    let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
+    if (!wallet) {
+      return creatorNodeEndpoint
+    }
+    if (this.creatorNodeConfig.storageNodeSelector) {
+      const [storageNode] =
+        this.creatorNodeConfig.storageNodeSelector.getNodes(wallet)
+      if (storageNode) {
+        creatorNodeEndpoint = storageNode
+      }
+    } else if (this.ethContracts) {
+      const storageV2Nodes =
+        await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+          'content-node'
+        )
+      const randomNodes = await getNStorageNodes(
+        storageV2Nodes,
+        1,
+        this.creatorNodeConfig.wallet,
+        this.logger
+      )
+      creatorNodeEndpoint = randomNodes[0]!
+    }
+    return creatorNodeEndpoint
+  }
+
+  /** Update the current user for CreatorNode and DiscoveryProvider requests */
+  async setCurrentUser({
+    wallet,
+    userId
+  }: {
+    wallet: string
+    handle: string
+    userId: number
+  }) {
+    this.creatorNode?.setEndpoint(
+      await this.determineCreatorNodeEndpointForWallet(wallet)
+    )
+    this.discoveryProvider?.setCurrentUser(userId)
+  }
+
+  /** Clear the current user for CreatorNode and DiscoveryProvder requests */
+  clearCurrentUser() {
+    this.creatorNode?.setEndpoint(this.creatorNodeConfig.fallbackUrl)
+    this.discoveryProvider?.clearCurrentUser()
+  }
+
   /** Init services based on presence of a relevant config. */
   async init() {
     if (!this.localStorage) {
@@ -547,30 +595,10 @@ export class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       // Use rendezvous to select creatorNodeEndpoint
-      let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
-      if (this.creatorNodeConfig.wallet) {
-        if (this.creatorNodeConfig.storageNodeSelector) {
-          const [storageNode] =
-            this.creatorNodeConfig.storageNodeSelector.getNodes(
-              this.creatorNodeConfig.wallet
-            )
-          if (storageNode) {
-            creatorNodeEndpoint = storageNode
-          }
-        } else if (this.ethContracts) {
-          const storageV2Nodes =
-            await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
-              'content-node'
-            )
-          const randomNodes = await getNStorageNodes(
-            storageV2Nodes,
-            1,
-            this.creatorNodeConfig.wallet,
-            this.logger
-          )
-          creatorNodeEndpoint = randomNodes[0]!
-        }
-      }
+      const creatorNodeEndpoint =
+        await this.determineCreatorNodeEndpointForWallet(
+          this.creatorNodeConfig.wallet
+        )
 
       this.creatorNode = new CreatorNode(
         this.web3Manager,

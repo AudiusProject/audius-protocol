@@ -8,10 +8,10 @@ import type { AudiusLibs } from '../AudiusLibs'
  */
 export const needsRecoveryEmail = async (
   libs: AudiusLibs,
-  { wallet, handle }: { wallet: string; handle: string }
+  { wallet, handle }: { wallet?: string; handle?: string }
 ) => {
   console.debug('Sanity Check - needsRecoveryEmail')
-  if (!wallet) return
+  if (!wallet || !handle) return
 
   const events = await libs.identityService?.getUserEvents(wallet)
   if (events?.needsRecoveryEmail) {

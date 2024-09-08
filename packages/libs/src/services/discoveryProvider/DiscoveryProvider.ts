@@ -71,6 +71,7 @@ export type DiscoveryProviderConfig = {
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   discoveryNodeSelector?: DiscoveryNodeSelector
+  // TODO-NOW: Maybe move userId/wallet out of config and into init or constructor params?
   userId?: number
 } & Pick<
   DiscoveryProviderSelectionConfig,
@@ -157,8 +158,6 @@ export class DiscoveryProvider {
   monitoringCallbacks:
     | DiscoveryProviderSelection['monitoringCallbacks']
     | undefined
-
-  enableUserWalletOverride = false
 
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
@@ -284,6 +283,14 @@ export class DiscoveryProvider {
 
   setEndpoint(endpoint: string) {
     this.discoveryProviderEndpoint = endpoint
+  }
+
+  setCurrentUser(userId?: number) {
+    this.userId = userId
+  }
+
+  clearCurrentUser() {
+    this.userId = undefined
   }
 
   setUnhealthyBlockDiff(updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {

@@ -506,10 +506,13 @@ export const audiusBackend = ({
     )
   }
 
-  async function sanityChecks(audiusLibs: any) {
+  async function sanityChecks(
+    audiusLibs: any,
+    args: { wallet?: string; handle?: string }
+  ) {
     try {
       const sanityChecks = new SanityChecks(audiusLibs)
-      await sanityChecks.run()
+      await sanityChecks.run(args)
     } catch (e) {
       console.error(`Sanity checks failed: ${e}`)
     }
@@ -518,10 +521,12 @@ export const audiusBackend = ({
   // TODO-NOW: Pass wallet/userId to setup when calling from saga
   async function setup({
     wallet,
-    userId
+    userId,
+    handle
   }: {
     wallet?: string
     userId?: number
+    handle?: string
   }) {
     // Wait for web3 to load if necessary
     await waitForWeb3()
@@ -642,7 +647,7 @@ export const audiusBackend = ({
       onLibsInit(audiusLibs)
       audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
 
-      sanityChecks(audiusLibs)
+      sanityChecks(audiusLibs, { wallet, handle })
     } catch (err) {
       console.error(err)
       libsError = getErrorMessage(err)
@@ -734,29 +739,29 @@ export const audiusBackend = ({
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  async function getAccount() {
-    await waitForLibsInit()
-    try {
-      // TODO: Non-v1
-      const account = audiusLibs.Account.getCurrentUser()
-      if (!account) return null
+  // async function getAccount() {
+  //   await waitForLibsInit()
+  //   try {
+  //     // TODO: Non-v1
+  //     const account = audiusLibs.Account.getCurrentUser()
+  //     if (!account) return null
 
-      try {
-        const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
-        account.userBank = userBank.toString()
-        return getUserImages(account)
-      } catch (e) {
-        // Failed to fetch solana user bank account for user
-        // in any case
-        console.error(e)
-        return getUserImages(account)
-      }
-    } catch (e) {
-      console.error(e)
-      // No account
-      return null
-    }
-  }
+  //     try {
+  //       const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
+  //       account.userBank = userBank.toString()
+  //       return getUserImages(account)
+  //     } catch (e) {
+  //       // Failed to fetch solana user bank account for user
+  //       // in any case
+  //       console.error(e)
+  //       return getUserImages(account)
+  //     }
+  //   } catch (e) {
+  //     console.error(e)
+  //     // No account
+  //     return null
+  //   }
+  // }
 
   type SearchTagsArgs = {
     query: string
@@ -3071,7 +3076,6 @@ export const audiusBackend = ({
     fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
     followUser,
-    getAccount,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
     getAddressSolBalance,

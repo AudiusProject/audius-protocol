@@ -1,3 +1,4 @@
+import { accountFromSDK } from '@audius/common/adapters'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,
@@ -12,8 +13,10 @@ import {
   profilePageActions,
   chatActions,
   solanaSelectors,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
+import { isResponseError } from '@audius/common/utils'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
@@ -145,6 +148,7 @@ function* onSignedIn({ payload: { account } }) {
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.
   yield put(
+    // TODO-NOW: Does this need to update?
     fetchProfile(account.handle, account.user_id, false, false, false, true)
   )
 
@@ -165,14 +169,15 @@ function* onSignedIn({ payload: { account } }) {
 
 export function* fetchAccountAsync({ isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
-  // TODO-NOW: Update this to use SDK
+  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+  const wallet = libs.web3Manager?.getWalletAddress()
 
-  const account = yield call(audiusBackendInstance.getAccount)
-  if (!account) {
+  if (!wallet) {
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -180,24 +185,53 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     )
     return
   }
-  if (account.is_deactivated) {
-    yield put(accountActions.resetAccount())
-    yield put(
-      fetchAccountFailed({
-        reason: 'ACCOUNT_DEACTIVATED'
-      })
-    )
-    return
+
+  // TODO-NOW: TEST! And then do all the other todos...
+  try {
+    const { data } = yield* call([
+      sdk.full.users,
+      sdk.full.users.getUserAccount({ wallet })
+    ])
+
+    if (!data || !data.user) {
+      yield put(
+        fetchAccountFailed({
+          reason: 'ACCOUNT_NOT_FOUND'
+        })
+      )
+      return
+    }
+    // TODO-NOW: audius-query fetching
+    const account = accountFromSDK(data)
+    if (account.user.is_deactivated) {
+      yield put(accountActions.resetAccount())
+      yield put(
+        fetchAccountFailed({
+          reason: 'ACCOUNT_DEACTIVATED'
+        })
+      )
+      return
+    }
+
+    // Set the userId in the remoteConfigInstance
+    remoteConfigInstance.setUserId(account.user_id)
+
+    yield call(recordIPIfNotRecent, account.handle)
+
+    // Cache the account and put the signedIn action. We're done.
+    yield call(cacheAccount, account)
+    yield put(signedIn({ account, isSignUp }))
+  } catch (e) {
+    if (isResponseError(e) && e.response.status === 404) {
+      yield put(
+        fetchAccountFailed({
+          reason: 'ACCOUNT_NOT_FOUND'
+        })
+      )
+      return
+    }
+    throw e
   }
-
-  // Set the userId in the remoteConfigInstance
-  remoteConfigInstance.setUserId(account.user_id)
-
-  yield call(recordIPIfNotRecent, account.handle)
-
-  // Cache the account and put the signedIn action. We're done.
-  yield call(cacheAccount, account)
-  yield put(signedIn({ account, isSignUp }))
 }
 
 export function* fetchLocalAccountAsync() {
