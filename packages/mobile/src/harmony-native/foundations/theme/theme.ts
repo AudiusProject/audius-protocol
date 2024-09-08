@@ -57,6 +57,11 @@ export const theme = {
     type: harmonyThemes.matrix.type,
     color: colorTheme.matrix,
     ...commonFoundations
+  },
+  debug: {
+    type: harmonyThemes.debug.type,
+    color: colorTheme.debug,
+    ...commonFoundations
   }
 }
 

@@ -5,11 +5,21 @@ import styles from './StatsText.module.css'
 
 export enum Flavor {
   REPOST = 'REPOST',
-  FAVORITE = 'FAVORITE'
+  FAVORITE = 'FAVORITE',
+  COMMENT = 'COMMENT'
 }
 
-const flavorize = (favoriteText: string, repostText: string, flavor: Flavor) =>
-  flavor === Flavor.FAVORITE ? favoriteText : repostText
+const flavorize = (
+  favoriteText: string,
+  repostText: string,
+  commentText: string,
+  flavor: Flavor
+) =>
+  flavor === Flavor.FAVORITE
+    ? favoriteText
+    : flavor === Flavor.REPOST
+    ? repostText
+    : commentText
 
 const formatEmptyState = (
   flavor: Flavor,
@@ -27,6 +37,9 @@ const formatEmptyState = (
       contentTitle ? contentTitle.toLowerCase() : 'track'
     }!`
   }
+  if (flavor === Flavor.COMMENT) {
+    return '0 Comments'
+  }
 }
 
 export const formatLongString = (
@@ -42,7 +55,10 @@ export const formatLongString = (
       longString: '',
       endString:
         formatCount(count) +
-        ` ${pluralize(flavorize('Favorite', 'Repost', flavor), count)}`
+        ` ${pluralize(
+          flavorize('Favorite', 'Repost', 'Comment', flavor),
+          count
+        )}`
     }
   }
 
@@ -64,10 +80,10 @@ export const formatLongString = (
   // If *just* followees of yours interacted, we need to say 'Favorited' (e.g. 'MyFollowee Favorited'),
   // otherwise, it should be 'Favorite' or 'Favorites'. (e.g. '1 favorite', '5 favorites', 'MyFollowee + 6 Favorites')
   if (remainingCount === 0) {
-    endString += ` ${flavorize('Favorited', 'Reposted', flavor)}`
+    endString += ` ${flavorize('Favorited', 'Reposted', 'Commented', flavor)}`
   } else {
     endString += pluralize(
-      flavorize('Favorite', 'Repost', flavor),
+      flavorize('Favorite', 'Repost', 'Comment', flavor),
       remainingCount
     )
   }

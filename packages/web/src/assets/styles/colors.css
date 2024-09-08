@@ -49,7 +49,7 @@
   --input-background: rgba(255, 255, 255, 0.8);
 
   --search-bar-background: rgba(255, 255, 255, 0.8);
-  --search-bar-expanded: rgba(255, 255, 255, 1);
+  --search-bar-expanded: var(--harmony-white);
   --search-bar-border: rgba(143, 149, 152, 0.1);
   --search-bar-shadow: rgba(133, 129, 153, 0.15);
 
@@ -303,4 +303,10 @@ html[data-theme='matrix'] {
     #4ff069 36.13%,
     #09bd51 133.51%
   );
+}
+
+html[data-theme='debug'] {
+  --page-header-text-shadow-color: var(--harmony-white);
+  --search-bar-background: var(--harmony-white);
+  --search-bar-expanded: var(--harmony-white);
 }

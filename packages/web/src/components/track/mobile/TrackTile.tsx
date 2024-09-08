@@ -1,5 +1,6 @@
 import { useCallback, useEffect, MouseEvent } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
@@ -7,6 +8,7 @@ import {
   AccessConditions,
   GatedContentStatus
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -26,7 +28,8 @@ import {
   IconTrending,
   Text,
   Flex,
-  IconStar
+  IconStar,
+  IconMessage
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -295,6 +298,10 @@ const TrackTile = (props: CombinedProps) => {
     openLockedContentModal
   ])
 
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
+
   const isReadonly = variant === 'readonly'
 
   return (
@@ -406,7 +413,11 @@ const TrackTile = (props: CombinedProps) => {
               isUnlisted={isUnlisted}
               isScheduledRelease={isScheduledRelease}
             />
-            {!(props.repostCount || props.saveCount) ? null : (
+            {!(
+              props.repostCount ||
+              props.saveCount ||
+              props.commentCount
+            ) ? null : (
               <>
                 <div
                   className={cn(styles.statItem, fadeIn, {
@@ -445,6 +456,21 @@ const TrackTile = (props: CombinedProps) => {
                     isMatrixMode={isMatrix}
                     className={styles.favoriteButton}
                     wrapperClassName={styles.favoriteButtonWrapper}
+                  />
+                  {formatCount(props.saveCount)}
+                </div>
+                <div
+                  className={cn(styles.statItem, fadeIn, {
+                    [styles.disabledStatItem]: !props.commentCount,
+                    [styles.isHidden]:
+                      !isCommentsEnabled ||
+                      props.isUnlisted ||
+                      props.commentsDisabled
+                  })}
+                >
+                  <IconMessage
+                    className={styles.favoriteButton}
+                    color='subdued'
                   />
                   {formatCount(props.saveCount)}
                 </div>

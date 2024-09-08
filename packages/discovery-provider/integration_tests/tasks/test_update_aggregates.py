@@ -29,6 +29,9 @@ def test_update_aggregate_track(app):
             {"user_id": 2, "repost_item_id": 1, "is_delete": True, "is_current": False},
             {"user_id": 2, "repost_item_id": 1, "is_current": True},
         ],
+        "comments": [
+            {"user_id": 2, "entity_id": 1},
+        ],
     }
 
     populate_mock_db(db, entities)
@@ -39,9 +42,11 @@ def test_update_aggregate_track(app):
         assert aggregate_track.track_id == 1
         assert aggregate_track.repost_count == 1
         assert aggregate_track.save_count == 1
+        assert aggregate_track.comment_count == 1
 
         aggregate_track.repost_count = 0
         aggregate_track.save_count = 0
+        aggregate_track.comment_count = 0
 
     with db.scoped_session() as session:
         _update_aggregates(session)
@@ -50,6 +55,7 @@ def test_update_aggregate_track(app):
         assert aggregate_track.track_id == 1
         assert aggregate_track.repost_count == 1
         assert aggregate_track.save_count == 1
+        assert aggregate_track.comment_count == 1
 
 
 def test_update_aggregate_playlist(app):

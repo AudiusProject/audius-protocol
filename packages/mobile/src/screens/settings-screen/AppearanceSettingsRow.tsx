@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { Name } from '@audius/common/models'
+import { settingsMessages as messages } from '@audius/common/messages'
+import { Name, Theme } from '@audius/common/models'
 import {
   accountSelectors,
   themeActions,
@@ -13,7 +14,6 @@ import { IconAppearance } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { env } from 'app/env'
 import { make, track } from 'app/services/analytics'
-import { Theme } from 'app/utils/theme'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
@@ -25,16 +25,6 @@ const { getTheme } = themeSelectors
 
 const isStaging = env.ENVIRONMENT === 'staging'
 
-const messages = {
-  appearance: 'Appearance',
-  appearanceDescription:
-    "Enable dark mode or choose 'Auto' to change with your system settings",
-  auto: 'Auto',
-  dark: 'Dark',
-  default: 'Default',
-  matrix: 'Matrix'
-}
-
 export const AppearanceSettingsRow = () => {
   const theme = useSelector(getTheme)
   const accountId = useSelector(getUserId)
@@ -43,13 +33,17 @@ export const AppearanceSettingsRow = () => {
   const { tier } = useSelectTierInfo(accountId ?? 0)
 
   const appearanceOptions = [
-    { key: Theme.DEFAULT, text: messages.default },
-    { key: Theme.AUTO, text: messages.auto },
-    { key: Theme.DARK, text: messages.dark }
+    { key: Theme.DEFAULT, text: messages.lightMode },
+    { key: Theme.AUTO, text: messages.autoMode },
+    { key: Theme.DARK, text: messages.darkMode }
   ]
 
   if (tier === 'gold' || tier === 'platinum' || isStaging) {
-    appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrix })
+    appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrixMode })
+  }
+
+  if (isStaging) {
+    appearanceOptions.push({ key: Theme.DEBUG, text: messages.debugMode })
   }
 
   const handleSetTheme = useCallback(
@@ -71,7 +65,10 @@ export const AppearanceSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.appearance} icon={IconAppearance} />
+      <SettingsRowLabel
+        label={messages.appearanceTitle}
+        icon={IconAppearance}
+      />
       <SettingsRowDescription>
         {messages.appearanceDescription}
       </SettingsRowDescription>

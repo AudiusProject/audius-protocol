@@ -8,6 +8,12 @@ class ArgumentError(Base):
     pass  # pylint: disable=W0107
 
 
+class PermissionError(Base):
+    """User does not have permission to access this resource"""
+
+    pass  # pylint: disable=W0107
+
+
 class NotFoundError(Base):
     """Invalid arguments passed to request"""
 

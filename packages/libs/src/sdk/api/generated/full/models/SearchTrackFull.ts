@@ -173,6 +173,12 @@ export interface SearchTrackFull {
     favoriteCount: number;
     /**
      * 
+     * @type {number}
+     * @memberof SearchTrackFull
+     */
+    commentCount: number;
+    /**
+     * 
      * @type {string}
      * @memberof SearchTrackFull
      */
@@ -527,6 +533,7 @@ export function instanceOfSearchTrackFull(value: object): value is SearchTrackFu
     isInstance = isInstance && "remixOf" in value && value["remixOf"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "commentCount" in value && value["commentCount"] !== undefined;
     isInstance = isInstance && "title" in value && value["title"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
@@ -578,6 +585,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'remixOf': FullRemixParentFromJSON(json['remix_of']),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
+        'commentCount': json['comment_count'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'title': json['title'],
         'user': UserFullFromJSON(json['user']),
@@ -661,6 +669,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'remix_of': FullRemixParentToJSON(value.remixOf),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,
+        'comment_count': value.commentCount,
         'tags': value.tags,
         'title': value.title,
         'user': UserFullToJSON(value.user),

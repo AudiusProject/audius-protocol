@@ -75,7 +75,9 @@ services:
       service: core
     container_name: core-discovery-1
     ports:
-      - '6661:26659'
+      - '6661:26659' # Http Console
+      - "6611:26657" # CometBFT RPC Server
+      - "6612:50051" # Core GRPC Server
     env_file:
       - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
     <<: *common
