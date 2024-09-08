@@ -54,17 +54,18 @@ def test_get_comments_default(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_track_comments({}, 1)
+        comments = get_track_comments({"limit": 5, "offset": 5}, 1)
 
         assert len(comments) == 5
         for comment in comments:
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
+                assert comment["reply_count"] == 9
                 assert comment["react_count"] == 1
             else:
                 assert len(comment["replies"]) == 0
 
-            assert 1 <= decode_string_id(comment["id"]) <= 5
+            assert 6 <= decode_string_id(comment["id"]) <= 10
 
 
 def test_get_comments_page(app):
