@@ -1,3 +1,5 @@
+import { formatCount, pluralize } from '~/utils'
+
 export const commentsMessages = {
   title: 'Comments',
   postComment: 'Post Comment',
@@ -8,7 +10,8 @@ export const commentsMessages = {
   viewAll: 'View All',
   showMoreReplies: 'Show More Replies',
   replies: 'Replies',
-  showReplies: 'Show Replies',
+  showReplies: (replyCount: number) =>
+    `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track'
 }
