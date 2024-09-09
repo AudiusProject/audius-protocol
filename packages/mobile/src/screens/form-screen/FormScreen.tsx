@@ -1,5 +1,6 @@
 import { useCallback, type ReactNode } from 'react'
 
+import { css } from '@emotion/native'
 import { Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -64,6 +65,7 @@ export const FormScreen = (props: FormScreenProps) => {
         backgroundColor='white'
         borderTop='default'
         gap='m'
+        style={css({ position: 'absolute', bottom: 0, left: 0, right: 0 })}
       >
         {bottomSection ?? (
           <>
@@ -76,7 +78,7 @@ export const FormScreen = (props: FormScreenProps) => {
               {messages.done}
             </Button>
             {onClear ? (
-              <PlainButton disabled={!clearable} onPress={onClear}>
+              <PlainButton disabled={!clearable} onPress={onClear} size='large'>
                 {messages.clear}
               </PlainButton>
             ) : null}
