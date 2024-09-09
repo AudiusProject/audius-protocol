@@ -28,6 +28,7 @@ base_comment_model = ns.model(
         "message": fields.String(required=True),
         "track_timestamp_s": fields.Integer(required=False),
         "react_count": fields.Integer(required=True),
+        "reply_count": fields.Integer(required=True),
         "is_pinned": fields.Boolean(required=True),
         "is_current_user_reacted": fields.Boolean(required=False),
         "is_artist_reacted": fields.Boolean(required=False),

@@ -12,6 +12,7 @@ apis/index.ts
 index.ts
 models/Access.ts
 models/AccessGate.ts
+models/AccountFull.ts
 models/ActivityFull.ts
 models/AnnouncementNotification.ts
 models/AnnouncementNotificationAction.ts
@@ -202,6 +203,7 @@ models/UsdcPurchaseBuyerNotificationActionData.ts
 models/UsdcPurchaseSellerNotification.ts
 models/UsdcPurchaseSellerNotificationAction.ts
 models/UsdcPurchaseSellerNotificationActionData.ts
+models/UserAccountResponseFull.ts
 models/UserFeedItem.ts
 models/UserFeedResponse.ts
 models/UserFull.ts

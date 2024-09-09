@@ -125,6 +125,12 @@ export interface Track {
     favoriteCount: number;
     /**
      * 
+     * @type {number}
+     * @memberof Track
+     */
+    commentCount: number;
+    /**
+     * 
      * @type {string}
      * @memberof Track
      */
@@ -196,6 +202,7 @@ export function instanceOfTrack(value: object): value is Track {
     isInstance = isInstance && "isOriginalAvailable" in value && value["isOriginalAvailable"] !== undefined;
     isInstance = isInstance && "repostCount" in value && value["repostCount"] !== undefined;
     isInstance = isInstance && "favoriteCount" in value && value["favoriteCount"] !== undefined;
+    isInstance = isInstance && "commentCount" in value && value["commentCount"] !== undefined;
     isInstance = isInstance && "title" in value && value["title"] !== undefined;
     isInstance = isInstance && "user" in value && value["user"] !== undefined;
     isInstance = isInstance && "duration" in value && value["duration"] !== undefined;
@@ -230,6 +237,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
+        'commentCount': json['comment_count'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'title': json['title'],
         'user': UserFromJSON(json['user']),
@@ -266,6 +274,7 @@ export function TrackToJSON(value?: Track | null): any {
         'remix_of': RemixParentToJSON(value.remixOf),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,
+        'comment_count': value.commentCount,
         'tags': value.tags,
         'title': value.title,
         'user': UserToJSON(value.user),

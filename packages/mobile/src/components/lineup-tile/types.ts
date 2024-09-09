@@ -89,6 +89,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Hide the share button */
   hideShare?: boolean
 
+  /** Hide the comments stat */
+  hideComments?: boolean
+
   /** ID of the item */
   id: ID
 
@@ -127,6 +130,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Amount of plays on this item */
   playCount?: number
+
+  /** Amount of comments on this item */
+  commentCount?: number
 
   /** Repost type used for the reposted user list */
   repostType: RepostType

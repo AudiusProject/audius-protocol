@@ -83,6 +83,21 @@ type EventAttribute struct {
 	Value        pgtype.Text
 }
 
+type SlaNodeReport struct {
+	ID             int32
+	Address        string
+	BlocksProposed int32
+	SlaRollupID    pgtype.Int4
+}
+
+type SlaRollup struct {
+	ID         int32
+	TxHash     string
+	BlockStart int64
+	BlockEnd   int64
+	Time       pgtype.Timestamp
+}
+
 type TxEvent struct {
 	Height       int64
 	Index        int32

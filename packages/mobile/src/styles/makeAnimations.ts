@@ -5,7 +5,8 @@ import {
   useThemeVariant,
   darkTheme,
   matrixTheme,
-  defaultTheme
+  defaultTheme,
+  debugTheme
 } from 'app/utils/theme'
 
 type AnimationCreatorConfig = { palette: ThemeColors; type: Theme }
@@ -25,6 +26,10 @@ export const makeAnimations = <TReturn>(
     [Theme.MATRIX]: animationCreator({
       palette: matrixTheme,
       type: Theme.MATRIX
+    }),
+    [Theme.DEBUG]: animationCreator({
+      palette: debugTheme,
+      type: Theme.DEBUG
     })
   }
 

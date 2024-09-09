@@ -89,7 +89,7 @@ const commentsApi = createApi({
         // TODO: add this endpoint "just in case"
         return undefined
       },
-      options: { type: 'query' }
+      options: {}
     },
     getCommentRepliesById: {
       async fetch(
@@ -140,6 +140,7 @@ const commentsApi = createApi({
           isPinned: false,
           trackTimestampS,
           reactCount: 0,
+          replyCount: 0,
           replies: undefined,
           createdAt: new Date().toISOString(),
           updatedAt: undefined

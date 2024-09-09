@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
@@ -62,6 +64,37 @@ func (q *Queries) GetAppStateAtHeight(ctx context.Context, blockHeight int64) (G
 	return i, err
 }
 
+const getInProgressRollupReports = `-- name: GetInProgressRollupReports :many
+select id, address, blocks_proposed, sla_rollup_id from sla_node_reports
+where sla_rollup_id is null 
+order by address
+`
+
+func (q *Queries) GetInProgressRollupReports(ctx context.Context) ([]SlaNodeReport, error) {
+	rows, err := q.db.Query(ctx, getInProgressRollupReports)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SlaNodeReport
+	for rows.Next() {
+		var i SlaNodeReport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Address,
+			&i.BlocksProposed,
+			&i.SlaRollupID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getKey = `-- name: GetKey :one
 select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
 `
@@ -99,6 +132,23 @@ func (q *Queries) GetLatestAppState(ctx context.Context) (GetLatestAppStateRow, 
 	return i, err
 }
 
+const getLatestSlaRollup = `-- name: GetLatestSlaRollup :one
+select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 1
+`
+
+func (q *Queries) GetLatestSlaRollup(ctx context.Context) (SlaRollup, error) {
+	row := q.db.QueryRow(ctx, getLatestSlaRollup)
+	var i SlaRollup
+	err := row.Scan(
+		&i.ID,
+		&i.TxHash,
+		&i.BlockStart,
+		&i.BlockEnd,
+		&i.Time,
+	)
+	return i, err
+}
+
 const getNodeByEndpoint = `-- name: GetNodeByEndpoint :one
 select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
 from core_validators
@@ -120,6 +170,36 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 		&i.SpID,
 	)
 	return i, err
+}
+
+const getRecentRollups = `-- name: GetRecentRollups :many
+select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
+`
+
+func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
+	rows, err := q.db.Query(ctx, getRecentRollups)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SlaRollup
+	for rows.Next() {
+		var i SlaRollup
+		if err := rows.Scan(
+			&i.ID,
+			&i.TxHash,
+			&i.BlockStart,
+			&i.BlockEnd,
+			&i.Time,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
@@ -155,6 +235,54 @@ func (q *Queries) GetRegisteredNodesByType(ctx context.Context, nodeType string)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRollupReportsForId = `-- name: GetRollupReportsForId :many
+select id, address, blocks_proposed, sla_rollup_id from sla_node_reports
+where sla_rollup_id = $1
+order by address
+`
+
+func (q *Queries) GetRollupReportsForId(ctx context.Context, slaRollupID pgtype.Int4) ([]SlaNodeReport, error) {
+	rows, err := q.db.Query(ctx, getRollupReportsForId, slaRollupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SlaNodeReport
+	for rows.Next() {
+		var i SlaNodeReport
+		if err := rows.Scan(
+			&i.ID,
+			&i.Address,
+			&i.BlocksProposed,
+			&i.SlaRollupID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSlaRollupWithId = `-- name: GetSlaRollupWithId :one
+select id, tx_hash, block_start, block_end, time from sla_rollups where id = $1
+`
+
+func (q *Queries) GetSlaRollupWithId(ctx context.Context, id int32) (SlaRollup, error) {
+	row := q.db.QueryRow(ctx, getSlaRollupWithId, id)
+	var i SlaRollup
+	err := row.Scan(
+		&i.ID,
+		&i.TxHash,
+		&i.BlockStart,
+		&i.BlockEnd,
+		&i.Time,
+	)
+	return i, err
 }
 
 const getTx = `-- name: GetTx :one

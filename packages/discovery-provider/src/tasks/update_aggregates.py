@@ -82,21 +82,37 @@ track_reposts as (
   group by
     repost_item_id
 ),
+track_comments as (
+  select
+    entity_id as comment_entity_id,
+    count(*) as comment_count
+  from
+    comments c
+  where
+    c.is_delete is false
+    and c.is_visible is true 
+    and c.entity_type = 'Track'
+  group by
+    comment_entity_id
+),
 new_aggregate_track as (
   select
     ap.track_id,
     coalesce(ps.save_count, 0) as save_count,
-    coalesce(pr.repost_count, 0) as repost_count
+    coalesce(pr.repost_count, 0) as repost_count,
+    coalesce(pc.comment_count, 0) as comment_count
   from
     aggregate_track ap
     left join track_saves ps on ap.track_id = ps.save_item_id
     left join track_reposts pr on ap.track_id = pr.repost_item_id
+    left join track_comments pc on ap.track_id = pc.comment_entity_id
 )
 update
   aggregate_track at
 set
   save_count = nat.save_count,
-  repost_count = nat.repost_count
+  repost_count = nat.repost_count,
+  comment_count = nat.comment_count
 from
   new_aggregate_track nat
 where
@@ -104,6 +120,7 @@ where
   and (
     at.save_count != nat.save_count
     or at.repost_count != nat.repost_count
+    or at.comment_count != nat.comment_count
   )
 returning at.track_id;
 """

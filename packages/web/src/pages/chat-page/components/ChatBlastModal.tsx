@@ -89,11 +89,15 @@ export const ChatBlastModal = () => {
       values.target_audience === ChatBlastAudience.CUSTOMERS
         ? values.purchased_content_metadata?.contentId
         : values.remixed_track_id
+    const audienceContentType =
+      values.target_audience === ChatBlastAudience.REMIXERS
+        ? 'track'
+        : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
         audience: values.target_audience,
         audienceContentId,
-        audienceContentType: values.purchased_content_metadata?.contentType
+        audienceContentType
       })
     )
   }
@@ -181,7 +185,7 @@ const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.FOLLOWERS
-  const isDisabled = user.follower_count === 0
+  const isDisabled = user?.follower_count === 0
   return (
     <Flex
       as='label'
@@ -194,7 +198,7 @@ const FollowersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.followers.label}
-          count={user.follower_count}
+          count={user?.follower_count}
           isSelected={selected}
         />
         {selected ? (
@@ -209,7 +213,7 @@ const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.TIPPERS
-  const isDisabled = user.supporter_count === 0
+  const isDisabled = user?.supporter_count === 0
   return (
     <Flex
       as='label'
@@ -222,7 +226,7 @@ const TipSupportersMessageField = () => {
       <Flex direction='column' gap='xs'>
         <LabelWithCount
           label={messages.supporters.label}
-          count={user.supporter_count ?? 0}
+          count={user?.supporter_count ?? 0}
           isSelected={selected}
         />
         {selected ? (

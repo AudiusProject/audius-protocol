@@ -203,6 +203,12 @@ export interface UserFull {
     splWallet: string;
     /**
      * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    splUsdcPayoutWallet?: string;
+    /**
+     * 
      * @type {number}
      * @memberof UserFull
      */
@@ -453,6 +459,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'isAvailable': json['is_available'],
         'ercWallet': json['erc_wallet'],
         'splWallet': json['spl_wallet'],
+        'splUsdcPayoutWallet': !exists(json, 'spl_usdc_payout_wallet') ? undefined : json['spl_usdc_payout_wallet'],
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
         'totalAudioBalance': json['total_audio_balance'],
@@ -520,6 +527,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'is_available': value.isAvailable,
         'erc_wallet': value.ercWallet,
         'spl_wallet': value.splWallet,
+        'spl_usdc_payout_wallet': value.splUsdcPayoutWallet,
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,
         'total_audio_balance': value.totalAudioBalance,

@@ -7,7 +7,60 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const clearUncommittedSlaNodeReports = `-- name: ClearUncommittedSlaNodeReports :exec
+delete from sla_node_reports
+where sla_rollup_id is null
+`
+
+func (q *Queries) ClearUncommittedSlaNodeReports(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, clearUncommittedSlaNodeReports)
+	return err
+}
+
+const commitSlaNodeReport = `-- name: CommitSlaNodeReport :exec
+insert into sla_node_reports (sla_rollup_id, address, blocks_proposed)
+values ($1, $2, $3)
+`
+
+type CommitSlaNodeReportParams struct {
+	SlaRollupID    pgtype.Int4
+	Address        string
+	BlocksProposed int32
+}
+
+func (q *Queries) CommitSlaNodeReport(ctx context.Context, arg CommitSlaNodeReportParams) error {
+	_, err := q.db.Exec(ctx, commitSlaNodeReport, arg.SlaRollupID, arg.Address, arg.BlocksProposed)
+	return err
+}
+
+const commitSlaRollup = `-- name: CommitSlaRollup :one
+insert into sla_rollups (time, tx_hash, block_start, block_end)
+values ($1, $2, $3, $4)
+returning id
+`
+
+type CommitSlaRollupParams struct {
+	Time       pgtype.Timestamp
+	TxHash     string
+	BlockStart int64
+	BlockEnd   int64
+}
+
+func (q *Queries) CommitSlaRollup(ctx context.Context, arg CommitSlaRollupParams) (int32, error) {
+	row := q.db.QueryRow(ctx, commitSlaRollup,
+		arg.Time,
+		arg.TxHash,
+		arg.BlockStart,
+		arg.BlockEnd,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
 
 const insertKVStore = `-- name: InsertKVStore :one
 insert into core_kvstore (key, value, tx_hash)
@@ -80,5 +133,22 @@ type UpsertAppStateParams struct {
 
 func (q *Queries) UpsertAppState(ctx context.Context, arg UpsertAppStateParams) error {
 	_, err := q.db.Exec(ctx, upsertAppState, arg.BlockHeight, arg.AppHash)
+	return err
+}
+
+const upsertSlaRollupReport = `-- name: UpsertSlaRollupReport :exec
+with updated as (
+    update sla_node_reports 
+    set blocks_proposed = blocks_proposed + 1
+    where address = $1 and sla_rollup_id is null
+    returning id, address, blocks_proposed, sla_rollup_id
+)
+insert into sla_node_reports (address, blocks_proposed, sla_rollup_id)
+select $1, 1, null
+where not exists (select 1 from updated)
+`
+
+func (q *Queries) UpsertSlaRollupReport(ctx context.Context, address string) error {
+	_, err := q.db.Exec(ctx, upsertSlaRollupReport, address)
 	return err
 }
