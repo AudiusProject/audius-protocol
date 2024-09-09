@@ -98,7 +98,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
             ))}
           </Flex>
         )}
-        {/* TODO: need a way to hide this when no more to load */}
+
         {hasMoreReplies ? (
           <PlainButton
             onClick={handleLoadMoreReplies}
