@@ -170,8 +170,6 @@ const TrackPage = (props: OwnProps) => {
           id={id}
           isPlaying={heroPlaying}
           isPreviewing={previewing}
-          commentCount={defaults.commentCount}
-          commentsDisabled={defaults.commentsDisabled}
           // Actions (Wire up once we add backend integrations)
           onClickMobileOverflow={onClickMobileOverflow}
           onPlay={onPlay}

@@ -107,8 +107,6 @@ type TrackHeaderProps = {
   id: ID
   isPlaying: boolean
   isPreviewing: boolean
-  commentCount: number
-  commentsDisabled: boolean
   onPlay: () => void
   onPreview: () => void
   onShare: () => void
@@ -127,8 +125,6 @@ const TrackHeader = (props: TrackHeaderProps) => {
     id,
     isPlaying,
     isPreviewing,
-    commentCount,
-    commentsDisabled,
     onPlay,
     onPreview,
     onShare,
@@ -163,9 +159,6 @@ const TrackHeader = (props: TrackHeaderProps) => {
     tags,
     title,
     trackId,
-    saveCount,
-    listenCount,
-    repostCount,
     remixParentTrackId
   } = getTrackDefaults(track ?? null)
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
@@ -185,7 +178,6 @@ const TrackHeader = (props: TrackHeaderProps) => {
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
-  const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
     { enabled: !!trackId }
@@ -401,15 +393,8 @@ const TrackHeader = (props: TrackHeaderProps) => {
         </div>
       ) : null}
       <StatsButtonRow
+        id={id}
         className={styles.withSectionDivider}
-        showListenCount={showListenCount}
-        showFavoriteCount={!isUnlisted}
-        showRepostCount={!isUnlisted}
-        showCommentCount={!isUnlisted && !commentsDisabled}
-        listenCount={listenCount}
-        favoriteCount={saveCount}
-        repostCount={repostCount}
-        commentCount={commentCount}
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
       />

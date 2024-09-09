@@ -1,4 +1,6 @@
+import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
+import { ID, Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -10,38 +12,53 @@ import {
   PlainButton
 } from '@audius/harmony'
 
+import { getTrackDefaults } from 'pages/track-page/utils'
+
 type StatsButtonRowProps = {
+  id: ID
   className?: string
-  showListenCount: boolean
-  showFavoriteCount: boolean
-  showRepostCount: boolean
-  showCommentCount: boolean
-  listenCount?: number
-  favoriteCount: number
-  repostCount: number
-  commentCount: number
   onClickFavorites: () => void
   onClickReposts: () => void
 }
 
 // A row of stats, visible on playlist and tracks pages.
 const StatsButtonRow = ({
+  id,
   className,
-  showListenCount,
-  showFavoriteCount,
-  showRepostCount,
-  showCommentCount,
-  favoriteCount,
-  repostCount,
-  commentCount,
   onClickFavorites,
-  onClickReposts,
-  listenCount = 0
+  onClickReposts
 }: StatsButtonRowProps) => {
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  if (!showListenCount && !showFavoriteCount && !showRepostCount) return null
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const track = (useGetTrackById({ id, currentUserId }).data ??
+    undefined) as unknown as Track | undefined
+
+  const {
+    saveCount,
+    repostCount,
+    commentCount,
+    isStreamGated,
+    isUnlisted,
+    commentsDisabled,
+    ownerId,
+    listenCount = 0
+  } = getTrackDefaults(track ?? null)
+  const isOwner = ownerId === currentUserId
+  const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
+  const showRepostCount = !isUnlisted
+  const showFavoriteCount = !isUnlisted
+  const showCommentCount = !commentsDisabled && !isUnlisted
+
+  if (
+    !showListenCount &&
+    !showRepostCount &&
+    !showFavoriteCount &&
+    !showCommentCount
+  )
+    return null
 
   const renderListenCount = () => (
     <PlainButton iconLeft={IconPlay}>{formatCount(listenCount)}</PlainButton>
@@ -49,7 +66,7 @@ const StatsButtonRow = ({
 
   const renderFavoriteCount = () => (
     <PlainButton iconLeft={IconFavorite} onClick={onClickFavorites}>
-      {formatCount(favoriteCount)}
+      {formatCount(saveCount)}
     </PlainButton>
   )
 

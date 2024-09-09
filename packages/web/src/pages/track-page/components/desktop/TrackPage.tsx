@@ -120,7 +120,6 @@ const TrackPage = (props: OwnProps) => {
 
   const { entries } = tracks
   const isOwner = track?.owner_id === currentUserId
-  const following = user?.does_current_user_follow ?? false
   const isSaved = track?.has_current_user_saved ?? false
   const isReposted = track?.has_current_user_reposted ?? false
 
@@ -149,7 +148,6 @@ const TrackPage = (props: OwnProps) => {
       onShare={onShare}
       onRepost={onRepost}
       onSave={onSave}
-      following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
       onMakePublic={makePublic}
