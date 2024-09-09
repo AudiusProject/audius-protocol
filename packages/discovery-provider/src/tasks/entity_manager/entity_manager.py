@@ -554,6 +554,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
                 if action == Action.MUTE or action == Action.UNMUTE:
                     entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
+                    entities_to_fetch[EntityType.USER].add(entity_id)
 
             if entity_type == EntityType.TRACK:
                 entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
