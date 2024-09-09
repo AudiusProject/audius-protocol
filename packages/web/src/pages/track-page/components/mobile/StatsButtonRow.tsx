@@ -37,14 +37,14 @@ const StatsButtonRow = ({
     undefined) as unknown as Track | undefined
 
   const {
-    saveCount,
-    repostCount,
     commentCount,
+    commentsDisabled,
     isStreamGated,
     isUnlisted,
-    commentsDisabled,
+    listenCount = 0,
     ownerId,
-    listenCount = 0
+    repostCount,
+    saveCount
   } = getTrackDefaults(track ?? null)
   const isOwner = ownerId === currentUserId
   const showListenCount = isOwner || (!isStreamGated && !isUnlisted)

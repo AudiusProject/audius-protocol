@@ -140,7 +140,15 @@ const TrackPage = (props: OwnProps) => {
     heroTrack && onHeroShare(heroTrack.track_id)
   }
 
-  const defaults = getTrackDefaults(heroTrack)
+  const {
+    description: trackDescription,
+    fieldVisibility,
+    isUnlisted,
+    remixesCount,
+    remixParentTrackId,
+    remixTrackIds,
+    trackId
+  } = getTrackDefaults(heroTrack)
 
   const renderOriginalTrackTitle = () => (
     <Text textAlign='left' variant='title'>
@@ -149,8 +157,8 @@ const TrackPage = (props: OwnProps) => {
   )
 
   const renderMoreByTitle = () =>
-    (defaults.remixParentTrackId && entries.length > 2) ||
-    (!defaults.remixParentTrackId && entries.length > 1) ? (
+    (remixParentTrackId && entries.length > 2) ||
+    (!remixParentTrackId && entries.length > 1) ? (
       <Text variant='title' textAlign='left'>
         {messages.moreBy} {user?.name}
       </Text>
@@ -160,10 +168,10 @@ const TrackPage = (props: OwnProps) => {
     <MobilePageContainer
       title={title}
       description={description}
-      ogDescription={defaults.description}
+      ogDescription={trackDescription}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
-      noIndex={defaults.isUnlisted}
+      noIndex={isUnlisted}
     >
       <Flex column p='l' gap='2xl' w='100%'>
         <TrackPageHeader
@@ -180,18 +188,16 @@ const TrackPage = (props: OwnProps) => {
           goToFavoritesPage={goToFavoritesPage}
           goToRepostsPage={goToRepostsPage}
         />
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
+        {fieldVisibility.remixes &&
+          remixTrackIds &&
+          remixTrackIds.length > 0 && (
             <Remixes
-              trackIds={defaults.remixTrackIds}
+              trackIds={remixTrackIds}
               goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
+              count={remixesCount}
             />
           )}
-        {isCommentingEnabled ? (
-          <CommentSection entityId={defaults.trackId} />
-        ) : null}
+        {isCommentingEnabled ? <CommentSection entityId={trackId} /> : null}
         <Flex column gap='l'>
           {hasValidRemixParent
             ? renderOriginalTrackTitle()
@@ -199,7 +205,7 @@ const TrackPage = (props: OwnProps) => {
           <Lineup
             lineup={tracks}
             // Styles for leading element (original track if remix).
-            leadingElementId={defaults.remixParentTrackId}
+            leadingElementId={remixParentTrackId}
             leadingElementDelineator={
               <div>
                 <SectionButton

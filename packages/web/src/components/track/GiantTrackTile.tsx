@@ -147,16 +147,16 @@ export const GiantTrackTile = (props: GiantTrackTileProps) => {
     isScheduledRelease,
     isStreamGated,
     isUnlisted,
+    listenCount,
     ownerId,
     releaseDate,
     remixParentTrackId,
+    repostCount,
+    saveCount,
     streamConditions,
     tags,
     title,
-    trackId,
-    saveCount,
-    listenCount,
-    repostCount
+    trackId
   } = getTrackDefaults(track ?? null)
 
   const isOwner = ownerId === currentUserId

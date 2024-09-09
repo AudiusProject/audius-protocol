@@ -116,12 +116,22 @@ const TrackPage = (props: OwnProps) => {
     return null
   }
 
-  const { title, description } = track
+  const {
+    description,
+    fieldVisibility,
+    isReposted,
+    isSaved,
+    isUnlisted,
+    ownerId,
+    remixesCount,
+    remixParentTrackId,
+    remixTrackIds,
+    title,
+    trackId
+  } = getTrackDefaults(track)
 
   const { entries } = tracks
-  const isOwner = track?.owner_id === currentUserId
-  const isSaved = track?.has_current_user_saved ?? false
-  const isReposted = track?.has_current_user_reposted ?? false
+  const isOwner = ownerId === currentUserId
 
   const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
@@ -160,11 +170,9 @@ const TrackPage = (props: OwnProps) => {
     </Text>
   )
 
-  const defaults = getTrackDefaults(track)
-
   const renderMoreByTitle = () =>
-    (defaults.remixParentTrackId && entries.length > 2) ||
-    (!defaults.remixParentTrackId && entries.length > 1) ? (
+    (remixParentTrackId && entries.length > 2) ||
+    (!remixParentTrackId && entries.length > 1) ? (
       <Text
         color='default'
         variant='title'
@@ -176,13 +184,13 @@ const TrackPage = (props: OwnProps) => {
     <Page
       title={title}
       description={description ?? undefined}
-      ogDescription={defaults.description}
+      ogDescription={description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       variant='flush'
       scrollableSearch
       fromOpacity={1}
-      noIndex={defaults.isUnlisted}
+      noIndex={isUnlisted}
     >
       <Box w='100%' css={{ position: 'absolute', height: '376px' }}>
         <CoverPhoto loading={!track} userId={user ? user.user_id : null} />
@@ -198,14 +206,14 @@ const TrackPage = (props: OwnProps) => {
         }}
       >
         {renderGiantTrackTile()}
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
+        {fieldVisibility.remixes &&
+          remixTrackIds &&
+          remixTrackIds.length > 0 && (
             <Flex justifyContent='center' mt='3xl' ph='l'>
               <Remixes
-                trackIds={defaults.remixTrackIds}
+                trackIds={remixTrackIds}
                 goToAllRemixes={goToAllRemixesPage}
-                count={defaults.remixesCount}
+                count={remixesCount}
               />
             </Flex>
           )}
@@ -220,7 +228,7 @@ const TrackPage = (props: OwnProps) => {
         >
           {isCommentingEnabled && !track?.comments_disabled ? (
             <Flex flex='3'>
-              <CommentSection entityId={defaults.trackId} />
+              <CommentSection entityId={trackId} />
             </Flex>
           ) : null}
           {hasMoreByTracks ? (
@@ -240,7 +248,7 @@ const TrackPage = (props: OwnProps) => {
               <Lineup
                 lineup={tracks}
                 // Styles for leading element (original track if remix).
-                leadingElementId={defaults.remixParentTrackId}
+                leadingElementId={remixParentTrackId}
                 leadingElementDelineator={
                   <Flex gap='3xl' direction='column' alignItems='center'>
                     <SectionButton

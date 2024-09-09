@@ -153,13 +153,13 @@ const TrackHeader = (props: TrackHeaderProps) => {
     isSaved,
     isStreamGated,
     isUnlisted,
-    releaseDate,
-    streamConditions,
     ownerId,
+    releaseDate,
+    remixParentTrackId,
+    streamConditions,
     tags,
     title,
-    trackId,
-    remixParentTrackId
+    trackId
   } = getTrackDefaults(track ?? null)
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
     track ?? null
