@@ -129,7 +129,7 @@ export interface TrackCommentsRequest {
     trackId: string;
     offset?: number;
     limit?: number;
-    userId?: number;
+    userId?: string;
 }
 
 /**

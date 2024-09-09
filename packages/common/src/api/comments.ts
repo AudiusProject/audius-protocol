@@ -281,7 +281,7 @@ const commentsApi = createApi({
           id,
           userId,
           isLiked,
-          isEntityOwner
+          isEntityOwner: _isEntityOwner
         }: {
           id: string
           userId: ID
