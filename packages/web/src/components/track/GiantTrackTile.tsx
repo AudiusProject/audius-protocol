@@ -6,15 +6,7 @@ import {
   useGetUserById
 } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  isContentUSDCPurchaseGated,
-  ID,
-  CoverArtSizes,
-  FieldVisibility,
-  Remix,
-  AccessConditions,
-  Track
-} from '@audius/common/models'
+import { isContentUSDCPurchaseGated, ID, Track } from '@audius/common/models'
 import {
   PurchaseableContentType,
   useEarlyReleaseConfirmationModal,
@@ -97,58 +89,9 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
-export type GiantTrackTilePropsOld = {
-  aiAttributionUserId: Nullable<number>
-  artistHandle: string
-  coSign: Nullable<Remix>
-  coverArtSizes: Nullable<CoverArtSizes>
-  credits: string
-  currentUserId: Nullable<ID>
-  description: string
-  hasStreamAccess: boolean
-  duration: number
-  fieldVisibility: FieldVisibility
-  genre: string
-  isArtistPick: boolean
-  isOwner: boolean
-  isStreamGated: boolean
-  isDownloadGated: boolean
-  isPublishing: boolean
-  isRemix: boolean
-  isReposted: boolean
-  isSaved: boolean
-  isUnlisted: boolean
-  isScheduledRelease: boolean
-  listenCount: number
-  loading: boolean
-  mood: string
-  onClickFavorites: () => void
-  onClickReposts: () => void
-  onMakePublic: (trackId: ID) => void
-  onFollow: () => void
-  onPlay: () => void
-  onPreview: () => void
-  onRepost: () => void
-  onSave: () => void
-  onShare: () => void
-  onUnfollow: () => void
-
-  streamConditions: Nullable<AccessConditions>
-  downloadConditions: Nullable<AccessConditions>
-  releaseDate: string
-  repostCount: number
-  saveCount: number
-  tags: string
-  trackId: number
-  trackTitle: string
-  userId: number
-  ddexApp?: string | null
-}
-
 export type GiantTrackTileProps = {
   id: ID
   trendingBadgeLabel: Nullable<string>
-  following: boolean
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -165,7 +108,6 @@ export const GiantTrackTile = (props: GiantTrackTileProps) => {
   const {
     id,
     trendingBadgeLabel,
-    following,
     onFollow,
     onMakePublic,
     onPlay,
@@ -185,6 +127,7 @@ export const GiantTrackTile = (props: GiantTrackTileProps) => {
     { id: track?.owner_id ?? 0 },
     { disabled: !track?.owner_id }
   )
+  const isFollowing = user?.does_current_user_follow ?? false
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
     track ?? null
   )
@@ -435,9 +378,9 @@ export const GiantTrackTile = (props: GiantTrackTileProps) => {
   const overflowMenuExtraItems = []
   if (!isOwner) {
     overflowMenuExtraItems.push({
-      text: following ? 'Unfollow Artist' : 'Follow Artist',
+      text: isFollowing ? 'Unfollow Artist' : 'Follow Artist',
       onClick: () =>
-        setTimeout(() => (following ? onUnfollow() : onFollow()), 0)
+        setTimeout(() => (isFollowing ? onUnfollow() : onFollow()), 0)
     })
   }
 

@@ -1,27 +1,21 @@
 import { Suspense, useCallback } from 'react'
 
 import {
+  useGetCurrentUserId,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import {
   SquareSizes,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
   ID,
-  CoverArtSizes,
-  FieldVisibility,
-  Remix,
-  AccessConditions
+  Track
 } from '@audius/common/models'
 import { trpc } from '@audius/common/services'
-import {
-  CommonState,
-  OverflowAction,
-  PurchaseableContentType,
-  cacheTracksSelectors
-} from '@audius/common/store'
-import {
-  getDogEarType,
-  Nullable,
-  formatReleaseDate
-} from '@audius/common/utils'
+import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
+import { getDogEarType, formatReleaseDate } from '@audius/common/utils'
 import {
   Flex,
   IconCollectible,
@@ -39,7 +33,6 @@ import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { shallowEqual, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -54,6 +47,7 @@ import { GatedContentSection } from 'components/track/GatedContentSection'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { getTrackDefaults } from 'pages/track-page/utils'
 import { isDarkMode } from 'utils/theme/theme'
 
 import ActionButtonRow from './ActionButtonRow'
@@ -110,93 +104,77 @@ const PreviewButton = ({ playing, onPlay }: PlayButtonProps) => {
 }
 
 type TrackHeaderProps = {
-  isLoading: boolean
+  id: ID
   isPlaying: boolean
   isPreviewing: boolean
-  isOwner: boolean
-  isSaved: boolean
-  isReposted: boolean
-  isFollowing: boolean
-  title: string
-  trackId: ID
-  userId: ID
-  coverArtSizes: CoverArtSizes | null
-  description: string
-  releaseDate: string
-  genre: string
-  mood: string
-  credits: string
-  tags: string
-  listenCount: number
-  duration: number
-  saveCount: number
-  repostCount: number
   commentCount: number
   commentsDisabled: boolean
-  isUnlisted: boolean
-  isStreamGated: boolean
-  streamConditions: Nullable<AccessConditions>
-  hasStreamAccess: boolean
-  hasDownloadAccess: boolean
-  isRemix: boolean
-  fieldVisibility: FieldVisibility
-  coSign: Remix | null
-  aiAttributedUserId: Nullable<ID>
-  onClickMobileOverflow: (
-    trackId: ID,
-    overflowActions: OverflowAction[]
-  ) => void
   onPlay: () => void
   onPreview: () => void
   onShare: () => void
   onSave: () => void
   onRepost: () => void
+  onClickMobileOverflow: (
+    trackId: ID,
+    overflowActions: OverflowAction[]
+  ) => void
   goToFavoritesPage: (trackId: ID) => void
   goToRepostsPage: (trackId: ID) => void
 }
 
-const TrackHeader = ({
-  title,
-  trackId,
-  userId,
-  coverArtSizes,
-  description,
-  isOwner,
-  isFollowing,
-  releaseDate,
-  isLoading,
-  isPlaying,
-  isPreviewing,
-  isSaved,
-  isReposted,
-  isUnlisted,
-  isStreamGated,
-  streamConditions,
-  hasStreamAccess,
-  isRemix,
-  fieldVisibility,
-  coSign,
-  listenCount,
-  saveCount,
-  repostCount,
-  commentCount,
-  commentsDisabled,
-  tags,
-  aiAttributedUserId,
-  onPlay,
-  onPreview,
-  onShare,
-  onSave,
-  onRepost,
-  onClickMobileOverflow,
-  goToFavoritesPage,
-  goToRepostsPage
-}: TrackHeaderProps) => {
-  const { getTrack } = cacheTracksSelectors
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
+const TrackHeader = (props: TrackHeaderProps) => {
+  const {
+    id,
+    isPlaying,
+    isPreviewing,
+    commentCount,
+    commentsDisabled,
+    onPlay,
+    onPreview,
+    onShare,
+    onSave,
+    onRepost,
+    onClickMobileOverflow,
+    goToFavoritesPage,
+    goToRepostsPage
+  } = props
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const track = (useGetTrackById({ id, currentUserId }).data ??
+    undefined) as unknown as Track | undefined
+  const { data: user } = useGetUserById(
+    { id: track?.owner_id ?? 0 },
+    { disabled: !track?.owner_id }
   )
+  const isFollowing = user?.does_current_user_follow ?? false
+
+  const {
+    aiAttributionUserId,
+    coSign,
+    coverArtSizes,
+    description,
+    fieldVisibility,
+    isReposted,
+    isSaved,
+    isStreamGated,
+    isUnlisted,
+    releaseDate,
+    streamConditions,
+    ownerId,
+    tags,
+    title,
+    trackId,
+    saveCount,
+    listenCount,
+    repostCount,
+    remixParentTrackId
+  } = getTrackDefaults(track ?? null)
+  const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(
+    track ?? null
+  )
+  const isOwner = ownerId === currentUserId
+  const isRemix = !!remixParentTrackId
+  const isLoading = !track || isFetchingNFTAccess
+
   const hasDownloadableAssets =
     track?.is_downloadable || (track?._stems?.length ?? 0) > 0
 
@@ -348,7 +326,7 @@ const TrackHeader = ({
       {renderDogEar()}
       <Flex gap='s' direction='column'>
         {renderHeaderText()}
-        {aiAttributedUserId ? (
+        {aiAttributionUserId ? (
           <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
             {messages.generatedWithAi}
           </MusicBadge>
@@ -366,7 +344,9 @@ const TrackHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <UserLink userId={userId} variant='visible' size='l' />
+        {ownerId ? (
+          <UserLink userId={ownerId} variant='visible' size='l' />
+        ) : null}
       </div>
       {showPlay ? (
         <PlayButton
@@ -390,7 +370,7 @@ const TrackHeader = ({
             wrapperClassName={styles.gatedContentSectionWrapper}
             className={styles.gatedContentSection}
             buttonClassName={styles.gatedContentSectionButton}
-            ownerId={userId}
+            ownerId={ownerId}
           />
         </Box>
       ) : null}
@@ -433,9 +413,9 @@ const TrackHeader = ({
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
       />
-      {aiAttributedUserId ? (
+      {aiAttributionUserId ? (
         <AiTrackSection
-          attributedUserId={aiAttributedUserId}
+          attributedUserId={aiAttributionUserId}
           className={cn(styles.aiSection, styles.withSectionDivider)}
           descriptionClassName={styles.aiSectionDescription}
         />

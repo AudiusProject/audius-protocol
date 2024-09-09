@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -34,6 +34,7 @@ const messages = {
 }
 
 export type OwnProps = {
+  id: ID
   title: string
   description: string
   canonicalUrl: string
@@ -73,36 +74,38 @@ export type OwnProps = {
   goToRepostsPage: (trackId: ID) => void
 }
 
-const TrackPage = ({
-  title,
-  description,
-  canonicalUrl,
-  structuredData,
-  hasValidRemixParent,
-  // Hero Track Props
-  heroTrack,
-  user,
-  heroPlaying,
-  previewing,
-  userId,
-  onHeroPlay,
-  onHeroShare,
-  goToAllRemixesPage,
-  goToParentRemixesPage,
-  onSaveTrack,
-  onHeroRepost,
-  onClickMobileOverflow,
+const TrackPage = (props: OwnProps) => {
+  const {
+    id,
+    title,
+    description,
+    canonicalUrl,
+    structuredData,
+    hasValidRemixParent,
+    // Hero Track Props
+    heroTrack,
+    user,
+    heroPlaying,
+    previewing,
+    userId,
+    onHeroPlay,
+    onHeroShare,
+    goToAllRemixesPage,
+    goToParentRemixesPage,
+    onSaveTrack,
+    onHeroRepost,
+    onClickMobileOverflow,
 
-  // Tracks Lineup Props
-  tracks,
-  currentQueueItem,
-  isPlaying,
-  isBuffering,
-  play,
-  pause,
-  goToFavoritesPage,
-  goToRepostsPage
-}: OwnProps) => {
+    // Tracks Lineup Props
+    tracks,
+    currentQueueItem,
+    isPlaying,
+    isBuffering,
+    play,
+    pause,
+    goToFavoritesPage,
+    goToRepostsPage
+  } = props
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.BACK)
@@ -119,16 +122,10 @@ const TrackPage = ({
   const isOwner = heroTrack ? heroTrack.owner_id === userId : false
   const isSaved = heroTrack ? heroTrack.has_current_user_saved : false
   const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
-  const isFollowing = user ? user.does_current_user_follow : false
-
-  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
-    useGatedContentAccess(heroTrack)
 
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-
-  const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -170,30 +167,11 @@ const TrackPage = ({
     >
       <Flex column p='l' gap='2xl' w='100%'>
         <TrackPageHeader
-          isLoading={loading}
+          id={id}
           isPlaying={heroPlaying}
           isPreviewing={previewing}
-          isReposted={isReposted}
-          isFollowing={isFollowing}
-          title={defaults.title}
-          trackId={defaults.trackId}
-          userId={heroTrack?.owner_id ?? 0}
-          coverArtSizes={defaults.coverArtSizes}
-          tags={defaults.tags}
-          description={defaults.description}
-          listenCount={defaults.playCount}
-          repostCount={defaults.repostCount}
           commentCount={defaults.commentCount}
           commentsDisabled={defaults.commentsDisabled}
-          duration={defaults.duration}
-          releaseDate={defaults.releaseDate}
-          credits={defaults.credits}
-          genre={defaults.genre}
-          mood={defaults.mood}
-          saveCount={defaults.saveCount}
-          isOwner={isOwner}
-          isSaved={isSaved}
-          coSign={defaults.coSign}
           // Actions (Wire up once we add backend integrations)
           onClickMobileOverflow={onClickMobileOverflow}
           onPlay={onPlay}
@@ -201,14 +179,6 @@ const TrackPage = ({
           onSave={onSave}
           onShare={onShare}
           onRepost={onRepost}
-          isUnlisted={defaults.isUnlisted}
-          isStreamGated={defaults.isStreamGated}
-          streamConditions={defaults.streamConditions}
-          hasStreamAccess={hasStreamAccess}
-          hasDownloadAccess={hasDownloadAccess}
-          isRemix={!!defaults.remixParentTrackId}
-          fieldVisibility={defaults.fieldVisibility}
-          aiAttributedUserId={defaults.aiAttributionUserId}
           goToFavoritesPage={goToFavoritesPage}
           goToRepostsPage={goToRepostsPage}
         />
