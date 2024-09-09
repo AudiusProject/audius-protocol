@@ -4,6 +4,7 @@ import { Commitment } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useGetCurrentUser } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
@@ -32,6 +33,8 @@ export const useUSDCBalance = ({
   commitment?: Commitment
 } = {}) => {
   const { audiusBackend } = useAppContext()
+  const { data: user } = useGetCurrentUser({})
+  const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
 
   const [balanceStatus, setBalanceStatus] = useState(Status.IDLE)
@@ -45,6 +48,9 @@ export const useUSDCBalance = ({
   )
 
   const refresh = useCallback(async () => {
+    if (!ethAddress) {
+      return
+    }
     setBalanceStatus(Status.LOADING)
     try {
       const account = await getUserbankAccountInfo(
@@ -60,7 +66,7 @@ export const useUSDCBalance = ({
     } catch (e) {
       setBalanceStatus(Status.ERROR)
     }
-  }, [audiusBackend, setData, commitment])
+  }, [ethAddress, audiusBackend, setData, commitment])
 
   // Refresh balance on mount
   useEffect(() => {

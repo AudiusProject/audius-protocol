@@ -47,7 +47,6 @@ export class Track extends Base {
     this.getSaversForPlaylist = this.getSaversForPlaylist.bind(this)
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
     this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
-    this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
     this.logTrackListen = this.logTrackListen.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
   }
@@ -338,20 +337,6 @@ export class Track extends Base {
       limit,
       offset,
       repostPlaylistId
-    )
-  }
-
-  /**
-   * Return saved tracks for current user
-   * NOTE in returned JSON, SaveType string one of track, playlist, album
-   */
-  // TODO-NOW: Update callers
-  async getListenHistoryTracks(userId: number, limit = 100, offset = 0) {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.getListenHistoryTracks(
-      userId!,
-      limit,
-      offset
     )
   }
 

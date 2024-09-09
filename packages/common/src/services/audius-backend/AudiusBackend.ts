@@ -1430,10 +1430,10 @@ export const audiusBackend = ({
     return libs.Account!.resetPassword({ username, password })
   }
 
-  async function sendRecoveryEmail() {
+  async function sendRecoveryEmail(handle: string) {
     await waitForLibsInit()
     const host = getHostUrl()
-    return audiusLibs.Account.generateRecoveryLink({ host })
+    return audiusLibs.Account.generateRecoveryLink({ handle, host })
   }
 
   async function emailInUse(email: string) {

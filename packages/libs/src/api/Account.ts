@@ -194,7 +194,6 @@ export class Account extends Base {
   /**
    * Generates and sends a recovery email for a user
    */
-  // TODO-NOW: Update callers of this to always pass handle
   async generateRecoveryLink({
     handle,
     host

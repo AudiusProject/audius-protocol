@@ -455,7 +455,6 @@ export class Users extends Base {
   /**
    * Adds a user subscription for a given subscriber and user
    */
-  // TODO-NOW: Update callers to pass userId
   async addUserSubscribe(subscribeToUserId: number, userId: number) {
     try {
       const response = await this.contracts.EntityManagerClient!.manageEntity(

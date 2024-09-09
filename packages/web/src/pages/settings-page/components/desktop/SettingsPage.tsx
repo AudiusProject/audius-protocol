@@ -179,7 +179,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const showEmailToast = useCallback(() => {
     const fn = async () => {
       try {
-        await audiusBackendInstance.sendRecoveryEmail()
+        await audiusBackendInstance.sendRecoveryEmail(handle)
         setEmailToastText(messages.emailSent)
         setIsEmailToastVisible(true)
         recordAccountRecovery()
@@ -193,7 +193,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
       }, EMAIL_TOAST_TIMEOUT)
     }
     fn()
-  }, [setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
+  }, [handle, setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
 
   const handleDownloadDesktopAppClicked = useCallback(() => {
     DownloadApp.start(getOS() || OS.WIN)

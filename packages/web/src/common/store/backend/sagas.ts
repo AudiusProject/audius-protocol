@@ -86,7 +86,6 @@ export function* setupBackend() {
   // TODO-NOW: If we have local account, pass wallet/userId to args?
   const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {})
 
-  // TODO-NOW: Need to wait on the account fetch so we can pass values in here
   if (libsError) {
     yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
     yield* put(backendActions.setupBackendFailed())

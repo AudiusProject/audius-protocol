@@ -67,7 +67,6 @@ type LibsComstockConfig = {
   url: string
 }
 
-// TODO-NOW: Is this class used anywhere? Does changing the config to require a wallet break things?
 type AudiusLibsConfig = {
   web3Config: Web3Config
   ethWeb3Config: EthWeb3Config
@@ -334,6 +333,10 @@ export class AudiusLibs {
   localStorage: LocalStorage
   useDiscoveryRelay: boolean
 
+  // Temporary hack to facilitate SDK migration
+  private currentWallet?: string
+  private currentUserId?: number
+
   /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
@@ -447,14 +450,22 @@ export class AudiusLibs {
 
   /** Update the current user for CreatorNode and DiscoveryProvider requests */
   async setCurrentUser({ wallet, userId }: { wallet: string; userId: number }) {
+    this.currentWallet = wallet
+    this.currentUserId = userId
     this.creatorNode?.setEndpoint(
       await this.determineCreatorNodeEndpointForWallet(wallet)
     )
     this.discoveryProvider?.setCurrentUser(userId)
   }
 
+  getCurrentUser() {
+    return { wallet: this.currentWallet, userId: this.currentUserId }
+  }
+
   /** Clear the current user for CreatorNode and DiscoveryProvder requests */
   clearCurrentUser() {
+    delete this.currentWallet
+    delete this.currentUserId
     this.creatorNode?.setEndpoint(this.creatorNodeConfig.fallbackUrl)
     this.discoveryProvider?.clearCurrentUser()
   }
