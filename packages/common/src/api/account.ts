@@ -1,10 +1,12 @@
+import { useMemo } from 'react'
+
 import dayjs from 'dayjs'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
 
-import { useGetUserById } from './user'
+import { userApiFetch } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -30,20 +32,30 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    getCurrentUserId: {
+    getCurrentUser: {
       async fetch(_, context) {
         const { audiusBackend } = context
-        // TODO-NOW: Use sdk instead
-        const account = await audiusBackend.getAccount()
-        return account?.user_id || null
+        const libs = await audiusBackend.getAudiusLibsTyped()
+        const wallet = libs.web3Manager?.getWalletAddress()
+        if (!wallet) {
+          console.warn('No wallet found for current user')
+          return null
+        }
+        const account = await userApiFetch.getUserAccount({ wallet }, context)
+        return account?.user
       },
-      options: {}
+      options: {
+        // TODO-NOW: Only doing this to avoid double caching of user
+        // Decide if that's necessary (also applies to getCurrentWeb3User)
+        schemaKey: 'currentUser'
+      }
     },
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
-        const libs = await audiusBackend.getAudiusLibsTyped()
+        /* const libs = */ await audiusBackend.getAudiusLibsTyped()
         // TODO-NOW: Use sdk instead
-        return libs.Account?.getWeb3User() as UserMetadata | null
+        return null
+        // return libs.Account?.getWeb3User() as UserMetadata | null
       },
       // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
       // Can probably remove the web3User concept and just use a single getAccount hook for both web3 and managed users
@@ -244,13 +256,15 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUser = () => {
-  const { data: userId } = accountApi.hooks.useGetCurrentUserId({})
-  return useGetUserById({ id: userId! })
+export const useGetCurrentUserId = () => {
+  const result = accountApi.hooks.useGetCurrentUser({})
+  return useMemo(() => {
+    return { ...result, data: result.data ? result.data.user_id : undefined }
+  }, [result])
 }
 
 export const {
-  useGetCurrentUserId,
+  useGetCurrentUser,
   useGetCurrentWeb3User,
   useResetPassword,
   useGetManagedAccounts,

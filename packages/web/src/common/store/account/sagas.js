@@ -174,7 +174,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   yield put(accountActions.fetchAccountRequested())
 
-  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+  const libs = yield call(audiusBackendInstance.getAudiusLibsTyped)
   const wallet = libs.web3Manager?.getWalletAddress()
 
   if (!wallet) {
@@ -186,12 +186,11 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     return
   }
 
-  // TODO-NOW: TEST! And then do all the other todos...
   try {
-    const { data } = yield* call([
-      sdk.full.users,
-      sdk.full.users.getUserAccount({ wallet })
-    ])
+    const { data } = yield call(
+      [sdk.full.users, sdk.full.users.getUserAccount],
+      { wallet }
+    )
 
     if (!data || !data.user) {
       yield put(
@@ -201,6 +200,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
       )
       return
     }
+    // TODO-NOW: get user bank and user images (copy from backend)
     // TODO-NOW: audius-query fetching
     const account = accountFromSDK(data)
     if (account.user.is_deactivated) {
@@ -219,7 +219,8 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     yield call(recordIPIfNotRecent, account.handle)
 
     // Cache the account and put the signedIn action. We're done.
-    yield call(cacheAccount, account)
+    // TODO-NOW: How hard would it be to use the separated fields here?
+    yield call(cacheAccount, account.user)
     yield put(signedIn({ account, isSignUp }))
   } catch (e) {
     if (isResponseError(e) && e.response.status === 404) {

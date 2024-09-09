@@ -124,7 +124,16 @@ export const accountFromSDK = (
     return undefined
   }
   return {
-    ...user,
+    user: {
+      ...user,
+      playlists: transformAndCleanList(
+        input.playlists,
+        accountCollectionFromSDK
+      ),
+      playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
+      track_save_count: input.trackSaveCount
+    },
+    // These values are included outside the user as well to facilitate separate caching
     playlists: transformAndCleanList(input.playlists, accountCollectionFromSDK),
     playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
     track_save_count: input.trackSaveCount

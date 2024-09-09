@@ -2,11 +2,9 @@ import { getErrorMessage } from '~/utils'
 
 import { AudiusBackend, AuthHeaders } from './AudiusBackend'
 
-export const recordIP = async ({
-  audiusBackendInstance
-}: {
+export const recordIP = async (
   audiusBackendInstance: AudiusBackend
-}): Promise<{ userIP: string } | { error: boolean }> => {
+): Promise<{ userIP: string } | { error: boolean }> => {
   await audiusBackendInstance.getAudiusLibs()
   try {
     const { data, signature } = await audiusBackendInstance.signData()

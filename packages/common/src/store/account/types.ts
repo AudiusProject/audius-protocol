@@ -1,5 +1,3 @@
-import { ID } from '../../models/Identifiers'
-
 type AccountPayload<Profile> = {
   uuid: string
   profile: Profile

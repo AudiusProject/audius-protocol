@@ -80,8 +80,11 @@ export type UserMetadata = {
   events?: UserEvent
 } & Timestamped
 
-export type AccountUserMetadata = UserMetadata & {
+export type AccountUserMetadata = {
+  user: UserMetadata & { playlists: AccountCollection[] }
   playlists: AccountCollection[]
+  track_save_count: number
+  playlist_library?: Nullable<PlaylistLibrary>
 }
 
 export type ManagedUserMetadata = {

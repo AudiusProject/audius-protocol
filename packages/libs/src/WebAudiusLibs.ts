@@ -440,14 +440,7 @@ export class AudiusLibs {
   }
 
   /** Update the current user for CreatorNode and DiscoveryProvider requests */
-  async setCurrentUser({
-    wallet,
-    userId
-  }: {
-    wallet: string
-    handle: string
-    userId: number
-  }) {
+  async setCurrentUser({ wallet, userId }: { wallet: string; userId: number }) {
     this.creatorNode?.setEndpoint(
       await this.determineCreatorNodeEndpointForWallet(wallet)
     )

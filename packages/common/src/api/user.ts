@@ -1,7 +1,7 @@
 import { full } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
-import { userMetadataListFromSDK } from '~/adapters/user'
+import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, Kind, OptionalId, StringUSDC } from '~/models'
 import {
@@ -47,6 +47,21 @@ const parseTransaction = ({
 const userApi = createApi({
   reducerPath: 'userApi',
   endpoints: {
+    getUserAccount: {
+      fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
+        const { data } = await (
+          await audiusSdk()
+        ).full.users.getUserAccount({ wallet })
+        if (!data) {
+          console.warn('Missing user from account response')
+          return null
+        }
+        return accountFromSDK(data)
+      },
+      options: {
+        schemaKey: 'accountUser'
+      }
+    },
     getUserById: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
