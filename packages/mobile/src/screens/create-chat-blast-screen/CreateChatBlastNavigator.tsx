@@ -6,10 +6,8 @@ import { useDispatch } from 'react-redux'
 
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
-import { FormScreen } from '../form-screen'
-
-import { ChatBlastPurchasersSelectContentScreen } from './ChatBlastPurchasersSelectContentScreen'
 import { ChatBlastSelectAudienceScreen } from './ChatBlastSelectAudienceScreen'
+import { ChatBlastSelectContentScreen } from './ChatBlastSelectContentScreen'
 
 const { createChatBlast } = chatActions
 
@@ -63,8 +61,8 @@ export const CreateChatBlastNavigator = () => {
             component={ChatBlastSelectAudienceScreen}
           />
           <Stack.Screen
-            name='ChatBlastPurchasersSelectContent'
-            component={ChatBlastPurchasersSelectContentScreen}
+            name='ChatBlastSelectContent'
+            component={ChatBlastSelectContentScreen}
           />
         </Stack.Group>
       </Stack.Navigator>

@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { usePurchasersAudience } from '@audius/common/hooks'
 import { useField, useFormikContext } from 'formik'
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 
@@ -13,15 +12,9 @@ import {
   TextInput
 } from '@audius/harmony-native'
 import { ScreenContent } from 'app/components/core'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { FormScreen } from '../form-screen'
-
-const messages = {
-  title: 'Tracks With Purchases',
-  done: 'Done',
-  clear: 'Clear',
-  search: 'Search for tracks with purchases'
-}
 
 const renderItem = ({ item }) => {
   return (
@@ -38,15 +31,16 @@ const renderItem = ({ item }) => {
   )
 }
 
-export const ChatBlastPurchasersSelectContentScreen = () => {
-  const [{ value }, , { setValue: setPurchasedContentMetadata }] = useField({
-    name: 'purchased_content_metadata',
+export const ChatBlastSelectContentScreen = () => {
+  const { params } = useRoute<'ChatBlastSelectContent'>()
+  const { valueName, title, searchLabel, content } = params
+  const [{ value }, , { setValue }] = useField({
+    name: valueName,
     type: 'select'
   })
   const { submitForm } = useFormikContext()
-  const { premiumContentOptions } = usePurchasersAudience({})
   const [search, setSearch] = useState('')
-  const filteredOptions = premiumContentOptions.filter((option) => {
+  const filteredOptions = content.filter((option) => {
     return search
       ? option.label.toLowerCase().includes(search.toLowerCase())
       : true
@@ -54,8 +48,8 @@ export const ChatBlastPurchasersSelectContentScreen = () => {
   const radioGroupValue = value ?? ''
 
   const handleClear = useCallback(() => {
-    setPurchasedContentMetadata(undefined)
-  }, [setPurchasedContentMetadata])
+    setValue(undefined)
+  }, [setValue])
 
   const handleSearchChange = useCallback(
     (e: TextInputChangeEvent) => {
@@ -66,7 +60,7 @@ export const ChatBlastPurchasersSelectContentScreen = () => {
 
   return (
     <FormScreen
-      title={messages.title}
+      title={title}
       clearable
       onClear={handleClear}
       onSubmit={submitForm}
@@ -76,15 +70,12 @@ export const ChatBlastPurchasersSelectContentScreen = () => {
         <Flex justifyContent='flex-start' h='70%'>
           <Flex p='l' backgroundColor='white' justifyContent='flex-start'>
             <TextInput
-              label={messages.search}
+              label={searchLabel}
               value={search}
               onChange={handleSearchChange}
             />
           </Flex>
-          <RadioGroup
-            value={radioGroupValue}
-            onValueChange={setPurchasedContentMetadata}
-          >
+          <RadioGroup value={radioGroupValue} onValueChange={setValue}>
             <KeyboardAwareFlatList
               data={filteredOptions}
               keyExtractor={(item) => item.label}

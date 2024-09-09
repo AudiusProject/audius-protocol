@@ -1,12 +1,8 @@
-import { useMemo } from 'react'
-
+import { useGetCurrentUser } from '@audius/common/api'
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetRemixedTracks,
-  useGetRemixersCount
-} from '@audius/common/api'
-import { usePurchasersAudience } from '@audius/common/hooks'
+  usePurchasersAudience,
+  useRemixersAudience
+} from '@audius/common/hooks'
 import { useChatBlastModal, chatActions } from '@audius/common/src/store'
 import {
   Flex,
@@ -282,34 +278,16 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
+  const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
-  const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId!,
-    trackId: remixedTrackField.value
-      ? parseInt(remixedTrackField.value)
-      : undefined
-  })
-
-  const { data: remixedTracks } = useGetRemixedTracks({
-    userId: currentUserId!
-  })
-  const isDisabled = remixedTracks?.length === 0
-
-  const isSelected = value === ChatBlastAudience.REMIXERS
-
-  const premiumTrackOptions = useMemo(
-    () =>
-      (remixedTracks ?? []).map((track) => ({
-        value: track.track_id.toString(),
-        label: track.title
-      })),
-    [remixedTracks]
-  )
+  const { isDisabled, remixersCount, remixedTracksOptions } =
+    useRemixersAudience({
+      remixedTrackId: remixedTrackField.value?.contentId
+    })
+  const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 
   return (
     <Flex
@@ -331,7 +309,7 @@ const RemixCreatorsMessageField = () => {
             <Text size='s'>{messages.remixCreators.description}</Text>
             <Select
               {...remixedTrackField}
-              options={premiumTrackOptions}
+              options={remixedTracksOptions}
               label={messages.remixCreators.placeholder}
               onChange={setRemixedTrackId}
               clearable

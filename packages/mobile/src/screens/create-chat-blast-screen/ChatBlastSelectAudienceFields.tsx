@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
 import { useGetCurrentUser } from '@audius/common/api'
-import { usePurchasersAudience } from '@audius/common/hooks'
+import {
+  usePurchasersAudience,
+  useRemixersAudience
+} from '@audius/common/hooks'
 import { ChatBlastAudience } from '@audius/sdk'
-import { css } from '@emotion/native'
 import { useField } from 'formik'
 import { TouchableOpacity } from 'react-native'
 
@@ -28,14 +30,16 @@ const messages = {
     description:
       'Send a bulk message to everyone who has purchased content from you on Audius.',
     placeholder: 'Premium Content',
-    filterBy: 'Filter by Tracks With Purchases'
+    filterBy: 'Filter by Tracks With Purchases',
+    search: 'Search for premium content'
   },
   remixCreators: {
     label: 'Remix Creators',
     description:
       'Send a bulk message to creators who have remixed your tracks.',
     placeholder: 'Tracks with Remixes',
-    filterBy: 'Filter by Tracks With Remixes'
+    filterBy: 'Filter by Tracks With Remixes',
+    search: 'Search for tracks with remixes'
   }
 }
 
@@ -119,14 +123,20 @@ const PastPurchasersMessageField = () => {
     name: 'purchased_content_metadata',
     type: 'select'
   })
-  const { isDisabled, purchasersCount } = usePurchasersAudience({
-    contentId: purchasedContentMetadataField.value?.contentId,
-    contentType: purchasedContentMetadataField.value?.contentType
-  })
+  const { isDisabled, purchasersCount, premiumContentOptions } =
+    usePurchasersAudience({
+      contentId: purchasedContentMetadataField.value?.contentId,
+      contentType: purchasedContentMetadataField.value?.contentType
+    })
 
   const handlePress = useCallback(() => {
-    navigation.navigate('ChatBlastPurchasersSelectContent')
-  }, [navigation])
+    navigation.navigate('ChatBlastSelectContent', {
+      valueName: 'purchased_content_metadata',
+      title: messages.purchasers.placeholder,
+      searchLabel: messages.purchasers.search,
+      content: premiumContentOptions
+    })
+  }, [navigation, premiumContentOptions])
 
   return (
     <ExpandableRadio
@@ -165,10 +175,25 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const navigation = useNavigation()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.REMIXERS
-  const isDisabled = false
+  const [remixedTrackField] = useField({
+    name: 'remixed_track_id',
+    type: 'select'
+  })
+  const { isDisabled, remixersCount, remixedTracksOptions } =
+    useRemixersAudience({
+      remixedTrackId: remixedTrackField.value?.contentId
+    })
+  const handlePress = useCallback(() => {
+    navigation.navigate('ChatBlastSelectContent', {
+      valueName: 'remixed_track_id',
+      title: messages.remixCreators.placeholder,
+      searchLabel: messages.remixCreators.search,
+      content: remixedTracksOptions
+    })
+  }, [navigation, remixedTracksOptions])
 
   return (
     <ExpandableRadio
@@ -177,12 +202,31 @@ const RemixCreatorsMessageField = () => {
       label={
         <LabelWithCount
           label={messages.remixCreators.label}
-          // TODO: need remixers count endpoint
-          count={user?.supporter_count}
+          count={remixersCount}
           isSelected={isSelected}
         />
       }
       description={messages.remixCreators.description}
+      checkedContent={
+        <TouchableOpacity onPress={handlePress}>
+          <Flex
+            row
+            borderTop='default'
+            justifyContent='space-between'
+            alignItems='center'
+            pt='xl' // TODO: should be l
+          >
+            <Text variant='body' size='l' strength='strong'>
+              {messages.remixCreators.filterBy}
+            </Text>
+            <IconCaretRight
+              width={spacing.l}
+              height={spacing.l}
+              color='subdued'
+            />
+          </Flex>
+        </TouchableOpacity>
+      }
     />
   )
 }

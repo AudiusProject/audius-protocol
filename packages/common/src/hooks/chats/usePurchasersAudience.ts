@@ -9,13 +9,14 @@ import {
   useGetSalesAggegrate,
   useGetTracksByIds
 } from '~/api'
+import { ID } from '~/models'
 import { removeNullable } from '~/utils'
 
 export const usePurchasersAudience = ({
   contentId,
   contentType
 }: {
-  contentId?: number
+  contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
   const { data: currentUserId } = useGetCurrentUserId({})
