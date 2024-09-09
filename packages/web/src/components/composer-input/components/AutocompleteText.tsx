@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { SearchCategory, useGetSearchResults } from '@audius/common/api'
 import { SquareSizes, Status, UserMetadata } from '@audius/common/models'
@@ -15,9 +15,15 @@ import {
 import { useTheme } from '@emotion/react'
 import { useSelector } from 'react-redux'
 
+import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 const { getAccountStatus, getUserId } = accountSelectors
+
+const messages = {
+  searchUsers: 'Search User',
+  noResults: 'No Results'
+}
 
 type AutocompleteItemProps = {
   user: UserMetadata
@@ -26,10 +32,11 @@ type AutocompleteItemProps = {
 
 const AutocompleteItem = ({ user, onConfirm }: AutocompleteItemProps) => {
   const imageSrc = useProfilePicture(user.user_id, SquareSizes.SIZE_150_BY_150)
-  const { color } = useTheme()
+  const { color, iconSizes } = useTheme()
 
   return (
     <Flex
+      as='li'
       alignItems='center'
       p='s'
       gap='s'
@@ -47,9 +54,12 @@ const AutocompleteItem = ({ user, onConfirm }: AutocompleteItemProps) => {
         <Avatar src={imageSrc} w={32} h={32} borderWidth='thin' />
       </Box>
       <Flex direction='column' alignItems='flex-start' w='100%'>
-        <Text variant='body' size='s' color='default'>
-          {user.name}
-        </Text>
+        <Flex alignItems='center' gap='xs'>
+          <Text variant='body' size='s' color='default'>
+            {user.name}
+          </Text>
+          <UserBadges userId={user.user_id} badgeSize={iconSizes['2xs']} />
+        </Flex>
         <Text variant='body' size='xs' color='subdued'>
           {user.handle}
         </Text>
@@ -61,16 +71,19 @@ const AutocompleteItem = ({ user, onConfirm }: AutocompleteItemProps) => {
 type AutocompleteTextProps = {
   text: string
   onConfirm?: (user: UserMetadata) => void
+  onResultsLoaded?: (results: UserMetadata[]) => void
 }
 
 export const AutocompleteText = ({
   onConfirm,
+  onResultsLoaded,
   text
 }: AutocompleteTextProps) => {
   const popupAnchorRef = useRef(null)
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
+  const { color } = useTheme()
 
   const params = {
     query: searchText,
@@ -85,16 +98,32 @@ export const AutocompleteText = ({
     disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
   })
 
+  useEffect(() => {
+    if (status === Status.SUCCESS && data?.users) {
+      onResultsLoaded?.(data.users)
+    }
+  }, [data, onResultsLoaded, status])
+
   const results = !searchText ? (
-    <Text>Search User</Text>
+    <Text>{messages.searchUsers}</Text>
   ) : status === Status.LOADING || status === Status.IDLE ? (
     <Flex justifyContent='center' alignItems='center' p='m' w='100%'>
       <LoadingSpinner css={{ height: 32 }} />
     </Flex>
   ) : !data ? (
-    <Text>No Results</Text>
+    <Text>{messages.noResults}</Text>
   ) : (
-    <Flex direction='column' w='100%'>
+    <Flex
+      as='ul'
+      direction='column'
+      w='100%'
+      css={{
+        ':not(:hover) > *:first-child': {
+          backgroundColor: color.focus.default,
+          '*': { color: color.static.white }
+        }
+      }}
+    >
       {data.users.map((user) => (
         <AutocompleteItem
           key={user.user_id}
