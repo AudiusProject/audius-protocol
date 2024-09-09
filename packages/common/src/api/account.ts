@@ -36,6 +36,7 @@ const accountApi = createApi({
       async fetch(_, context) {
         const { audiusBackend } = context
         const libs = await audiusBackend.getAudiusLibsTyped()
+        // TODO-NOW: Needs to be the override wallet address if specified
         const wallet = libs.web3Manager?.getWalletAddress()
         if (!wallet) {
           console.warn('No wallet found for current user')
@@ -51,11 +52,17 @@ const accountApi = createApi({
       }
     },
     getCurrentWeb3User: {
-      async fetch(_, { audiusBackend }) {
-        /* const libs = */ await audiusBackend.getAudiusLibsTyped()
-        // TODO-NOW: Use sdk instead
-        return null
-        // return libs.Account?.getWeb3User() as UserMetadata | null
+      async fetch(_, context) {
+        const { audiusBackend } = context
+        const libs = await audiusBackend.getAudiusLibsTyped()
+
+        const wallet = libs.web3Manager?.getWalletAddress()
+        if (!wallet) {
+          console.warn('No wallet found for current user')
+          return null
+        }
+        const account = await userApiFetch.getUserAccount({ wallet }, context)
+        return account?.user
       },
       // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
       // Can probably remove the web3User concept and just use a single getAccount hook for both web3 and managed users
@@ -256,10 +263,12 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUserId = () => {
-  const result = accountApi.hooks.useGetCurrentUser({})
+export const useGetCurrentUserId = (
+  ...args: Parameters<typeof accountApi.hooks.useGetCurrentUser>
+) => {
+  const result = accountApi.hooks.useGetCurrentUser(...args)
   return useMemo(() => {
-    return { ...result, data: result.data ? result.data.user_id : undefined }
+    return { ...result, data: result.data ? result.data.user_id : null }
   }, [result])
 }
 

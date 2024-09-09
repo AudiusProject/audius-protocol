@@ -52,7 +52,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
     : undefined
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const { data: track } = useGetTrackById(
     {
       id: decodedContentId!

@@ -111,8 +111,11 @@ export function* setupBackend() {
   }
 
   const { wallet, user_id } = user
-  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  yield* call(libs.setCurrentUser, { wallet, userId: user_id })
+  const libs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibsTyped
+  ])
+  yield* call([libs, libs.setCurrentUser], { wallet, userId: user_id })
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline

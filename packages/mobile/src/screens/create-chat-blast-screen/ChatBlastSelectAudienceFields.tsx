@@ -60,7 +60,7 @@ const LabelWithCount = (props: {
 }
 
 const FollowersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.FOLLOWERS
 
@@ -80,7 +80,7 @@ const FollowersMessageField = () => {
 }
 
 const TipSupportersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.TIPPERS
 
@@ -100,7 +100,7 @@ const TipSupportersMessageField = () => {
 }
 
 const PastPurchasersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.CUSTOMERS
 
@@ -121,7 +121,7 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 

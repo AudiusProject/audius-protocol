@@ -182,7 +182,7 @@ const LabelWithCount = (props: {
 }
 
 const FollowersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.FOLLOWERS
   const isDisabled = user?.follower_count === 0
@@ -210,7 +210,7 @@ const FollowersMessageField = () => {
 }
 
 const TipSupportersMessageField = () => {
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.TIPPERS
   const isDisabled = user?.supporter_count === 0

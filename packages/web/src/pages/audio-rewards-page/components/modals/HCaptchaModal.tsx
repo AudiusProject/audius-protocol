@@ -34,6 +34,7 @@ export const HCaptchaModal = () => {
 
   const onVerify = useCallback(
     async (token: string) => {
+      // TODO-NOW: Need to pass account user if exists
       const result = await audiusBackendInstance.updateHCaptchaScore(token)
       if (result.error) {
         dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
