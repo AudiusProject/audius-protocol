@@ -132,7 +132,7 @@ export type AppTabScreenParamList = {
     valueName: string
     title: string
     searchLabel: string
-    content: any[]
+    content: { label: string; value: string }[]
   }
   FilterButton: FilterButtonScreenParams
 }

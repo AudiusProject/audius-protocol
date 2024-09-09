@@ -1,4 +1,4 @@
-import { chatActions } from '@audius/common/store/pages/chat'
+import { chatActions } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Formik } from 'formik'
