@@ -68,7 +68,7 @@ const commentsApi = createApi({
           trackId: encodeHashId(entityId),
           offset,
           limit,
-          userId: currentUserId ?? undefined
+          userId: currentUserId?.toString() ?? undefined
         })
         return commentsRes?.data ?? []
       },
