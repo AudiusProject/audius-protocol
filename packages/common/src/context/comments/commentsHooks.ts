@@ -32,14 +32,13 @@ export const usePostComment = () => {
   return [wrappedHandler, postCommentResponse] as const
 }
 
-export const useReactToComment = () => {
+export const useReactToComment = (authFlowCallback?: () => void) => {
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const { currentUserId } = useCurrentCommentSection()
   const wrappedHandler = async (commentId: string, isLiked: boolean) => {
     if (currentUserId) {
       reactToComment({ id: commentId, userId: currentUserId, isLiked })
     }
-    // TODO: trigger auth flow here
   }
   return [wrappedHandler, reactToCommentResponse] as const
 }

@@ -22,13 +22,19 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import {
+  openAuthModal,
+  useAuthenticatedCallback
+} from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 const messages = {
   pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
+  reply: 'Reply',
   edit: 'Edit Comment',
   delete: 'Delete Comment',
   report: 'Report Comment',
@@ -57,6 +63,7 @@ export const CommentActionBar = ({
 
   // context actions & values
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const dispatch = useDispatch()
 
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
@@ -70,7 +77,7 @@ export const CommentActionBar = ({
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
   const notificationsMuted = false // TODO: Need to set up API to provide this
 
-  const handleCommentReact = useCallback(() => {
+  const handleCommentReact = useAuthenticatedCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
   }, [commentId, reactToComment, reactionState])
@@ -87,9 +94,13 @@ export const CommentActionBar = ({
     if (isMobile) {
       toggleIsMobileAppDrawer()
     } else {
-      onClickReply()
+      if (currentUserId === undefined) {
+        openAuthModal(dispatch)
+      } else {
+        onClickReply()
+      }
     }
-  }, [isMobile, onClickReply, toggleIsMobileAppDrawer])
+  }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   const popupMenuItems = useMemo(() => {
     let items: PopupMenuItem[] = []
@@ -168,7 +179,7 @@ export const CommentActionBar = ({
         size='m'
         disabled={isDisabled}
       >
-        Reply
+        {messages.reply}
       </TextLink>
 
       <PopupMenu
@@ -184,7 +195,11 @@ export const CommentActionBar = ({
               if (isMobile) {
                 toggleIsMobileAppDrawer()
               } else {
-                triggerPopup()
+                if (currentUserId === undefined) {
+                  openAuthModal(dispatch)
+                } else {
+                  triggerPopup()
+                }
               }
             }}
           />
