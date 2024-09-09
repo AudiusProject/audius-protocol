@@ -39,9 +39,11 @@ export const CommentThread = (props: CommentThreadProps) => {
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <>
-      <CommentBlock comment={rootComment} />
+      <CommentBlock commentId={rootComment.id} />
       <Flex pl={40} direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(rootComment?.replies?.length ?? 0) > 0 ? (
           <Box mv='xs'>
@@ -52,7 +54,9 @@ export const CommentThread = (props: CommentThreadProps) => {
                 hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
               }
             >
-              {hiddenReplies[rootComment.id] ? 'Show Replies' : 'Hide Replies'}
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies(replyCount)
+                : messages.hideReplies}
             </PlainButton>
           </Box>
         ) : null}
@@ -62,7 +66,7 @@ export const CommentThread = (props: CommentThreadProps) => {
               {rootComment?.replies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    comment={reply}
+                    commentId={reply.id}
                     parentCommentId={rootComment.id}
                   />
                 </Flex>

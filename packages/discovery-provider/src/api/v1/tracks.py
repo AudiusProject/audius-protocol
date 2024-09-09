@@ -464,12 +464,12 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+# Comments
 track_comments_response = make_response(
     "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
 )
 
 
-# Comment
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
     @record_metrics
@@ -483,13 +483,14 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
-    @ns.expect(pagination_parser)
+    @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        args = pagination_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(args, decoded_id)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(args, decoded_id, current_user_id)
         return success_response(track_comments)
 
 

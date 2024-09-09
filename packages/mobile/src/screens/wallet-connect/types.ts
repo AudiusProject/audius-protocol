@@ -1,5 +1,12 @@
 import type { RouteProp } from '@react-navigation/native'
 
+export type ConnectParams = {
+  path: 'connect'
+  phantom_encryption_public_key: string
+  data: string
+  nonce: string
+}
+
 export type ConnectNewWalletParams = {
   path: 'wallet-connect'
   phantom_encryption_public_key: string
@@ -20,6 +27,7 @@ export type SignedMessageParams = {
 
 export type WalletConnectParamList = {
   Wallets:
+    | ConnectParams
     | ConnectNewWalletParams
     | CancelPhantomConnectParams
     | SignedMessageParams
@@ -32,6 +40,7 @@ export type WalletConnectParamList = {
 
 export type WalletConnectParams =
   | undefined
+  | ConnectParams
   | ConnectNewWalletParams
   | SignedMessageParams
 
