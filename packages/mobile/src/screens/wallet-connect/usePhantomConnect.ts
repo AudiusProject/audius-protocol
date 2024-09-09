@@ -14,13 +14,16 @@ import type { WalletConnectRoute } from './types'
 
 const { updateWalletError } = tokenDashboardPageActions
 
-export const usePhantomConnect = () => {
+export const usePhantomConnect = (
+  getParamsFromRoute: (
+    route: WalletConnectRoute<'Wallets'>
+  ) => WalletConnectRoute<'Wallets'>['params'] = (route) => route.params
+) => {
   const dispatch = useDispatch()
   const route = useRoute<WalletConnectRoute<'Wallets'>>()
-  // I have no idea what's going on here. I don't think this works currently,
-  // somehow the params we care about is inside the other params ???
-  // @ts-ignore
-  const params = route?.params?.params?.params
+  const params = getParamsFromRoute(
+    route
+  ) as WalletConnectRoute<'Wallets'>['params']
 
   useEffect(() => {
     if (!params) return

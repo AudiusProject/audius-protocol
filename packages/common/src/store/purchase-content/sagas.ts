@@ -6,7 +6,8 @@ import {
   PublicKey,
   VersionedTransaction,
   AddressLookupTableAccount,
-  TransactionMessage
+  TransactionMessage,
+  TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
@@ -403,7 +404,7 @@ function* purchaseTrackWithCoinflow(args: {
         routeInstruction,
         memoInstruction,
         locationMemoInstruction
-      ]
+      ].filter(Boolean) as TransactionInstruction[]
     }
   )
 
@@ -504,7 +505,7 @@ function* purchaseAlbumWithCoinflow(args: {
         routeInstruction,
         memoInstruction,
         locationMemoInstruction
-      ]
+      ].filter(Boolean) as TransactionInstruction[]
     }
   )
 
@@ -937,8 +938,9 @@ function* purchaseWithAnything({
     const mobileWalletActions = yield* getContext('mobileWalletActions')
     if (isNativeMobile && mobileWalletActions) {
       const { connect } = mobileWalletActions
-      const getWalletConnectPublicKey = (state: any) =>
-        state.walletConnect.publicKey
+      const getWalletConnectPublicKey = (state: any) => {
+        return state.walletConnect.publicKey
+      }
       const dappKeyPair = nacl.box.keyPair()
       yield* put({
         type: 'walletConnect/setDappKeyPair',
@@ -965,7 +967,8 @@ function* purchaseWithAnything({
         ],
         {
           sourceWallet,
-          total: totalAmountWithDecimals,
+          total:
+            totalAmountWithDecimals / 10 ** TOKEN_LISTING_MAP.USDC.decimals,
           mint: 'USDC'
         }
       )
@@ -991,7 +994,6 @@ function* purchaseWithAnything({
         sourceWallet
       )
 
-      console.info('Calling jupiter API to get a quote')
       const jup = yield* call(getJupiterInstance)
       const quote = yield* call([jup, jup.quoteGet], {
         inputMint,
@@ -1067,42 +1069,44 @@ function* purchaseWithAnything({
       addressLookupTableAccounts
     })
 
-    if (contentType === PurchaseableContentType.TRACK) {
-      const {
-        instructions: {
-          routeInstruction,
-          memoInstruction,
-          locationMemoInstruction
+    try {
+      if (contentType === PurchaseableContentType.TRACK) {
+        const {
+          instructions: {
+            routeInstruction,
+            memoInstruction,
+            locationMemoInstruction
+          }
+        } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
+          userId: encodeHashId(purchaserUserId),
+          trackId: encodeHashId(contentId),
+          price: price / 100.0,
+          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        })
+        message.instructions.push(routeInstruction, memoInstruction)
+        if (locationMemoInstruction) {
+          message.instructions.push()
         }
-      } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        trackId: encodeHashId(contentId),
-        price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-      })
-      message.instructions.push(
-        routeInstruction,
-        memoInstruction,
-        locationMemoInstruction
-      )
-    } else {
-      const {
-        instructions: {
-          routeInstruction,
-          memoInstruction,
-          locationMemoInstruction
+      } else {
+        const {
+          instructions: {
+            routeInstruction,
+            memoInstruction,
+            locationMemoInstruction
+          }
+        } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
+          userId: encodeHashId(purchaserUserId),
+          albumId: encodeHashId(contentId),
+          price: price / 100.0,
+          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        })
+        message.instructions.push(routeInstruction, memoInstruction)
+        if (locationMemoInstruction) {
+          message.instructions.push()
         }
-      } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        albumId: encodeHashId(contentId),
-        price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-      })
-      message.instructions.push(
-        routeInstruction,
-        memoInstruction,
-        locationMemoInstruction
-      )
+      }
+    } catch (e) {
+      console.error(e)
     }
     console.info(
       `Purchasing ${
