@@ -479,7 +479,6 @@ export class Users extends Base {
   /**
    * Delete a user subscription for a given subscriber and user
    */
-  // TODO-NOW: update callers
   async deleteUserSubscribe(subscribedToUserId: number, userId: number) {
     try {
       const response = await this.contracts.EntityManagerClient!.manageEntity(

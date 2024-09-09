@@ -110,6 +110,9 @@ function* watchGetPushNotificationSettings() {
     settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
     function* () {
       yield* call(waitForRead)
+      const account = yield* select(getAccountUser)
+      if (!account) return
+
       try {
         const settings = yield* call(
           audiusBackendInstance.getPushNotificationSettings

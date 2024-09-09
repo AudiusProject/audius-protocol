@@ -18,7 +18,6 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import queryString from 'query-string'
 
 import { Env } from '~/services/env'
 import dayjs from '~/utils/dayjs'
@@ -27,9 +26,7 @@ import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from '../../assets/img/imageProfilePicEmpty2X.png'
 import {
-  BadgeTier,
   BNWei,
-  ChallengeRewardID,
   CID,
   Collection,
   CollectionMetadata,
@@ -41,8 +38,6 @@ import {
   Name,
   ProfilePictureSizes,
   SquareSizes,
-  StringUSDC,
-  StringWei,
   TikTokUser,
   Track,
   TrackMetadata,
@@ -64,13 +59,7 @@ import {
 } from '../../services/remote-config'
 import {
   BrowserNotificationSetting,
-  DiscoveryNotification,
   PushNotificationSetting,
-  NotificationType,
-  Entity,
-  Achievement,
-  Notification,
-  IdentityNotification,
   PushNotifications,
   TrackMetadataForUpload,
   SearchKind
@@ -80,9 +69,7 @@ import {
   uuid,
   Maybe,
   encodeHashId,
-  decodeHashId,
   Nullable,
-  removeNullable,
   isNullOrUndefined
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
@@ -206,9 +193,6 @@ type WithEagerOption = (
 ) => Promise<any>
 
 type WaitForLibsInit = () => Promise<unknown>
-
-// TODO-NOW: Remove
-type CurrentUser = any
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
@@ -1563,647 +1547,15 @@ export const audiusBackend = ({
     }
   }
 
-  function getDiscoveryEntityType({
-    type,
-    is_album
-  }: {
-    type: string
-    is_album?: boolean
-  }) {
-    if (type === 'track') {
-      return Entity.Track
-    } else if (is_album === true) {
-      return Entity.Album
-    }
-    return Entity.Playlist
-  }
-
-  function formatBaseNotification(notification: DiscoveryNotification) {
-    const timestamp = notification.actions[0].timestamp
-    return {
-      groupId: notification.group_id,
-      timestamp,
-      isViewed: !!notification.seen_at,
-      id: `timestamp:${timestamp}:group_id:${notification.group_id}`
-    }
-  }
-
-  function mapIdentityNotification(
-    notification: IdentityNotification
-  ): Notification {
-    const { timestamp, ...restNotification } = notification
-    return {
-      ...restNotification,
-      timestamp: Math.round(Date.parse(timestamp) / 1000) // unix timestamp (sec)
-    } as Notification
-  }
-
-  function mapDiscoveryNotification(
-    notification: DiscoveryNotification
-  ): Notification {
-    if (notification.type === 'follow') {
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          return decodeHashId(data.follower_user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.Follow,
-        userIds,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'repost') {
-      let entityId = 0
-      let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.repost_item_id) as number
-          entityType = getDiscoveryEntityType(data)
-          return decodeHashId(data.user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.Repost,
-        userIds,
-        entityId,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'save') {
-      let entityId = 0
-      let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.save_item_id) as number
-          entityType = getDiscoveryEntityType(data)
-          return decodeHashId(data.user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.Favorite,
-        userIds,
-        entityId,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'tip_send') {
-      const data = notification.actions[0].data
-      const amount = data.amount
-      const receiverUserId = decodeHashId(data.receiver_user_id) as number
-      return {
-        type: NotificationType.TipSend,
-        entityId: receiverUserId,
-        entityType: Entity.User,
-        amount: amount!.toString() as StringWei,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'tip_receive') {
-      const data = notification.actions[0].data
-      const amount = data.amount
-      const senderUserId = decodeHashId(data.sender_user_id) as number
-      return {
-        type: NotificationType.TipReceive,
-        entityId: senderUserId,
-        amount: amount!.toString() as StringWei,
-        entityType: Entity.User,
-        tipTxSignature: data.tip_tx_signature,
-        reactionValue: data.reaction_value,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'track_added_to_purchased_album') {
-      let trackId = 0
-      let playlistId = 0
-      let playlistOwnerId = 0
-      notification.actions.filter(removeNullable).forEach((action) => {
-        const { data } = action
-        if (data.track_id && data.playlist_id && data.playlist_owner_id) {
-          trackId = decodeHashId(data.track_id) as ID
-          playlistId = decodeHashId(data.playlist_id) as ID
-          playlistOwnerId = decodeHashId(data.playlist_owner_id) as ID
-        }
-      })
-      return {
-        type: NotificationType.TrackAddedToPurchasedAlbum,
-        trackId,
-        playlistId,
-        playlistOwnerId,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'track_added_to_playlist') {
-      let trackId = 0
-      let playlistId = 0
-      let playlistOwnerId = 0
-      notification.actions.filter(removeNullable).forEach((action) => {
-        const { data } = action
-        if (data.track_id && data.playlist_id && data.playlist_owner_id) {
-          trackId = decodeHashId(data.track_id) as ID
-          playlistId = decodeHashId(data.playlist_id) as ID
-          playlistOwnerId = decodeHashId(data.playlist_owner_id) as ID
-        }
-      })
-      return {
-        type: NotificationType.AddTrackToPlaylist,
-        trackId,
-        playlistId,
-        playlistOwnerId,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'tastemaker') {
-      const data = notification.actions[0].data
-      return {
-        type: NotificationType.Tastemaker,
-        entityType: Entity.Track,
-        entityId: decodeHashId(data.tastemaker_item_id) as number,
-        userId: decodeHashId(data.tastemaker_item_owner_id) as number, // owner of the tastemaker track
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'supporter_rank_up') {
-      const data = notification.actions[0].data
-      const senderUserId = decodeHashId(data.sender_user_id) as number
-      return {
-        type: NotificationType.SupporterRankUp,
-        entityId: senderUserId,
-        rank: data.rank,
-        entityType: Entity.User,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'supporting_rank_up') {
-      const data = notification.actions[0].data
-      const receiverUserId = decodeHashId(data.receiver_user_id) as number
-      return {
-        type: NotificationType.SupportingRankUp,
-        entityId: receiverUserId,
-        rank: data.rank,
-        entityType: Entity.User,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'supporter_dethroned') {
-      const data = notification.actions[0].data
-      return {
-        type: NotificationType.SupporterDethroned,
-        entityType: Entity.User,
-        entityId: decodeHashId(data.sender_user_id) as number,
-        supportedUserId: decodeHashId(data.receiver_user_id) as number,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'challenge_reward') {
-      const data = notification.actions[0].data
-      const challengeId = data.challenge_id as ChallengeRewardID
-      return {
-        type: NotificationType.ChallengeReward,
-        challengeId,
-        entityType: Entity.User,
-        amount: data.amount as StringWei,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'claimable_reward') {
-      const data = notification.actions[0].data
-      const challengeId = data.challenge_id as ChallengeRewardID
-      return {
-        type: NotificationType.ClaimableReward,
-        challengeId,
-        entityType: Entity.User,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'tier_change') {
-      const data = notification.actions[0].data
-      const tier = data.new_tier as BadgeTier
-      const userId = decodeHashId(notification.actions[0].specifier) as number
-      return {
-        type: NotificationType.TierChange,
-        tier,
-        userId,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'create') {
-      let entityType: Entity = Entity.Track
-      const entityIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          if ('playlist_id' in data) {
-            entityType = data.is_album ? Entity.Album : Entity.Playlist
-            return data.playlist_id.map((playlist_id) =>
-              decodeHashId(playlist_id)
-            )
-          }
-          entityType = Entity.Track
-          return decodeHashId(data.track_id)
-        })
-        .flat()
-        .filter(removeNullable)
-      // playlist owner ids are the specifier of the playlist create notif
-      const userId =
-        entityType === Entity.Track
-          ? // track create notifs store track owner id in the group id
-            parseInt(notification.group_id.split(':')[3])
-          : // album/playlist create notifications store album owner
-            // id as the specifier
-            (decodeHashId(notification.actions[0].specifier) as number)
-      return {
-        type: NotificationType.UserSubscription,
-        userId,
-        entityIds,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'remix') {
-      let childTrackId = 0
-      let parentTrackId = 0
-      let trackOwnerId = 0
-      notification.actions.forEach((action) => {
-        const data = action.data
-        childTrackId = decodeHashId(data.track_id) as number
-        parentTrackId = decodeHashId(data.parent_track_id) as number
-        trackOwnerId = decodeHashId(data.track_owner_id) as number
-      })
-      return {
-        type: NotificationType.RemixCreate,
-        entityType: Entity.Track,
-        parentTrackId,
-        childTrackId,
-        userId: trackOwnerId,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'cosign') {
-      const data = notification.actions[0].data
-      const entityType = Entity.Track
-      const entityIds = [decodeHashId(data.parent_track_id) as number]
-      const childTrackId = decodeHashId(data.track_id) as number
-      const parentTrackUserId = decodeHashId(
-        notification.actions[0].specifier
-      ) as number
-      const userId = decodeHashId(data.track_owner_id) as number
-
-      return {
-        type: NotificationType.RemixCosign,
-        userId,
-        entityType,
-        entityIds,
-        parentTrackUserId,
-        childTrackId,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'trending_playlist') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.TrendingPlaylist,
-        rank: data.rank,
-        genre: data.genre,
-        time: data.time_range,
-        entityType: Entity.Playlist,
-        entityId: decodeHashId(data.playlist_id) as number,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'trending') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.TrendingTrack,
-        rank: data.rank,
-        genre: data.genre,
-        time: data.time_range,
-        entityType: Entity.Track,
-        entityId: decodeHashId(data.track_id) as number,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'trending_underground') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.TrendingUnderground,
-        rank: data.rank,
-        genre: data.genre,
-        time: data.time_range,
-        entityType: Entity.Track,
-        entityId: decodeHashId(data.track_id) as number,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'milestone') {
-      const data = notification.actions[0].data
-      if ('track_id' in data) {
-        let achievement: Achievement
-        if (data.type === 'track_repost_count') {
-          achievement = Achievement.Reposts
-        } else if (data.type === 'track_save_count') {
-          achievement = Achievement.Favorites
-        } else {
-          achievement = Achievement.Listens
-        }
-        return {
-          type: NotificationType.Milestone,
-          entityType: Entity.Track,
-          entityId: decodeHashId(data.track_id) as number,
-          value: data.threshold,
-          achievement,
-          ...formatBaseNotification(notification)
-        }
-      } else if ('playlist_id' in data) {
-        let achievement: Achievement
-        if (data.type === 'playlist_repost_count') {
-          achievement = Achievement.Reposts
-        } else {
-          achievement = Achievement.Favorites
-        }
-        return {
-          type: NotificationType.Milestone,
-          entityType: data.is_album ? Entity.Album : Entity.Playlist,
-          entityId: decodeHashId(data.playlist_id) as number,
-          value: data.threshold,
-          achievement,
-          ...formatBaseNotification(notification)
-        }
-      } else {
-        return {
-          type: NotificationType.Milestone,
-          entityType: Entity.User,
-          entityId: decodeHashId(data.user_id) as number,
-          achievement: Achievement.Followers,
-          value: data.threshold,
-          ...formatBaseNotification(notification)
-        }
-      }
-    } else if (notification.type === 'announcement') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.Announcement,
-        title: data.title,
-        shortDescription: data.short_description,
-        longDescription: data.long_description,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'reaction') {
-      const data = notification.actions[0].data
-      return {
-        type: NotificationType.Reaction,
-        entityId: decodeHashId(data.receiver_user_id) as number,
-        entityType: Entity.User,
-        reactionValue: data.reaction_value,
-        reactionType: data.reaction_type,
-        reactedToEntity: {
-          tx_signature: data.reacted_to,
-          amount: data.tip_amount as StringWei,
-          tip_sender_id: decodeHashId(data.sender_user_id) as number
-        },
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'repost_of_repost') {
-      let entityId = 0
-      let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.repost_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data)
-          return decodeHashId(data.user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.RepostOfRepost,
-        userIds,
-        entityId,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'save_of_repost') {
-      let entityId = 0
-      let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.save_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data)
-          return decodeHashId(data.user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.FavoriteOfRepost,
-        userIds,
-        entityId,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'usdc_purchase_seller') {
-      let entityId = 0
-      let entityType = Entity.Track
-      let amount = '' as StringUSDC
-      let extraAmount = '' as StringUSDC
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.content_id) as number
-          entityType =
-            data.content_type === 'track' ? Entity.Track : Entity.Album
-          amount = data.amount
-          extraAmount = data.extra_amount
-          return decodeHashId(data.buyer_user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.USDCPurchaseSeller,
-        userIds,
-        entityId,
-        entityType,
-        amount,
-        extraAmount,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'usdc_purchase_buyer') {
-      let entityId = 0
-      let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = decodeHashId(data.content_id) as number
-          entityType =
-            data.content_type === 'track' ? Entity.Track : Entity.Album
-          return decodeHashId(data.seller_user_id)
-        })
-        .filter(removeNullable)
-      return {
-        type: NotificationType.USDCPurchaseBuyer,
-        userIds,
-        entityId,
-        entityType,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'request_manager') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.RequestManager,
-        userId: decodeHashId(data.user_id)!,
-        ...formatBaseNotification(notification)
-      }
-    } else if (notification.type === 'approve_manager_request') {
-      const data = notification.actions[0].data
-
-      return {
-        type: NotificationType.ApproveManagerRequest,
-        userId: decodeHashId(data.grantee_user_id)!,
-        ...formatBaseNotification(notification)
-      }
-    } else {
-      console.error('Notification does not match an expected type.')
-    }
-
-    return notification
-  }
-
-  // TODO-NOW: For all instances of account?: CurrentUser in this file, remove the parameter and the check here and
-  // update call sites to just not call it if no account is present
-
-  // TODO(C-2719)
-  async function getDiscoveryNotifications({
-    account,
-    timestamp,
-    groupIdOffset,
-    limit,
-    validTypes
-  }: {
-    account?: CurrentUser
-    timestamp?: number
-    groupIdOffset?: string
-    limit?: number
-    validTypes?: string[]
-  }) {
+  async function markAllNotificationAsViewed({ userId }: { userId: ID }) {
     await waitForLibsInit()
-    if (!account)
-      return {
-        message: 'error',
-        error: new Error('User not signed in'),
-        isRequestError: false
-      }
-    const encodedUserId = encodeHashId(account.user_id)
 
-    type DiscoveryNotificationsResponse = {
-      notifications: DiscoveryNotification[]
-      unread_count: number
-    }
-
-    const response: Nullable<DiscoveryNotificationsResponse> =
-      await audiusLibs.Notifications.getNotifications({
-        encodedUserId,
-        timestamp,
-        groupId: groupIdOffset,
-        limit,
-        validTypes
-      })
-
-    if (!response)
-      return {
-        message: 'error',
-        error: new Error('Invalid Server Response'),
-        isRequestError: true
-      }
-
-    const { unread_count, notifications } = response
-    return {
-      totalUnviewed: unread_count,
-      notifications: notifications.map(
-        mapDiscoveryNotification
-      ) as Notification[]
-    }
-  }
-
-  async function getNotifications({
-    account,
-    limit,
-    timeOffset
-  }: {
-    account?: CurrentUser
-    limit: number
-    // unix timestamp
-    timeOffset?: number
-  }) {
-    await waitForLibsInit()
-    if (!account)
-      return {
-        message: 'error',
-        error: new Error('User not signed in'),
-        isRequestError: false
-      }
-    const { handle } = account
-    try {
-      const { data, signature } = await signData()
-      const query = {
-        timeOffset: timeOffset
-          ? dayjs.unix(timeOffset).toISOString()
-          : undefined,
-        limit,
-        handle,
-        withDethroned: true,
-        withTips: true,
-        withRewards: true,
-        withRemix: true,
-        withTrendingTrack: true
-      }
-
-      // Passing user_id to support manager mode
-      const getNotificationsUrl = queryString.stringifyUrl({
-        url: `${identityServiceUrl}/notifications?user_id=${account.user_id}`,
-        query
-      })
-
-      // TODO: withRemix, withTrending, withRewards are always true and should be removed in a future release
-      const notificationsResponse = await fetch(getNotificationsUrl, {
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        }
-      })
-
-      if (notificationsResponse.status !== 200) {
-        return {
-          message: 'error',
-          error: new Error('Invalid Server Response'),
-          isRequestError: true
-        }
-      }
-      type NotificationsResult = {
-        message: 'success'
-        notifications: IdentityNotification[]
-        totalUnread: number
-      }
-      const notificationsResult: NotificationsResult =
-        await notificationsResponse.json()
-
-      const formattedNotifications = {
-        ...notificationsResult,
-        totalUnviewed: notificationsResult.totalUnread,
-        notifications: notificationsResult.notifications.map(
-          mapIdentityNotification
-        )
-      }
-
-      return formattedNotifications
-    } catch (e) {
-      return {
-        message: 'error',
-        error: new Error(getErrorMessage(e)),
-        isRequestError: true
-      }
-    }
-  }
-
-  async function markAllNotificationAsViewed({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
-    await waitForLibsInit()
-    if (!account) return
     let notificationsReadResponse
     try {
       const { data, signature } = await signData()
       // Passing `user_id` to support manager mode
       const response = await fetch(
-        `${identityServiceUrl}/notifications/all?user_id=${account.user_id}`,
+        `${identityServiceUrl}/notifications/all?user_id=${userId}`,
         {
           method: 'POST',
           headers: {
@@ -2226,13 +1578,8 @@ export const audiusBackend = ({
     return notificationsReadResponse
   }
 
-  async function clearNotificationBadges({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
+  async function clearNotificationBadges() {
     await waitForLibsInit()
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/notifications/clear_badges`, {
@@ -2248,14 +1595,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function getEmailNotificationSettings({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
+  async function getEmailNotificationSettings() {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       const res = await fetch(`${identityServiceUrl}/notifications/settings`, {
@@ -2274,18 +1616,17 @@ export const audiusBackend = ({
 
   async function updateEmailNotificationSettings({
     emailFrequency,
-    account
+    userId
   }: {
     emailFrequency: string
-    account?: CurrentUser
+    userId: ID
   }) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       const res = await fetch(
-        `${identityServiceUrl}/notifications/settings?user_id=${account.user_id}`,
+        `${identityServiceUrl}/notifications/settings?user_id=${userId}`,
         {
           method: 'POST',
           headers: {
@@ -2302,16 +1643,11 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateNotificationSettings({
-    settings,
-    account
-  }: {
+  async function updateNotificationSettings(
     settings: Partial<Record<BrowserNotificationSetting, boolean>>
-    account?: CurrentUser
-  }) {
+  ) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(
@@ -2331,16 +1667,11 @@ export const audiusBackend = ({
     }
   }
 
-  async function updatePushNotificationSettings({
-    settings,
-    account
-  }: {
+  async function updatePushNotificationSettings(
     settings: Partial<Record<PushNotificationSetting, boolean>>
-    account?: CurrentUser
-  }) {
+  ) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -2380,14 +1711,9 @@ export const audiusBackend = ({
     return { data, signature }
   }
 
-  async function getBrowserPushNotificationSettings({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
+  async function getBrowserPushNotificationSettings() {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(
@@ -2407,16 +1733,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function getBrowserPushSubscription({
-    pushEndpoint,
-    account
-  }: {
-    pushEndpoint: string
-    account?: CurrentUser
-  }) {
+  async function getBrowserPushSubscription(pushEndpoint: string) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       const endpiont = encodeURIComponent(pushEndpoint)
@@ -2437,16 +1756,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSafariBrowserPushEnabled({
-    deviceToken,
-    account
-  }: {
-    deviceToken: string
-    account?: CurrentUser
-  }) {
+  async function getSafariBrowserPushEnabled(deviceToken: string) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(
@@ -2510,14 +1822,9 @@ export const audiusBackend = ({
     ).then((res) => res.json())
   }
 
-  async function getPushNotificationSettings({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
+  async function getPushNotificationSettings() {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -2534,18 +1841,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function registerDeviceToken({
-    deviceToken,
-    deviceType,
-    account
-  }: {
-    deviceToken: string
-    deviceType: string
-    account?: CurrentUser
-  }) {
+  async function registerDeviceToken(deviceToken: string, deviceType: string) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(
@@ -2568,16 +1866,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function deregisterDeviceToken({
-    deviceToken,
-    account
-  }: {
-    deviceToken: string
-    account?: CurrentUser
-  }) {
+  async function deregisterDeviceToken(deviceToken: string) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(
@@ -2599,45 +1890,16 @@ export const audiusBackend = ({
     }
   }
 
-  /**
-   * Returns whether the current user is subscribed to userId.
-   */
-  // TODO(C-2719)
-  async function getUserSubscribed({
-    userId,
-    account
-  }: {
-    userId: ID
-    account?: CurrentUser
-  }) {
-    await waitForLibsInit()
-
-    if (!account) return
-
-    try {
-      const encodedUserId = encodeHashId(userId)
-      const bulkResp: { user_id: string; subscriber_ids: string[] }[] =
-        await audiusLibs.User.bulkGetUserSubscribers([encodedUserId])
-      const encodedSubscriberIds = bulkResp[0].subscriber_ids
-      const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
-      return subscriberIds.includes(account.user_id)
-    } catch (e) {
-      console.error(getErrorMessage(e))
-      return false
-    }
-  }
-
   async function subscribeToUser({
-    userId,
-    account
+    subscribeToUserId,
+    userId
   }: {
+    subscribeToUserId: ID
     userId: ID
-    account?: CurrentUser
   }) {
     try {
       await waitForLibsInit()
-      if (!account) return
-      return await audiusLibs.User.addUserSubscribe(userId)
+      return await audiusLibs.User.addUserSubscribe(subscribeToUserId, userId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -2645,31 +1907,28 @@ export const audiusBackend = ({
   }
 
   async function unsubscribeFromUser({
-    userId,
-    account
+    subscribedToUserId,
+    userId
   }: {
+    subscribedToUserId: ID
     userId: ID
-    account?: CurrentUser
   }) {
     try {
       await waitForLibsInit()
 
-      if (!account) return
-      return await audiusLibs.User.deleteUserSubscribe(userId)
+      return await audiusLibs.User.deleteUserSubscribe(
+        subscribedToUserId,
+        userId
+      )
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
     }
   }
 
-  async function updateUserLocationTimezone({
-    account
-  }: {
-    account?: CurrentUser
-  }) {
+  async function updateUserLocationTimezone() {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       const timezone = dayjs.tz.guess()
@@ -2688,16 +1947,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function sendWelcomeEmail({
-    name,
-    account
-  }: {
-    name: string
-    account?: CurrentUser
-  }) {
+  async function sendWelcomeEmail({ name }: { name: string }) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/email/welcome`, {
@@ -2715,15 +1967,12 @@ export const audiusBackend = ({
   }
 
   async function updateUserEvent({
-    hasSignedInNativeMobile,
-    account
+    hasSignedInNativeMobile
   }: {
     hasSignedInNativeMobile: boolean
-    account?: CurrentUser
   }) {
     await waitForLibsInit()
 
-    if (!account) return
     try {
       const { data, signature } = await signData()
       const res = await fetch(`${identityServiceUrl}/userEvents`, {
@@ -2747,33 +1996,22 @@ export const audiusBackend = ({
    */
   async function updatePlaylistLastViewedAt({
     playlistId,
-    account
+    userId
   }: {
     playlistId: ID
-    account?: CurrentUser
+    userId: ID
   }) {
     await waitForLibsInit()
 
-    if (!account) return
-
     try {
-      return await audiusLibs.Notifications.viewPlaylist({ playlistId })
+      return await audiusLibs.Notifications.viewPlaylist({ playlistId, userId })
     } catch (err) {
       console.error(getErrorMessage(err))
     }
   }
 
-  async function updateHCaptchaScore({
-    token,
-    account
-  }: {
-    token: string
-    account?: CurrentUser
-  }) {
+  async function updateHCaptchaScore({ token }: { token: string }) {
     await waitForLibsInit()
-
-    if (!account) return { error: true }
-
     try {
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/score/hcaptcha`, {
@@ -3090,8 +2328,6 @@ export const audiusBackend = ({
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
-    getNotifications,
-    getDiscoveryNotifications,
     getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
@@ -3101,7 +2337,6 @@ export const audiusBackend = ({
     getUserEmail,
     getUserImages,
     getUserListenCountsMonthly,
-    getUserSubscribed,
     getWAudioBalance,
     getWeb3,
     identityServiceUrl,

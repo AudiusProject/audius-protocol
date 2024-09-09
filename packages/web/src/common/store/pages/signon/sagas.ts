@@ -76,7 +76,7 @@ const { requestPushNotificationPermissions } = settingsPageActions
 const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser, getHasAccount } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -1105,6 +1105,8 @@ function* watchSendWelcomeEmail() {
   yield* takeLatest(
     signOnActions.SEND_WELCOME_EMAIL,
     function* (action: ReturnType<typeof signOnActions.sendWelcomeEmail>) {
+      const hasAccount = yield* select(getHasAccount)
+      if (!hasAccount) return
       yield* call(audiusBackendInstance.sendWelcomeEmail, {
         name: action.name
       })

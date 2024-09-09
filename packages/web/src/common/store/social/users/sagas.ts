@@ -304,7 +304,7 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.subscribeToUser,
-          userId
+          { subscribeToUserId: userId, userId: accountId }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -370,7 +370,7 @@ export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.unsubscribeFromUser,
-          userId
+          { subscribedToUserId: userId, userId: accountId }
         )
         const confirmed = yield* call(
           confirmTransaction,
