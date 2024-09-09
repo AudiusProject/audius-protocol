@@ -52,7 +52,7 @@ export const CommentActionBar = ({
   onClickDelete
 }: CommentActionBarProps) => {
   // comment from props
-  const { reactCount, id: commentId } = comment
+  const { reactCount, id: commentId, isCurrentUserReacted } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
@@ -64,7 +64,7 @@ export const CommentActionBar = ({
   const isMobile = useIsMobile()
 
   // component state
-  const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
 
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
