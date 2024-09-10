@@ -327,7 +327,6 @@ export const WithdrawalsTab = ({
           onSort={onSort}
           onClickRow={onClickRow}
           fetchMore={fetchMore}
-          isVirtualized={true}
           scrollRef={mainContentRef}
           totalRowCount={count}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
