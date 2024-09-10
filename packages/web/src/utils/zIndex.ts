@@ -10,6 +10,7 @@ export enum zIndex {
   // These are still set in css, added here for reference
   // TODO: use these enums
 
+  UTIL_ONE = 1,
   GATED_TRACK_TILE_CORNER_TAG = 3,
 
   // FROSTED_HEADER_BACKGROUND = 10,

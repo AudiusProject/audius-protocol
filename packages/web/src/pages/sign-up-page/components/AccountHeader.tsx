@@ -25,6 +25,7 @@ import {
 import { useMedia } from 'hooks/useMedia'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
+import zIndex from 'utils/zIndex'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
@@ -66,13 +67,16 @@ const ProfileImageAvatar = ({
       }}
     >
       {isEditing && !imageUrl ? (
-        <IconButton
-          aria-label='Upload a profile photo'
-          size='l'
-          color='staticWhite'
-          shadow='drop'
-          icon={IconCamera}
-        />
+        <>
+          <IconButton
+            aria-label='Upload a profile photo'
+            size='l'
+            color='staticWhite'
+            shadow='drop'
+            icon={IconCamera}
+            style={{ zIndex: zIndex.UTIL_ONE }}
+          />
+        </>
       ) : null}
     </Avatar>
   )
