@@ -23,16 +23,14 @@ const { fetchUserSocials } = cacheUsersActions
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     flexDirection: 'row',
-    alignItems: 'center',
-    height: 50
+    alignItems: 'center'
   },
   audioTier: {
     paddingLeft: spacing(3)
   },
   socials: {
     flexDirection: 'row',
-    flex: 4,
-    marginVertical: spacing(3)
+    flex: 4
   },
   socialsCentered: {
     justifyContent: 'center'
@@ -120,7 +118,6 @@ export const ProfileSocials = () => {
       </Fragment>
     ))
   }
-
   return (
     <View pointerEvents='box-none' style={styles.root}>
       {tier !== 'none' ? (
