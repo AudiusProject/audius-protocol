@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 
+import { Flex, IconArrowRight, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconPause from '../../assets/img/iconPause.svg'
-import IconPlay from '../../assets/img/iconPlay.svg'
 import Spinner from '../spinner/Spinner'
 
 import styles from './PlayButton.module.css'
@@ -16,18 +15,32 @@ export const PlayingState = Object.seal({
 })
 
 const PlayButton = ({
+  isPlayable = true,
   playingState,
   onTogglePlay,
+  url,
   iconColor,
   className,
-  style = {}
+  style = {},
+  iconStyle = {}
 }) => {
   const stateIconMap = {
-    [PlayingState.Playing]: <IconPause />,
-    [PlayingState.Paused]: <IconPlay />,
-    [PlayingState.Stopped]: <IconPlay />,
+    [PlayingState.Playing]: <IconPause style={iconStyle} size='l' />,
+    [PlayingState.Paused]: (
+      <Flex ml='10%'>
+        <IconPlay style={iconStyle} size='l' />
+      </Flex>
+    ),
+    [PlayingState.Stopped]: (
+      <Flex ml='10%'>
+        <IconPlay style={iconStyle} size='l' />
+      </Flex>
+    ),
     [PlayingState.Buffering]: (
-      <Spinner className={styles.spinner} svgStyle={{ stroke: iconColor }} />
+      <Spinner
+        className={cn(styles.spinner, iconStyle)}
+        svgStyle={{ stroke: iconColor }}
+      />
     )
   }
 
@@ -44,15 +57,17 @@ const PlayButton = ({
   return (
     <div
       onClick={(e) => {
-        e.stopPropagation()
-        onTogglePlay()
+        if (isPlayable) {
+          e.stopPropagation()
+          onTogglePlay()
+        } else {
+          window.open(url, '_blank')
+        }
       }}
-      className={cn(styles.container, className, {
-        [styles.isBuffering]: playingState === PlayingState.Buffering
-      })}
+      className={cn(styles.container, className)}
       style={style}
     >
-      {stateIconMap[playingState]}
+      {isPlayable ? stateIconMap[playingState] : <IconArrowRight size='l' />}
     </div>
   )
 }
