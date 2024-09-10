@@ -32,6 +32,9 @@ export type ExploreCollection = {
   cardSensitivity?: number
 }
 
+// How much full width cards move
+const WIDE_CARD_SENSITIVTY = 0.04
+
 export type ExploreMoodCollection = ExploreCollection & {
   emoji: string
   moods: string[]
@@ -44,7 +47,8 @@ export const PREMIUM_TRACKS: ExploreCollection = {
   gradient: 'linear-gradient(95deg, #13C65A 0%, #16A653 100%)',
   shadow: 'rgba(196,81,193,0.35)',
   icon: IconCart,
-  link: EXPLORE_PREMIUM_TRACKS_PAGE
+  link: EXPLORE_PREMIUM_TRACKS_PAGE,
+  cardSensitivity: WIDE_CARD_SENSITIVTY
 }
 
 export const LET_THEM_DJ: ExploreCollection = {
