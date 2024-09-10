@@ -86,11 +86,6 @@ jobs:
       service: trpc
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-healthz
-      context: [GCP, dockerhub, slack-secrets]
-      service: healthz
-      notify_slack_on_failure: true
-  - push-docker-image:
       name: push-protocol-dashboard
       context: [GCP, dockerhub, slack-secrets]
       service: dashboard
@@ -129,7 +124,6 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-healthz
         - push-protocol-dashboard
         - push-uptime
         - push-ddex-processor

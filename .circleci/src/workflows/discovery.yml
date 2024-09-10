@@ -106,13 +106,6 @@ jobs:
         branches:
           only: main
   - push-docker-image:
-      name: push-healthz
-      context: [Vercel, dockerhub]
-      service: healthz
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
       name: push-uptime
       context: [Vercel, dockerhub]
       service: uptime
@@ -157,7 +150,6 @@ jobs:
         - push-trpc
         - push-protocol-dashboard
         - push-uptime
-        - push-healthz
 
       filters:
         branches:
