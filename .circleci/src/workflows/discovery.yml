@@ -99,13 +99,6 @@ jobs:
         branches:
           only: main
   - push-docker-image:
-      name: push-protocol-dashboard
-      context: [Vercel, dockerhub]
-      service: dashboard
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
       name: push-uptime
       context: [Vercel, dockerhub]
       service: uptime
@@ -148,7 +141,6 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-protocol-dashboard
         - push-uptime
 
       filters:
