@@ -456,7 +456,12 @@ export const GiantTrackTile = ({
             coSign={coSign}
             callback={onArtworkLoad}
           />
-          <Flex column justifyContent='space-between'>
+          <Flex
+            column
+            justifyContent='space-between'
+            flex={1}
+            css={{ minWidth: '386px', flexBasis: '386px' }}
+          >
             <Flex column gap='2xl'>
               <Flex column gap='xl'>
                 <Flex column gap='l' alignItems='flex-start'>
