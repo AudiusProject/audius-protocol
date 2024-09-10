@@ -114,7 +114,12 @@ function* optimisticallySavePlaylist(
   playlist.is_private = true
   playlist.playlist_contents = {
     track_ids: initTrack
-      ? [{ time: Date.now(), track: initTrack.track_id }]
+      ? [
+          {
+            time: Math.round(Date.now() / 1000),
+            track: initTrack.track_id
+          }
+        ]
       : []
   }
   playlist.tracks = initTrack
