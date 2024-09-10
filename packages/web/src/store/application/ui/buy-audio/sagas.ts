@@ -1056,70 +1056,72 @@ function* recoverPurchaseIfNecessary() {
       'finalized'
     )
 
-    // Get dummy quote and calculate fees
-    const quote = yield* call(JupiterSingleton.getQuote, {
-      inputTokenSymbol: 'SOL',
-      outputTokenSymbol: 'AUDIO',
-      inputAmount: existingBalance / LAMPORTS_PER_SOL,
-      slippageBps
-    })
-    const { totalFees, rootAccountMinBalance } = yield* call(getSwapFees, {
-      quote: quote.quote
-    })
+    if (existingBalance > 0) {
+      // Get dummy quote and calculate fees
+      const quote = yield* call(JupiterSingleton.getQuote, {
+        inputTokenSymbol: 'SOL',
+        outputTokenSymbol: 'AUDIO',
+        inputAmount: existingBalance / LAMPORTS_PER_SOL,
+        slippageBps
+      })
+      const { totalFees } = yield* call(getSwapFees, {
+        quote: quote.quote
+      })
 
-    // Subtract fees and rent to see how much SOL is available to exchange
-    const exchangableBalance = BigInt(existingBalance - totalFees)
+      // Subtract fees and rent to see how much SOL is available to exchange
+      const exchangableBalance = BigInt(existingBalance - totalFees)
 
-    // Use proportion to guesstimate an $AUDIO quote for the exchangeable balance
-    const estimatedAudio =
-      existingBalance > 0
-        ? (BigInt(exchangableBalance) * BigInt(quote.outputAmount.amount)) /
-          BigInt(existingBalance)
-        : BigInt(0)
+      // Use proportion to guesstimate an $AUDIO quote for the exchangeable balance
+      const estimatedAudio =
+        existingBalance > 0
+          ? (BigInt(exchangableBalance) * BigInt(quote.outputAmount.amount)) /
+            BigInt(existingBalance)
+          : BigInt(0)
 
-    // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
-    // Should only occur as the result of a previously failed Swap
-    if (
-      exchangableBalance > BigInt(0) &&
-      estimatedAudio > BigInt(1 * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
-    ) {
-      yield* put(
-        make(Name.BUY_AUDIO_RECOVERY_OPENED, {
-          provider,
-          trigger: 'SOL',
-          balance: exchangableBalance.toString()
+      // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
+      // Should only occur as the result of a previously failed Swap
+      if (
+        exchangableBalance > BigInt(0) &&
+        estimatedAudio > BigInt(1 * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
+      ) {
+        yield* put(
+          make(Name.BUY_AUDIO_RECOVERY_OPENED, {
+            provider,
+            trigger: 'SOL',
+            balance: exchangableBalance.toString()
+          })
+        )
+        console.debug(
+          `Found existing SOL balance of ${
+            existingBalance / LAMPORTS_PER_SOL
+          } SOL, converting ${
+            Number(exchangableBalance) / LAMPORTS_PER_SOL
+          } SOL to AUDIO... (~${estimatedAudio.toString()} $AUDIO SPL)`
+        )
+
+        yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
+        yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
+        didNeedRecovery = true
+
+        const { audioSwappedSpl } = yield* call(swapStep, {
+          exchangeAmount: exchangableBalance,
+          desiredAudioAmount: localStorageState.desiredAudioAmount,
+          rootAccount,
+          transactionHandler,
+          maxRetryCount,
+          retryDelayMs
         })
-      )
-      console.debug(
-        `Found existing SOL balance of ${
-          existingBalance / LAMPORTS_PER_SOL
-        } SOL, converting ${
-          Number(exchangableBalance) / LAMPORTS_PER_SOL
-        } SOL to AUDIO... (~${estimatedAudio.toString()} $AUDIO SPL)`
-      )
-
-      yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
-      yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
-      didNeedRecovery = true
-
-      const { audioSwappedSpl } = yield* call(swapStep, {
-        exchangeAmount: exchangableBalance,
-        desiredAudioAmount: localStorageState.desiredAudioAmount,
-        rootAccount,
-        transactionHandler,
-        maxRetryCount,
-        retryDelayMs
-      })
-      const { audioTransferredWei } = yield* call(transferStep, {
-        transferAmount: audioSwappedSpl,
-        rootAccount,
-        transactionHandler,
-        provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
-      })
-      recoveredAudio = parseFloat(
-        formatWei(audioTransferredWei).replaceAll(',', '')
-      )
-      yield* call(populateAndSaveTransactionDetails)
+        const { audioTransferredWei } = yield* call(transferStep, {
+          transferAmount: audioSwappedSpl,
+          rootAccount,
+          transactionHandler,
+          provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
+        })
+        recoveredAudio = parseFloat(
+          formatWei(audioTransferredWei).replaceAll(',', '')
+        )
+        yield* call(populateAndSaveTransactionDetails)
+      }
     } else {
       // Check for $AUDIO in the account and transfer if necessary
       const tokenAccount = yield* call(getAudioAccount, {
@@ -1132,8 +1134,15 @@ function* recoverPurchaseIfNecessary() {
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
       if (audioBalance > BigInt(0)) {
+        const transferFee = yield* call(
+          getTransferTransactionFee,
+          rootAccount.publicKey
+        )
+        const neededSolBalance =
+          (yield* call(getRootAccountRentExemptionMinimum)) + transferFee
+
         // Check we can afford to transfer
-        if (existingBalance - rootAccountMinBalance > 0) {
+        if (existingBalance - neededSolBalance > 0) {
           yield* put(
             make(Name.BUY_AUDIO_RECOVERY_OPENED, {
               provider,
@@ -1165,7 +1174,7 @@ function* recoverPurchaseIfNecessary() {
           // User can't afford to transfer their $AUDIO
           console.debug(
             `OWNED: ${audioBalance.toString()} $AUDIO (spl wei) ${existingBalance.toString()} SOL (lamports)\n` +
-              `NEED: ${totalFees.toString()} SOL (lamports)`
+              `NEED: ${neededSolBalance.toString()} SOL (lamports)`
           )
           throw new Error(`User is bricked`)
         }
