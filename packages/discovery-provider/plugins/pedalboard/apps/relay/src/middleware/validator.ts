@@ -89,7 +89,7 @@ export const validator = async (
     loggerInfo.handle = user.handle_lc || undefined
     loggerInfo.address = user.wallet || undefined
     loggerInfo.userId = user.user_id || undefined
-
+    
     logger.info({ handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
   }
 
@@ -137,7 +137,7 @@ export const validator = async (
 
   const oldCtx = response.locals.ctx
   // create child logger with additional
-  const newLogger = logger.child({ ...loggerInfo })
+  const newLogger = logger.child({...loggerInfo})
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
