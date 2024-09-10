@@ -6,6 +6,7 @@ import {
   Collection
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -24,7 +25,6 @@ import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =

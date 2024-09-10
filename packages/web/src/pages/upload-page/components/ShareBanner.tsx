@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
 import { Name, ShareSource, Track, User } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   tracksSocialActions,
@@ -26,7 +27,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
-import { collectionPage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
 
 import styles from './ShareBanner.module.css'

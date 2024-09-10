@@ -8,6 +8,7 @@ import {
   Track
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountActions,
   accountSelectors,
@@ -31,7 +32,6 @@ import { call, put, select, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
-import { collectionPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'

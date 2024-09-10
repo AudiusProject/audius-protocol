@@ -18,6 +18,7 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -70,7 +71,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import { collectionPage, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
 

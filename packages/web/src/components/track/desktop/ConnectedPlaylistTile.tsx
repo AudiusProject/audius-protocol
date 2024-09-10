@@ -20,6 +20,7 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -56,7 +57,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
-import { fullCollectionPage, fullTrackPage, collectionPage } from 'utils/route'
+import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'

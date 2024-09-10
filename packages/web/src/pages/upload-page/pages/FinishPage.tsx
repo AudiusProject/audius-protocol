@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Name } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   uploadSelectors,
@@ -28,7 +29,6 @@ import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
-import { collectionPage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
 import { CollectionFormState, TrackFormState } from '../types'

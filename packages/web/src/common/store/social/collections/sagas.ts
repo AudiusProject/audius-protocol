@@ -6,6 +6,7 @@ import {
   PlaylistLibrary,
   User
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountActions,
   accountSelectors,
@@ -32,7 +33,7 @@ import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
 } from 'common/store/playlist-library/sagas'
-import { audioNftPlaylistPage, collectionPage } from 'utils/route'
+import { audioNftPlaylistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'

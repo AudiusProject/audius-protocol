@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
@@ -7,7 +8,6 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-import { collectionPage } from 'utils/route'
 
 import { CollectionNavItem } from './CollectionNavItem'
 

@@ -1,5 +1,6 @@
 import { SearchCategory, SearchFilters } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import { convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Genre } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -43,26 +44,6 @@ export const fullAlbumPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${albumPage(handle, title, id)}`
 }
 
-export const collectionPage = (
-  handle?: string | null,
-  playlistName?: string | null,
-  playlistId?: ID | null,
-  permalink?: string | null,
-  isAlbum?: boolean
-) => {
-  // Prioritize permalink if available. If not, default to legacy routing
-  if (permalink) {
-    return permalink
-  } else if (playlistName && playlistId && handle) {
-    const collectionType = isAlbum ? 'album' : 'playlist'
-    return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
-      playlistName
-    )}-${playlistId}`
-  } else {
-    console.error('Missing required arguments to get PlaylistPage route.')
-    return ''
-  }
-}
 export const fullCollectionPage = (
   handle: string,
   playlistName?: string | null,

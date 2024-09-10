@@ -6,6 +6,7 @@ import {
   ID,
   ModalSource
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -34,7 +35,7 @@ import { Dispatch } from 'redux'
 
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
-import { collectibleDetailsPage, collectionPage } from 'utils/route'
+import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
 

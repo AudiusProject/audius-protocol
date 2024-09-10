@@ -6,6 +6,7 @@ import {
 } from '@audius/common/assets'
 import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { collectionPage } from '@audius/common/src/utils/route'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
@@ -25,7 +26,7 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { collectionPage, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 
 const { profilePage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions

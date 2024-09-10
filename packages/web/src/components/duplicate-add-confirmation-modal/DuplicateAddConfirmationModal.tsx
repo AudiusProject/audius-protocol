@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -23,7 +24,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
-import { collectionPage } from 'utils/route'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors

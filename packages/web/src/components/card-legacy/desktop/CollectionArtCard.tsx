@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -32,7 +33,6 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { collectionPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'

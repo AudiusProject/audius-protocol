@@ -10,6 +10,7 @@ import {
   ID,
   Track
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -33,7 +34,6 @@ import { Dispatch } from 'redux'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
 import { AppState } from 'store/types'
-import { collectionPage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
