@@ -109,7 +109,6 @@ docker-tag-images:
           for image in "${images[@]}"; do
             echo "adding tag '$tag' to image 'audius/${image}:${CIRCLE_SHA1}'"
             crane copy "audius/${image}:${CIRCLE_SHA1}" "audius/${image}:${tag}"
-            handle_dashboard "$image" "$tag"
           done
     - docker-logout
 
