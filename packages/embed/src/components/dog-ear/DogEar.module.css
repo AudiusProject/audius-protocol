@@ -7,7 +7,7 @@
   height: 88px;
 }
 
-.dogEar.purchase {
+.dogEar.purchase path {
   fill: var(--harmony-light-green);
 }
 

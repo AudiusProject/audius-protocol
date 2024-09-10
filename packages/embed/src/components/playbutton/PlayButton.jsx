@@ -21,6 +21,7 @@ const PlayButton = ({
   url,
   iconColor,
   className,
+  iconSize = 'l',
   style = {},
   iconStyle = {}
 }) => {
@@ -28,12 +29,12 @@ const PlayButton = ({
     [PlayingState.Playing]: <IconPause style={iconStyle} size='l' />,
     [PlayingState.Paused]: (
       <Flex ml='10%'>
-        <IconPlay style={iconStyle} size='l' />
+        <IconPlay style={iconStyle} size={iconSize} />
       </Flex>
     ),
     [PlayingState.Stopped]: (
       <Flex ml='10%'>
-        <IconPlay style={iconStyle} size='l' />
+        <IconPlay style={iconStyle} size={iconSize} />
       </Flex>
     ),
     [PlayingState.Buffering]: (
@@ -67,7 +68,11 @@ const PlayButton = ({
       className={cn(styles.container, className)}
       style={style}
     >
-      {isPlayable ? stateIconMap[playingState] : <IconArrowRight size='l' />}
+      {isPlayable ? (
+        stateIconMap[playingState]
+      ) : (
+        <IconArrowRight size={iconSize} />
+      )}
     </div>
   )
 }

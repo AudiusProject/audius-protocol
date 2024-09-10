@@ -56,6 +56,7 @@ const CollectionListRow = ({
             playingState={playingState}
             iconColor={iconColor}
             className={styles.playButton}
+            iconSize='2xs'
           />
         ) : (
           trackIndex

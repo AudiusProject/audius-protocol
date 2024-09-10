@@ -87,6 +87,7 @@ const TrackPlayerTiny = ({
         onTogglePlay={onTogglePlay}
         className={styles.playButton}
         isPlayable={!isGated || isPurchaseable}
+        iconSize='2xs'
       />
       <div className={styles.container} onClick={onClick} ref={containerRef}>
         {isPurchaseable ? <Preview size='s' /> : null}

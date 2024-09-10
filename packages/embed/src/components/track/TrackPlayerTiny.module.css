@@ -55,13 +55,6 @@
   fill: var(--primary) !important;
 }
 
-.playButton svg {
-  height: 12px;
-  width: 12px;
-  min-height: 12px;
-  min-width: 12px;
-}
-
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-100%); }
