@@ -32,7 +32,7 @@ export const UserDisplayName = (props: UserDisplayProps) => {
 
   return (
     <Flex
-      direction='row'
+      row
       gap='xs'
       alignItems='center'
       style={style}
