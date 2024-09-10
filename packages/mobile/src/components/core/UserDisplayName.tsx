@@ -36,7 +36,6 @@ export const UserDisplayName = (props: UserDisplayProps) => {
       gap='xs'
       alignItems='center'
       style={style}
-      w='100%'
       ph={isVerified ? 'xl' : 'l'}
     >
       <Text ellipses variant={variant} size={size} {...other} numberOfLines={1}>
