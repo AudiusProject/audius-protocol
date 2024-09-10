@@ -116,7 +116,7 @@ function* optimisticallySavePlaylist(
     track_ids: initTrack
       ? [
           {
-            time: Math.round(Date.now() / 1000),
+            time: Math.round(Date.now() / 1000), // must use seconds
             track: initTrack.track_id
           }
         ]
