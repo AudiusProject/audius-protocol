@@ -65,7 +65,7 @@ const getTwitterShareData = (
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      if (entity && isEntityHidden(entity)) {
+      if (entity && !isEntityHidden(entity)) {
         const { entityType } = notification
         const link = getEntityRoute(entity, true)
         const text = messages.achievementText(
