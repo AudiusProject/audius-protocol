@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -6,36 +6,48 @@ import {
   useReactToComment
 } from '@audius/common/context'
 import {
+  cacheUsersSelectors,
+  CommentConfirmationModalState,
+  useCommentConfirmationModal
+} from '@audius/common/store'
+import {
   Flex,
+  Hint,
   IconButton,
   IconHeart,
   IconKebabHorizontal,
-  IconNotificationOff,
-  IconPencil,
-  IconPin,
-  IconShieldCheck,
-  IconTrash,
-  IconUserUnfollow,
+  IconQuestionCircle,
   PopupMenu,
   PopupMenuItem,
   Text,
   TextLink
 } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
+import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AppState } from 'store/types'
+const { getUser } = cacheUsersSelectors
 
 const messages = {
-  pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
-  edit: 'Edit Comment',
-  delete: 'Delete Comment',
-  report: 'Report Comment',
+  pin: (isPinned: boolean) => (isPinned ? 'Unpin' : 'Pin'),
+  edit: 'Edit',
+  delete: 'Delete',
+  report: 'Flag & Remove',
   block: 'Mute User',
   muteNotifs: (isMuted: boolean) =>
-    isMuted ? 'Unmute Notifications' : 'Mute Notifications'
+    isMuted ? 'Turn on notifications' : 'Turn off notifications'
 }
+
+type ConfirmationAction =
+  | 'pin'
+  | 'flagAndRemove'
+  | 'muteUser'
+  | 'delete'
+  | 'artistDelete'
+  | 'report'
 
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
@@ -51,25 +63,36 @@ export const CommentActionBar = ({
   onClickReply,
   onClickDelete
 }: CommentActionBarProps) => {
-  // comment from props
-  const { reactCount, id: commentId } = comment
+  // comment details
+  const { reactCount, id: commentId, userId } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
+  const isUserGettingNotifs = true // TODO: Need to set up API to provide this
+  const notificationsMuted = false // TODO: Need to set up API to provide this
 
-  // context actions & values
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
-
+  // API actions
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
+
+  // context data
+  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const isCommentOwner = Number(comment.userId) === currentUserId
+  const userDisplayName = useSelector(
+    (state: AppState) => getUser(state, { id: userId })?.name
+  )
+
+  // Modals
+  const {
+    onClose: closeConfirmationModal,
+    onOpen: openConfirmationModal,
+    setData: setConfirmationModalData
+  } = useCommentConfirmationModal()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
   const isMobile = useIsMobile()
 
   // component state
-  const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
+  const [reactionState, setReactionState] = useState(false)
 
-  const isCommentOwner = Number(comment.userId) === currentUserId
-  const isUserGettingNotifs = true // TODO: Need to set up API to provide this
-  const notificationsMuted = false // TODO: Need to set up API to provide this
-
+  // Handlers
   const handleCommentReact = useCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
@@ -78,6 +101,14 @@ export const CommentActionBar = ({
   const handleCommentDelete = useCallback(() => {
     onClickDelete()
   }, [onClickDelete])
+
+  const handleCommentMute = useCallback(() => {
+    // TODO
+  }, [])
+
+  const handleCommentReport = useCallback(() => {
+    // TODO
+  }, [])
 
   const handleCommentPin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -91,35 +122,143 @@ export const CommentActionBar = ({
     }
   }, [isMobile, onClickReply, toggleIsMobileAppDrawer])
 
+  // Confirmation Modal state
+  const confirmationModals: {
+    [k in ConfirmationAction]: CommentConfirmationModalState
+  } = useMemo(
+    () => ({
+      pin: {
+        messages: {
+          title: 'Pin this comment?',
+          body: (
+            <Text color='default'>
+              If you already pinned a comment, this will replace it
+            </Text>
+          ),
+          confirm: 'Pin',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentPin,
+        cancelCallback: closeConfirmationModal
+      },
+      // Specifically for an artist deleting someone else's comment
+      artistDelete: {
+        messages: {
+          title: 'Delete comment',
+          body: (
+            <Text color='default'>
+              Delete {userDisplayName}&apos;s comment?
+            </Text>
+          ),
+          confirm: 'Delete',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentDelete,
+        cancelCallback: closeConfirmationModal
+      },
+      delete: {
+        messages: {
+          title: 'Delete comment',
+          body: <Text color='default'> Delete your comment permanently? </Text>,
+          confirm: 'Delete',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentDelete,
+        cancelCallback: closeConfirmationModal
+      },
+      muteUser: {
+        messages: {
+          title: 'Are you sure?',
+          body: (
+            <>
+              <Text color='default'>
+                Mute ${userDisplayName} from commenting on your content?
+              </Text>
+              <Hint icon={IconQuestionCircle}>
+                Mute {userDisplayName} from commenting on your content?
+              </Hint>
+            </>
+          ) as ReactNode,
+          confirm: 'Mute User',
+          cancel: 'Cancel'
+        },
+        confirmButtonType: 'destructive',
+        confirmCallback: handleCommentMute,
+        cancelCallback: closeConfirmationModal
+      },
+      // Anyone deleting their own comment
+      delete: {
+        messages: {
+          title: 'Delete comment',
+          body: <Text>Delete your comment permanently?</Text>,
+          confirm: 'Delete',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentDelete,
+        cancelCallback: closeConfirmationModal
+      },
+      flagAndRemove: {
+        messages: {
+          title: 'Flag comment?',
+          body: <Text color='default'> Flag and hide this comment? </Text>,
+          confirm: 'Flag',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentReport,
+        cancelCallback: closeConfirmationModal
+      },
+      report: {
+        messages: {
+          title: 'Flag comment?',
+          body: <Text color='default'> Flag this comment? </Text>,
+          confirm: 'Flag',
+          cancel: 'Cancel'
+        },
+        confirmCallback: handleCommentReport,
+        cancelCallback: closeConfirmationModal
+      }
+    }),
+    [
+      closeConfirmationModal,
+      handleCommentDelete,
+      handleCommentMute,
+      handleCommentPin,
+      handleCommentReport,
+      userDisplayName
+    ]
+  )
+
+  // Popup menu items
   const popupMenuItems = useMemo(() => {
+    const handleConfirmationPopup =
+      (confirmationType: ConfirmationAction) => () => {
+        openConfirmationModal()
+        setConfirmationModalData(confirmationModals[confirmationType])
+      }
     let items: PopupMenuItem[] = []
     const entityOwnerMenuItems: PopupMenuItem[] = [
       {
-        onClick: handleCommentPin,
-        text: messages.pin(isPinned),
-        icon: <IconPin />
+        onClick: handleConfirmationPopup('pin'),
+        text: messages.pin(isPinned)
       }
     ]
     const commentOwnerMenuItems: PopupMenuItem[] = [
-      { onClick: onClickEdit, text: messages.edit, icon: <IconPencil /> }
+      { onClick: onClickEdit, text: messages.edit }
     ]
     const nonCommentOwnerItems: PopupMenuItem[] = [
       {
-        onClick: () => {}, // TODO - nothing implemented yet
-        text: messages.report,
-        icon: <IconShieldCheck /> // TODO: temporary icon
+        onClick: handleConfirmationPopup('report'), // TODO - nothing implemented yet
+        text: messages.report
       },
-      { onClick: () => {}, text: messages.block, icon: <IconUserUnfollow /> } // TODO - nothing implemented yet
+      { onClick: () => {}, text: messages.block } // TODO - nothing implemented yet
     ]
     const muteNotifs: PopupMenuItem = {
-      onClick: () => {}, // TODO - nothing implemented yet here
-      text: messages.muteNotifs(notificationsMuted),
-      icon: <IconNotificationOff />
+      onClick: handleConfirmationPopup('muteUser'), // TODO - nothing implemented yet here
+      text: messages.muteNotifs(notificationsMuted)
     }
     const deleteComment: PopupMenuItem = {
-      onClick: handleCommentDelete,
-      text: messages.delete,
-      icon: <IconTrash />
+      onClick: handleConfirmationPopup('delete'),
+      text: messages.delete
     }
 
     if (isEntityOwner) {
@@ -139,14 +278,15 @@ export const CommentActionBar = ({
     }
     return items
   }, [
-    isCommentOwner,
-    isEntityOwner,
     isPinned,
-    isUserGettingNotifs,
-    notificationsMuted,
     onClickEdit,
-    handleCommentDelete,
-    handleCommentPin
+    notificationsMuted,
+    isEntityOwner,
+    isCommentOwner,
+    openConfirmationModal,
+    setConfirmationModalData,
+    confirmationModals,
+    isUserGettingNotifs
   ])
 
   return (

@@ -5,6 +5,7 @@ import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-c
 import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
+import { commentConfirmationModalReducer } from './comment-confirmation-modal/commentConfirmationModal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
@@ -57,7 +58,8 @@ const combinedReducers = combineReducers({
   EditAccessConfirmation: editAccessConfirmationModalReducer,
   EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
-  HideContentConfirmation: hideContentConfirmationModalReducer
+  HideContentConfirmation: hideContentConfirmationModalReducer,
+  CommentConfirmation: commentConfirmationModalReducer
 })
 
 /**

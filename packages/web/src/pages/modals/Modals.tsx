@@ -13,6 +13,7 @@ import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
 import CoinflowOnrampModal from 'components/coinflow-onramp-modal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
+import { CommentConfirmationModal } from 'components/comments/CommentConfirmationModal'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
@@ -118,7 +119,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
-  PayoutWallet: PayoutWalletModal
+  PayoutWallet: PayoutWalletModal,
+  CommentConfirmation: CommentConfirmationModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
