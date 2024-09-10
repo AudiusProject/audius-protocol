@@ -20,7 +20,7 @@ export const Hint = ({
   return (
     <div className={styles.root}>
       <Icon className={styles.icon} />
-      <Flex alignItems='center' gap='s'>
+      <Flex wrap='wrap' alignItems='center' gap='s'>
         <Text variant='body' size='m' strength='default'>
           {text}
         </Text>
