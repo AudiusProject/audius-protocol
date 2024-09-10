@@ -1,10 +1,9 @@
-import { Name, Theme } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import {
   accountActions,
   tokenDashboardPageActions,
   feedPageLineupActions,
   signOutActions,
-  themeActions,
   searchActions
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
@@ -30,7 +29,6 @@ const { resetAccount } = accountActions
 const { resetState: resetWalletState } = tokenDashboardPageActions
 const { clearHistory } = searchActions
 const { signOut: signOutAction } = signOutActions
-const { setTheme } = themeActions
 
 const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY, SEARCH_HISTORY_KEY]
 
@@ -42,7 +40,6 @@ function* signOut() {
 
   yield* put(resetAccount())
   yield* put(feedPageLineupActions.reset())
-  yield* put(setTheme({ theme: Theme.DEFAULT }))
 
   yield* put(clearHistory())
   yield* put(resetOAuthState())

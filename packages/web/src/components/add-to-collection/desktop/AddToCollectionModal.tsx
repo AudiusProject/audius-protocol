@@ -13,6 +13,7 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Modal, Scrollbar, IconMultiselectAdd } from '@audius/harmony'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
@@ -24,7 +25,6 @@ import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
@@ -35,6 +35,7 @@ const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 const { toast } = toastActions
+const { collectionPage } = route
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add to ${capitalize(collectionType)}`,
