@@ -353,23 +353,25 @@ const TrackTile = (props: CombinedProps) => {
             flex='0 1 65%'
             css={{ overflow: 'hidden' }}
           >
-            <TextLink
-              to={permalink}
-              textVariant='title'
-              isActive={isActive}
-              applyHoverStylesToInnerSvg
-            >
-              <Text ellipses>{title}</Text>
-              {isPlaying ? <IconVolume size='m' /> : null}
-              {showSkeleton && (
+            {showSkeleton ? (
+              <Flex column gap='s'>
                 <Skeleton className={styles.skeleton} height='20px' />
-              )}
-            </TextLink>
-            <UserLink userId={userId} badgeSize='xs'>
-              {showSkeleton && (
                 <Skeleton className={styles.skeleton} height='20px' />
-              )}
-            </UserLink>
+              </Flex>
+            ) : (
+              <>
+                <TextLink
+                  to={permalink}
+                  textVariant='title'
+                  isActive={isActive}
+                  applyHoverStylesToInnerSvg
+                >
+                  <Text ellipses>{title}</Text>
+                  {isPlaying ? <IconVolume size='m' /> : null}
+                </TextLink>
+                <UserLink userId={userId} badgeSize='xs'></UserLink>
+              </>
+            )}
           </Flex>
           {coSign && (
             <Text

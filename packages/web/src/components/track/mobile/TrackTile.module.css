@@ -115,10 +115,6 @@
   transform: scale(1);
 }
 
-.skeleton {
-  position: absolute;
-  top: 0;
-}
 .skeleton div {
   width: 100%;
 }
