@@ -65,8 +65,9 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
   const { name, onChange, buttonTitle, onPress, onImageLoad, isLoading } = props
   const styles = useStyles()
   const { neutralLight8 } = useThemeColors()
-  const [{ value }, { error, touched }, { setValue: setArtwork }] =
-    useField(name)
+  const [{ value }, { error, touched }, { setValue: setArtwork }] = useField<{
+    url: string
+  }>(name)
   const [{ value: existingTrackArtwork }] = useField('trackArtwork')
   const trackArtworkUrl = value?.url ?? existingTrackArtwork
   const [isImageLoading, setIsImageLoading] = useState(false)
@@ -117,7 +118,10 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
           </Button>
         </Flex>
       </DynamicImage>
-      {error && touched ? <InputErrorMessage message={error} /> : null}
+      {error && touched ? (
+        // @ts-ignore
+        <InputErrorMessage message={error?.url || error} />
+      ) : null}
     </View>
   )
 }
