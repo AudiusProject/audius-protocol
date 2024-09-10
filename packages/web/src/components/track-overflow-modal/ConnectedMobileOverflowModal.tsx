@@ -6,7 +6,6 @@ import {
   ID,
   ModalSource
 } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -39,7 +38,7 @@ import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors

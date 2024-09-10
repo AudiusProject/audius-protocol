@@ -20,7 +20,6 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -31,6 +30,7 @@ import {
   usePremiumContentPurchaseModal,
   PurchaseableContentType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -78,6 +78,7 @@ const {
 } = collectionsSocialActions
 const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserHandle = accountSelectors.getUserHandle
+const { collectionPage } = route
 
 type OwnProps = {
   uid: UID

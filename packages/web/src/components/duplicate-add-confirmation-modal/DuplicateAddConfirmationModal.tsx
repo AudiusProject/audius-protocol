@@ -1,13 +1,12 @@
 import { useCallback, useContext } from 'react'
 
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
-import { fillString } from '@audius/common/utils'
+import { fillString, route } from '@audius/common/utils'
 import {
   Button,
   Modal,
@@ -29,6 +28,7 @@ const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
 const { getAccountUser } = accountSelectors
+const { collectionPage } = route
 
 const messages = {
   title: 'Already Added',

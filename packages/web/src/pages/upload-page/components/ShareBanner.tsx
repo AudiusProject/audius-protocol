@@ -1,7 +1,6 @@
 import { useCallback, useContext } from 'react'
 
 import { Name, ShareSource, Track, User } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   tracksSocialActions,
@@ -9,6 +8,7 @@ import {
   ShareContent,
   UploadType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   IconLink,
@@ -35,6 +35,7 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 
 const { getAccountUser } = accountSelectors
+const { collectionPage } = route
 
 const uploadTypeMap = {
   [UploadType.INDIVIDUAL_TRACK]: 'new track',

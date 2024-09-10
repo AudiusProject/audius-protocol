@@ -18,7 +18,6 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -80,6 +79,7 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const {
   profilePage,
+  collectionPage,
   NOT_FOUND_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE

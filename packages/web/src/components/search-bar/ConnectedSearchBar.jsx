@@ -6,7 +6,6 @@ import {
 } from '@audius/common/assets'
 import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { collectionPage } from '@audius/common/src/utils/route'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
@@ -28,7 +27,7 @@ import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getPathname } from 'utils/route'
 
-const { profilePage, SEARCH_PAGE } = route
+const { profilePage, collectionPage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions
 
 class ConnectedSearchBar extends Component {

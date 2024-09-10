@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -37,7 +36,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { getUserFromCollection } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId

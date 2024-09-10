@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { Name } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   uploadSelectors,
@@ -35,7 +34,7 @@ import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { getAccountUser } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 

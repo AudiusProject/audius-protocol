@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { useAppContext } from '@audius/common/context'
 import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
-import { Nullable, Maybe } from '@audius/common/utils'
+import { Nullable, Maybe, route } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -24,6 +23,8 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { env } from 'services/env'
 
 import styles from './FeaturedContent.module.css'
+
+const { collectionPage } = route
 
 const messages = {
   title: 'Featured Content',

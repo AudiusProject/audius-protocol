@@ -10,7 +10,6 @@ import {
   ID,
   Track
 } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -39,7 +38,7 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 
 import PlaylistTile from './PlaylistTile'
-const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
+const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE, collectionPage } = route
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
