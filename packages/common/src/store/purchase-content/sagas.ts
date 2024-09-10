@@ -1069,44 +1069,40 @@ function* purchaseWithAnything({
       addressLookupTableAccounts
     })
 
-    try {
-      if (contentType === PurchaseableContentType.TRACK) {
-        const {
-          instructions: {
-            routeInstruction,
-            memoInstruction,
-            locationMemoInstruction
-          }
-        } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
-          userId: encodeHashId(purchaserUserId),
-          trackId: encodeHashId(contentId),
-          price: price / 100.0,
-          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-        })
-        message.instructions.push(routeInstruction, memoInstruction)
-        if (locationMemoInstruction) {
-          message.instructions.push()
+    if (contentType === PurchaseableContentType.TRACK) {
+      const {
+        instructions: {
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
         }
-      } else {
-        const {
-          instructions: {
-            routeInstruction,
-            memoInstruction,
-            locationMemoInstruction
-          }
-        } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
-          userId: encodeHashId(purchaserUserId),
-          albumId: encodeHashId(contentId),
-          price: price / 100.0,
-          extraAmount: extraAmount ? extraAmount / 100.0 : undefined
-        })
-        message.instructions.push(routeInstruction, memoInstruction)
-        if (locationMemoInstruction) {
-          message.instructions.push()
-        }
+      } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
+        userId: encodeHashId(purchaserUserId),
+        trackId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
+      message.instructions.push(routeInstruction, memoInstruction)
+      if (locationMemoInstruction) {
+        message.instructions.push()
       }
-    } catch (e) {
-      console.error(e)
+    } else {
+      const {
+        instructions: {
+          routeInstruction,
+          memoInstruction,
+          locationMemoInstruction
+        }
+      } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
+        userId: encodeHashId(purchaserUserId),
+        albumId: encodeHashId(contentId),
+        price: price / 100.0,
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+      })
+      message.instructions.push(routeInstruction, memoInstruction)
+      if (locationMemoInstruction) {
+        message.instructions.push()
+      }
     }
     console.info(
       `Purchasing ${
