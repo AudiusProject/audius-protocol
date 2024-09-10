@@ -95,6 +95,14 @@ const Artwork = ({
         }
       : { boxShadow }
   }
+  const getPlayButtonIconStyle = () => {
+    return isLargeFlavor
+      ? {
+          height: `${sideLength / 1.5}px`,
+          width: `${sideLength / 1.5}px`
+        }
+      : {}
+  }
   return (
     <div
       className={cn(
@@ -128,6 +136,7 @@ const Artwork = ({
         >
           <PlayButton
             style={getPlayButtonStyle()}
+            iconStyle={getPlayButtonIconStyle()}
             onTogglePlay={onTogglePlay}
             playingState={playingState}
             iconColor={getWrapperTint(iconColor)}

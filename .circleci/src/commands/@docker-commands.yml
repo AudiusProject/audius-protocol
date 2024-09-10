@@ -48,7 +48,6 @@ docker-tag-images:
             discovery-provider-notifications
             discovery-provider-openresty
             es-indexer
-            healthz
             relay
             sla-auditor
             solana-relay
