@@ -64,7 +64,8 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
         justifyContent='center'
         alignItems='center'
         css={{
-          visibility: (isHovered || isPlaying) && hasTracks ? 'visible' : 'hidden',
+          visibility:
+            (isHovered || isPlaying) && hasTracks ? 'visible' : 'hidden',
           pointerEvents: 'none',
           position: 'absolute',
           top: 0,
@@ -76,21 +77,20 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
           zIndex: 2
         }}
       >
-        {hasTracks ?
+        {hasTracks ? (
           isPlaying ? (
-          <IconPause size='l' color='staticWhite' />
-        ) : (
-          <Box pl='xs'>
-            <IconPlay size='l' color='staticWhite' />
-          </Box>
+            <IconPause size='l' color='staticWhite' />
+          ) : (
+            <Box pl='xs'>
+              <IconPlay size='l' color='staticWhite' />
+            </Box>
           )
-          : null
-        }
+        ) : null}
       </Flex>
       <Avatar
         variant='strong'
         userId={user_id}
-        css={{ cursor: hasTracks ? "pointer" : "default" }}
+        css={{ cursor: hasTracks ? 'pointer' : 'default' }}
         onClick={() => {
           dispatch(
             make(Name.CREATE_ACCOUNT_ARTIST_PREVIEWED, {
