@@ -1,5 +1,4 @@
-import { EntityType, Comment, ReplyComment } from '@audius/sdk'
-import { CommentMetadata } from '@audius/sdk/dist/sdk/api/comments/CommentsAPI'
+import { EntityType, Comment, CommentMetadata, ReplyComment } from '@audius/sdk'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
 import { createApi } from '~/audius-query'

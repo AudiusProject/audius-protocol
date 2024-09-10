@@ -1,6 +1,4 @@
-import { useTheme } from '@audius/harmony'
 import cn from 'classnames'
-import Color from 'color'
 
 import { usePortal } from 'hooks/usePortal'
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -11,6 +9,7 @@ const BACKGROUND_ELEMENT_HEIGHT_PX = 161
 export const BACKGROUND_ELEMENT_ID = 'headerPadding'
 
 type HeaderGutterProps = {
+  isChromeOrSafari?: boolean
   headerContainerRef?: React.RefObject<HTMLDivElement>
   scrollBarWidth?: number
   className?: string
@@ -20,22 +19,23 @@ type HeaderGutterProps = {
  * Hacky div that's Portaled out to document.body
  * with a low z-index to allow scroll bars to visually "float on top" of sticky headers.
  */
-export const HeaderGutter = (props: HeaderGutterProps) => {
-  const { headerContainerRef, scrollBarWidth, className } = props
+export const HeaderGutter = ({
+  isChromeOrSafari,
+  headerContainerRef,
+  scrollBarWidth,
+  className
+}: HeaderGutterProps) => {
   const mainContentRef = useMainContentRef()
   // Portal to the main content parent, which is the app (not body, to account for banners)
   const Portal = usePortal({
     container: mainContentRef.current?.parentElement ?? undefined
   })
 
-  const { color, type } = useTheme()
-
-  const gradient = `linear-gradient(180deg, ${color.background.white} 0%, ${
-    color.background.white
-  } 20%, ${Color(color.background.white).alpha(0.85)} 65%)`
-
   // Not all browsers support backdrop-filter: blur (at least at time this was intially implemented)
   // so treat it with a different gradient in those cases.
+  const gradient = isChromeOrSafari
+    ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
+    : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
 
   const containerHeight =
     headerContainerRef && headerContainerRef.current
@@ -45,13 +45,14 @@ export const HeaderGutter = (props: HeaderGutterProps) => {
   const style = {
     width: `${scrollBarWidth}px`,
     height: `${containerHeight}px`,
-    background:
-      type === 'debug'
-        ? color.background.white
-        : `rgba(0, 0, 0, 0) ${gradient} repeat scroll 0% 0%`
+    background: `rgba(0, 0, 0, 0) ${gradient} repeat scroll 0% 0%`
   }
 
-  if (headerContainerRef === undefined || scrollBarWidth === undefined) {
+  if (
+    isChromeOrSafari === undefined ||
+    headerContainerRef === undefined ||
+    scrollBarWidth === undefined
+  ) {
     return null
   }
 
