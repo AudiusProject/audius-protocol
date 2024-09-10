@@ -1,10 +1,12 @@
-import { Chain } from '@audius/common/models'
+import { Chain, Status } from '@audius/common/models'
 import type { AssociatedWallet } from '@audius/common/store'
 import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Flex } from '@audius/harmony-native'
 import { Divider, Text } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { LinkedWallet } from './LinkedWallet'
@@ -50,12 +52,11 @@ export const LinkedWallets = () => {
   const styles = useStyles()
 
   const {
+    loadingStatus,
     confirmingWallet,
     connectedEthWallets = [],
     connectedSolWallets
   } = useSelector(getAssociatedWallets)
-
-  // TODO C-3163 - Add loading state for loading associated wallets. Currently behaves as if you have no associated wallets until loading is finished.
 
   const removeWallets = useSelector(getRemoveWallet)
 
@@ -107,20 +108,26 @@ export const LinkedWallets = () => {
         <View style={styles.gap} />
       </View>
       <Divider style={styles.divider} />
-      <FlatList
-        renderItem={({ item }) => (
-          <LinkedWallet
-            chain={item.chain}
-            address={item.address}
-            audioBalance={item.balance}
-            isLoading={Boolean(
-              removeWallets.wallet === item.address || item.isConfirming
-            )}
-          />
-        )}
-        data={wallets}
-        ItemSeparatorComponent={() => <Divider style={styles.divider} />}
-      />
+      {loadingStatus === Status.SUCCESS ? (
+        <FlatList
+          renderItem={({ item }) => (
+            <LinkedWallet
+              chain={item.chain}
+              address={item.address}
+              audioBalance={item.balance}
+              isLoading={Boolean(
+                removeWallets.wallet === item.address || item.isConfirming
+              )}
+            />
+          )}
+          data={wallets}
+          ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+        />
+      ) : (
+        <Flex alignSelf='center'>
+          <LoadingSpinner style={{ width: 40, height: 40 }} />
+        </Flex>
+      )}
     </View>
   )
 }

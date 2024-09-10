@@ -1,10 +1,17 @@
 import { useCallback } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions
 } from '@audius/common/store'
-import { Button, Flex, ModalFooter, Text } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  LoadingSpinner,
+  ModalFooter,
+  Text
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
@@ -34,12 +41,12 @@ const ConnectWalletsBody = ({ onClose }: { onClose: () => void }) => {
   const { errorMessage } = useSelector(getAssociatedWallets)
 
   const {
+    loadingStatus,
     status,
     confirmingWallet,
     connectedEthWallets: ethWallets,
     connectedSolWallets: solWallets
   } = useSelector(getAssociatedWallets)
-  // TODO C-3163 - Add loading state for loading associated wallets. Currently behaves as if you have no associated wallets until loading is finished.
   const removeWallets = useSelector(getRemoveWallet)
   const numConnectedWallets =
     (ethWallets?.length ?? 0) + (solWallets?.length ?? 0)
@@ -64,14 +71,22 @@ const ConnectWalletsBody = ({ onClose }: { onClose: () => void }) => {
         <Text variant='body' size='m'>
           {messages.description}
         </Text>
-        {(numConnectedWallets > 0 || Boolean(confirmingWallet.wallet)) && (
-          <WalletsTable hasActions />
+        {loadingStatus === Status.SUCCESS ? (
+          <>
+            {(numConnectedWallets > 0 || Boolean(confirmingWallet.wallet)) && (
+              <WalletsTable hasActions />
+            )}
+            {numConnectedWallets === 0 && !confirmingWallet.wallet ? (
+              <Text variant='body' size='m' strength='strong'>
+                {messages.noConnected}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          <Flex alignItems='center' alignSelf='center'>
+            <LoadingSpinner />
+          </Flex>
         )}
-        {numConnectedWallets === 0 && !confirmingWallet.wallet ? (
-          <Text variant='body' size='m' strength='strong'>
-            {messages.noConnected}
-          </Text>
-        ) : null}
         {errorMessage && (
           <Text variant='body' color='danger'>
             {errorMessage}
