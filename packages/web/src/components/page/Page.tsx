@@ -4,16 +4,12 @@ import {
   useRef,
   useState,
   useEffect,
-  useCallback,
   MutableRefObject
 } from 'react'
 
-import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
-// @ts-ignore
-import calcScrollbarWidth from 'scrollbar-width'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
@@ -21,31 +17,12 @@ import SearchBar from 'components/search-bar/ConnectedSearchBar'
 import styles from './Page.module.css'
 
 const HEADER_MARGIN_PX = 32
-// Pixels on the right side of the header to account for potential scrollbars
-const MIN_GUTTER_WIDTH = 20
 
 // Responsible for positioning the header
-type HeaderContainerProps = Pick<PageProps, 'header' | 'showSearch'> & {
-  containerRef: (element: Nullable<HTMLElement>) => void
-}
+type HeaderContainerProps = Pick<PageProps, 'header' | 'showSearch'>
 
 const HeaderContainer = (props: HeaderContainerProps) => {
-  const { header, containerRef, showSearch } = props
-
-  // Need to offset the header on the right side
-  // the width of the scrollbar.
-  const [scrollBarWidth, setScrollbarWidth] = useState(0)
-
-  const refreshScrollWidth = useCallback(() => {
-    const width = calcScrollbarWidth(true)
-    // For some odd reason, narrow windows ONLY in Firefox
-    // return 0 width for the scroll bars.
-    setScrollbarWidth(width > 0 ? width : MIN_GUTTER_WIDTH)
-  }, [])
-
-  useEffect(() => {
-    refreshScrollWidth()
-  }, [refreshScrollWidth])
+  const { header, showSearch } = props
 
   // Only Safari & Chrome support the CSS
   // frosted glasss effect.
@@ -63,13 +40,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
   const headerContainerRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div
-      className={styles.headerContainer}
-      ref={containerRef}
-      style={{
-        right: `${scrollBarWidth}px`
-      }}
-    >
+    <div className={styles.headerContainer}>
       <div
         ref={headerContainerRef}
         className={styles.frosted}
@@ -77,7 +48,6 @@ const HeaderContainer = (props: HeaderContainerProps) => {
           // Need to set a different gradient for
           // browsers that don't support the
           // backdrop-filter frosted glass effect.
-          paddingLeft: `${scrollBarWidth}px`,
           background: isChromeOrSafari
             ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
             : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
@@ -85,7 +55,6 @@ const HeaderContainer = (props: HeaderContainerProps) => {
       >
         {cloneElement(header as any, {
           isChromeOrSafari,
-          scrollBarWidth,
           headerContainerRef,
           topLeftElement: showSearch ? <SearchBar /> : null
         })}
@@ -138,14 +107,6 @@ export const Page = (props: PageProps) => {
     variant = 'inset'
   } = props
 
-  const [headerHeight, setHeaderHeight] = useState(0)
-
-  const calculateHeaderHeight = (element: Nullable<HTMLElement>) => {
-    if (element) {
-      setHeaderHeight(element.offsetHeight)
-    }
-  }
-
   const metaTagsProps = {
     title,
     description,
@@ -173,13 +134,7 @@ export const Page = (props: PageProps) => {
           props.className
         )}
       >
-        {header && (
-          <HeaderContainer
-            header={header}
-            showSearch={showSearch}
-            containerRef={calculateHeaderHeight}
-          />
-        )}
+        {header && <HeaderContainer header={header} showSearch={showSearch} />}
         <div
           className={cn({
             [styles.inset]: variant === 'inset',
@@ -189,9 +144,7 @@ export const Page = (props: PageProps) => {
             [containerClassName ?? '']: !!containerClassName
           })}
           style={
-            variant === 'inset'
-              ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
-              : undefined
+            variant === 'inset' ? { paddingTop: HEADER_MARGIN_PX } : undefined
           }
         >
           {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
