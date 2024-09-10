@@ -38,10 +38,9 @@ const ConnectWalletsBody = ({ onClose }: { onClose: () => void }) => {
     dispatch(connectNewWallet())
   }, [dispatch])
 
-  const { errorMessage } = useSelector(getAssociatedWallets)
-
   const {
     loadingStatus,
+    errorMessage,
     status,
     confirmingWallet,
     connectedEthWallets: ethWallets,
@@ -82,11 +81,12 @@ const ConnectWalletsBody = ({ onClose }: { onClose: () => void }) => {
               </Text>
             ) : null}
           </>
-        ) : (
+        ) : loadingStatus === Status.IDLE ||
+          loadingStatus === Status.LOADING ? (
           <Flex alignItems='center' alignSelf='center'>
             <LoadingSpinner />
           </Flex>
-        )}
+        ) : null}
         {errorMessage && (
           <Text variant='body' color='danger'>
             {errorMessage}

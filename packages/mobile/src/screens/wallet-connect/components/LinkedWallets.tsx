@@ -4,8 +4,8 @@ import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex } from '@audius/harmony-native'
-import { Divider, Text } from 'app/components/core'
+import { Flex, Text } from '@audius/harmony-native'
+import { Divider } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
@@ -53,6 +53,7 @@ export const LinkedWallets = () => {
 
   const {
     loadingStatus,
+    errorMessage,
     confirmingWallet,
     connectedEthWallets = [],
     connectedSolWallets
@@ -89,19 +90,17 @@ export const LinkedWallets = () => {
       <View style={styles.linkedWalletsHeader}>
         <Text
           style={styles.linkedWalletsText}
-          fontSize='medium'
-          textTransform='uppercase'
-          weight='bold'
-          color='neutralLight4'
+          size='m'
+          variant='label'
+          color='subdued'
         >
           {messages.linkedWallets}
         </Text>
         <Text
           style={styles.audioAmountText}
-          fontSize='medium'
-          textTransform='uppercase'
-          weight='bold'
-          color='neutralLight4'
+          size='m'
+          variant='label'
+          color='subdued'
         >
           {messages.audio}
         </Text>
@@ -123,9 +122,16 @@ export const LinkedWallets = () => {
           data={wallets}
           ItemSeparatorComponent={() => <Divider style={styles.divider} />}
         />
-      ) : (
+      ) : loadingStatus === Status.IDLE || loadingStatus === Status.LOADING ? (
         <Flex alignSelf='center'>
           <LoadingSpinner style={{ width: 40, height: 40 }} />
+        </Flex>
+      ) : null}
+      {errorMessage && (
+        <Flex alignSelf='center'>
+          <Text variant='body' color='danger'>
+            {errorMessage}
+          </Text>
         </Flex>
       )}
     </View>
