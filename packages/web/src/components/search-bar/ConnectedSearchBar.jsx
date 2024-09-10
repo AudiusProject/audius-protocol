@@ -25,9 +25,9 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { collectionPage, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 
-const { profilePage, SEARCH_PAGE } = route
+const { profilePage, collectionPage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions
 
 class ConnectedSearchBar extends Component {
