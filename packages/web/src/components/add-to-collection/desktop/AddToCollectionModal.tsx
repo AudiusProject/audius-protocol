@@ -25,7 +25,7 @@ import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
 import styles from './AddToCollectionModal.module.css'
-const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
+const { getCollectionType, getTrackId, getTrackTitle } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -52,7 +52,6 @@ const AddToCollectionModal = () => {
   const collectionType = useSelector(getCollectionType)
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
-  const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const isAlbumType = collectionType === 'album'
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
@@ -118,10 +117,6 @@ const AddToCollectionModal = () => {
     setIsOpen(false)
   }
 
-  const handleDisabledPlaylistClick = () => {
-    dispatch(toast({ content: messages.hiddenAdd }))
-  }
-
   const handleCreateCollection = () => {
     if (!trackTitle) return
     const metadata = { playlist_name: trackTitle }
@@ -170,11 +165,7 @@ const AddToCollectionModal = () => {
                 <CollectionItem
                   collectionType={collectionType}
                   collection={collection}
-                  handleClick={
-                    isTrackUnlisted && !collection.is_private
-                      ? handleDisabledPlaylistClick
-                      : handleCollectionClick
-                  }
+                  handleClick={handleCollectionClick}
                 />
               </div>
             ))}
