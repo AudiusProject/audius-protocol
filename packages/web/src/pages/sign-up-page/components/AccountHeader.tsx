@@ -73,7 +73,6 @@ const ProfileImageAvatar = ({
           color='staticWhite'
           shadow='drop'
           icon={IconCamera}
-          style={{ zIndex: zIndex.ONE }}
         />
       ) : null}
     </Avatar>
