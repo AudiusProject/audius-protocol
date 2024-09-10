@@ -54,6 +54,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = useContext(SelectArtistsPreviewContext)
 
   const isPlaying = isPreviewPlaying && nowPlayingArtistId === user_id
+  const hasTracks = track_count && track_count > 0
 
   const [avatar] = useHover((isHovered) => (
     <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
@@ -63,7 +64,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
         justifyContent='center'
         alignItems='center'
         css={{
-          visibility: isHovered || isPlaying ? 'visible' : 'hidden',
+          visibility: (isHovered || isPlaying) && hasTracks ? 'visible' : 'hidden',
           pointerEvents: 'none',
           position: 'absolute',
           top: 0,
@@ -75,17 +76,21 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
           zIndex: 2
         }}
       >
-        {isPlaying ? (
+        {hasTracks ?
+          isPlaying ? (
           <IconPause size='l' color='staticWhite' />
         ) : (
           <Box pl='xs'>
             <IconPlay size='l' color='staticWhite' />
           </Box>
-        )}
+          )
+          : null
+        }
       </Flex>
       <Avatar
         variant='strong'
         userId={user_id}
+        css={{ cursor: hasTracks ? "pointer" : "default" }}
         onClick={() => {
           dispatch(
             make(Name.CREATE_ACCOUNT_ARTIST_PREVIEWED, {
@@ -93,7 +98,9 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               artistID: user_id
             })
           )
-          togglePreview(user_id)
+          if (hasTracks) {
+            togglePreview(user_id)
+          }
         }}
       />
     </Box>
