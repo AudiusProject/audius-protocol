@@ -67,16 +67,14 @@ const ProfileImageAvatar = ({
       }}
     >
       {isEditing && !imageUrl ? (
-        <>
-          <IconButton
-            aria-label='Upload a profile photo'
-            size='l'
-            color='staticWhite'
-            shadow='drop'
-            icon={IconCamera}
-            style={{ zIndex: zIndex.UTIL_ONE }}
-          />
-        </>
+        <IconButton
+          aria-label='Upload a profile photo'
+          size='l'
+          color='staticWhite'
+          shadow='drop'
+          icon={IconCamera}
+          style={{ zIndex: zIndex.ONE }}
+        />
       ) : null}
     </Avatar>
   )
