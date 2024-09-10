@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages as messages } from '@audius/common/messages'
-import { ID, Name, OS, ProfilePictureSizes, Theme } from '@audius/common/models'
+import { ID, Name, ProfilePictureSizes, Theme } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   BrowserNotificationSetting,
@@ -17,12 +17,12 @@ import { route } from '@audius/common/utils'
 import {
   Button,
   IconAppearance,
-  IconDesktop,
   IconEmailAddress,
   IconKey,
   IconRecoveryEmail as IconMail,
   IconMessage,
   IconNotificationOn as IconNotification,
+  IconReceive,
   IconRobot,
   IconSignOut,
   IconVerified,
@@ -48,9 +48,8 @@ import { ComponentPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import DownloadApp from 'services/download-app/DownloadApp'
 import { env } from 'services/env'
-import { getOS, isElectron } from 'utils/clientUtil'
+import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import packageInfo from '../../../../../package.json'
@@ -65,8 +64,12 @@ import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
 
-const { PRIVACY_POLICY, PRIVATE_KEY_EXPORTER_SETTINGS_PAGE, TERMS_OF_SERVICE } =
-  route
+const {
+  DOWNLOAD_LINK,
+  PRIVACY_POLICY,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  TERMS_OF_SERVICE
+} = route
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
@@ -196,8 +199,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
   }, [setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
 
   const handleDownloadDesktopAppClicked = useCallback(() => {
-    DownloadApp.start(getOS() || OS.WIN)
     recordDownloadDesktopApp()
+    window.location.href = `https://audius.co${DOWNLOAD_LINK}`
   }, [recordDownloadDesktopApp])
 
   const openChangePasswordModal = useCallback(() => {
@@ -415,7 +418,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
-            icon={<IconDesktop />}
+            icon={<IconReceive />}
             title={messages.desktopAppCardTitle}
             description={messages.desktopAppCardDescription}
           >

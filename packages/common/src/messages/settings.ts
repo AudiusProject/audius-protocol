@@ -41,7 +41,7 @@ export const settingsMessages = {
   verificationCardDescription:
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   desktopAppCardDescription:
-    'For the best experience, we reccomend downloading the Audius Desktop App.',
+    'For the best experience, we recommend downloading the Audius App.',
 
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
