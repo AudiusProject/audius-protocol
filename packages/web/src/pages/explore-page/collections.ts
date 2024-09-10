@@ -37,9 +37,6 @@ export type ExploreMoodCollection = ExploreCollection & {
   moods: string[]
 }
 
-// How much full width cards move
-const WIDE_CARD_SENSITIVTY = 0.04
-
 export const PREMIUM_TRACKS: ExploreCollection = {
   variant: ExploreCollectionsVariant.DIRECT_LINK,
   title: 'Premium Tracks',
@@ -47,8 +44,7 @@ export const PREMIUM_TRACKS: ExploreCollection = {
   gradient: 'linear-gradient(95deg, #13C65A 0%, #16A653 100%)',
   shadow: 'rgba(196,81,193,0.35)',
   icon: IconCart,
-  link: EXPLORE_PREMIUM_TRACKS_PAGE,
-  cardSensitivity: WIDE_CARD_SENSITIVTY
+  link: EXPLORE_PREMIUM_TRACKS_PAGE
 }
 
 export const LET_THEM_DJ: ExploreCollection = {
@@ -79,8 +75,7 @@ export const TRENDING_PLAYLISTS: ExploreCollection = {
   shadow: 'rgba(87,170,255,0.35)',
   icon: IconExploreTopPlaylists,
   link: TRENDING_PLAYLISTS_PAGE,
-  incentivized: true,
-  cardSensitivity: WIDE_CARD_SENSITIVTY
+  incentivized: true
 }
 
 export const TRENDING_UNDERGROUND: ExploreCollection = {
@@ -91,8 +86,7 @@ export const TRENDING_UNDERGROUND: ExploreCollection = {
   shadow: 'rgba(242, 87, 255, 0.35)',
   icon: IconCassette,
   link: TRENDING_UNDERGROUND_PAGE,
-  incentivized: true,
-  cardSensitivity: WIDE_CARD_SENSITIVTY
+  incentivized: true
 }
 
 export const CHILL_PLAYLISTS: ExploreMoodCollection = {
