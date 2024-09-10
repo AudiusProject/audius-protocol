@@ -215,6 +215,7 @@ export const authenticatedRoutes = [
   CHAT_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
+  PAYMENTS_PAGE,
   WITHDRAWALS_PAGE
 ]
 
