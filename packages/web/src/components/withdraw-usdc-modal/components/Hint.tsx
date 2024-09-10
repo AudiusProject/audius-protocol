@@ -1,4 +1,4 @@
-import { IconComponent, Text } from '@audius/harmony'
+import { Flex, IconComponent, Text } from '@audius/harmony'
 
 import styles from './Hint.module.css'
 
@@ -20,13 +20,8 @@ export const Hint = ({
   return (
     <div className={styles.root}>
       <Icon className={styles.icon} />
-      <div>
-        <Text
-          className={styles.text}
-          variant='body'
-          size='m'
-          strength='default'
-        >
+      <Flex alignItems='center' gap='s'>
+        <Text variant='body' size='m' strength='default'>
           {text}
         </Text>
         <a
@@ -38,7 +33,7 @@ export const Hint = ({
         >
           {linkText}
         </a>
-      </div>
+      </Flex>
     </div>
   )
 }
