@@ -1,7 +1,12 @@
 import { useEffect, useContext } from 'react'
 
+import {
+  useGetCurrentUserId,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { ID, LineupState, Track, User } from '@audius/common/models'
+import { ID, LineupState, Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
@@ -41,8 +46,6 @@ export type OwnProps = {
   structuredData?: Object
   hasValidRemixParent: boolean
   // Hero Track Props
-  heroTrack: Track | null
-  user: User | null
   heroPlaying: boolean
   previewing: boolean
   userId: ID | null
@@ -83,8 +86,6 @@ const TrackPage = (props: OwnProps) => {
     structuredData,
     hasValidRemixParent,
     // Hero Track Props
-    heroTrack,
-    user,
     heroPlaying,
     previewing,
     userId,
@@ -106,6 +107,15 @@ const TrackPage = (props: OwnProps) => {
     goToFavoritesPage,
     goToRepostsPage
   } = props
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const track = (useGetTrackById({ id, currentUserId }).data ??
+    undefined) as unknown as Track | undefined
+  const { data: user } = useGetUserById(
+    { id: track?.owner_id ?? 0 },
+    { disabled: !track?.owner_id }
+  )
+
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.BACK)
@@ -119,9 +129,9 @@ const TrackPage = (props: OwnProps) => {
   }, [setHeader])
 
   const { entries } = tracks
-  const isOwner = heroTrack ? heroTrack.owner_id === userId : false
-  const isSaved = heroTrack ? heroTrack.has_current_user_saved : false
-  const isReposted = heroTrack ? heroTrack.has_current_user_reposted : false
+  const isOwner = track ? track.owner_id === userId : false
+  const isSaved = track ? track.has_current_user_saved : false
+  const isReposted = track ? track.has_current_user_reposted : false
 
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -132,12 +142,12 @@ const TrackPage = (props: OwnProps) => {
     onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
   const onSave = isOwner
     ? () => {}
-    : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
+    : () => track && onSaveTrack(isSaved, track.track_id)
   const onRepost = isOwner
     ? () => {}
-    : () => heroTrack && onHeroRepost(isReposted, heroTrack.track_id)
+    : () => track && onHeroRepost(isReposted, track.track_id)
   const onShare = () => {
-    heroTrack && onHeroShare(heroTrack.track_id)
+    track && onHeroShare(track.track_id)
   }
 
   const {
@@ -148,7 +158,7 @@ const TrackPage = (props: OwnProps) => {
     remixParentTrackId,
     remixTrackIds,
     trackId
-  } = getTrackDefaults(heroTrack)
+  } = getTrackDefaults(track ?? null)
 
   const renderOriginalTrackTitle = () => (
     <Text textAlign='left' variant='title'>
