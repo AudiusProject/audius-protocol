@@ -103,7 +103,8 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 			// Set status to trigger retranscode job
 			upload.Status = JobStatusRetranscode
 		}
-		err = ss.crud.Update(upload)
+
+		err = ss.transcode(upload)
 		if err != nil {
 			ss.logger.Warn("update upload failed", "err", err)
 		}
@@ -229,12 +230,12 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodeProgress = 1
 				upload.TranscodedAt = time.Now().UTC()
 				upload.Status = JobStatusDone
+				return ss.crud.Create(upload)
 			} else {
 				// do transcode
-				ss.transcode(upload)
+				return ss.transcode(upload)
 			}
 
-			return ss.crud.Create(upload)
 		})
 	}
 

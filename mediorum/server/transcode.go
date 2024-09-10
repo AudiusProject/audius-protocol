@@ -304,7 +304,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		upload.TranscodeProgress = 0
 		upload.TranscodedAt = time.Now().UTC()
 		upload.Status = JobStatusBusyRetranscode
-		ss.crud.Update(upload)
+		// ss.crud.Update(upload)
 
 		return ss.transcodeAudioPreview(upload, dest, logger, onError)
 	}
@@ -400,7 +400,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	} else {
 		upload.Status = JobStatusBusy
 	}
-	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
 	if upload.Status == JobStatusBusyRetranscode {
@@ -444,46 +443,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
-	case JobTemplateImgSquare:
-		// 150x150, 480x480, 1000x1000
-		squares := []int{150, 480, 1000}
-		for _, targetBox := range squares {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
-	case JobTemplateImgBackdrop:
-		// 640x, 2000x
-		widths := []int{640, 2000}
-		for _, targetWidth := range widths {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx.jpg", targetWidth)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
 	case JobTemplateAudio, "":
 		if upload.Template == "" {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
@@ -504,6 +463,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			// analyze audio for new full audio uploads
 			ss.analyzeAudio(upload, time.Minute)
 		}
+	default:
+		return fmt.Errorf("unsupported format: %s", upload.Template)
 	}
 
 	upload.TranscodeProgress = 1
