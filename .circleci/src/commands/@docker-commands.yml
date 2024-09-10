@@ -43,7 +43,6 @@ docker-tag-images:
         command: |
           discovery=(
             comms
-            dashboard
             discovery-provider
             discovery-provider-notifications
             discovery-provider-openresty
@@ -106,15 +105,6 @@ docker-tag-images:
             tag="$exported_version_tag"
             [ -n "$tag" ]
           fi
-
-          function handle_dashboard() {
-            if [[ "$1" = "dashboard" ]]; then
-              echo "Adding supplemental tags to ${1}:${2}"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-dev"   "audius/${1}:${2}-dev"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-stage" "audius/${1}:${2}-stage"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-prod"  "audius/${1}:${2}-prod"
-            fi
-          }
 
           for image in "${images[@]}"; do
             echo "adding tag '$tag' to image 'audius/${image}:${CIRCLE_SHA1}'"
