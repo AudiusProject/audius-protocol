@@ -6,47 +6,6 @@
   margin: 0 auto;
 }
 
-.topSection {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  position: relative;
-  border-radius: var(--harmony-unit-3) var(--harmony-unit-3) 0px 0px;
-  background-color: var(--harmony-n-25);
-
-  padding: var(--harmony-unit-6);
-}
-
-.infoSection {
-  flex: 1 0 338px;
-  padding-left: 22px;
-  flex-direction: column;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  overflow-wrap: break-word;
-  padding-bottom: var(--harmony-unit-1);
-  margin-bottom: -4px;
-}
-
-.infoSectionHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.typeLabel {
-  display: flex;
-  align-items: center;
-  color: var(--harmony-text-subdued);
-  gap: var(--harmony-unit-2);
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  user-select: none;
-}
-
 .gatedContent .typeLabel {
   letter-spacing: 2px;
 }
@@ -65,26 +24,11 @@
   align-items: center;
 }
 
-.title {
-  margin-bottom: var(--harmony-unit-3);
-  width: 100%;
-  position: relative;
-  min-height: 38px;
-}
-
 .trackLength {
   padding-left: 18px;
   color: var(--harmony-n-400);
   font-size: var(--harmony-unit-3);
   font-weight: 600;
-}
-
-.playSection {
-  margin-top: 7px;
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-6);
-  flex-wrap: wrap;
 }
 
 .playSection > * {
@@ -247,11 +191,6 @@
   margin-left: var(--harmony-unit-1);
 }
 
-.bottomSection {
-  padding: var(--harmony-unit-5) var(--harmony-unit-6) var(--harmony-unit-5);
-  border-top: 1px solid var(--harmony-n-100);
-}
-
 .description {
   padding-top: var(--harmony-unit-3);
   line-height: 26px;
@@ -267,12 +206,6 @@
 .makePublicButton {
   width: 166px;
   flex-shrink: 0;
-}
-
-.headerContainer {
-  padding-top: var(--harmony-unit-5);
-  padding-bottom: 22px;
-  display: flex;
 }
 
 .downloadableIconContainer {
@@ -293,13 +226,6 @@
 .skeleton {
   position: absolute;
   top: 0;
-}
-
-.statsSection {
-  margin-top: var(--harmony-unit-5);
-  min-height: 26px;
-  display: flex;
-  align-items: center;
 }
 
 .spinner {

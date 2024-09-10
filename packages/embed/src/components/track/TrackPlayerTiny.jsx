@@ -76,6 +76,7 @@ const TrackPlayerTiny = ({
     infoStyle['--info-width'] = `${infoWidth + MARQUEE_SPACING}px`
   }
 
+  const isGated = !!streamConditions
   const isPurchaseable =
     streamConditions && instanceOfPurchaseGate(streamConditions)
 
@@ -85,6 +86,8 @@ const TrackPlayerTiny = ({
         playingState={playingState}
         onTogglePlay={onTogglePlay}
         className={styles.playButton}
+        isPlayable={!isGated || isPurchaseable}
+        iconSize='2xs'
       />
       <div className={styles.container} onClick={onClick} ref={containerRef}>
         {isPurchaseable ? <Preview size='s' /> : null}

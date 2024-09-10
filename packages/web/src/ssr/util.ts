@@ -10,7 +10,8 @@ const {
   CHANGE_EMAIL_SETTINGS_PAGE,
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHATS_PAGE,
-  CHAT_PAGE
+  CHAT_PAGE,
+  DOWNLOAD_LINK
 } = route
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
@@ -24,7 +25,8 @@ const nonSsrPaths = [
   CHANGE_EMAIL_SETTINGS_PAGE,
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHATS_PAGE,
-  CHAT_PAGE
+  CHAT_PAGE,
+  DOWNLOAD_LINK
 ]
 
 export const makePageRoute =

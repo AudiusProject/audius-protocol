@@ -150,7 +150,6 @@ services:
       x-bake:
         platforms:
           - linux/amd64
-          - linux/arm64
     profiles:
       - solana-build
     ports:

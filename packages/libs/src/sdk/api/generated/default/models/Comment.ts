@@ -71,6 +71,18 @@ export interface Comment {
     isPinned: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isCurrentUserReacted?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isArtistReacted?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof Comment
      */
@@ -122,6 +134,8 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'reactCount': json['react_count'],
         'replyCount': json['reply_count'],
         'isPinned': json['is_pinned'],
+        'isCurrentUserReacted': !exists(json, 'is_current_user_reacted') ? undefined : json['is_current_user_reacted'],
+        'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
@@ -144,6 +158,8 @@ export function CommentToJSON(value?: Comment | null): any {
         'react_count': value.reactCount,
         'reply_count': value.replyCount,
         'is_pinned': value.isPinned,
+        'is_current_user_reacted': value.isCurrentUserReacted,
+        'is_artist_reacted': value.isArtistReacted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),

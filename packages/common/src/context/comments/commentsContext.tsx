@@ -72,6 +72,7 @@ export const CommentSectionProvider = (
     setEditingComment
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
+  const { data: currentUserId } = useGetCurrentUserId({})
   const {
     data: comments = [],
     status,
@@ -79,13 +80,12 @@ export const CommentSectionProvider = (
     reset,
     hasMore: hasMorePages
   } = useGetCommentsByTrackId(
-    { entityId },
+    { entityId, currentUserId },
     {
       pageSize: 5,
       disabled: entityId === 0
     }
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
   const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
     CommentSortMethod.top
   )

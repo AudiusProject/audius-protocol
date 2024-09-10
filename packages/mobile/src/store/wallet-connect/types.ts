@@ -5,6 +5,14 @@ export type ConnectionType =
   | 'solana-phone-wallet-adapter'
   | 'wallet-connect'
 
+type Connect = {
+  connectionType: 'phantom'
+  path: 'connect'
+  phantom_encryption_public_key: string
+  data: string
+  nonce: string
+}
+
 type ConnectNewPhantomWallet = {
   connectionType: 'phantom'
   path: 'wallet-connect'
@@ -26,6 +34,8 @@ type ConnectSolanaPhoneWallet = {
 export type ConnectNewWalletAction = PayloadAction<
   ConnectNewPhantomWallet | ConnectNewEthWallet | ConnectSolanaPhoneWallet
 >
+
+export type ConnectAction = PayloadAction<Connect>
 
 type SignPhantomWallet = {
   connectionType: 'phantom'

@@ -18,9 +18,11 @@ import {
   Text,
   Flex,
   IconQrCode,
-  IconPhantomPlain
+  IconPhantomPlain,
+  IconCaretRight
 } from '@audius/harmony-native'
 import { Divider, RadioButton } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -39,7 +41,7 @@ const messages = {
   withCard: 'Credit/Debit Card',
   withCrypto: 'USDC Transfer',
   withAnything: 'Pay with Anything',
-  requiresPhantom: 'Phantom wallet required',
+  withAnyToken: 'Pay with any Solana token',
   showAdvanced: 'Show advanced options',
   hideAdvanced: 'Hide advanced options'
 }
@@ -51,6 +53,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   rowTitle: {
     ...flexRowCentered(),
+    alignItems: 'flex-start',
     gap: spacing(3)
   },
   rowTitleText: {
@@ -177,6 +180,9 @@ export const PaymentMethod = ({
       icon: IconQrCode
     }
   ]
+
+  const navigation = useNavigation()
+
   if (
     isPayWithAnythingEnabled &&
     selectedPurchaseMethodMintAddress &&
@@ -186,20 +192,37 @@ export const PaymentMethod = ({
       id: PurchaseMethod.WALLET,
       value: PurchaseMethod.WALLET,
       label: (
-        <Flex flex={1}>
+        <Flex flex={1} gap='m'>
           <Flex direction='row' justifyContent='space-between'>
-            <Flex direction='row' gap='xs' alignItems='center'>
-              <Text>{messages.withAnything}</Text>
-            </Flex>
-            <TokenPicker
-              selectedTokenAddress={selectedPurchaseMethodMintAddress}
-              onChange={setSelectedPurchaseMethodMintAddress}
-              onOpen={handleOpenTokenPicker}
-            />
+            <Text>{messages.withAnything}</Text>
           </Flex>
-          <Text size='xs' color='subdued'>
-            {messages.requiresPhantom}
-          </Text>
+          {selectedMethod === PurchaseMethod.WALLET ? (
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('TokenPicker')
+                handleOpenTokenPicker()
+              }}
+              hitSlop={spacing(6)}
+            >
+              <Flex gap='s'>
+                <Flex
+                  direction='row'
+                  justifyContent='space-between'
+                  alignItems='center'
+                >
+                  <Text strength='strong'>{messages.withAnyToken}</Text>
+                  <IconCaretRight color='subdued' size='m' />
+                </Flex>
+                <Flex direction='row' justifyContent='space-between'>
+                  <TokenPicker
+                    selectedTokenAddress={selectedPurchaseMethodMintAddress}
+                    onChange={setSelectedPurchaseMethodMintAddress}
+                    onOpen={handleOpenTokenPicker}
+                  />
+                </Flex>
+              </Flex>
+            </TouchableOpacity>
+          ) : null}
         </Flex>
       ),
       icon: IconPhantomPlain

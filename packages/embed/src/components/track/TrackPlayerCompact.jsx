@@ -29,6 +29,7 @@ const TrackPlayerCompact = ({
   backgroundColor,
   streamConditions
 }) => {
+  const isGated = !!streamConditions
   const isPurchaseable =
     streamConditions && instanceOfPurchaseGate(streamConditions)
 
@@ -42,9 +43,10 @@ const TrackPlayerCompact = ({
       <div className={styles.shareButton} />
       <div className={styles.artworkWrapper}>
         <Artwork
+          isPlayable={!isGated || isPurchaseable}
           artworkURL={albumArtURL}
           onClickURL={trackURL}
-          displayHoverPlayButton={true}
+          displayHoverPlayButton={!isGated || isPurchaseable}
           onTogglePlay={onTogglePlay}
           playingState={playingState}
           iconColor={backgroundColor}
@@ -52,18 +54,22 @@ const TrackPlayerCompact = ({
         />
       </div>
       <div className={styles.trackInfo}>
-        {isPurchaseable ? <DogEar size='s' /> : null}
+        {isGated ? (
+          <DogEar size='s' variant={isPurchaseable ? 'purchase' : 'special'} />
+        ) : null}
         <div className={styles.topSection}>
           {isPurchaseable ? <Preview /> : null}
-          <div className={styles.scrubber}>
-            <BedtimeScrubber
-              mediaKey={`title-${mediaKey}`}
-              playingState={playingState}
-              seekTo={seekTo}
-              duration={duration}
-              elapsedSeconds={position}
-            />
-          </div>
+          {!isGated || isPurchaseable ? (
+            <div className={styles.scrubber}>
+              <BedtimeScrubber
+                mediaKey={`title-${mediaKey}`}
+                playingState={playingState}
+                seekTo={seekTo}
+                duration={duration}
+                elapsedSeconds={position}
+              />
+            </div>
+          ) : null}
           <div className={styles.logo}>
             <AudiusLogoButton />
           </div>
@@ -73,6 +79,7 @@ const TrackPlayerCompact = ({
             playingState={playingState}
             onTogglePlay={onTogglePlay}
             iconColor={backgroundColor}
+            isPlayable={!isGated || isPurchaseable}
           />
           <div className={styles.titleContainer}>
             <Titles
