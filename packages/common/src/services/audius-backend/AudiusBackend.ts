@@ -1571,7 +1571,7 @@ export const audiusBackend = ({
       console.error(e)
     }
     try {
-      await audiusLibs.Notifications.viewNotification({})
+      await audiusLibs.Notifications.viewNotification({ userId })
     } catch (err) {
       console.error(err)
     }

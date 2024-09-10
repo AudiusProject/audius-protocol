@@ -47,6 +47,23 @@ type PlaylistParam = {
   Handles metadata + file upload etc. for entities such as Playlist/Track/User
 */
 export class EntityManager extends Base {
+  private userId?: number
+
+  setCurrentUserId(userId: number) {
+    this.userId = userId
+  }
+
+  clearCurrentUserId() {
+    delete this.userId
+  }
+
+  getCurrentUserId() {
+    if (!this.userId) {
+      throw new Error('Missing current user ID')
+    }
+    return this.userId
+  }
+
   /**
    * Generate random integer between two known values
    */
@@ -68,20 +85,15 @@ export class EntityManager extends Base {
     }
   }
 
-  // TODO-NOW: Update callers of social features to pass userId
   /** Social Features */
   createSocialMethod =
     (entityType: EntityType, action: Action) =>
-    async (
-      entityId: number,
-      userId: number,
-      metadata = ''
-    ): Promise<EntityManagerResponse> => {
+    async (entityId: number, metadata = ''): Promise<EntityManagerResponse> => {
       const responseValues: EntityManagerResponse =
         this.getDefaultEntityManagerResponseValues()
       try {
         return await this.manageEntity({
-          userId,
+          userId: this.getCurrentUserId(),
           entityType,
           entityId,
           action,
@@ -110,14 +122,13 @@ export class EntityManager extends Base {
 
   /** Playlist */
 
-  // TODO-NOW: Update callers to pass userId
   async createPlaylist(
-    playlist: PlaylistParam,
-    userId?: number
+    playlist: PlaylistParam
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
     try {
+      const userId = this.getCurrentUserId()
       if (!userId) {
         responseValues.error = 'Missing current user ID'
         return responseValues
@@ -172,13 +183,10 @@ export class EntityManager extends Base {
     }
   }
 
-  // TODO-NOW: Update callers to pass userId
-  async deletePlaylist(
-    playlistId: number,
-    userId?: number
-  ): Promise<EntityManagerResponse> {
+  async deletePlaylist(playlistId: number): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
+    const userId = this.getCurrentUserId()
     if (!userId) {
       responseValues.error = 'Missing current user ID'
       return responseValues
@@ -198,15 +206,15 @@ export class EntityManager extends Base {
     }
   }
 
-  // TODO-NOW: Update callers to pass userId
   async updatePlaylist(
-    playlist: PlaylistParam,
-    userId?: number
+    playlist: PlaylistParam
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
 
     try {
+      const userId = this.getCurrentUserId()
+
       if (!playlist || playlist === undefined) {
         responseValues.error = 'Missing current playlist'
         return responseValues

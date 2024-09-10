@@ -82,7 +82,6 @@ export class Notifications extends Base {
     }
   }
 
-  // TODO-NOW: Update callers to pass userId
   async viewPlaylist({
     logger = console,
     playlistId,

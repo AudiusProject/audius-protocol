@@ -65,7 +65,6 @@ const accountApi = createApi({
         return account?.user
       },
       // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
-      // Can probably remove the web3User concept and just use a single getAccount hook for both web3 and managed users
       options: {
         // Note that this schema key is used to prevent caching of the
         // web3 user as it does not match the standard user schema.
