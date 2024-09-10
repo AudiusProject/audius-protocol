@@ -25,8 +25,8 @@ const MESSAGE_TEXT = `
   Please wait a moment for your changes to get saved.
   `
 
-const RELOAD_TEXT = 'RELOAD ANYWAY'
-const QUIT_TEXT = 'QUIT ANYWAY'
+const RELOAD_TEXT = 'Reload anyway'
+const QUIT_TEXT = 'Quit anyway'
 
 export const UnloadDialog = () => {
   const [showModal, setShowModal] = useState(false)
@@ -121,7 +121,7 @@ export const UnloadDialog = () => {
           Got It
         </Button>
         <Button
-          variant='primary'
+          variant='destructive'
           onClick={reload ? onReloadAnyway : onQuitAnyway}
         >
           {reload ? RELOAD_TEXT : QUIT_TEXT}

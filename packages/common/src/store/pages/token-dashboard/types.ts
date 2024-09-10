@@ -1,5 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 
+import { Status } from '~/models'
+
 import { Chain } from '../../../models/Chain'
 import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
 import { Nullable } from '../../../utils/typeUtils'
@@ -69,6 +71,7 @@ export type InputSendDataAction = PayloadAction<{
 }>
 
 export type AssociatedWalletsState = {
+  loadingStatus: Status
   status: Nullable<'Connecting' | 'Connected' | 'Confirming' | 'Confirmed'>
   connectedEthWallets: Nullable<AssociatedWallets>
   connectedSolWallets: Nullable<AssociatedWallets>

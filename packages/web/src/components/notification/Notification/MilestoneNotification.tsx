@@ -7,7 +7,12 @@ import {
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common/store'
-import { formatCount, Nullable, route } from '@audius/common/utils'
+import {
+  formatCount,
+  isEntityHidden,
+  Nullable,
+  route
+} from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -66,7 +71,7 @@ const getAchievementText = (
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      if (entity) {
+      if (entity && !isEntityHidden(entity)) {
         const { entityType } = notification
         const link = getEntityLink(entity, true)
         const text = messages.achievementText(
@@ -143,14 +148,16 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{renderBody()}</NotificationBody>
-      <TwitterShareButton
-        type='static'
-        url={link}
-        shareText={text}
-        analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
-          milestone: text
-        })}
-      />
+      {link && text ? (
+        <TwitterShareButton
+          type='static'
+          url={link}
+          shareText={text}
+          analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
+            milestone: text
+          })}
+        />
+      ) : null}
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
