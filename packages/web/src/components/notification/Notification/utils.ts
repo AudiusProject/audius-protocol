@@ -1,7 +1,9 @@
 import { Entity, EntityType } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 
 import { UserListEntityType } from 'store/application/ui/userListModal/types'
-import { fullCollectionPage, fullTrackPage, collectionPage } from 'utils/route'
+import { fullCollectionPage, fullTrackPage } from 'utils/route'
+const { collectionPage } = route
 
 export const getEntityLink = (entity: EntityType, fullRoute = false) => {
   if (!entity.user) return ''

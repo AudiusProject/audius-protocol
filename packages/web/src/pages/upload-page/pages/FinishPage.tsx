@@ -28,14 +28,13 @@ import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
-import { collectionPage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
 import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { getAccountUser } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 
