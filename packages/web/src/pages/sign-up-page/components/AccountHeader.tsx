@@ -25,7 +25,6 @@ import {
 import { useMedia } from 'hooks/useMedia'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
-import zIndex from 'utils/zIndex'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
