@@ -21,11 +21,9 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
-	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 )
 
@@ -68,52 +66,6 @@ func (ss *MediorumServer) startTranscoder() {
 			ss.logger.Info("reset stuck uploads", "count", tx.RowsAffected)
 		}
 	}
-
-	// add a callback to crudr that so we can consider new uploads
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionCreate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			// only the first mirror transcodes
-			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
-				ss.logger.Info("got transcode job", "id", upload.ID)
-				work <- upload
-			}
-		}
-	})
-
-	// add a callback to crudr that so we can consider audio preview retranscodes
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			if upload.Status == JobStatusRetranscode {
-				if upload.TranscodedMirrors == nil {
-					ss.logger.Warn("missing full transcoded mp3 data in retranscode job. skipping", "id", upload.ID)
-					continue
-				}
-				// only the first mirror transcodes
-				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got retranscode job", "id", upload.ID)
-					work <- upload
-				}
-			}
-		}
-	})
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {

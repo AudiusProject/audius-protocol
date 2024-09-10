@@ -15,6 +15,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -141,6 +142,10 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		placementHosts = strings.Split(v, ",")
 	}
 
+	if placementHosts != nil && !slices.Contains(placementHosts, ss.Config.Self.Host) {
+		return c.String(400, "if placement_hosts is specified, you must upload to one of the placement_hosts")
+	}
+
 	if previewStart != "" {
 		previewStartSeconds, err := strconv.ParseFloat(previewStart, 64)
 		if err != nil {
@@ -209,6 +214,8 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			// ffprobe: restore orig filename
 			upload.FFProbe.Format.Filename = formFile.Filename
 
+			// replicate to my bucket + others
+			ss.replicateToMyBucket(formFileCID, tmpFile)
 			upload.Mirrors, err = ss.replicateFileParallel(formFileCID, tmpFile.Name(), placementHosts)
 			if err != nil {
 				upload.Error = err.Error()
@@ -222,6 +229,9 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodeProgress = 1
 				upload.TranscodedAt = time.Now().UTC()
 				upload.Status = JobStatusDone
+			} else {
+				// do transcode
+				ss.transcode(upload)
 			}
 
 			return ss.crud.Create(upload)
