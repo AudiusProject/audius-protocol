@@ -38,7 +38,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   })
   const { data: artistTracks } = useGetUserTracksByHandle(
     {
-      handle: artist!.handle,
+      handle: artist?.handle || "",
       currentUserId: null,
       // Unlikely we cant play an artist's first 3 tracks.
       limit: 3
