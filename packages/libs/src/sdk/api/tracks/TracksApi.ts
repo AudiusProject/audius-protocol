@@ -1,4 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
+import { TransactionInstruction } from '@solana/web3.js'
 import snakecaseKeys from 'snakecase-keys'
 
 import type {
@@ -577,7 +578,7 @@ export class TracksApi extends GeneratedTracksApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     } else {
       // Use the authed wallet's userbank and relay
@@ -616,7 +617,7 @@ export class TracksApi extends GeneratedTracksApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     }
 

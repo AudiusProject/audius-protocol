@@ -1,4 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
+import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
   AuthService,
@@ -396,7 +397,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     } else {
       // Use the authed wallet's userbank and relay
@@ -435,7 +436,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     }
 
