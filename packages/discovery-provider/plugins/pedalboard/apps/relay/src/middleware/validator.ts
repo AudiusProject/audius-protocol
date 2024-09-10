@@ -4,7 +4,7 @@ import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
-import { isTrackDownload, isUserCreate, isUserDeactivate } from '../utils'
+import { isTrackDownload, isUserCreate, isUserDeactivate, isViewNotification } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
 const MAX_ACDC_GAS_LIMIT = 10485760
@@ -89,7 +89,7 @@ export const validator = async (
     loggerInfo.handle = user.handle_lc || undefined
     loggerInfo.address = user.wallet || undefined
     loggerInfo.userId = user.user_id || undefined
-    
+
     logger.info({ handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
   }
 
@@ -108,6 +108,10 @@ export const validator = async (
 
   if (isTrackDownload(encodedABI)) {
     logger.info("track download")
+    isAnonymousAllowed = true
+  }
+
+  if (isViewNotification(encodedABI)) {
     isAnonymousAllowed = true
   }
 
@@ -133,7 +137,7 @@ export const validator = async (
 
   const oldCtx = response.locals.ctx
   // create child logger with additional
-  const newLogger = logger.child({...loggerInfo})
+  const newLogger = logger.child({ ...loggerInfo })
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
