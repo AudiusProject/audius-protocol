@@ -129,12 +129,7 @@ const SkeletonTrackTileView = memo(function SkeletonTrackTileView(props: {
 }) {
   const { itemStyles } = props
   return (
-    <View
-      style={{
-        ...styles.item,
-        ...itemStyles
-      }}
-    >
+    <View style={[styles.item, itemStyles]}>
       <LineupTileSkeleton />
     </View>
   )
