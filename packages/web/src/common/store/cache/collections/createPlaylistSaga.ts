@@ -8,7 +8,6 @@ import {
   Track
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
-import { collectionPage } from '@audius/common/src/utils/route'
 import {
   accountActions,
   accountSelectors,
@@ -26,7 +25,7 @@ import {
   EditCollectionValues,
   RequestConfirmationError
 } from '@audius/common/store'
-import { makeKindId, Nullable } from '@audius/common/utils'
+import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -42,6 +41,7 @@ const { requestConfirmation } = confirmerActions
 const { getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { collectionPage } = route
 
 export function* createPlaylistSaga() {
   yield* takeLatest(

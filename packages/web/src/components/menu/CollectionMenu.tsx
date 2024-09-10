@@ -5,6 +5,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
+import { collectionPage } from '@audius/common/src/utils/route'
 import {
   cacheUsersSelectors,
   collectionsSocialActions as socialActions
@@ -18,7 +19,6 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { AppState } from 'store/types'
-import { collectionPage } from 'utils/route'
 const { getUser } = cacheUsersSelectors
 const { profilePage } = route
 

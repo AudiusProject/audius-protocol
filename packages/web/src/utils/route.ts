@@ -1,6 +1,5 @@
 import { SearchCategory, SearchFilters } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { collectionPage } from '@audius/common/src/utils/route'
 import { convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Genre } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -12,7 +11,8 @@ import { env } from 'services/env'
 
 import { encodeUrlName } from './urlUtils'
 
-const { getHash, SIGN_UP_PAGE, SEARCH_PAGE, profilePage } = route
+const { getHash, SIGN_UP_PAGE, SEARCH_PAGE, profilePage, collectionPage } =
+  route
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
