@@ -340,6 +340,23 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Toast>
           </SettingsCard>
         ) : null}
+        <SettingsCard
+          icon={<IconVerified className={styles.iconVerified} size='l' />}
+          title={messages.verificationCardTitle}
+          description={messages.verificationCardDescription}
+        >
+          <VerificationModal
+            userId={userId}
+            handle={handle}
+            name={name}
+            profilePictureSizes={profilePictureSizes}
+            goToRoute={goToRoute}
+            isVerified={isVerified}
+            onInstagramLogin={onInstagramLogin}
+            onTwitterLogin={onTwitterLogin}
+            onTikTokLogin={onTikTokLogin}
+          />
+        </SettingsCard>
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconEmailAddress />}
@@ -396,23 +413,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
-        <SettingsCard
-          icon={<IconVerified className={styles.iconVerified} size='l' />}
-          title={messages.verificationCardTitle}
-          description={messages.verificationCardDescription}
-        >
-          <VerificationModal
-            userId={userId}
-            handle={handle}
-            name={name}
-            profilePictureSizes={profilePictureSizes}
-            goToRoute={goToRoute}
-            isVerified={isVerified}
-            onInstagramLogin={onInstagramLogin}
-            onTwitterLogin={onTwitterLogin}
-            onTikTokLogin={onTikTokLogin}
-          />
-        </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
             icon={<IconDesktop />}
