@@ -1,5 +1,5 @@
 {
-  "name": "@audius/sdk",
+  "name": "@audius/sdk-old",
   "version": "4.2.0",
   "audius": {
     "releaseSHA": "f1d70a2a0643c5c84d8ab053f70c1e0a2ec3ad49"

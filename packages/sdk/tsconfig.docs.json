@@ -1,0 +1,15 @@
+{
+  "extends": "@tsconfig/node16-strictest/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2020", "dom"],
+    "checkJs": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "exactOptionalPropertyTypes": false,
+    "outDir": "dist"
+  },
+  "exclude": ["dist"],
+  "include": ["src/**/*"]
+}
