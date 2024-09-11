@@ -9,8 +9,6 @@ import {
   IconComponent
 } from '@audius/harmony'
 
-import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
-
 const {
   EXPLORE_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
