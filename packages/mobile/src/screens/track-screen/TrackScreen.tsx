@@ -1,27 +1,13 @@
-import { useCallback } from 'react'
-
 import { useProxySelector } from '@audius/common/hooks'
-import {
-  trackPageLineupActions,
-  trackPageActions,
-  trackPageSelectors,
-  reachabilitySelectors
-} from '@audius/common/store'
-import { useFocusEffect } from '@react-navigation/native'
-import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { trackPageSelectors, reachabilitySelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
-import { IconArrowRight, Button, Text } from '@audius/harmony-native'
-import { Screen, ScreenContent } from 'app/components/core'
-import { Lineup } from 'app/components/lineup'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { Text } from '@audius/harmony-native'
+import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
-const { fetchTrack } = trackPageActions
-const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -31,23 +17,15 @@ const messages = {
   viewOtherRemixes: 'View Other Remixes'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  buttonContainer: {
-    padding: spacing(6)
-  }
-}))
-
 /**
  * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
  */
 export const TrackScreen = () => {
-  const styles = useStyles()
-  const navigation = useNavigation()
+  // const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
-  const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
+  const { searchTrack } = params ?? {}
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -63,30 +41,30 @@ export const TrackScreen = () => {
 
   const remixParentTrack = useProxySelector(getRemixParentTrack, [])
 
-  const handleFetchTrack = useCallback(() => {
-    dispatch(tracksActions.reset())
-    dispatch(
-      fetchTrack(
-        id ?? null,
-        decodeURIComponent(slug ?? ''),
-        handle ?? user?.handle,
-        canBeUnlisted
-      )
-    )
-  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
+  // const handleFetchTrack = useCallback(() => {
+  //   dispatch(tracksActions.reset())
+  //   dispatch(
+  //     fetchTrack(
+  //       id ?? null,
+  //       decodeURIComponent(slug ?? ''),
+  //       handle ?? user?.handle,
+  //       canBeUnlisted
+  //     )
+  //   )
+  // }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
 
-  useFocusEffect(handleFetchTrack)
+  // useFocusEffect(handleFetchTrack)
 
   if (!track || !user) {
     return <TrackScreenSkeleton />
   }
 
-  const handlePressGoToRemixes = () => {
-    if (!remixParentTrack) {
-      return
-    }
-    navigation.push('TrackRemixes', { id: remixParentTrack.track_id })
-  }
+  // const handlePressGoToRemixes = () => {
+  //   if (!remixParentTrack) {
+  //     return
+  //   }
+  //   navigation.push('TrackRemixes', { id: remixParentTrack.track_id })
+  // }
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
   const showMoreByArtistTitle =
@@ -115,46 +93,62 @@ export const TrackScreen = () => {
   return (
     <Screen url={track?.permalink}>
       <ScreenContent isOfflineCapable>
-        <Lineup
-          actions={tracksActions}
-          keyboardShouldPersistTaps='handled'
-          // When offline, we don't want to render any tiles here and the
-          // current solution is to hard-code a count to show skeletons
-          count={isReachable ? 6 : 0}
-          header={
-            <TrackScreenMainContent
-              // @ts-ignore not sure why but it's registering
-              //  as LineupState<{ id: number }> instead of Track
-              lineup={lineup}
-              remixParentTrack={remixParentTrack}
-              track={track}
-              user={user}
-              lineupHeader={
-                hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
-              }
-            />
-          }
-          leadingElementId={remixParentTrack?.track_id}
-          leadingElementDelineator={
-            <>
-              <View style={styles.buttonContainer}>
-                <Button
-                  iconRight={IconArrowRight}
-                  variant='primary'
-                  size='small'
-                  onPress={handlePressGoToRemixes}
-                  fullWidth
-                >
-                  {messages.viewOtherRemixes}
-                </Button>
-              </View>
-              {moreByArtistTitle}
-            </>
-          }
-          lineup={lineup}
-          start={1}
-          includeLineupStatus
-        />
+        {/* {isReady ? (
+          <Lineup
+            actions={tracksActions}
+            keyboardShouldPersistTaps='handled'
+            // When offline, we don't want to render any tiles here and the
+            // current solution is to hard-code a count to show skeletons
+            count={isReachable ? 6 : 0}
+            header={
+              <TrackScreenMainContent
+                // @ts-ignore not sure why but it's registering
+                //  as LineupState<{ id: number }> instead of Track
+                lineup={lineup}
+                remixParentTrack={remixParentTrack}
+                track={track}
+                user={user}
+                lineupHeader={
+                  hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
+                }
+              />
+            }
+            leadingElementId={remixParentTrack?.track_id}
+            leadingElementDelineator={
+              <>
+                <View style={styles.buttonContainer}>
+                  <Button
+                    iconRight={IconArrowRight}
+                    variant='primary'
+                    size='small'
+                    onPress={handlePressGoToRemixes}
+                    fullWidth
+                  >
+                    {messages.viewOtherRemixes}
+                  </Button>
+                </View>
+                {moreByArtistTitle}
+              </>
+            }
+            lineup={lineup}
+            start={1}
+            includeLineupStatus
+          />
+        ) : ( */}
+        <ScrollView>
+          <TrackScreenMainContent
+            // @ts-ignore not sure why but it's registering
+            //  as LineupState<{ id: number }> instead of Track
+            lineup={lineup}
+            remixParentTrack={remixParentTrack}
+            track={track}
+            user={user}
+            lineupHeader={
+              hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
+            }
+          />
+        </ScrollView>
+        {/* )} */}
       </ScreenContent>
     </Screen>
   )

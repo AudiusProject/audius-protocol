@@ -11,15 +11,12 @@ import { usePhantomConnect } from '../wallet-connect/usePhantomConnect'
 
 import { AppTabBar } from './AppTabBar'
 import type { ExploreTabScreenParamList } from './ExploreTabScreen'
-import { ExploreTabScreen } from './ExploreTabScreen'
 import type { FavoritesTabScreenParamList } from './FavoritesTabScreen'
 import { FavoritesTabScreen } from './FavoritesTabScreen'
 import type { FeedTabScreenParamList } from './FeedTabScreen'
 import { FeedTabScreen } from './FeedTabScreen'
-import { NotificationsTabScreen } from './NotificationsTabScreen'
 import type { ProfileTabScreenParamList } from './ProfileTabScreen'
 import type { TrendingTabScreenParamList } from './TrendingTabScreen'
-import { TrendingTabScreen } from './TrendingTabScreen'
 const { getBalance } = walletActions
 
 export type AppScreenParamList = {
@@ -32,7 +29,8 @@ export type AppScreenParamList = {
 
 const Tab = createBottomTabNavigator()
 
-const screenOptions = { headerShown: false }
+const screenOptions = { headerShown: false, lazy: false }
+// const screenOptions = { headerShown: false }
 const tabBar = (props: BottomTabBarProps) => <AppTabBar {...props} />
 
 export const AppTabsScreen = () => {
@@ -49,10 +47,10 @@ export const AppTabsScreen = () => {
   return (
     <Tab.Navigator tabBar={tabBar} screenOptions={screenOptions}>
       <Tab.Screen name='feed' component={FeedTabScreen} />
-      <Tab.Screen name='trending' component={TrendingTabScreen} />
-      <Tab.Screen name='explore' component={ExploreTabScreen} />
+      {/* <Tab.Screen name='trending' component={TrendingTabScreen} /> */}
+      {/* <Tab.Screen name='explore' component={ExploreTabScreen} /> */}
       <Tab.Screen name='library' component={FavoritesTabScreen} />
-      <Tab.Screen name='notifications' component={NotificationsTabScreen} />
+      {/* <Tab.Screen name='notifications' component={NotificationsTabScreen} /> */}
     </Tab.Navigator>
   )
 }
