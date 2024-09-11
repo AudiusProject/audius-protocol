@@ -239,11 +239,11 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodedAt = time.Now().UTC()
 				upload.Status = JobStatusDone
 				return ss.crud.Create(upload)
-			} else {
-				// do transcode
-				return ss.transcode(upload)
 			}
 
+			ss.crud.Create(upload)
+			ss.transcodeWork <- upload
+			return nil
 		})
 	}
 

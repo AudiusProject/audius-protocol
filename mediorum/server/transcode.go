@@ -33,7 +33,6 @@ var (
 
 func (ss *MediorumServer) startTranscoder() {
 	myHost := ss.Config.Self.Host
-	work := make(chan *Upload)
 
 	// use most cpus for transcode
 	numWorkers := runtime.NumCPU() - 2
@@ -69,7 +68,7 @@ func (ss *MediorumServer) startTranscoder() {
 
 	// start workers
 	for i := 0; i < numWorkers; i++ {
-		go ss.startTranscodeWorker(i, work)
+		go ss.startTranscodeWorker(i)
 	}
 
 	// hash-migration: the findMissedJobs was using the og `mirrors` list
@@ -91,9 +90,9 @@ func (ss *MediorumServer) startTranscoder() {
 	for {
 		time.Sleep(time.Minute)
 		// find missed transcode jobs
-		ss.findMissedJobs(work, myHost, false)
+		ss.findMissedJobs(ss.transcodeWork, myHost, false)
 		// find missed retranscode jobs
-		ss.findMissedJobs(work, myHost, true)
+		ss.findMissedJobs(ss.transcodeWork, myHost, true)
 	}
 }
 
@@ -124,13 +123,12 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		// if we have orig file... try to reprocess
 		if ok, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); ok {
 			work <- upload
-			continue
 		}
 	}
 }
 
-func (ss *MediorumServer) startTranscodeWorker(_ int, work chan *Upload) {
-	for upload := range work {
+func (ss *MediorumServer) startTranscodeWorker(_ int) {
+	for upload := range ss.transcodeWork {
 		ss.logger.Debug("transcoding", "upload", upload.ID)
 		err := ss.transcode(upload)
 		if err != nil {
