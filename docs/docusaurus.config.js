@@ -8,7 +8,7 @@ import { themes as prismThemes } from 'prism-react-renderer'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Audius Docs',
+  title: 'Audius Developer Documentation',
   tagline:
     'Audius is a fully decentralized music platform. ARTISTS (AND DEVELOPERS) DESERVE MORE 💜',
   favicon: 'img/favicon.ico',
@@ -77,7 +77,7 @@ const config = {
         isCloseable: false,
       },
       navbar: {
-        title: 'Audius',
+        title: '| Developer Documentation',
         hideOnScroll: false,
         logo: {
           alt: 'Audius Logo',
