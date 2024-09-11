@@ -12,21 +12,25 @@ import TabItem from '@theme/TabItem'
 
 ## Controllers and Nodes
 
-A key feature of `audius-ctl` is the ability to interact with and control multiple Nodes from a
-single "Controller". Any computer or virtual machine can be a Controller, a laptop, a shared Virtual
-Private Server for your team, or even the VM running a Node itself. Only one Controller is needed,
-but Node Operators can configure as many Controllers as they would like.
+A key feature of `audius-ctl` is the usage of configuration profiles to interact with and control
+multiple Nodes from a single "Controller" over ssh.
 
-Node Operators manage all of their Nodes, or a subset of their Nodes, from a single command line
-utility. Rather than needing to access each Node directly to issue commands, a single "controller"
-machine, using configuration profiles, is able to issue commands to several Nodes over ssh.
+Node Operators are able to manage all of their Nodes, or a subset of their Nodes, from a single
+command line utility, rather than needing to access each Node directly to issue commands
 
-### Audius Control Utility
+Any computer or virtual machine can be a Controller, a laptop, a shared Virtual Private Server for
+your team, or even the host machine running a Node itself. Only one Controller is needed, but Node
+Operators can configure as many Controllers as they would like to suit their needs.
 
-Installing and configuring `audius-ctl` on the Controller includes the command line utility
-`audius-ctl`
+---
 
-### Suggested Configuration
+## Suggested Configuration
+
+While it is recommended to use an additional machine as a Controller, but remember _any_ machine can
+operate as a Controller.
+
+> This example is a simple configuration where the Node Operator has configured one host machine as
+> a Controller and uses it to access and mange a set of Nodes.
 
 ```mermaid
 flowchart LR
