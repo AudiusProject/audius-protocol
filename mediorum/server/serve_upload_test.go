@@ -42,6 +42,7 @@ func TestUploadFile(t *testing.T) {
 
 	assert.Equal(t, u2.TranscodeProgress, 1.0)
 	assert.Len(t, u2.TranscodedMirrors, s1.Config.ReplicationFactor)
+
 }
 
 func TestUploadPlacement(t *testing.T) {
