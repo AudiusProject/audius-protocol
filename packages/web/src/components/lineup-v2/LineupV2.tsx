@@ -9,8 +9,13 @@ import {
 } from '@audius/common/store'
 import { makeUid, Uid } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
-import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
+import {
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller
+} from 'react-virtualized'
 
 import { TrackTileV2 } from 'components/track/desktop/TrackTileV2'
 
@@ -76,38 +81,85 @@ export const LineupV2 = (props: LineupV2Props) => {
 
   const { hasMore, loadMore } = useLineupContext()
 
+  const renderRow = useCallback(
+    ({ index }: { index: number }) => {
+      const row = items[index]
+      if (!row) return
+
+      const uid = makeUid(row.kind, row.id, name, index)
+
+      if (row.kind === Kind.TRACKS) {
+        return (
+          <li key={uid}>
+            <TrackTileV2 uid={uid} key={uid} />
+          </li>
+        )
+      }
+
+      if (row.kind === Kind.COLLECTIONS) {
+        return (
+          <li key={uid}>
+            <div key={index}>Collection {row.id}</div>
+          </li>
+        )
+      }
+
+      return null
+    },
+    [items, name]
+  )
+
   return (
     <LineupContext.Provider value={{ onPlay }}>
       <Flex gap='s' direction='column'>
-        <InfiniteScroll
-          loadMore={hasMore ? loadMore : () => {}}
-          hasMore={hasMore}
+        <InfiniteLoader
+          isRowLoaded={({ index }) => !!items[index]}
+          loadMoreRows={hasMore ? loadMore : () => {}}
           initialLoad={false}
           threshold={0.3}
           element='ol'
         >
-          {items.map((item, index) => {
-            const uid = makeUid(item.kind, item.id, name, index)
-
-            if (item.kind === Kind.TRACKS) {
-              return (
-                <li key={uid}>
-                  <TrackTileV2 uid={uid} key={uid} />
-                </li>
-              )
-            }
-
-            if (item.kind === Kind.COLLECTIONS) {
-              return (
-                <li key={uid}>
-                  <div key={index}>Collection {item.id}</div>
-                </li>
-              )
-            }
-
-            return null
-          })}
-        </InfiniteScroll>
+          {({ onRowsRendered, registerChild: registerListChild }) => (
+            <WindowScroller>
+              {({
+                height,
+                registerChild,
+                isScrolling,
+                onChildScroll,
+                scrollTop
+              }) => {
+                return (
+                  <div
+                    ref={
+                      registerChild as (
+                        instance: HTMLTableSectionElement | null
+                      ) => void
+                    }
+                  >
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <List
+                          // TODO: dynamically calculate row height
+                          rowHeight={152 + 16}
+                          height={height}
+                          width={width}
+                          isScrolling={isScrolling}
+                          onScroll={onChildScroll}
+                          scrollTop={scrollTop}
+                          onRowsRendered={(info) => onRowsRendered(info)}
+                          ref={registerListChild}
+                          overscanRowsCount={2}
+                          rowCount={items.length}
+                          rowRenderer={renderRow}
+                        />
+                      )}
+                    </AutoSizer>
+                  </div>
+                )
+              }}
+            </WindowScroller>
+          )}
+        </InfiniteLoader>
       </Flex>
     </LineupContext.Provider>
   )
