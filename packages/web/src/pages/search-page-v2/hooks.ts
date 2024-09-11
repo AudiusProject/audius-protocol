@@ -162,7 +162,7 @@ export const useSearchParams = () => {
 
   const searchParams = useMemo(
     () => ({
-      query,
+      query: query || undefined,
       genre: (genre || undefined) as Genre,
       mood: (mood || undefined) as Mood,
       bpm: bpm || undefined,
