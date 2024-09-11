@@ -38,16 +38,6 @@ type LinkButtonInfo = {
   link: (handle: string | null) => string | null
 }
 
-const GoldBadgeIconImage = () => (
-  <img
-    draggable={false}
-    alt='Gold badge'
-    src={IconGoldBadge}
-    width={24}
-    height={24}
-  />
-)
-
 const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   trackUpload: {
     label: 'Upload Tracks',
@@ -76,11 +66,11 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   sendFirstTip: {
     label: 'Send a Tip',
     leftIcon: null,
-    rightIcon: GoldBadgeIconImage,
+    rightIcon: IconArrowRight,
     link: () => LIBRARY_PAGE
   },
   firstPlaylist: {
-    label: 'Discover Some Tracks',
+    label: 'Create A Playlist',
     leftIcon: null,
     rightIcon: IconArrowRight,
     link: () => EXPLORE_PAGE

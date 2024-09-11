@@ -17,6 +17,7 @@ export type ChallengeRewardsInfo = {
   fullDescription?: (amount: OptimisticUserChallenge | undefined) => string
   progressLabel?: string
   remainingLabel?: string
+  completedLabel?: string
   panelButtonText: string
   isVerifiedChallenge?: boolean
 }
@@ -76,6 +77,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
+    completedLabel: 'Keep Listening',
     panelButtonText: 'Trending on Audius'
   },
   'mobile-install': {
@@ -95,6 +97,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
+    completedLabel: 'View Your Profile',
     panelButtonText: 'More Info'
   },
   'track-upload': {
@@ -104,6 +107,7 @@ export const challengeRewardsConfig: Record<
       `Earn ${challenge?.amount} $AUDIO for uploading 3 tracks.`,
     fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
+    completedLabel: 'Upload More Tracks',
     panelButtonText: 'Upload Tracks'
   },
   'send-first-tip': {
@@ -114,6 +118,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Show some love to your favorite artist and send them a tip.',
     progressLabel: 'Not Earned',
+    completedLabel: 'Find Someone Else To Tip',
     panelButtonText: 'Send a Tip'
   },
   'first-playlist': {
@@ -122,6 +127,7 @@ export const challengeRewardsConfig: Record<
     description: (_) => 'Create a playlist and add a track to it.',
     fullDescription: () => 'Create a playlist and add a track to it.',
     progressLabel: 'Not Earned',
+    completedLabel: 'Create Another Playlist',
     panelButtonText: 'Discover Some Tracks'
   },
   [ChallengeName.AudioMatchingSell]: {

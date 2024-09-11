@@ -257,8 +257,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const challenge = userChallenges[modalType]
   const isCooldownChallenge = challenge && challenge.cooldown_days > 0
   const currentStepCount = challenge?.current_step_count || 0
-  const { fullDescription, progressLabel, isVerifiedChallenge } =
-    challengeRewardsConfig[modalType]
+  const {
+    fullDescription,
+    progressLabel,
+    completedLabel,
+    isVerifiedChallenge
+  } = challengeRewardsConfig[modalType]
   const { modalButtonInfo } = getChallengeConfig(modalType)
   const {
     cooldownChallenges,
@@ -564,7 +568,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         )}
         {renderReferralContent()}
         {renderMobileInstallContent()}
-        {buttonLink && !audioToClaim ? (
+        {buttonLink && !audioToClaim && completedLabel ? (
           <Button
             variant='primary'
             fullWidth={isMobile}
@@ -572,7 +576,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             iconLeft={buttonInfo?.leftIcon}
             iconRight={buttonInfo?.rightIcon}
           >
-            {buttonInfo?.label}
+            {completedLabel}
           </Button>
         ) : null}
         {audioToClaim > 0 ||
