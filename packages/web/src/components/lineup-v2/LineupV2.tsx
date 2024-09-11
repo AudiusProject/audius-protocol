@@ -9,6 +9,7 @@ import {
 } from '@audius/common/store'
 import { makeUid, Uid } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
+import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TrackTileV2 } from 'components/track/desktop/TrackTileV2'
@@ -73,22 +74,40 @@ export const LineupV2 = (props: LineupV2Props) => {
     [name, queueSource, items, currentPlayerTrackUid, dispatch]
   )
 
+  const { hasMore, loadMore } = useLineupContext()
+
   return (
     <LineupContext.Provider value={{ onPlay }}>
       <Flex gap='s' direction='column'>
-        {items.map((item, index) => {
-          const uid = makeUid(item.kind, item.id, name, index)
+        <InfiniteScroll
+          loadMore={hasMore ? loadMore : () => {}}
+          hasMore={hasMore}
+          initialLoad={false}
+          threshold={0.3}
+          element='ol'
+        >
+          {items.map((item, index) => {
+            const uid = makeUid(item.kind, item.id, name, index)
 
-          if (item.kind === Kind.TRACKS) {
-            return <TrackTileV2 uid={uid} key={uid} />
-          }
+            if (item.kind === Kind.TRACKS) {
+              return (
+                <li key={uid}>
+                  <TrackTileV2 uid={uid} key={uid} />
+                </li>
+              )
+            }
 
-          if (item.kind === Kind.COLLECTIONS) {
-            return <div key={index}>Collection {item.id}</div>
-          }
+            if (item.kind === Kind.COLLECTIONS) {
+              return (
+                <li key={uid}>
+                  <div key={index}>Collection {item.id}</div>
+                </li>
+              )
+            }
 
-          return null
-        })}
+            return null
+          })}
+        </InfiniteScroll>
       </Flex>
     </LineupContext.Provider>
   )
