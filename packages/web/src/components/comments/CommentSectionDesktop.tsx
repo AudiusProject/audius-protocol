@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { Button, Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 
@@ -31,7 +33,10 @@ export const CommentSectionDesktop = () => {
   } = useCurrentCommentSection()
 
   const mainContentRef = useMainContentRef()
-  const commentPostAllowed = currentUserId !== null
+  const { isEnabled: commentPostFlag = false } = useFeatureFlag(
+    FeatureFlags.COMMENT_POSTING_ENABLED
+  )
+  const commentPostAllowed = currentUserId !== undefined && commentPostFlag
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
 
   if (commentSectionLoading) {
@@ -55,7 +60,7 @@ export const CommentSectionDesktop = () => {
         Refresh{' '}
       </Button>
       <Paper w='100%' direction='column'>
-        {commentPostAllowed !== null ? (
+        {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
               <CommentForm />
