@@ -23,6 +23,15 @@ export class Uid {
     this.count = count
   }
 
+  static buildIndexedUid(
+    kind: string,
+    id: ID | string,
+    index: number,
+    source?: string
+  ) {
+    return new Uid(kind, id, source, index)
+  }
+
   static build(kind: string, id: ID | string, source?: string, addedCount = 0) {
     const count = Uid._getCount()
     return new Uid(kind, id, source, count + addedCount)
@@ -101,6 +110,16 @@ export function makeUids(
 
 export function makeUid(kind: string, id: ID, source?: string, index?: number) {
   const uid = Uid.build(kind, id, source, index)
+  return uid.toString()
+}
+
+export function makeIndexedUid(
+  kind: string,
+  id: ID,
+  index: number,
+  source?: string
+) {
+  const uid = Uid.buildIndexedUid(kind, id, index, source)
   return uid.toString()
 }
 

@@ -8,16 +8,18 @@ import {
   searchResultsPageSelectors,
   searchResultsPageTracksLineupActions,
   searchActions,
-  SearchKind
+  SearchKind,
+  QueueSource
 } from '@audius/common/store'
 import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
-import { css } from '@emotion/css'
+import { css } from '@emotion/react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
-import { LineupV2 } from 'components/lineup-v2/LineupV2'
+import { LineupContextProvider } from 'components/lineup-v2/LineupContext'
+import { LineupTileList, LineupV2 } from 'components/lineup-v2/LineupTileList'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
@@ -141,10 +143,13 @@ export const TrackResults = (props: TrackResultsProps) => {
   }
 
   return (
-    <LineupV2
+    <LineupContextProvider
       name='TrackSearchResults'
       items={(ids ?? []).map((id) => ({ kind: Kind.TRACKS, id }))}
-    />
+      queueSource={QueueSource.SEARCH_TRACKS}
+    >
+      <LineupTileList />
+    </LineupContextProvider>
   )
 
   // return (

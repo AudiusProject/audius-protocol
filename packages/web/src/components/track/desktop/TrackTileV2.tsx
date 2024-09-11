@@ -5,7 +5,7 @@ import { Status, UID, UserTrackMetadata } from '@audius/common/models'
 import { Uid } from '@audius/common/utils'
 import { Flex, Paper, Text } from '@audius/harmony'
 
-import { useLineupContext } from 'components/lineup-v2/LineupV2'
+import { useLineupContext } from 'components/lineup-v2/LineupContext'
 
 type TrackTileContextType = {
   track: UserTrackMetadata
@@ -13,7 +13,8 @@ type TrackTileContextType = {
 
 export const TrackTileContext = createContext<TrackTileContextType>({
   track: {} as UserTrackMetadata,
-  uid: ''
+  uid: '',
+  lineupIndex: -1
 })
 
 export const useTrackTileContext = () => {
@@ -22,12 +23,12 @@ export const useTrackTileContext = () => {
 
 const TrackTileV2Content = () => {
   const { onPlay } = useLineupContext()
-  const { track, uid } = useTrackTileContext()
+  const { track, uid, lineupIndex } = useTrackTileContext()
 
   const { title, user } = track
 
   return (
-    <Paper w='100%' onClick={() => onPlay(uid)}>
+    <Paper w='100%' onClick={() => onPlay(uid, lineupIndex)}>
       <Flex direction='column' alignItems='flex-start'>
         <Text>{title}</Text>
         <Text>{user.name}</Text>
@@ -38,10 +39,11 @@ const TrackTileV2Content = () => {
 
 type TrackTileV2Props = {
   uid: UID
+  lineupIndex: number // The lineupIndex of the track in the lineup list
 }
 
 export const TrackTileV2 = (props: TrackTileV2Props) => {
-  const { uid } = props
+  const { uid, lineupIndex } = props
   const id = Number(Uid.getComponent(uid, 'id'))
 
   const { data: track, status } = useGetTrackById({ id })
@@ -56,7 +58,7 @@ export const TrackTileV2 = (props: TrackTileV2Props) => {
   }
 
   return (
-    <TrackTileContext.Provider value={{ track, uid }}>
+    <TrackTileContext.Provider value={{ track, uid, lineupIndex }}>
       <TrackTileV2Content />
     </TrackTileContext.Provider>
   )

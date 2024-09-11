@@ -181,11 +181,11 @@ const slice = createSlice({
       state.positions = newPositions
       state.index = newIndex
     },
-    // Adds a track to the queue either at the end or the given index.
+    // Adds a track or an array of tracks to the queue either at the end or the given index.
     add: (state, action: PayloadAction<AddPayload>) => {
       const { entries, index } = action.payload
 
-      const newIndex = index || state.order.length
+      const newIndex = index ?? state.order.length
 
       const newOrder = [...state.order]
       newOrder.splice(newIndex, 0, ...entries)
