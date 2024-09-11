@@ -1,10 +1,9 @@
-import { Kind } from '@audius/common/models'
+import { Collection, Kind, Track } from '@audius/common/models'
 import {
   accountSelectors,
   profilePageTracksLineupActions,
   profilePageSelectors,
   uploadActions,
-  CommonState,
   UploadType
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
@@ -20,16 +19,19 @@ export function* watchUploadTracksSaga() {
   yield* takeEvery(UPLOAD_TRACKS_SUCCEEDED, addUploadedTrackToLineup)
 }
 
+const isTrackEntity = (entity: Track | Collection): entity is Track =>
+  (entity as Track).track_id !== undefined
+
 function* addUploadedTrackToLineup(action: UploadTracksSucceededAction) {
   const accountHandle = yield* select(getUserHandle)
-  const { uploadType, completedEntity } = yield* select(
-    (state: CommonState) => state.upload
-  )
+  const { uploadType, completedEntity } = action
+
   // We will only be adding single track uploads since multi-adds for lineups
   // are cumbersome. When we want to suport multi-track upload on mobile or
   // properly cache desktop profile lineups, we should revisit this.
   if (
     !completedEntity ||
+    !isTrackEntity(completedEntity) ||
     !accountHandle ||
     uploadType !== UploadType.INDIVIDUAL_TRACK
   )
