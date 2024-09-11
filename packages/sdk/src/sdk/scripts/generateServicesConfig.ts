@@ -2,7 +2,7 @@ import { promises } from 'fs'
 import path from 'path'
 
 import { EthContracts } from '../../services/ethContracts'
-import { EthWeb3Manager } from '../../services/ethWeb3Manager'
+// import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import type { SdkServicesConfig } from '../config/types'
 import { IdentityService } from '../services/IdentityService'
 

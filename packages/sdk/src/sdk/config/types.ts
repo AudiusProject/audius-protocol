@@ -25,4 +25,7 @@ export type SdkServicesConfig = {
     usdcTokenMint: string
     wAudioTokenMint: string
   }
+  ethereum: {
+    rpcEndpoint: string
+  }
 }

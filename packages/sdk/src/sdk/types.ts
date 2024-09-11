@@ -5,6 +5,7 @@ import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleS
 import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
+import { ServiceTypeManagerClient } from './services/Ethereum/contracts/ServiceTypeManager'
 import type { LoggerService } from './services/Logger'
 import type {
   PaymentRouterClient,
@@ -42,6 +43,11 @@ export type ServicesContainer = {
    * Helpers to faciliate requests that require signatures or encryption
    */
   auth: AuthService
+
+  /**
+   * Contract client to interact with service types
+   */
+  serviceTypeManagerClient: ServiceTypeManagerClient
 
   /**
    * Service used to log and set a desired log level
