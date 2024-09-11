@@ -12,6 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gowebpki/jcs"
 	"github.com/storyicon/sigverify"
+	"google.golang.org/protobuf/proto"
+	protob "google.golang.org/protobuf/proto"
 )
 
 type SignatureEnvelope struct {
@@ -124,7 +126,21 @@ func SignBytes(input []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 }
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func recover(input string, signature []byte) (common.Address, error) {
+func recoverSigner(input string, signature []byte) (common.Address, error) {
 	hash := crypto.Keccak256Hash([]byte(input))
 	return sigverify.EcRecoverEx(hash.Bytes(), signature)
+}
+
+func SignCoreBytes(input proto.Message, privateKey *ecdsa.PrivateKey) (string, error) {
+	eventBodyBytes, err := protob.Marshal(input)
+	if err != nil {
+		return "", err
+	}
+
+	signedBody, err := SignBytes(eventBodyBytes, privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(signedBody), nil
 }

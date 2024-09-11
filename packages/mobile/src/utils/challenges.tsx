@@ -152,7 +152,19 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconRight: IconCheck
       }
     },
+    tp: {
+      icon: ArrowUp,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
     'trending-track': {
+      icon: ChartIncreasing,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    tt: {
       icon: ChartIncreasing,
       buttonInfo: {
         iconRight: IconCheck
@@ -177,6 +189,13 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconRight: IconCheck
       }
     },
+    tut: {
+      icon: BarChart,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+
     [ChallengeName.AudioMatchingBuy]: {
       icon: Cart,
       buttonInfo: {

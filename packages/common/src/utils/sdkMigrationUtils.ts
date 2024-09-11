@@ -40,16 +40,28 @@ export class SDKMigrationFailedError extends Error {
  * literal values, will do a strict equals. For objects, will do a deep diff.
  * Throws `SDKMigrationFailedError` if there is a difference between the two responses.
  */
-export const compareSDKResponse = <T extends object>(
+export const compareSDKResponse = <T extends object | undefined | null>(
   { legacy, migrated }: CheckSDKMigrationArgs<T>,
   endpointName: string
 ) => {
+  if (legacy == null || migrated == null) {
+    if (legacy !== migrated) {
+      console.error(`SDK Migration failed (empty) for ${endpointName}`, {
+        legacy,
+        migrated
+      })
+    } else {
+      console.debug(`SDK Migration succeeded (empty) for ${endpointName}`)
+    }
+    return
+  }
   // Migrated is an error, skip the diff
   if (migrated instanceof Error) {
     console.error(`SDK Migration failed (error) for ${endpointName}`, {
       legacy,
       migrated
     })
+    return
   }
   // Both object-like, perform deep diff
   if (typeof legacy === 'object' && typeof migrated === 'object') {
@@ -64,14 +76,18 @@ export const compareSDKResponse = <T extends object>(
         legacy,
         migrated
       })
+    } else {
+      console.debug(`SDK Migration succeeded (object diff) for ${endpointName}`)
     }
+    return
   }
   // Not object like, perform strict equals
-  else if (legacy !== migrated) {
+  if (legacy !== migrated) {
     console.error(`SDK Migration failed (!==) for ${endpointName}`, {
       legacy,
       migrated
     })
+  } else {
+    console.debug(`SDK Migration succeeded (===) for ${endpointName}`)
   }
-  console.debug(`SDK Migration succeeded for ${endpointName}`)
 }

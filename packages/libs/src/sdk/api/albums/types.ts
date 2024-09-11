@@ -172,19 +172,18 @@ const PurchaseAlbumSchemaBase = z.object({
   /** Any extra amount the user wants to donate (in dollars if number, USDC if bigint) */
   extraAmount: z
     .union([z.number().min(0), z.bigint().min(BigInt(0))])
-    .optional()
+    .optional(),
+  /** Whether to include the staking system as a recipient */
+  includeNetworkCut: z.boolean().optional()
 })
 
-export const GetPurchaseAlbumTransactionSchema = z
-  .object({
-    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
-    wallet: PublicKeySchema.optional()
-  })
+export const GetPurchaseAlbumInstructionsSchema = z
+  .object({})
   .merge(PurchaseAlbumSchemaBase)
   .strict()
 
-export type GetPurchaseAlbumTransactionRequest = z.input<
-  typeof GetPurchaseAlbumTransactionSchema
+export type GetPurchaseAlbumInstructionsRequest = z.input<
+  typeof GetPurchaseAlbumInstructionsSchema
 >
 
 export const PurchaseAlbumSchema = z
@@ -192,7 +191,9 @@ export const PurchaseAlbumSchema = z
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
     walletAdapter: z
       .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
-      .optional()
+      .optional(),
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    wallet: PublicKeySchema.optional()
   })
   .merge(PurchaseAlbumSchemaBase)
   .strict()

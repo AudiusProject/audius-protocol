@@ -4,6 +4,7 @@ import {
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import DesktopHeader from 'components/header/desktop/Header'
@@ -15,10 +16,12 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
-import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 
 import styles from './TrendingPlaylistPage.module.css'
+
+const { TRENDING_PLAYLISTS_PAGE } = route
 const { getLineup } = trendingPlaylistsPageLineupSelectors
 
 const messages = {

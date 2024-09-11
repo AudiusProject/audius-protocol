@@ -45,7 +45,7 @@ const messages = {
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
   copied: 'Copied to Clipboard!',
-  buy: (amount: string) => `Buy $${amount}`
+  buy: (amount: string) => `Buy ${amount}`
 }
 
 export const USDCManualTransfer = ({
@@ -140,9 +140,7 @@ export const USDCManualTransfer = ({
             >
               {messages.buy(
                 USDC(amount).toLocaleString('en-us', {
-                  roundingMode: 'ceil',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
+                  roundingMode: 'ceil'
                 })
               )}
             </Button>

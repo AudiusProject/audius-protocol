@@ -2,7 +2,7 @@
   "files": [
     {
       "path": "./build-ssr-production/server/chunks/chunk-*.js",
-      "maxSize": "55 kB"
+      "maxSize": "100 kB"
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import { IconCaretRight, IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
@@ -15,9 +16,10 @@ import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import GooglePlayBadge from 'assets/img/publicSite/google-play-badge.svg'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { getIOSAppLink } from 'utils/appLinks'
-import { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } from 'utils/route'
 
 import styles from './Hero.module.css'
+
+const { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } = route
 
 const messages = {
   title: 'Artists Deserve More',

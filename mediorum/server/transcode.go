@@ -21,11 +21,9 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
-	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 )
 
@@ -69,55 +67,24 @@ func (ss *MediorumServer) startTranscoder() {
 		}
 	}
 
-	// add a callback to crudr that so we can consider new uploads
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionCreate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			// only the first mirror transcodes
-			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
-				ss.logger.Info("got transcode job", "id", upload.ID)
-				work <- upload
-			}
-		}
-	})
-
-	// add a callback to crudr that so we can consider audio preview retranscodes
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			if upload.Status == JobStatusRetranscode {
-				if upload.TranscodedMirrors == nil {
-					ss.logger.Warn("missing full transcoded mp3 data in retranscode job. skipping", "id", upload.ID)
-					continue
-				}
-				// only the first mirror transcodes
-				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got retranscode job", "id", upload.ID)
-					work <- upload
-				}
-			}
-		}
-	})
-
 	// start workers
 	for i := 0; i < numWorkers; i++ {
 		go ss.startTranscodeWorker(i, work)
+	}
+
+	// hash-migration: the findMissedJobs was using the og `mirrors` list
+	// to determine if this server should transocde the file
+	// with the assumption that if server was in mirrors list it would have the orig upload.
+	// but hash migration changed that assumption...
+	// so hosts would try to transcode and would not have the orig
+	// which would issue a crudr update to put transcode job in error state.
+	//
+	// This is a temporary fix in prod to only find missing transcode jobs on StoreAll nodes
+	// which will have the orig.
+	//
+	// long term fix is to move transcode inline to upload...
+	if ss.Config.Env == "prod" && !ss.Config.StoreAll {
+		return
 	}
 
 	// finally... poll periodically for uploads that slipped thru the cracks
@@ -131,6 +98,7 @@ func (ss *MediorumServer) startTranscoder() {
 }
 
 func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
+	ctx := context.Background()
 	newStatus := JobStatusNew
 	busyStatus := JobStatusBusy
 	errorStatus := JobStatusError
@@ -148,73 +116,15 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 			continue
 		}
 
-		mirrors := upload.Mirrors
-		if retranscode {
-			if upload.TranscodedMirrors == nil {
-				ss.logger.Warn("missing full transcoded mp3 mirrors in retranscode job. skipping", "id", upload.ID)
-				continue
-			}
-			mirrors = upload.TranscodedMirrors
-		}
-
-		myIdx := slices.Index(mirrors, myHost)
-		if myIdx == -1 {
-			continue
-		}
-		myRank := myIdx + 1
-
-		logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
-		// normally this job of mine would start via callback
-		// but just in case we could enqueue it here.
-		// there's a chance it would be processed twice if the callback and this loop
-		// ran at the same instant...
-		// but I'm not too worried about that race condition
-
-		if myRank == 1 && upload.Status == newStatus {
-			logger.Info("my upload not started")
-			work <- upload
+		// don't re-process if it was updated recently
+		if time.Since(upload.TranscodedAt) < time.Minute {
 			continue
 		}
 
-		// determine if #1 rank worker dropped ball
-		timedOut := false
-		neverStarted := false
-
-		// for #2 rank worker:
-		if myRank == 2 {
-			// no recent update?
-			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*3
-
-			// never started?
-			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*6
-		}
-
-		// for #3 rank worker:
-		if myRank == 3 {
-			// no recent update?
-			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*7
-
-			// never started?
-			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*14
-		}
-
-		if timedOut {
-			logger.Info("upload timed out... starting")
+		// if we have orig file... try to reprocess
+		if ok, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); ok {
 			work <- upload
-		} else if neverStarted {
-			logger.Info("upload never started")
-			work <- upload
-		}
-
-		// take turns retrying errors
-		if upload.Status == errorStatus && upload.ErrorCount%len(mirrors) == myIdx {
-			logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
-			work <- upload
+			continue
 		}
 	}
 }
@@ -394,7 +304,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		upload.TranscodeProgress = 0
 		upload.TranscodedAt = time.Now().UTC()
 		upload.Status = JobStatusBusyRetranscode
-		ss.crud.Update(upload)
+		// ss.crud.Update(upload)
 
 		return ss.transcodeAudioPreview(upload, dest, logger, onError)
 	}
@@ -490,7 +400,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	} else {
 		upload.Status = JobStatusBusy
 	}
-	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
 	if upload.Status == JobStatusBusyRetranscode {
@@ -534,46 +443,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
-	case JobTemplateImgSquare:
-		// 150x150, 480x480, 1000x1000
-		squares := []int{150, 480, 1000}
-		for _, targetBox := range squares {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
-	case JobTemplateImgBackdrop:
-		// 640x, 2000x
-		widths := []int{640, 2000}
-		for _, targetWidth := range widths {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx.jpg", targetWidth)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
 	case JobTemplateAudio, "":
 		if upload.Template == "" {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
@@ -594,6 +463,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			// analyze audio for new full audio uploads
 			ss.analyzeAudio(upload, time.Minute)
 		}
+	default:
+		return fmt.Errorf("unsupported format: %s", upload.Template)
 	}
 
 	upload.TranscodeProgress = 1
@@ -607,16 +478,12 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 type FFProbeResult struct {
 	Format struct {
-		Filename       string            `json:"filename"`
-		NbStreams      int               `json:"nb_streams"`
-		NbPrograms     int               `json:"nb_programs"`
-		FormatName     string            `json:"format_name"`
-		FormatLongName string            `json:"format_long_name"`
-		Duration       string            `json:"duration,omitempty"`
-		Size           string            `json:"size"`
-		BitRate        string            `json:"bit_rate,omitempty"`
-		ProbeScore     int               `json:"probe_score"`
-		Tags           map[string]string `json:"tags,omitempty"`
+		Filename       string `json:"filename"`
+		FormatName     string `json:"format_name"`
+		FormatLongName string `json:"format_long_name"`
+		Duration       string `json:"duration,omitempty"`
+		Size           string `json:"size"`
+		BitRate        string `json:"bit_rate,omitempty"`
 	} `json:"format"`
 }
 

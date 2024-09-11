@@ -17,7 +17,8 @@ import {
   SearchApi as SearchApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
-  TransactionsApi as TransactionsApiFull
+  TransactionsApi as TransactionsApiFull,
+  NotificationsApi as NotificationsApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
@@ -59,6 +60,8 @@ import {
   RewardManagerClient,
   getDefaultRewardManagerClentConfig
 } from './services/Solana/programs/RewardManagerClient'
+import { SolanaClient } from './services/Solana/programs/SolanaClient'
+import { getDefaultSolanaClientConfig } from './services/Solana/programs/getDefaultConfig'
 import { Storage, getDefaultStorageServiceConfig } from './services/Storage'
 import {
   StorageNodeSelector,
@@ -189,25 +192,34 @@ const initializeServices = (config: SdkConfig) => {
       solanaRelay
     })
 
+  const solanaClient =
+    config.services?.solanaClient ??
+    new SolanaClient({
+      ...getDefaultSolanaClientConfig(servicesConfig),
+      solanaWalletAdapter
+    })
+
   const claimableTokensClient =
     config.services?.claimableTokensClient ??
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaClient,
+      logger
     })
 
   const rewardManagerClient =
     config.services?.rewardManagerClient ??
     new RewardManagerClient({
       ...getDefaultRewardManagerClentConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaClient,
+      logger
     })
 
   const paymentRouterClient =
     config.services?.paymentRouterClient ??
     new PaymentRouterClient({
       ...getDefaultPaymentRouterClientConfig(servicesConfig),
-      solanaWalletAdapter
+      solanaClient
     })
 
   const services: ServicesContainer = {
@@ -220,6 +232,7 @@ const initializeServices = (config: SdkConfig) => {
     claimableTokensClient,
     rewardManagerClient,
     paymentRouterClient,
+    solanaClient,
     solanaWalletAdapter,
     solanaRelay,
     antiAbuseOracle,
@@ -256,7 +269,8 @@ const initializeApis = ({
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
-    services.solanaRelay
+    services.solanaRelay,
+    services.solanaClient
   )
   const users = new UsersApi(
     generatedApiClientConfig,
@@ -264,7 +278,8 @@ const initializeApis = ({
     services.entityManager,
     services.auth,
     services.logger,
-    services.claimableTokensClient
+    services.claimableTokensClient,
+    services.solanaClient
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -274,7 +289,8 @@ const initializeApis = ({
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
-    services.solanaRelay
+    services.solanaRelay,
+    services.solanaClient
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
@@ -290,7 +306,8 @@ const initializeApis = ({
     services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
-  const { resolve } = new ResolveApi(generatedApiClientConfig)
+  const resolveApi = new ResolveApi(generatedApiClientConfig)
+  const resolve = resolveApi.resolve.bind(resolveApi)
   const chats = new ChatsApi(
     new Configuration({
       fetchApi: fetch,
@@ -327,7 +344,8 @@ const initializeApis = ({
     services.rewardManagerClient,
     services.claimableTokensClient,
     services.antiAbuseOracle,
-    services.logger
+    services.logger,
+    services.solanaClient
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
@@ -342,7 +360,8 @@ const initializeApis = ({
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
     tips: new TipsApiFull(generatedApiClientConfigFull),
-    transactions: new TransactionsApiFull(generatedApiClientConfigFull)
+    transactions: new TransactionsApiFull(generatedApiClientConfigFull),
+    notifications: new NotificationsApiFull(generatedApiClientConfigFull)
   }
 
   return {

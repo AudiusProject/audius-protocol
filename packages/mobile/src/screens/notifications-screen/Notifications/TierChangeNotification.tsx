@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common/store'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { fullProfilePage } from '@audius/web/src/utils/route'
+import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import {
@@ -11,6 +11,7 @@ import {
   IconTokenPlatinum,
   IconTokenSilver
 } from '@audius/harmony-native'
+import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -90,7 +91,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
       <NotificationText>{messages.congrats(label, amount)}</NotificationText>
       <NotificationTwitterButton
         type='static'
-        url={fullProfilePage(user.handle)}
+        url={`${env.AUDIUS_URL}${route.profilePage(user.handle)}`}
         shareText={messages.twitterShareText(label, twitterIcon)}
       />
     </NotificationTile>

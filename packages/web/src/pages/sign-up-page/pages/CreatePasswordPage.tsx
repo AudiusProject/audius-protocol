@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 
 import { createPasswordPageMessages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,11 +12,12 @@ import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
 import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
+
+const { SIGN_UP_HANDLE_PAGE } = route
 
 const initialValues = {
   password: '',

@@ -3,7 +3,8 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
-  Connection
+  Connection,
+  Commitment
 } from '@solana/web3.js'
 
 import type { Nullable } from '../../utils'
@@ -37,6 +38,7 @@ export async function findAssociatedTokenAddress({
 type GetTokenAccountInfoConfig = {
   tokenAccountAddressKey: PublicKey
   connection: Connection
+  commitment?: Commitment
 }
 
 /**
@@ -44,13 +46,14 @@ type GetTokenAccountInfoConfig = {
  */
 export async function getTokenAccountInfo({
   tokenAccountAddressKey,
-  connection
+  connection,
+  commitment = 'processed'
 }: GetTokenAccountInfoConfig) {
   // Fetch token info with 'processed commitment to get any recently changed amounts.
   // NOTE: Our version of spl-token omits the second argument
   // in the type definitions even though it's actually available,
   // so we suppress error until we can upgrade.
-  const info = await getAccount(connection, tokenAccountAddressKey, 'processed')
+  const info = await getAccount(connection, tokenAccountAddressKey, commitment)
   return info
 }
 

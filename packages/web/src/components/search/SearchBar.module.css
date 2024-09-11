@@ -6,12 +6,7 @@
 }
 
 .loadingAnimation {
-  position: absolute;
-  z-index: 2;
   pointer-events: none;
-  top: 0;
-  right: 8px;
-  bottom: 2px;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
 }
@@ -78,7 +73,7 @@
       .ant-select-selection-search.expanded
       .ant-select-selection-search-input
   ) {
-  background-color: var(--search-bar-expanded);
+  background-color: var(--harmony-white);
   width: 280px;
 }
 

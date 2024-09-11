@@ -84,9 +84,10 @@ const messages = {
 type ViewProps = {
   value: string | null
   handleChange: (value: string, label: string) => void
+  setIsOpen: (isOpen: boolean) => void
 }
 
-const BpmRangeView = ({ value, handleChange }: ViewProps) => {
+const BpmRangeView = ({ value, handleChange, setIsOpen }: ViewProps) => {
   const minMaxValue = value?.includes('-') ? value.split('-') : null
   const isValueRangeOption = Boolean(
     bpmOptions.find((opt) => opt.value === value)
@@ -179,9 +180,10 @@ const BpmRangeView = ({ value, handleChange }: ViewProps) => {
             activeValue={
               isValueRangeOption && !(minBpm || maxBpm) ? value : undefined
             }
-            onChange={() =>
+            onChange={() => {
               handleChange(option.value, option.helperText ?? option.value)
-            }
+              setIsOpen(false)
+            }}
           />
         ))}
       </Flex>
@@ -299,14 +301,7 @@ const BpmTargetView = ({ value, handleChange }: ViewProps) => {
   }, [bpmTarget, bpmTargetType, error, hasChanged, onChange])
 
   return (
-    <Flex
-      direction='column'
-      w='100%'
-      ph='s'
-      gap='s'
-      // NOTE: Adds a little flexibility so the user doesn't close the popup by accident
-      onClick={(e) => e.stopPropagation()}
-    >
+    <Flex direction='column' w='100%' ph='s' gap='s'>
       <TextInput
         defaultValue={initialTargetValue ?? ''}
         label={messages.bpm}
@@ -363,12 +358,12 @@ export const BpmFilter = () => {
       label={label}
       onChange={updateSearchParams}
       iconRight={IconCaretDown}
-      popupProps={{
+      menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' }
       }}
     >
-      {({ onChange }) => (
+      {({ onChange, setIsOpen }) => (
         <Flex
           w='100%'
           pv='s'
@@ -393,7 +388,11 @@ export const BpmFilter = () => {
             />
           </Flex>
           <Divider css={{ width: '100%' }} />
-          <InputView value={validatedBpm} handleChange={onChange} />
+          <InputView
+            value={validatedBpm}
+            handleChange={onChange}
+            setIsOpen={setIsOpen}
+          />
         </Flex>
       )}
     </FilterButton>

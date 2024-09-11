@@ -8,9 +8,10 @@ import { setLastNavAction } from 'app/hooks/useNavigation'
 
 import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
 import { ChangePasswordModalScreen } from '../change-password-screen'
+import { CreateChatBlastNavigator } from '../create-chat-blast-screen/CreateChatBlastNavigator'
 import { EditCollectionScreen } from '../edit-collection-screen'
 import { EditTrackModalScreen } from '../edit-track-screen'
-import { FeatureFlagOverrideModalScreen } from '../feature-flag-override-screen'
+import { FeatureFlagOverrideScreen } from '../feature-flag-override-screen'
 import { TipArtistModalScreen } from '../tip-artist-screen'
 import { UploadModalScreen } from '../upload-screen'
 import { WalletConnectModalScreen } from '../wallet-connect'
@@ -55,12 +56,16 @@ export const AppScreen = () => {
         />
         <Stack.Screen name='EditCollection' component={EditCollectionScreen} />
         <Stack.Screen
+          name='CreateChatBlast'
+          component={CreateChatBlastNavigator}
+        />
+        <Stack.Screen
           name='WalletConnect'
           component={WalletConnectModalScreen}
         />
         <Stack.Screen
           name='FeatureFlagOverride'
-          component={FeatureFlagOverrideModalScreen}
+          component={FeatureFlagOverrideScreen}
         />
         <Stack.Screen
           name='ChangePassword'

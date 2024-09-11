@@ -1,15 +1,17 @@
+import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import type {
   ID,
   TrackMetadata,
   Track,
   UserTrackMetadata
 } from '@audius/common/models'
-import { SquareSizes } from '@audius/common/models'
+import { Id, OptionalId, SquareSizes } from '@audius/common/models'
 import type { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
-  gatedContentSelectors
+  gatedContentSelectors,
+  getSDK
 } from '@audius/common/store'
 import {
   encodeHashId,
@@ -129,16 +131,13 @@ function* downloadTrackAsync(
 ): Generator<any, OfflineDownloadStatus> {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return OfflineDownloadStatus.ERROR
+  const sdk = yield* getSDK()
 
-  const apiClient = yield* getContext('apiClient')
-
-  const track = yield* call([apiClient, apiClient.getTrack], {
-    id: trackId,
-    currentUserId,
-    // Needed to ensure APIClient doesn't abort when we become unreachable,
-    // allowing this job time to self-cancel
-    abortOnUnreachable: false
+  const { data } = yield* call([sdk.full.tracks, sdk.full.tracks.getTrack], {
+    trackId: Id.parse(trackId),
+    userId: OptionalId.parse(currentUserId)
   })
+  const track = data ? userTrackMetadataFromSDK(data) : null
 
   if (!track) return OfflineDownloadStatus.ERROR
 

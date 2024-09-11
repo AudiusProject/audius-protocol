@@ -1,3 +1,4 @@
+import { route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontalColor,
   IconTelegram,
@@ -8,7 +9,11 @@ import {
 import cn from 'classnames'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import {
+
+import styles from './Footer.module.css'
+import { handleClickRoute } from './handleClickRoute'
+
+const {
   HOME_PAGE,
   AUDIUS_TWITTER_LINK,
   AUDIUS_INSTAGRAM_LINK,
@@ -23,10 +28,7 @@ import {
   AUDIUS_ORG,
   AUDIUS_MERCH_LINK,
   AUDIUS_TELEGRAM_LINK
-} from 'utils/route'
-
-import styles from './Footer.module.css'
-import { handleClickRoute } from './handleClickRoute'
+} = route
 
 const bottomLinks = [
   {

@@ -9,6 +9,7 @@ import {
   cacheUsersSelectors,
   collectionsSocialActions as socialActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -17,8 +18,8 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { AppState } from 'store/types'
-import { collectionPage, profilePage } from 'utils/route'
 const { getUser } = cacheUsersSelectors
+const { profilePage, collectionPage } = route
 
 type PlaylistId = number
 

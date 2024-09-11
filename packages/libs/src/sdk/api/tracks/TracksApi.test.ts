@@ -18,6 +18,7 @@ import {
   ClaimableTokensClient,
   getDefaultClaimableTokensConfig
 } from '../../services/Solana/programs/ClaimableTokensClient'
+import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Genre } from '../../types/Genre'
@@ -106,6 +107,9 @@ describe('TracksApi', () => {
         })
       )
     })
+    const solanaClient = new SolanaClient({
+      solanaWalletAdapter
+    })
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
@@ -115,17 +119,18 @@ describe('TracksApi', () => {
       new Logger(),
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
-        solanaWalletAdapter
+        solanaClient
       }),
       new PaymentRouterClient({
         ...getDefaultPaymentRouterClientConfig(developmentConfig),
-        solanaWalletAdapter
+        solanaClient
       }),
       new SolanaRelay(
         new Configuration({
           middleware: [discoveryNodeSelector.createMiddleware()]
         })
-      )
+      ),
+      solanaClient
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

@@ -3,25 +3,40 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"github.com/davecgh/go-spew/spew"
+	"github.com/google/uuid"
 )
 
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func checkErr(e error) {
+	if e != nil {
+		log.Fatal(e)
+	}
+}
+
 func main() {
-	sdk, _ := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"))
-	res, err := sdk.GetEvent(context.Background(), &proto.GetEventRequest{Txhash: "E23871FA5C351D201AD9C72A8D0FAC55DF05813E9A3D0C22774A4C0ED4E593A8"})
-	if err != nil {
-		log.Fatal(err)
-	}
+	rand.Seed(time.Now().UnixNano())
+	ctx := context.Background()
 
-	spewConfig := spew.ConfigState{
-		Indent:                  "  ",
-		DisableMethods:          true,
-		DisablePointerAddresses: true,
-		DisableCapacities:       true,
-	}
+	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
+	checkErr(err)
 
-	spewConfig.Dump(res.Event.Body)
+	_, err = sdk.Ping(ctx, &proto.PingRequest{})
+	checkErr(err)
+
+	for {
+		randString := uuid.NewString()
+		log.Printf("Setting 'randomString' to '%s'", randString)
+		time.Sleep(1 * time.Second)
+		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
+			Key:   "randomString",
+			Value: randString,
+		})
+		checkErr(err)
+	}
 }

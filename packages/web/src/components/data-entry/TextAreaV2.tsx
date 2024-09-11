@@ -3,7 +3,8 @@ import {
   useRef,
   useCallback,
   useEffect,
-  ComponentPropsWithoutRef
+  ComponentPropsWithoutRef,
+  ReactNode
 } from 'react'
 
 import cn from 'classnames'
@@ -48,6 +49,7 @@ export type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   showMaxLength?: boolean
   error?: boolean
   helperText?: string
+  renderDisplayElement?: (value: string) => ReactNode
 }
 
 const CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT = 0.875
@@ -69,11 +71,14 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
       onBlur: onBlurProp,
       error,
       helperText,
+      renderDisplayElement,
       ...other
     } = props
 
     const rootRef = useRef<HTMLDivElement>(null)
+    const textContainerRef = useRef<HTMLDivElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const displayElementContainerRef = useRef<HTMLDivElement>(null)
     const characterCount = value ? `${value}`.length : 0
     const nearCharacterLimit =
       maxLength &&
@@ -90,7 +95,10 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
     }
 
     const growTextArea = useCallback(() => {
-      if (textareaRef.current) {
+      if (displayElementContainerRef.current && textareaRef.current) {
+        textareaRef.current.style.height =
+          displayElementContainerRef.current.scrollHeight + 'px'
+      } else if (textareaRef.current) {
         const textarea = textareaRef.current
         textarea.style.height = 'inherit'
         textarea.style.height = `${
@@ -128,14 +136,28 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
             className={styles.scrollArea}
             style={{ maxHeight }}
           >
-            <textarea
-              ref={mergeRefs([textareaRef, forwardedRef])}
-              maxLength={maxLength ?? undefined}
-              value={value}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              {...other}
-            />
+            <div ref={textContainerRef} className={styles.left}>
+              <textarea
+                className={
+                  renderDisplayElement ? styles.transparentTextArea : undefined
+                }
+                spellCheck={!renderDisplayElement}
+                ref={mergeRefs([textareaRef, forwardedRef])}
+                maxLength={maxLength ?? undefined}
+                value={value}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                {...other}
+              />
+              {renderDisplayElement ? (
+                <div
+                  ref={displayElementContainerRef}
+                  className={styles.displayElementContainer}
+                >
+                  {renderDisplayElement(value?.toString() ?? '')}
+                </div>
+              ) : null}
+            </div>
             <div className={styles.right}>
               <div className={styles.bottomRight}>
                 <div

@@ -1,9 +1,9 @@
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { RateLimiterRes } from 'rate-limiter-flexible'
-import { DeveloperApps, Table, Users } from '@pedalboard/storage'
+import { DeveloperApps, Users } from '@pedalboard/storage'
 import { config } from '..'
-import { NextFunction, Request, Response, response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { rateLimitError } from '../error'
 
 const globalRateLimiter = new RelayRateLimiter()
@@ -13,7 +13,7 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, logger } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, isAnonymousAllowed, isSenderVerifier, logger } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   // don't rate limit on local dev, this can block audius-cmd
@@ -29,7 +29,7 @@ export const rateLimiterMiddleware = async (
     signer = (recoveredSigner as DeveloperApps).address
   }
 
-  if ((signer === undefined || signer === null) && !createOrDeactivate && !isSenderVerifier) {
+  if ((signer === undefined || signer === null) && !isAnonymousAllowed && !isSenderVerifier) {
     rateLimitError(next, 'user record does not have wallet')
     return
   }
@@ -52,7 +52,7 @@ export const rateLimiterMiddleware = async (
 
   const limit = await determineLimit(
     signerIsUser,
-    createOrDeactivate,
+    isAnonymousAllowed,
     config.rateLimitAllowList,
     signer
   )
@@ -99,11 +99,11 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 
 const determineLimit = async (
   isUser: boolean,
-  createOrDeactivate: boolean,
+  isAnonymousAllowed: boolean,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
-  if (createOrDeactivate) return "app"
+  if (isAnonymousAllowed) return "app"
   const isAllowed = allowList.includes(signer)
   if (isAllowed) return 'allowlist'
   if (isUser) return 'owner'

@@ -1,7 +1,11 @@
+import { full } from '@audius/sdk'
+
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Kind } from '~/models'
-import { parseTrackRouteFromPermalink } from '~/utils/stringUtils'
+import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
+
+import { SDKRequest } from './types'
 
 const trackApi = createApi({
   reducerPath: 'trackApi',
@@ -9,20 +13,26 @@ const trackApi = createApi({
     getTrackById: {
       fetch: async (
         { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return await apiClient.getTrack({ id, currentUserId })
+        if (!id || id === -1) return null
+        const sdk = await audiusSdk()
+        const { data } = await sdk.full.tracks.getTrack({
+          trackId: Id.parse(id),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return data ? userTrackMetadataFromSDK(data) : null
       },
       fetchBatch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return (
-          (await apiClient.getTracks({
-            ids,
-            currentUserId: currentUserId ?? null
-          })) ?? []
-        )
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.tracks.getBulkTracks({
+          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         idArgKey: 'id',
@@ -36,18 +46,20 @@ const trackApi = createApi({
           permalink,
           currentUserId
         }: { permalink: Nullable<string>; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
         if (!permalink) {
           console.error('Attempting to get track but permalink is null...')
           return
         }
-        const { handle, slug } = parseTrackRouteFromPermalink(permalink)
-        return await apiClient.getTrackByHandleAndSlug({
-          handle,
-          slug,
-          currentUserId
+        const sdk = await audiusSdk()
+        const { data } = await sdk.full.tracks.getBulkTracks({
+          permalink: [permalink],
+          userId: OptionalId.parse(currentUserId)
         })
+        return data && data.length > 0
+          ? userTrackMetadataFromSDK(data[0])
+          : null
       },
       options: {
         permalinkArgKey: 'permalink',
@@ -58,9 +70,15 @@ const trackApi = createApi({
     getTracksByIds: {
       fetch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
-        { apiClient }
+        { audiusSdk }
       ) => {
-        return await apiClient.getTracks({ ids, currentUserId })
+        const sdk = await audiusSdk()
+
+        const { data = [] } = await sdk.full.tracks.getBulkTracks({
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         idListArgKey: 'ids',
@@ -71,18 +89,21 @@ const trackApi = createApi({
     getUserTracksByHandle: {
       fetch: async (
         {
-          handle,
           currentUserId,
-          limit
-        }: { handle: string; currentUserId: Nullable<ID>; limit?: number },
-        { apiClient }
+          filterTracks = 'public',
+          sort = 'date',
+          ...params
+        }: SDKRequest<full.GetTracksByUserHandleRequest>,
+        { audiusSdk }
       ) => {
-        return await apiClient.getUserTracksByHandle({
-          handle,
-          currentUserId,
-          getUnlisted: false,
-          limit
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getTracksByUserHandle({
+          ...params,
+          userId: OptionalId.parse(currentUserId),
+          sort,
+          filterTracks
         })
+        return transformAndCleanList(data, userTrackMetadataFromSDK)
       },
       options: {
         idListArgKey: 'ids',
@@ -101,3 +122,4 @@ export const {
 } = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
+export const trackApiActions = trackApi.actions

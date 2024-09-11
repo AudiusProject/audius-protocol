@@ -1,10 +1,4 @@
-import {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useRef,
-  useState
-} from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -13,7 +7,7 @@ import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce } from 'react-use'
+import { useCustomCompareEffect, useDebounce } from 'react-use'
 import { Dispatch } from 'redux'
 import { call, select } from 'typed-redux-saga'
 
@@ -24,7 +18,7 @@ import {
 } from '~/models/Collection'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { Kind } from '~/models/Kind'
-import { Status } from '~/models/Status'
+import { PaginatedStatus, Status } from '~/models/Status'
 import { User, UserMetadata } from '~/models/User'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { reformatCollection } from '~/store/cache/collections/utils/reformatCollection'
@@ -63,7 +57,10 @@ import {
   QueryHookResults,
   FetchResetAction,
   RetryConfig,
-  MutationHookResults
+  MutationHookResults,
+  PaginatedQueryHookOptions,
+  PaginatedQueryArgs,
+  PaginatedQueryHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
@@ -127,8 +124,10 @@ export const createApi = <
       (endpointName, fetchArgs, updateRecipe) =>
       (dispatch: Dispatch, getState: () => any) => {
         const key = getKeyFromFetchArgs(fetchArgs)
-        const endpointState = getState().api[reducerPath][endpointName][key]
-        if (!endpointState) return
+        // New endpoint state is used whenever updateQueryData is called before the endpoint being updated has had a chance to be called
+        const newEndpointState = { status: Status.SUCCESS, normalizedData: {} }
+        const endpointState =
+          getState().api[reducerPath][endpointName][key] || newEndpointState
         const newState = produce(endpointState.normalizedData, updateRecipe)
         const updateAction =
           slice.actions[`fetch${capitalize(endpointName as string)}Succeeded`]
@@ -199,6 +198,7 @@ const addEndpointToSlice = <NormalizedData>(
   }
 }
 
+// Check the legacy entity cache for results before calling audius-query fetch
 const useQueryState = <Args, Data>(
   fetchArgs: Nullable<Args>,
   reducerPath: string,
@@ -216,7 +216,6 @@ const useQueryState = <Args, Data>(
       state.api[reducerPath][endpointName]
 
     if (!fetchArgs) return endpointState.default
-
     const key = getKeyFromFetchArgs(fetchArgs)
 
     // Retrieve data from cache if lookup args provided
@@ -336,7 +335,8 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<ForceType>,
+  force?: ForceType,
+  setForce?: (force: ForceType) => void,
   currentUserId?: Nullable<number>
 ) => {
   const { audiusBackend, dispatch } = context
@@ -374,8 +374,8 @@ const fetchData = async <Args, Data>(
       : await fetch(fetchArgs, context)
 
     if (apiData === null || apiData === undefined) {
-      if (force?.current) {
-        force.current = false
+      if (force && setForce) {
+        setForce(false)
       }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
@@ -402,7 +402,7 @@ const fetchData = async <Args, Data>(
       // Hack alert: We can't overwrite the current user, since it contains
       // special account data. Once this is removed from user cache we can
       // remove this line.
-      if (force?.current && currentUserId) {
+      if (force && currentUserId) {
         delete entities[Kind.USERS][currentUserId]
       }
 
@@ -415,14 +415,14 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(entities, !!force?.current))
+      dispatch(addEntries(entities, !!force))
       data = result
     } else {
       data = apiData
     }
 
-    if (force?.current) {
-      force.current = false
+    if (force && setForce) {
+      setForce(false)
     }
 
     dispatch(
@@ -474,7 +474,9 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
+    const [force, setForce] = useState<ForceType>(
+      hookOptions?.force ? 'force' : false
+    )
     const currentUserId = useSelector(getUserId)
     const queryState = useQueryState(
       fetchArgs,
@@ -484,10 +486,10 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current
+    const state = force
       ? {
           normalizedData: null,
-          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+          status: force === 'forcing' ? Status.LOADING : Status.IDLE
         }
       : queryState
 
@@ -505,10 +507,10 @@ const buildEndpointHooks = <
       if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
         return
       if (hookOptions?.disabled) return
-      if (force.current === 'forcing') return
+      if (force === 'forcing') return
 
-      if (force.current === 'force') {
-        force.current = 'forcing'
+      if (force === 'force') {
+        setForce('forcing')
       }
       fetchData(
         fetchArgs,
@@ -517,9 +519,17 @@ const buildEndpointHooks = <
         actions,
         context,
         force,
+        setForce,
         currentUserId
       )
-    }, [context, fetchArgs, hookOptions?.disabled, status, currentUserId])
+    }, [
+      context,
+      status,
+      hookOptions?.disabled,
+      force,
+      fetchArgs,
+      currentUserId
+    ])
 
     useDebounce(
       () => {
@@ -548,6 +558,137 @@ const buildEndpointHooks = <
       status,
       errorMessage,
       forceRefresh: fetchWrapped
+    }
+  }
+
+  const usePaginatedQuery = <Data extends [], ArgsType extends Args>(
+    baseArgs: Omit<ArgsType, 'limit' | 'offset'>,
+    options: PaginatedQueryHookOptions
+  ): PaginatedQueryHookResults<Data> => {
+    const dispatch = useDispatch()
+    const {
+      pageSize = 5,
+      startOffset = 0,
+      singlePageData,
+      ...queryHookOptions
+    } = options
+    const [forceLoad, setForceLoad] = useState(false)
+    const [page, setPage] = useState(0)
+    const [status, setStatus] = useState<Status | PaginatedStatus>(Status.IDLE)
+
+    // Resets current page and loading state, but the data is still held in store (which means cache hits will still return as expected)
+    // This is triggered below when the args or page size changes
+    const reset = useCallback(
+      (hardReset?: boolean) => {
+        setPage(0)
+        setStatus(Status.IDLE)
+
+        // If requesting a hard refresh we also reset the cached data in the store
+        if (hardReset) {
+          // @ts-ignore - Unclear whats wrong with the type here
+          dispatch(actions[`reset${capitalize(endpointName)}`]())
+        }
+      },
+      [dispatch]
+    )
+
+    // Should reset if args change - (soft reset - leaves all cached data intact)
+    useCustomCompareEffect(reset, [baseArgs], isEqual)
+
+    const args = {
+      ...baseArgs,
+      limit: pageSize,
+      offset: startOffset + page * pageSize
+    } as ArgsType & PaginatedQueryArgs
+
+    const allPageData = useSelector((state: CommonState) => {
+      // If in single page mode we only return the current page of data (no aggregation)
+      if (singlePageData) {
+        return (
+          state?.api?.[reducerPath]?.[endpointName]?.[getKeyFromFetchArgs(args)]
+            ?.normalizedData ?? []
+        )
+      }
+
+      // By default, select data for every page up to the current page and aggregate the results
+      let pageAccumulator: Data[] = []
+
+      for (let i = 0; i <= page; i++) {
+        const key = getKeyFromFetchArgs({
+          ...args,
+          offset: startOffset + i * pageSize
+        })
+        const normalizedPageData =
+          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData ?? []
+        if (normalizedPageData) {
+          // If an endpoint is paginated it "should" be in an array format but in case it's not we just append it to the accumulator
+          if (!Array.isArray(normalizedPageData)) {
+            pageAccumulator.push(normalizedPageData)
+          } else {
+            pageAccumulator = [...pageAccumulator, ...normalizedPageData]
+          }
+        }
+      }
+      return pageAccumulator
+    })
+
+    // Since this is a paginated query we know that the results will be in an array
+    // Call the useQuery hook to trigger cache checks and/or fetches
+    const result = useQuery(args, queryHookOptions) as QueryHookResults<Data[]>
+
+    // If forceLoad is set, force a data refresh on every render
+    useEffect(() => {
+      if (forceLoad) {
+        result.forceRefresh()
+        setForceLoad(false)
+      }
+    }, [result, forceLoad])
+
+    // Track status of the latest page fetches
+    useEffect(() => {
+      if (
+        !(
+          // If the status was set to LOADING_MORE, we've requested a new page; in which case we don't want to reset the status to IDLE or LOADING
+          (
+            status === PaginatedStatus.LOADING_MORE &&
+            (result.status === Status.LOADING || result.status === Status.IDLE)
+          )
+        ) &&
+        status !== result.status // redudant changes
+      ) {
+        setStatus(result.status)
+      }
+    }, [result.status, status])
+
+    const notError = result.status !== Status.ERROR
+    const stillLoadingCurrentPage =
+      status === PaginatedStatus.LOADING_MORE ||
+      result.status === Status.LOADING
+    const notStarted = result.status === Status.IDLE && allPageData.length === 0
+    const hasNotFetched = !result.data && result.status !== Status.SUCCESS
+    // If fetchedFullPreviousPage is less than the pageSize we can infer that there are no more pages to fetch
+    const fetchedFullPreviousPage = result.data?.length === pageSize
+
+    const hasMore =
+      notError && (notStarted || hasNotFetched || fetchedFullPreviousPage)
+
+    // Callback to increment the page state which will trigger new more data queries
+    const loadMore = useCallback(() => {
+      // If we're still loading a page OR there isn't any more data to load nothing should happen here yet
+      if (stillLoadingCurrentPage || !hasMore) {
+        return
+      }
+      setStatus(PaginatedStatus.LOADING_MORE)
+      setPage((page) => page + 1)
+    }, [stillLoadingCurrentPage, hasMore])
+
+    return {
+      ...result,
+      status,
+      data: allPageData,
+      reset,
+      loadMore,
+      hasMore
     }
   }
 
@@ -659,11 +800,13 @@ const buildEndpointHooks = <
     context: AudiusQueryContextType
   ) => fetchData(fetchArgs, endpointName, endpoint, actions, context)
 
+  let endpointHook
   if (endpoint.options.type === 'mutation') {
-    // @ts-ignore can't match the endpoint name with 'use' prefix
-    api.hooks[`use${capitalize(endpointName)}`] = useMutation
+    endpointHook = useMutation
+  } else if (endpoint.options.type === 'paginatedQuery') {
+    endpointHook = usePaginatedQuery
   } else {
-    // @ts-ignore can't match the endpoint name with 'use' prefix
-    api.hooks[`use${capitalize(endpointName)}`] = useQuery
+    endpointHook = useQuery
   }
+  api.hooks[`use${capitalize(endpointName)}`] = endpointHook
 }

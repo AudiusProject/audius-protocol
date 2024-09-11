@@ -8,12 +8,13 @@ import bs58 from 'bs58'
 import { Request, Response, NextFunction } from 'express'
 
 import { config } from '../../config'
-import { BadRequestError } from '../../errors'
-import { connections, getConnection } from '../../utils/connections'
+import { BadRequestError, UnauthorizedError } from '../../errors'
+import { connections } from '../../utils/connections'
 import {
   broadcastTransaction,
   sendTransactionWithRetries
 } from '../../utils/transaction'
+import { verifySignatures } from '../../utils/verifySignatures'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
@@ -42,31 +43,13 @@ export const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
 const getLookupTableAccounts = async (lookupTableKeys: PublicKey[]) => {
   return await Promise.all(
     lookupTableKeys.map(async (accountKey) => {
-      const res = await getConnection().getAddressLookupTable(accountKey)
+      const res = await connections[0].getAddressLookupTable(accountKey)
       if (res.value === null) {
         throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
       }
       return res.value
     })
   )
-}
-
-/**
- * Checks that the transaction is signed
- *
- * TODO PAY-3106: Verify the signature is correct as well as non-empty.
- * @see {@link https://github.com/solana-labs/solana-web3.js/blob/9344bbfa5dd68f3e15918ff606284373ae18911f/packages/library-legacy/src/transaction/legacy.ts#L767 verifySignatures} for Transaction in @solana/web3.js
- * @param transaction the versioned transaction to check
- * @returns false if missing a signature, true if all signatures are present.
- */
-const verifySignatures = (transaction: VersionedTransaction) => {
-  for (const signature of transaction.signatures) {
-    if (signature === null || signature.every((b) => b === 0)) {
-      return false
-    }
-    // TODO PAY-3106: Use ed25519 to verify signature
-  }
-  return true
 }
 
 /**
@@ -89,7 +72,7 @@ export const relay = async (
       sendOptions
     } = req.body
     const commitment = confirmationOptions?.commitment ?? 'processed'
-    const connection = getConnection()
+    const connection = connections[0]
     const strategy =
       confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
@@ -105,32 +88,34 @@ export const relay = async (
     const feePayerKey = decompiled.payerKey
     const feePayerKeyPair = getFeePayerKeyPair(feePayerKey)
 
-    try {
-      await assertRelayAllowedInstructions(decompiled.instructions, {
-        user: res.locals.signerUser,
-        feePayer: feePayerKey.toBase58()
-      })
-    } catch (e) {
-      if (e instanceof InvalidRelayInstructionError) {
-        throw new BadRequestError('Invalid relay instructions', { cause: e })
-      } else {
-        throw e
-      }
-    }
-
     if (feePayerKeyPair) {
       res.locals.logger.info(
         `Signing with fee payer '${feePayerKey.toBase58()}'`
       )
+      try {
+        // Only care about what the instructions are if signing/paying
+        await assertRelayAllowedInstructions(decompiled.instructions, {
+          user: res.locals.signerUser,
+          feePayer: feePayerKey.toBase58()
+        })
+      } catch (e) {
+        if (e instanceof InvalidRelayInstructionError) {
+          throw new BadRequestError('Invalid relay instructions', { cause: e })
+        } else {
+          throw e
+        }
+      }
       transaction.sign([feePayerKeyPair])
-    } else if (verifySignatures(transaction)) {
+    } else if (res.locals.signerUser && verifySignatures(transaction)) {
       res.locals.logger.info(
         `Transaction already signed by '${feePayerKey.toBase58()}'`
       )
-    } else {
+    } else if (res.locals.signerUser) {
       throw new BadRequestError(
         `No fee payer for address '${feePayerKey?.toBase58()}' and signature missing or invalid`
       )
+    } else {
+      throw new UnauthorizedError()
     }
     const signature = bs58.encode(transaction.signatures[0])
 

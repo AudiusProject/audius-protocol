@@ -1,17 +1,28 @@
-import { ClaimableTokensProgram } from '@audius/spl'
+import {
+  ClaimableTokensErrorCode,
+  ClaimableTokensErrorMessages,
+  ClaimableTokensInstruction,
+  ClaimableTokensProgram
+} from '@audius/spl'
+import { SendTransactionOptions } from '@solana/wallet-adapter-base'
 import {
   TransactionMessage,
   VersionedTransaction,
   Secp256k1Program,
-  PublicKey
+  PublicKey,
+  Transaction,
+  SendTransactionError
 } from '@solana/web3.js'
 
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
+import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
-import type { Mint } from '../../types'
-import { BaseSolanaProgramClient } from '../BaseSolanaProgramClient'
+import type { LoggerService } from '../../../Logger'
+import type { TokenName } from '../../types'
+import { CustomInstructionError } from '../CustomInstructionError'
+import { SolanaClient } from '../SolanaClient'
 
 import { getDefaultClaimableTokensConfig } from './getDefaultConfig'
 import {
@@ -25,6 +36,31 @@ import {
   ClaimableTokensConfig
 } from './types'
 
+export class ClaimableTokensError extends Error {
+  override name = 'ClaimableTokensError'
+  public code: number
+  public instructionName: string
+  public customErrorName?: string
+  constructor({
+    code,
+    instructionName,
+    cause
+  }: {
+    code: number
+    instructionName: string
+    cause?: Error
+  }) {
+    super(
+      ClaimableTokensErrorMessages[code as ClaimableTokensErrorCode] ??
+        `Unknown error: ${code}`,
+      { cause }
+    )
+    this.code = code
+    this.instructionName = instructionName
+    this.customErrorName = ClaimableTokensErrorCode[code]
+  }
+}
+
 /**
  * Connected client to the ClaimableTokens Solana program.
  *
@@ -32,20 +68,22 @@ import {
  * associated token accounts that are permissioned to users by their Ethereum
  * hedgehog wallet private keys.
  */
-export class ClaimableTokensClient extends BaseSolanaProgramClient {
+export class ClaimableTokensClient {
+  private readonly client: SolanaClient
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
-  private readonly mints: Record<Mint, PublicKey>
+  private readonly mints: Record<TokenName, PublicKey>
   /** Map from token mint name to derived user bank authority. */
-  private readonly authorities: Record<Mint, PublicKey>
+  private readonly authorities: Record<TokenName, PublicKey>
+  private readonly logger: LoggerService
 
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
       getDefaultClaimableTokensConfig(productionConfig)
     )
-    super(configWithDefaults, config.solanaWalletAdapter)
+    this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.mints = configWithDefaults.mints
     this.authorities = {
@@ -58,6 +96,9 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         mint: configWithDefaults.mints.USDC
       })
     }
+    this.logger = configWithDefaults.logger.createPrefixedLogger(
+      '[claimable-tokens-client]'
+    )
   }
 
   /**
@@ -68,39 +109,41 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'getOrCreateUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    const { ethWallet, mint, feePayer: feePayerOverride } = args
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const { ethWallet, feePayer: feePayerOverride } = args
+    const { mint, token } = parseMintToken(args.mint, this.mints)
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
-    const userBankAccount = await this.connection.getAccountInfo(userBank)
+    const userBankAccount = await this.client.connection.getAccountInfo(
+      userBank
+    )
     if (!userBankAccount) {
+      this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
       const createUserBankInstruction =
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: ethWallet,
           payer: feePayer,
-          mint: this.mints[mint],
-          authority: this.authorities[mint],
+          mint,
+          authority: this.authorities[token],
           userBank,
           programId: this.programId
         })
       const confirmationStrategyArgs =
-        await this.connection.getLatestBlockhash()
+        await this.client.connection.getLatestBlockhash()
       const message = new TransactionMessage({
         payerKey: feePayer,
         recentBlockhash: confirmationStrategyArgs.blockhash,
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      const signature = await this.wallet.sendTransaction(
-        transaction,
-        this.connection
-      )
+      const signature = await this.sendTransaction(transaction)
       const confirmationStrategy = { ...confirmationStrategyArgs, signature }
-      await this.connection.confirmTransaction(
+      await this.client.connection.confirmTransaction(
         confirmationStrategy,
         'finalized'
       )
       return { userBank, didExist: false }
     }
+    this.logger.debug(`User bank ${userBank} already exists.`)
     return { userBank, didExist: true }
   }
 
@@ -121,11 +164,12 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
-    const feePayer = feePayerOverride ?? (await this.getFeePayer())
+    const { token } = parseMintToken(mint, this.mints)
+    const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mint],
+      authority: this.authorities[token],
       programId: this.programId
     })
     return ClaimableTokensProgram.createTransferInstruction({
@@ -134,7 +178,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       sourceUserBank: source,
       destination,
       nonceAccount: nonceKey,
-      authority: this.authorities[mint],
+      authority: this.authorities[token],
       programId: this.programId
     })
   }
@@ -152,13 +196,15 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
         CreateSecpSchema
       )(params)
 
+    const { token } = parseMintToken(mint, this.mints)
+
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[mint],
+      authority: this.authorities[token],
       programId: this.programId
     })
-    const nonceAccount = await this.connection.getAccountInfo(nonceKey)
+    const nonceAccount = await this.client.connection.getAccountInfo(nonceKey)
     const encodedNonceData = nonceAccount?.data
     if (encodedNonceData) {
       const nonceData =
@@ -167,7 +213,7 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: mintFixedDecimalMap[mint](amount).value,
+      amount: mintFixedDecimalMap[token](amount).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)
@@ -190,9 +236,53 @@ export class ClaimableTokensClient extends BaseSolanaProgramClient {
       'deriveUserBank',
       GetOrCreateUserBankSchema
     )(params)
+
+    const { token } = parseMintToken(mint, this.mints)
+
     return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
-      claimableTokensPDA: this.authorities[mint]
+      claimableTokensPDA: this.authorities[token]
     })
+  }
+
+  /**
+   * Override the sendTransaction method to provide some more friendly errors
+   * back to the consumer for ClaimableTokens instructions
+   */
+  public async sendTransaction(
+    transaction: Transaction | VersionedTransaction,
+    sendOptions?: SendTransactionOptions | undefined
+  ): Promise<string> {
+    try {
+      return await this.client.sendTransaction(transaction, sendOptions)
+    } catch (e) {
+      if (e instanceof SendTransactionError) {
+        try {
+          const error = CustomInstructionError.parseSendTransactionError(e)
+          if (error) {
+            const instructions = await this.client.getInstructions(transaction)
+            const instruction = instructions[error.instructionIndex]
+            if (instruction && instruction.programId.equals(this.programId)) {
+              const decodedInstruction =
+                ClaimableTokensProgram.decodeInstruction(instruction)
+              throw new ClaimableTokensError({
+                code: error.code,
+                instructionName:
+                  ClaimableTokensInstruction[
+                    decodedInstruction.data.instruction
+                  ] ?? 'Unknown',
+                cause: e
+              })
+            }
+          }
+        } catch (e) {
+          if (!(e instanceof ClaimableTokensError)) {
+            // If failed to provide user friendly error, surface original error
+            this.logger.warn('Failed to parse ClaimableTokensError error', e)
+          }
+        }
+      }
+      throw e
+    }
   }
 }

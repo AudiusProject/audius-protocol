@@ -10,7 +10,7 @@ import {
 } from '@reduxjs/toolkit'
 import AsyncRetry from 'async-retry'
 
-import { Kind, Status } from '~/models'
+import { Kind, PaginatedStatus, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
@@ -27,6 +27,13 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
     >}`]: EndpointDefinitions[Property]['options']['type'] extends 'mutation'
       ? () => MutationHookResults<
           Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
+      : EndpointDefinitions[Property]['options']['type'] extends 'paginatedQuery'
+      ? (
+          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          options: PaginatedQueryHookOptions
+        ) => PaginatedQueryHookResults<
           Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
         >
       : (
@@ -81,7 +88,7 @@ type EndpointOptions = {
   kind?: Kind
   retry?: boolean
   retryConfig?: RetryConfig
-  type?: 'query' | 'mutation'
+  type?: 'query' | 'mutation' | 'paginatedQuery'
 }
 
 export type EndpointConfig<Args, Data> = {
@@ -138,6 +145,8 @@ export type PerKeyState<NormalizedData> = {
   errorMessage?: string
 }
 
+export type PaginatedQueryArgs = { limit: number; offset: number }
+
 export type QueryHookOptions = {
   disabled?: boolean
   shallow?: boolean
@@ -147,6 +156,22 @@ export type QueryHookOptions = {
   debounce?: number
 }
 
+export type PaginatedQueryHookOptions = QueryHookOptions & {
+  /**
+   * Page size to use.
+   * NOTE: if you change this value after the hook was initialized you will cause a cache miss and it will re-fetch data.
+   */
+  pageSize: number
+  /**
+   * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
+   */
+  singlePageData?: boolean
+  /**
+   * Optional option to start with a custom offset (e.g. starting on a later page)
+   */
+  startOffset?: number
+}
+
 export type QueryHookResults<Data> = {
   data: Data
   status: Status
@@ -154,11 +179,38 @@ export type QueryHookResults<Data> = {
   forceRefresh: () => void
 }
 
+export type PaginatedQueryHookResults<Data extends []> = Omit<
+  QueryHookResults<Data>,
+  'status'
+> & {
+  /**
+   * Is true whenever the endpoint may have more data to load.
+   * Note: there is an edge case where this is true but there is no more data to load. This occurs when the data matches a perfect page size interval (e.g. 25 ).
+   */
+  hasMore: boolean
+  /**
+   * Load the next page
+   */
+  loadMore: () => void
+  /**
+   * Resets current page data & load state.
+   * By default this is considered a "soft" reset and as long as the args didnt change the cached data will still be used.
+   * Alternatively, setting hardReset to true will force a reset of the cached store data and reset the status.
+   */
+  reset: (hardReset?: boolean) => void
+  /**
+   * Status can include a LOADING_MORE status specific to paginated queries
+   */
+  status: PaginatedStatus | Status
+}
+
+export type MutationHookResponse<Data> = {
+  data: Data
+  status: Status
+  errorMessage?: string
+}
+
 export type MutationHookResults<Args, Data> = [
   (fetchArgs: Args, options?: QueryHookOptions) => void,
-  {
-    data: Data
-    status: Status
-    errorMessage?: string
-  }
+  MutationHookResponse<Data>
 ]

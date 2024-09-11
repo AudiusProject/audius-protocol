@@ -1,4 +1,10 @@
-import type { ChatMessage } from '@audius/sdk'
+import {
+  ChatBlastAudience,
+  ChatMessage,
+  Track,
+  Playlist,
+  User
+} from '@audius/sdk'
 
 import { Status } from '~/models/Status'
 
@@ -61,4 +67,102 @@ export const chatCanFetchMoreMessages = (
   prevCount?: number
 ) => {
   return !!messagesStatus && messagesStatus !== Status.LOADING && !!prevCount
+}
+
+/**
+ * Matches audius links with a specific hostname in the provided text
+ * @param text input text
+ * @param hostname the hostname of the site, e.g. audius.co
+ */
+export const matchAudiusLinks = ({
+  text,
+  hostname
+}: {
+  text: string
+  hostname: string
+}) => {
+  const linkRegex = new RegExp(
+    `https://${hostname.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    )}/[^/\\s]+(?:/[^/\\s]+)*(?=\\s|$)`,
+    'g'
+  )
+  const matches: string[] = text.match(linkRegex) ?? []
+
+  return {
+    matches
+  }
+}
+
+/**
+ * Formats a track for human readability.
+ * @param track
+ * @returns string of "title - display name"
+ */
+export const formatTrackName = ({ track }: { track: Track }) => {
+  return `${track.title} - ${track.user.name}`
+}
+
+/**
+ * Formats a collection for human readability.
+ * @param collection
+ * @returns string of "playlist name - display name"
+ */
+export const formatCollectionName = ({
+  collection
+}: {
+  collection: Playlist
+}) => {
+  return `${collection.playlistName} - ${collection.user.name}`
+}
+
+/**
+ * Formats a user for human readability.
+ * @param track
+ * @returns string of "display name"
+ */
+export const formatUserName = ({ user }: { user: User }) => {
+  return user.name
+}
+
+/**
+ * Custom split function that splits on \n, removing empty results
+ * and keeping the \n in the returned array.
+ * - hello\nworld becomes ['hello', '\n', 'world']
+ * - hello\n becomes ['hello', '\n']
+ * @param s
+ * @returns array of parts
+ */
+export const splitOnNewline = (s: string) => {
+  return s.split(/(\n)/).filter(Boolean)
+}
+
+export const makeBlastChatId = ({
+  audience,
+  audienceContentType,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentType?: 'track' | 'album'
+  audienceContentId?: string
+}) => {
+  return (
+    `${audience}` +
+    (audienceContentType ? `:${audienceContentType}` : '') +
+    (audienceContentId ? `:${audienceContentId}` : '')
+  )
+}
+
+export const getChatBlastTitle = (audience: ChatBlastAudience) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return 'All Followers'
+    case ChatBlastAudience.TIPPERS:
+      return 'Tip Supporters'
+    case ChatBlastAudience.CUSTOMERS:
+      return 'Purchasers'
+    case ChatBlastAudience.REMIXERS:
+      return 'Remix Creators'
+  }
 }

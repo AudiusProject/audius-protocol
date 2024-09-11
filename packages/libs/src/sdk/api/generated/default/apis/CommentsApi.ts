@@ -23,8 +23,10 @@ import {
     CommentResponseToJSON,
 } from '../models';
 
-export interface GetCommentRequest {
-    id: string;
+export interface GetCommentRepliesRequest {
+    commentId: string;
+    offset?: number;
+    limit?: number;
 }
 
 /**
@@ -34,19 +36,27 @@ export class CommentsApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a single comment by its ID
+     * Gets replies to a parent comment
      */
-    async getCommentRaw(params: GetCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getComment.');
+    async getCommentRepliesRaw(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentResponse>> {
+        if (params.commentId === null || params.commentId === undefined) {
+            throw new runtime.RequiredError('commentId','Required parameter params.commentId was null or undefined when calling getCommentReplies.');
         }
 
         const queryParameters: any = {};
 
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/comments/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            path: `/comments/{comment_id}/replies`.replace(`{${"comment_id"}}`, encodeURIComponent(String(params.commentId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -56,10 +66,10 @@ export class CommentsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a single comment by its ID
+     * Gets replies to a parent comment
      */
-    async getComment(params: GetCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
-        const response = await this.getCommentRaw(params, initOverrides);
+    async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
+        const response = await this.getCommentRepliesRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@audius/spl": "*",
+    "@noble/curves": "1.4.2",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",

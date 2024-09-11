@@ -12,6 +12,7 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -31,7 +32,7 @@ import {
   OverflowActionCallbacks,
   PurchaseableContentType
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { Genre, route } from '@audius/common/utils'
 import { IconCaretRight as IconCaret, Scrubber } from '@audius/harmony'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
@@ -57,15 +58,14 @@ import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
 import {
   pushUniqueRoute as pushRoute,
-  profilePage,
   collectibleDetailsPage
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getBuffering, getCounter, getPlaying, getPlaybackRate } =
   playerSelectors
@@ -562,6 +562,8 @@ const NowPlaying = g(
               onClick={onClickPill}
               className={styles.premiumPill}
               buttonSize='large'
+              contentId={track_id as ID}
+              contentType='track'
             />
           ) : null}
           <ActionsBar

@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { squashNewLines } from '@audius/common/utils'
+import {
+  formatCollectionName,
+  formatTrackName,
+  formatUserName,
+  isAudiusUrl,
+  squashNewLines
+} from '@audius/common/utils'
+import { ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
@@ -9,6 +16,13 @@ import Autolink from 'react-native-autolink'
 
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text, TextLink } from '@audius/harmony-native'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
+
+const {
+  instanceOfTrackResponse,
+  instanceOfUserResponse,
+  instanceOfPlaylistResponse
+} = ResolveApi
 
 type PositionedLink = {
   text: string
@@ -21,6 +35,37 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
   linkProps?: Partial<TextLinkProps>
+}
+
+const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
+  const [unfurledContent, setUnfurledContent] = useState<string>()
+
+  useEffect(() => {
+    if (isAudiusUrl(url) && !unfurledContent) {
+      const fn = async () => {
+        const sdk = await audiusSdk()
+        const res = await sdk.resolve({ url })
+        if (res.data) {
+          if (instanceOfTrackResponse(res)) {
+            setUnfurledContent(formatTrackName({ track: res.data }))
+          } else if (instanceOfPlaylistResponse(res)) {
+            setUnfurledContent(
+              formatCollectionName({ collection: res.data[0] })
+            )
+          } else if (instanceOfUserResponse(res)) {
+            setUnfurledContent(formatUserName({ user: res.data }))
+          }
+        }
+      }
+      fn()
+    }
+  }, [url, unfurledContent, setUnfurledContent])
+
+  return (
+    <TextLink {...other} url={url}>
+      {unfurledContent ?? children}
+    </TextLink>
+  )
 }
 
 export const UserGeneratedText = (props: UserGeneratedTextProps) => {
@@ -105,7 +150,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
 
   const renderLink = useCallback(
     (text: string, match: Match) => (
-      <TextLink
+      <Link
         {...other}
         variant='visible'
         textVariant={other.variant}
@@ -113,20 +158,24 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         {...linkProps}
       >
         {text}
-      </TextLink>
+      </Link>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
   const renderText = useCallback(
-    (text: string) => <Text {...other}>{text}</Text>,
+    (text: string) => (
+      <Text suppressHighlighting {...other}>
+        {text}
+      </Text>
+    ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
   return (
-    <>
+    <View>
       <View
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
@@ -148,7 +197,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
           const linkLayout = linkLayouts[index]
 
           return linkLayout && linkContainerLayout ? (
-            <TextLink
+            <Link
               {...other}
               variant='visible'
               textVariant={other.variant}
@@ -160,12 +209,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
               }}
               url={match.getAnchorHref()}
               source={source}
+              {...linkProps}
             >
               {text}
-            </TextLink>
+            </Link>
           ) : null
         })}
       </View>
-    </>
+    </View>
   )
 }

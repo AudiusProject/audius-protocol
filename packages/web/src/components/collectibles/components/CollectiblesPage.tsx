@@ -14,7 +14,7 @@ import {
   collectibleDetailsUIActions,
   ProfileUser
 } from '@audius/common/store'
-import { getHash } from '@audius/common/utils'
+import { getHash, route } from '@audius/common/utils'
 import {
   Button as HarmonyButton,
   Modal,
@@ -55,14 +55,11 @@ import { ComponentPlacement, MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
-import {
-  BASE_GA_URL,
-  PROFILE_PAGE_COLLECTIBLE_DETAILS,
-  doesMatchRoute
-} from 'utils/route'
+import { BASE_GA_URL, doesMatchRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './CollectiblesPage.module.css'
+const { PROFILE_PAGE_COLLECTIBLE_DETAILS } = route
 const { getCollectible } = collectibleDetailsUISelectors
 const { setCollectible } = collectibleDetailsUIActions
 

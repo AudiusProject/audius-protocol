@@ -12,6 +12,7 @@ import {
   ExploreCollectionsVariant,
   UploadType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
@@ -83,6 +84,7 @@ import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
+import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
@@ -100,7 +102,11 @@ import {
 } from 'store/application/ui/scrollLock/actions'
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
-import {
+import { getPathname } from 'utils/route'
+
+import styles from './WebPlayer.module.css'
+
+const {
   FEED_PAGE,
   TRENDING_PAGE,
   NOTIFICATION_PAGE,
@@ -130,6 +136,7 @@ import {
   PLAYLIST_PAGE,
   ALBUM_PAGE,
   TRACK_PAGE,
+  TRACK_COMMENTS_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
@@ -159,7 +166,6 @@ import {
   TRENDING_UNDERGROUND_PAGE,
   EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
-  getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
   AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
@@ -181,9 +187,7 @@ import {
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE
-} from 'utils/route'
-
-import styles from './WebPlayer.module.css'
+} = route
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
@@ -907,6 +911,13 @@ class WebPlayer extends Component {
                   exact
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   component={AiAttributedTracksPage}
+                />
+                <Route exact path={TRACK_PAGE} component={TrackPage} />
+                <MobileRoute
+                  exact
+                  path={TRACK_COMMENTS_PAGE}
+                  isMobile={isMobile}
+                  component={TrackCommentsPage}
                 />
                 <Route exact path={TRACK_PAGE} component={TrackPage} />
                 <DesktopRoute

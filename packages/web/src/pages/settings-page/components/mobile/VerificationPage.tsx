@@ -13,6 +13,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -26,11 +27,12 @@ import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { profilePage } from 'utils/route'
 
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
+
+const { profilePage } = route
 
 const messages = {
   title: 'VERIFICATION',

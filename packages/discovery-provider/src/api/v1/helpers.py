@@ -5,13 +5,17 @@ from datetime import datetime
 from typing import Dict, Union, cast
 
 import requests
-from flask_restx import reqparse
+from flask_restx import inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
+from src.queries.get_notifications import (
+    NotificationType,
+    default_valid_notification_types,
+)
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
@@ -301,6 +305,50 @@ def extend_user(user, current_user_id=None):
     return user
 
 
+def extend_account_playlist(playlist):
+    playlist["id"] = encode_int_id(playlist["id"])
+    if playlist.get("user"):
+        playlist["user"]["id"] = encode_int_id(playlist["user"]["id"])
+    return playlist
+
+
+def extend_playlist_library_item(item):
+    if item.get("contents"):
+        item["contents"] = [
+            extend_playlist_library_item(content) for content in item["contents"]
+        ]
+        return item
+    elif item.get("playlist_id"):
+        item["playlist_id"] = encode_int_id(item["playlist_id"])
+        return item
+    logger.error(f"Invalid playlist library item: {item}")
+    return None
+
+
+def extend_playlist_library(playlist_library):
+    if playlist_library is None:
+        return None
+    extended_contents = [
+        extend_playlist_library_item(item) for item in playlist_library["contents"]
+    ]
+    return {"contents": [item for item in extended_contents if item is not None]}
+
+
+def extend_account(account):
+    user = account["user"]
+    # Extract before extend_user as it will delete this
+    playlist_library = user.get("playlist_library", None)
+    return {
+        "user": extend_user(user),
+        "playlist_library": extend_playlist_library(playlist_library),
+        "playlists": [
+            extend_account_playlist(playlist)
+            for playlist in account.get("playlists", [])
+        ],
+        "track_save_count": user.get("track_save_count", 0),
+    }
+
+
 def extend_repost(repost):
     repost["user_id"] = encode_int_id(repost["user_id"])
     repost["repost_item_id"] = encode_int_id(repost["repost_item_id"])
@@ -500,6 +548,7 @@ def extend_activity(item):
         extended_playlist = extend_playlist(item)
         # Wee hack to make sure this marshals correctly. The marshaller for
         # playlist_model expects these two values to be the same type.
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
         extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
@@ -587,6 +636,23 @@ def extend_purchase(purchase):
     return new_purchase
 
 
+def extend_feed_item(item):
+    if item.get("track_id"):
+        return {
+            "type": "track",
+            "item": extend_track(item),
+        }
+    if item.get("playlist_id"):
+        extended_playlist = extend_playlist(item)
+        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
+        return {
+            "type": "playlist",
+            "item": extended_playlist,
+        }
+    return None
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
@@ -597,6 +663,10 @@ def abort_bad_request_param(param, namespace):
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
+
+
+def abort_forbidden(namespace):
+    namespace.abort(403, "Oh no! User is not allowed to access this resource.")
 
 
 def abort_unauthorized(namespace):
@@ -699,18 +769,11 @@ class DescriptiveArgument(reqparse.Argument):
             return None
         param = super().__schema__
         param["description"] = self.description
-        return param
 
-
-class ListEnumArgument(DescriptiveArgument):
-    """
-    A descriptive argument that's used for a list of enum values.
-    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
-    """
-
-    @property
-    def __schema__(self):
-        param = super().__schema__
+        # Allow for a list of enum values to be represented properly in an
+        # argument's schema. By default, the enum field is mistakenly added to
+        # the root "enum" field rather than the items "enum" field.
+        # See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
         if "enum" in param and "items" in param:
             param["items"]["enum"] = param["enum"]
             del param["enum"]
@@ -957,7 +1020,7 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "includePurchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Whether or not to include purchaseable content",
 )
 full_search_parser.add_argument(
@@ -977,19 +1040,19 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "is_verified",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include verified users in the user results",
 )
 full_search_parser.add_argument(
     "has_downloads",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include tracks that have downloads in the track results",
 )
 full_search_parser.add_argument(
     "is_purchaseable",
     required=False,
-    type=str,
+    type=inputs.boolean,
     description="Only include purchaseable tracks and albums in the track and album results",
 )
 full_search_parser.add_argument(
@@ -1002,13 +1065,13 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "bpm_min",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm greater than or equal to",
 )
 full_search_parser.add_argument(
     "bpm_max",
     required=False,
-    type=str,
+    type=float,
     description="Only include tracks that have a bpm less than or equal to",
 )
 full_search_parser.add_argument(
@@ -1069,6 +1132,8 @@ notifications_parser.add_argument(
     type=str,
     action="append",
     description="Additional valid notification types to return",
+    choices=[n.value for n in NotificationType],
+    default=default_valid_notification_types,
 )
 
 

@@ -1,13 +1,16 @@
 import { useState, useCallback, useEffect } from 'react'
 
+import { route } from '@audius/common/utils'
 import { Button, IconShieldCheck } from '@audius/harmony'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import { AUTHORIZED_APPS_SETTINGS_PAGE, doesMatchRoute } from 'utils/route'
+import { doesMatchRoute } from 'utils/route'
 
 import SettingsCard from '../SettingsCard'
 
 import { AuthorizedAppsSettingsModal } from './AuthorizedAppsSettingsModal'
+
+const { AUTHORIZED_APPS_SETTINGS_PAGE } = route
 
 const messages = {
   title: 'Authorized Apps',

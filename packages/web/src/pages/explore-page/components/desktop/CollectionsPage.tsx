@@ -1,13 +1,16 @@
 import { ID, Status } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 
 import { CollectionCard } from 'components/collection'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { BASE_URL, EXPLORE_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'
+
+const { EXPLORE_PAGE } = route
 
 export type CollectionsPageProps = {
   title: string
@@ -22,8 +25,8 @@ const CollectionsPage = (props: CollectionsPageProps) => {
     <Header
       primary={title}
       secondary={description}
-      containerStyles={description ? styles.header : null}
-      wrapperClassName={description ? styles.headerWrapper : null}
+      containerStyles={description ? styles.header : undefined}
+      wrapperClassName={description ? styles.headerWrapper : undefined}
     />
   )
 

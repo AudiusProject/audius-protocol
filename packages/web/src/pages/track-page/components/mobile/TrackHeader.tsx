@@ -1,6 +1,5 @@
 import { Suspense, useCallback } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -11,6 +10,7 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
+import { trpc } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
@@ -55,7 +55,6 @@ import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { isDarkMode } from 'utils/theme/theme'
-import { trpc } from 'utils/trpcClientWeb'
 
 import ActionButtonRow from './ActionButtonRow'
 import StatsButtonRow from './StatsButtonRow'
@@ -132,6 +131,8 @@ type TrackHeaderProps = {
   duration: number
   saveCount: number
   repostCount: number
+  commentCount: number
+  commentsDisabled: boolean
   isUnlisted: boolean
   isStreamGated: boolean
   streamConditions: Nullable<AccessConditions>
@@ -175,9 +176,11 @@ const TrackHeader = ({
   isRemix,
   fieldVisibility,
   coSign,
+  listenCount,
   saveCount,
   repostCount,
-  listenCount,
+  commentCount,
+  commentsDisabled,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -253,12 +256,7 @@ const TrackHeader = ({
     }
 
     return (
-      <Flex
-        gap='s'
-        wrap='wrap'
-        justifyContent='center'
-        className={styles.withSectionDivider}
-      >
+      <Flex gap='s' wrap='wrap' w='100%'>
         {filteredTags.map((tag) => (
           <SearchTag key={tag} source='track page'>
             {tag}
@@ -427,9 +425,11 @@ const TrackHeader = ({
         showListenCount={showListenCount}
         showFavoriteCount={!isUnlisted}
         showRepostCount={!isUnlisted}
+        showCommentCount={!isUnlisted && !commentsDisabled}
         listenCount={listenCount}
         favoriteCount={saveCount}
         repostCount={repostCount}
+        commentCount={commentCount}
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
       />
@@ -460,25 +460,6 @@ const TrackHeader = ({
       ) : null}
     </div>
   )
-}
-
-TrackHeader.defaultProps = {
-  loading: false,
-  playing: false,
-  active: true,
-  coverArtUrl: placeholderArt,
-  artistVerified: false,
-  description: '',
-
-  isOwner: false,
-  isAlbum: false,
-  hasTracks: false,
-  isPublished: false,
-  isSaved: false,
-
-  saveCount: 0,
-  tags: [],
-  onPlay: () => {}
 }
 
 export default TrackHeader

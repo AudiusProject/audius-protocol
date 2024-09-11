@@ -19,6 +19,7 @@ import (
 	_ "embed"
 	_ "net/http/pprof"
 
+	core "github.com/AudiusProject/audius-protocol/core/sdk"
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
@@ -66,6 +67,8 @@ type MediorumConfig struct {
 	StoreAll                  bool
 	VersionJson               VersionJson
 	DiscoveryListensEndpoints []string
+	CoreGRPCEndpoint          string
+	CoreJRPCEndpoint          string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -83,6 +86,7 @@ type MediorumServer struct {
 	trustedNotifier  *ethcontracts.NotifierInfo
 	reqClient        *req.Client
 	rendezvousHasher *RendezvousHasher
+	coreSdk          *core.Sdk
 
 	// simplify
 	mediorumPathUsed uint64
@@ -299,7 +303,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/uploads", ss.serveUploadList)
 	routes.GET("/uploads/:id", ss.serveUploadDetail, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
-	routes.POST("/uploads/:id/analyze", ss.analyzeUpload, ss.requireHealthy, ss.requireRegisteredSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
 	// workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
@@ -308,7 +311,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// legacy blob audio analysis
 	routes.GET("/tracks/legacy/:cid/analysis", ss.serveLegacyBlobAnalysis, ss.requireHealthy)
-	routes.POST("/tracks/legacy/:cid/analyze", ss.serveLegacyBlobAnalysis, ss.requireHealthy)
 
 	// serve blob (audio)
 	routes.HEAD("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)

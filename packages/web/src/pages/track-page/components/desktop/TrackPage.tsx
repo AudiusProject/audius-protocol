@@ -4,8 +4,7 @@ import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
-import { CommentSectionProvider } from 'components/comments/CommentSectionContext'
-import { CommentSectionDesktop } from 'components/comments/CommentSectionDesktop'
+import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -250,14 +249,9 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled ? (
+          {isCommentingEnabled && !heroTrack?.comments_disabled ? (
             <Flex flex='3'>
-              <CommentSectionProvider
-                userId={userId}
-                entityId={defaults.trackId}
-              >
-                <CommentSectionDesktop />
-              </CommentSectionProvider>
+              <CommentSection entityId={defaults.trackId} />
             </Flex>
           ) : null}
           {hasMoreByTracks ? (

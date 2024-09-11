@@ -79,10 +79,10 @@ access_gate = ns.add_model(
     OneOfModel(
         "access_gate",
         [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(purchase_gate),
-            fields.Nested(nft_gate),
+            tip_gate,
+            follow_gate,
+            purchase_gate,
+            nft_gate,
         ],
     ),
 )
@@ -92,7 +92,8 @@ extended_payment_split = ns.clone(
     "extended_payment_split",
     payment_split,
     {
-        "eth_wallet": fields.String(required=True),
+        "user_id": fields.Integer(required=False),
+        "eth_wallet": fields.String(),
         "payout_wallet": fields.String(required=True),
         "amount": fields.Integer(required=True),
     },
@@ -123,10 +124,10 @@ extended_access_gate = ns.add_model(
     OneOfModel(
         "extended_access_gate",
         [
-            fields.Nested(tip_gate),
-            fields.Nested(follow_gate),
-            fields.Nested(extended_purchase_gate),
-            fields.Nested(nft_gate),
+            tip_gate,
+            follow_gate,
+            extended_purchase_gate,
+            nft_gate,
         ],
     ),
 )

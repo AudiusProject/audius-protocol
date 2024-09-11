@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { route } from '@audius/common/utils'
 import {
   IconTwitter,
   IconCloudUpload,
@@ -12,10 +13,11 @@ import { InstagramButton, TwitterButton } from 'components/social-button'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './VerifiedUpload.module.css'
+
+const { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } = route
 
 const messages = {
   title: 'Verified Upload',

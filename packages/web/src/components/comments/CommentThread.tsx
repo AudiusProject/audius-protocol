@@ -1,89 +1,114 @@
 import { useState } from 'react'
 
-import { ID } from '@audius/common/models'
+import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
-  Button,
+  Box,
   Flex,
   IconCaretDown,
   IconCaretUp,
-  Text,
-  TextLink
+  PlainButton
 } from '@audius/harmony'
+import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
-import { useCurrentCommentSection } from './CommentSectionContext'
 
-const messages = {
-  noCommentsTitle: 'Nothing here yet',
-  noCommentsSubtitle: 'Be the first to comment on this track', // TODO: make this derive from entity type
-  showMoreReplies: 'Show More Replies'
-}
+export const CommentThread = ({ commentId }: { commentId: string }) => {
+  const { data: rootComment } = useGetCommentById({
+    id: commentId
+  })
+  const [hasLoadedMore, setHasLoadedMore] = useState(false)
+  const {
+    data: moreReplies,
+    loadMore,
+    hasMore
+  } = useGetCommentRepliesById(
+    { id: commentId },
+    {
+      // Root comments already have the first 3 replies so we only need to load more when the user requests them
+      disabled: (rootComment?.replies?.length ?? 0) < 3 || !hasLoadedMore,
+      pageSize: 3,
+      // Start at the 4th reply
+      startOffset: 3
+    }
+  )
 
-export const CommentThread = () => {
-  const { comments, fetchComments, handleLoadMoreReplies } =
-    useCurrentCommentSection()
-  // TODO: this feels sub-optimal? Maybe fine
+  const hasMoreReplies = hasMore && (rootComment?.replies?.length ?? 0) >= 3
+
   const [hiddenReplies, setHiddenReplies] = useState<{
-    [parentCommentId: number]: boolean
+    [parentCommentId: string]: boolean
   }>({})
 
-  const toggleReplies = (commentId: ID) => {
+  const toggleReplies = (commentId: string) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
 
+  const handleLoadMoreReplies = () => {
+    if (hasLoadedMore) {
+      loadMore()
+    } else {
+      // If hasLoadedMore is false, this is the first time the user is requesting more replies
+      // In this case audius-query will automatically fetch the first page of replies, no need to trigger via loadMore()
+      setHasLoadedMore(true)
+    }
+  }
+
+  // Combine the replies from the root comment and the additional loaded replies
+  const allReplies = [...(rootComment?.replies ?? []), ...(moreReplies ?? [])]
+
+  if (!rootComment) return null
+
+  const { replyCount } = rootComment
+
   return (
-    <Flex direction='column' gap='m'>
-      <Button onClick={fetchComments} size='xs' css={{ width: '100px' }}>
-        Refresh
-      </Button>
-      {comments.length === 0 ? (
-        <Flex
-          alignItems='center'
-          justifyContent='center'
-          direction='column'
-          css={{ paddingTop: 80, paddingBottom: 80 }}
-        >
-          <Text>{messages.noCommentsTitle}</Text>
-          <Text color='subdued'>{messages.noCommentsSubtitle}</Text>
-        </Flex>
-      ) : null}
-      {comments.map((rootComment, i) => (
-        <Flex key={rootComment.id} direction='column'>
-          <CommentBlock comment={rootComment} parentCommentIndex={i} />
-          <Flex ml='56px' direction='column' mt='l'>
-            {(rootComment?.replies?.length ?? 0) > 0 ? (
-              <TextLink onClick={() => toggleReplies(rootComment.id)}>
-                {hiddenReplies[rootComment.id] ? (
-                  <IconCaretUp color='subdued' size='m' />
-                ) : (
-                  <IconCaretDown color='subdued' size='m' />
-                )}
-                {hiddenReplies[rootComment.id] ? 'Show' : 'Hide'} Replies
-              </TextLink>
-            ) : null}
-            {hiddenReplies[rootComment.id] ||
-            (rootComment?.replies?.length ?? 0) === 0 ? null : (
-              <Flex direction='column' mt='l' gap='l'>
-                {rootComment?.replies?.map((reply) => (
-                  <Flex w='100%' key={reply.id}>
-                    <CommentBlock
-                      comment={reply}
-                      parentCommentId={rootComment.id}
-                      parentCommentIndex={i}
-                    />
-                  </Flex>
-                ))}
+    <Flex direction='column' as='li'>
+      <CommentBlock commentId={rootComment.id} />
+      <Flex ml='56px' direction='column' mt='l' gap='l'>
+        {(rootComment?.replies?.length ?? 0) > 0 ? (
+          <Box alignSelf='flex-start'>
+            <PlainButton
+              onClick={() => toggleReplies(rootComment.id)}
+              variant='subdued'
+              iconLeft={
+                hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
+              }
+            >
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies(replyCount)
+                : messages.hideReplies}
+            </PlainButton>
+          </Box>
+        ) : null}
+        {hiddenReplies[rootComment.id] ? null : (
+          <Flex
+            direction='column'
+            gap='l'
+            as='ul'
+            aria-label={messages.replies}
+          >
+            {allReplies.map((reply: ReplyComment) => (
+              <Flex w='100%' key={reply.id} as='li'>
+                <CommentBlock
+                  commentId={reply.id}
+                  parentCommentId={rootComment.id}
+                />
               </Flex>
-            )}
-            {/* TODO: need a way to hide this when no more to load */}
-            <TextLink onClick={() => handleLoadMoreReplies(rootComment.id)}>
-              {messages.showMoreReplies}
-            </TextLink>
+            ))}
           </Flex>
-        </Flex>
-      ))}
+        )}
+
+        {hasMoreReplies ? (
+          <PlainButton
+            onClick={handleLoadMoreReplies}
+            variant='subdued'
+            css={{ width: 'max-content' }}
+          >
+            {messages.showMoreReplies}
+          </PlainButton>
+        ) : null}
+      </Flex>
     </Flex>
   )
 }

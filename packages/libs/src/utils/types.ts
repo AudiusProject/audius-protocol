@@ -171,6 +171,7 @@ export type TrackMetadata = {
   release_date: Nullable<string>
   repost_count: number
   save_count: number
+  comment_count: number
   tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
@@ -183,6 +184,7 @@ export type TrackMetadata = {
   stream_conditions: Nullable<GatedConditions>
   is_download_gated: boolean
   download_conditions: Nullable<GatedConditions>
+  comments_disabled?: boolean
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>
@@ -219,6 +221,7 @@ export type TrackMetadata = {
   bpm?: Nullable<number>
   is_custom_bpm?: boolean
   musical_key?: Nullable<string>
+  is_custom_musical_key?: boolean
   audio_analysis_error_count?: number
   field_visibility?: FieldVisibility
 }

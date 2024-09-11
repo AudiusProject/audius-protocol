@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -34,6 +35,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
+import { ChatBlastCTA } from './ChatBlastCTA'
 import { ChatUserListItem } from './ChatUserListItem'
 
 const { getAccountUser } = accountSelectors
@@ -129,6 +131,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(6),
     width: spacing(6)
   },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%'
+  },
   footerPadding: {
     height: spacing(30)
   }
@@ -206,6 +213,9 @@ export const ChatUserListScreen = () => {
   const defaultUserList = useDefaultUserList(defaultUserListType)
   const queryUserList = useQueryUserList(query)
 
+  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
   const hasQuery = query.length > 0
 
   const { hasMore, loadMore, status, userIds } = hasQuery
@@ -313,6 +323,11 @@ export const ChatUserListScreen = () => {
             />
           )}
         </View>
+        {isOneToManyDMsEnabled ? (
+          <View style={styles.footerContainer}>
+            <ChatBlastCTA />
+          </View>
+        ) : null}
       </ScreenContent>
     </Screen>
   )

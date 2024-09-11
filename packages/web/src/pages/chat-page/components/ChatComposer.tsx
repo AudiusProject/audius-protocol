@@ -1,30 +1,22 @@
-import {
-  ChangeEvent,
-  ComponentPropsWithoutRef,
-  FormEvent,
-  useCallback,
-  useState,
-  useRef,
-  useEffect
-} from 'react'
+import { ComponentPropsWithoutRef, useCallback, useState } from 'react'
 
+import { LinkEntity } from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
-import { IconSend, IconButton } from '@audius/harmony'
-import cn from 'classnames'
+import { Nullable } from '@audius/common/utils'
+import { Box } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
+import { ComposerInput } from 'components/composer-input/ComposerInput'
+import { decodeHashId } from 'utils/hashIds'
 
-import styles from './ChatComposer.module.css'
+import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
 const { sendMessage } = chatActions
 
 const messages = {
-  sendMessage: 'Send Message',
-  sendMessagePlaceholder: 'Start a New Message'
+  sendMessagePlaceholder: 'Start typing...'
 }
-
-const ENTER_KEY = 'Enter'
 
 export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
@@ -34,91 +26,53 @@ export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
 
 const MAX_MESSAGE_LENGTH = 10000
 
-type ChatSendButtonProps = { disabled: boolean }
-
-export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
-  return (
-    <IconButton
-      className={styles.sendButton}
-      disabled={disabled}
-      aria-label={messages.sendMessage}
-      type='submit'
-      size='m'
-      icon={IconSend}
-      color='staticWhite'
-      iconCss={{ position: 'relative', left: -1 }}
-    />
-  )
-}
-
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId, presetMessage, onMessageSent } = props
   const dispatch = useDispatch()
   const [value, setValue] = useState(presetMessage ?? '')
-  const ref = useRef<HTMLTextAreaElement>(null)
-  const chatIdRef = useRef(chatId)
+  const [messageId, setMessageId] = useState(0)
+  // The track and collection ids used to render the composer preview
+  const [trackId, setTrackId] = useState<Nullable<ID>>(null)
+  const [collectionId, setCollectionId] = useState<Nullable<ID>>(null)
 
   const handleChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value)
+    (value: string, linkEntities: LinkEntity[]) => {
+      setValue(value)
+
+      const track = linkEntities.find((e) => e.type === 'track')
+      setTrackId(track ? decodeHashId(track.data.id) : null)
+
+      const collection = linkEntities.find((e) => e.type === 'collection')
+      setCollectionId(collection ? decodeHashId(collection.data.id) : null)
     },
-    [setValue]
+    []
   )
 
-  const handleSubmit = useCallback(
-    async (e?: FormEvent) => {
-      e?.preventDefault()
-      if (chatId && value) {
-        const message = value
-        dispatch(sendMessage({ chatId, message }))
-        setValue('')
-        onMessageSent()
-      }
-    },
-    [chatId, value, setValue, dispatch, onMessageSent]
-  )
-
-  // Submit when pressing enter while not holding shift
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === ENTER_KEY && !e.shiftKey) {
-        e.preventDefault()
-        handleSubmit()
-      }
-    },
-    [handleSubmit]
-  )
-
-  // Set focus and clear on new chat selected
-  useEffect(() => {
-    if (chatId) {
-      ref.current?.focus()
+  const handleSubmit = useCallback(async () => {
+    if (chatId && value) {
+      dispatch(sendMessage({ chatId, message: value }))
+      setMessageId((id) => ++id)
+      onMessageSent()
     }
-    if (chatId !== chatIdRef.current) {
-      setValue('')
-      chatIdRef.current = chatId
-    }
-  }, [ref, chatId, chatIdRef])
+  }, [chatId, dispatch, onMessageSent, value])
 
   return (
-    <div className={cn(styles.root, props.className)}>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <TextAreaV2
-          ref={ref}
-          rows={1}
+    <Box backgroundColor='white' className={props.className}>
+      {trackId ? (
+        <ComposerTrackInfo trackId={trackId} />
+      ) : collectionId ? (
+        <ComposerCollectionInfo collectionId={collectionId} />
+      ) : null}
+      <Box p='l'>
+        <ComposerInput
           placeholder={messages.sendMessagePlaceholder}
-          onKeyDown={handleKeyDown}
+          messageId={messageId}
           onChange={handleChange}
-          value={value}
-          maxVisibleRows={10}
+          onSubmit={handleSubmit}
           maxLength={MAX_MESSAGE_LENGTH}
-          showMaxLength={!!value && value.length > MAX_MESSAGE_LENGTH * 0.85}
-          grows
-          resize
-        >
-          <ChatSendButton disabled={!value} />
-        </TextAreaV2>
-      </form>
-    </div>
+          presetMessage={presetMessage}
+        />
+      </Box>
+    </Box>
   )
 }

@@ -18,6 +18,8 @@ from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWall
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
+from src.models.moderation.muted_user import MutedUser
+from src.models.moderation.reported_comment import ReportedComment
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -72,8 +74,12 @@ class Action(str, Enum):
     VIEW_PLAYLIST = "ViewPlaylist"
     APPROVE = "Approve"
     REJECT = "Reject"
+    DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    MUTE = "Mute"
+    UNMUTE = "Unmute"
+    REPORT = "Report"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -103,6 +109,8 @@ class EntityType(str, Enum):
     TIP = "Tip"
     COMMENT = "Comment"
     COMMENT_REACTION = "CommentReaction"
+    MUTED_USER = "MutedUser"
+    REPORTED_COMMENT = "ReportedComment"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -159,6 +167,8 @@ class ExistingRecordDict(TypedDict):
     PlaylistRoute: Dict[int, PlaylistRoute]
     Comment: Dict[int, Comment]
     CommentReaction: Dict[Tuple, CommentReaction]
+    MutedUser: Dict[Tuple, MutedUser]
+    ReportedComment: Dict[Tuple, ReportedComment]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -180,6 +190,8 @@ class EntitiesToFetchDict(TypedDict):
     UserWallet: Set[str]
     Comment: Set[int]
     CommentReaction: Set[Tuple]
+    MutedUser: Set[Tuple]
+    ReportedComment: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -412,6 +424,7 @@ def copy_record(
         DashboardWalletUser,
         Comment,
         CommentReaction,
+        MutedUser,
     ],
     block_number: int,
     event_blockhash: str,

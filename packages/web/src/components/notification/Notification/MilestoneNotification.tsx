@@ -7,13 +7,18 @@ import {
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common/store'
-import { formatCount, Nullable } from '@audius/common/utils'
+import {
+  formatCount,
+  isEntityHidden,
+  Nullable,
+  route
+} from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
-import { fullProfilePage, profilePage } from 'utils/route'
+import { fullProfilePage } from 'utils/route'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -24,6 +29,8 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconMilestone } from './components/icons'
 import { getEntityLink } from './utils'
+
+const { profilePage } = route
 const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -64,7 +71,7 @@ const getAchievementText = (
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      if (entity) {
+      if (entity && !isEntityHidden(entity)) {
         const { entityType } = notification
         const link = getEntityLink(entity, true)
         const text = messages.achievementText(
@@ -141,14 +148,16 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{renderBody()}</NotificationBody>
-      <TwitterShareButton
-        type='static'
-        url={link}
-        shareText={text}
-        analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
-          milestone: text
-        })}
-      />
+      {link && text ? (
+        <TwitterShareButton
+          type='static'
+          url={link}
+          shareText={text}
+          analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
+            milestone: text
+          })}
+        />
+      ) : null}
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

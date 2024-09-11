@@ -18,6 +18,7 @@ test::
 
 
 steve.test::
+	# docker compose -f docker-compose.test.yml down
 	docker compose -f docker-compose.test.yml up -d
 
 	audius_db_url="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable" \
@@ -25,7 +26,7 @@ steve.test::
 
 	audius_delegate_private_key="c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" \
 	audius_db_url="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable" \
-	go test ./... -count=1
+	go test -count=1 ./...
 
 
 # formerly build.fast but uses qemu - slow
@@ -45,4 +46,4 @@ build.push.fast::
 quicktype::
 	cp ../packages/libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
 	npx quicktype@23.0.37 --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/schema.ts
-	# gofmt -w discovery/schema/schema.go
+	gofmt -w discovery/schema/schema.go

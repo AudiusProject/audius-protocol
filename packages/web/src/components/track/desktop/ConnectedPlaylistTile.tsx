@@ -30,6 +30,7 @@ import {
   usePremiumContentPurchaseModal,
   PurchaseableContentType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -56,7 +57,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
-import { fullCollectionPage, fullTrackPage, collectionPage } from 'utils/route'
+import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
@@ -77,6 +78,7 @@ const {
 } = collectionsSocialActions
 const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserHandle = accountSelectors.getUserHandle
+const { collectionPage } = route
 
 type OwnProps = {
   uid: UID

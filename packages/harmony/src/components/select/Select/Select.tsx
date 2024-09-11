@@ -1,253 +1,211 @@
 import {
   forwardRef,
-  RefObject,
   useState,
   useCallback,
   useRef,
-  useMemo
+  useMemo,
+  Ref,
+  useEffect,
+  MouseEvent
 } from 'react'
 
-import { CSSObject, useTheme } from '@emotion/react'
+import { mergeRefs } from 'react-merge-refs'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { Box, Flex, Paper } from 'components/layout'
-import { Popup } from 'components/popup'
+import { TextInput } from 'components/input'
+import { Menu, MenuProps } from 'components/internal/Menu'
+import { MenuItem } from 'components/internal/MenuItem'
+import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
+import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 import { useControlled } from 'hooks/useControlled'
+import { IconCaretDown, IconCloseAlt } from 'icons'
 
-import { SelectInput } from '../SelectInput'
-import { SelectPopupKeyHandler } from '../SelectPopupKeyHandler'
-
-import { SelectOption, SelectProps } from './types'
+import { SelectProps } from './types'
 
 const messages = {
   noMatches: 'No matches'
 }
 
-type SelectOptionsProps = {
-  activeValue?: string | null
-  options: SelectOption[]
-  optionRefs?: RefObject<HTMLButtonElement[]>
-  onChange: (option: SelectOption) => void
+const defaultMenuProps: Partial<MenuProps> = {
+  anchorOrigin: { horizontal: 'left', vertical: 'bottom' },
+  transformOrigin: { horizontal: 'left', vertical: 'top' }
 }
 
-export const SelectOptions = (props: SelectOptionsProps) => {
-  const { activeValue, options, onChange, optionRefs } = props
-  const { color, cornerRadius, spacing, typography } = useTheme()
-
-  // Popup Styles
-  const optionIconCss: CSSObject = {
-    width: spacing.unit4,
-    height: spacing.unit4
-  }
-
-  const activeOptionCss: CSSObject = {
-    transform: 'none',
-    backgroundColor: color.secondary.s300,
-    color: color.static.white
-  }
-
-  const optionCss: CSSObject = {
-    background: 'transparent',
-    border: 'none',
-    color: color.text.default,
-    fontWeight: typography.weight.medium,
-    gap: spacing.s,
-    paddingLeft: spacing.m,
-    paddingRight: spacing.m,
-    paddingTop: spacing.s,
-    paddingBottom: spacing.s,
-    width: '100%',
-    borderRadius: cornerRadius.s,
-    justifyContent: 'flex-start',
-
-    '&:hover': activeOptionCss,
-
-    '&:active': {
-      transform: 'none'
-    }
-  }
-
-  if (!options.length) {
-    return (
-      <Flex justifyContent='center'>
-        <Text variant='body' color='subdued' size='s'>
-          {messages.noMatches}
-        </Text>
-      </Flex>
-    )
-  }
-
-  return (
-    <Flex direction='column'>
-      {options.map((option, index) => (
-        <BaseButton
-          key={option.value}
-          iconLeft={option.icon}
-          styles={{
-            button: {
-              ...optionCss,
-              ...(option.value === activeValue ? activeOptionCss : {})
-            },
-            icon: optionIconCss
-          }}
-          onClick={() => onChange(option)}
-          aria-label={option.label ?? option.value}
-          role='option'
-          ref={(el) => {
-            if (optionRefs && optionRefs.current && el) {
-              optionRefs.current[index] = el
-            }
-          }}
-        >
-          {option.leadingElement ?? null}
-          <Text variant='body' strength='strong'>
-            {option.label ?? option.value}
-          </Text>
-          {option.helperText ? (
-            <Text variant='body' strength='strong' color='subdued'>
-              {option.helperText}
-            </Text>
-          ) : null}
-        </BaseButton>
-      ))}
-    </Flex>
-  )
-}
-
-export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
-  props,
-  ref
+/**
+ * A form input used for selecting a value: when collapsed it shows the
+ * currently selected option and when expanded, it shows a scrollable list
+ * of predefined options for the user to choose from.
+ */
+export const Select = forwardRef(function Select<Value extends string>(
+  props: SelectProps<Value>,
+  ref: Ref<HTMLInputElement>
 ) {
   const {
-    selection: selectionProp,
+    value: valueProp,
     options,
-    optionsLabel,
-    popupAnchorOrigin = { horizontal: 'left', vertical: 'bottom' },
-    popupMaxHeight,
-    popupTransformOrigin = { horizontal: 'left', vertical: 'top' },
-    popupPortalLocation,
-    popupZIndex,
-    ...selectInputProps
+    menuProps,
+    onChange,
+    onClick,
+    clearable,
+    children,
+    ...other
   } = props
 
-  const [selection, setSelection] = useControlled({
-    controlledProp: selectionProp,
+  const { label } = other
+
+  const [value, setValue] = useControlled({
+    controlledProp: valueProp,
     defaultValue: null,
     stateName: 'selection',
     componentName: 'Select'
   })
 
-  // TODO: implement filtering
-  // The state management is already done because this was copied from FilterButton
-  // but I would like to support filtering the options by typing in the SelectInput
-  const [filterInputValue, setFilterInputValue] = useState('')
-  const selectedOption = options.find((option) => option.value === selection)
+  const [isOpen, setIsOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const selectedOption = options.find((option) => option.value === value)
   const selectedLabel = selectedOption?.label ?? selectedOption?.value
+  const anchorRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const optionRefs = useRef([])
+  const optionRefs = useRef<HTMLButtonElement[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const handleOptionSelect = useCallback(
-    (
-        handleChange: (value: string, label: string) => void,
-        setIsOpen: (isOpen: boolean) => void
-      ) =>
-      (option: SelectOption) => {
-        setSelection(option.value)
-        handleChange(option.value, option.label ?? '')
-        setIsOpen(false)
-      },
-    [setSelection]
+  const handleChange = useCallback(
+    (value: Value) => {
+      setValue(value)
+      setInputValue('')
+      onChange?.(value)
+      setIsOpen(false)
+    },
+    [onChange, setValue]
   )
 
-  const handleOpen = useCallback(() => {
-    // Focus the input after the popup is open
-    setTimeout(() => {
-      inputRef.current?.focus({ preventScroll: true })
-    }, 0)
-  }, [inputRef])
+  useEffect(() => {
+    if (isOpen) {
+      // Focus the input after the popup is open
+      setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true })
+      }, 0)
+    }
+  }, [isOpen])
 
   const filteredOptions = useMemo(
     () =>
-      options.filter(({ label }) => {
+      options.filter(({ value, label }) => {
         return (
-          !filterInputValue ||
-          label?.toLowerCase().includes(filterInputValue.toLowerCase())
+          !inputValue ||
+          label?.toLowerCase().includes(inputValue.toLowerCase()) ||
+          value.toLowerCase().includes(inputValue.toLowerCase())
         )
       }),
-    [options, filterInputValue]
+    [options, inputValue]
+  )
+
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLInputElement>) => {
+      setIsOpen(true)
+      onClick?.(e)
+    },
+    [onClick]
+  )
+
+  const handleClickIcon = useCallback(
+    (e: MouseEvent<SVGSVGElement>) => {
+      e.stopPropagation()
+      e.preventDefault()
+      if (value !== null && clearable) {
+        setValue(null)
+        // @ts-ignore
+        onChange?.(null)
+      } else {
+        setIsOpen((isOpen: boolean) => !isOpen)
+      }
+    },
+    [value, clearable, setValue, onChange]
+  )
+
+  const Icon = value !== null && clearable ? IconCloseAlt : IconCaretDown
+
+  const optionElements = (
+    <OptionKeyHandler
+      options={filteredOptions}
+      disabled={!isOpen}
+      optionRefs={optionRefs}
+      scrollRef={scrollRef}
+      onChange={handleChange}
+    >
+      {(activeValue) =>
+        filteredOptions.length === 0 ? (
+          <Flex justifyContent='center'>
+            <Text variant='body' color='subdued' size='s'>
+              {messages.noMatches}
+            </Text>
+          </Flex>
+        ) : (
+          filteredOptions?.map((option, index) => (
+            <MenuItem
+              ref={(el) => {
+                if (optionRefs && optionRefs.current && el) {
+                  optionRefs.current[index] = el
+                }
+              }}
+              key={option.value}
+              variant='option'
+              {...option}
+              onChange={handleChange}
+              isActive={option.value === activeValue}
+            />
+          ))
+        )
+      }
+    </OptionKeyHandler>
   )
 
   return (
-    <SelectInput
-      {...selectInputProps}
-      value={selection}
-      onOpen={handleOpen}
-      onReset={() => setFilterInputValue('')}
-    >
-      {({ isOpen, setIsOpen, handleChange, anchorRef }) => (
-        <SelectPopupKeyHandler
-          options={filteredOptions}
-          disabled={!isOpen}
-          onOptionSelect={handleOptionSelect(handleChange, setIsOpen)}
-          optionRefs={optionRefs}
-          scrollRef={scrollRef}
-        >
-          {(activeValue) => (
-            <Popup
-              anchorRef={(ref as RefObject<HTMLElement>) || anchorRef}
-              isVisible={isOpen}
-              onClose={() => setIsOpen(false)}
-              anchorOrigin={popupAnchorOrigin}
-              transformOrigin={popupTransformOrigin}
-              portalLocation={popupPortalLocation}
-              zIndex={popupZIndex}
-              onAfterClose={() => setFilterInputValue('')}
-              takeWidthOfAnchor
-            >
-              <Paper
-                mv='s'
-                w='100%'
-                border='strong'
-                shadow='far'
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Flex
-                  p='s'
-                  direction='column'
-                  alignItems='flex-start'
-                  role='listbox'
-                  aria-label={selectedLabel ?? props['aria-label']}
-                  aria-activedescendant={selectedLabel}
-                  w='100%'
-                  css={{
-                    maxHeight: popupMaxHeight,
-                    overflowY: 'auto'
-                  }}
-                  ref={scrollRef}
-                >
-                  <Flex direction='column' w='100%' gap='s'>
-                    {optionsLabel ? (
-                      <Box pt='s' ph='m'>
-                        <Text variant='label' size='xs'>
-                          {optionsLabel}
-                        </Text>
-                      </Box>
-                    ) : null}
-                    <SelectOptions
-                      activeValue={activeValue}
-                      options={filteredOptions}
-                      optionRefs={optionRefs}
-                      onChange={handleOptionSelect(handleChange, setIsOpen)}
-                    />
-                  </Flex>
-                </Flex>
-              </Paper>
-            </Popup>
-          )}
-        </SelectPopupKeyHandler>
-      )}
-    </SelectInput>
+    <Flex ref={anchorRef}>
+      <TextInput
+        ref={mergeRefs([ref, inputRef])}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onClick={handleClick}
+        aria-haspopup='listbox'
+        aria-expanded={isOpen}
+        autoComplete='off'
+        endIcon={Icon}
+        IconProps={{ onClick: handleClickIcon }}
+        elevateLabel={!!selectedOption}
+        hidePlaceholder={!!selectedOption}
+        {...other}
+      />
+      {/* Overlay selected option */}
+      {selectedOption && !inputValue ? (
+        <MenuItem
+          variant='option'
+          {...selectedOption}
+          onChange={() => {}}
+          css={({ spacing }) => ({
+            position: 'absolute',
+            // Magic values to align the selected option with the input
+            top: spacing.unit6 + 2,
+            left: spacing.unit1,
+            opacity: isOpen ? 0.5 : 1
+          })}
+          disabled
+        />
+      ) : null}
+      <Menu
+        anchorRef={anchorRef}
+        isVisible={isOpen}
+        scrollRef={scrollRef}
+        aria-label={selectedLabel ?? label ?? props['aria-label']}
+        aria-activedescendant={selectedLabel}
+        onClose={() => setIsOpen(false)}
+        {...defaultMenuProps}
+        {...menuProps}
+      >
+        {children
+          ? children({ onChange: handleChange, options: optionElements })
+          : optionElements}
+      </Menu>
+    </Flex>
   )
 })

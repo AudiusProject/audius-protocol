@@ -1,4 +1,4 @@
-import { ID } from '@audius/common/models'
+import { ID, Id, OptionalId } from '@audius/common/models'
 import {
   cacheTracksActions,
   getContext,
@@ -6,9 +6,10 @@ import {
   gatedContentSelectors,
   cacheTracksSelectors,
   queueSelectors,
-  calculatePlayerBehavior
+  calculatePlayerBehavior,
+  getSDK
 } from '@audius/common/store'
-import { getQueryParams } from '@audius/common/utils'
+import { getQueryParams, isResponseError } from '@audius/common/utils'
 import { all, call, select, put, delay, fork, cancel } from 'typed-redux-saga'
 const { getUserId } = accountSelectors
 const { getTrackStreamUrl, getTrack } = cacheTracksSelectors
@@ -23,7 +24,7 @@ export function* fetchTrackStreamUrls({
   trackIds: ID[]
   isUpdate?: boolean
 }) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
   const playerBehavior = yield* select(getPlayerBehavior)
@@ -57,23 +58,35 @@ export function* fetchTrackStreamUrls({
             nftAccessSignature,
             userId: currentUserId
           })
-          if (shouldPreview) {
-            queryParams.preview = true
-          }
-          const streamUrl = yield* call([apiClient, 'getTrackStreamUrl'], {
-            id,
-            currentUserId,
-            queryParams,
-            abortOnUnreachable: true
-          })
+
+          const { user_data, user_signature, nft_access_signature } =
+            queryParams
+          const { data: streamUrl } = yield* call(
+            [sdk.tracks, sdk.tracks.streamTrack],
+            {
+              trackId: Id.parse(id),
+              userId: OptionalId.parse(currentUserId),
+              noRedirect: true,
+              preview: shouldPreview,
+              userData: user_data as string,
+              userSignature: user_signature as string,
+              nftAccessSignature: nft_access_signature as string
+            }
+          )
+
           earlyResultsArr.push({ [id]: streamUrl })
           return streamUrl !== undefined ? { [id]: streamUrl } : undefined
         } catch (e) {
-          reportToSentry({
-            error: e as Error,
-            name: 'Stream Prefetch',
-            additionalInfo: { trackId: id }
-          })
+          // Don't log 404s as errors, could be for deleted tracks etc.
+          if (isResponseError(e) && e.response.status === 404) {
+            console.warn(`Prefetch: Track ${id} not found`)
+          } else {
+            reportToSentry({
+              error: e as Error,
+              name: 'Stream Prefetch',
+              additionalInfo: { trackId: id }
+            })
+          }
         }
       })
     )

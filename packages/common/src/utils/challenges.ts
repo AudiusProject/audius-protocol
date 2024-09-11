@@ -1,8 +1,7 @@
-import { UndisbursedUserChallenge } from '~/store/pages'
-
 import {
   ChallengeRewardID,
   UserChallenge,
+  UndisbursedUserChallenge,
   OptimisticUserChallenge,
   ChallengeName,
   SpecifierWithAmount
@@ -149,7 +148,19 @@ export const challengeRewardsConfig: Record<
     description: () => 'Winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More'
   },
+  tp: {
+    id: 'trending-playlist',
+    title: 'Top 5 Trending Playlists',
+    description: () => 'Winners are selected every Friday at Noon PT!',
+    panelButtonText: 'See More'
+  },
   'trending-track': {
+    title: 'Top 5 Trending Tracks',
+    description: () => 'Winners are selected every Friday at Noon PT!',
+    panelButtonText: 'See More',
+    id: 'trending-track'
+  },
+  tt: {
     title: 'Top 5 Trending Tracks',
     description: () => 'Winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
@@ -169,6 +180,12 @@ export const challengeRewardsConfig: Record<
     id: 'verified-upload'
   },
   'trending-underground': {
+    title: 'Top 5 Underground Trending',
+    description: () => 'Winners are selected every Friday at Noon PT!',
+    panelButtonText: 'See More',
+    id: 'trending-underground'
+  },
+  tut: {
     title: 'Top 5 Underground Trending',
     description: () => 'Winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',

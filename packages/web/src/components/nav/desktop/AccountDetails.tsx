@@ -1,17 +1,18 @@
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
-import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
+const { SIGN_IN_PAGE, profilePage } = route
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -83,6 +84,9 @@ export const AccountDetails = () => {
                     badgeSize='xs'
                     css={{
                       flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      wordBreak: 'break-word',
                       ...(isManagedAccount && {
                         color: color.secondary.s500,
                         '&:hover': { color: color.secondary.s500 }

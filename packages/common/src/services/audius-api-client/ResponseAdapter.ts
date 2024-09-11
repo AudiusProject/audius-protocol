@@ -164,6 +164,7 @@ export const makeUserlessTrack = (
       : 0
   const save_count = 'favorite_count' in track ? track.favorite_count : 0
   const repost_count = 'repost_count' in track ? track.repost_count : 0
+  const comment_count = 'comment_count' in track ? track.comment_count : 0
   const has_current_user_reposted =
     'has_current_user_reposted' in track
       ? track.has_current_user_reposted
@@ -179,6 +180,7 @@ export const makeUserlessTrack = (
     play_count,
     save_count,
     repost_count,
+    comment_count,
     has_current_user_reposted,
     has_current_user_saved,
     remix_of:
@@ -415,6 +417,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     isrc: null,
     iswc: null,
     credits_splits: null,
+    create_date: null,
     description: null,
     followee_reposts: [],
     followee_saves: [],
@@ -428,6 +431,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     release_date: null,
     repost_count: 0,
     save_count: 0,
+    comment_count: 0,
     tags: null,
     title: '',
     track_segments: [],

@@ -43,7 +43,7 @@ export interface ReplyComment {
      * @type {number}
      * @memberof ReplyComment
      */
-    timestampS?: number;
+    trackTimestampS?: number;
     /**
      * 
      * @type {number}
@@ -55,7 +55,13 @@ export interface ReplyComment {
      * @type {boolean}
      * @memberof ReplyComment
      */
-    isPinned: boolean;
+    isCurrentUserReacted?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ReplyComment
+     */
+    isArtistReacted?: boolean;
     /**
      * 
      * @type {string}
@@ -79,7 +85,6 @@ export function instanceOfReplyComment(value: object): value is ReplyComment {
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
-    isInstance = isInstance && "isPinned" in value && value["isPinned"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
     return isInstance;
@@ -98,9 +103,10 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'id': json['id'],
         'userId': json['user_id'],
         'message': json['message'],
-        'timestampS': !exists(json, 'timestamp_s') ? undefined : json['timestamp_s'],
+        'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
-        'isPinned': json['is_pinned'],
+        'isCurrentUserReacted': !exists(json, 'is_current_user_reacted') ? undefined : json['is_current_user_reacted'],
+        'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
     };
@@ -118,9 +124,10 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
-        'timestamp_s': value.timestampS,
+        'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
-        'is_pinned': value.isPinned,
+        'is_current_user_reacted': value.isCurrentUserReacted,
+        'is_artist_reacted': value.isArtistReacted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
     };

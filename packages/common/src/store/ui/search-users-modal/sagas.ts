@@ -1,10 +1,11 @@
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
-import { User } from '~/models/User'
+import { transformAndCleanList, userMetadataFromSDK } from '~/adapters'
+import { OptionalId } from '~/models'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache/users/utils'
-import { getContext } from '~/store/effects'
 import { SearchKind } from '~/store/pages/search-results/types'
+import { getSDK } from '~/store/sdkUtils'
 import * as searchUsersModalSelectors from '~/store/ui/search-users-modal/selectors'
 import { actions as searchUsersModalActions } from '~/store/ui/search-users-modal/slice'
 
@@ -14,18 +15,18 @@ const { getUserList } = searchUsersModalSelectors
 
 function* doSearchUsers(action: ReturnType<typeof searchUsers>) {
   const { query, limit = 15 } = action.payload
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const userList = yield* select(getUserList)
   try {
     const currentUserId = yield* select(getUserId)
-    const res = yield* call([apiClient, apiClient.getSearchFull], {
-      currentUserId,
+    const { data } = yield* call([sdk.full.search, sdk.full.search.search], {
       query,
+      limit,
       kind: SearchKind.USERS,
       offset: userList.userIds.length,
-      limit
+      userId: OptionalId.parse(currentUserId)
     })
-    const users = Object.values(res.users) as User[]
+    const users = transformAndCleanList(data?.users ?? [], userMetadataFromSDK)
     yield* call(processAndCacheUsers, users)
     yield* put(
       searchUsersSucceeded({ userIds: users.map((u) => u.user_id), limit })

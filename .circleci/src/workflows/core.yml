@@ -13,25 +13,12 @@ jobs:
       context: Vercel
       service: core
 
-  - push-arm-image:
-      name: push-core-arm
-      context: [Vercel, dockerhub]
-      service: core
-      filters:
-        branches:
-          only: main
-      requires:
-        - push-core
-
   - deploy-stage-nodes-just-tag:
       service: core
       name: deploy-core-staging
       requires:
         - push-core
-        # uncomment when 
-        # - test-core
-        # uncomment when arm builds are stable
-        # - push-core-arm
+        - test-core
       filters:
         branches:
           only: main

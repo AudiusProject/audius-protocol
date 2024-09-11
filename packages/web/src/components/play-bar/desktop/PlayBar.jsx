@@ -21,7 +21,7 @@ import {
   playerSelectors,
   playbackRateValueMap
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { Genre, route } from '@audius/common/utils'
 import { removeHotkeys, setupHotkeys, Scrubber } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -37,7 +37,7 @@ import { audioPlayer } from 'services/audio-player'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { getLocation } from 'store/routing/selectors'
-import { collectibleDetailsPage, profilePage } from 'utils/route'
+import { collectibleDetailsPage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { PlaybackRateButton } from '../playback-rate-button/PlaybackRateButton'
@@ -45,6 +45,7 @@ import { PlaybackRateButton } from '../playback-rate-button/PlaybackRateButton'
 import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
 import { SocialActions } from './components/SocialActions'
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const {
   getCollectible,

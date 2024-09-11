@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from src.models.comments.comment import Comment
+from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -120,6 +123,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 block_offset = 0
 
         tracks = entities.get("tracks", [])
+        comments = entities.get("comments", [])
+        comment_threads = entities.get("comment_threads", [])
+        comment_reactions = entities.get("comment_reactions", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -167,6 +173,8 @@ def populate_mock_db(db, entities, block_offset=None):
         num_blocks = max(
             len(tracks),
             len(playlists),
+            len(comments),
+            len(comment_threads),
             len(users),
             len(developer_apps),
             len(grants),
@@ -734,6 +742,18 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
                 access=usdc_purchase.get("access", PurchaseAccessType.stream),
+                splits=usdc_purchase.get(
+                    "splits",
+                    [
+                        {
+                            "user_id": 2,
+                            "amount": 1000000,
+                            "percentage": 100.0,
+                            "eth_wallet": "",
+                            "payout_wallet": "",
+                        }
+                    ],
+                ),
             )
             session.add(purchase)
         for i, cid_data in enumerate(cid_datas):
@@ -774,5 +794,37 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(user_payout_wallet_history_record)
+        for i, comment_meta in enumerate(comments):
+            comment_record = Comment(
+                user_id=comment_meta.get("user_id", i),
+                comment_id=comment_meta.get("comment_id", i),
+                entity_id=comment_meta.get("entity_id", i),
+                entity_type=comment_meta.get("entity_type", "Track"),
+                text=comment_meta.get("text", ""),
+                created_at=comment_meta.get("created_at", datetime.now()),
+                updated_at=comment_meta.get("updated_at", datetime.now()),
+                txhash=comment_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_meta.get("blockhash", str(i + block_offset)),
+            )
+            session.add(comment_record)
+        for i, comment_threads_meta in enumerate(comment_threads):
+            comment_thread_record = CommentThread(
+                parent_comment_id=comment_threads_meta.get("parent_comment_id", i),
+                comment_id=comment_threads_meta.get("comment_id", i),
+            )
+            session.add(comment_thread_record)
+        for i, comment_reactions_meta in enumerate(comment_reactions):
+            comment_reactions_record = CommentReaction(
+                comment_id=comment_reactions_meta.get("comment_id", i),
+                user_id=comment_reactions_meta.get("user_id", i),
+                is_delete=comment_reactions_meta.get("is_delete", i),
+                created_at=comment_reactions_meta.get("created_at", datetime.now()),
+                updated_at=comment_reactions_meta.get("updated_at", datetime.now()),
+                txhash=comment_reactions_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_reactions_meta.get(
+                    "blockhash", str(i + block_offset)
+                ),
+            )
+            session.add(comment_reactions_record)
 
         session.commit()

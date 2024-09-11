@@ -11,6 +11,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Box, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
@@ -24,13 +25,6 @@ import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
-import {
-  EXPLORE_PAGE,
-  FEED_PAGE,
-  HISTORY_PAGE,
-  LIBRARY_PAGE,
-  TRENDING_PAGE
-} from 'utils/route'
 
 import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'
@@ -43,9 +37,13 @@ import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { RouteNav } from './RouteNav'
 
+const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
+  route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { getAccountStatus, getAccountUser } = accountSelectors
+
+export const LEFT_NAV_WIDTH = 240
 
 const messages = {
   discover: 'Discover',

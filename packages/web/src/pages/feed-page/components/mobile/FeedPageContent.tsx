@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react'
 
 import { Name, FeedFilter } from '@audius/common/models'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import cn from 'classnames'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -12,11 +13,13 @@ import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/mobile/NavContext'
 import { FeedPageContentProps } from 'pages/feed-page/types'
-import { BASE_URL, FEED_PAGE } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import Filters from './FeedFilterButton'
 import FeedFilterDrawer from './FeedFilterDrawer'
 import styles from './FeedPageContent.module.css'
+
+const { FEED_PAGE } = route
 
 const messages = {
   title: 'Your Feed'
@@ -65,6 +68,7 @@ const FeedPageMobileContent = ({
     playTrack: playFeedTrack,
     pauseTrack: pauseFeedTrack,
     actions: feedActions,
+    showLeadingElementArtistPick: false,
     delineate: true
   }
 

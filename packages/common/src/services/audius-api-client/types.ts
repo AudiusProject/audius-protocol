@@ -15,9 +15,7 @@ import {
   Supporting,
   UserTip,
   AccessConditions,
-  ID,
-  AccessPermissions,
-  NFTAccessSignature
+  AccessPermissions
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -118,6 +116,7 @@ export type APITrack = {
   }
   repost_count: number
   favorite_count: number
+  comment_count: number
   tags: Nullable<string>
   title: string
   user: APIUser
@@ -295,8 +294,4 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
   sender: APIUser
   receiver: APIUser
   followee_supporters: { user_id: string }[]
-}
-
-export type GetNFTGatedTrackSignaturesResponse = {
-  [id: ID]: NFTAccessSignature
 }

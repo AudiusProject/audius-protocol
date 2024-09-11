@@ -657,6 +657,7 @@ export interface TrackRow {
   bpm?: number | null
   is_custom_bpm?: boolean | null
   musical_key?: string | null
+  is_custom_musical_key?: boolean | null
   audio_analysis_error_count?: number
 }
 export interface TrendingParamRow {
@@ -694,6 +695,7 @@ export interface UsdcPurchaseRow {
   signature: string
   slot: number
   updated_at?: Date
+  splits: any
 }
 export interface UsdcTransactionsHistoryRow {
   balance: string

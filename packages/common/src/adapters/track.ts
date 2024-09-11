@@ -9,7 +9,7 @@ import {
   StemCategory,
   TrackSegment
 } from '~/models'
-import { UserTrackMetadata } from '~/models/Track'
+import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { License } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
@@ -32,7 +32,7 @@ export const trackSegmentFromSDK = ({
 })
 
 export const userTrackMetadataFromSDK = (
-  input: full.TrackFull
+  input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
   const decodedTrackId = decodeHashId(input.id)
   const decodedOwnerId = decodeHashId(input.userId)
@@ -57,6 +57,7 @@ export const userTrackMetadataFromSDK = (
     // Conversions
     track_id: decodedTrackId,
     owner_id: decodedOwnerId,
+    // TODO: Remove this when api is fixed to return UTC dates
     release_date: input.releaseDate
       ? dayjs
           .utc(input.releaseDate)
@@ -113,6 +114,7 @@ export const userTrackMetadataFromSDK = (
       ? (snakecaseKeys(input.copyrightLine) as Copyright)
       : null,
     cover_art: input.coverArt ?? null,
+    create_date: input.createDate ?? null,
     credits_splits: input.creditsSplits ?? null,
     ddex_app: input.ddexApp ?? null,
     ddex_release_ids: input.ddexReleaseIds ?? null,
@@ -149,4 +151,66 @@ export const userTrackMetadataFromSDK = (
   }
 
   return newTrack
+}
+
+export const stemTrackMetadataFromSDK = (
+  input: full.StemFull
+): StemTrackMetadata | undefined => {
+  const [id, parentId, ownerId] = [input.id, input.parentId, input.userId].map(
+    decodeHashId
+  )
+  if (!(id && parentId && ownerId)) return undefined
+
+  return {
+    blocknumber: input.blocknumber,
+    is_delete: false,
+    track_id: id,
+    created_at: '',
+    isrc: null,
+    iswc: null,
+    credits_splits: null,
+    create_date: null,
+    description: null,
+    followee_reposts: [],
+    followee_saves: [],
+    genre: '',
+    has_current_user_reposted: false,
+    has_current_user_saved: false,
+    license: null,
+    mood: null,
+    play_count: 0,
+    owner_id: ownerId,
+    release_date: null,
+    repost_count: 0,
+    save_count: 0,
+    comment_count: 0,
+    tags: null,
+    title: '',
+    track_segments: [],
+    cover_art: null,
+    cover_art_sizes: null,
+    cover_art_cids: null,
+    is_scheduled_release: false,
+    is_unlisted: false,
+    stem_of: {
+      parent_track_id: parentId,
+      category: input.category as StemCategory
+    },
+    remix_of: null,
+    duration: 0,
+    updated_at: '',
+    permalink: '',
+    is_available: true,
+    is_stream_gated: false,
+    stream_conditions: null,
+    is_download_gated: false,
+    download_conditions: null,
+    access: { stream: true, download: true },
+    track_cid: input.cid,
+    orig_file_cid: '',
+    orig_filename: input.origFilename,
+    is_downloadable: true,
+    is_original_available: false,
+    is_playlist_upload: false
+  }
 }

@@ -39,10 +39,10 @@ const GenreFilter = () => {
   return (
     <FilterButton
       label={messages.genre}
-      popupProps={{
+      menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { maxHeight: 400 }
+        maxHeight: 400
       }}
       value={genre}
       onChange={updateSearchParams}
@@ -85,10 +85,10 @@ const MoodFilter = () => {
   return (
     <FilterButton
       label={messages.mood}
-      popupProps={{
+      menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { maxHeight: 400 }
+        maxHeight: 400
       }}
       value={mood}
       onChange={updateSearchParams}
@@ -128,10 +128,10 @@ const KeyFilter = () => {
       renderLabel={renderLabel}
       label={messages.key}
       onChange={updateSearchParams}
-      popupProps={{
+      menuProps={{
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        css: { minWidth: 200 }
+        width: 200
       }}
       options={keyOptions}
     >

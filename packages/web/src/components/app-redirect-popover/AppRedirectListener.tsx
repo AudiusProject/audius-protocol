@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 
 import { MobileOS } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getMobileOS } from 'utils/clientUtil'
-import {
+const {
   APP_REDIRECT,
   ANDROID_PLAY_STORE_LINK,
   IOS_WEBSITE_STORE_LINK,
   IOS_APP_STORE_LINK
-} from 'utils/route'
+} = route
 
 type AppRedirectListenerProps = ReturnType<typeof mapDispatchToProps>
 

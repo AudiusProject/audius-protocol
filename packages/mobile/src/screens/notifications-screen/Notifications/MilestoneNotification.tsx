@@ -7,11 +7,11 @@ import type {
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common/store'
 import { notificationsSelectors, Achievement } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
-import { fullProfilePage } from '@audius/web/src/utils/route'
+import { isEntityHidden, route, type Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'
+import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
@@ -56,7 +56,7 @@ const getTwitterShareData = (
   switch (achievement) {
     case Achievement.Followers: {
       if (user) {
-        const link = fullProfilePage(user.handle)
+        const link = `${env.AUDIUS_URL}${route.profilePage(user.handle)}`
         const text = messages.followerAchievementText(value)
         return { text, link }
       }
@@ -65,7 +65,7 @@ const getTwitterShareData = (
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      if (entity) {
+      if (entity && !isEntityHidden(entity)) {
         const { entityType } = notification
         const link = getEntityRoute(entity, true)
         const text = messages.achievementText(
@@ -138,15 +138,17 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>{renderBody()}</NotificationText>
-      <NotificationTwitterButton
-        type='static'
-        url={link}
-        shareText={text}
-        analytics={{
-          eventName: EventNames.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE,
-          milestone: text
-        }}
-      />
+      {link && text ? (
+        <NotificationTwitterButton
+          type='static'
+          url={link}
+          shareText={text}
+          analytics={{
+            eventName: EventNames.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE,
+            milestone: text
+          }}
+        />
+      ) : null}
     </NotificationTile>
   )
 }

@@ -8,6 +8,7 @@ import {
   notificationsSelectors,
   searchResultsPageSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -20,9 +21,10 @@ import {
 } from 'components/animated-switch/RouterContextProvider'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
-import { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } from 'utils/route'
 
 import NavBar from './NavBar'
+
+const { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
 const { getNotificationUnviewedCount } = notificationsSelectors
 const { getAccountUser, getAccountStatus } = accountSelectors

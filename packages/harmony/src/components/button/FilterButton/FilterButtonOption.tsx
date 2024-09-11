@@ -11,6 +11,7 @@ import { FilterButtonOptionType } from './types'
 
 type FilterButtonOptionProps<Value extends string> = {
   activeValue?: Value | null
+  isActive?: boolean
   option: FilterButtonOptionType<Value>
   onChange: (option: Value) => void
 }
@@ -19,7 +20,7 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
   props: FilterButtonOptionProps<Value>,
   ref: Ref<HTMLButtonElement>
 ) {
-  const { activeValue, option, onChange } = props
+  const { activeValue, option, onChange, isActive } = props
   const { color, cornerRadius, spacing, typography } = useTheme()
 
   // Popup Styles
@@ -74,7 +75,7 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
       styles={{
         button: {
           ...optionCss,
-          ...(option.value === activeValue ? activeOptionCss : {})
+          ...(option.value === activeValue || isActive ? activeOptionCss : {})
         },
         icon: optionIconCss
       }}
@@ -86,16 +87,6 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
       <Text variant='body' strength='strong'>
         {option.label ?? option.value}
       </Text>
-      {option.helperText ? (
-        <Text
-          variant='body'
-          strength='strong'
-          color={option.value === activeValue ? 'staticWhite' : 'subdued'}
-          className='helperText'
-        >
-          {option.helperText}
-        </Text>
-      ) : null}
     </BaseButton>
   )
 })

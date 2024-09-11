@@ -20,6 +20,15 @@ func DecodeHashId(id string) (int, error) {
 	}
 	return ids[0], err
 }
+
 func EncodeHashId(id int) (string, error) {
 	return hashIdUtil.Encode([]int{id})
+}
+
+func MustEncodeHashID(id int) string {
+	enc, err := EncodeHashId(id)
+	if err != nil {
+		panic(err)
+	}
+	return enc
 }

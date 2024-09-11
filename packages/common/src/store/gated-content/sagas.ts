@@ -9,6 +9,11 @@ import {
 } from 'typed-redux-saga'
 
 import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK,
+  userTrackMetadataFromSDK
+} from '~/adapters'
+import {
   Chain,
   Collectible,
   ID,
@@ -20,7 +25,9 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus
+  GatedContentStatus,
+  Id,
+  OptionalId
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -36,6 +43,7 @@ import { Nullable } from '~/utils/typeUtils'
 import { getCollection } from '../cache/collections/selectors'
 import { getTrack } from '../cache/tracks/selectors'
 import { PurchaseableContentType } from '../purchase-content'
+import { getSDK } from '../sdkUtils'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
@@ -254,13 +262,31 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
   const account = yield* select(getAccountUser)
   if (!account) return
 
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
 
-  const nftGatedTrackSignatureResponse = yield* call(
-    [apiClient, apiClient.getNFTGatedTrackSignatures],
+  /** Endpoint accepts an array of track_ids and an array of token_id specifications which map to them
+   * The entry in each token_id array is a hyphen-delimited list of tokenIds.
+   * Example:
+   *   trackMap: { 1: [1, 2], 2: [], 3: [1]}
+   *   query params: '?track_ids=1&token_ids=1-2&track_ids=2&token_ids=&track_ids=3&token_ids=1'
+   */
+  const trackIds: number[] = []
+  const tokenIds: string[] = []
+  Object.keys(trackMap).forEach((trackId) => {
+    const id = parseInt(trackId)
+    if (Number.isNaN(id)) {
+      console.warn(`Invalid track id: ${trackId}`)
+      return
+    }
+    trackIds.push(id)
+    tokenIds.push(trackMap[trackId].join('-'))
+  })
+  const { data: nftGatedTrackSignatureResponse = {} } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getNFTGatedTrackSignatures],
     {
-      userId: account.user_id,
-      trackMap
+      userId: Id.parse(account.user_id),
+      trackIds,
+      tokenIds
     }
   )
 
@@ -328,7 +354,6 @@ function* updateGatedContentAccess(
     | ReturnType<typeof updateUserEthCollectibles>
     | ReturnType<typeof updateUserSolCollectibles>
     | ReturnType<typeof cacheActions.addSucceeded>
-    | ReturnType<typeof cacheActions.update>
 ) {
   const account = yield* select(getAccountUser)
 
@@ -424,7 +449,7 @@ export function* pollGatedContent({
   isSourceTrack?: boolean
 }) {
   const analytics = yield* getContext('analytics')
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const frequency =
@@ -444,13 +469,19 @@ export function* pollGatedContent({
   // poll for access until it is granted
   while (true) {
     const apiEntity = isAlbum
-      ? (yield* call([apiClient, 'getPlaylist'], {
-          playlistId: contentId,
-          currentUserId
-        }))[0]
-      : yield* call([apiClient, 'getTrack'], {
-          id: contentId,
-          currentUserId
+      ? yield* call(async () => {
+          const { data = [] } = await sdk.full.playlists.getPlaylist({
+            playlistId: Id.parse(contentId),
+            userId: OptionalId.parse(currentUserId)
+          })
+          return transformAndCleanList(data, userCollectionMetadataFromSDK)[0]
+        })
+      : yield* call(async () => {
+          const { data } = await sdk.full.tracks.getTrack({
+            trackId: Id.parse(contentId),
+            userId: OptionalId.parse(currentUserId)
+          })
+          return data ? userTrackMetadataFromSDK(data) : null
         })
 
     if (!apiEntity?.access) {
@@ -702,7 +733,6 @@ function* watchGatedTracks() {
   yield* takeEvery(
     [
       cacheActions.ADD_SUCCEEDED,
-      cacheActions.UPDATE,
       updateUserEthCollectibles.type,
       updateUserSolCollectibles.type
     ],

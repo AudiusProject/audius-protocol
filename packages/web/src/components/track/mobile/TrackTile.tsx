@@ -1,5 +1,6 @@
 import { useCallback, useEffect, MouseEvent } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
@@ -7,6 +8,7 @@ import {
   AccessConditions,
   GatedContentStatus
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -26,7 +28,8 @@ import {
   IconTrending,
   Text,
   Flex,
-  IconStar
+  IconStar,
+  IconMessage
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -69,12 +72,14 @@ type ExtraProps = {
   streamConditions?: Nullable<AccessConditions>
   hasPreview?: boolean
   hasStreamAccess: boolean
+  trackId?: number
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
 
 type LockedOrPlaysContentProps = Pick<
   CombinedProps,
+  | 'trackId'
   | 'hasStreamAccess'
   | 'isOwner'
   | 'isStreamGated'
@@ -88,6 +93,7 @@ type LockedOrPlaysContentProps = Pick<
 }
 
 const renderLockedContentOrPlayCount = ({
+  trackId,
   hasStreamAccess,
   isOwner,
   isStreamGated,
@@ -102,7 +108,8 @@ const renderLockedContentOrPlayCount = ({
     if (
       !hasStreamAccess &&
       lockedContentType === 'premium' &&
-      variant === 'readonly'
+      variant === 'readonly' &&
+      trackId
     ) {
       return (
         <GatedConditionsPill
@@ -110,6 +117,8 @@ const renderLockedContentOrPlayCount = ({
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickGatedUnlockPill}
           buttonSize='small'
+          contentId={trackId}
+          contentType='track'
         />
       )
     }
@@ -289,6 +298,10 @@ const TrackTile = (props: CombinedProps) => {
     openLockedContentModal
   ])
 
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
+
   const isReadonly = variant === 'readonly'
 
   return (
@@ -346,16 +359,19 @@ const TrackTile = (props: CombinedProps) => {
               isActive={isActive}
               applyHoverStylesToInnerSvg
             >
-              <Text ellipses>{title}</Text>
+              <Text ellipses>{title || messages.loading}</Text>
               {isPlaying ? <IconVolume size='m' /> : null}
-              {showSkeleton && (
+              {showSkeleton ? (
                 <Skeleton className={styles.skeleton} height='20px' />
-              )}
+              ) : null}
             </TextLink>
             <UserLink userId={userId} badgeSize='xs'>
-              {showSkeleton && (
-                <Skeleton className={styles.skeleton} height='20px' />
-              )}
+              {showSkeleton ? (
+                <>
+                  <Text>{messages.loading}</Text>
+                  <Skeleton className={styles.skeleton} height='20px' />
+                </>
+              ) : null}
             </UserLink>
           </Flex>
           {coSign && (
@@ -400,7 +416,11 @@ const TrackTile = (props: CombinedProps) => {
               isUnlisted={isUnlisted}
               isScheduledRelease={isScheduledRelease}
             />
-            {!(props.repostCount || props.saveCount) ? null : (
+            {!(
+              props.repostCount ||
+              props.saveCount ||
+              props.commentCount
+            ) ? null : (
               <>
                 <div
                   className={cn(styles.statItem, fadeIn, {
@@ -442,6 +462,21 @@ const TrackTile = (props: CombinedProps) => {
                   />
                   {formatCount(props.saveCount)}
                 </div>
+                <div
+                  className={cn(styles.statItem, fadeIn, {
+                    [styles.disabledStatItem]: !props.commentCount,
+                    [styles.isHidden]:
+                      !isCommentsEnabled ||
+                      props.isUnlisted ||
+                      props.commentsDisabled
+                  })}
+                >
+                  <IconMessage
+                    className={styles.favoriteButton}
+                    color='subdued'
+                  />
+                  {formatCount(props.saveCount)}
+                </div>
               </>
             )}
           </div>
@@ -452,6 +487,7 @@ const TrackTile = (props: CombinedProps) => {
           >
             {!isLoading
               ? renderLockedContentOrPlayCount({
+                  trackId: id,
                   hasStreamAccess,
                   isOwner,
                   isStreamGated,
@@ -485,6 +521,8 @@ const TrackTile = (props: CombinedProps) => {
             isDarkMode={darkMode}
             isMatrixMode={isMatrix}
             isTrack
+            contentId={id}
+            contentType='track'
           />
         )}
       </div>

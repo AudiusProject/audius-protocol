@@ -334,6 +334,7 @@ export type AggregateTrack = {
   track_id: number;
   repost_count: number;
   save_count: number;
+  comment_count: number;
 };
 
 export type AggregateUser = {
@@ -1006,7 +1007,9 @@ export type Tracks = {
   bpm: number | null;
   is_custom_bpm: boolean | null;
   musical_key: string | null;
+  is_custom_musical_key: boolean | null;
   audio_analysis_error_count: number;
+  comments_disabled: boolean | null;
 };
 
 export type TrendingResults = {

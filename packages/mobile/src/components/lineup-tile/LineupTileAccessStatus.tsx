@@ -22,8 +22,10 @@ import {
 } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { make, track } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
 
 import { LineupTileSource } from './types'
 
@@ -73,6 +75,13 @@ export const LineupTileAccessStatus = ({
       return
     }
     if (isUSDCPurchase) {
+      track(
+        make({
+          eventName: EventNames.PURCHASE_CONTENT_BUY_CLICKED,
+          contentId,
+          contentType
+        })
+      )
       const determineModalSource = () => {
         if (tileSource === LineupTileSource.DM_COLLECTION) {
           return ModalSource.DirectMessageCollectionTile

@@ -1,4 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
+import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
   AuthService,
@@ -12,6 +13,7 @@ import type {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
+import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { parseParams } from '../../utils/parseParams'
 import { prepareSplits } from '../../utils/preparePaymentSplits'
 import {
@@ -31,8 +33,8 @@ import {
   getAlbumRequest,
   getAlbumsRequest,
   getAlbumTracksRequest,
-  GetPurchaseAlbumTransactionRequest,
-  GetPurchaseAlbumTransactionSchema,
+  GetPurchaseAlbumInstructionsRequest,
+  GetPurchaseAlbumInstructionsSchema,
   PurchaseAlbumRequest,
   PurchaseAlbumSchema,
   RepostAlbumRequest,
@@ -55,7 +57,8 @@ export class AlbumsApi {
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
     private paymentRouterClient: PaymentRouterClient,
-    private solanaRelay: SolanaRelayService
+    private solanaRelay: SolanaRelayService,
+    private solanaClient: SolanaClient
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
@@ -242,22 +245,22 @@ export class AlbumsApi {
   }
 
   /**
-   * Gets the Solana transaction that purchases the album
+   * Gets the Solana instructions that purchase the album
    *
    * @hidden
    */
-  async getPurchaseAlbumTransaction(
-    params: GetPurchaseAlbumTransactionRequest
+  async getPurchaseAlbumInstructions(
+    params: GetPurchaseAlbumInstructionsRequest
   ) {
     const {
       userId,
       albumId,
       price: priceNumber,
       extraAmount: extraAmountNumber = 0,
-      wallet
+      includeNetworkCut
     } = await parseParams(
-      'getPurchaseAlbumTransaction',
-      GetPurchaseAlbumTransactionSchema
+      'getPurchaseAlbumInstructions',
+      GetPurchaseAlbumInstructionsSchema
     )(params)
 
     const contentType = 'album'
@@ -267,7 +270,8 @@ export class AlbumsApi {
     this.logger.debug('Fetching album...', { albumId })
     const { data: album } = await this.playlistsApi.getPlaylistAccessInfo({
       userId: params.userId, // use hashed userId
-      playlistId: params.albumId // use hashed albumId
+      playlistId: params.albumId, // use hashed albumId
+      includeNetworkCut
     })
 
     // Validate purchase attempt
@@ -335,8 +339,45 @@ export class AlbumsApi {
         buyerUserId: userId,
         accessType
       })
-    const locationMemoInstruction =
-      await this.solanaRelay.getLocationInstruction()
+
+    let locationMemoInstruction
+    try {
+      locationMemoInstruction = await this.solanaRelay.getLocationInstruction()
+    } catch (e) {
+      this.logger.warn('Unable to compute location memo instruction')
+    }
+
+    return {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    }
+  }
+
+  /**
+   * Purchases stream access to an album
+   *
+   * @hidden
+   */
+  public async purchaseAlbum(params: PurchaseAlbumRequest) {
+    const { wallet } = await parseParams(
+      'purchaseAlbum',
+      PurchaseAlbumSchema
+    )(params)
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseAlbumInstructions(params)
+
+    let transaction
+    const mint = 'USDC'
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -349,19 +390,15 @@ export class AlbumsApi {
           total,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ],
-        priorityFee: {
-          microLamports: 100000
-        }
+        ].filter(Boolean) as TransactionInstruction[]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -390,30 +427,19 @@ export class AlbumsApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.paymentRouterClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ],
-        priorityFee: {
-          microLamports: 100000
-        }
+        ].filter(Boolean) as TransactionInstruction[]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream access to an album
-   *
-   * @hidden
-   */
-  public async purchaseAlbum(params: PurchaseAlbumRequest) {
-    await parseParams('purchaseAlbum', PurchaseAlbumSchema)(params)
-    const transaction = await this.getPurchaseAlbumTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(
@@ -422,9 +448,9 @@ export class AlbumsApi {
       }
       return await params.walletAdapter.sendTransaction(
         transaction,
-        this.paymentRouterClient.connection
+        this.solanaClient.connection
       )
     }
-    return this.paymentRouterClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction)
   }
 }

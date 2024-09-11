@@ -102,9 +102,11 @@ class Track(Base, RepresentableMixin):
     bpm = Column(Float)
     is_custom_bpm = Column(Boolean, server_default=text("false"))
     musical_key = Column(String)
+    is_custom_musical_key = Column(Boolean, server_default=text("false"))
     audio_analysis_error_count = Column(
         Integer, nullable=False, server_default=text("0")
     )
+    comments_disabled = Column(Boolean, nullable=False, server_default=text("false"))
 
     # From DDEX
     ddex_release_ids = Column(JSONB())

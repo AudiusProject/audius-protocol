@@ -1,14 +1,18 @@
+import { route } from '@audius/common/utils'
 import { resolveRoute } from 'vike/routing'
 import type { PageContextServer } from 'vike/types'
 
-import {
+const {
   staticRoutes,
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
   PROFILE_PAGE_COLLECTIBLE_DETAILS,
   CHANGE_EMAIL_SETTINGS_PAGE,
-  CHANGE_PASSWORD_SETTINGS_PAGE
-} from 'utils/route'
+  CHANGE_PASSWORD_SETTINGS_PAGE,
+  CHATS_PAGE,
+  CHAT_PAGE,
+  DOWNLOAD_LINK
+} = route
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 
@@ -19,7 +23,10 @@ const nonSsrPaths = [
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
-  CHANGE_PASSWORD_SETTINGS_PAGE
+  CHANGE_PASSWORD_SETTINGS_PAGE,
+  CHATS_PAGE,
+  CHAT_PAGE,
+  DOWNLOAD_LINK
 ]
 
 export const makePageRoute =

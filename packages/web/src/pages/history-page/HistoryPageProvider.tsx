@@ -26,6 +26,7 @@ import {
   tracksSocialActions as socialActions,
   playerSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
@@ -34,11 +35,11 @@ import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
+const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getHistoryTracksLineup } = historyPageSelectors

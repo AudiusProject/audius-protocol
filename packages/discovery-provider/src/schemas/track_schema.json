@@ -376,11 +376,19 @@
           ],
           "default": null
         },
+        "is_custom_musical_key": {
+          "type": ["boolean"],
+          "default": false
+        },
         "audio_analysis_error_count": {
           "type": [
             "integer"
           ],
           "default": 0
+        },
+        "comments_disabled": {
+          "type": ["boolean"],
+          "default": false
         }
       },
       "required": [

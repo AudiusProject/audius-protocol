@@ -7,14 +7,16 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
   --mount=type=bind,source=go.mod,target=go.mod \
   go mod download -x
 
+COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-  --mount=type=bind,target=. \
   CGO_ENABLED=0 go build -o /bin/server .
 
 FROM alpine:latest AS final
 
 RUN --mount=type=cache,target=/var/cache/apk \
   apk --update add \
+  jq \
+  curl \
   ca-certificates \
   tzdata \
   && \

@@ -10,6 +10,7 @@ import {
   userListSelectors,
   UserListStoreState
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -17,9 +18,10 @@ import { Dispatch } from 'redux'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { profilePage } from 'utils/route'
 
 import UserList from './components/UserList'
+
+const { profilePage } = route
 const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors

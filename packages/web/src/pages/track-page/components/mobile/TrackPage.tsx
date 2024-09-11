@@ -1,13 +1,16 @@
 import { useEffect, useContext } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
   OverflowAction,
   QueueItem
 } from '@audius/common/store'
+import { Flex, Text } from '@audius/harmony'
 
+import { CommentSection } from 'components/comments/CommentSection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -22,7 +25,6 @@ import { getTrackDefaults } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import TrackPageHeader from './TrackHeader'
-import styles from './TrackPage.module.css'
 const { tracksActions } = trackPageLineupActions
 
 const messages = {
@@ -121,6 +123,11 @@ const TrackPage = ({
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useGatedContentAccess(heroTrack)
+
+  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
+
   const loading = !heroTrack || isFetchingNFTAccess
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
@@ -139,15 +146,17 @@ const TrackPage = ({
   const defaults = getTrackDefaults(heroTrack)
 
   const renderOriginalTrackTitle = () => (
-    <div className={styles.lineupHeader}>{messages.originalTrack}</div>
+    <Text textAlign='left' variant='title'>
+      {messages.originalTrack}
+    </Text>
   )
 
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <div
-        className={styles.lineupHeader}
-      >{`${messages.moreBy} ${user?.name}`}</div>
+      <Text variant='title' textAlign='left'>
+        {messages.moreBy} {user?.name}
+      </Text>
     ) : null
 
   return (
@@ -159,7 +168,7 @@ const TrackPage = ({
       structuredData={structuredData}
       noIndex={defaults.isUnlisted}
     >
-      <div className={styles.trackContent}>
+      <Flex column p='l' gap='2xl' w='100%'>
         <TrackPageHeader
           isLoading={loading}
           isPlaying={heroPlaying}
@@ -169,12 +178,13 @@ const TrackPage = ({
           title={defaults.title}
           trackId={defaults.trackId}
           userId={heroTrack?.owner_id ?? 0}
-          artistVerified={user?.is_verified ?? false}
           coverArtSizes={defaults.coverArtSizes}
           tags={defaults.tags}
           description={defaults.description}
           listenCount={defaults.playCount}
           repostCount={defaults.repostCount}
+          commentCount={defaults.commentCount}
+          commentsDisabled={defaults.commentsDisabled}
           duration={defaults.duration}
           releaseDate={defaults.releaseDate}
           credits={defaults.credits}
@@ -205,23 +215,25 @@ const TrackPage = ({
         {defaults.fieldVisibility.remixes &&
           defaults.remixTrackIds &&
           defaults.remixTrackIds.length > 0 && (
-            <div className={styles.remixes}>
-              <Remixes
-                trackIds={defaults.remixTrackIds}
-                goToAllRemixes={goToAllRemixesPage}
-                count={defaults.remixesCount}
-              />
-            </div>
+            <Remixes
+              trackIds={defaults.remixTrackIds}
+              goToAllRemixes={goToAllRemixesPage}
+              count={defaults.remixesCount}
+            />
           )}
-        <div className={styles.tracksContainer}>
-          {!hasValidRemixParent && renderMoreByTitle()}
-          {hasValidRemixParent && renderOriginalTrackTitle()}
+        {isCommentingEnabled ? (
+          <CommentSection entityId={defaults.trackId} />
+        ) : null}
+        <Flex column gap='l'>
+          {hasValidRemixParent
+            ? renderOriginalTrackTitle()
+            : renderMoreByTitle()}
           <Lineup
             lineup={tracks}
             // Styles for leading element (original track if remix).
             leadingElementId={defaults.remixParentTrackId}
             leadingElementDelineator={
-              <div className={styles.originalTrackDelineator}>
+              <div>
                 <SectionButton
                   isMobile
                   text={messages.viewOtherRemixes}
@@ -230,7 +242,6 @@ const TrackPage = ({
                 {renderMoreByTitle()}
               </div>
             }
-            leadingElementClassName={styles.originalTrack}
             showLeadingElementArtistPick={false}
             // Don't render the first tile in the lineup.
             start={1}
@@ -250,8 +261,8 @@ const TrackPage = ({
             pauseTrack={pause}
             actions={tracksActions}
           />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     </MobilePageContainer>
   )
 }

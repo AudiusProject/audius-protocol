@@ -6,19 +6,14 @@ import {
   EntityManagerService,
   EntityType
 } from '../../services/EntityManager/types'
+import { encodeHashId } from '../../utils/hashId'
 import {
   Configuration,
   CommentsApi as GeneratedCommentsApi
 } from '../generated/default'
 
-export type CommentMetadata = {
-  body?: string
-  userId: number
-  entityId: number
-  entityType?: EntityType // For now just tracks are supported, but we left the door open for more
-  parentCommentId?: number
-  timestamp_s?: number
-}
+import { CommentMetadata } from './types'
+
 export class CommentsApi extends GeneratedCommentsApi {
   constructor(
     configuration: Configuration,
@@ -32,7 +27,7 @@ export class CommentsApi extends GeneratedCommentsApi {
   async postComment(metadata: CommentMetadata) {
     const { userId } = metadata
     const newCommentId = Math.floor(Math.random() * 10000000) // TODO: need to get an unclaimed id. SEE TrackUploadHelper.generateId
-    const response = await this.entityManager.manageEntity({
+    await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
       entityId: newCommentId,
@@ -44,7 +39,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       auth: this.auth
     })
     this.logger.info('Successfully posted a comment')
-    return response
+    return encodeHashId(newCommentId)
   }
 
   async editComment(metadata: CommentMetadata) {

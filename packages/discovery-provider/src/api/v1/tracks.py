@@ -88,9 +88,9 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
 
-from .models.tracks import blob_info
+from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
-from .models.tracks import stem_full, track, track_access_info, track_full
+from .models.tracks import stem, stem_full, track, track_access_info, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +252,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "id": decode_ids_array(ids),
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )
@@ -261,7 +261,7 @@ class BulkTracks(Resource):
                 {
                     "with_users": True,
                     "routes": routes_parsed,
-                    "exclude_gated": True,
+                    "exclude_gated": False,
                     "skip_unlisted_filter": True,
                 }
             )
@@ -464,12 +464,12 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+# Comments
 track_comments_response = make_response(
     "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
 )
 
 
-# Comment
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
     @record_metrics
@@ -483,11 +483,14 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
+    @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
+        args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(decoded_id)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(args, decoded_id, current_user_id)
         return success_response(track_comments)
 
 
@@ -546,6 +549,10 @@ stream_parser.add_argument(
     default=None,
 )
 
+stream_url_response = make_response(
+    "stream_url_response", ns, fields.String(required=True)
+)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -562,6 +569,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
+    @ns.response(200, "Success", stream_url_response)
     @ns.expect(stream_parser)
     @cache(ttl_sec=5, transform=redirect)
     def get(self, track_id):
@@ -1361,7 +1369,7 @@ class TrackTopListeners(Resource):
         return success_response(top_listeners)
 
 
-track_stems_response = make_full_response(
+full_track_stems_response = make_full_response(
     "stems_response", full_ns, fields.List(fields.Nested(stem_full))
 )
 
@@ -1373,10 +1381,31 @@ class FullTrackStems(Resource):
         description="""Get the remixable stems of a track""",
         params={"track_id": "A Track ID"},
     )
-    @full_ns.marshal_with(track_stems_response)
+    @full_ns.marshal_with(full_track_stems_response)
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
+        stems = get_stems_of(decoded_id)
+        stems = list(map(stem_from_track, stems))
+        return success_response(stems)
+
+
+track_stems_response = make_response(
+    "stems_response", ns, fields.List(fields.Nested(stem))
+)
+
+
+@ns.route("/<string:track_id>/stems")
+class TrackStems(Resource):
+    @ns.doc(
+        id="""Get Track Stems""",
+        description="""Get the remixable stems of a track""",
+        params={"track_id": "A Track ID"},
+    )
+    @ns.marshal_with(track_stems_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, ns)
         stems = get_stems_of(decoded_id)
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
@@ -1391,6 +1420,10 @@ track_remixables_route_parser.add_argument(
     description="Boolean to include user info with tracks",
 )
 
+track_remixables_response = make_full_response(
+    "remixables_response", full_ns, fields.List(fields.Nested(track_full))
+)
+
 
 @full_ns.route("/remixables")
 class FullRemixableTracks(Resource):
@@ -1401,7 +1434,7 @@ class FullRemixableTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(track_remixables_route_parser)
-    @full_ns.marshal_with(full_track_response)
+    @full_ns.marshal_with(track_remixables_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
@@ -1743,17 +1776,25 @@ class FullUSDCPurchaseTracks(Resource):
         return success_response(premium_tracks)
 
 
+full_nft_gated_track_signatures_response = make_full_response(
+    "nft_gated_track_signatures_response",
+    full_ns,
+    fields.Nested(nft_gated_track_signature_mapping),
+)
+
+
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
 class NFTGatedTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Gated Track Signatures""",
+        id="""Get NFT Gated Track Signatures""",
         description="""Gets gated track signatures for passed in gated track ids""",
         params={
             "user_id": """The user for whom we are generating gated track signatures."""
         },
     )
     @full_ns.expect(track_signatures_parser)
+    @full_ns.response(200, "Success", full_nft_gated_track_signatures_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
@@ -1825,6 +1866,14 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
 )
 
+access_info_parser = current_user_parser.copy()
+access_info_parser.add_argument(
+    "include_network_cut",
+    required=False,
+    type=inputs.boolean,
+    description="Whether to include the staking system as a recipient",
+)
+
 
 @ns.route("/<string:track_id>/access-info")
 class GetTrackAccessInfo(Resource):
@@ -1834,10 +1883,11 @@ class GetTrackAccessInfo(Resource):
         description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
-    @ns.expect(current_user_parser)
+    @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
-        args = current_user_parser.parse_args()
+        args = access_info_parser.parse_args()
+        include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
         get_track_args: GetTrackArgs = {
@@ -1851,8 +1901,12 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(raw["stream_conditions"])
-        download_conditions = get_extended_purchase_gate(raw["download_conditions"])
+        stream_conditions = get_extended_purchase_gate(
+            gate=raw["stream_conditions"], include_network_cut=include_network_cut
+        )
+        download_conditions = get_extended_purchase_gate(
+            gate=raw["download_conditions"], include_network_cut=include_network_cut
+        )
         track = extend_track(raw)
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions

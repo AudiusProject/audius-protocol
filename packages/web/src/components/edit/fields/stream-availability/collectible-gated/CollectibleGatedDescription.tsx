@@ -1,3 +1,4 @@
+import { route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -9,7 +10,8 @@ import {
 } from '@audius/harmony'
 
 import { ExternalLink } from 'components/link'
-import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
+
+const { AUDIUS_GATED_CONTENT_BLOG_LINK } = route
 
 const messages = {
   collectibleGatedSubtitle:

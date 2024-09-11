@@ -8,13 +8,10 @@ import { closeVisualizer, toggleVisibility } from './store/slice'
 
 import styles from './Visualizer.module.css'
 import { useHistory } from 'react-router-dom'
-import {
-  UPLOAD_PAGE,
-  UPLOAD_ALBUM_PAGE,
-  UPLOAD_PLAYLIST_PAGE
-} from 'utils/route'
 import { useHotkeys } from '@audius/harmony'
+import { route } from '@audius/common/utils'
 
+const { UPLOAD_PAGE, UPLOAD_ALBUM_PAGE, UPLOAD_PLAYLIST_PAGE } = route
 export const NO_VISUALIZER_ROUTES = new Set([
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,

@@ -1,4 +1,8 @@
 import {
+  userMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import {
   Name,
   FavoriteSource,
   ID,
@@ -26,14 +30,16 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import {
   Genre,
   ELECTRONIC_SUBGENRES,
   waitForAccount,
   parseHandleReservedStatusFromSocial,
-  isValidEmailString
+  isValidEmailString,
+  route
 } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -58,7 +64,6 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
@@ -66,6 +71,7 @@ import { watchSignOnError } from './errorSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 
+const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
@@ -177,15 +183,19 @@ function* fetchAllFollowArtist() {
 function* fetchFollowArtistGenre(
   followArtistCategory: SelectableArtistCategory
 ) {
-  const apiClient = yield* getContext('apiClient')
+  const sdk = yield* getSDK()
   const genres = followArtistCategoryGenreMappings[followArtistCategory]
   const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
   try {
-    const users = yield* call([apiClient, apiClient.getTopArtistGenres], {
-      genres,
-      limit: 31,
-      offset: 0
-    })
+    const { data: sdkUsers } = yield* call(
+      [sdk.full.users, sdk.full.users.getTopUsersInGenre],
+      {
+        genre: genres,
+        limit: 31,
+        offset: 0
+      }
+    )
+    const users = transformAndCleanList(sdkUsers, userMetadataFromSDK)
     const userOptions = users
       .filter((user) => !defaultFollowUserIds.has(user.user_id))
       .slice(0, 30)

@@ -1,8 +1,22 @@
+import { route } from '@audius/common/utils'
 import { Helmet } from 'react-helmet'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { useDetermineAllowedRoute } from 'pages/sign-up-page/utils/useDetermineAllowedRoutes'
-import {
+
+import { CreateEmailPage } from './pages/CreateEmailPage'
+import { CreateLoginDetailsPage } from './pages/CreateLoginDetailsPage'
+import { CreatePasswordPage } from './pages/CreatePasswordPage'
+import { FinishProfilePage } from './pages/FinishProfilePage'
+import { LoadingAccountPage } from './pages/LoadingAccountPage'
+import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
+import { PickHandlePage } from './pages/PickHandlePage'
+import { ReviewHandlePage } from './pages/ReviewHandlePage'
+import { SelectArtistsPage } from './pages/SelectArtistsPage'
+import { SelectGenresPage } from './pages/SelectGenresPage'
+import { RouteContextProvider } from './utils/RouteContext'
+
+const {
   FEED_PAGE,
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_ARTISTS_PAGE,
@@ -16,19 +30,7 @@ import {
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE
-} from 'utils/route'
-
-import { CreateEmailPage } from './pages/CreateEmailPage'
-import { CreateLoginDetailsPage } from './pages/CreateLoginDetailsPage'
-import { CreatePasswordPage } from './pages/CreatePasswordPage'
-import { FinishProfilePage } from './pages/FinishProfilePage'
-import { LoadingAccountPage } from './pages/LoadingAccountPage'
-import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
-import { PickHandlePage } from './pages/PickHandlePage'
-import { ReviewHandlePage } from './pages/ReviewHandlePage'
-import { SelectArtistsPage } from './pages/SelectArtistsPage'
-import { SelectGenresPage } from './pages/SelectGenresPage'
-import { RouteContextProvider } from './utils/RouteContext'
+} = route
 
 const messages = {
   metaTitle: 'Sign Up • Audius',

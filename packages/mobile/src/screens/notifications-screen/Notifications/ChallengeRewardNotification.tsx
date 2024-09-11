@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ChallengeRewardID } from '@audius/common/models'
+import type { BNAudio } from '@audius/common/models'
 import type { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
+import {
+  challengeRewardsConfig,
+  stringWeiToAudioBN
+} from '@audius/common/utils'
 import { Platform } from 'react-native'
 
 import { IconAudiusLogo } from '@audius/harmony-native'
@@ -16,7 +20,7 @@ import {
 } from '../Notification'
 
 const messages = {
-  amountEarned: (amount: number) => `You've earned ${amount} $AUDIO`,
+  amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
@@ -24,58 +28,14 @@ const messages = {
     'I earned $AUDIO for completing challenges on @audius #AudioRewards'
 }
 
-const challengeInfoMap: Partial<
-  Record<
-    ChallengeRewardID,
-    { title: string; amount: number; iosTitle?: string }
-  >
-> = {
-  'profile-completion': {
-    title: '✅️ Complete Your Profile',
-    amount: 1
-  },
-  'listen-streak': {
-    title: '🎧 Listening Streak: 7 Days',
-    amount: 1
-  },
-  'track-upload': {
-    title: '🎶 Upload 3 Tracks',
-    amount: 1
-  },
-  referrals: {
-    title: '📨 Invite Your Friends',
-    amount: 1
-  },
-  'ref-v': {
-    title: '📨 Invite Your Fans',
-    amount: 1
-  },
-  referred: {
-    title: '📨 Invite Your Friends',
-    amount: 1
-  },
-  'connect-verified': {
-    title: '✅️ Link Verified Accounts',
-    amount: 5
-  },
-  'mobile-install': {
-    title: '📲 Get the App',
-    amount: 1
-  },
-  'send-first-tip': {
-    title: '🤑 Send Your First Tip',
-    // NOTE: Send tip -> Send $AUDIO change
-    iosTitle: '🤑 Send Your First $AUDIO',
-    amount: 2
-  },
-  'first-playlist': {
-    title: '🎼 Create a Playlist',
-    amount: 2
-  }
-}
-
 type ChallengeRewardNotificationProps = {
   notification: ChallengeRewardNotificationType
+}
+
+const trendingChallengeIdMapping = {
+  tt: 'trending-track',
+  tp: 'trending-playlist',
+  tut: 'trending-underground-track'
 }
 
 export const ChallengeRewardNotification = (
@@ -83,7 +43,13 @@ export const ChallengeRewardNotification = (
 ) => {
   const { notification } = props
   const { challengeId } = notification
-  const info = challengeInfoMap[challengeId]
+  const mappedChallengeRewardsConfigKey =
+    challengeId in trendingChallengeIdMapping
+      ? trendingChallengeIdMapping[challengeId]
+      : challengeId
+
+  const info = challengeRewardsConfig[mappedChallengeRewardsConfigKey]
+  const amount = stringWeiToAudioBN(notification.amount)
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
@@ -91,13 +57,14 @@ export const ChallengeRewardNotification = (
   }, [navigation, notification])
 
   if (!info) return null
-  const { title, amount, iosTitle } = info
-
+  const { title } = info
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconAudiusLogo}>
         <NotificationTitle>
-          {Platform.OS === 'ios' && iosTitle != null ? iosTitle : title}
+          {Platform.OS === 'ios' && title.includes('Tip')
+            ? title.replace('Tip', '$AUDIO')
+            : title}
         </NotificationTitle>
       </NotificationHeader>
       <NotificationText>

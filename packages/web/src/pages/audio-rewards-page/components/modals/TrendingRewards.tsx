@@ -7,6 +7,7 @@ import {
   audioRewardsPageActions,
   TrendingRewardsModalType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   SegmentedControl,
   IconArrowRight as IconArrow,
@@ -23,15 +24,13 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
-import {
-  TRENDING_PAGE,
-  TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'utils/route'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './TrendingRewards.module.css'
+
+const { TRENDING_PAGE, TRENDING_PLAYLISTS_PAGE, TRENDING_UNDERGROUND_PAGE } =
+  route
 const { getTrendingRewardsModalType } = audioRewardsPageSelectors
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 

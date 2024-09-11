@@ -6,7 +6,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
  * Navigation state selector that selects the current route
  * Can be passed to useNavigationState
  */
-export const getRoutePath = (state: NavigationState, routePath?: string[]) => {
+export const getRoutePath = (
+  state: NavigationState,
+  routePath?: string[]
+): string[] | undefined => {
   if (!state || state.routes.length === 0) {
     return routePath
   }

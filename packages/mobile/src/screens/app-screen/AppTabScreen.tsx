@@ -37,7 +37,7 @@ import {
 } from 'app/screens/search-results-screen'
 import { SearchScreen } from 'app/screens/search-screen'
 import type { SearchParams } from 'app/screens/search-screen-v2'
-import { SearchScreenV2 } from 'app/screens/search-screen-v2'
+import { SearchScreenStack } from 'app/screens/search-screen-v2'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -114,6 +114,7 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
+  CreateChatBlast: undefined
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined
@@ -223,8 +224,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       {isSearchV2Enabled ? (
         <Stack.Screen
           name='Search'
-          component={SearchScreenV2}
-          options={screenOptions}
+          component={SearchScreenStack}
+          options={{ ...screenOptions, headerShown: false }}
         />
       ) : (
         <Stack.Group>

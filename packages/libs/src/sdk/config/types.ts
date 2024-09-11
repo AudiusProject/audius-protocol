@@ -20,6 +20,7 @@ export type SdkServicesConfig = {
     rewardManagerProgramAddress: string
     rewardManagerStateAddress: string
     paymentRouterProgramAddress: string
+    stakingBridgeProgramAddress: string
     rpcEndpoint: string
     usdcTokenMint: string
     wAudioTokenMint: string

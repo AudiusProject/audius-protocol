@@ -3,6 +3,7 @@ import { forwardRef, useCallback, useState } from 'react'
 import { useProxySelector } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { chatSelectors, useCreateChatModal } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -20,13 +21,14 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
-import { profilePage } from 'utils/route'
 
 import { BlockUserConfirmationModal } from './BlockUserConfirmationModal'
 import styles from './ChatHeader.module.css'
 import { ChatUser } from './ChatUser'
 import { DeleteChatConfirmationModal } from './DeleteChatConfirmationModal'
 import { UnblockUserConfirmationModal } from './UnblockUserConfirmationModal'
+
+const { profilePage } = route
 
 const messages = {
   header: 'Messages',
@@ -44,16 +46,12 @@ const { getOtherChatUsers, getBlockees } = chatSelectors
 
 type ChatHeaderProps = {
   currentChatId?: string
-  isChromeOrSafari?: boolean
   scrollBarWidth?: number
   headerContainerRef?: React.RefObject<HTMLDivElement>
 }
 
 export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
-  (
-    { currentChatId, isChromeOrSafari, scrollBarWidth, headerContainerRef },
-    ref
-  ) => {
+  ({ currentChatId, scrollBarWidth, headerContainerRef }, ref) => {
     const dispatch = useDispatch()
     const { onOpen: openCreateChatModal } = useCreateChatModal()
     const [, setInboxSettingsVisible] = useModalState('InboxSettings')
@@ -139,7 +137,6 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       <>
         <HeaderGutter
           headerContainerRef={headerContainerRef}
-          isChromeOrSafari={isChromeOrSafari}
           scrollBarWidth={scrollBarWidth}
           className={styles.gutterOverride}
         />

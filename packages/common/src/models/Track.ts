@@ -191,6 +191,7 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   created_at: string
+  create_date: Nullable<string>
   isrc: Nullable<string>
   iswc: Nullable<string>
   credits_splits: Nullable<string>
@@ -240,8 +241,11 @@ export type TrackMetadata = {
   parental_warning_type?: string | null
   bpm?: number | null
   is_custom_bpm?: boolean
+  is_custom_musical_key?: boolean
   musical_key?: string | null
   audio_analysis_error_count?: number
+  comments_disabled?: boolean
+  comment_count: number
 
   // Optional Fields
   is_playlist_upload?: boolean

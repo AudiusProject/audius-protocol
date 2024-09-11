@@ -5,7 +5,9 @@ import type {
   ChatMessageReaction,
   ChatMessageNullableReaction,
   UnfurlResponse,
-  ValidatedChatPermissions
+  ValidatedChatPermissions,
+  ChatBlastAudience,
+  ChatBlast
 } from '@audius/sdk'
 import {
   Action,
@@ -23,7 +25,9 @@ import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 
-type UserChatWithMessagesStatus = UserChat & {
+export type Chat = UserChat | ChatBlast
+
+export type UserChatWithMessagesStatus = Chat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }
@@ -63,8 +67,23 @@ type SetMessageReactionPayload = {
   reaction: string | null
 }
 
-const chatSortComparator = (a: UserChat, b: UserChat) =>
-  dayjs(a.last_message_at).isBefore(dayjs(b.last_message_at)) ? 1 : -1
+const chatSortComparator = (a: Chat, b: Chat) => {
+  const aLastMessageAt = dayjs(a.last_message_at)
+  const bLastMessageAt = dayjs(b.last_message_at)
+  const alphabeticalSort = a.chat_id.localeCompare(b.chat_id)
+  // If last message timestamps are the same, favor blasts on top, then sort by chat_id alphabetically
+  if (aLastMessageAt.isSame(bLastMessageAt)) {
+    if (a.is_blast || b.is_blast) {
+      return a.is_blast && !b.is_blast
+        ? -1
+        : b.is_blast && !a.is_blast
+        ? 1
+        : alphabeticalSort
+    }
+    return alphabeticalSort
+  }
+  return aLastMessageAt.isBefore(bLastMessageAt) ? 1 : -1
+}
 
 export const chatsAdapter = createEntityAdapter<UserChatWithMessagesStatus>({
   selectId: (chat) => chat.chat_id,
@@ -139,7 +158,20 @@ const slice = createSlice({
     ) => {
       // triggers saga
     },
-    createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
+    createChatBlast: (
+      _state,
+      _action: PayloadAction<{
+        audience: ChatBlastAudience
+        audienceContentId?: number
+        audienceContentType?: 'track' | 'album'
+        skipNavigation?: boolean
+        presetMessage?: string
+        replaceNavigation?: boolean
+      }>
+    ) => {
+      // triggers saga
+    },
+    createChatSucceeded: (state, action: PayloadAction<{ chat: Chat }>) => {
       const { chat } = action.payload
       chatsAdapter.upsertOne(state.chats, {
         ...chat,
@@ -372,7 +404,7 @@ const slice = createSlice({
       // Optimistically mark as read
       const { chatId } = action.payload
       const existingChat = getChat(state, chatId)
-      if (existingChat) {
+      if (existingChat && !existingChat.is_blast) {
         state.optimisticChatRead[chatId] = {
           last_read_at: existingChat.last_message_at,
           unread_message_count: 0
@@ -395,6 +427,7 @@ const slice = createSlice({
       delete state.optimisticChatRead[chatId]
       delete state.optimisticUnreadMessagesCount
       const existingChat = getChat(state, chatId)
+      if (!existingChat || existingChat.is_blast) return
       state.unreadMessagesCount -= existingChat?.unread_message_count ?? 0
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
@@ -449,6 +482,16 @@ const slice = createSlice({
         return
       }
 
+      // Update the chat metadata, but don't update recheck_permissions unless
+      // it's a message received from someone else
+      chatsAdapter.updateOne(state.chats, {
+        id: chatId,
+        changes: {
+          last_message: message.message,
+          last_message_at: message.created_at
+        }
+      })
+
       // Return early if we've seen this message
       const existingMessage = getMessage(
         state.messages[chatId],
@@ -465,8 +508,6 @@ const slice = createSlice({
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
         changes: {
-          last_message: message.message,
-          last_message_at: message.created_at,
           // If a new message comes through, we don't need to recheck permissions anymore
           recheck_permissions: false
         }
@@ -477,6 +518,7 @@ const slice = createSlice({
 
       // Handle unread counts
       const existingChat = getChat(state, chatId)
+      if (!existingChat || existingChat.is_blast) return
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
         ? optimisticRead.unread_message_count

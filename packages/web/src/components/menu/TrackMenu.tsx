@@ -8,7 +8,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -20,7 +20,7 @@ import {
   CommonState,
   artistPickModalActions
 } from '@audius/common/store'
-import { Genre, Nullable } from '@audius/common/utils'
+import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
@@ -30,8 +30,9 @@ import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
-import { albumPage, profilePage } from 'utils/route'
-import { trpc } from 'utils/trpcClientWeb'
+import { albumPage } from 'utils/route'
+
+const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
@@ -42,8 +43,8 @@ const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
-  addToAlbum: 'Add to Album',
-  addToPlaylist: 'Add to Playlist',
+  addToAlbum: 'Add To Album',
+  addToPlaylist: 'Add To Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
   embed: 'Embed',
   favorite: 'Favorite',

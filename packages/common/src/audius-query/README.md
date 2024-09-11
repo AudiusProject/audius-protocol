@@ -10,10 +10,11 @@
   - [Add a query endpoint](#add-a-query-endpoint)
   - [Adding a mutation endpoint](#adding-a-mutation-endpoint)
   - [Adding optimistic updates to your mutation endpoint](#adding-optimistic-updates-to-your-mutation-endpoint)
+  - [Paginating Your Query Endpoint](#paginating-your-query-endpoint)
   - [Pre-fetching related entities](#pre-fetching-related-entities)
     - [Cascading hooks](#cascading-hooks)
     - [Pre-fetching in endpoint implementations](#pre-fetching-in-endpoint-implementations)
-  - [Batching requests](#batching-requests)
+    - [Batching requests](#batching-requests)
   - [Query Hook options](#query-hook-options)
   - [Caching](#caching)
     - [Endpoint response caching](#endpoint-response-caching)
@@ -22,8 +23,6 @@
     - [Enable single-entity cache hits](#enable-single-entity-cache-hits)
       - [Example (useGetTrackById)](#example-usegettrackbyid)
   - [Debugging](#debugging)
-  - [Experimental features](#experimental-features)
-    - [Pagination (beta)](#pagination-beta)
 
 ## Why audius-query
 
@@ -215,6 +214,43 @@ const api = createApi({
 })
 ```
 
+## Paginating Your Query Endpoint
+
+If your endpoint has pagination, you can use the type `'paginatedQuery'` instead of `'query'`.
+
+This will modify the query hook to pass `limit` and `offset` params and returns data in page chunks.
+
+By default it will aggregate all pages that you've requested 
+
+Example usage
+
+```typescript
+// Set up a paginated query
+const userApi = createApi({
+      endpoints: {
+        getSomeData: {
+          // ...
+        },
+        { type: 'paginatedQuery' }
+      }
+    })
+
+// Using the query
+const {
+    data,
+    status, // Same as query type but also includes sub-state LOADING_MORE for new pages loading
+    loadMore, // Callback to increment the page and load more data
+    reset, // Resets back to the first page, with an option to clear the cache data out as well
+    hasMore // 
+  } = useGetSomeData(
+    { ...args },
+    {
+      pageSize: 5, // Pass your desired page size
+      singlePageData: false // (Optional) Enable this if you only want one page of data at a time (not an aggregated list)
+    }
+  )
+```
+
 ## Pre-fetching related entities
 
 Many endpoints return related data as nested fields (ex. Tracks including a user field with basic info about a user). However, some endpoints only return identifiers pointing to the related entities. In cases where we know we will need that information before rendering, there are a couple of options.
@@ -367,40 +403,3 @@ getTrackById: {
   - `fetch${capitalize(endpointName)}Loading`
   - `fetch${capitalize(endpointName)}Succeeded`
   - `fetch${capitalize(endpointName)}Error`
-
-## Experimental features
-
-### Pagination (beta)
-
-see [usePaginatedQuery.ts](./hooks/usePaginatedQuery.ts)
-
-- `usePaginatedQuery` - wraps an audius-query fetch hook which accepts `{ limit, offset }` and handles pagination with our common `{ hasMore, loadMore }` pattern. Returns the current page of results
-- `useAllPaginatedQuery` - the same as `usePaginatedQuery` but returns the cumulative list of results
-
-Example usage
-
-```typescript
-const {
-  data: pageOfUsers,
-  status,
-  loadMore,
-  hasMore
-} = usePaginatedQuery(
-  useGetFollowingUsers /* accepts { userId, limit, offset } */,
-  { userId },
-  10 /* page size */
-)
-
-return status === Status.LOADING ? (
-  <Loading />
-) : (
-  <PaginatedUserTable
-    users={pageOfUsers}
-    hasMore={hasMore}
-    loadMore={loadMore}
-  />
-)
-```
-
-- `hasMore` - true if there are more results available
-- `loadMore` - increments the page counter internal to `usePaginatedQuery`, causing the offset to increment and the next page of results to be fetched and returned from the hook

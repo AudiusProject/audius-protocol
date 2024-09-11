@@ -2,6 +2,7 @@ import { memo, useEffect, useCallback, useContext } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { ID, UID, LineupTrack } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -9,9 +10,10 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
-import { TRENDING_PAGE } from 'utils/route'
 
 import styles from './HistoryPage.module.css'
+
+const { TRENDING_PAGE } = route
 
 const messages = {
   header: 'LISTENING HISTORY',

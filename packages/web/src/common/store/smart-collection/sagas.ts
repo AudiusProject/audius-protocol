@@ -12,15 +12,13 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { encodeHashId, removeNullable } from '@audius/common/utils'
+import { encodeHashId, removeNullable, route } from '@audius/common/utils'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
-
-import { EXPLORE_PAGE } from '../../../utils/route'
 
 import {
   HEAVY_ROTATION,
@@ -30,6 +28,8 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from './smartCollections'
+
+const { EXPLORE_PAGE } = route
 const { setSmartCollection } = collectionPageActions
 const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
   smartCollectionPageActions

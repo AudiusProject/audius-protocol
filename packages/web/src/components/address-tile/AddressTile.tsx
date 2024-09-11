@@ -37,8 +37,10 @@ export const AddressTile = ({
   const { color } = useTheme()
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
-  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
-
+  const { data: balanceBN } = useUSDCBalance({
+    isPolling: true,
+    commitment: 'confirmed'
+  })
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)
     toast(messages.copied)
@@ -62,11 +64,7 @@ export const AddressTile = ({
           </Box>
         </Flex>
         <Text variant='title' size='l' strength='strong'>
-          {`$${USDC(balanceBN ?? new BN(0)).toLocaleString('en-us', {
-            roundingMode: 'floor',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          })}`}
+          {USDC(balanceBN ?? new BN(0)).toLocaleString()}
         </Text>
       </Flex>
       <Flex

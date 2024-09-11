@@ -136,7 +136,9 @@ class TrackMetadata(TypedDict):
     bpm: Optional[float]
     is_custom_bpm: Optional[bool]
     musical_key: Optional[str]
+    is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
+    comments_disabled: bool
 
 
 track_metadata_format: TrackMetadata = {
@@ -192,7 +194,9 @@ track_metadata_format: TrackMetadata = {
     "bpm": None,
     "is_custom_bpm": False,
     "musical_key": None,
+    "is_custom_musical_key": False,
     "audio_analysis_error_count": 0,
+    "comments_disabled": False,
 }
 
 # Required format for user metadata retrieved from the content system
@@ -231,6 +235,7 @@ comment_metadata_format = {
     "entity_id": None,
     "entity_type": None,
     "parent_comment_id": None,
+    "track_timestamp_s": None,
 }
 
 

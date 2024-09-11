@@ -5,7 +5,14 @@
   left: 0;
   width: 88px;
   height: 88px;
-  color: var(--special-light-green);
+}
+
+.dogEar.purchase path {
+  fill: var(--harmony-light-green);
+}
+
+.dogEar.special path {
+  fill: var(--harmony-blue);
 }
 
 .dogEar.small {

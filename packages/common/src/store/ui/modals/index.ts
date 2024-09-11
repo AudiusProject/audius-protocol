@@ -1,4 +1,5 @@
 export * from './types'
+
 export * as modalsSelectors from './selectors'
 export { actions as modalsActions } from './parentSlice'
 export { rootModalReducer as modalsReducer } from './reducers'
@@ -23,3 +24,4 @@ export * from './edit-access-confirmation-modal'
 export * from './early-release-confirmation-modal'
 export * from './publish-confirmation-modal'
 export * from './hide-confirmation-modal'
+export * from './create-chat-blast-modal'

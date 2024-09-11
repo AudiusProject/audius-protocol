@@ -20,7 +20,7 @@ import (
 )
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func recover(input string, signature []byte) (common.Address, error) {
+func recoverSigner(input string, signature []byte) (common.Address, error) {
 	hash := crypto.Keccak256Hash([]byte(input))
 	return sigverify.EcRecoverEx(hash.Bytes(), signature)
 }
@@ -45,7 +45,7 @@ func (ss *MediorumServer) checkBasicAuth(user, pass string, c echo.Context) (boo
 	if err != nil {
 		return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: signature not hex", err)
 	}
-	wallet, err := recover(user, sig)
+	wallet, err := recoverSigner(user, sig)
 	if err != nil {
 		return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: invalid signature", err)
 	}

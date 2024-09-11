@@ -1,5 +1,10 @@
-import { ID } from '@audius/common/models'
-import { getContext } from '@audius/common/store'
+import {
+  transformAndCleanList,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import { ID, OptionalId } from '@audius/common/models'
+import { IntKeys } from '@audius/common/services'
+import { getContext, getSDK } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { call } from 'typed-redux-saga'
 
@@ -10,12 +15,20 @@ export function* getRecommendedTracks(
   exclusionList: number[],
   currentUserId: Nullable<ID>
 ) {
-  const apiClient = yield* getContext('apiClient')
-  const tracks = yield* call([apiClient, apiClient.getRecommended], {
-    genre,
-    exclusionList,
-    currentUserId
-  })
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+
+  const sdk = yield* getSDK()
+
+  const { data } = yield* call(
+    [sdk.full.tracks, sdk.full.tracks.getRecommendedTracks],
+    {
+      genre,
+      exclusionList,
+      limit: remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
+      userId: OptionalId.parse(currentUserId)
+    }
+  )
+  const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
   yield* call(processAndCacheTracks, tracks)
   return tracks
 }

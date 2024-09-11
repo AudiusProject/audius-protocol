@@ -6,7 +6,7 @@ import {
   cacheCollectionsSelectors,
   duplicateAddConfirmationModalUISelectors
 } from '@audius/common/store'
-import { fillString } from '@audius/common/utils'
+import { fillString, route } from '@audius/common/utils'
 import {
   Button,
   Modal,
@@ -23,12 +23,12 @@ import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
-import { collectionPage } from 'utils/route'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
 const { getAccountUser } = accountSelectors
+const { collectionPage } = route
 
 const messages = {
   title: 'Already Added',

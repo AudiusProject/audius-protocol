@@ -39,8 +39,10 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { EventNames } from 'app/types/analytics'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -186,7 +188,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { isOpen: isModalOpen } = useDrawer('LockedContent')
+  const { isOpen: isModalOpen, onClose } = useDrawer('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
@@ -210,11 +212,21 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   }, [followee, dispatch, followSource, trackId])
 
   const handleSendTip = useCallback(() => {
+    onClose()
     dispatch(beginTip({ user: tippedUser, source, trackId }))
     navigation.navigate('TipArtist')
-  }, [tippedUser, navigation, dispatch, source, trackId])
+  }, [dispatch, tippedUser, source, trackId, navigation, onClose])
 
   const handlePurchasePress = useCallback(() => {
+    track(
+      make({
+        eventName: EventNames.PURCHASE_CONTENT_BUY_CLICKED,
+        contentId: trackId,
+        contentType
+      })
+    )
+
+    onClose()
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType },
       {
@@ -224,7 +236,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             : ModalSource.TrackDetails
       }
     )
-  }, [trackId, openPremiumContentPurchaseModal, contentType])
+  }, [trackId, contentType, openPremiumContentPurchaseModal, onClose])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {

@@ -1,3 +1,4 @@
+import { route } from '@audius/common/utils'
 import {
   IconComponent,
   IconNote,
@@ -7,12 +8,13 @@ import {
 import { useRouteMatch } from 'react-router-dom'
 
 import { SteppedProgress } from 'components/stepped-progress/SteppedProgress'
-import {
+
+const {
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE
-} from 'utils/route'
+} = route
 
 type ProgressHeaderStep = 'customize' | 'genres' | 'artists'
 

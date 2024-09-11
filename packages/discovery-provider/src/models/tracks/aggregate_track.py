@@ -10,3 +10,4 @@ class AggregateTrack(Base, RepresentableMixin):
     track_id = Column(Integer, primary_key=True)
     repost_count = Column(Integer, nullable=False, server_default=text("0"))
     save_count = Column(Integer, nullable=False, server_default=text("0"))
+    comment_count = Column(Integer, nullable=False, server_default=text("0"))

@@ -630,7 +630,7 @@ export type MilestoneNotification = BaseNotification &
         type: NotificationType.Milestone
         entityType: Entity
         entityId: ID
-        achievement: Exclude<Achievement, Achievement.Followers>
+        achievement: Achievement
         value: number
       }
     | {
@@ -802,6 +802,7 @@ export type ChallengeRewardNotification = BaseNotification & {
   type: NotificationType.ChallengeReward
   challengeId: ChallengeRewardID
   entityType: string
+  amount: StringWei
 }
 
 export type ClaimableRewardNotification = BaseNotification & {

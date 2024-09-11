@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import type {
   LineupState,
   SearchUser,
@@ -7,24 +8,15 @@ import type {
   Track,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { Nullable } from '@audius/common/utils'
-import { View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
+import { CommentSection } from 'app/components/comments/CommentSection'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenRemixes } from './TrackScreenRemixes'
-
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    padding: spacing(3),
-    paddingBottom: 0
-  },
-  headerContainer: {
-    marginBottom: spacing(6)
-  }
-}))
 
 type TrackScreenMainContentProps = {
   lineup: LineupState<Track>
@@ -44,34 +36,50 @@ export const TrackScreenMainContent = ({
   user
 }: TrackScreenMainContentProps) => {
   const navigation = useNavigation()
-  const styles = useStyles()
+  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
-  const remixTrackIds = track._remixes?.map(({ track_id }) => track_id) ?? null
+  const {
+    track_id,
+    _remixes,
+    field_visibility,
+    _remixes_count,
+    comments_disabled
+  } = track
+
+  const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
   const handlePressGoToRemixes = () => {
-    navigation.push('TrackRemixes', { id: track.track_id })
+    navigation.push('TrackRemixes', { id: track_id })
   }
   return (
-    <View style={styles.root}>
-      <View style={styles.headerContainer}>
+    <Flex p='m' pb={0}>
+      <Flex gap='2xl'>
         <TrackScreenDetailsTile
           track={track}
           user={user}
           uid={lineup?.entries?.[0]?.uid}
           isLineupLoading={!lineup?.entries?.[0]}
         />
-      </View>
 
-      {track.field_visibility?.remixes &&
-        remixTrackIds &&
-        remixTrackIds.length > 0 && (
-          <TrackScreenRemixes
-            trackIds={remixTrackIds}
-            onPressGoToRemixes={handlePressGoToRemixes}
-            count={track._remixes_count ?? null}
-          />
-        )}
-      {lineupHeader}
-    </View>
+        {field_visibility?.remixes &&
+          remixTrackIds &&
+          remixTrackIds.length > 0 && (
+            <TrackScreenRemixes
+              trackIds={remixTrackIds}
+              onPressGoToRemixes={handlePressGoToRemixes}
+              count={_remixes_count ?? null}
+            />
+          )}
+
+        {isCommentingEnabled && !comments_disabled ? (
+          <Flex flex={3}>
+            <CommentSection entityId={track_id} />
+          </Flex>
+        ) : null}
+        {lineupHeader}
+      </Flex>
+    </Flex>
   )
 }

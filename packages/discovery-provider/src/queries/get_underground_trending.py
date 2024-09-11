@@ -73,7 +73,6 @@ def get_scorable_track_data(session, redis_instance, strategy):
     r = score_params["r"]
     q = score_params["q"]
     o = score_params["o"]
-    qr = score_params["qr"]
     xf = score_params["xf"]
     pt = score_params["pt"]
     trending_key = make_trending_tracks_cache_key("week", None, strategy.version)
@@ -81,7 +80,6 @@ def get_scorable_track_data(session, redis_instance, strategy):
     old_trending = get_json_cached_key(redis_instance, trending_key)
     if old_trending:
         track_ids = old_trending[1]
-    exclude_track_ids = track_ids[:qr]
 
     base_query = (
         session.query(
@@ -103,7 +101,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             Track.is_delete == False,
             Track.is_unlisted == False,
             Track.stem_of == None,
-            Track.track_id.notin_(exclude_track_ids),
+            Track.track_id.notin_(track_ids),
             Track.created_at >= (datetime.now() - timedelta(days=o)),
             AggregateUser.follower_count < S,
             AggregateUser.follower_count >= pt,

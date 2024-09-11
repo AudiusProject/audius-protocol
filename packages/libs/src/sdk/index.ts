@@ -6,6 +6,7 @@ export * from './api/generated/default'
 export { TracksApi } from './api/tracks/TracksApi'
 export { PlaylistsApi } from './api/playlists/PlaylistsApi'
 export { AlbumsApi } from './api/albums/AlbumsApi'
+export { CommentsApi } from './api/comments/CommentsAPI'
 export { GrantsApi } from './api/grants/GrantsApi'
 export { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 export { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
@@ -14,11 +15,13 @@ export { ResolveApi } from './api/ResolveApi'
 export { ChallengesApi } from './api/challenges/ChallengesApi'
 export {
   GetAudioTransactionHistorySortMethodEnum,
-  GetAudioTransactionHistorySortDirectionEnum
+  GetAudioTransactionHistorySortDirectionEnum,
+  GetNotificationsValidTypesEnum
 } from './api/generated/full'
 export * from './api/challenges/types'
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
+export * from './api/comments/types'
 export * from './api/albums/types'
 export * from './api/playlists/types'
 export * from './api/tracks/types'

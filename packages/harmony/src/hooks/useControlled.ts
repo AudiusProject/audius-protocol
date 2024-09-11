@@ -62,7 +62,7 @@ const defaultChangedError = ({
 }
 
 export const useControlled = <
-  T extends string | number | boolean | undefined | null
+  T extends string | number | boolean | undefined | null | readonly string[]
 >({
   controlledProp,
   defaultValue,

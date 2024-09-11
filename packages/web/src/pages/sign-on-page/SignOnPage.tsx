@@ -1,5 +1,7 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { FEED_PAGE } from '@audius/common/src/utils/route'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -9,21 +11,23 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useEffectOnce, useLocation, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
 import { fetchReferrer } from 'common/store/pages/signon/actions'
+import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
 import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { ScrollView } from 'pages/sign-up-page/components/layout'
-import {
+
+const {
   SIGN_IN_CONFIRM_EMAIL_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_APP_CTA_PAGE,
@@ -36,7 +40,7 @@ import {
   TRENDING_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_ARTISTS_PAGE
-} from 'utils/route'
+} = route
 
 const messages = {
   newToAudius: 'New to Audius?',
@@ -271,6 +275,7 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
+  const hasCompletedAccount = useSelector(getHasCompletedAccount)
   const location = useLocation()
   const dispatch = useDispatch()
 
@@ -288,6 +293,10 @@ export const SignOnPage = () => {
   useEffectOnce(() => {
     setIsLoaded(true)
   })
+
+  if (hasCompletedAccount) {
+    return <Redirect to={FEED_PAGE} />
+  }
 
   return (
     <SignOnRoot isLoaded={isLoaded}>

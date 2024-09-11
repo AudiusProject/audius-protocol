@@ -1,4 +1,5 @@
 import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
+import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from './Identifiers'
 
@@ -42,4 +43,10 @@ export type PlaylistLibraryItem =
 
 export type PlaylistLibrary = {
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]
+}
+
+export type PlaylistUpdate = {
+  playlist_id: number
+  updated_at: number
+  last_seen_at: Nullable<number>
 }

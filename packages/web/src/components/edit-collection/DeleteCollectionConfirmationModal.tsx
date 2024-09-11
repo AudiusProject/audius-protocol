@@ -5,6 +5,7 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useLastLocation } from 'react-router-last-location'
@@ -13,8 +14,8 @@ import { SetRequired } from 'type-fest'
 import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
-import { FEED_PAGE } from 'utils/route'
 
+const { FEED_PAGE } = route
 const { getCollection } = cacheCollectionsSelectors
 const { deletePlaylist } = cacheCollectionsActions
 

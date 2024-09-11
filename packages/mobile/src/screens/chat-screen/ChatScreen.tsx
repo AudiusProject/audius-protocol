@@ -453,11 +453,10 @@ export const ChatScreen = () => {
 
   const handleMessagePress = useCallback(
     async (id: string) => {
+      if (chat?.is_blast || !canSendMessage) return
+
       const messageRef = itemsRef.current[id]
       if (messageRef === null || messageRef === undefined) {
-        return
-      }
-      if (!canSendMessage) {
         return
       }
 
@@ -471,7 +470,7 @@ export const ChatScreen = () => {
         light()
       })
     },
-    [canSendMessage, dispatch]
+    [canSendMessage, chat?.is_blast, dispatch]
   )
 
   const topBarRight = (

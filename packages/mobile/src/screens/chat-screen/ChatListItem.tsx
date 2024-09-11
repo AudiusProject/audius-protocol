@@ -85,21 +85,22 @@ const useRemoveLeadingWhitespace = (message: string) => {
 }
 
 export const ChatListItem = ({ chatId }: { chatId: string }) => {
-  const navigation = useNavigation<AppTabScreenParamList>()
   const styles = useStyles()
+  const { spacing } = useTheme()
+  const navigation = useNavigation<AppTabScreenParamList>()
 
   const chat = useProxySelector((state) => getChat(state, chatId), [chatId])
   const otherUser = useProxySelector(
     (state) => getSingleOtherChatUser(state, chatId),
     [chatId]
   )
-  const lastMessage = useRemoveLeadingWhitespace(chat?.last_message ?? '')
+  const lastMessage = useRemoveLeadingWhitespace(
+    (!chat?.is_blast && chat?.last_message) || ''
+  )
 
   const handlePress = useCallback(() => {
     navigation.push('Chat', { chatId })
   }, [navigation, chatId])
-
-  const { spacing } = useTheme()
 
   return (
     <TouchableHighlight onPress={handlePress}>

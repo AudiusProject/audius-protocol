@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
 import { playerSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { IconClose as IconRemove } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -9,10 +10,11 @@ import { Dispatch } from 'redux'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
 import { AppState } from 'store/types'
-import { COOKIE_POLICY } from 'utils/route'
+import { BASE_URL } from 'utils/route'
 
 import styles from './CookieBanner.module.css'
 
+const { PRIVACY_POLICY } = route
 const { getUid } = playerSelectors
 
 const messages = {
@@ -27,7 +29,7 @@ export type CookieBannerProps = ReturnType<typeof mapStateToProps> &
 export const CookieBanner = ({ isPlaying, dismiss }: CookieBannerProps) => {
   const isMobile = useIsMobile()
   const goToCookiePolicy = () => {
-    const win = window.open(COOKIE_POLICY, '_blank')
+    const win = window.open(`${BASE_URL}${PRIVACY_POLICY}`, '_blank')
     if (win) win.focus()
   }
 

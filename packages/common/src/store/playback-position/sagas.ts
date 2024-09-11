@@ -6,7 +6,7 @@ import { getUserId } from '~/store/account/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { getContext } from '~/store/effects'
 import { getPlaying, getTrackId } from '~/store/player/selectors'
-import { Genre } from '~/utils/genres'
+import { isLongFormContent } from '~/utils/isLongFormContent'
 
 import { getPlaybackPositions } from './selectors'
 import {
@@ -120,10 +120,8 @@ function* savePlaybackPositionWorker() {
     const userId = yield* select(getUserId)
     const track = yield* select(getTrack, { id: trackId })
     const playing = yield* select(getPlaying)
-    const isLongFormContent =
-      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
-    if (userId && trackId && isLongFormContent && playing) {
+    if (userId && trackId && isLongFormContent(track) && playing) {
       const { position } = yield* call(getPlayerSeekInfo, audioPlayer)
       yield* put(
         setTrackPosition({

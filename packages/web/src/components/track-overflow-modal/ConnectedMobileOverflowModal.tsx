@@ -26,6 +26,7 @@ import {
   PurchaseableContentType,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -33,14 +34,11 @@ import { Dispatch } from 'redux'
 
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
-import {
-  collectibleDetailsPage,
-  collectionPage,
-  profilePage
-} from 'utils/route'
+import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
 
+const { profilePage, collectionPage } = route
 const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors

@@ -65,8 +65,11 @@ const trackMetadataSchema = {
   allowed_api_keys: null,
   bpm: null,
   is_custom_bpm: false,
+  is_custom_musical_key: false,
   musical_key: null,
-  audio_analysis_error_count: 0
+  audio_analysis_error_count: 0,
+  comments_disabled: false,
+  comment_count: 0
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {

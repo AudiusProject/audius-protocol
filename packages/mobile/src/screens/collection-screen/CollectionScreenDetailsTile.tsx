@@ -264,7 +264,9 @@ export const CollectionScreenDetailsTile = ({
     dayjs(releaseDate).isAfter(dayjs())
   const shouldHideOverflow =
     hideOverflow || !isReachable || (isPrivate && !isOwner)
-  const shouldHideActions = hideActions || (isPrivate && !isOwner)
+  const shouldHideActions =
+    hideActions || (isPrivate && !isOwner) || !hasStreamAccess
+  const shouldeHideShare = hideActions || (isPrivate && !isOwner)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
@@ -426,7 +428,7 @@ export const CollectionScreenDetailsTile = ({
         ) : null}
         {imageElement}
         <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s'>
+          <Text variant='heading' size='s' textAlign='center'>
             {title}
           </Text>
           {user ? (
@@ -458,7 +460,7 @@ export const CollectionScreenDetailsTile = ({
           hideFavorite={shouldHideActions}
           hideOverflow={shouldHideOverflow}
           hideRepost={shouldHideActions}
-          hideShare={shouldHideActions}
+          hideShare={shouldeHideShare}
           isOwner={isOwner}
           isCollection
           collectionId={numericCollectionId}

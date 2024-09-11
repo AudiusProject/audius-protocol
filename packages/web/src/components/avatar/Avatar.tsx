@@ -1,17 +1,18 @@
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
-import { Maybe } from '@audius/common/utils'
+import { Maybe, route } from '@audius/common/utils'
 import {
   Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
+import { UserLink } from 'components/link'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
-import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
+const { SIGN_IN_PAGE, profilePage } = route
 const { getAccountUser } = accountSelectors
 
 const { getUser } = cacheUsersSelectors
@@ -27,6 +28,7 @@ type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   userId: Maybe<ID>
   onClick?: () => void
   imageSize?: SquareSizes
+  popover?: boolean
 }
 
 export const Avatar = (props: AvatarProps) => {
@@ -35,6 +37,7 @@ export const Avatar = (props: AvatarProps) => {
     onClick,
     'aria-hidden': ariaHidden,
     imageSize = SquareSizes.SIZE_150_BY_150,
+    popover,
     ...other
   } = props
   const profileImage = useProfilePicture(userId ?? null, imageSize)
@@ -74,7 +77,11 @@ export const Avatar = (props: AvatarProps) => {
     )
   }
 
-  return (
+  return typeof userId === 'number' ? (
+    <UserLink userId={userId} popover={popover} noText aria-label={label}>
+      <HarmonyAvatar src={image} {...other} />
+    </UserLink>
+  ) : (
     <Link to={userLink} aria-label={label}>
       <HarmonyAvatar src={image} {...other} />
     </Link>

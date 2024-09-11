@@ -1,8 +1,9 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
-import { formatUSDCWeiToUSDString } from '@audius/common/utils'
-import { BN } from 'bn.js'
+import { FeatureFlags } from '@audius/common/services'
+import { USDC } from '@audius/fixed-decimal'
 import moment from 'moment'
 
 import { UserLink } from 'components/link'
@@ -68,8 +69,13 @@ const renderDateCell = (cellInfo: PurchaseCell) => {
 
 const renderValueCell = (cellInfo: PurchaseCell) => {
   const transaction = cellInfo.row.original
-  const total = new BN(transaction.amount).add(new BN(transaction.extraAmount))
-  return `$${formatUSDCWeiToUSDString(total)}`
+  const total = USDC(
+    BigInt(
+      transaction.splits.find((s) => s.userId === transaction.sellerUserId)
+        ?.amount || 0
+    ) + BigInt(transaction.extraAmount)
+  ).toLocaleString()
+  return total
 }
 
 // Columns
@@ -103,7 +109,7 @@ const tableColumnMap = {
   },
   value: {
     id: 'value',
-    Header: 'Value',
+    Header: 'Total',
     accessor: 'amount',
     Cell: renderValueCell,
     maxWidth: 200,
@@ -139,6 +145,10 @@ export const SalesTable = ({
   scrollRef,
   fetchBatchSize
 }: SalesTableProps) => {
+  const { isEnabled: isNetworkCutEnabled } = useFeatureFlag(
+    FeatureFlags.NETWORK_CUT_ENABLED
+  )
+
   const tableColumns = useMemo(
     () => columns.map((id) => tableColumnMap[id]),
     [columns]
@@ -169,6 +179,9 @@ export const SalesTable = ({
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
       wrapperClassName={styles.tableWrapper}
+      tableHeaderClassName={
+        isNetworkCutEnabled ? styles.tableHeaderSmallPadding : undefined
+      }
     />
   )
 }

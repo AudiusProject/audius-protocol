@@ -7,6 +7,7 @@ import {
   SavedPageTabs,
   CommonState
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { CollectionCard } from 'components/collection'
@@ -15,12 +16,12 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
-import { TRENDING_PAGE } from 'utils/route'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
 import styles from './SavedPage.module.css'
 
+const { TRENDING_PAGE } = route
 const { getCategory } = savedPageSelectors
 
 const messages = {

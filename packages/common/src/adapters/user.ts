@@ -51,10 +51,11 @@ export const userMetadataFromSDK = (
 
     // Re-types
     balance: input.balance as StringWei,
-    associated_wallets_balance: input.associatedSolWalletsBalance as StringWei,
+    associated_wallets_balance: input.associatedWalletsBalance as StringWei,
     total_balance: input.totalBalance as StringWei,
     user_id: decodedUserId,
     spl_wallet: input.splWallet as SolanaWalletAddress,
+    spl_usdc_payout_wallet: input.splUsdcPayoutWallet as SolanaWalletAddress,
 
     // Legacy Overrides
     cover_photo: input.coverPhotoLegacy ?? null,

@@ -250,7 +250,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatReactMessage(tx, userId, params.MessageID, params.Reaction, messageTs)
+			err = chatReactMessage(tx, userId, params.ChatID, params.MessageID, params.Reaction, messageTs)
 			if err != nil {
 				return err
 			}
@@ -312,6 +312,27 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			err = chatUnblock(tx, userId, int32(unblockedUserId), messageTs)
 			if err != nil {
 				return err
+			}
+
+		case schema.RPCMethodChatBlast:
+			var params schema.ChatBlastRPCParams
+			err = json.Unmarshal(rawRpc.Params, &params)
+			if err != nil {
+				return err
+			}
+
+			outgoingMessages, err := chatBlast(tx, userId, messageTs, params)
+			if err != nil {
+				return err
+			}
+			// Send chat message websocket event to all recipients who have existing chats
+			for _, outgoingMessage := range outgoingMessages {
+				j, err := json.Marshal(outgoingMessage.ChatMessageRPC)
+				if err != nil {
+					slog.Error("err: invalid json", "err", err)
+				} else {
+					websocketNotify(json.RawMessage(j), userId, messageTs.Round(time.Microsecond))
+				}
 			}
 		default:
 			logger.Warn("no handler for ", rawRpc.Method)
@@ -420,36 +441,17 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 	if chatId := gjson.GetBytes(rpcJson, "params.chat_id").String(); chatId != "" {
 
 		var userIds []int32
-		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
+		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1 and is_hidden = false`, chatId)
 		if err != nil {
 			logger.Warn("failed to load chat members for websocket push " + err.Error())
 			return
 		}
 
-		encodedUserId, _ := misc.EncodeHashId(int(userId))
-
-		// this struct should match ChatWebsocketEventData
-		// but we create a matching anon struct here
-		// so we can simply pass thru the RPC as a json.RawMessage
-		// which is simpler than satisfying the quicktype generated schema.RPC struct
-		data := struct {
-			RPC      json.RawMessage `json:"rpc"`
-			Metadata schema.Metadata `json:"metadata"`
-		}{
-			rpcJson,
-			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+		for _, receiverUserId := range userIds {
+			websocketPush(userId, receiverUserId, rpcJson, timestamp)
 		}
-
-		j, err := json.Marshal(data)
-		if err != nil {
-			logger.Warn("invalid websocket json " + err.Error())
-			return
-		}
-
-		for _, subscribedUserId := range userIds {
-			websocketPush(subscribedUserId, j)
-		}
-
+	} else if gjson.GetBytes(rpcJson, "method").String() == "chat.blast" {
+		websocketPushAll(userId, rpcJson, timestamp)
 	}
 }
 

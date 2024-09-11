@@ -38,6 +38,7 @@ from src.models.users.usdc_transactions_history import (
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
 from src.queries.get_extended_purchase_gate import (
+    ExtendedSplit,
     add_wallet_info_to_splits,
     calculate_split_amounts,
     to_wallet_amount_map,
@@ -136,7 +137,7 @@ class UserIdBankAccount(TypedDict):
 
 class PurchaseMetadataDict(TypedDict):
     price: int
-    splits: dict[str, int]
+    splits: List[ExtendedSplit]
     type: PurchaseType
     id: int
     purchaser_user_id: int
@@ -239,7 +240,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
 
 
 def parse_route_transaction_memos(
-    session: Session, memos: List[str], timestamp: datetime
+    session: Session, memos: List[str], timestamp: datetime, include_network_cut: bool
 ) -> Tuple[RouteTransactionMemo | None, GeoMetadataDict | None]:
     """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
     if len(memos) == 0:
@@ -257,11 +258,19 @@ def parse_route_transaction_memos(
                 continue
             if memo.startswith(GEO_MEMO_STRING):
                 geo_data = json.loads(memo.replace(GEO_MEMO_STRING, ""))
+                if not geo_data:
+                    logger.warn(
+                        f"index_payment_router.py | No geo data found in geo memo: {memo}"
+                    )
+                    continue
                 city = geo_data.get("city")
                 region = geo_data.get("region")
                 country = geo_data.get("country")
                 if not country:
-                    raise Exception("No country found in geo data")
+                    logger.warn(
+                        f"index_payment_router.py | No country found in geo memo: {memo}"
+                    )
+                    continue
                 geo_memo = GeoMetadataDict(
                     {
                         "city": city,
@@ -356,8 +365,6 @@ def parse_route_transaction_memos(
             else:
                 logger.error(f"index_payment_router.py | Unknown content type {type}")
 
-            # Convert the new splits format to the old splits format for
-            # maximal backwards compatibility
             if (
                 price is not None
                 and splits is not None
@@ -365,21 +372,16 @@ def parse_route_transaction_memos(
                 and content_owner_id is not None
             ):
                 wallet_splits = add_wallet_info_to_splits(session, splits, timestamp)
-                amount_splits = calculate_split_amounts(price, wallet_splits)
-                splits = to_wallet_amount_map(amount_splits)
-            if (
-                price is not None
-                and splits is not None
-                and isinstance(splits, dict)
-                and content_owner_id is not None
-            ):
+                extended_splits = calculate_split_amounts(
+                    price, wallet_splits, include_network_cut=include_network_cut
+                )
                 route_transaction_memo = RouteTransactionMemo(
                     type=RouteTransactionMemoType.purchase,
                     metadata={
                         "type": type,
                         "id": id,
                         "price": price * USDC_PER_USD_CENT,
-                        "splits": splits,
+                        "splits": extended_splits,
                         "purchaser_user_id": purchaser_user_id,
                         "content_owner_id": content_owner_id,
                         "access": access,
@@ -408,7 +410,8 @@ def validate_purchase(
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
     # Check that the recipients all got the correct split
-    for account, split in purchase_metadata["splits"].items():
+    splits = to_wallet_amount_map(purchase_metadata["splits"])
+    for account, split in splits.items():
         if account not in balance_changes:
             logger.error(
                 f"index_payment_router.py | No split given to account={account}, expected={split}"
@@ -455,6 +458,7 @@ def index_purchase(
         region=geo_metadata.get("region") if geo_metadata else None,
         country=geo_metadata.get("country") if geo_metadata else None,
         vendor=vendor,
+        splits=purchase_metadata["splits"],
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -753,8 +757,16 @@ def process_route_instruction(
         )
     elif is_usdc:
         logger.debug(f"index_payment_router.py | Parsing memos: {memos}")
+        include_network_cut = (
+            shared_config["solana"]["staking_bridge_usdc_payout_wallet"]
+            in receiver_accounts
+        )
+
         memo, geo_metadata = parse_route_transaction_memos(
-            session=session, memos=memos, timestamp=timestamp
+            session=session,
+            memos=memos,
+            timestamp=timestamp,
+            include_network_cut=include_network_cut,
         )
         validate_and_index_usdc_transfers(
             session=session,

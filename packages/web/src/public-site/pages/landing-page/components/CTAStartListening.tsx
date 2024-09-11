@@ -1,3 +1,4 @@
+import { route } from '@audius/common/utils'
 import { IconCaretRight } from '@audius/harmony'
 import { Parallax } from 'react-scroll-parallax'
 
@@ -7,9 +8,10 @@ import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { TRENDING_PAGE } from 'utils/route'
 
 import styles from './CTAStartListening.module.css'
+
+const { TRENDING_PAGE } = route
 
 const messages = {
   title: 'Artists Deserve More',

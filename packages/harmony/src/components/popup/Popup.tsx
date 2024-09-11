@@ -13,6 +13,7 @@ import { useTheme } from '@emotion/react'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
+import { usePrevious } from 'react-use'
 
 import { PlainButton } from 'components/button'
 import { IconClose } from 'icons'
@@ -250,6 +251,7 @@ export const PopupInternal = forwardRef<
   const { spring, shadows } = useTheme()
 
   const isVisible = popupState !== 'closed'
+  const previousIsVisible = usePrevious(isVisible)
 
   const handleClose = useCallback(() => {
     onClose?.()
@@ -267,8 +269,8 @@ export const PopupInternal = forwardRef<
 
   const popupRef: React.MutableRefObject<HTMLDivElement> = useClickOutside(
     handleClose,
-    checkIfClickInside,
     isVisible,
+    checkIfClickInside,
     typeof ref === 'function' ? undefined : ref
   )
 
@@ -277,9 +279,16 @@ export const PopupInternal = forwardRef<
   const [computedTransformOrigin, setComputedTransformOrigin] =
     useState(anchorOrigin)
 
+  const wrapperHeight = wrapperRef?.current?.offsetHeight ?? null
+  const wrapperWidth = wrapperRef?.current?.offsetWidth ?? null
+  const previousHeight = usePrevious(wrapperHeight)
+  const previousWidth = usePrevious(wrapperWidth)
+  const wrapperSizeChange =
+    wrapperHeight !== previousHeight || wrapperWidth !== previousWidth
+
   // On visible, set the position
   useEffect(() => {
-    if (isVisible) {
+    if ((isVisible && !previousIsVisible) || wrapperSizeChange) {
       const [anchorRect, wrapperRect] = [anchorRef, wrapperRef].map((r) =>
         r?.current?.getBoundingClientRect()
       )
@@ -324,7 +333,7 @@ export const PopupInternal = forwardRef<
 
       originalTopPosition.current = top
     }
-  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef])
+  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef, previousIsVisible, previousHeight, wrapperSizeChange])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position

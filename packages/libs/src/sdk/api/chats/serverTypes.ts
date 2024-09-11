@@ -7,6 +7,17 @@ export type ValidateCanChatRPC = {
   }
 }
 
+export type ChatBlastRPC = {
+  method: 'chat.blast'
+  params: {
+    blast_id: string
+    audience: ChatBlastAudience
+    audience_content_type?: 'track' | 'album' // if targeting buyers / remixers of a specific track or album
+    audience_content_id?: string // if targeting buyers / remixers of a specific track or album
+    message: string
+  }
+}
+
 export type ChatCreateRPC = {
   method: 'chat.create'
   params: {
@@ -43,6 +54,7 @@ export type ChatMessageRPC = {
     message_id: string
     message: string
     parent_message_id?: string
+    is_plaintext?: boolean
   }
 }
 
@@ -84,6 +96,7 @@ export type ChatPermitRPC = {
 }
 
 export type RPCPayloadRequest =
+  | ChatBlastRPC
   | ChatCreateRPC
   | ChatDeleteRPC
   | ChatInviteRPC
@@ -107,6 +120,7 @@ export type UserChat = {
   chat_id: string
   last_message: string
   last_message_at: string
+  last_message_is_plaintext: boolean
   chat_members: Array<{ user_id: string }>
   recheck_permissions: boolean
 
@@ -115,6 +129,9 @@ export type UserChat = {
   unread_message_count: number
   last_read_at: string
   cleared_history_at: string
+
+  // User chats are not blasts
+  is_blast: false
 }
 
 export type ChatMessageReaction = {
@@ -136,12 +153,34 @@ export type ChatMessage = {
   sender_user_id: string
   created_at: string
   message: string
+  is_plaintext: boolean
   reactions: ChatMessageReaction[]
 }
 
 export type ChatInvite = {
   user_id: string
   invite_code: string
+}
+
+type ChatBlastBase = {
+  chat_id: string // maps to blast_id on the backend
+  audience: ChatBlastAudience
+  audience_content_id?: string
+  audience_content_type?: 'track' | 'album'
+}
+
+// Return type of getNewBlasts
+export type UpgradableChatBlast = ChatBlastBase & {
+  pending_chat_id: string // chat_id to be created when upgrading to UserChat
+  from_user_id: number
+  plaintext: string
+  created_at: string
+}
+
+// Client-side chat blast
+export type ChatBlast = ChatBlastBase & {
+  is_blast: true
+  last_message_at: string
 }
 
 export type ValidatedChatPermissions = {
@@ -172,6 +211,13 @@ export enum ChatPermission {
   NONE = 'none'
 }
 
+export enum ChatBlastAudience {
+  FOLLOWERS = 'follower_audience',
+  TIPPERS = 'tipper_audience',
+  REMIXERS = 'remixer_audience',
+  CUSTOMERS = 'customer_audience'
+}
+
 export type CommsResponse = {
   health: {
     is_healthy: boolean
@@ -191,7 +237,8 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
-    userId: string
+    senderUserId: string
+    receiverUserId: string
     timestamp: string
   }
 }

@@ -19,7 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -50,7 +50,6 @@ import {
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { trpc } from 'utils/trpcClientWeb'
 
 import {
   Box,
@@ -193,6 +192,8 @@ export const TrackScreenDetailsTile = ({
     remix_of: remixOf,
     repost_count: repostCount,
     save_count: saveCount,
+    comment_count: commentCount,
+    comments_disabled: commentsDisabled,
     title,
     track_id: trackId,
     stream_conditions: streamConditions,
@@ -225,6 +226,9 @@ export const TrackScreenDetailsTile = ({
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -239,6 +243,11 @@ export const TrackScreenDetailsTile = ({
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
   const shouldHideRepostCount =
     isUnlisted || (!isOwner && (repostCount ?? 0) <= 0)
+  const shouldHideCommentCount =
+    !isCommentsEnabled ||
+    isUnlisted ||
+    commentsDisabled ||
+    (!isOwner && (commentCount ?? 0) <= 0)
   const shouldHidePlayCount =
     (!isOwner && isUnlisted) ||
     isStreamGated ||
@@ -462,7 +471,12 @@ export const TrackScreenDetailsTile = ({
   ])
 
   const renderBottomContent = () => {
-    return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
+    return hasDownloadableAssets ? (
+      <>
+        <Divider />
+        <DownloadSection trackId={trackId} />
+      </>
+    ) : null
   }
 
   const renderDogEar = () => {
@@ -522,7 +536,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   return (
-    <Paper mb='2xl' style={{ overflow: 'hidden' }}>
+    <Paper>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
@@ -542,7 +556,7 @@ export const TrackScreenDetailsTile = ({
         ) : null}
         {imageElement}
         <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s'>
+          <Text variant='heading' size='s' textAlign='center'>
             {title}
           </Text>
           {user ? (
@@ -618,6 +632,8 @@ export const TrackScreenDetailsTile = ({
           hideFavoriteCount={shouldHideFavoriteCount}
           repostCount={repostCount}
           hideRepostCount={shouldHideRepostCount}
+          commentCount={commentCount}
+          hideCommentCount={shouldHideCommentCount}
           onPressFavorites={handlePressFavorites}
           onPressReposts={handlePressReposts}
         />
@@ -632,8 +648,7 @@ export const TrackScreenDetailsTile = ({
         {renderTags()}
         <OfflineStatusRow contentId={trackId} isCollection={false} />
       </Flex>
-      <Divider />
-      {renderBottomContent?.()}
+      {renderBottomContent()}
     </Paper>
   )
 }
