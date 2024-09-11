@@ -1,10 +1,13 @@
-import { favoriteFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import {
+  favoriteFromSDK,
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import type { ID, DownloadReason } from '@audius/common/models'
-import { Id } from '@audius/common/models'
+import { OptionalId, Id } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  getContext,
   getSDK
 } from '@audius/common/store'
 import { difference } from 'lodash'
@@ -151,19 +154,21 @@ function* syncFavoritesCollection() {
 
 function* syncCollection(collectionId: ID) {
   const currentUserId = yield* select(getUserId)
-  const apiClient = yield* getContext('apiClient')
   const currentCollection = yield* select(getCollection, { id: collectionId })
   if (!currentCollection || !currentUserId) return CollectionSyncStatus.ERROR
 
-  const latestCollection = yield* call(
-    [apiClient, apiClient.getCollectionMetadata],
+  const sdk = yield* getSDK()
+
+  const { data = [] } = yield* call(
+    [sdk.playlists, sdk.playlists.getPlaylist],
     {
-      collectionId,
-      currentUserId,
-      // Needed to ensure APIClient doesn't abort when we become unreachable,
-      // allowing this job time to self-cancel
-      abortOnUnreachable: false
+      playlistId: Id.parse(collectionId),
+      userId: OptionalId.parse(currentUserId)
     }
+  )
+  const [latestCollection] = transformAndCleanList(
+    data,
+    userCollectionMetadataFromSDK
   )
 
   if (!latestCollection) return CollectionSyncStatus.ERROR

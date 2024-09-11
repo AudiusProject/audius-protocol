@@ -116,6 +116,7 @@ export type APITrack = {
   }
   repost_count: number
   favorite_count: number
+  comment_count: number
   tags: Nullable<string>
   title: string
   user: APIUser

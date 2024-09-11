@@ -312,7 +312,6 @@ workflows:
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -321,7 +320,6 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-workflow true
-            .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
@@ -348,6 +346,12 @@ workflows:
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
+            packages/fixed-decimal/.* run-sdk-workflow true
+            packages/fixed-decimal/.* run-web-workflow true
+            packages/fixed-decimal/.* run-mobile-workflow true
+            packages/fixed-decimal/.* run-common-workflow true
+            packages/spl/.* run-sdk-workflow true
+            packages/spl/.* run-identity-workflow true
           requires:
             - generate-config
             - init
@@ -368,7 +372,6 @@ workflows:
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -377,7 +380,6 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-workflow true
-            .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
@@ -403,6 +405,12 @@ workflows:
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
+            packages/fixed-decimal/.* run-sdk-workflow true
+            packages/fixed-decimal/.* run-web-workflow true
+            packages/fixed-decimal/.* run-mobile-workflow true
+            packages/fixed-decimal/.* run-common-workflow true
+            packages/spl/.* run-sdk-workflow true
+            packages/spl/.* run-identity-workflow true
           requires:
             - generate-config
             - init

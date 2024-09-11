@@ -11,9 +11,6 @@ import {
   IconSpecialAccess,
   Flex
 } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './GiantTrackTile.module.css'
 
 const messages = {
   trackTitle: 'TRACK',
@@ -43,10 +40,8 @@ export const CardTitle = ({
   streamConditions
 }: CardTitleProps) => {
   let content
-  const extraStyles = []
 
   if (isStreamGated) {
-    extraStyles.push(styles.gatedContent)
     let icon
     let message
     if (isContentCollectibleGated(streamConditions)) {
@@ -80,11 +75,7 @@ export const CardTitle = ({
   }
 
   return (
-    <Text
-      variant='title'
-      strength='weak'
-      className={cn(styles.headerContainer, className, ...extraStyles)}
-    >
+    <Text variant='title' strength='weak' className={className}>
       {content}
     </Text>
   )

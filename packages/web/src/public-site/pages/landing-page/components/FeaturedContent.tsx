@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { useAppContext } from '@audius/common/context'
 import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
-import { Nullable, Maybe } from '@audius/common/utils'
+import { Nullable, Maybe, route } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -21,9 +21,10 @@ import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
-import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
+
+const { collectionPage } = route
 
 const messages = {
   title: 'Featured Content',

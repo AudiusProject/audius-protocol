@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useEffect } from 'react'
 
 import {
   Flex,
@@ -6,8 +6,11 @@ import {
   IconComponent,
   TextColors,
   Text,
-  useTheme
+  useTheme,
+  PlainButton,
+  IconCaretUp
 } from '@audius/harmony'
+import { useToggle } from 'react-use'
 
 import { Expandable } from 'components/expandable/Expandable'
 
@@ -24,17 +27,32 @@ export type SummaryTableProps = {
   /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
   items: SummaryTableItem[]
+  extraItems?: SummaryTableItem[]
+  onHideExtraItems?: () => void
+  showExtraItemsCopy?: string
+  hideExtraItemsCopy?: string
+  disableExtraItemsToggle?: boolean
   summaryItem?: SummaryTableItem
-  title: ReactNode
+  title?: ReactNode
   secondaryTitle?: ReactNode
   summaryLabelColor?: TextColors
   summaryValueColor?: TextColors
   renderBody?: (items: SummaryTableItem[]) => ReactNode
 }
 
+const messages = {
+  showAdvanced: 'Show advanced options',
+  hideAdvanced: 'Hide advanced options'
+}
+
 export const SummaryTable = ({
   collapsible = false,
   items,
+  extraItems,
+  onHideExtraItems,
+  showExtraItemsCopy,
+  hideExtraItemsCopy,
+  disableExtraItemsToggle,
   summaryItem,
   title,
   secondaryTitle,
@@ -43,9 +61,14 @@ export const SummaryTable = ({
   renderBody: renderBodyProp
 }: SummaryTableProps) => {
   const { color } = useTheme()
-  // Collapsible is collapsed by default
-  const [expanded, setExpanded] = useState(!collapsible)
-  const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+  const [isExpanded, setIsExpanded] = useToggle(!collapsible)
+  const [showExtraItems, setShowExtraItems] = useToggle(false)
+
+  useEffect(() => {
+    if (!showExtraItems) {
+      onHideExtraItems?.()
+    }
+  }, [onHideExtraItems, showExtraItems])
 
   const renderHeader = () => {
     return (
@@ -59,14 +82,14 @@ export const SummaryTable = ({
           backgroundColor: color.background.surface1,
           cursor: collapsible ? 'pointer' : 'auto'
         }}
-        onClick={onToggleExpand}
+        onClick={setIsExpanded}
       >
         <Flex gap='s'>
           {collapsible ? (
             <IconCaretDown
               css={{
                 transition: 'transform var(--harmony-expressive)',
-                transform: `rotate(${expanded ? -180 : 0}deg)`
+                transform: `rotate(${isExpanded ? -180 : 0}deg)`
               }}
               size='m'
               color='default'
@@ -101,63 +124,89 @@ export const SummaryTable = ({
     )
   }
 
+  const renderMoreOptionsToggle = () => {
+    return (
+      <Flex p='xs'>
+        <PlainButton
+          onClick={setShowExtraItems}
+          iconRight={showExtraItems ? IconCaretUp : IconCaretDown}
+          disabled={disableExtraItemsToggle}
+        >
+          {showExtraItems
+            ? hideExtraItemsCopy ?? messages.hideAdvanced
+            : showExtraItemsCopy ?? messages.showAdvanced}
+        </PlainButton>
+      </Flex>
+    )
+  }
+
   const renderContent = () => {
+    const shownItems =
+      showExtraItems && extraItems ? [...items, ...extraItems] : items
     return (
       <>
         {renderBodyProp
-          ? renderBodyProp(items)
-          : items.map(({ id, label, icon: Icon, value, disabled, color }) => (
-              <Flex
-                key={id}
-                alignItems='center'
-                alignSelf='stretch'
-                justifyContent='space-between'
-                pv='m'
-                ph='xl'
-                css={{ opacity: disabled ? 0.5 : 1 }}
-                borderTop='default'
-              >
+          ? renderBodyProp(shownItems)
+          : shownItems.map(
+              ({ id, label, icon: Icon, value, disabled, color }) => (
                 <Flex
-                  css={{ cursor: 'pointer' }}
+                  key={id}
                   alignItems='center'
+                  alignSelf='stretch'
                   justifyContent='space-between'
-                  gap='s'
+                  pv='m'
+                  ph='xl'
+                  css={{
+                    opacity: disabled ? 0.5 : 1,
+                    '&:first-child': { borderTop: '0' }
+                  }}
+                  borderTop='default'
                 >
-                  {Icon ? (
-                    <Flex alignItems='center' ml='s'>
-                      <Icon color='default' />
-                    </Flex>
-                  ) : null}
-                  <Text variant='body' size='m'>
-                    {label}
+                  <Flex
+                    css={{ cursor: 'pointer' }}
+                    alignItems='center'
+                    justifyContent='space-between'
+                    gap='s'
+                  >
+                    {Icon ? (
+                      <Flex alignItems='center' ml='s'>
+                        <Icon color='default' />
+                      </Flex>
+                    ) : null}
+                    <Text variant='body' size='m'>
+                      {label}
+                    </Text>
+                  </Flex>
+                  <Text variant='body' size='m' color={color}>
+                    {value}
                   </Text>
                 </Flex>
-                <Text variant='body' size='m' color={color}>
-                  {value}
-                </Text>
-              </Flex>
-            ))}
+              )
+            )}
         {renderSummaryItem()}
       </>
     )
   }
 
   return (
-    <Flex
-      alignItems='center'
-      alignSelf='stretch'
-      justifyContent='center'
-      direction='column'
-      border='default'
-      borderRadius='xs'
-      css={{ overflow: 'hidden' }}
-    >
-      {renderHeader()}
-      {collapsible ? (
-        <Expandable expanded={expanded}>{renderContent()}</Expandable>
-      ) : (
-        renderContent()
-      )}
+    <Flex direction='column' gap='l'>
+      <Flex
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='center'
+        direction='column'
+        border='default'
+        borderRadius='s'
+        css={{ overflow: 'hidden' }}
+      >
+        {title || secondaryTitle ? renderHeader() : null}
+        {collapsible ? (
+          <Expandable expanded={isExpanded}>{renderContent()}</Expandable>
+        ) : (
+          renderContent()
+        )}
+      </Flex>
+      {extraItems ? renderMoreOptionsToggle() : null}
     </Flex>
   )
 }

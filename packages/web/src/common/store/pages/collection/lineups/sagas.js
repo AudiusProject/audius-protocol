@@ -37,7 +37,10 @@ function* getCollectionTracks() {
   const trackIds = tracks.map((t) => t.track)
   // TODO: Conform all timestamps to be of the same format so we don't have to do any special work here.
   // Some playlists & albums may not have a metadata time, so use the time if not.
-  const times = tracks.map((t) => t.metadata_time || t.time)
+  // If for whatever reason, the metadata time is off, prefer the release date
+  const times = tracks.map((t) =>
+    Math.max(t.metadata_time || t.time, moment(collection.release_date).unix())
+  )
 
   // Reconcile fetching this playlist with the queue.
   // Search the queue for its currently playing uids. If any are sourced
@@ -77,10 +80,7 @@ function* getCollectionTracks() {
         if (!metadata.track_id) return null
 
         if (times[i]) {
-          metadata.dateAdded =
-            typeof times[i] === 'string'
-              ? moment(times[i])
-              : moment.unix(times[i])
+          metadata.dateAdded = moment.unix(times[i])
         }
         if (uidForSource[id] && uidForSource[id].length > 0) {
           metadata.uid = uidForSource[id].shift()

@@ -96,6 +96,7 @@ track = ns.model(
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
+        "comment_count": fields.Integer(required=True),
         "tags": fields.String,
         "title": fields.String(required=True),
         "user": fields.Nested(user_model, required=True),
@@ -179,6 +180,7 @@ track_full = ns.clone(
         "musical_key": fields.String,
         "is_custom_musical_key": fields.Boolean,
         "audio_analysis_error_count": fields.Integer,
+        "comments_disabled": fields.Boolean,
         # DDEX fields
         "ddex_release_ids": fields.Raw(allow_null=True),
         "artists": fields.List(fields.Raw, allow_null=True),
@@ -207,8 +209,33 @@ track_full = ns.clone(
     },
 )
 
+# Search results may exclude these fields if populated for auto-complete
+# TODO: Search results should be entirely different types
+# https://linear.app/audius/issue/PAY-3390/split-search-types-out-from-entity-types
+search_track_full = ns.clone(
+    "search_track_full",
+    track_full,
+    {
+        "followee_reposts": fields.List(fields.Nested(repost), required=False),
+        "followee_favorites": fields.List(fields.Nested(favorite), required=False),
+    },
+)
+
 stem_full = ns.model(
     "stem_full",
+    {
+        "id": fields.String(required=True),
+        "parent_id": fields.String(required=True),
+        "category": fields.String(required=True),
+        "cid": fields.String(required=True),
+        "user_id": fields.String(required=True),
+        "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
+    },
+)
+
+stem = ns.model(
+    "stem",
     {
         "id": fields.String(required=True),
         "parent_id": fields.String(required=True),

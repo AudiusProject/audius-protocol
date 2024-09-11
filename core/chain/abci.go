@@ -5,39 +5,67 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
+	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
 )
 
-type KVStoreApplication struct {
+type CoreApplication struct {
 	logger       *common.Logger
 	queries      *db.Queries
+	contracts    *contracts.AudiusContracts
 	pool         *pgxpool.Pool
 	onGoingBlock pgx.Tx
+	config       *config.Config
 }
 
-var _ abcitypes.Application = (*KVStoreApplication)(nil)
+var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewKVStoreApplication(logger *common.Logger, pool *pgxpool.Pool) *KVStoreApplication {
-	return &KVStoreApplication{
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config) *CoreApplication {
+	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
+		contracts:    contracts,
 		pool:         pool,
 		onGoingBlock: nil,
+		config:       envConfig,
 	}
 }
 
-func (app *KVStoreApplication) Info(_ context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {
-	return &abcitypes.InfoResponse{}, nil
+func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {
+	latest, err := app.queries.GetLatestAppState(ctx)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		// Log the error and return a default response
+		app.logger.Errorf("Error retrieving app state: %v", err)
+		return nil, err
+	}
+
+	// if at genesis, tell comet there's no blocks indexed
+	if latest.BlockHeight < 2 {
+		return &abcitypes.InfoResponse{}, nil
+	}
+
+	app.logger.Infof("app starting at block %d with hash %s", latest.BlockHeight, hex.EncodeToString(latest.AppHash))
+
+	res := &abcitypes.InfoResponse{
+		LastBlockHeight:  latest.BlockHeight,
+		LastBlockAppHash: latest.AppHash,
+	}
+
+	return res, nil
 }
 
-func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
+func (app *CoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
 	resp := abcitypes.QueryResponse{Key: req.Data}
 
 	kv, err := app.queries.GetKey(ctx, string(req.Data))
@@ -53,68 +81,75 @@ func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRe
 	return &resp, nil
 }
 
-func (app *KVStoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
+func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
 	// check if protobuf event
-	if app.isValidProtoEvent(check.Tx) {
+	_, err := app.isValidProtoEvent(check.Tx)
+	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
 	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
-	code := app.isValid(check.Tx)
-	return &abcitypes.CheckTxResponse{Code: code}, nil
+	if app.isValidKVTx(check.Tx) {
+		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
+	} else {
+		return &abcitypes.CheckTxResponse{Code: 1}, nil
+	}
 }
 
-func (app *KVStoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
+func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
 	return &abcitypes.InitChainResponse{}, nil
 }
 
-func (app *KVStoreApplication) PrepareProposal(_ context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
-	return &abcitypes.PrepareProposalResponse{Txs: proposal.Txs}, nil
+func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
+	proposalTxs := proposal.Txs
+
+	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
+		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
+		if err != nil {
+			app.logger.Error("Failed to create rollup transaction", "error", err)
+		} else {
+			proposalTxs = append(proposalTxs, rollupTx)
+		}
+	}
+	return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, nil
 }
 
-func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abcitypes.ProcessProposalRequest) (*abcitypes.ProcessProposalResponse, error) {
+func (app *CoreApplication) ProcessProposal(ctx context.Context, proposal *abcitypes.ProcessProposalRequest) (*abcitypes.ProcessProposalResponse, error) {
+	valid, err := app.validateBlockTxs(ctx, proposal.Time, proposal.Height, proposal.Txs)
+	if err != nil {
+		app.logger.Error("Reporting unknown proposal status due to validation error", "error", err)
+		return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_UNKNOWN}, err
+	} else if !valid {
+		return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_REJECT}, nil
+	}
 	return &abcitypes.ProcessProposalResponse{Status: abcitypes.PROCESS_PROPOSAL_STATUS_ACCEPT}, nil
 }
 
-func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
+func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
-
-	// early out if empty block
-	if len(txs) == 0 {
-		return &abcitypes.FinalizeBlockResponse{
-			TxResults: txs,
-		}, nil
-	}
 
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
-		// just store events in blocks, no indexing yet
-		if app.isValidProtoEvent(tx) {
-			// TODO: index plays straight from here
+		protoEvent, err := app.isValidProtoEvent(tx)
+		if err == nil {
+			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
+				app.logger.Errorf("error finalizing event: %v", err)
+				txs[i] = &abcitypes.ExecTxResult{Code: 2}
+			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-			continue
-		}
-		if code := app.isValid(tx); code != 0 {
-			logger.Errorf("Error: invalid transaction index %v", i)
-			txs[i] = &abcitypes.ExecTxResult{Code: code}
-		} else {
+		} else if app.isValidKVTx(tx) {
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
 			logger.Infof("Adding key %s with value %s", key, value)
 
-			qtx := app.getDb()
-
-			hash := sha256.Sum256(tx)
-			txHash := hex.EncodeToString(hash[:])
-
 			params := db.InsertKVStoreParams{
 				Key:    string(key),
 				Value:  string(value),
-				TxHash: txHash,
+				TxHash: app.toTxHash(tx),
 			}
 
-			record, err := qtx.InsertKVStore(ctx, params)
+			record, err := app.getDb().InsertKVStore(ctx, params)
 			if err != nil {
 				logger.Errorf("failed to persisted kv entry %v", err)
 			}
@@ -131,15 +166,56 @@ func (app *KVStoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes
 					},
 				},
 			}
+		} else {
+			logger.Errorf("Error: invalid transaction index %v", i)
+			txs[i] = &abcitypes.ExecTxResult{Code: 1}
 		}
+	}
+
+	lastBlock := req.Height - 1
+	prevAppState, err := app.getDb().GetAppStateAtHeight(ctx, req.Height-1)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		app.logger.Errorf("prev app state not found: %v", err)
+		return &abcitypes.FinalizeBlockResponse{}, nil
+	}
+
+	nextAppHash := []byte{}
+	if lastBlock == 1 {
+		nextAppHash = app.serializeAppState([]byte{}, req.GetTxs())
+	} else {
+		app.serializeAppState(prevAppState.AppHash, req.GetTxs())
+	}
+	// if empty block and previous was not genesis, use prior state
+	if len(txs) == 0 && req.Height > 2 {
+		nextAppHash = prevAppState.AppHash
+	}
+
+	if err = app.getDb().UpsertAppState(ctx, db.UpsertAppStateParams{
+		BlockHeight: req.Height,
+		AppHash:     nextAppHash,
+	}); err != nil {
+		app.logger.Errorf("error upserting app state %v", err)
+	}
+
+	// increment number of proposed blocks for sla auditor
+	addr := cometbfttypes.Address(req.ProposerAddress).String()
+	if err := app.getDb().UpsertSlaRollupReport(ctx, addr); err != nil {
+		app.logger.Error(
+			"Error attempting to increment blocks proposed by node",
+			"address",
+			addr,
+			"error",
+			err,
+		)
 	}
 
 	return &abcitypes.FinalizeBlockResponse{
 		TxResults: txs,
+		AppHash:   nextAppHash,
 	}, nil
 }
 
-func (app KVStoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
+func (app CoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
 	app.logger.Info("in commit phase", "onGoingBlock", app.onGoingBlock)
 	if err := app.commitInProgressTx(ctx); err != nil {
 		app.logger.Error("failure to commit tx", "error", err)
@@ -148,42 +224,89 @@ func (app KVStoreApplication) Commit(ctx context.Context, commit *abcitypes.Comm
 	return &abcitypes.CommitResponse{}, nil
 }
 
-func (app *KVStoreApplication) ListSnapshots(_ context.Context, snapshots *abcitypes.ListSnapshotsRequest) (*abcitypes.ListSnapshotsResponse, error) {
+func (app *CoreApplication) ListSnapshots(_ context.Context, snapshots *abcitypes.ListSnapshotsRequest) (*abcitypes.ListSnapshotsResponse, error) {
 	return &abcitypes.ListSnapshotsResponse{}, nil
 }
 
-func (app *KVStoreApplication) OfferSnapshot(_ context.Context, snapshot *abcitypes.OfferSnapshotRequest) (*abcitypes.OfferSnapshotResponse, error) {
+func (app *CoreApplication) OfferSnapshot(_ context.Context, snapshot *abcitypes.OfferSnapshotRequest) (*abcitypes.OfferSnapshotResponse, error) {
 	return &abcitypes.OfferSnapshotResponse{}, nil
 }
 
-func (app *KVStoreApplication) LoadSnapshotChunk(_ context.Context, chunk *abcitypes.LoadSnapshotChunkRequest) (*abcitypes.LoadSnapshotChunkResponse, error) {
+func (app *CoreApplication) LoadSnapshotChunk(_ context.Context, chunk *abcitypes.LoadSnapshotChunkRequest) (*abcitypes.LoadSnapshotChunkResponse, error) {
 	return &abcitypes.LoadSnapshotChunkResponse{}, nil
 }
 
-func (app *KVStoreApplication) ApplySnapshotChunk(_ context.Context, chunk *abcitypes.ApplySnapshotChunkRequest) (*abcitypes.ApplySnapshotChunkResponse, error) {
+func (app *CoreApplication) ApplySnapshotChunk(_ context.Context, chunk *abcitypes.ApplySnapshotChunkRequest) (*abcitypes.ApplySnapshotChunkResponse, error) {
 	return &abcitypes.ApplySnapshotChunkResponse{Result: abcitypes.APPLY_SNAPSHOT_CHUNK_RESULT_ACCEPT}, nil
 }
 
-func (app KVStoreApplication) ExtendVote(_ context.Context, extend *abcitypes.ExtendVoteRequest) (*abcitypes.ExtendVoteResponse, error) {
+func (app CoreApplication) ExtendVote(_ context.Context, extend *abcitypes.ExtendVoteRequest) (*abcitypes.ExtendVoteResponse, error) {
 	return &abcitypes.ExtendVoteResponse{}, nil
 }
 
-func (app *KVStoreApplication) VerifyVoteExtension(_ context.Context, verify *abcitypes.VerifyVoteExtensionRequest) (*abcitypes.VerifyVoteExtensionResponse, error) {
+func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcitypes.VerifyVoteExtensionRequest) (*abcitypes.VerifyVoteExtensionResponse, error) {
 	return &abcitypes.VerifyVoteExtensionResponse{}, nil
 }
 
-func (app *KVStoreApplication) isValid(tx []byte) uint32 {
+func (app *CoreApplication) isValidKVTx(tx []byte) bool {
 	// check format
 	parts := bytes.Split(tx, []byte("="))
 	if len(parts) != 2 {
-		return 1
+		return false
 	}
 
-	return 0
+	return true
 }
 
-func (app *KVStoreApplication) isValidProtoEvent(tx []byte) bool {
+func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
 	var msg gen_proto.Event
 	err := proto.Unmarshal(tx, &msg)
+	if err != nil {
+		return nil, err
+	}
+	return &msg, nil
+}
+
+func (app *CoreApplication) isValidSlaRollup(tx []byte) bool {
+	var msg gen_proto.SlaRollupEvent
+	err := proto.Unmarshal(tx, &msg)
 	return err == nil
+}
+
+func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
+	alreadyContainsRollup := false
+	for _, tx := range txs {
+		protoEvent, err := app.isValidProtoEvent(tx)
+		if err != nil {
+			if app.isValidKVTx(tx) {
+				continue
+			} else {
+				app.logger.Error(" **** Invalid block bcz not proto event or KVp")
+				return false, nil
+			}
+		}
+
+		switch protoEvent.Body.(type) {
+		case *gen_proto.Event_Plays:
+		case *gen_proto.Event_RegisterNode:
+		case *gen_proto.Event_SlaRollup:
+			if alreadyContainsRollup {
+				return false, nil
+				app.logger.Error(" **** Invalid block already have rollup")
+			} else if valid, err := app.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
+				app.logger.Error(" **** Invalid block bcuz err", "error", err)
+				return false, err
+			} else if !valid {
+				app.logger.Error(" **** Invalid block bcuz invalid rollup")
+				return false, nil
+			}
+			alreadyContainsRollup = true
+		}
+	}
+	return true, nil
+}
+
+func (app *CoreApplication) toTxHash(tx []byte) string {
+	hash := sha256.Sum256(tx)
+	return hex.EncodeToString(hash[:])
 }

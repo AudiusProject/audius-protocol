@@ -26,6 +26,7 @@ func TestChatBlast(t *testing.T) {
 
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
+	defer tx.Rollback()
 
 	var count = 0
 	var messages []queries.ChatMessageAndReactionsRow
@@ -54,7 +55,8 @@ func TestChatBlast(t *testing.T) {
 		(100, 69, true, false, $1, ''),
 		(101, 69, true, false, $1, ''),
 		(102, 69, true, false, $1, ''),
-		(103, 69, true, false, $1, '')
+		(103, 69, true, false, $1, ''),
+		(104, 69, true, false, $1, '')
 	`, t0)
 	assert.NoError(t, err)
 
@@ -283,6 +285,16 @@ func TestChatBlast(t *testing.T) {
 		}
 	}
 
+	// artist view: user 69 can get this blast
+	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: string(schema.FollowerAudience),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, string(schema.FollowerAudience), chat.ChatID)
+	}
+
 	// ----------------- a second message ------------------------
 	_, err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
@@ -321,7 +333,7 @@ func TestChatBlast(t *testing.T) {
 		// user 101 reacts
 		{
 			heart := "heart"
-			chatReactMessage(tx, 101, messages[0].MessageID, &heart, t5)
+			chatReactMessage(tx, 101, chatId, messages[0].MessageID, &heart, t5)
 
 			// reaction shows up
 			messages = mustGetMessagesAndReactions(69, chatId)
@@ -364,6 +376,13 @@ func TestChatBlast(t *testing.T) {
 
 	// ------ sender can get blasts in a given thread ----------
 	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: string(schema.FollowerAudience),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, string(schema.FollowerAudience), chat.ChatID)
+
 		messages, err := queries.ChatMessagesAndReactions(tx, ctx, queries.ChatMessagesAndReactionsParams{
 			UserID:  69,
 			ChatID:  "follower_audience",
@@ -467,6 +486,15 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, pending, 0)
 	}
 
+	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: string(schema.TipperAudience),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, string(schema.TipperAudience), chat.ChatID)
+	}
+
 	// -------------- remixer
 
 	tx.MustExec(`
@@ -557,12 +585,31 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, messages, 3)
 	}
 
+	{
+		blastChatId := "remixer_audience:track:" + misc.MustEncodeHashID(1)
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: blastChatId,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, blastChatId, chat.ChatID)
+	}
+
+	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: "remixer_audience",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, "remixer_audience", chat.ChatID)
+	}
+
 	// ------------- PURCHASE
 	tx.MustExec(`
 	insert into usdc_purchases
-	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id)
+	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id, splits)
 	values
-	(0, '', 203, 69, 5.99, 'track', 1);
+	(0, '', 203, 69, 5.99, 'track', 1, 'null');
 	`)
 
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
@@ -580,6 +627,24 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, pending, 1)
+	}
+
+	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: "customer_audience",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, "customer_audience", chat.ChatID)
+	}
+
+	// no blasts for a specific track customer yet... so this is a not found error
+	{
+		_, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: "customer_audience:track:1",
+		})
+		assert.Error(t, err)
 	}
 
 	err = tx.Rollback()

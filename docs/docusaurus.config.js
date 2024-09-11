@@ -68,9 +68,17 @@ const config = {
           hideable: true,
         },
       },
+      announcementBar: {
+        id: 'amplify_hackathon',
+        content:
+          '👩‍💻 <a target="_blank" rel="noopener noreferrer" href="https://www.audius.events/e/hackathon">Join the Amplify Hackathon!</a> 🚀   Registration Open September 23-30, 2024',
+        backgroundColor: '#7e1bcc',
+        textColor: '#fff',
+        isCloseable: false,
+      },
       navbar: {
         title: '| Developer Documentation',
-        hideOnScroll: true,
+        hideOnScroll: false,
         logo: {
           alt: 'Audius Logo',
           src: 'img/logo.png',

@@ -43,8 +43,8 @@ const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
-  addToAlbum: 'Add to Album',
-  addToPlaylist: 'Add to Playlist',
+  addToAlbum: 'Add To Album',
+  addToPlaylist: 'Add To Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
   embed: 'Embed',
   favorite: 'Favorite',

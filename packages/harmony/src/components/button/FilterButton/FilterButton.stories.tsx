@@ -132,3 +132,22 @@ export const Accessibility: Story = {
     ).toBeInTheDocument()
   }
 }
+
+export const Virtualized: Story = {
+  render: (props) => (
+    <Box h='200px'>
+      <Flex pv='2xl' justifyContent='space-around'>
+        <FilterButton
+          {...props}
+          virtualized
+          menuProps={{ maxHeight: 400, width: 200 }}
+          options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap((index) =>
+            (props.options ?? []).map((option) => ({
+              value: `${option.value} ${index}` as string
+            }))
+          )}
+        />
+      </Flex>
+    </Box>
+  )
+}

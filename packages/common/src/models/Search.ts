@@ -89,6 +89,8 @@ export type SearchTrack = TrackImage & {
   ddex_app: null
   _remixes: undefined
   _remixes_count: undefined
+  comments_disabled: boolean
+  comment_count: number
 }
 
 export type SearchPlaylist = CollectionImage & {

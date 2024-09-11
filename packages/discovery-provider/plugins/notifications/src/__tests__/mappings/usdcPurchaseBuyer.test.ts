@@ -58,7 +58,14 @@ describe('USDC Purchase Buyer', () => {
         content_type: usdc_purchase_content_type.track,
         content_id: 10,
         amount: '1000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          {
+            user_id: 1,
+            amount: 10000000,
+            percentage: 100
+          }
+        ])
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
@@ -130,7 +137,10 @@ describe('USDC Purchase Buyer', () => {
         content_type: usdc_purchase_content_type.track,
         content_id: 10,
         amount: '1000000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          { user_id: 1, percentage: 100, amount: 1000000 }
+        ])
       },
       {
         seller_user_id: 1,
@@ -138,7 +148,10 @@ describe('USDC Purchase Buyer', () => {
         content_type: usdc_purchase_content_type.album,
         content_id: 15,
         amount: '1000000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          { user_id: 1, percentage: 100, amount: 1000000 }
+        ])
       }
     ])
 
@@ -155,7 +168,8 @@ describe('USDC Purchase Buyer', () => {
           amount: 1000000,
           extra_amount: 0,
           content_id: 10,
-          content_type: 'track'
+          content_type: 'track',
+          splits: [{ user_id: 1, percentage: 100, amount: 1000000 }]
         },
         user_ids: [2],
         receiver_user_id: 2
@@ -184,7 +198,8 @@ describe('USDC Purchase Buyer', () => {
           amount: 1000000,
           extra_amount: 0,
           content_id: 15,
-          content_type: 'album'
+          content_type: 'album',
+          splits: [{ user_id: 1, percentage: 100, amount: 1000000 }]
         },
         user_ids: [2],
         receiver_user_id: 2

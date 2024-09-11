@@ -359,69 +359,6 @@ def push(ctx, services, prod):
 
 
 @cli.command()
-@click.argument("services", nargs=-1)
-@click.option(
-    "--prod",
-    is_flag=True,
-    help="Use production containers which have all dependencies built in",
-)
-@click.pass_context
-def push_arm(ctx, services, prod):
-    protocol_dir = ctx.obj
-    services = services or ["mediorum", "discovery-provider", "identity-service"]
-
-    git_commit = get_git_commit(protocol_dir)
-
-    if not git_commit:
-        raise click.ClickException("Failed to get git commit")
-
-    # this is building w/o cache every time
-    ctx.invoke(build, services=services, prod=prod)
-
-    try:
-        for service in services:
-            # TODO: Find if there is a better way to find source image names
-            subprocess.run(
-                [
-                    "docker",
-                    "tag",
-                    f"{protocol_dir.name}-{service}",
-                    f"audius/{service}:{git_commit}-arm",
-                ],
-                check=True,
-            )
-    except subprocess.CalledProcessError:
-        raise click.ClickException("Failed to tag local images")
-
-    try:
-        for service in services:
-            subprocess.run(
-                ["docker", "push", f"audius/{service}:{git_commit}-arm"],
-                check=True,
-            )
-    except subprocess.CalledProcessError:
-        raise click.ClickException("Failed to push arm images")
-
-    try:
-        for service in services:
-            og_tag = f"audius/{service}:{git_commit}"
-            arm_tag = f"{og_tag}-arm"
-            cmd = [
-                "docker",
-                "buildx",
-                "imagetools",
-                "create",
-                "-t",
-                og_tag,
-                og_tag,
-                arm_tag,
-            ]
-            subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError:
-        raise click.ClickException("Failed to merge manifest")
-
-
-@cli.command()
 @click.pass_context
 def pull(ctx):
     protocol_dir = ctx.obj
@@ -432,6 +369,7 @@ def pull(ctx):
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
             f"--project-name={protocol_dir.name}",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+            "--profile=solana",
             "pull",
             "--ignore-buildable",
         ],
@@ -489,9 +427,21 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
-@click.option("--ddex-deps", is_flag=True, help="Bring up only ddex dependency containers (Mongo and S3)")
-@click.option("--ddex-release-by-release", is_flag=True, help="Bring up only ddex containers (release-by-release choreography)")
-@click.option("--ddex-batched", is_flag=True, help="Bring up only ddex containers (batch choreography)")
+@click.option(
+    "--ddex-deps",
+    is_flag=True,
+    help="Bring up only ddex dependency containers (Mongo and S3)",
+)
+@click.option(
+    "--ddex-release-by-release",
+    is_flag=True,
+    help="Bring up only ddex containers (release-by-release choreography)",
+)
+@click.option(
+    "--ddex-batched",
+    is_flag=True,
+    help="Bring up only ddex containers (batch choreography)",
+)
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -524,8 +474,13 @@ def up(
 
     if ddex_deps or ddex_release_by_release or ddex_batched:
         generate_ddex_mongo_key(protocol_dir)
-        profiles = ["--profile=ddex-deps", *(["--profile=ddex"] if not ddex_deps else [])]
-        os.environ["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
+        profiles = [
+            "--profile=ddex-deps",
+            *(["--profile=ddex"] if not ddex_deps else []),
+        ]
+        os.environ["DDEX_CHOREOGRAPHY"] = (
+            "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
+        )
     else:
         AAO_DIR = pathlib.Path(
             os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")
@@ -671,7 +626,9 @@ def test_run(protocol_dir, service, args):
 
     if service.startswith("ddex"):
         env["COMPOSE_PROFILES"] = "ddex"
-        env["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
+        env["DDEX_CHOREOGRAPHY"] = (
+            "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
+        )
         generate_ddex_mongo_key(protocol_dir)
 
     result = subprocess.run(
@@ -796,7 +753,7 @@ def ps(protocol_dir):
             "{{json .}}",
         ],
         capture_output=True,
-        text=True
+        text=True,
     )
 
     if proc.returncode != 0:

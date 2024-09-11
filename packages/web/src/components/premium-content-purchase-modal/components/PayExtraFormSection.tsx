@@ -37,12 +37,7 @@ export const PayExtraFormSection = ({
 
   return (
     <Flex gap='s' direction='column'>
-      <Text
-        variant='label'
-        strength='strong'
-        color='subdued'
-        className={styles.title}
-      >
+      <Text variant='title' size='m' className={styles.title}>
         {messages.payExtra}
       </Text>
       <Flex gap='s' w='100%'>

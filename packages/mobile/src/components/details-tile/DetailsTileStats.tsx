@@ -1,22 +1,24 @@
-import { pluralize } from '@audius/common/utils'
+import { formatCount } from '@audius/common/utils'
 
-import { Flex, IconHeart, IconPlay, IconRepost } from '@audius/harmony-native'
+import {
+  Flex,
+  IconHeart,
+  IconMessage,
+  IconPlay,
+  IconRepost,
+  PlainButton
+} from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
-
-import { DetailsTileStat } from './DetailsStat'
-
-const messages = {
-  favorites: (count: number) => `${pluralize('Favorite', count)}`,
-  reposts: (count: number) => `${pluralize('Repost', count)}`
-}
 
 type DetailsTileStatsProps = {
   playCount?: number
   repostCount?: number
   favoriteCount?: number
+  commentCount?: number
   hidePlayCount?: boolean
   hideRepostCount?: boolean
   hideFavoriteCount?: boolean
+  hideCommentCount?: boolean
   onPressFavorites?: GestureResponderHandler
   onPressReposts?: GestureResponderHandler
 }
@@ -28,16 +30,24 @@ export const DetailsTileStats = ({
   playCount = 0,
   repostCount = 0,
   favoriteCount = 0,
+  commentCount = 0,
   hidePlayCount,
   hideRepostCount,
   hideFavoriteCount,
+  hideCommentCount,
   onPressFavorites,
   onPressReposts
 }: DetailsTileStatsProps) => {
   const shouldHidePlayCount = hidePlayCount || playCount <= 0
   const shouldHideRepostCount = hideRepostCount || repostCount <= 0
   const shouldHideFavoriteCount = hideFavoriteCount || favoriteCount <= 0
-  if (shouldHideFavoriteCount && shouldHideRepostCount && shouldHidePlayCount) {
+  const shouldHideCommentCount = hideCommentCount || commentCount <= 0
+  if (
+    shouldHideFavoriteCount &&
+    shouldHideRepostCount &&
+    shouldHidePlayCount &&
+    shouldHideCommentCount
+  ) {
     return null
   }
 
@@ -50,23 +60,22 @@ export const DetailsTileStats = ({
       justifyContent='flex-start'
     >
       {shouldHidePlayCount ? null : (
-        <DetailsTileStat count={playCount} icon={IconPlay} />
+        <PlainButton iconLeft={IconPlay}>{formatCount(playCount)}</PlainButton>
       )}
       {shouldHideRepostCount ? null : (
-        <DetailsTileStat
-          count={repostCount}
-          onPress={onPressReposts}
-          icon={IconRepost}
-          label={messages.reposts(repostCount)}
-        />
+        <PlainButton onPress={onPressReposts} iconLeft={IconRepost}>
+          {formatCount(repostCount)}
+        </PlainButton>
       )}
       {shouldHideFavoriteCount ? null : (
-        <DetailsTileStat
-          count={favoriteCount}
-          onPress={onPressFavorites}
-          icon={IconHeart}
-          label={messages.favorites(favoriteCount)}
-        />
+        <PlainButton onPress={onPressFavorites} iconLeft={IconHeart}>
+          {formatCount(favoriteCount)}
+        </PlainButton>
+      )}
+      {shouldHideCommentCount ? null : (
+        <PlainButton iconLeft={IconMessage}>
+          {formatCount(commentCount)}
+        </PlainButton>
       )}
     </Flex>
   )

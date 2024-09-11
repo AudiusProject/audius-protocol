@@ -29,6 +29,7 @@ import type {
   RelatedArtistResponse,
   RemixersResponse,
   Reposts,
+  SalesAggregateResponse,
   SubscribersResponse,
   TagsResponse,
   TracksResponse,
@@ -65,6 +66,8 @@ import {
     RemixersResponseToJSON,
     RepostsFromJSON,
     RepostsToJSON,
+    SalesAggregateResponseFromJSON,
+    SalesAggregateResponseToJSON,
     SubscribersResponseFromJSON,
     SubscribersResponseToJSON,
     TagsResponseFromJSON,
@@ -184,6 +187,15 @@ export interface GetRepostsRequest {
     userId?: string;
 }
 
+export interface GetSalesAggregateRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface GetSubscribersRequest {
     id: string;
     offset?: number;
@@ -239,6 +251,13 @@ export interface GetUserChallengesRequest {
 
 export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
+}
+
+export interface GetUserTracksRemixedRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface SearchUsersRequest {
@@ -885,6 +904,57 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the aggregated sales data for the user
+     */
+    async getSalesAggregateRaw(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SalesAggregateResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesAggregate.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/aggregate`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SalesAggregateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the aggregated sales data for the user
+     */
+    async getSalesAggregate(params: GetSalesAggregateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SalesAggregateResponse> {
+        const response = await this.getSalesAggregateRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * All users that subscribe to the provided user
      */
     async getSubscribersRaw(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SubscribersResponse>> {
@@ -1249,6 +1319,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
         const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserTracksRemixed.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/tracks/remixed`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets tracks owned by the user which have been remixed by another track
+     */
+    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUserTracksRemixedRaw(params, initOverrides);
         return await response.value();
     }
 

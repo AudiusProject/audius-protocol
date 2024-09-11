@@ -21,10 +21,20 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { Comment } from '@audius/sdk'
+import { Comment, ReplyComment } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
+import { useToggle } from 'react-use'
+
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import {
+  openAuthModal,
+  useAuthenticatedCallback
+} from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 const messages = {
   pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
+  reply: 'Reply',
   edit: 'Edit Comment',
   delete: 'Delete Comment',
   report: 'Report Comment',
@@ -34,7 +44,7 @@ const messages = {
 }
 
 type CommentActionBarProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
   isDisabled: boolean
   onClickEdit: () => void
   onClickReply: () => void
@@ -48,22 +58,26 @@ export const CommentActionBar = ({
   onClickDelete
 }: CommentActionBarProps) => {
   // comment from props
-  const { reactCount, id: commentId, isPinned } = comment
+  const { reactCount, id: commentId, isCurrentUserReacted } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const dispatch = useDispatch()
 
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
+  const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
+  const isMobile = useIsMobile()
 
   // component state
-  const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
 
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
   const notificationsMuted = false // TODO: Need to set up API to provide this
 
-  const handleCommentReact = useCallback(() => {
+  const handleCommentReact = useAuthenticatedCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
   }, [commentId, reactToComment, reactionState])
@@ -75,6 +89,18 @@ export const CommentActionBar = ({
   const handleCommentPin = useCallback(() => {
     pinComment(commentId, !isPinned)
   }, [commentId, isPinned, pinComment])
+
+  const handleClickReply = useCallback(() => {
+    if (isMobile) {
+      toggleIsMobileAppDrawer()
+    } else {
+      if (currentUserId === undefined) {
+        openAuthModal(dispatch)
+      } else {
+        onClickReply()
+      }
+    }
+  }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   const popupMenuItems = useMemo(() => {
     let items: PopupMenuItem[] = []
@@ -137,6 +163,7 @@ export const CommentActionBar = ({
   return (
     <Flex gap='l' alignItems='center'>
       <Flex alignItems='center'>
+        {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
           color={reactionState ? 'active' : 'subdued'}
@@ -148,11 +175,11 @@ export const CommentActionBar = ({
       </Flex>
       <TextLink
         variant='subdued'
-        onClick={onClickReply}
+        onClick={handleClickReply}
         size='m'
         disabled={isDisabled}
       >
-        Reply
+        {messages.reply}
       </TextLink>
 
       <PopupMenu
@@ -165,10 +192,22 @@ export const CommentActionBar = ({
             ref={anchorRef}
             disabled={isDisabled}
             onClick={() => {
-              triggerPopup()
+              if (isMobile) {
+                toggleIsMobileAppDrawer()
+              } else {
+                if (currentUserId === undefined) {
+                  openAuthModal(dispatch)
+                } else {
+                  triggerPopup()
+                }
+              }
             }}
           />
         )}
+      />
+      <DownloadMobileAppDrawer
+        isOpen={isMobileAppDrawerOpen}
+        onClose={toggleIsMobileAppDrawer}
       />
     </Flex>
   )

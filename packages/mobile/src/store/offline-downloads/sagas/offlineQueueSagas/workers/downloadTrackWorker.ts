@@ -18,7 +18,6 @@ import {
   removeNullable,
   getQueryParams
 } from '@audius/common/utils'
-import { current } from '@reduxjs/toolkit'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
@@ -136,7 +135,7 @@ function* downloadTrackAsync(
 
   const { data } = yield* call([sdk.full.tracks, sdk.full.tracks.getTrack], {
     trackId: Id.parse(trackId),
-    userId: OptionalId.parse(current)
+    userId: OptionalId.parse(currentUserId)
   })
   const track = data ? userTrackMetadataFromSDK(data) : null
 

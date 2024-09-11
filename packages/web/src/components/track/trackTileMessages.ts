@@ -8,5 +8,6 @@ export const messages = {
   played: 'Played',
   reposted: 'Reposted',
   repostedAndFavorited: 'Reposted & Favorited',
-  timeLeft: 'left'
+  timeLeft: 'left',
+  loading: 'Loading...'
 }

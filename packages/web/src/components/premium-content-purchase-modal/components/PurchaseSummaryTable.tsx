@@ -81,6 +81,7 @@ export const PurchaseSummaryTable = ({
     <SummaryTable
       items={items}
       title={messages.total}
+      collapsible
       secondaryTitle={
         <Text tag='span' color='accent'>
           {messages.price(formatPrice(totalPriceInCents))}

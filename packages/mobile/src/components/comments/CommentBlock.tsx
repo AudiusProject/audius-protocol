@@ -1,16 +1,17 @@
 import { useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
-import { useReactToComment } from '@audius/common/context'
-import type { Comment } from '@audius/sdk'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
+import {
+  useCurrentCommentSection,
+  useReactToComment
+} from '@audius/common/context'
+import type { Comment, ReplyComment } from '@audius/sdk'
 
 import {
+  ArtistPick,
+  Box,
   CommentText,
   Flex,
-  IconButton,
-  IconHeart,
-  IconKebabHorizontal,
-  IconPencil,
   PlainButton,
   Text,
   TextLink,
@@ -19,7 +20,11 @@ import {
 import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
+import { FavoriteButton } from '../favorite-button'
 import { UserLink } from '../user-link'
+
+import { CommentBadge } from './CommentBadge'
+import { CommentOverflowMenu } from './CommentOverflowMenu'
 
 const messages = {
   pinned: 'Pinned by artist',
@@ -28,40 +33,36 @@ const messages = {
 }
 
 export type CommentBlockProps = {
-  comment: Comment
+  commentId: string
   parentCommentId?: string
   hideActions?: boolean
 }
 
-export const CommentBlock = (props: CommentBlockProps) => {
+export const CommentBlockInternal = (
+  props: Omit<CommentBlockProps, 'commentId'> & {
+    comment: Comment | ReplyComment
+  }
+) => {
   const { comment, hideActions } = props
+  const { artistId, setReplyingToComment } = useCurrentCommentSection()
   const {
-    isPinned,
     message,
     reactCount = 0,
     trackTimestampS,
     id: commentId,
     createdAt,
-    userId: userIdStr
+    userId: commentUserIdStr,
+    isArtistReacted,
+    isCurrentUserReacted
   } = comment
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
-  //   const [editComment] = useEditComment()
   const [reactToComment] = useReactToComment()
-  const userId = Number(userIdStr)
-  useGetUserById({ id: userId })
+  const commentUserId = Number(commentUserIdStr)
+  useGetUserById({ id: commentUserId })
 
-  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
-  const [showReplyInput, setShowReplyInput] = useState(false)
-  //   const isOwner = true // TODO: need to check against current user (not really feasible with modck data)
-  const hasBadges = false // TODO: need to figure out how to data model these "badges" correctly
-
-  //   const handleCommentEdit = (commentMessage: string) => {
-  //     editComment(commentId, commentMessage)
-  //   }
-
-  //   const handleCommentReply = (commentMessage: string) => {
-  //     postComment(commentMessage, parentCommentId ?? comment.id)
-  //   }
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
+  const isCommentByArtist = commentUserId === artistId
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -72,55 +73,47 @@ export const CommentBlock = (props: CommentBlockProps) => {
     <Flex direction='row' w='100%' gap='s'>
       <ProfilePicture
         style={{ width: 32, height: 32, flexShrink: 0 }}
-        userId={userId}
+        userId={commentUserId}
       />
-      <Flex gap='xs' w='100%' alignItems='flex-start'>
-        <Flex>
-          {isPinned || hasBadges ? (
-            <Flex direction='row' justifyContent='space-between' w='100%'>
-              {isPinned ? (
-                <Flex direction='row' gap='xs'>
-                  <IconPencil color='subdued' size='xs' />
-                  <Text color='subdued' size='xs'>
-                    {messages.pinned}
-                  </Text>
-                </Flex>
-              ) : null}
-              {hasBadges ? (
-                <Text color='accent'>{messages.topSupporters}</Text>
-              ) : null}
-            </Flex>
-          ) : null}
-          <Flex direction='row' gap='s' alignItems='center'>
-            <UserLink size='s' userId={userId} strength='strong' />
-            <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-              <Timestamp time={new Date(createdAt)} />
-              {trackTimestampS !== undefined ? (
-                <>
-                  <Text color='subdued' size='xs'>
-                    •
-                  </Text>
-
-                  <TextLink size='xs' variant='active'>
-                    {formatCommentTrackTimestamp(trackTimestampS)}
-                  </TextLink>
-                </>
-              ) : null}
-            </Flex>
+      <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
+        <Box style={{ position: 'absolute', top: 0, right: 0 }}>
+          <CommentBadge
+            isArtist={isCommentByArtist}
+            commentUserId={commentUserId}
+          />
+        </Box>
+        {isPinned || isArtistReacted ? (
+          <Flex direction='row' justifyContent='space-between' w='100%'>
+            <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
-          <CommentText>{message}</CommentText>
+        ) : null}
+        <Flex direction='row' gap='s' alignItems='center'>
+          <UserLink size='s' userId={commentUserId} strength='strong' />
+          <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+            <Timestamp time={new Date(createdAt)} />
+            {trackTimestampS !== undefined ? (
+              <>
+                <Text color='subdued' size='xs'>
+                  •
+                </Text>
+
+                <TextLink size='xs' variant='active'>
+                  {formatCommentTrackTimestamp(trackTimestampS)}
+                </TextLink>
+              </>
+            ) : null}
+          </Flex>
         </Flex>
+        <CommentText>{message}</CommentText>
 
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>
               <Flex direction='row' alignItems='center' gap='xs'>
-                <IconButton
-                  size='m'
-                  icon={IconHeart}
-                  color={reactionState ? 'active' : 'subdued'}
-                  aria-label='Heart comment'
+                <FavoriteButton
                   onPress={handleCommentReact}
+                  isActive={reactionState}
+                  wrapperStyle={{ height: 20, width: 20 }}
                 />
                 <Text color='default' size='s'>
                   {reactCount}
@@ -129,22 +122,24 @@ export const CommentBlock = (props: CommentBlockProps) => {
               <PlainButton
                 variant='subdued'
                 onPress={() => {
-                  setShowReplyInput(!showReplyInput)
+                  setReplyingToComment?.(comment)
                 }}
               >
                 {messages.reply}
               </PlainButton>
-              <IconButton
-                aria-label='edit comment'
-                icon={IconKebabHorizontal}
-                size='s'
-                color='subdued'
-                onPress={() => {}}
-              />
+              <CommentOverflowMenu comment={comment} />
             </Flex>
           </>
         ) : null}
       </Flex>
     </Flex>
   )
+}
+
+// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// There's no way to return early in the above component due to rules of hooks ordering
+export const CommentBlock = (props: CommentBlockProps) => {
+  const { data: comment } = useGetCommentById({ id: props.commentId })
+  if (!comment) return null
+  return <CommentBlockInternal {...props} comment={comment} />
 }

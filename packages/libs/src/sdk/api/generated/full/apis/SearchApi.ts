@@ -32,15 +32,15 @@ export interface SearchRequest {
     userId?: string;
     query?: string;
     kind?: SearchKindEnum;
-    includePurchaseable?: string;
+    includePurchaseable?: boolean;
     genre?: Array<string>;
     mood?: Array<string>;
-    isVerified?: string;
-    hasDownloads?: string;
-    isPurchaseable?: string;
+    isVerified?: boolean;
+    hasDownloads?: boolean;
+    isPurchaseable?: boolean;
     key?: Array<string>;
-    bpmMin?: string;
-    bpmMax?: string;
+    bpmMin?: number;
+    bpmMax?: number;
     sortMethod?: SearchSortMethodEnum;
 }
 
@@ -50,15 +50,15 @@ export interface SearchAutocompleteRequest {
     userId?: string;
     query?: string;
     kind?: SearchAutocompleteKindEnum;
-    includePurchaseable?: string;
+    includePurchaseable?: boolean;
     genre?: Array<string>;
     mood?: Array<string>;
-    isVerified?: string;
-    hasDownloads?: string;
-    isPurchaseable?: string;
+    isVerified?: boolean;
+    hasDownloads?: boolean;
+    isPurchaseable?: boolean;
     key?: Array<string>;
-    bpmMin?: string;
-    bpmMax?: string;
+    bpmMin?: number;
+    bpmMax?: number;
     sortMethod?: SearchAutocompleteSortMethodEnum;
 }
 

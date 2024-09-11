@@ -22,7 +22,8 @@ import {
   Flex,
   IconSpecialAccess,
   IconCollectible,
-  IconCart
+  IconCart,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
@@ -216,18 +217,27 @@ export const TracksTable = ({
 
       return (
         <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
-          <TextLink
-            to={deleted ? '' : track.permalink}
-            isActive={active}
-            textVariant='title'
-            size='s'
-            strength='weak'
-            css={{ display: 'block', 'line-height': '125%' }}
-            ellipses
-          >
-            {track.name}
-            {deleted ? ` [Deleted By Artist]` : ''}
-          </TextLink>
+          {deleted ? (
+            <Text
+              variant='title'
+              size='s'
+              strength='weak'
+              css={{ display: 'block', 'line-height': '125%' }}
+              ellipses
+            >{`${track.name} [Deleted By Artist]`}</Text>
+          ) : (
+            <TextLink
+              to={deleted ? '' : track.permalink}
+              isActive={active}
+              textVariant='title'
+              size='s'
+              strength='weak'
+              css={{ display: 'block', 'line-height': '125%' }}
+              ellipses
+            >
+              {track.name}
+            </TextLink>
+          )}
         </div>
       )
     },

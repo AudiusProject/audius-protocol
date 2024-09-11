@@ -206,9 +206,9 @@ const getAllChallenges = async (
 
   console.log(`Found ${toDisburse.length} trending challenges to disburse`)
   let possibleNodeSet: string[] = []
-  let possibleChallenges = []
-  let impossibleChallenges = []
-  let setToChallengeMap = new Map<string, any[]>()
+  const possibleChallenges = []
+  const impossibleChallenges = []
+  const setToChallengeMap = new Map<string, any[]>()
 
   for (const challenge of toDisburse) {
     console.log(`Trying challenge: ${JSON.stringify(challenge)}`)
@@ -287,7 +287,18 @@ const getAllChallenges = async (
 
     const encodedUserId = challenge.user_id.toString()
     const rewards = libs.Rewards
-    if (rewards === null) throw new Error('rewards object null')
+    if (rewards === null) {
+      throw new Error('rewards object null')
+    }
+    const solanaWeb3Manager = libs.solanaWeb3Manager
+    if (solanaWeb3Manager === null) {
+      throw new Error('solana web3manager not defined')
+    }
+
+    await solanaWeb3Manager.createUserBankIfNeeded({
+      feePayerOverride,
+      ethAddress: challenge.wallet
+    })
 
     const args = {
       challengeId: challenge.challenge_id,

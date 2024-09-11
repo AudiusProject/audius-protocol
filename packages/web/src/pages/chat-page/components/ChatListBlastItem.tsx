@@ -1,28 +1,14 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUser } from '@audius/common/api'
+import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast } from '@audius/sdk'
 import cn from 'classnames'
 
 import styles from './ChatListItem.module.css'
 
 const messages = {
-  audience: 'AUDIENCE',
-  [ChatBlastAudience.FOLLOWERS]: {
-    title: 'All Followers'
-  },
-  [ChatBlastAudience.TIPPERS]: {
-    title: 'All Supporters'
-  },
-  [ChatBlastAudience.CUSTOMERS]: {
-    // TODO: per track messages
-    title: 'All Purchasers'
-  },
-  [ChatBlastAudience.REMIXERS]: {
-    // TODO: per track messages
-    title: 'All Remix Creators'
-  }
+  audience: 'AUDIENCE'
 }
 
 type ChatListBlastItemProps = {
@@ -33,11 +19,12 @@ type ChatListBlastItemProps = {
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
   const { chat, onChatClicked, currentChatId } = props
-  const { chat_id: chatId, audience } = chat
+  const { chat_id: chatId } = chat
   const isCurrentChat = currentChatId && currentChatId === chatId
-
-  const { data: user } = useGetCurrentUser()
-  const audienceCount = user?.follower_count ?? 0
+  const { chatBlastTitle, contentTitle, audienceCount } =
+    useChatBlastAudienceContent({
+      chat
+    })
 
   const handleClick = useCallback(() => {
     onChatClicked(chatId)
@@ -53,11 +40,24 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       onClick={handleClick}
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
-      <Flex gap='s'>
+      <Flex gap='s' css={{ overflow: 'hidden' }}>
         <IconTowerBroadcast size='l' color='default' />
-        <Text size='l' strength='strong'>
-          {messages[audience].title}
+        <Text size='l' strength='strong' css={{ whiteSpace: 'nowrap' }}>
+          {chatBlastTitle}
         </Text>
+        {contentTitle ? (
+          <Text
+            size='l'
+            color='subdued'
+            css={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
+            {contentTitle}
+          </Text>
+        ) : null}
       </Flex>
       <Flex justifyContent='space-between' w='100%'>
         <Text variant='label' textTransform='capitalize' color='subdued'>

@@ -1,11 +1,17 @@
 import type { ReactNode } from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { removeNullable } from '@audius/common/utils'
 import { LayoutAnimation } from 'react-native'
 
 import type { TextColors } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
+import {
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  PlainButton,
+  Text
+} from '@audius/harmony-native'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { makeStyles } from 'app/styles'
 
@@ -27,8 +33,14 @@ export type SummaryTableItem = {
   color?: TextColors
 }
 
+const messages = {
+  showAdvanced: 'Show advanced options',
+  hideAdvanced: 'Hide advanced options'
+}
+
 export type SummaryTableProps = {
   items: SummaryTableItem[]
+  extraItems?: SummaryTableItem[]
   summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
@@ -37,17 +49,26 @@ export type SummaryTableProps = {
   renderBody?: (items: SummaryTableItem[]) => ReactNode
   /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
+  onHideExtraItems?: () => void
+  showExtraItemsCopy?: string
+  hideExtraItemsCopy?: string
+  disableExtraItemsToggle?: boolean
 }
 
 export const SummaryTable = ({
   items,
+  extraItems,
   summaryItem,
   title,
   secondaryTitle,
   summaryLabelColor,
   summaryValueColor = 'accent',
   renderBody: renderBodyProp,
-  collapsible = false
+  collapsible = false,
+  onHideExtraItems,
+  showExtraItemsCopy,
+  hideExtraItemsCopy,
+  disableExtraItemsToggle
 }: SummaryTableProps) => {
   const styles = useStyles()
   const nonNullItems = items.filter(removeNullable)
@@ -59,6 +80,19 @@ export const SummaryTable = ({
     )
     setIsExpanded((expanded) => !expanded)
   }, [])
+
+  // Extra items are collapsed by default
+  const [showExtraItems, setShowExtraItems] = useState(false)
+  const onToggleExtraItems = useCallback(
+    () => setShowExtraItems((val) => !val),
+    [setShowExtraItems]
+  )
+
+  useEffect(() => {
+    if (!showExtraItems) {
+      onHideExtraItems?.()
+    }
+  }, [onHideExtraItems, showExtraItems])
 
   const renderHeader = () => {
     return collapsible ? (
@@ -129,14 +163,32 @@ export const SummaryTable = ({
     )
   }
 
+  const renderMoreOptionsToggle = () => {
+    return (
+      <Flex p='xs' alignSelf='flex-start'>
+        <PlainButton
+          onPress={onToggleExtraItems}
+          iconRight={showExtraItems ? IconCaretUp : IconCaretDown}
+          disabled={disableExtraItemsToggle}
+        >
+          {showExtraItems
+            ? hideExtraItemsCopy ?? messages.hideAdvanced
+            : showExtraItemsCopy ?? messages.showAdvanced}
+        </PlainButton>
+      </Flex>
+    )
+  }
+
   const renderContent = () => {
+    const shownItems =
+      showExtraItems && extraItems ? [...nonNullItems, ...extraItems] : items
     const isLastRow = (index: number) =>
-      summaryItem === undefined && index === nonNullItems.length - 1
+      summaryItem === undefined && index === shownItems.length - 1
     return (
       <>
         {renderBodyProp
-          ? renderBodyProp(items)
-          : nonNullItems.map(({ id, label, value, color }, index) => (
+          ? renderBodyProp(shownItems)
+          : shownItems.map(({ id, label, value, color }, index) => (
               <Flex
                 direction='row'
                 justifyContent='space-between'
@@ -157,19 +209,24 @@ export const SummaryTable = ({
     )
   }
 
-  return collapsible ? (
-    <Expandable
-      style={styles.container}
-      renderHeader={renderHeader}
-      expanded={isExpanded}
-      onToggleExpand={onToggleExpand}
-    >
-      {renderContent()}
-    </Expandable>
-  ) : (
-    <Flex border='default' borderRadius='s'>
-      {renderHeader()}
-      {renderContent()}
+  return (
+    <Flex direction='column' gap='l'>
+      {collapsible ? (
+        <Expandable
+          style={styles.container}
+          renderHeader={renderHeader}
+          expanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+        >
+          {renderContent()}
+        </Expandable>
+      ) : (
+        <Flex border='default' borderRadius='s'>
+          {renderHeader()}
+          {renderContent()}
+        </Flex>
+      )}
+      {extraItems ? renderMoreOptionsToggle() : null}
     </Flex>
   )
 }

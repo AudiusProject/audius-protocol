@@ -3,6 +3,7 @@ import logging  # pylint: disable=C0302
 from sqlalchemy import desc, func
 
 from src.models.tracks.tag_track_user_matview import t_tag_track_user
+from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,9 @@ def get_top_user_track_tags(args):
 def _get_top_user_track_tags(session, args):
     most_used_tags = (
         session.query(t_tag_track_user.c.tag)
+        .join(Track, Track.track_id == t_tag_track_user.c.track_id)
         .filter(t_tag_track_user.c.owner_id == args["user_id"])
+        .filter(Track.is_delete == False)
         .group_by(t_tag_track_user.c.tag)
         .order_by(
             desc(func.count(t_tag_track_user.c.tag)), desc(t_tag_track_user.c.tag)

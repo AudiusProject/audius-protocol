@@ -12,6 +12,7 @@ type ThemeProviderProps = {
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children, themeName } = props
+
   return (
     <EmotionThemeProvider theme={theme[themeName]}>
       {children}

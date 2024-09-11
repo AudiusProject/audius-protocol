@@ -353,6 +353,7 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       }
       const currentUserId = yield* select(getUserId)
       // Retain specified info in the lineup itself and resolve with success.
+      let duplicateCount = 0
       const lineupEntries = allMetadatas
         .map(retainSelector)
         .map((m, i) => {
@@ -369,7 +370,10 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
         .filter((metadata, idx) => {
           if (lineup.dedupe && lineup.entryIds) {
             const entryId = getEntryId(metadata)
-            if (lineup.entryIds.has(entryId)) return false
+            if (lineup.entryIds.has(entryId)) {
+              duplicateCount += 1
+              return false
+            }
             lineup.entryIds.add(entryId)
           }
           return true
@@ -378,7 +382,8 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       const deletedCount =
         lineupMetadatasResponse.length -
         responseFilteredDeletes.length -
-        nullCount
+        nullCount +
+        duplicateCount
       yield* put(
         lineupActions.fetchLineupMetadatasSucceeded(
           lineupEntries,

@@ -11,7 +11,8 @@ import { env } from 'services/env'
 
 import { encodeUrlName } from './urlUtils'
 
-const { getHash, SIGN_UP_PAGE, SEARCH_PAGE, profilePage } = route
+const { getHash, SIGN_UP_PAGE, SEARCH_PAGE, profilePage, collectionPage } =
+  route
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
@@ -43,26 +44,6 @@ export const fullAlbumPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${albumPage(handle, title, id)}`
 }
 
-export const collectionPage = (
-  handle?: string | null,
-  playlistName?: string | null,
-  playlistId?: ID | null,
-  permalink?: string | null,
-  isAlbum?: boolean
-) => {
-  // Prioritize permalink if available. If not, default to legacy routing
-  if (permalink) {
-    return permalink
-  } else if (playlistName && playlistId && handle) {
-    const collectionType = isAlbum ? 'album' : 'playlist'
-    return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
-      playlistName
-    )}-${playlistId}`
-  } else {
-    console.error('Missing required arguments to get PlaylistPage route.')
-    return ''
-  }
-}
 export const fullCollectionPage = (
   handle: string,
   playlistName?: string | null,

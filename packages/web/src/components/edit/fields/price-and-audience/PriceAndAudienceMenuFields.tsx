@@ -94,7 +94,7 @@ export const PriceAndAudienceMenuFields = (
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
-  const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
+  const { isEnabled: isUdscPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
@@ -105,8 +105,8 @@ export const PriceAndAudienceMenuFields = (
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
   const isUsdcUploadEnabled = isAlbum
-    ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
-    : isUsdcFlagUploadEnabled
+    ? isPremiumAlbumsEnabled && isUdscPurchaseEnabled
+    : isUdscPurchaseEnabled
 
   const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
 

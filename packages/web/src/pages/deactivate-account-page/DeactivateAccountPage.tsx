@@ -5,7 +5,7 @@ import {
   deactivateAccountActions,
   deactivateAccountSelectors
 } from '@audius/common/store'
-import { Button } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -84,7 +84,7 @@ export const DeactivateAcccountPageContents = ({
           </span>
         </div>
       )}
-      <div className={styles.buttons}>
+      <Flex gap='l'>
         <Button
           variant='destructive'
           isLoading={isLoading}
@@ -101,7 +101,7 @@ export const DeactivateAcccountPageContents = ({
         >
           {messages.buttonSafety}
         </Button>
-      </div>
+      </Flex>
     </div>
   )
 }

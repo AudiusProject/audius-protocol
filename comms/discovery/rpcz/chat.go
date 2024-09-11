@@ -131,10 +131,12 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 		SELECT *
 		FROM chat_message msg
 		LEFT JOIN chat_blast b USING (blast_id)
+		LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
 		WHERE msg.chat_id = member.chat_id
 		AND (
 			msg.blast_id IS NULL OR
-			b.from_user_id != member.user_id
+			b.from_user_id != member.user_id OR
+			r.user_id != member.user_id
 		)
 	)
 	WHERE member.chat_id = $1
@@ -170,7 +172,7 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	return err
 }
 
-func chatReactMessage(tx *sqlx.Tx, userId int32, messageId string, reaction *string, messageTimestamp time.Time) error {
+func chatReactMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string, reaction *string, messageTimestamp time.Time) error {
 	var err error
 	if reaction != nil {
 		_, err = tx.Exec(`
@@ -188,6 +190,8 @@ func chatReactMessage(tx *sqlx.Tx, userId int32, messageId string, reaction *str
 		return err
 	}
 
+	// update chat's info on reaction
+	err = chatUpdateLatestFields(tx, chatId)
 	return err
 }
 

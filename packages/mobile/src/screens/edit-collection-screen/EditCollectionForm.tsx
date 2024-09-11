@@ -103,11 +103,6 @@ export const EditCollectionForm = (
     dispatch(openDeletePlaylist({ playlistId }))
   }, [dispatch, playlistId])
 
-  const submitAndGoBack = useCallback(() => {
-    handleSubmitProp()
-    navigation.goBack()
-  }, [handleSubmitProp, navigation])
-
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
@@ -116,7 +111,7 @@ export const EditCollectionForm = (
 
   const handleSubmit = useCallback(() => {
     if (usersMayLoseAccess) {
-      openHideContentConfirmation({ confirmCallback: submitAndGoBack })
+      openHideContentConfirmation({ confirmCallback: handleSubmitProp })
     } else if (
       isToBePublished &&
       isInitiallyScheduled &&
@@ -124,21 +119,21 @@ export const EditCollectionForm = (
     ) {
       openEarlyReleaseConfirmation({
         contentType: 'album',
-        confirmCallback: submitAndGoBack
+        confirmCallback: handleSubmitProp
       })
     } else if (isToBePublished) {
       openPublishConfirmation({
         contentType: entityType === 'album' ? 'album' : 'playlist',
-        confirmCallback: submitAndGoBack
+        confirmCallback: handleSubmitProp
       })
     } else {
-      submitAndGoBack()
+      handleSubmitProp()
     }
   }, [
     usersMayLoseAccess,
     isToBePublished,
     isInitiallyScheduled,
-    submitAndGoBack,
+    handleSubmitProp,
     openHideContentConfirmation,
     openEarlyReleaseConfirmation,
     openPublishConfirmation,

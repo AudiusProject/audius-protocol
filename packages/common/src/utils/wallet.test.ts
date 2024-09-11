@@ -109,6 +109,7 @@ describe('wallet.ts currency formatting and conversion tests', function () {
     const expected = '12,345,678,901,234.57'
     expect(
       USDC(usdc).toLocaleString('en-US', {
+        style: undefined,
         maximumFractionDigits: precision,
         minimumFractionDigits: precision,
         roundingMode: 'ceil'

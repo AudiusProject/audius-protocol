@@ -27,7 +27,7 @@ type GRPCServer struct {
 
 func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool) (*GRPCServer, error) {
 	server := &GRPCServer{
-		logger: logger,
+		logger: logger.Child("grpc"),
 		chain:  chain,
 		db:     db.New(pool),
 	}

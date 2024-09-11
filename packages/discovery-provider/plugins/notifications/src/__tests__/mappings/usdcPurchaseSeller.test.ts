@@ -58,7 +58,14 @@ describe('USDC Purchase Seller', () => {
         content_type: usdc_purchase_content_type.track,
         content_id: 10,
         amount: '1000000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          {
+            user_id: 1,
+            amount: 1000000,
+            percentage: 100
+          }
+        ])
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -131,7 +138,14 @@ describe('USDC Purchase Seller', () => {
         content_type: usdc_purchase_content_type.track,
         content_id: 10,
         amount: '1000000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          {
+            user_id: 1,
+            amount: 1000000,
+            percentage: 100
+          }
+        ])
       },
       {
         seller_user_id: 1,
@@ -139,7 +153,14 @@ describe('USDC Purchase Seller', () => {
         content_type: usdc_purchase_content_type.album,
         content_id: 15,
         amount: '1000000',
-        extra_amount: '0'
+        extra_amount: '0',
+        splits: JSON.stringify([
+          {
+            user_id: 1,
+            amount: 1000000,
+            percentage: 100
+          }
+        ])
       }
     ])
 
@@ -156,7 +177,14 @@ describe('USDC Purchase Seller', () => {
           amount: 1000000,
           extra_amount: 0,
           content_id: 10,
-          content_type: 'track'
+          content_type: 'track',
+          splits: [
+            {
+              user_id: 1,
+              amount: 1000000,
+              percentage: 100
+            }
+          ]
         },
         user_ids: [1],
         receiver_user_id: 1
@@ -185,7 +213,14 @@ describe('USDC Purchase Seller', () => {
           amount: 1000000,
           extra_amount: 0,
           content_id: 15,
-          content_type: 'album'
+          content_type: 'album',
+          splits: [
+            {
+              user_id: 1,
+              amount: 1000000,
+              percentage: 100
+            }
+          ]
         },
         user_ids: [1],
         receiver_user_id: 1

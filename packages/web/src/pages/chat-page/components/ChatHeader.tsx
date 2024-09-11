@@ -46,16 +46,12 @@ const { getOtherChatUsers, getBlockees } = chatSelectors
 
 type ChatHeaderProps = {
   currentChatId?: string
-  isChromeOrSafari?: boolean
   scrollBarWidth?: number
   headerContainerRef?: React.RefObject<HTMLDivElement>
 }
 
 export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
-  (
-    { currentChatId, isChromeOrSafari, scrollBarWidth, headerContainerRef },
-    ref
-  ) => {
+  ({ currentChatId, scrollBarWidth, headerContainerRef }, ref) => {
     const dispatch = useDispatch()
     const { onOpen: openCreateChatModal } = useCreateChatModal()
     const [, setInboxSettingsVisible] = useModalState('InboxSettings')
@@ -141,7 +137,6 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       <>
         <HeaderGutter
           headerContainerRef={headerContainerRef}
-          isChromeOrSafari={isChromeOrSafari}
           scrollBarWidth={scrollBarWidth}
           className={styles.gutterOverride}
         />

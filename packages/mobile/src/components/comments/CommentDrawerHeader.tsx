@@ -5,6 +5,8 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { Flex, IconButton, IconCloseAlt, Text } from '@audius/harmony-native'
 
+import { CommentSortBar } from './CommentSortBar'
+
 const messages = {
   comments: 'Comments'
 }
@@ -24,25 +26,27 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   }
 
   return (
-    <Flex
-      direction='row'
-      w='100%'
-      justifyContent='space-between'
-      p='l'
-      alignItems='center'
-    >
-      <Text variant='body' size='m'>
-        {messages.comments}
-        {!isLoading && comments?.length ? (
-          <Text color='subdued'>&nbsp;({comments.length})</Text>
-        ) : null}
-      </Text>
-      <IconButton
-        icon={IconCloseAlt}
-        onPress={handlePressClose}
-        color='subdued'
-        size='m'
-      />
+    <Flex p='l' gap='m'>
+      <Flex
+        direction='row'
+        w='100%'
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <Text variant='body' size='m'>
+          {messages.comments}
+          {!isLoading && comments?.length ? (
+            <Text color='subdued'>&nbsp;({comments.length})</Text>
+          ) : null}
+        </Text>
+        <IconButton
+          icon={IconCloseAlt}
+          onPress={handlePressClose}
+          color='subdued'
+          size='m'
+        />
+      </Flex>
+      <CommentSortBar />
     </Flex>
   )
 }

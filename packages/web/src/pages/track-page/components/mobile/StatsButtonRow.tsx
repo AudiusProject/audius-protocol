@@ -1,27 +1,25 @@
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { formatCount } from '@audius/common/utils'
 import {
   Flex,
   IconHeart as IconFavorite,
+  IconMessage,
   IconPlay,
-  IconRepost
+  IconRepost,
+  PlainButton
 } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './StatsButtonRow.module.css'
-
-const messages = {
-  reposts: 'Reposts',
-  favorites: 'Favorites'
-}
 
 type StatsButtonRowProps = {
   className?: string
   showListenCount: boolean
   showFavoriteCount: boolean
   showRepostCount: boolean
+  showCommentCount: boolean
   listenCount?: number
   favoriteCount: number
   repostCount: number
+  commentCount: number
   onClickFavorites: () => void
   onClickReposts: () => void
 }
@@ -32,48 +30,47 @@ const StatsButtonRow = ({
   showListenCount,
   showFavoriteCount,
   showRepostCount,
+  showCommentCount,
   favoriteCount,
   repostCount,
+  commentCount,
   onClickFavorites,
   onClickReposts,
   listenCount = 0
 }: StatsButtonRowProps) => {
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
   if (!showListenCount && !showFavoriteCount && !showRepostCount) return null
 
-  const renderListenCount = () => {
-    return (
-      <div className={cn(styles.countContainer, styles.listenCount)}>
-        <IconPlay />
-        <span className={styles.count}>{formatCount(listenCount)}</span>
-      </div>
-    )
-  }
+  const renderListenCount = () => (
+    <PlainButton iconLeft={IconPlay}>{formatCount(listenCount)}</PlainButton>
+  )
 
-  const renderFavoriteCount = () => {
-    return (
-      <div className={styles.countContainer} onClick={onClickFavorites}>
-        <IconFavorite />
-        <span className={styles.count}>{formatCount(favoriteCount)}</span>
-        <span className={styles.countLabel}>{messages.favorites}</span>
-      </div>
-    )
-  }
+  const renderFavoriteCount = () => (
+    <PlainButton iconLeft={IconFavorite} onClick={onClickFavorites}>
+      {formatCount(favoriteCount)}
+    </PlainButton>
+  )
 
-  const renderRepostCount = () => {
-    return (
-      <div className={styles.countContainer} onClick={onClickReposts}>
-        <IconRepost />
-        <span className={styles.count}>{formatCount(repostCount)}</span>
-        <span className={styles.countLabel}>{messages.reposts}</span>
-      </div>
-    )
-  }
+  const renderRepostCount = () => (
+    <PlainButton onClick={onClickReposts} iconLeft={IconRepost}>
+      {formatCount(repostCount)}
+    </PlainButton>
+  )
+
+  const renderCommentCount = () => (
+    <PlainButton iconLeft={IconMessage}>
+      {formatCount(commentCount)}
+    </PlainButton>
+  )
 
   return (
     <Flex gap='xl' className={className} justifyContent='flex-start'>
-      {showListenCount && renderListenCount()}
-      {showRepostCount && renderRepostCount()}
-      {showFavoriteCount && renderFavoriteCount()}
+      {showListenCount ? renderListenCount() : null}
+      {showRepostCount ? renderRepostCount() : null}
+      {showFavoriteCount ? renderFavoriteCount() : null}
+      {isCommentsEnabled && showCommentCount ? renderCommentCount() : null}
     </Flex>
   )
 }

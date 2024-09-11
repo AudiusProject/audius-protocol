@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import {
-  chatActions,
   chatSelectors,
+  chatActions,
   useInboxUnavailableModal,
-  CommonState
+  type CommonState
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
@@ -15,10 +15,10 @@ import {
   ModalTitle,
   ModalFooter,
   Button,
+  Text,
   Flex,
-  IconExternalLink,
   IconMessage,
-  Text
+  IconExternalLink
 } from '@audius/harmony'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,16 +35,12 @@ const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
 
 const messages = {
-  by: 'by',
-  date: 'Date',
+  by: 'Purchased By',
+  transactionDate: 'Date',
   done: 'Done',
-  messageBuyer: 'Message Buyer',
-  purchasedBy: 'Purchased By',
   saleDetails: 'Sale Details',
-  trackPurchased: 'Track Purchased',
-  transaction: 'Explore Transaction',
-  transactionDate: 'Transaction Date',
-  sayThanks: 'Say Thanks'
+  messageBuyer: 'Message Buyer',
+  transaction: 'Explore Transaction'
 }
 
 type SaleModalContentProps = {
@@ -92,73 +88,73 @@ export const SaleModalContent = ({
       <ModalHeader>
         <ModalTitle title={messages.saleDetails} />
       </ModalHeader>
-      <ModalContent className={styles.content}>
-        <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <DynamicImage
-            image={artwork}
-            wrapperClassName={styles.artworkContainer}
-          />
-          <DetailSection label={contentLabel}>
-            <ContentLink onClick={onClose} title={contentTitle} link={link} />
-            <Flex gap='xs'>
-              <Text variant='body' size='l'>
-                {messages.by}
-              </Text>
-              <UserLink
-                userId={purchaseDetails.sellerUserId}
-                popover
-                size='l'
-                onClick={onClose}
-              />
-            </Flex>
-          </DetailSection>
-        </Flex>
-        <Flex borderBottom='default' w='100%' pb='xl'>
+      <ModalContent>
+        <Flex gap='l' direction='column'>
           <DetailSection
-            label={messages.purchasedBy}
+            label={contentLabel}
             actionButton={
-              isManagedAccount ? undefined : (
-                <Button
-                  iconLeft={IconMessage}
-                  variant='secondary'
-                  size='small'
-                  onClick={handleClickMessageBuyer}
-                >
-                  {messages.sayThanks}
-                </Button>
-              )
+              <DynamicImage
+                image={artwork}
+                wrapperClassName={styles.artworkContainer}
+              />
             }
           >
-            <UserLink userId={purchaseDetails.buyerUserId} popover size='l' />
+            <ContentLink
+              variant='visible'
+              onClick={onClose}
+              title={contentTitle}
+              link={link}
+            />
           </DetailSection>
-        </Flex>
-        <DetailSection
-          label={messages.transactionDate}
-          actionButton={
-            <Button
-              iconLeft={IconExternalLink}
-              variant='secondary'
-              size='small'
-              asChild
-            >
-              <ExternalLink
-                to={makeSolanaTransactionLink(purchaseDetails.signature)}
+          <DetailSection label={messages.by}>
+            <UserLink
+              variant='visible'
+              userId={purchaseDetails.buyerUserId}
+              popover
+              size='l'
+              onClick={onClose}
+            />
+          </DetailSection>
+          <DetailSection
+            label={messages.transactionDate}
+            actionButton={
+              <Button
+                iconLeft={IconExternalLink}
+                variant='secondary'
+                size='small'
+                asChild
               >
-                {messages.transaction}
-              </ExternalLink>
-            </Button>
-          }
-        >
-          <Text variant='body' size='l'>
-            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
-          </Text>
-        </DetailSection>
-        <TransactionSummary transaction={purchaseDetails} />
+                <ExternalLink
+                  to={makeSolanaTransactionLink(purchaseDetails.signature)}
+                >
+                  {messages.transaction}
+                </ExternalLink>
+              </Button>
+            }
+          >
+            <Text variant='body' size='l'>
+              {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+            </Text>
+          </DetailSection>
+          <TransactionSummary isSale transaction={purchaseDetails} />
+        </Flex>
       </ModalContent>
       <ModalFooter style={{ paddingTop: 0 }}>
-        <Button onClick={onClose} fullWidth>
-          {messages.done}
-        </Button>
+        <Flex w='100%' gap='s'>
+          {!isManagedAccount ? (
+            <Button
+              onClick={handleClickMessageBuyer}
+              fullWidth
+              variant='secondary'
+              iconLeft={IconMessage}
+            >
+              {messages.messageBuyer}
+            </Button>
+          ) : null}
+          <Button onClick={onClose} fullWidth>
+            {messages.done}
+          </Button>
+        </Flex>
       </ModalFooter>
     </>
   )
