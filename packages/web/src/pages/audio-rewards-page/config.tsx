@@ -46,7 +46,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     link: () => UPLOAD_PAGE
   },
   profile: {
-    label: 'Your Profile',
+    label: 'Complete Your Profile',
     leftIcon: null,
     rightIcon: IconArrowRight,
     link: (handle: Nullable<string>) => (handle ? profilePage(handle) : null)

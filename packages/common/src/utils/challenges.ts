@@ -67,7 +67,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
-    panelButtonText: 'Link Verified Account'
+    panelButtonText: 'Verify Your Account'
   },
   'listen-streak': {
     id: 'listen-streak',

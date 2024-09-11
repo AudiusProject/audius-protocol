@@ -570,13 +570,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         {renderMobileInstallContent()}
         {buttonLink && !audioToClaim && completedLabel ? (
           <Button
-            variant='primary'
+            variant='secondary'
             fullWidth={isMobile}
             onClick={goToRoute}
             iconLeft={buttonInfo?.leftIcon}
             iconRight={buttonInfo?.rightIcon}
           >
-            {completedLabel}
+            {challenge?.state === 'disbursed'
+              ? completedLabel
+              : buttonInfo?.label}
           </Button>
         ) : null}
         {audioToClaim > 0 ||
