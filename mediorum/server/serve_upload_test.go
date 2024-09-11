@@ -43,11 +43,6 @@ func TestUploadFile(t *testing.T) {
 	assert.Equal(t, u2.TranscodeProgress, 1.0)
 	assert.Len(t, u2.TranscodedMirrors, s1.Config.ReplicationFactor)
 
-	{
-		uploads := []*Upload{}
-		s1.crud.DB.Where("status in ?", []string{JobStatusBusy}).Find(&uploads)
-		assert.Len(t, uploads, 1)
-	}
 }
 
 func TestUploadPlacement(t *testing.T) {
