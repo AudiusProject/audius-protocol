@@ -55,39 +55,52 @@ flowchart LR
   Z---->C
 ```
 
-:::tip Flexible Options
+---
 
-While it is recommended to use an additional machine as a controller, _any_ machine can operate as a
-controller.
+### Controller on Host
 
-:::
+In this configuration, the Node Operator configures each host machine to run a Node and its own
+Controller.
 
-### Controller on Node
+In this example, the Node Operator has elected to use the machine marked `VM 1` to both run a Node
+_and_ serve as the Controller for `VM 1`, and the same for each of `VM 2` and `VM 3`.
 
-In this example, this Service Provider has elected to use the machine marked `VM 1` to both run a
-node _and_ serve as the controller for all of their other nodes.
+> This configuration can be useful for Node Operators looking to isolate Nodes from one another and
+> reduce the security concerns that may arise from configuring multiple ssh access options.
 
 ```mermaid
-  flowchart LR
+  flowchart TD
     subgraph VM 3
-    C(Discovery Node 1);
+    Z2{{Controller 3}}-->C(Discovery Node 3);
     end
 
     subgraph VM 2
-    B(Content Node 2);
+    Z3{{Controller 2}}-->B(Content Node 2);
     end
 
     subgraph VM 1
-    Z{{Controller}}-->A(Content Node 1);
+    Z1{{Controller 1}}-->A(Content Node 1);
     end
-
-    Z--->B
-    Z---->C
 ```
+
+To running `audius-ctl` and a Node on the same host first follow the
+[audius-d config instructions](/node-operator/migration-guide/#5-edit-the-configuration-file) and
+then edit your `/etc/hosts` file to map `localhost` to the Node URL
+
+```bash showLineNumbers title="/etc/hosts file"
+#/etc/hosts
+127.0.0.1    content-1.example.com
+    │                └── # THE URL OF THE NODE
+    └── local host
+```
+
+---
 
 ### Multiple Controllers
 
-description text goes here
+In this configuration, a single Node is accessible from two different hosts acting as Controllers.
+
+> This configuration can be useful when distributing access control to multiple users.
 
 ```mermaid
 flowchart LR
@@ -95,28 +108,25 @@ flowchart LR
   Z2{{audius-ctl}};
   end
 
+subgraph VM 1
+  A(Content Node 1);
+  end
+
   subgraph Controller 1
   Z1{{audius-ctl}};
   end
 
-  subgraph VM 2
-  B(Content Node 2);
-  end
-
-  subgraph VM 1
-  A(Content Node 1);
-  end
-
-  Z1-->A;
-  Z1-->B;
+  Z1--->A;
   Z2-->A;
-  Z2-->B;
 ```
 
 ### Using a Virtual Private Server
 
-Keep private keys secure by requiring users interacting with Audius Nodes to log in to a Virtual
-Private Server and issue commands from `audius-ctl` there.
+Keep private keys secure by requiring users interacting with Nodes to log in to a Virtual Private
+Server and issue commands from `audius-ctl` there.
+
+> This configuration can be useful from a security and gatekeeping perspective, narrowing the access
+> point to a single access machine which can be managed by multiple users.
 
 ```mermaid
 flowchart LR
@@ -147,7 +157,7 @@ flowchart LR
 
 ---
 
-### Downing a Node
+## Downing a Node
 
 If for some reason you want to `down` an Audius Node, use the following command:
 
@@ -170,9 +180,7 @@ The same can be done with the `up` command when you are ready to start the Audiu
 
 ---
 
-## Content Node
-
-### Storage Configuration
+## Content Node Storage Configuration
 
 Content nodes support s3 compatible blob storage as an alternative to SSD storage.
 
