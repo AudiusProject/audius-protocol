@@ -1,6 +1,14 @@
+import { useCallback } from 'react'
+
 import { Kind } from '@audius/common/models'
 import { makeIndexedUid } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
+import {
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller
+} from 'react-virtualized'
 
 import { TrackTileV2 } from 'components/track/desktop/TrackTileV2'
 
@@ -14,12 +22,12 @@ export const LineupTileList = () => {
       const row = items[index]
       if (!row) return
 
-      const uid = makeUid(row.kind, row.id, name, index)
+      const uid = makeIndexedUid(row.kind, row.id, index, name)
 
       if (row.kind === Kind.TRACKS) {
         return (
           <li key={uid}>
-            <TrackTileV2 uid={uid} key={uid} />
+            <TrackTileV2 uid={uid} key={uid} lineupIndex={index} />
           </li>
         )
       }
@@ -41,7 +49,7 @@ export const LineupTileList = () => {
     <Flex gap='s' direction='column'>
       <InfiniteLoader
         isRowLoaded={({ index }) => !!items[index]}
-        loadMoreRows={hasMore ? loadMore : () => {}}
+        loadMoreRows={hasMore ? (loadMore as any) : () => {}}
         initialLoad={false}
         threshold={0.3}
         element='ol'

@@ -32,16 +32,12 @@ type LineupContextProps = {
 // The value passed down through the context
 type LineupContextValue = {
   onPlay: (uid: UID, index: number) => void
+  hasMore: boolean
+  loadMore: () => void
 } & Pick<LineupContextProps, 'items' | 'name'>
 
-const initialValue: LineupContextValue = {
-  onPlay: () => {},
-  items: [],
-  name: ''
-}
-
 export const LineupContext = createContext<LineupContextValue | undefined>(
-  initialValue
+  undefined
 )
 
 export const LineupContextProvider = (
@@ -81,6 +77,8 @@ export const LineupContextProvider = (
     <LineupContext.Provider
       value={{
         onPlay,
+        hasMore: false,
+        loadMore: () => {},
         ...props
       }}
     >
