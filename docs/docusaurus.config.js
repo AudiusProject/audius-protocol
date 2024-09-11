@@ -74,7 +74,7 @@ const config = {
         logo: {
           alt: 'Audius Logo',
           src: 'img/logo.png',
-          // srcDark: 'img/logo-white.png',
+          srcDark: 'img/logo-white.png',
         },
         items: [
           {
