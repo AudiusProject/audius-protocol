@@ -118,7 +118,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Show some love to your favorite artist and send them a tip.',
     progressLabel: 'Not Earned',
-    completedLabel: 'Find Someone Else To Tip',
+    completedLabel: 'Tip Another Artist',
     panelButtonText: 'Send a Tip'
   },
   'first-playlist': {
