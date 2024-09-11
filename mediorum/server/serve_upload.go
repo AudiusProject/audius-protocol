@@ -32,6 +32,14 @@ func (ss *MediorumServer) serveUploadDetail(c echo.Context) error {
 	if upload.Status == JobStatusError {
 		return c.JSON(422, upload)
 	}
+
+	if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix && upload.Status != JobStatusDone {
+		err = ss.transcode(upload)
+		if err != nil {
+			return err
+		}
+	}
+
 	return c.JSON(200, upload)
 }
 
@@ -231,11 +239,11 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodedAt = time.Now().UTC()
 				upload.Status = JobStatusDone
 				return ss.crud.Create(upload)
-			} else {
-				// do transcode
-				return ss.transcode(upload)
 			}
 
+			ss.crud.Create(upload)
+			ss.transcodeWork <- upload
+			return nil
 		})
 	}
 

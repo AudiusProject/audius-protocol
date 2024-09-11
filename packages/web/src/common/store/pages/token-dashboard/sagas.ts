@@ -16,8 +16,11 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { watchRemoveWallet } from './removeWalletSaga'
 
-const { fetchAssociatedWallets, setAssociatedWallets } =
-  tokenDashboardPageActions
+const {
+  fetchAssociatedWallets,
+  setAssociatedWallets,
+  fetchAssociatedWalletsFailed
+} = tokenDashboardPageActions
 
 const { getUserId } = accountSelectors
 
@@ -71,60 +74,68 @@ function* fetchSplWalletInfo(wallets: string[]) {
 }
 
 function* fetchAccountAssociatedWallets() {
-  // TODO C-3163 - Add loading state for fetching associated wallets
-  yield* waitForRead()
-  const sdk = yield* getSDK()
-  const accountUserId = yield* select(getUserId)
-  if (!accountUserId) return
+  try {
+    yield* waitForRead()
+    const sdk = yield* getSDK()
+    const accountUserId = yield* select(getUserId)
+    if (!accountUserId) return
 
-  const { data } = yield* call([sdk.users, sdk.users.getConnectedWallets], {
-    id: Id.parse(accountUserId)
-  })
+    const { data } = yield* call([sdk.users, sdk.users.getConnectedWallets], {
+      id: Id.parse(accountUserId)
+    })
 
-  if (!data) {
-    return
+    if (!data) {
+      throw new Error('No data found')
+    }
+
+    const associatedWallets = userWalletsFromSDK(data)
+
+    const ethWalletBalances = yield* fetchEthWalletInfo(
+      associatedWallets.wallets
+    )
+    const splWalletBalances = yield* fetchSplWalletInfo(
+      associatedWallets.sol_wallets ?? []
+    )
+
+    // Put balances first w/o collectibles
+
+    yield* put(
+      setAssociatedWallets({
+        associatedWallets: ethWalletBalances,
+        chain: Chain.Eth
+      })
+    )
+    yield* put(
+      setAssociatedWallets({
+        associatedWallets: splWalletBalances.map((b) => ({
+          ...b,
+          collectibleCount: 0
+        })),
+        chain: Chain.Sol
+      })
+    )
+
+    // Add collectibles, this can take a while if fetching metadata is slow
+
+    const splWalletCollectibles = yield* fetchSplCollectibles(
+      associatedWallets.sol_wallets ?? []
+    )
+
+    yield* put(
+      setAssociatedWallets({
+        associatedWallets: splWalletBalances.map((b, i) => ({
+          ...b,
+          collectibleCount: splWalletCollectibles[i].collectibleCount
+        })),
+        chain: Chain.Sol
+      })
+    )
+  } catch (e) {
+    console.error(e)
+    yield* put(
+      fetchAssociatedWalletsFailed({ errorMessage: (e as Error).message })
+    )
   }
-
-  const associatedWallets = userWalletsFromSDK(data)
-
-  const ethWalletBalances = yield* fetchEthWalletInfo(associatedWallets.wallets)
-  const splWalletBalances = yield* fetchSplWalletInfo(
-    associatedWallets.sol_wallets ?? []
-  )
-
-  // Put balances first w/o collectibles
-
-  yield* put(
-    setAssociatedWallets({
-      associatedWallets: ethWalletBalances,
-      chain: Chain.Eth
-    })
-  )
-  yield* put(
-    setAssociatedWallets({
-      associatedWallets: splWalletBalances.map((b) => ({
-        ...b,
-        collectibleCount: 0
-      })),
-      chain: Chain.Sol
-    })
-  )
-
-  // Add collectibles, this can take a while if fetching metadata is slow
-
-  const splWalletCollectibles = yield* fetchSplCollectibles(
-    associatedWallets.sol_wallets ?? []
-  )
-
-  yield* put(
-    setAssociatedWallets({
-      associatedWallets: splWalletBalances.map((b, i) => ({
-        ...b,
-        collectibleCount: splWalletCollectibles[i].collectibleCount
-      })),
-      chain: Chain.Sol
-    })
-  )
 }
 
 function* watchGetAssociatedWallets() {
