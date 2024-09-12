@@ -201,6 +201,11 @@ const generateServicesConfig = async (
 
   // const antiAbuseAddresses =
   //   await contracts.EthRewardsManagerClient.getAntiAbuseOracleAddresses()
+  const ethRewardsManager = new EthRewardsManagerClient({
+    rpcEndpoint: ''
+  })
+  const antiAbuseAddresses =
+    await ethRewardsManager.contract.getAntiAbuseOracleAddresses()
   const antiAbuseAddresses = await new EthRewardsManagerClient({
     rpcEndpoint: ''
   }).contract.getAntiAbuseOracleAddresses()
