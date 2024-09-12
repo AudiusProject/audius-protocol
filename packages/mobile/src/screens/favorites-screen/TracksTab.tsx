@@ -13,12 +13,10 @@ import {
   reachabilitySelectors
 } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { useFocusEffect } from '@react-navigation/native'
 import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex } from '@audius/harmony-native'
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from 'app/components/filter-input'
@@ -249,26 +247,4 @@ export const TracksTab = () => {
       )}
     </VirtualizedScrollView>
   )
-}
-
-const useIsScreenReady = () => {
-  const [isReady, setIsReady] = useState(false)
-  useFocusEffect(
-    useCallback(() => {
-      // Listener for the end of the transition animation
-      // const unsubscribe = navigation.addListener('transitionEnd', (e) => {
-      //   setIsReady(true)
-      // })
-
-      // return unsubscribe
-      setIsReady(true)
-    }, [setIsReady])
-  )
-
-  return isReady
-}
-
-export const TracksTabWrapper = () => {
-  const isReady = useIsScreenReady()
-  return isReady ? <TracksTab /> : <Flex h='100%' />
 }

@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
@@ -18,6 +19,7 @@ import {
 } from '@audius/harmony-native'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { AppDrawerContext } from '../app-drawer-screen'
@@ -55,6 +57,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
+const messages = {
+  earlyAccess: 'Early Access'
+}
+
 type ParamList = AppScreenParamList & Pick<AppTabScreenParamList, 'Search'>
 
 type Options = {
@@ -78,6 +84,8 @@ export const useAppScreenOptions = (
     dispatch(clearSearch())
     navigation.navigate('Search', { autoFocus: true })
   }, [dispatch, navigation])
+
+  const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
@@ -128,13 +136,16 @@ export const useAppScreenOptions = (
               )
             }
             return (
-              <>
+              <View>
                 <IconAudiusLogoHorizontal
                   height={24}
                   width={100}
                   color='subdued'
                 />
-              </>
+                {isEarlyAccess ? (
+                  <Text style={styles.earlyAccess}>{messages.earlyAccess}</Text>
+                ) : null}
+              </View>
             )
           },
           headerRightContainerStyle: styles.headerRight,
@@ -154,7 +165,13 @@ export const useAppScreenOptions = (
           ...overrides
         }
       },
-      [handleOpenLeftNavDrawer, handlePressSearch, styles, overrides]
+      [
+        handleOpenLeftNavDrawer,
+        handlePressSearch,
+        styles,
+        overrides,
+        isEarlyAccess
+      ]
     )
 
   return screenOptions
