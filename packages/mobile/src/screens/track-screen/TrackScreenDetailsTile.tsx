@@ -80,7 +80,6 @@ import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
-import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
@@ -158,7 +157,6 @@ export const TrackScreenDetailsTile = ({
   const styles = useStyles()
   const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const navigation = useNavigation()
-  const isReady = useIsScreenReady()
 
   const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
@@ -585,76 +583,72 @@ export const TrackScreenDetailsTile = ({
           </Button>
         ) : null}
         {shouldShowPreview ? <PreviewButton /> : null}
-        {isReady ? (
-          <DetailsTileActionButtons
-            ddexApp={ddexApp}
-            hasReposted={!!hasReposted}
-            hasSaved={!!hasSaved}
-            hideFavorite={hideFavorite}
-            hideOverflow={hideOverflow}
-            hideRepost={hideRepost}
-            hideShare={hideShare}
-            isOwner={isOwner}
-            isCollection={false}
-            isPublished={!isUnlisted || _is_publishing}
-            onPressEdit={handlePressEdit}
-            onPressOverflow={handlePressOverflow}
-            onPressRepost={handlePressRepost}
-            onPressSave={handlePressSave}
-            onPressShare={handlePressShare}
-            onPressPublish={handlePressPublish}
+        <DetailsTileActionButtons
+          ddexApp={ddexApp}
+          hasReposted={!!hasReposted}
+          hasSaved={!!hasSaved}
+          hideFavorite={hideFavorite}
+          hideOverflow={hideOverflow}
+          hideRepost={hideRepost}
+          hideShare={hideShare}
+          isOwner={isOwner}
+          isCollection={false}
+          isPublished={!isUnlisted || _is_publishing}
+          onPressEdit={handlePressEdit}
+          onPressOverflow={handlePressOverflow}
+          onPressRepost={handlePressRepost}
+          onPressSave={handlePressSave}
+          onPressShare={handlePressShare}
+          onPressPublish={handlePressPublish}
+        />
+      </Flex>
+      <Flex
+        p='l'
+        gap='l'
+        borderTop='default'
+        backgroundColor='surface1'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
+        {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
+          <DetailsTileNoAccess
+            trackId={trackId}
+            contentType={PurchaseableContentType.TRACK}
+            streamConditions={streamConditions}
           />
         ) : null}
-      </Flex>
-      {isReady ? (
-        <Flex
-          p='l'
-          gap='l'
-          borderTop='default'
-          backgroundColor='surface1'
-          borderBottomLeftRadius='m'
-          borderBottomRightRadius='m'
-        >
-          {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
-            <DetailsTileNoAccess
-              trackId={trackId}
-              contentType={PurchaseableContentType.TRACK}
-              streamConditions={streamConditions}
-            />
-          ) : null}
-          {(hasStreamAccess || isOwner) && streamConditions ? (
-            <DetailsTileHasAccess
-              streamConditions={streamConditions}
-              isOwner={isOwner}
-              trackArtist={user}
-              contentType={PurchaseableContentType.TRACK}
-            />
-          ) : null}
-          <DetailsTileStats
-            playCount={playCount}
-            hidePlayCount={shouldHidePlayCount}
-            favoriteCount={saveCount}
-            hideFavoriteCount={shouldHideFavoriteCount}
-            repostCount={repostCount}
-            hideRepostCount={shouldHideRepostCount}
-            commentCount={commentCount}
-            hideCommentCount={shouldHideCommentCount}
-            onPressFavorites={handlePressFavorites}
-            onPressReposts={handlePressReposts}
+        {(hasStreamAccess || isOwner) && streamConditions ? (
+          <DetailsTileHasAccess
+            streamConditions={streamConditions}
+            isOwner={isOwner}
+            trackArtist={user}
+            contentType={PurchaseableContentType.TRACK}
           />
-          {description ? (
-            <Box w='100%'>
-              <UserGeneratedText source={'track page'} variant='body' size='s'>
-                {description}
-              </UserGeneratedText>
-            </Box>
-          ) : null}
-          <TrackMetadataList trackId={trackId} />
-          {renderTags()}
-          <OfflineStatusRow contentId={trackId} isCollection={false} />
-        </Flex>
-      ) : null}
-      {isReady ? renderBottomContent() : null}
+        ) : null}
+        <DetailsTileStats
+          playCount={playCount}
+          hidePlayCount={shouldHidePlayCount}
+          favoriteCount={saveCount}
+          hideFavoriteCount={shouldHideFavoriteCount}
+          repostCount={repostCount}
+          hideRepostCount={shouldHideRepostCount}
+          commentCount={commentCount}
+          hideCommentCount={shouldHideCommentCount}
+          onPressFavorites={handlePressFavorites}
+          onPressReposts={handlePressReposts}
+        />
+        {description ? (
+          <Box w='100%'>
+            <UserGeneratedText source={'track page'} variant='body' size='s'>
+              {description}
+            </UserGeneratedText>
+          </Box>
+        ) : null}
+        <TrackMetadataList trackId={trackId} />
+        {renderTags()}
+        <OfflineStatusRow contentId={trackId} isCollection={false} />
+      </Flex>
+      {renderBottomContent()}
     </Paper>
   )
 }
