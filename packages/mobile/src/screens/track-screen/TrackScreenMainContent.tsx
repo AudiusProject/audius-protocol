@@ -13,6 +13,7 @@ import type { Nullable } from '@audius/common/utils'
 
 import { Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
+import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
@@ -36,6 +37,7 @@ export const TrackScreenMainContent = ({
   user
 }: TrackScreenMainContentProps) => {
   const navigation = useNavigation()
+  const isReady = useIsScreenReady()
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
@@ -63,22 +65,26 @@ export const TrackScreenMainContent = ({
           isLineupLoading={!lineup?.entries?.[0]}
         />
 
-        {field_visibility?.remixes &&
-          remixTrackIds &&
-          remixTrackIds.length > 0 && (
-            <TrackScreenRemixes
-              trackIds={remixTrackIds}
-              onPressGoToRemixes={handlePressGoToRemixes}
-              count={_remixes_count ?? null}
-            />
-          )}
+        {isReady ? (
+          <>
+            {field_visibility?.remixes &&
+              remixTrackIds &&
+              remixTrackIds.length > 0 && (
+                <TrackScreenRemixes
+                  trackIds={remixTrackIds}
+                  onPressGoToRemixes={handlePressGoToRemixes}
+                  count={_remixes_count ?? null}
+                />
+              )}
 
-        {isCommentingEnabled && !comments_disabled ? (
-          <Flex flex={3}>
-            <CommentSection entityId={track_id} />
-          </Flex>
+            {isCommentingEnabled && !comments_disabled ? (
+              <Flex flex={3}>
+                <CommentSection entityId={track_id} />
+              </Flex>
+            ) : null}
+            {lineupHeader}
+          </>
         ) : null}
-        {lineupHeader}
       </Flex>
     </Flex>
   )

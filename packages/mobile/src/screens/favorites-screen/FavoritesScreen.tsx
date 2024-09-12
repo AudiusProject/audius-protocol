@@ -1,19 +1,12 @@
-import {
-  IconAlbum,
-  IconLibrary,
-  IconNote,
-  IconPlaylists
-} from '@audius/harmony-native'
+import { IconAlbum, IconLibrary, IconNote } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { makeStyles } from 'app/styles'
 
-import { AlbumsTab } from './AlbumsTab'
 import { FavoritesDownloadSection } from './FavoritesDownloadSection'
 import { LibraryCategorySelectionMenu } from './LibraryCategorySelectionMenu'
-import { PlaylistsTab } from './PlaylistsTab'
-import { TracksTab } from './TracksTab'
+import { TracksTabWrapper } from './TracksTab'
 
 const messages = {
   header: 'Library'
@@ -23,18 +16,18 @@ const favoritesScreens = [
   {
     name: 'tracks',
     Icon: IconNote,
-    component: TracksTab
+    component: TracksTabWrapper
   },
   {
     name: 'albums',
     Icon: IconAlbum,
-    component: AlbumsTab
-  },
-  {
-    name: 'playlists',
-    Icon: IconPlaylists,
-    component: PlaylistsTab
+    component: () => null
   }
+  // {
+  //   name: 'playlists',
+  //   Icon: IconPlaylists,
+  //   component: PlaylistsTab
+  // }
 ]
 
 const useHeaderStyles = makeStyles(({ spacing }) => ({
