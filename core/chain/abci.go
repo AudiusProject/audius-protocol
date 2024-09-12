@@ -1,7 +1,6 @@
 package chain
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -87,12 +86,7 @@ func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxR
 	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
-	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
-	if app.isValidKVTx(check.Tx) {
-		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
-	} else {
-		return &abcitypes.CheckTxResponse{Code: 1}, nil
-	}
+	return &abcitypes.CheckTxResponse{Code: 1}, nil
 }
 
 func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
@@ -138,34 +132,6 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-		} else if app.isValidKVTx(tx) {
-			parts := bytes.SplitN(tx, []byte("="), 2)
-			key, value := parts[0], parts[1]
-			logger.Infof("Adding key %s with value %s", key, value)
-
-			params := db.InsertKVStoreParams{
-				Key:    string(key),
-				Value:  string(value),
-				TxHash: app.toTxHash(tx),
-			}
-
-			record, err := app.getDb().InsertKVStore(ctx, params)
-			if err != nil {
-				logger.Errorf("failed to persisted kv entry %v", err)
-			}
-
-			txs[i] = &abcitypes.ExecTxResult{
-				Code: 0,
-				Events: []abcitypes.Event{
-					{
-						Type: "app",
-						Attributes: []abcitypes.EventAttribute{
-							{Key: "key", Value: record.Key, Index: true},
-							{Key: "value", Value: record.Value, Index: true},
-						},
-					},
-				},
-			}
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}
@@ -248,16 +214,6 @@ func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcit
 	return &abcitypes.VerifyVoteExtensionResponse{}, nil
 }
 
-func (app *CoreApplication) isValidKVTx(tx []byte) bool {
-	// check format
-	parts := bytes.Split(tx, []byte("="))
-	if len(parts) != 2 {
-		return false
-	}
-
-	return true
-}
-
 func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
 	var msg gen_proto.Event
 	err := proto.Unmarshal(tx, &msg)
@@ -278,12 +234,8 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 	for _, tx := range txs {
 		protoEvent, err := app.isValidProtoEvent(tx)
 		if err != nil {
-			if app.isValidKVTx(tx) {
-				continue
-			} else {
-				app.logger.Error(" **** Invalid block bcz not proto event or KVp")
-				return false, nil
-			}
+			app.logger.Error(" **** Invalid block bcz not proto event or KVp")
+			return false, nil
 		}
 
 		switch protoEvent.Body.(type) {
@@ -291,8 +243,8 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 		case *gen_proto.Event_RegisterNode:
 		case *gen_proto.Event_SlaRollup:
 			if alreadyContainsRollup {
-				return false, nil
 				app.logger.Error(" **** Invalid block already have rollup")
+				return false, nil
 			} else if valid, err := app.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
 				app.logger.Error(" **** Invalid block bcuz err", "error", err)
 				return false, err
