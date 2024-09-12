@@ -13,7 +13,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 	"gocloud.dev/gcerrors"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -48,8 +47,8 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 
 	// find old work from backlog
 	for {
-		ss.findMissedAudioAnalysisJobs(context.Background(), work)
 		time.Sleep(time.Minute * 5)
+		ss.findMissedAudioAnalysisJobs(context.Background(), work)
 	}
 }
 
@@ -74,23 +73,14 @@ func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work 
 
 		cid, ok := upload.TranscodeResults["320"]
 		if !ok {
-			if slices.Index(upload.Mirrors, ss.Config.Self.Host) == 0 {
-				upload.AudioAnalysisStatus = JobStatusError
-				upload.AudioAnalysisError = "missing transcoded audio"
-				upload.AudioAnalysisErrorCount = MAX_TRIES
-				ss.crud.Update(upload)
+			if exists, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); exists {
+				ss.transcode(upload)
+				cid, ok = upload.TranscodeResults["320"]
 			}
-			continue
 		}
-		_, isMine := ss.rendezvousAllHosts(cid)
-		isMine = isMine || (ss.Config.Env == "prod" && ss.Config.Self.Host == "https://creatornode2.audius.co")
-		if isMine && upload.AudioAnalysisErrorCount < MAX_TRIES {
-			select {
-			case work <- upload:
-				// successfully sent the job to the channel
-			case <-ctx.Done():
-				// if the context is done, stop processing
-				return
+		if ok {
+			if exists, _ := ss.bucket.Exists(ctx, cid); exists {
+				work <- upload
 			}
 		}
 	}
@@ -136,10 +126,16 @@ func (ss *MediorumServer) analyzeAudio(upload *Upload, deadline time.Duration) e
 	logger := ss.logger.With("upload", upload.ID)
 
 	// pull transcoded file from bucket
-	cid, exists := upload.TranscodeResults["320"]
-	if !exists {
-		err := errors.New("audio upload missing 320kbps cid")
-		return onError(err)
+	cid, ok := upload.TranscodeResults["320"]
+	if !ok {
+		if exists, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); exists {
+			ss.transcode(upload)
+			cid, ok = upload.TranscodeResults["320"]
+		}
+	}
+	if !ok {
+		logger.Warn("Upload missing 320 result", "id", upload.ID)
+		return nil
 	}
 
 	// do not mark the audio analysis job as failed if this node cannot pull the file from its bucket
