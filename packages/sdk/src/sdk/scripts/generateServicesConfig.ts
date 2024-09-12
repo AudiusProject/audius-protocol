@@ -4,6 +4,7 @@ import path from 'path'
 import { EthContracts } from '../../services/ethContracts'
 // import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import type { SdkServicesConfig } from '../config/types'
+import { EthRewardsManagerClient } from '../services/Ethereum'
 import { IdentityService } from '../services/IdentityService'
 
 const { writeFile } = promises
@@ -161,26 +162,26 @@ const generateServicesConfig = async (
   env: EnvironmentConfig,
   config: SdkServicesConfig
 ): Promise<SdkServicesConfig> => {
-  const contracts = new EthContracts({
-    ethWeb3Manager: new EthWeb3Manager({
-      identityService: new IdentityService({
-        identityServiceEndpoint: env.IDENTITY_SERVICE_URL
-      }),
-      web3Config: {
-        ownerWallet: env.ETH_OWNER_WALLET,
-        providers: [env.ETH_PROVIDER_URL],
-        tokenAddress: env.ETH_TOKEN_ADDRESS,
-        registryAddress: env.ETH_REGISTRY_ADDRESS,
-        claimDistributionContractAddress:
-          env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-        wormholeContractAddress: env.WORMHOLE_ADDRESS
-      }
-    }),
-    tokenContractAddress: env.ETH_TOKEN_ADDRESS,
-    registryAddress: env.ETH_REGISTRY_ADDRESS,
-    claimDistributionContractAddress: env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-    wormholeContractAddress: env.WORMHOLE_ADDRESS
-  })
+  // const contracts = new EthContracts({
+  //   ethWeb3Manager: new EthWeb3Manager({
+  //     identityService: new IdentityService({
+  //       identityServiceEndpoint: env.IDENTITY_SERVICE_URL
+  //     }),
+  //     web3Config: {
+  //       ownerWallet: env.ETH_OWNER_WALLET,
+  //       providers: [env.ETH_PROVIDER_URL],
+  //       tokenAddress: env.ETH_TOKEN_ADDRESS,
+  //       registryAddress: env.ETH_REGISTRY_ADDRESS,
+  //       claimDistributionContractAddress:
+  //         env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  //       wormholeContractAddress: env.WORMHOLE_ADDRESS
+  //     }
+  //   }),
+  //   tokenContractAddress: env.ETH_TOKEN_ADDRESS,
+  //   registryAddress: env.ETH_REGISTRY_ADDRESS,
+  //   claimDistributionContractAddress: env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  //   wormholeContractAddress: env.WORMHOLE_ADDRESS
+  // })
 
   const discoveryNodes =
     await contracts.ServiceProviderFactoryClient.getServiceProviderList(
@@ -198,8 +199,12 @@ const generateServicesConfig = async (
     throw Error('Storage node services not found')
   }
 
-  const antiAbuseAddresses =
-    await contracts.EthRewardsManagerClient.getAntiAbuseOracleAddresses()
+  // const antiAbuseAddresses =
+  //   await contracts.EthRewardsManagerClient.getAntiAbuseOracleAddresses()
+  const antiAbuseAddresses = await new EthRewardsManagerClient({
+    rpcEndpoint: ''
+  }).contract.getAntiAbuseOracleAddresses()
+
   if (!antiAbuseAddresses || antiAbuseAddresses.length === 0) {
     throw Error('Anti Abuse node services not found')
   }

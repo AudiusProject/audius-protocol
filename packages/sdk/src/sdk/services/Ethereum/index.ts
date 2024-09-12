@@ -1,2 +1,3 @@
-export * from './contracts/ServiceTypeManager/ServiceTypeManagerClient'
-export * from './contracts/ServiceTypeManager/getDefaultConfig'
+export * from './contracts/ServiceTypeManager'
+export * from './contracts/ServiceProviderFactory'
+export * from './contracts/EthRewardsManager'

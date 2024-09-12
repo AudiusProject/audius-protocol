@@ -49,6 +49,14 @@ import {
   EntityManager,
   getDefaultEntityManagerConfig
 } from './services/EntityManager'
+import {
+  EthRewardsManagerClient,
+  getDefaultEthRewardsManagerConfig,
+  getDefaultServiceProviderFactoryConfig,
+  getDefaultServiceTypeManagerConfig,
+  ServiceProviderFactoryClient,
+  ServiceTypeManagerClient
+} from './services/Ethereum'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from './services/Solana/SolanaRelayWalletAdapter'
@@ -222,6 +230,24 @@ const initializeServices = (config: SdkConfig) => {
       solanaClient
     })
 
+  const serviceTypeManagerClient =
+    config.services?.serviceTypeManagerClient ??
+    new ServiceTypeManagerClient({
+      ...getDefaultServiceTypeManagerConfig(servicesConfig)
+    })
+
+  const serviceProviderFactoryClient =
+    config.services?.serviceProviderFactoryClient ??
+    new ServiceProviderFactoryClient({
+      ...getDefaultServiceProviderFactoryConfig(servicesConfig)
+    })
+
+  const ethRewardsManagerClient =
+    config.services?.ethRewardsManagerClient ??
+    new EthRewardsManagerClient({
+      ...getDefaultEthRewardsManagerConfig(servicesConfig)
+    })
+
   const services: ServicesContainer = {
     storageNodeSelector,
     discoveryNodeSelector,
@@ -236,6 +262,9 @@ const initializeServices = (config: SdkConfig) => {
     solanaWalletAdapter,
     solanaRelay,
     antiAbuseOracle,
+    serviceTypeManagerClient,
+    serviceProviderFactoryClient,
+    ethRewardsManagerClient,
     logger
   }
   return services
