@@ -7,11 +7,8 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func checkErr(e error) {
 	if e != nil {
@@ -29,16 +26,14 @@ func main() {
 	checkErr(err)
 
 	for {
-		randString := uuid.NewString()
-		log.Printf("Setting 'randomString' to '%s'", randString)
 		time.Sleep(1 * time.Second)
 		_, err = sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
 			Event: &proto.Event{
 				Body: &proto.Event_Plays{
 					Plays: &proto.PlaysEvent{
 						Listens: []*proto.Listen{{
-							UserId:    "user1",
-							TrackId:   "track1",
+							UserId:    "uuid.NewString()",
+							TrackId:   "uuid.NewString()",
 							Timestamp: timestamppb.Now(),
 							Signature: "sig",
 						}},

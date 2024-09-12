@@ -65,19 +65,7 @@ func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoReques
 }
 
 func (app *CoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
-	resp := abcitypes.QueryResponse{Key: req.Data}
-
-	kv, err := app.queries.GetKey(ctx, string(req.Data))
-	if err != nil {
-		resp.Log = err.Error()
-		return &resp, err
-	}
-
-	value := []byte(kv.Value)
-	resp.Log = "exists"
-	resp.Value = value
-
-	return &resp, nil
+	return &abcitypes.QueryResponse{}, nil
 }
 
 func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
