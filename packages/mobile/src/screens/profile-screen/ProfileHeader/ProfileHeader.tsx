@@ -4,14 +4,13 @@ import { useSelectTierInfo } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
-import { LayoutAnimation, View } from 'react-native'
+import { LayoutAnimation } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { Box, useTheme } from '@audius/harmony-native'
-import { Divider, ProfilePicture } from 'app/components/core'
+import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
-import { makeStyles } from 'app/styles'
 import { zIndex } from 'app/utils/zIndex'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'
@@ -28,23 +27,13 @@ import { ExpandedSection } from './ExpandedSection'
 import { TopSupporters } from './TopSupporters'
 const getUserId = accountSelectors.getUserId
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  header: {
-    backgroundColor: palette.white,
-    paddingTop: spacing(2),
-    paddingHorizontal: spacing(3)
-  },
-  divider: { marginHorizontal: -12, marginBottom: spacing(2) },
-  bottomDivider: { marginTop: spacing(2), marginHorizontal: -12 }
-}))
-
 type ProfileHeaderProps = {
   scrollY: Animated.Value
 }
+
 // Memoized since material-top-tabs triggers unecessary rerenders
 export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const { scrollY } = props
-  const styles = useStyles()
   const accountId = useSelector(getUserId)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
@@ -130,7 +119,15 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
       >
         <ProfilePicture userId={userId} size='xl' />
       </Box>
-      <View pointerEvents='box-none' style={styles.header}>
+      <Flex
+        column
+        pointerEvents='box-none'
+        backgroundColor='white'
+        pv='s'
+        ph='m'
+        gap='s'
+        borderBottom='default'
+      >
         <ProfileInfo onFollow={handleFollow} />
         <OnlineOnly>
           <ProfileMetrics />
@@ -148,15 +145,14 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
               onPress={handleToggleExpand}
             />
           ) : null}
-          <Divider style={styles.divider} />
+          <Divider mh={-12} />
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
           {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
           <TopSupporters />
         </OnlineOnly>
-        <Divider style={styles.bottomDivider} />
-      </View>
+      </Flex>
     </>
   )
 })

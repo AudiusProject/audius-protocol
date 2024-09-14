@@ -19,7 +19,7 @@ import type { PlainButtonProps } from './types'
  * include and position icons.
  */
 export const PlainButton = (props: PlainButtonProps) => {
-  const { variant = 'default', size = 'default', ...baseProps } = props
+  const { variant = 'default', size = 'default', styles, ...baseProps } = props
   const { disabled, isLoading, onPress } = baseProps
   const isDisabled = disabled || isLoading
   const isPressable = !isDisabled && onPress
@@ -131,7 +131,7 @@ export const PlainButton = (props: PlainButtonProps) => {
     <BaseButton
       sharedValue={pressed}
       style={[animatedButtonStyles, buttonStyles]}
-      styles={{ text: textCss }}
+      styles={{ text: textCss, ...styles }}
       innerProps={{
         icon: {
           fill: iconColor,

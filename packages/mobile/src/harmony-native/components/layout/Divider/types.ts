@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react'
+import type { FlexProps } from '../Flex/types'
 
-export type DividerProps = {
+export type DividerProps = FlexProps & {
   orientation?: 'horizontal' | 'vertical'
-  children?: ReactNode
 }
