@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type { ParamListBase } from '@react-navigation/native'
 import type { GestureResponderEvent } from 'react-native'
 
@@ -35,4 +37,9 @@ export type TextLinkProps<
     showUnderline?: boolean
 
     source?: Source
+
+    /**
+     * React element to the right side of the text link.
+     */
+    endAdornment?: ReactNode
   }
