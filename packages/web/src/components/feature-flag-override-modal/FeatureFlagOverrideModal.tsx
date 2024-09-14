@@ -98,7 +98,7 @@ export const FeatureFlagOverrideModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
-  const filterdFlags = useMemo(() => {
+  const filteredFlags = useMemo(() => {
     return filter ? fuzzySearch(filter, flags, 3) : flags
   }, [filter])
 
@@ -133,7 +133,7 @@ export const FeatureFlagOverrideModal = () => {
           />
           {remoteInstanceLoaded ? (
             <div className={styles.optionContainer}>
-              {filterdFlags.map((flag) => (
+              {filteredFlags.map((flag) => (
                 <div key={flag} className={styles.option}>
                   <span>{flag}: </span>
                   <SegmentedControl
