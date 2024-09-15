@@ -7,7 +7,7 @@ import (
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 )
 
-func (core *CoreApplication) finalizeEvent(ctx context.Context, msg *gen_proto.Event, txHash string) error {
+func (core *CoreApplication) finalizeEvent(ctx context.Context, msg *gen_proto.SignedTransaction, txHash string) error {
 	switch t := msg.Body.(type) {
 	case *gen_proto.Event_Plays:
 		return nil

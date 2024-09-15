@@ -20,7 +20,7 @@ var _ = Describe("Plays", func() {
 
 		sdk := utils.DiscoveryOne
 
-		listens := []*proto.Listen{
+		listens := []*proto.TrackPlay{
 			{
 				UserId:    uuid.NewString(),
 				TrackId:   uuid.NewString(),
@@ -41,10 +41,10 @@ var _ = Describe("Plays", func() {
 			},
 		}
 
-		playEvent := &proto.Event{
-			Body: &proto.Event_Plays{
-				Plays: &proto.PlaysEvent{
-					Listens: listens,
+		playEvent := &proto.SignedTransaction{
+			Transaction: &proto.SignedTransaction_Plays{
+				Plays: &proto.TrackPlays{
+					Plays: listens,
 				},
 			},
 		}
@@ -52,11 +52,11 @@ var _ = Describe("Plays", func() {
 		expectedTxHash, err := grpc.ToTxHash(playEvent)
 		Expect(err).To(BeNil())
 
-		req := &proto.SubmitEventRequest{
-			Event: playEvent,
+		req := &proto.SendTransactionRequest{
+			Transaction: playEvent,
 		}
 
-		submitRes, err := sdk.SubmitEvent(ctx, req)
+		submitRes, err := sdk.SendTransaction(ctx, req)
 		Expect(err).To(BeNil())
 
 		txhash := submitRes.GetTxhash()
@@ -64,10 +64,10 @@ var _ = Describe("Plays", func() {
 
 		time.Sleep(time.Second * 1)
 
-		playEventRes, err := sdk.GetEvent(ctx, &proto.GetEventRequest{Txhash: txhash})
+		playEventRes, err := sdk.GetTransaction(ctx, &proto.GetTransactionRequest{Txhash: txhash})
 		Expect(err).To(BeNil())
 
-		Expect(protob.Equal(playEvent, playEventRes.GetEvent())).To(BeTrue())
+		Expect(protob.Equal(playEvent, playEventRes.GetTransaction())).To(BeTrue())
 
 		// test rpc get hash works too
 		txResult, err := sdk.Tx(ctx, []byte(txhash), true)
