@@ -57,6 +57,8 @@ type ChallengeRewardsDrawerContentProps = {
   amount: number
   /** The label to use for the in-progress status */
   progressLabel: string
+  /** The label to use for the completed status */
+  completedLabel?: string
   challengeState: UserChallengeState
   /** The amount of $AUDIO available to be claimed */
   claimableAmount: number
@@ -88,6 +90,7 @@ export const ChallengeRewardsDrawerContent = ({
   currentStep,
   stepCount = 1,
   progressLabel,
+  completedLabel,
   challengeId,
   isCooldownChallenge,
   challengeState,
@@ -129,10 +132,6 @@ export const ChallengeRewardsDrawerContent = ({
         formatNumberCommas(stepCount)
       )
     : messages.incomplete
-
-  const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
-    messages.claimableLabel
-  }`
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
@@ -216,15 +215,6 @@ export const ChallengeRewardsDrawerContent = ({
               renderCooldownSummaryTable()
             ) : (
               <>
-                <Text
-                  key='claimableAmount'
-                  style={styles.claimableAmount}
-                  variant='label'
-                  strength='strong'
-                  textTransform='uppercase'
-                >
-                  {claimableAmountText}
-                </Text>
                 <Button
                   style={styles.claimButton}
                   variant={claimInProgress ? 'secondary' : 'primary'}

@@ -1,9 +1,7 @@
 package console
 
 import (
-	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/console/components"
 	"github.com/AudiusProject/audius-protocol/core/console/utils"
@@ -49,20 +47,6 @@ func gatherTxMetadata(txResult []byte) (string, map[string]string) {
 
 	tx := result.Tx
 
-	if isKvTx(tx) {
-		txType = "KV Update"
-
-		values := string(tx)
-		parts := strings.Split(values, "=")
-
-		k := parts[0]
-		v := parts[1]
-
-		data[k] = v
-
-		return txType, data
-	}
-
 	var transaction gen_proto.SignedTransaction
 	err = proto.Unmarshal(tx, &transaction)
 	if err != nil {
@@ -85,9 +69,4 @@ func gatherTxMetadata(txResult []byte) (string, map[string]string) {
 	}
 
 	return txType, data
-}
-
-func isKvTx(tx []byte) bool {
-	parts := bytes.Split(tx, []byte("="))
-	return len(parts) == 2
 }

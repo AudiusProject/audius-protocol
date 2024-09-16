@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -97,42 +96,4 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 
 func (s *GRPCServer) Ping(ctx context.Context, req *proto.PingRequest) (*proto.PingResponse, error) {
 	return &proto.PingResponse{Message: "pong"}, nil
-}
-
-func (s *GRPCServer) SetKeyValue(ctx context.Context, req *proto.SetKeyValueRequest) (*proto.KeyValueResponse, error) {
-	logger := s.logger
-	rpc := s.chain
-	db := s.db
-
-	tx := []byte(fmt.Sprintf("%s=%s", req.Key, req.Value))
-	_, err := SendRawTx(ctx, logger, rpc, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	record, err := db.GetKey(ctx, req.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &proto.KeyValueResponse{
-		Key:   record.Key,
-		Value: record.Value,
-	}
-
-	return res, nil
-}
-func (s *GRPCServer) GetKeyValue(ctx context.Context, req *proto.GetKeyValueRequest) (*proto.KeyValueResponse, error) {
-	db := s.db
-	record, err := db.GetKey(ctx, req.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &proto.KeyValueResponse{
-		Key:   record.Key,
-		Value: record.Value,
-	}
-
-	return res, nil
 }

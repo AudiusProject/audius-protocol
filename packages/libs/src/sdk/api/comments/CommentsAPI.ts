@@ -82,4 +82,16 @@ export class CommentsApi extends GeneratedCommentsApi {
     })
     return response
   }
+
+  async pinComment(userId: number, entityId: number, isPin: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: isPin ? Action.PIN : Action.UNPIN,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
 }

@@ -2,10 +2,8 @@ import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
   formatCooldownChallenges,
-  useChallengeCooldownSchedule,
-  useFeatureFlag
+  useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   challengesSelectors,
@@ -34,7 +32,8 @@ import {
   Button,
   Text,
   ProgressBar,
-  Flex
+  Flex,
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -126,7 +125,11 @@ const messages = {
   profileCheckProfileDescription: 'Profile Description',
   profileCheckFavorite: 'Favorite Track/Playlist',
   profileCheckRepost: 'Repost Track/Playlist',
-  profileCheckFollow: 'Follow Five People'
+  profileCheckFollow: 'Follow Five People',
+  progress: 'Progress',
+  taskDetails: 'Task Details',
+  complete: 'Complete',
+  incomplete: 'Incomplete'
 }
 
 type InviteLinkProps = {
@@ -193,6 +196,7 @@ const TwitterShareButton = ({
 const ProfileChecks = () => {
   const completionStages = useSelector(getCompletionStages)
   const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
 
   const config: Record<string, boolean> = {
     [messages.profileCheckNameAndHandle]: completionStages.hasNameAndHandle,
@@ -206,7 +210,17 @@ const ProfileChecks = () => {
   }
 
   return (
-    <div className={wm(styles.profileTaskContainer)}>
+    <Flex
+      column
+      gap='m'
+      wrap='wrap'
+      ph={isMobile ? undefined : 'xl'}
+      pv={isMobile ? undefined : 'm'}
+      justifyContent='center'
+      css={{
+        maxHeight: 150
+      }}
+    >
       {Object.keys(config).map((key) => (
         <div className={wm(styles.profileTask)} key={key}>
           {config[key] ? (
@@ -217,7 +231,7 @@ const ProfileChecks = () => {
           <p className={cn({ [styles.completeText]: config[key] })}>{key}</p>
         </div>
       ))}
-    </div>
+    </Flex>
   )
 }
 
@@ -238,9 +252,6 @@ type BodyProps = {
 }
 
 const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
-  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
-    FeatureFlags.REWARDS_COOLDOWN
-  )
   const { toast } = useContext(ToastContext)
   const claimStatus = useSelector(getClaimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
@@ -257,8 +268,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const challenge = userChallenges[modalType]
   const isCooldownChallenge = challenge && challenge.cooldown_days > 0
   const currentStepCount = challenge?.current_step_count || 0
-  const { fullDescription, progressLabel, isVerifiedChallenge } =
-    challengeRewardsConfig[modalType]
+  const {
+    fullDescription,
+    progressLabel,
+    completedLabel,
+    isVerifiedChallenge
+  } = challengeRewardsConfig[modalType]
   const { modalButtonInfo } = getChallengeConfig(modalType)
   const {
     cooldownChallenges,
@@ -305,49 +320,52 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       {messages.verifiedChallenge}
     </div>
   ) : (
-    'Task'
+    <Text variant='label' size='l' strength='strong'>
+      {messages.taskDetails}
+    </Text>
   )
-  const progressDescription = isRewardsCooldownEnabled ? (
-    <div className={styles.audioMatchingDescription}>
+  const progressDescription = (
+    <Flex column gap='m'>
       <Text variant='body'>{fullDescription?.(challenge)}</Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
           {messages.cooldownDescription}
         </Text>
       ) : null}
-    </div>
-  ) : (
-    fullDescription?.(challenge)
+    </Flex>
   )
 
   const renderProgressStatusLabel = () => (
-    <div
-      className={cn(styles.progressStatus, {
-        [styles.incomplete]: challenge?.state === 'incomplete',
-        [styles.inProgress]: challenge?.state === 'in_progress',
-        [styles.complete]:
-          challenge?.state === 'completed' || challenge?.state === 'disbursed'
-      })}
-    >
+    <Flex alignItems='center'>
       {challenge?.state === 'incomplete' ? (
-        <h3 className={styles.incomplete}>Incomplete</h3>
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {messages.incomplete}
+        </Text>
       ) : null}
       {challenge?.state === 'completed' || challenge?.state === 'disbursed' ? (
         <Flex gap='s' justifyContent='center' alignItems='center'>
           <IconCheck width={16} height={16} color='subdued' />
-          <h3 className={styles.complete}>Complete</h3>
+          <Text variant='label' size='l' strength='strong' color='subdued'>
+            {messages.complete}
+          </Text>
         </Flex>
       ) : null}
       {challenge?.state === 'in_progress' && progressLabel ? (
-        <h3 className={styles.inProgress}>
+        <Text
+          variant='label'
+          size='l'
+          strength='strong'
+          color='subdued'
+          ellipses
+        >
           {fillString(
             progressLabel,
             formatNumberCommas(currentStepCount.toString()),
             formatNumberCommas(challenge?.max_steps?.toString() ?? '')
           )}
-        </h3>
+        </Text>
       ) : null}
-    </div>
+    </Flex>
   )
 
   const inviteLink = useMemo(
@@ -416,11 +434,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }, [])
 
   const renderCooldownSummaryTable = () => {
-    if (
-      isRewardsCooldownEnabled &&
-      isCooldownChallenge &&
-      !isCooldownChallengesEmpty
-    ) {
+    if (isCooldownChallenge && !isCooldownChallengesEmpty) {
       return (
         <SummaryTable
           title={messages.upcomingRewards}
@@ -437,19 +451,32 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const renderProgressBar = () => {
     if (showProgressBar && challenge.max_steps) {
-      return (
-        <div className={wm(styles.progressBarSection)}>
-          {isMobile ? (
-            <h3>Progress</h3>
-          ) : modalType === 'profile-completion' ? (
-            <ProfileChecks />
-          ) : null}
+      return isMobile ? (
+        <Flex
+          column
+          gap='s'
+          ph='l'
+          pv='xl'
+          borderLeft='strong'
+          css={{
+            flex: '1 1 0%'
+          }}
+        >
+          <Text variant='label' size='l' strength='strong' color='subdued'>
+            {messages.progress}
+          </Text>
           <ProgressBar
             className={wm(styles.progressBar)}
             value={currentStepCount}
             max={challenge?.max_steps}
           />
-        </div>
+        </Flex>
+      ) : (
+        <ProgressBar
+          className={wm(styles.progressBar)}
+          value={currentStepCount}
+          max={challenge?.max_steps}
+        />
       )
     }
     return null
@@ -491,6 +518,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           isLoading={claimInProgress}
           iconRight={IconCheck}
           onClick={onClaimRewardClicked}
+          fullWidth
         >
           {messages.claimableAmountLabel(audioToClaim)}
         </Button>
@@ -523,30 +551,46 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     )
   } else {
     return (
-      <div className={wm(styles.container)}>
+      <Flex column alignItems='center' gap='2xl'>
         {isMobile ? (
           <>
             <ProgressDescription
               label={progressDescriptionLabel}
               description={progressDescription}
             />
-            <div className={wm(styles.progressCard)}>
-              <div className={wm(styles.progressInfo)}>
+            <Paper
+              column
+              shadow='flat'
+              border='strong'
+              borderRadius='m'
+              w='100%'
+              backgroundColor='surface1'
+            >
+              <Flex justifyContent='center' borderBottom='strong'>
                 <ProgressReward
                   amount={formatNumberCommas(challenge?.totalAmount ?? '')}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
-              </div>
-              {renderProgressStatusLabel()}
-            </div>
+              </Flex>
+              <Flex justifyContent='center' ph='xl' pv='l'>
+                {renderProgressStatusLabel()}
+              </Flex>
+            </Paper>
             {modalType === 'profile-completion' ? <ProfileChecks /> : null}
             {renderCooldownSummaryTable()}
           </>
         ) : (
           <>
-            <div className={styles.progressCard}>
-              <div className={styles.progressInfo}>
+            <Paper
+              column
+              shadow='flat'
+              border='strong'
+              borderRadius='m'
+              w='100%'
+              backgroundColor='surface1'
+            >
+              <Flex justifyContent='space-between'>
                 <ProgressDescription
                   label={progressDescriptionLabel}
                   description={progressDescription}
@@ -555,40 +599,48 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   amount={formatNumberCommas(challenge?.totalAmount ?? '')}
                   subtext={messages.audio}
                 />
-              </div>
-              {renderProgressBar()}
-              {renderProgressStatusLabel()}
-            </div>
+              </Flex>
+              <Flex
+                pv='l'
+                ph='xl'
+                borderTop='strong'
+                gap='l'
+                borderBottomLeftRadius='m'
+                borderBottomRightRadius='m'
+                justifyContent='center'
+              >
+                {renderProgressStatusLabel()}
+                {renderProgressBar()}
+              </Flex>
+              {modalType === 'profile-completion' ? <ProfileChecks /> : null}
+            </Paper>
             {renderCooldownSummaryTable()}
           </>
         )}
         {renderReferralContent()}
         {renderMobileInstallContent()}
-        {buttonLink && !audioToClaim ? (
+        {buttonLink && !audioToClaim && completedLabel ? (
           <Button
             variant='primary'
-            fullWidth={isMobile}
+            fullWidth
             onClick={goToRoute}
             iconLeft={buttonInfo?.leftIcon}
             iconRight={buttonInfo?.rightIcon}
           >
-            {buttonInfo?.label}
+            {challenge?.state === 'disbursed'
+              ? completedLabel
+              : buttonInfo?.label}
           </Button>
         ) : null}
         {audioToClaim > 0 ||
         (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') ? (
           <div className={wm(styles.claimRewardWrapper)}>
-            {!isRewardsCooldownEnabled ? (
-              <div className={styles.claimRewardAmountLabel}>
-                {`${audioToClaim} ${messages.claimAmountLabel}`}
-              </div>
-            ) : null}
             {renderClaimButton()}
             {renderClaimedSoFarContent()}
           </div>
         ) : null}
         {errorContent}
-      </div>
+      </Flex>
     )
   }
 }
