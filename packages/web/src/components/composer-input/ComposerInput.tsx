@@ -1,5 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGetTracksByIds } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
 import { splitOnNewline } from '@audius/common/utils'
@@ -10,6 +12,7 @@ import {
   TextProps,
   useTheme
 } from '@audius/harmony'
+import { EntityType } from '@audius/sdk'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
@@ -21,6 +24,15 @@ import { ComposerInputProps } from './types'
 const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
+}
+
+const timestampRegex = /(?:([0-9]?\d):)?([0-5]?\d):([0-5]\d)/gm
+
+const getDurationFromTimestampMatch = (match: RegExpMatchArray) => {
+  const h = match[1] ? Number(match[1]) : 0
+  const m = match[2] ? Number(match[2]) : 0
+  const s = match[3] ? Number(match[3]) : 0
+  return s + m * 60 + h * 60 * 60
 }
 
 const MAX_LENGTH_DISPLAY_PERCENT = 0.85
@@ -62,6 +74,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
+  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
+  const track = useGetTracksByIds({
+    ids: entityType === EntityType.TRACK && entityId ? [entityId] : [],
+    currentUserId
+  }).data[0]
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
@@ -120,6 +137,21 @@ export const ComposerInput = (props: ComposerInputProps) => {
         : null
     },
     [userMentions]
+  )
+
+  const getTimestamps = useCallback(
+    (value: string) => {
+      const { duration } = track
+      return Array.from(value.matchAll(timestampRegex))
+        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+        .map((match) => ({
+          type: 'timestamp',
+          text: match[0],
+          index: match.index,
+          link: ''
+        }))
+    },
+    [track]
   )
 
   const handleChange = useCallback(
@@ -234,7 +266,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     const cursorPosition = ref.current?.selectionStart || 0
     const matches = getMatches(value) ?? []
     const mentions = getUserMentions(value) ?? []
-    const fullMatches = [...matches, ...mentions]
+    const timestamps = getTimestamps(value)
+    const fullMatches = [...matches, ...mentions, ...timestamps]
 
     // If there are no highlightable sections, render text normally
     if (!fullMatches.length && !isUserAutocompleteActive) {
