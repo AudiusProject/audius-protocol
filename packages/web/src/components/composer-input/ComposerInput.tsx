@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetTracksByIds } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
@@ -13,7 +13,6 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType } from '@audius/sdk'
-
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
@@ -75,10 +74,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
   const { currentUserId, entityId, entityType } = useCurrentCommentSection()
-  const track = useGetTracksByIds({
-    ids: entityType === EntityType.TRACK && entityId ? [entityId] : [],
+  const { data: track } = useGetTrackById({
+    id: entityType === EntityType.TRACK && entityId ? entityId : -1,
     currentUserId
-  }).data[0]
+  })
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
@@ -141,6 +140,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const getTimestamps = useCallback(
     (value: string) => {
+      if (!track) return []
+
       const { duration } = track
       return Array.from(value.matchAll(timestampRegex))
         .filter((match) => getDurationFromTimestampMatch(match) <= duration)
