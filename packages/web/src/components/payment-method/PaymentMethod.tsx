@@ -176,14 +176,14 @@ export const PaymentMethod = ({
     [setSelectedMethod]
   )
 
-  const handleHideExtraItems = useCallback(() => {
-    if (
-      selectedMethod === PurchaseMethod.CRYPTO ||
-      selectedMethod === PurchaseMethod.WALLET
-    ) {
-      setSelectedMethod(PurchaseMethod.CARD)
-    }
-  }, [selectedMethod, setSelectedMethod])
+  // const handleHideExtraItems = useCallback(() => {
+  //   if (
+  //     selectedMethod === PurchaseMethod.CRYPTO ||
+  //     selectedMethod === PurchaseMethod.WALLET
+  //   ) {
+  //     setSelectedMethod(PurchaseMethod.CARD)
+  //   }
+  // }, [selectedMethod, setSelectedMethod])
 
   const renderBody = (items: SummaryTableItem[]) => {
     const getFlexProps = (id: PurchaseMethod) => {
@@ -253,15 +253,15 @@ export const PaymentMethod = ({
   return (
     <SummaryTable
       title={messages.paymentMethod}
-      items={options}
-      extraItems={extraOptions}
-      onHideExtraItems={handleHideExtraItems}
-      showExtraItemsCopy={messages.showAdvanced}
-      disableExtraItemsToggle={
-        selectedMethod === PurchaseMethod.WALLET ||
-        selectedMethod === PurchaseMethod.CRYPTO
-      }
-      hideExtraItemsCopy={messages.hideAdvanced}
+      items={[...options, ...extraOptions]}
+      // extraItems={extraOptions}
+      // onHideExtraItems={handleHideExtraItems}
+      // showExtraItemsCopy={messages.showAdvanced}
+      // disableExtraItemsToggle={
+      //   selectedMethod === PurchaseMethod.WALLET ||
+      //   selectedMethod === PurchaseMethod.CRYPTO
+      // }
+      // hideExtraItemsCopy={messages.hideAdvanced}
       renderBody={renderBody}
     />
   )
