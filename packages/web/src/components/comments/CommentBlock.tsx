@@ -8,11 +8,10 @@ import {
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { toast } from '@audius/common/src/store/ui/toast/slice'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
@@ -28,10 +27,6 @@ export type CommentBlockProps = {
   comment: Comment | ReplyComment
   parentCommentId?: string
   hideActions?: boolean
-}
-
-const messages = {
-  deleteSuccess: 'Comment deleted'
 }
 
 export const CommentBlock = (props: CommentBlockProps) => {
@@ -57,16 +52,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
   const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
   const isDeleting = deleteStatus === Status.LOADING
-  const dispatch = useDispatch()
 
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
-  })
-
-  useStatusChange(deleteStatus, {
-    onSuccess: () => {
-      dispatch(toast({ content: messages.deleteSuccess }))
-    }
   })
 
   // triggers a fetch to get user profile info

@@ -19,12 +19,13 @@ export const useStatusChange = (
     onLoad?: (prevStatus: Status) => void
     onSuccess?: (prevStatus: Status) => void
     onError?: (prevStatus: Status) => void
-    onIdle?: (prevStatus: Status) => void
+    onIdle?: (prevStatus: Status) => void // Note: this doesnt call on first idle init; only on subsequent ones
   }
 ) => {
-  const prevStatus = usePrevious(status) as Status
+  const prevStatus = usePrevious(status)
   useEffect(() => {
-    if (prevStatus !== status) {
+    // Prev status is undefined on first render before going to IDLE
+    if (prevStatus !== status && prevStatus !== undefined) {
       if (status === Status.LOADING) {
         onLoad?.(prevStatus)
       }
