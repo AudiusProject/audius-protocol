@@ -32,17 +32,12 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
     <Flex justifyContent='space-between' w='100%'>
       <Flex gap='s' alignItems='center'>
         {audienceContentId ? (
-          audienceContentType === 'track' ? (
-            <DynamicImage
-              image={trackArtwork}
-              wrapperClassName={styles.artworkContainer}
-            />
-          ) : (
-            <DynamicImage
-              image={albumArtwork}
-              wrapperClassName={styles.artworkContainer}
-            />
-          )
+          <DynamicImage
+            image={
+              audienceContentType === 'track' ? trackArtwork : albumArtwork
+            }
+            wrapperClassName={styles.artworkContainer}
+          />
         ) : null}
         <Flex column gap='xs' alignItems='flex-start'>
           <Flex gap='s' alignItems='center'>
