@@ -73,7 +73,6 @@ export const trackRouter = router({
             must: [
               { term: { 'playlist_contents.track_ids.track': input.trackId } },
               { term: { is_delete: false } },
-              { term: { is_private: false } },
               { term: { is_album: true } },
             ],
             must_not: [],

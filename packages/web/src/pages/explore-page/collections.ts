@@ -32,13 +32,13 @@ export type ExploreCollection = {
   cardSensitivity?: number
 }
 
+// How much full width cards move
+const WIDE_CARD_SENSITIVTY = 0.04
+
 export type ExploreMoodCollection = ExploreCollection & {
   emoji: string
   moods: string[]
 }
-
-// How much full width cards move
-const WIDE_CARD_SENSITIVTY = 0.04
 
 export const PREMIUM_TRACKS: ExploreCollection = {
   variant: ExploreCollectionsVariant.DIRECT_LINK,
@@ -79,8 +79,7 @@ export const TRENDING_PLAYLISTS: ExploreCollection = {
   shadow: 'rgba(87,170,255,0.35)',
   icon: IconExploreTopPlaylists,
   link: TRENDING_PLAYLISTS_PAGE,
-  incentivized: true,
-  cardSensitivity: WIDE_CARD_SENSITIVTY
+  incentivized: true
 }
 
 export const TRENDING_UNDERGROUND: ExploreCollection = {
@@ -91,8 +90,7 @@ export const TRENDING_UNDERGROUND: ExploreCollection = {
   shadow: 'rgba(242, 87, 255, 0.35)',
   icon: IconCassette,
   link: TRENDING_UNDERGROUND_PAGE,
-  incentivized: true,
-  cardSensitivity: WIDE_CARD_SENSITIVTY
+  incentivized: true
 }
 
 export const CHILL_PLAYLISTS: ExploreMoodCollection = {

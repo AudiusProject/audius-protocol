@@ -16,7 +16,8 @@ test_entities = {
             "entity_id": 1,
             "entity_type": "Track",
             "created_at": datetime(2022, 1, i),
-            "is_edited": i == 10
+            "is_edited": i == 10,
+            "track_timestamp_s": i,
         }
         for i in range(1, 11)
     ]
@@ -31,9 +32,9 @@ test_entities = {
         for i in range(1, 11)
     ],
     "comment_threads": [
-        {"parent_comment_id": 10, "comment_id": i} for i in range(102, 111)
+        {"parent_comment_id": 10, "comment_id": i} for i in range(101, 111)
     ],
-    "comment_reactions": [{"comment_id": 10, "user_id": 1}],
+    "comment_reactions": [{"comment_id": 5, "user_id": 1}],
     "tracks": [
         {
             "track_id": 1,
@@ -55,7 +56,7 @@ def test_get_comments_default(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_track_comments({"limit": 5, "offset": 5}, 1)
+        comments = get_track_comments({"sort_method": "newest"}, 1)
 
         assert len(comments) == 5
         for comment in comments:
@@ -67,23 +68,90 @@ def test_get_comments_default(app):
             else:
                 assert len(comment["replies"]) == 0
 
-            assert 6 <= decode_string_id(comment["id"]) <= 10
+            assert 5 <= decode_string_id(comment["id"]) <= 10
 
 
 def test_get_comments_page(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_track_comments({"limit": 5, "offset": 5}, 1)
+        comments = get_track_comments(
+            {"limit": 5, "offset": 5, "sort_method": "newest"}, 1
+        )
 
         for comment in comments:
-            assert 6 <= decode_string_id(comment["id"]) <= 10
+            assert 1 <= decode_string_id(comment["id"]) <= 5
+
+
+def test_get_comments_sort(app):
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, test_entities)
+
+        # Testing default sort "top"
+        comments = get_track_comments({}, 1)
+        assert decode_string_id(comments[0]["id"]) == 5
+        assert comments[0]["react_count"] == 1
+
+        # Testing sort "top"
+        comments = get_track_comments({"sort_method": "top"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 5
+        assert comments[0]["react_count"] == 1
+
+        # Testing sort "newest"
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 10
+
+        # Testing sort "timestamp"
+        comments = get_track_comments({"sort_method": "timestamp"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 1
+        assert comments[0]["track_timestamp_s"] == 1
+
+
+def test_get_comments_pinned(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+                "is_pinned": True,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({"sort_method": "top"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
+
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
+
+        comments = get_track_comments({"sort_method": "timestamp"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
 
 
 def test_get_comments_replies(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_comment_replies({"limit": 2, "offset": 2}, 10)
+        comments = get_comment_replies(
+            {"limit": 2, "offset": 2, "sort_method": "newest"}, 10
+        )
         for comment in comments:
-            assert 104 <= decode_string_id(comment["id"]) <= 106
+            assert 103 <= decode_string_id(comment["id"]) <= 105

@@ -17,6 +17,8 @@ from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWall
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
+from src.models.moderation.muted_user import MutedUser
+from src.models.moderation.reported_comment import ReportedComment
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -40,7 +42,9 @@ from src.queries.get_skipped_transactions import (
 from src.tasks.entity_manager.entities.comment import (
     create_comment,
     delete_comment,
+    pin_comment,
     react_comment,
+    unpin_comment,
     unreact_comment,
     update_comment,
 )
@@ -59,6 +63,7 @@ from src.tasks.entity_manager.entities.grant import (
     reject_grant,
     revoke_grant,
 )
+from src.tasks.entity_manager.entities.muted_user import mute_user, unmute_user
 from src.tasks.entity_manager.entities.notification import (
     create_notification,
     view_notification,
@@ -69,6 +74,7 @@ from src.tasks.entity_manager.entities.playlist import (
     delete_playlist,
     update_playlist,
 )
+from src.tasks.entity_manager.entities.reported_comment import report_comment
 from src.tasks.entity_manager.entities.social_features import (
     action_to_record_types,
     create_social_action_types,
@@ -219,7 +225,6 @@ def entity_manager_update(
                         txhash,
                         logger,
                     )
-
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
 
@@ -377,6 +382,31 @@ def entity_manager_update(
                         and params.entity_type == EntityType.COMMENT
                     ):
                         unreact_comment(params)
+                    elif (
+                        params.action == Action.PIN
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        pin_comment(params)
+                    elif (
+                        params.action == Action.UNPIN
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        unpin_comment(params)
+                    elif (
+                        params.action == Action.MUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        mute_user(params)
+                    elif (
+                        params.action == Action.UNMUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        unmute_user(params)
+                    elif (
+                        params.action == Action.REPORT
+                        and params.entity_type == EntityType.COMMENT
+                    ):
+                        report_comment(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -534,6 +564,10 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if entity_type == EntityType.USER:
                 entities_to_fetch[EntityType.USER_EVENT].add(user_id)
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+                if action == Action.MUTE or action == Action.UNMUTE:
+                    entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
+                    entities_to_fetch[EntityType.USER].add(entity_id)
+
             if entity_type == EntityType.TRACK:
                 entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
             if entity_type == EntityType.PLAYLIST:
@@ -544,6 +578,11 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.COMMENT_REACTION].add(
                         (user_id, entity_id)
                     )
+                elif action == Action.REPORT:
+                    entities_to_fetch[EntityType.REPORTED_COMMENT].add(
+                        (user_id, entity_id)
+                    )
+
             if (
                 entity_type == EntityType.NOTIFICATION
                 and action == Action.VIEW_PLAYLIST
@@ -1131,6 +1170,75 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.COMMENT_REACTION] = {
             (comment_json["user_id"], comment_json["comment_id"]): comment_json
             for _, comment_json in comment_reactions
+        }
+    if entities_to_fetch[EntityType.MUTED_USER.value]:
+        muted_users_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.MUTED_USER.value
+        ]
+        or_queries = []
+        for muted_user in muted_users_to_fetch:
+            user_id, muted_user_id = muted_user
+            or_queries.append(
+                or_(
+                    MutedUser.user_id == user_id,
+                    MutedUser.muted_user_id == muted_user_id,
+                )
+            )
+
+        muted_users: List[Tuple[MutedUser, dict]] = (
+            session.query(
+                MutedUser,
+                literal_column(f"row_to_json({MutedUser.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.MUTED_USER] = {
+            (muted_user.user_id, muted_user.muted_user_id): muted_user
+            for muted_user, _ in muted_users
+        }
+        existing_entities_in_json[EntityType.MUTED_USER] = {
+            (
+                muted_user_json["user_id"],
+                muted_user_json["muted_user_id"],
+            ): muted_user_json
+            for _, muted_user_json in muted_users
+        }
+    if entities_to_fetch[EntityType.REPORTED_COMMENT.value]:
+        reported_comments_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.REPORTED_COMMENT.value
+        ]
+        or_queries = []
+        for reported_comment in reported_comments_to_fetch:
+            user_id, reported_comment_id = reported_comment
+            or_queries.append(
+                or_(
+                    ReportedComment.user_id == user_id,
+                    ReportedComment.reported_comment_id == reported_comment_id,
+                )
+            )
+
+        reported_comments: List[Tuple[ReportedComment, dict]] = (
+            session.query(
+                ReportedComment,
+                literal_column(f"row_to_json({ReportedComment.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.REPORTED_COMMENT] = {
+            (
+                reported_comment.user_id,
+                reported_comment.reported_comment_id,
+            ): reported_comment
+            for reported_comment, _ in reported_comments
+        }
+        existing_entities_in_json[EntityType.REPORTED_COMMENT] = {
+            (
+                reported_comment_json["user_id"],
+                reported_comment_json["reported_comment_id"],
+            ): reported_comment_json
+            for _, reported_comment_json in reported_comments
         }
 
     return existing_entities, existing_entities_in_json

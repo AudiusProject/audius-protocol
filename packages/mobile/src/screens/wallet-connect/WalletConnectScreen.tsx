@@ -13,6 +13,7 @@ import { TopBarIconButton } from '../app-screen'
 import { ConnectNewWalletButton } from './ConnectNewWalletButton'
 import { LinkedWallets } from './components'
 import type { WalletConnectParamList } from './types'
+import { usePhantomConnect } from './usePhantomConnect'
 import { useWalletStatusToasts } from './useWalletStatusToasts'
 
 const { fetchAssociatedWallets } = tokenDashboardPageActions
@@ -54,6 +55,7 @@ export const WalletConnectScreen = () => {
   const navigation = useNavigation<WalletConnectParamList>()
   const dispatch = useDispatch()
   useWalletStatusToasts()
+  usePhantomConnect()
 
   useEffectOnce(() => {
     dispatch(fetchAssociatedWallets())

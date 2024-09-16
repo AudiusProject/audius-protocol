@@ -1,5 +1,5 @@
 .container {
-  background-color: none;
+  background-color: #FFFFFF;
   height: 40px;
   width: 40px;
   border-radius: 40px;
@@ -13,10 +13,6 @@
   cursor: pointer;
 }
 
-.container.isBuffering {
-  background-color: #FFFFFF;
-}
-
 .container:hover {
   transform: scale(1.07);
 }
@@ -25,16 +21,7 @@
   transform: scale(0.98);
 }
 
-.container svg {
-  height: 100%;
-  width: 100%;
-}
-
 .container svg path {
-  fill: #FFFFFF;
-}
-
-.container.isBuffering svg path {
   fill: var(--play-button-fill);
 }
 

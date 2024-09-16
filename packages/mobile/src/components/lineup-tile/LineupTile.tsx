@@ -15,7 +15,6 @@ import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
-import { LineupTileCoSign } from './LineupTileCoSign'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
@@ -121,7 +120,8 @@ export const LineupTile = ({
           isPlayingUid={isPlayingUid}
           type={contentType}
         />
-        {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
+        {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
+        {/* {coSign ? <LineupTileCoSign coSign={coSign} /> : null} */}
         <LineupTileStats
           favoriteType={favoriteType}
           repostType={repostType}

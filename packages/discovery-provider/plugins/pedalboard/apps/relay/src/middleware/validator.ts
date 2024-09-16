@@ -4,7 +4,7 @@ import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
-import { isTrackDownload, isUserCreate, isUserDeactivate } from '../utils'
+import { isTrackDownload, isUserCreate, isUserDeactivate, isViewNotification } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
 const MAX_ACDC_GAS_LIMIT = 10485760
@@ -108,6 +108,10 @@ export const validator = async (
 
   if (isTrackDownload(encodedABI)) {
     logger.info("track download")
+    isAnonymousAllowed = true
+  }
+
+  if (isViewNotification(encodedABI)) {
     isAnonymousAllowed = true
   }
 

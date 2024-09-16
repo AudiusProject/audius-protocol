@@ -18,6 +18,10 @@ import {
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
+import {
+  connect,
+  signAndSendTransaction
+} from 'app/store/utils/phantomWalletConnect'
 import { generatePlaylistArtwork } from 'app/utils/generatePlaylistArtwork'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import share from 'app/utils/share'
@@ -63,6 +67,10 @@ export const storeContext: CommonStoreContext = {
     generatePlaylistArtwork
   },
   isMobile: true,
+  mobileWalletActions: {
+    connect,
+    signAndSendTransaction
+  },
   // @ts-ignore dispatch will be populated in store.ts
   dispatch: undefined
 }
