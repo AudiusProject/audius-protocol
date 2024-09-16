@@ -40,7 +40,8 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, comments } = useCurrentCommentSection()
+  const { currentUserId, entityId, entityType, comments } =
+    useCurrentCommentSection()
   const isMobile = useIsMobile()
   const isFirstComment = comments.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
@@ -115,6 +116,8 @@ export const CommentForm = ({
               ? messages.firstComment
               : messages.addComment
           }
+          entityId={entityId}
+          entityType={entityType}
           presetMessage={initialValue}
           readOnly={isMobile}
           disabled={isLoading}
