@@ -92,7 +92,7 @@ export class RewardManagerProgram {
           blob(45),
           ethAddress('operator')
         ]),
-        3,
+        4,
         'messages'
       )
     ])
