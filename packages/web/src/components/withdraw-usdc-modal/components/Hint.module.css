@@ -11,10 +11,6 @@
   fill: var(--harmony-neutral);
 }
 
-.text {
-  margin-bottom: 14px;
-}
-
 .link {
   color: var(--harmony-primary);
   font-weight: var(--harmony-font-medium);

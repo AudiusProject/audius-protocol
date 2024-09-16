@@ -53,7 +53,7 @@ export const Artwork = (props: ArtworkProps) => {
             borderRadius={borderRadius}
             h='100%'
             w='100%'
-            css={{ zIndex: 1, position: 'absolute' }}
+            css={{ zIndex: 2, position: 'absolute' }}
           />
         ) : null}
         <Box
@@ -99,7 +99,8 @@ export const Artwork = (props: ArtworkProps) => {
               top: 0,
               left: 0,
               backgroundColor: src ? color.static.black : undefined,
-              opacity: src ? 0.4 : undefined
+              opacity: src ? 0.4 : undefined,
+              zIndex: 1
             }}
           >
             {children}

@@ -2,6 +2,7 @@ import { MouseEvent as ReactMouseEvent, useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
+import { Dispatch } from 'redux'
 
 import {
   openSignOn,
@@ -9,6 +10,14 @@ import {
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
 const { getHasAccount } = accountSelectors
+
+/**
+ * Static callback that can be used to auth modal opening logic
+ * */
+export const openAuthModal = (dispatch: Dispatch) => {
+  dispatch(openSignOn(/** signIn */ false))
+  dispatch(showRequiresAccountModal())
+}
 
 /**
  * Like useCallback but designed to be used to redirect unauthenticated users
@@ -26,8 +35,7 @@ export const useAuthenticatedCallback = <T extends (...args: any) => any>(
   return useCallback(
     (...args: Parameters<T>) => {
       if (!isSignedIn) {
-        dispatch(openSignOn(/** signIn */ false))
-        dispatch(showRequiresAccountModal())
+        openAuthModal(dispatch)
       } else {
         // eslint-disable-next-line n/no-callback-literal
         return callback(...args)

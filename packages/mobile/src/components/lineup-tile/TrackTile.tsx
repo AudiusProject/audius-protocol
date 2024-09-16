@@ -116,6 +116,7 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp,
     is_unlisted: isUnlisted,
+    _co_sign: coSign,
     comment_count,
     comments_disabled
   } = track
@@ -266,6 +267,7 @@ export const TrackTileComponent = ({
   return (
     <LineupTile
       {...lineupTileProps}
+      coSign={coSign}
       duration={duration}
       isPlayingUid={isPlayingUid}
       favoriteType={FavoriteType.TRACK}

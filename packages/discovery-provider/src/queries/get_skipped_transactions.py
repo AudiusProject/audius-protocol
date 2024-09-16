@@ -1,7 +1,5 @@
 import logging
 
-from sqlalchemy import func
-
 from src.models.indexing.block import Block
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.utils import db_session, helpers
@@ -139,9 +137,6 @@ def save_and_get_skip_tx_hash(session, redis):
         and "has_consensus" in indexing_error
         and indexing_error["has_consensus"]
     ):
-        num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
-        if num_skipped_tx >= MAX_SKIPPED_TX:
-            return None
         skipped_tx = SkippedTransaction(
             blocknumber=indexing_error["blocknumber"],
             blockhash=indexing_error["blockhash"],

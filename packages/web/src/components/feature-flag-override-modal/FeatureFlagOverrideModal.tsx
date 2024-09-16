@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   OverrideSetting,
@@ -6,14 +6,17 @@ import {
 } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
+import { fuzzySearch } from '@audius/common/utils'
 import {
   Box,
+  Flex,
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
   PlainButton,
-  SegmentedControl
+  SegmentedControl,
+  TextInput
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -29,6 +32,7 @@ const { getHasAccount } = accountSelectors
 const flags = Object.values(FeatureFlags)
 const messages = {
   title: 'Feature Flag Override Settings',
+  filterPlaceholder: 'Filter Feature Flags',
   restart: 'Restart'
 }
 
@@ -48,6 +52,7 @@ const setOverrideSetting = (flag: string, val: OverrideSetting) => {
 export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
   const [ignoredHotkeyActive, setHotkeyActive] = useState(true)
+  const [filter, setFilter] = useState('')
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
@@ -93,59 +98,71 @@ export const FeatureFlagOverrideModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
+  const filteredFlags = useMemo(() => {
+    return filter ? fuzzySearch(filter, flags, 3) : flags
+  }, [filter])
+
   return (
     <Modal
       title={messages.title}
       onClose={closeModal}
       isOpen={isOpen}
       zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}
+      size='medium'
     >
       <ModalHeader onClose={closeModal}>
         <ModalTitle title={messages.title}>hi</ModalTitle>
       </ModalHeader>
       <ModalContent>
-        {isFlagChanged ? (
-          <Box mb='l'>
-            <PlainButton
-              onClick={() => window.location.reload()}
-              size='large'
-              fullWidth
-            >
-              {messages.restart}
-            </PlainButton>
-          </Box>
-        ) : null}
-        {remoteInstanceLoaded ? (
-          <div className={styles.optionContainer}>
-            {flags.map((flag) => (
-              <div key={flag} className={styles.option}>
-                <span>{flag}: </span>
-                <SegmentedControl
-                  options={[
-                    {
-                      key: 'default',
-                      text: `Default (${
-                        defaultSettings.current[flag] ? 'Enabled' : 'Disabled'
-                      })`
-                    },
-                    { key: 'enabled', text: 'Enabled' },
-                    { key: 'disabled', text: 'Disabled' }
-                  ]}
-                  selected={overrideSettings[flag] ?? 'default'}
-                  onSelectOption={(key: string) => {
-                    const val: OverrideSetting =
-                      key === 'default' ? null : (key as OverrideSetting)
-                    setOverrideSettings((prev) => ({ ...prev, [flag]: val }))
-                    setOverrideSetting(flag as FeatureFlags, val)
-                    setIsFlagChanged(true)
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <LoadingSpinner className={styles.loader} />
-        )}
+        <Flex column gap='xl'>
+          {isFlagChanged ? (
+            <Box mb='l'>
+              <PlainButton
+                onClick={() => window.location.reload()}
+                size='large'
+                fullWidth
+              >
+                {messages.restart}
+              </PlainButton>
+            </Box>
+          ) : null}
+          <TextInput
+            label={messages.filterPlaceholder}
+            onChange={(e) => setFilter(e.target.value)}
+            value={filter}
+          />
+          {remoteInstanceLoaded ? (
+            <div className={styles.optionContainer}>
+              {filteredFlags.map((flag) => (
+                <div key={flag} className={styles.option}>
+                  <span>{flag}: </span>
+                  <SegmentedControl
+                    options={[
+                      {
+                        key: 'default',
+                        text: `Default (${
+                          defaultSettings.current[flag] ? 'Enabled' : 'Disabled'
+                        })`
+                      },
+                      { key: 'enabled', text: 'Enabled' },
+                      { key: 'disabled', text: 'Disabled' }
+                    ]}
+                    selected={overrideSettings[flag] ?? 'default'}
+                    onSelectOption={(key: string) => {
+                      const val: OverrideSetting =
+                        key === 'default' ? null : (key as OverrideSetting)
+                      setOverrideSettings((prev) => ({ ...prev, [flag]: val }))
+                      setOverrideSetting(flag as FeatureFlags, val)
+                      setIsFlagChanged(true)
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <LoadingSpinner className={styles.loader} />
+          )}
+        </Flex>
       </ModalContent>
     </Modal>
   )

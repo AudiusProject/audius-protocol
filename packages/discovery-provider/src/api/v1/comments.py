@@ -37,5 +37,6 @@ class CommentReplies(Resource):
     def get(self, comment_id):
         args = pagination_parser.parse_args()
         decoded_id = decode_with_abort(comment_id, ns)
-        comment_replies = get_comment_replies(args, decoded_id)
+        current_user_id = args.get("user_id")
+        comment_replies = get_comment_replies(args, decoded_id, current_user_id)
         return success_response(comment_replies)

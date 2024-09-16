@@ -38,6 +38,7 @@
 }
 
 .selectedValue {
+  position: relative;
   height: 28px;
   display: inline-flex;
   align-self: flex-start;
