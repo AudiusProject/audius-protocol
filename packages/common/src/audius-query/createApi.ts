@@ -1,11 +1,4 @@
-import {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -342,7 +335,8 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<ForceType>,
+  force?: ForceType,
+  setForce?: (force: ForceType) => void,
   currentUserId?: Nullable<number>
 ) => {
   const { audiusBackend, dispatch } = context
@@ -380,8 +374,8 @@ const fetchData = async <Args, Data>(
       : await fetch(fetchArgs, context)
 
     if (apiData === null || apiData === undefined) {
-      if (force?.current) {
-        force.current = false
+      if (force && setForce) {
+        setForce(false)
       }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
@@ -408,7 +402,7 @@ const fetchData = async <Args, Data>(
       // Hack alert: We can't overwrite the current user, since it contains
       // special account data. Once this is removed from user cache we can
       // remove this line.
-      if (force?.current && currentUserId) {
+      if (force && currentUserId) {
         delete entities[Kind.USERS][currentUserId]
       }
 
@@ -421,14 +415,14 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(entities, !!force?.current))
+      dispatch(addEntries(entities, !!force))
       data = result
     } else {
       data = apiData
     }
 
-    if (force?.current) {
-      force.current = false
+    if (force && setForce) {
+      setForce(false)
     }
 
     dispatch(
@@ -480,7 +474,9 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
+    const [force, setForce] = useState<ForceType>(
+      hookOptions?.force ? 'force' : false
+    )
     const currentUserId = useSelector(getUserId)
     const queryState = useQueryState(
       fetchArgs,
@@ -490,10 +486,10 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current
+    const state = force
       ? {
           normalizedData: null,
-          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+          status: force === 'forcing' ? Status.LOADING : Status.IDLE
         }
       : queryState
 
@@ -511,10 +507,10 @@ const buildEndpointHooks = <
       if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
         return
       if (hookOptions?.disabled) return
-      if (force.current === 'forcing') return
+      if (force === 'forcing') return
 
-      if (force.current === 'force') {
-        force.current = 'forcing'
+      if (force === 'force') {
+        setForce('forcing')
       }
       fetchData(
         fetchArgs,
@@ -523,9 +519,17 @@ const buildEndpointHooks = <
         actions,
         context,
         force,
+        setForce,
         currentUserId
       )
-    }, [context, fetchArgs, hookOptions?.disabled, status, currentUserId])
+    }, [
+      context,
+      status,
+      hookOptions?.disabled,
+      force,
+      fetchArgs,
+      currentUserId
+    ])
 
     useDebounce(
       () => {

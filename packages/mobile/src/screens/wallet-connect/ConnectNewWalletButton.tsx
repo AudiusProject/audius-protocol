@@ -8,7 +8,6 @@ import { Button } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 import { useCanConnectNewWallet } from './useCanConnectNewWallet'
-import { usePhantomConnect } from './usePhantomConnect'
 import { useWalletConnect } from './useWalletConnect'
 
 const { getConfirmingWalletStatus, getRemoveWallet } =
@@ -29,7 +28,6 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ConnectNewWalletButton = () => {
   const styles = useStyles()
   const { connector } = useWalletConnect()
-  usePhantomConnect()
 
   const newWalletStatus = useSelector(getConfirmingWalletStatus)
   const { status: removeWalletStatus } = useSelector(getRemoveWallet)

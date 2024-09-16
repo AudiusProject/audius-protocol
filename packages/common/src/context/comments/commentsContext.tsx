@@ -76,6 +76,7 @@ export const CommentSectionProvider = (
     TrackCommentsSortMethodEnum.Top
   )
 
+  const { data: currentUserId } = useGetCurrentUserId({})
   const {
     data: comments = [],
     status,
@@ -83,13 +84,12 @@ export const CommentSectionProvider = (
     reset,
     hasMore: hasMorePages
   } = useGetCommentsByTrackId(
-    { entityId, sortMethod: currentSort },
+    { entityId, sortMethod: currentSort, currentUserId },
     {
       pageSize: 5,
       disabled: entityId === 0
     }
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
   const playerUid = useSelector(playerSelectors.getUid) ?? undefined
   const playTrack = useCallback(() => {

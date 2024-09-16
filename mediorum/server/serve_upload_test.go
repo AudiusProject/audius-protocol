@@ -42,6 +42,7 @@ func TestUploadFile(t *testing.T) {
 
 	assert.Equal(t, u2.TranscodeProgress, 1.0)
 	assert.Len(t, u2.TranscodedMirrors, s1.Config.ReplicationFactor)
+
 }
 
 func TestUploadPlacement(t *testing.T) {
@@ -64,7 +65,7 @@ func TestUploadPlacement(t *testing.T) {
 			"placement_hosts": strings.Join(examplePlacement, ","),
 		}).
 		SetSuccessResult(&uploads).
-		MustPost(s1.Config.Self.Host + "/uploads")
+		MustPost(s3.Config.Self.Host + "/uploads")
 
 	assert.Equal(t, resp.StatusCode, 200)
 	assert.Equal(t, examplePlacement, uploads[0].PlacementHosts)
@@ -78,7 +79,7 @@ func TestUploadPlacement(t *testing.T) {
 	// poll for complete
 	var u2 *Upload
 	for i := 0; i < 3; i++ {
-		resp, err := s2.reqClient.R().SetSuccessResult(&u2).Get(s2.Config.Self.Host + "/uploads/" + uploadId)
+		resp, err := s2.reqClient.R().SetSuccessResult(&u2).Get(s3.Config.Self.Host + "/uploads/" + uploadId)
 		assert.NoError(t, err)
 		assert.Equal(t, resp.StatusCode, 200)
 		if u2.Status == JobStatusDone {

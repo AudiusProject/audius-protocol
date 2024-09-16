@@ -11,6 +11,7 @@ import {
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
 } from '@audius/common/store'
+import { fuzzySearch } from '@audius/common/utils'
 import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
@@ -20,7 +21,6 @@ import { useEffectOnce } from 'react-use'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-import { fuzzySearch } from 'app/utils/fuzzySearch'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'

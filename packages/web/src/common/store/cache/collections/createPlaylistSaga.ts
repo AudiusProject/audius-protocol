@@ -25,13 +25,12 @@ import {
   EditCollectionValues,
   RequestConfirmationError
 } from '@audius/common/store'
-import { makeKindId, Nullable } from '@audius/common/utils'
+import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
-import { collectionPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
@@ -42,6 +41,7 @@ const { requestConfirmation } = confirmerActions
 const { getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { collectionPage } = route
 
 export function* createPlaylistSaga() {
   yield* takeLatest(
@@ -114,7 +114,12 @@ function* optimisticallySavePlaylist(
   playlist.is_private = true
   playlist.playlist_contents = {
     track_ids: initTrack
-      ? [{ time: Date.now(), track: initTrack.track_id }]
+      ? [
+          {
+            time: Math.round(Date.now() / 1000), // must use seconds
+            track: initTrack.track_id
+          }
+        ]
       : []
   }
   playlist.tracks = initTrack

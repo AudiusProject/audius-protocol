@@ -32,12 +32,11 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { collectionPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { getUserFromCollection } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId

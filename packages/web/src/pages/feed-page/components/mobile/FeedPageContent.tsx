@@ -68,6 +68,7 @@ const FeedPageMobileContent = ({
     playTrack: playFeedTrack,
     pauseTrack: pauseFeedTrack,
     actions: feedActions,
+    showLeadingElementArtistPick: false,
     delineate: true
   }
 

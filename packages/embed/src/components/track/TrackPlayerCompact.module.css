@@ -29,6 +29,7 @@
 
 .scrubber {
   flex: 1;
+  margin-right: 16px;
 }
 
 .bottomSection {
@@ -43,7 +44,8 @@
 }
 
 .logo {
-  margin: 0px 16px;
+  margin-right: 16px;
+  opacity: 0.5;
 }
 
 .logo path {

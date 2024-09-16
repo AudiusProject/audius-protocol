@@ -5,7 +5,6 @@ import {
   SquareSizes,
   Collection
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -13,6 +12,7 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Modal, Scrollbar, IconMultiselectAdd } from '@audius/harmony'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
@@ -23,11 +23,9 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { collectionPage } from 'utils/route'
 
 import styles from './AddToCollectionModal.module.css'
-const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
+const { getCollectionType, getTrackId, getTrackTitle } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -35,6 +33,7 @@ const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 const { toast } = toastActions
+const { collectionPage } = route
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add to ${capitalize(collectionType)}`,
@@ -53,13 +52,9 @@ const AddToCollectionModal = () => {
   const collectionType = useSelector(getCollectionType)
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
-  const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const isAlbumType = collectionType === 'album'
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   const messages = getMessages(collectionType)
 
@@ -122,10 +117,6 @@ const AddToCollectionModal = () => {
     setIsOpen(false)
   }
 
-  const handleDisabledPlaylistClick = () => {
-    dispatch(toast({ content: messages.hiddenAdd }))
-  }
-
   const handleCreateCollection = () => {
     if (!trackTitle) return
     const metadata = { playlist_name: trackTitle }
@@ -173,17 +164,8 @@ const AddToCollectionModal = () => {
               <div key={`${collection.playlist_id}`}>
                 <CollectionItem
                   collectionType={collectionType}
-                  disabled={
-                    !isHiddenPaidScheduledEnabled &&
-                    isTrackUnlisted &&
-                    !collection.is_private
-                  }
                   collection={collection}
-                  handleClick={
-                    isTrackUnlisted && !collection.is_private
-                      ? handleDisabledPlaylistClick
-                      : handleCollectionClick
-                  }
+                  handleClick={handleCollectionClick}
                 />
               </div>
             ))}

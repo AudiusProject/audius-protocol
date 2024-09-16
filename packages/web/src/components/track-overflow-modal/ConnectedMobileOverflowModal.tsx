@@ -34,11 +34,11 @@ import { Dispatch } from 'redux'
 
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
-import { collectibleDetailsPage, collectionPage } from 'utils/route'
+import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
 
-const { profilePage } = route
+const { profilePage, collectionPage } = route
 const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors

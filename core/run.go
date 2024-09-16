@@ -59,7 +59,7 @@ func run(logger *common.Logger) error {
 	}
 	logger.Info("initialized contracts")
 
-	node, err := chain.NewNode(logger, cometConfig, pool, c)
+	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
 	}

@@ -464,12 +464,10 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+# Comments
 track_comments_response = make_response(
     "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
 )
-
-
-# Comment
 
 track_comments_parser = pagination_with_current_user_parser.copy()
 track_comments_parser.add_argument(
@@ -502,7 +500,8 @@ class TrackComments(Resource):
         args = track_comments_parser.parse_args()
         print('darggs', args)
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(args, decoded_id)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(args, decoded_id, current_user_id)
         return success_response(track_comments)
 
 

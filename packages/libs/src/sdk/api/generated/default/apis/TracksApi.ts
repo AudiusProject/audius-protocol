@@ -130,7 +130,6 @@ export interface TrackCommentsRequest {
     offset?: number;
     limit?: number;
     userId?: string;
-    sortMethod?: TrackCommentsSortMethodEnum;
 }
 
 /**
@@ -643,10 +642,6 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
-        if (params.sortMethod !== undefined) {
-            queryParameters['sort_method'] = params.sortMethod;
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -688,12 +683,3 @@ export const SearchTracksSortMethodEnum = {
     Recent: 'recent'
 } as const;
 export type SearchTracksSortMethodEnum = typeof SearchTracksSortMethodEnum[keyof typeof SearchTracksSortMethodEnum];
-/**
- * @export
- */
-export const TrackCommentsSortMethodEnum = {
-    Top: 'top',
-    Newest: 'newest',
-    Timestamp: 'timestamp'
-} as const;
-export type TrackCommentsSortMethodEnum = typeof TrackCommentsSortMethodEnum[keyof typeof TrackCommentsSortMethodEnum];

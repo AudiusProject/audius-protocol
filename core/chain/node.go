@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	cfg "github.com/cometbft/cometbft/config"
 	nm "github.com/cometbft/cometbft/node"
@@ -14,8 +15,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewNode(logger *common.Logger, cometConfig *cfg.Config, pool *pgxpool.Pool, contracts *contracts.AudiusContracts) (*nm.Node, error) {
-	app := NewCoreApplication(logger, pool, contracts)
+func NewNode(logger *common.Logger, envConfig *config.Config, cometConfig *cfg.Config, pool *pgxpool.Pool, contracts *contracts.AudiusContracts) (*nm.Node, error) {
+	app := NewCoreApplication(logger, pool, contracts, envConfig)
 
 	pv := privval.LoadFilePV(
 		cometConfig.PrivValidatorKeyFile(),

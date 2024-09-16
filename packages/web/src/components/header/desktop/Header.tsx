@@ -4,6 +4,7 @@ import cn from 'classnames'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
+import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
 import styles from './Header.module.css'
 
@@ -20,6 +21,9 @@ export type HeaderProps = {
   onClickBack?: () => void
   overrideWidth?: number
   children?: ReactNode
+  isChromeOrSafari?: boolean
+  scrollBarWidth?: number
+  headerContainerRef?: React.RefObject<HTMLDivElement>
 }
 
 const Header = (props: HeaderProps) => {
@@ -35,7 +39,10 @@ const Header = (props: HeaderProps) => {
     showBackButton = false,
     onClickBack,
     bottomBar,
-    overrideWidth = null
+    overrideWidth = null,
+    isChromeOrSafari,
+    scrollBarWidth,
+    headerContainerRef
   } = props
 
   const { history } = useHistoryContext()
@@ -49,6 +56,11 @@ const Header = (props: HeaderProps) => {
 
   return (
     <>
+      <HeaderGutter
+        isChromeOrSafari={isChromeOrSafari}
+        headerContainerRef={headerContainerRef}
+        scrollBarWidth={scrollBarWidth}
+      />
       <div
         className={cn(
           styles.container,

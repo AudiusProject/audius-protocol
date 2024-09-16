@@ -59,10 +59,28 @@ export interface Comment {
     reactCount: number;
     /**
      * 
+     * @type {number}
+     * @memberof Comment
+     */
+    replyCount: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof Comment
      */
     isPinned: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isCurrentUserReacted?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isArtistReacted?: boolean;
     /**
      * 
      * @type {string}
@@ -92,6 +110,7 @@ export function instanceOfComment(value: object): value is Comment {
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
+    isInstance = isInstance && "replyCount" in value && value["replyCount"] !== undefined;
     isInstance = isInstance && "isPinned" in value && value["isPinned"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
 
@@ -113,7 +132,10 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'message': json['message'],
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
+        'replyCount': json['reply_count'],
         'isPinned': json['is_pinned'],
+        'isCurrentUserReacted': !exists(json, 'is_current_user_reacted') ? undefined : json['is_current_user_reacted'],
+        'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
@@ -134,7 +156,10 @@ export function CommentToJSON(value?: Comment | null): any {
         'message': value.message,
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
+        'reply_count': value.replyCount,
         'is_pinned': value.isPinned,
+        'is_current_user_reacted': value.isCurrentUserReacted,
+        'is_artist_reacted': value.isArtistReacted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
