@@ -146,6 +146,7 @@ const commentsApi = createApi({
           userId: `${userId}`,
           message: body,
           isPinned: false,
+          isEdited: false,
           trackTimestampS,
           reactCount: 0,
           replyCount: 0,
@@ -252,23 +253,29 @@ const commentsApi = createApi({
       async onQueryStarted({ id, newMessage }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...(comment as Comment), message: newMessage }),
+          (comment) => ({
+            ...(comment as Comment),
+            message: newMessage,
+            isEdited: true
+          }),
           dispatch
         )
       }
     },
     pinCommentById: {
-      async fetch({
-        id: _id,
-        userId: _userId,
-        isPinned
-      }: {
-        id: string
-        userId: ID
-        isPinned: boolean
-      }) {
-        // TODO: call sdk here
-        // return null
+      async fetch(
+        { id, userId, isPinned }: { id: string; userId: ID; isPinned: boolean },
+        { audiusSdk }
+      ) {
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to react to comment. Id ${id} could not be decoded`
+          )
+          return
+        }
+        const sdk = await audiusSdk()
+        await sdk.comments.pinComment(userId, decodedId, isPinned)
       },
       options: { type: 'mutation' },
       onQueryStarted({ id, isPinned }, { dispatch }) {

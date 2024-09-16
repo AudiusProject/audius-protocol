@@ -5,6 +5,7 @@ import {
   useCurrentCommentSection,
   useReactToComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ReplyComment } from '@audius/sdk'
 
 import {
@@ -26,12 +27,6 @@ import { UserLink } from '../user-link'
 import { CommentBadge } from './CommentBadge'
 import { CommentOverflowMenu } from './CommentOverflowMenu'
 
-const messages = {
-  pinned: 'Pinned by artist',
-  topSupporters: 'Top Supporters',
-  reply: 'Reply'
-}
-
 export type CommentBlockProps = {
   commentId: string
   parentCommentId?: string
@@ -52,6 +47,7 @@ export const CommentBlockInternal = (
     id: commentId,
     createdAt,
     userId: commentUserIdStr,
+    isEdited,
     isArtistReacted,
     isCurrentUserReacted
   } = comment
@@ -104,8 +100,10 @@ export const CommentBlockInternal = (
             ) : null}
           </Flex>
         </Flex>
-        <CommentText>{message}</CommentText>
-
+        <CommentText>
+          {message}
+          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
+        </CommentText>
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>

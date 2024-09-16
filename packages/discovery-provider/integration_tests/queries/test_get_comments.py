@@ -16,7 +16,8 @@ test_entities = {
             "entity_id": 1,
             "entity_type": "Track",
             "created_at": datetime(2022, 1, i),
-            "track_timestamp_s": i 
+            "is_edited": i == 10,
+            "track_timestamp_s": i,
         }
         for i in range(1, 11)
     ]
@@ -61,6 +62,9 @@ def test_get_comments_default(app):
         for comment in comments:
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
+                assert comment["reply_count"] == 10
+                assert comment["react_count"] == 0
+                assert comment["is_edited"] == True
             else:
                 assert len(comment["replies"]) == 0
 
@@ -71,7 +75,9 @@ def test_get_comments_page(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_track_comments({"limit": 5, "offset": 5, "sort_method": "newest"}, 1)
+        comments = get_track_comments(
+            {"limit": 5, "offset": 5, "sort_method": "newest"}, 1
+        )
 
         for comment in comments:
             assert 1 <= decode_string_id(comment["id"]) <= 5
@@ -102,10 +108,50 @@ def test_get_comments_sort(app):
         assert comments[0]["track_timestamp_s"] == 1
 
 
+def test_get_comments_pinned(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+                "is_pinned": True,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({"sort_method": "top"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
+
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
+
+        comments = get_track_comments({"sort_method": "timestamp"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 2
+
+
 def test_get_comments_replies(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_comment_replies({"limit": 2, "offset": 2, "sort_method": "newest"}, 10)
+        comments = get_comment_replies(
+            {"limit": 2, "offset": 2, "sort_method": "newest"}, 10
+        )
         for comment in comments:
             assert 103 <= decode_string_id(comment["id"]) <= 105
