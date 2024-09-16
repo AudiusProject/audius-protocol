@@ -12,14 +12,8 @@ import {
   CommentsApi as GeneratedCommentsApi
 } from '../generated/default'
 
-export type CommentMetadata = {
-  body?: string
-  userId: number
-  entityId: number
-  entityType?: EntityType // For now just tracks are supported, but we left the door open for more
-  parentCommentId?: number
-  timestamp_s?: number
-}
+import { CommentMetadata } from './types'
+
 export class CommentsApi extends GeneratedCommentsApi {
   constructor(
     configuration: Configuration,
@@ -83,6 +77,18 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.COMMENT,
       entityId,
       action: isLiked ? Action.REACT : Action.UNREACT,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async pinComment(userId: number, entityId: number, isPin: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: isPin ? Action.PIN : Action.UNPIN,
       metadata: '',
       auth: this.auth
     })

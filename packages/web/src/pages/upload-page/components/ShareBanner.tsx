@@ -8,6 +8,7 @@ import {
   ShareContent,
   UploadType
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   IconLink,
@@ -26,7 +27,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
-import { collectionPage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
 
 import styles from './ShareBanner.module.css'
@@ -35,6 +35,7 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 
 const { getAccountUser } = accountSelectors
+const { collectionPage } = route
 
 const uploadTypeMap = {
   [UploadType.INDIVIDUAL_TRACK]: 'new track',

@@ -2,6 +2,7 @@ import qs from 'query-string'
 import { matchPath, generatePath } from 'react-router'
 
 import { SearchCategory, SearchFilters } from '~/api/search'
+import { ID } from '~/models'
 
 import { encodeUrlName } from './formatUtil'
 import { convertGenreLabelToValue, Genre } from './genres'
@@ -214,6 +215,7 @@ export const authenticatedRoutes = [
   CHAT_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
+  PAYMENTS_PAGE,
   WITHDRAWALS_PAGE
 ]
 
@@ -345,6 +347,27 @@ export const staticRoutes = new Set([
 
 export const profilePage = (handle: string) => {
   return `/${encodeUrlName(handle)}`
+}
+
+export const collectionPage = (
+  handle?: string | null,
+  playlistName?: string | null,
+  playlistId?: ID | null,
+  permalink?: string | null,
+  isAlbum?: boolean
+) => {
+  // Prioritize permalink if available. If not, default to legacy routing
+  if (permalink) {
+    return permalink
+  } else if (playlistName && playlistId && handle) {
+    const collectionType = isAlbum ? 'album' : 'playlist'
+    return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
+      playlistName
+    )}-${playlistId}`
+  } else {
+    console.error('Missing required arguments to get PlaylistPage route.')
+    return ''
+  }
 }
 
 /**

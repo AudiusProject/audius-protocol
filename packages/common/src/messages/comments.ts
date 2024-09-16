@@ -13,5 +13,7 @@ export const commentsMessages = {
   showReplies: (replyCount: number) =>
     `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
   hideReplies: 'Hide Replies',
-  commentsDisabled: 'Comments are disabled for this track'
+  commentsDisabled: 'Comments are disabled for this track',
+  edited: 'edited',
+  reply: 'Reply'
 }

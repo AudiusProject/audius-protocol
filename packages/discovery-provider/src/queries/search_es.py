@@ -585,6 +585,14 @@ def track_dsl(
                                 "boost": len(search_str) * 0.5,
                             }
                         },
+                        {
+                            "term": {
+                                "title": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": len(search_str) * 0.5,
+                                }
+                            }
+                        },
                         *[
                             {
                                 "match": {

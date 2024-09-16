@@ -20,10 +20,8 @@ type CommentHeaderProps = {
   isLoading?: boolean
 }
 
-export const CommentHeader = ({
-  commentCount,
-  isLoading
-}: CommentHeaderProps) => {
+export const CommentHeader = (props: CommentHeaderProps) => {
+  const { commentCount, isLoading } = props
   const { handleMuteEntityNotifications, isEntityOwner } = useContext(
     CommentSectionContext
   )!

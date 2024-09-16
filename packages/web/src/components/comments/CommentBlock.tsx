@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment,
   usePostComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
@@ -24,19 +25,26 @@ import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
 export type CommentBlockProps = {
-  comment: Comment | ReplyComment
+  commentId: string
   parentCommentId?: string
   hideActions?: boolean
 }
 
-export const CommentBlock = (props: CommentBlockProps) => {
+const CommentBlockInternal = (
+  props: Omit<CommentBlockProps, 'commentId'> & {
+    comment: Comment | ReplyComment
+  }
+) => {
   const { comment, parentCommentId, hideActions } = props
+
   const {
-    message,
     id: commentId,
+    message,
     trackTimestampS,
     createdAt,
-    userId: commentUserIdStr
+    userId: commentUserIdStr,
+    isEdited,
+    isArtistReacted
   } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
@@ -64,8 +72,6 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = commentUserId === artistId
 
-  const isLikedByArtist = false // TODO: need to add this to backend metadata
-
   return (
     <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0 }}>
@@ -82,9 +88,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
             commentUserId={commentUserId}
           />
         </Box>
-        {isPinned || isLikedByArtist ? (
+        {isPinned || isArtistReacted ? (
           <Flex justifyContent='space-between' w='100%'>
-            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
+            <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
@@ -115,6 +121,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
         ) : (
           <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
             {message}
+            {isEdited ? (
+              <Text color='subdued'> ({messages.edited})</Text>
+            ) : null}
           </Text>
         )}
         {hideActions ? null : (
@@ -136,4 +145,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
       </Flex>
     </Flex>
   )
+}
+
+// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// There's no way to return early in the above component due to rules of hooks ordering
+export const CommentBlock = (props: CommentBlockProps) => {
+  const { data: comment } = useGetCommentById({ id: props.commentId })
+  if (!comment) return null
+  return <CommentBlockInternal {...props} comment={comment} />
 }

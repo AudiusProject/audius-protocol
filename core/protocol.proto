@@ -10,8 +10,6 @@ service Protocol {
   rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse);
   rpc GetEvent (GetEventRequest) returns (GetEventResponse);
   rpc Ping (PingRequest) returns (PingResponse);
-  rpc SetKeyValue(SetKeyValueRequest) returns (KeyValueResponse);
-  rpc GetKeyValue(GetKeyValueRequest) returns (KeyValueResponse);
 }
 
 message Event {
@@ -64,21 +62,6 @@ message PingRequest {
 
 message PingResponse {
   string message = 1;
-}
-
-message SetKeyValueRequest {
-  string key = 1;
-  string value = 2;
-}
-
-message GetKeyValueRequest {
-  string key = 1;
-}
-
-message KeyValueResponse {
-  string key = 1;
-  string value = 2;
-  string txhash = 3;
 }
 
 message SlaRollupEvent {

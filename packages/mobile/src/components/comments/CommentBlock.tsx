@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useReactToComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ReplyComment } from '@audius/sdk'
 
 import {
@@ -26,19 +27,17 @@ import { UserLink } from '../user-link'
 import { CommentBadge } from './CommentBadge'
 import { CommentOverflowMenu } from './CommentOverflowMenu'
 
-const messages = {
-  pinned: 'Pinned by artist',
-  topSupporters: 'Top Supporters',
-  reply: 'Reply'
-}
-
 export type CommentBlockProps = {
-  comment: Comment | ReplyComment
+  commentId: string
   parentCommentId?: string
   hideActions?: boolean
 }
 
-export const CommentBlock = (props: CommentBlockProps) => {
+export const CommentBlockInternal = (
+  props: Omit<CommentBlockProps, 'commentId'> & {
+    comment: Comment | ReplyComment
+  }
+) => {
   const { comment, hideActions } = props
   const { artistId, setReplyingToComment } = useCurrentCommentSection()
   const {
@@ -47,7 +46,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
     trackTimestampS,
     id: commentId,
     createdAt,
-    userId: commentUserIdStr
+    userId: commentUserIdStr,
+    isEdited,
+    isArtistReacted,
+    isCurrentUserReacted
   } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
@@ -55,10 +57,8 @@ export const CommentBlock = (props: CommentBlockProps) => {
   const commentUserId = Number(commentUserIdStr)
   useGetUserById({ id: commentUserId })
 
-  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
   const isCommentByArtist = commentUserId === artistId
-
-  const isLikedByArtist = false // TODO: need to add this to backend metadata
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -78,9 +78,9 @@ export const CommentBlock = (props: CommentBlockProps) => {
             commentUserId={commentUserId}
           />
         </Box>
-        {isPinned || isLikedByArtist ? (
+        {isPinned || isArtistReacted ? (
           <Flex direction='row' justifyContent='space-between' w='100%'>
-            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
+            <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
         <Flex direction='row' gap='s' alignItems='center'>
@@ -100,8 +100,10 @@ export const CommentBlock = (props: CommentBlockProps) => {
             ) : null}
           </Flex>
         </Flex>
-        <CommentText>{message}</CommentText>
-
+        <CommentText>
+          {message}
+          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
+        </CommentText>
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>
@@ -130,4 +132,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
       </Flex>
     </Flex>
   )
+}
+
+// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// There's no way to return early in the above component due to rules of hooks ordering
+export const CommentBlock = (props: CommentBlockProps) => {
+  const { data: comment } = useGetCommentById({ id: props.commentId })
+  if (!comment) return null
+  return <CommentBlockInternal {...props} comment={comment} />
 }

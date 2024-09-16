@@ -3,7 +3,7 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import type { IconSize, TextLinkProps } from '@audius/harmony-native'
-import { TextLink, Flex } from '@audius/harmony-native'
+import { TextLink } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
 import { UserBadgesV2 } from '../user-badges/UserBadgesV2'
@@ -22,16 +22,14 @@ export const UserLink = (props: UserLinkProps) => {
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
   return (
-    <Flex direction='row' gap='xs' justifyContent='center' alignItems='center'>
-      <TextLink<ParamList>
-        to={{ screen: 'Profile', params: { id: userId } }}
-        numberOfLines={1}
-        flexShrink={1}
-        {...other}
-      >
-        {userName}
-      </TextLink>
-      <UserBadgesV2 userId={userId} badgeSize={badgeSize} />
-    </Flex>
+    <TextLink<ParamList>
+      to={{ screen: 'Profile', params: { id: userId } }}
+      numberOfLines={1}
+      flexShrink={1}
+      endAdornment={<UserBadgesV2 userId={userId} badgeSize={badgeSize} />}
+      {...other}
+    >
+      {userName}
+    </TextLink>
   )
 }

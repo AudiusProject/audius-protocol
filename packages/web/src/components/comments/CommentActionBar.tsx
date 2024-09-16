@@ -28,12 +28,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import {
+  openAuthModal,
+  useAuthenticatedCallback
+} from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
 const { getUser } = cacheUsersSelectors
 
 const messages = {
   pin: (isPinned: boolean) => (isPinned ? 'Unpin' : 'Pin'),
+  reply: 'Reply',
   edit: 'Edit',
   delete: 'Delete',
   report: 'Flag & Remove',
@@ -72,13 +77,11 @@ export const CommentActionBar = ({
   onClickReply,
   onClickDelete
 }: CommentActionBarProps) => {
-  const dispatch = useDispatch()
-  // comment details
-  const { reactCount, id: commentId, userId } = comment
-  const isParentComment = 'isPinned' in comment
+    const dispatch = useDispatch()
+  // comment from props
+  const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
+    const isParentComment = 'isPinned' in comment
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
-  const [notificationsMuted, setNotificationsMuted] = useState(false) // TODO: Need to set up API to provide this
-
   // API actions
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
@@ -101,10 +104,11 @@ export const CommentActionBar = ({
   const isMobile = useIsMobile()
 
   // component state
-  const [reactionState, setReactionState] = useState(false)
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
+    const [notificationsMuted, setNotificationsMuted] = useState(false) // TODO: Need to set up API to provide this
 
   // Handlers
-  const handleReact = useCallback(() => {
+  const handleReact = useAuthenticatedCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
   }, [commentId, reactToComment, reactionState])
@@ -133,9 +137,13 @@ export const CommentActionBar = ({
     if (isMobile) {
       toggleIsMobileAppDrawer()
     } else {
-      onClickReply()
+      if (currentUserId === undefined) {
+        openAuthModal(dispatch)
+      } else {
+        onClickReply()
+      }
     }
-  }, [isMobile, onClickReply, toggleIsMobileAppDrawer])
+  }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   // Confirmation Modal state
   const confirmationModals: {
@@ -318,7 +326,7 @@ export const CommentActionBar = ({
         size='m'
         disabled={isDisabled}
       >
-        Reply
+        {messages.reply}
       </TextLink>
 
       <PopupMenu
@@ -334,7 +342,11 @@ export const CommentActionBar = ({
               if (isMobile) {
                 toggleIsMobileAppDrawer()
               } else {
-                triggerPopup()
+                if (currentUserId === undefined) {
+                  openAuthModal(dispatch)
+                } else {
+                  triggerPopup()
+                }
               }
             }}
           />

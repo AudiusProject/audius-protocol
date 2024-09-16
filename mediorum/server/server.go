@@ -87,6 +87,7 @@ type MediorumServer struct {
 	reqClient        *req.Client
 	rendezvousHasher *RendezvousHasher
 	coreSdk          *core.Sdk
+	transcodeWork    chan *Upload
 
 	// simplify
 	mediorumPathUsed uint64
@@ -280,6 +281,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isSeeding:        config.Env == "stage" || config.Env == "prod",
 		isAudiusdManaged: isAudiusdManaged,
 		rendezvousHasher: rendezvousHasher,
+		transcodeWork:    make(chan *Upload),
 
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),

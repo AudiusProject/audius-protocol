@@ -52,7 +52,7 @@ TRACK_ID_OFFSET = 2_000_000
 USER_ID_OFFSET = 3_000_000
 
 # limits
-CHARACTER_LIMIT_USER_BIO = 250
+CHARACTER_LIMIT_USER_BIO = 256
 CHARACTER_LIMIT_DESCRIPTION = 1000
 PLAYLIST_TRACK_LIMIT = 5000
 
@@ -77,6 +77,8 @@ class Action(str, Enum):
     DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    PIN = "Pin"
+    UNPIN = "Unpin"
     MUTE = "Mute"
     UNMUTE = "Unmute"
     REPORT = "Report"

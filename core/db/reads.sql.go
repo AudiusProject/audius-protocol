@@ -95,24 +95,6 @@ func (q *Queries) GetInProgressRollupReports(ctx context.Context) ([]SlaNodeRepo
 	return items, nil
 }
 
-const getKey = `-- name: GetKey :one
-select id, key, value, tx_hash, created_at, updated_at from core_kvstore where key = $1
-`
-
-func (q *Queries) GetKey(ctx context.Context, key string) (CoreKvstore, error) {
-	row := q.db.QueryRow(ctx, getKey, key)
-	var i CoreKvstore
-	err := row.Scan(
-		&i.ID,
-		&i.Key,
-		&i.Value,
-		&i.TxHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const getLatestAppState = `-- name: GetLatestAppState :one
 select block_height, app_hash
 from core_app_state

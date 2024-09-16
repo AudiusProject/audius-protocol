@@ -86,16 +86,6 @@ jobs:
       service: trpc
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-healthz
-      context: [GCP, dockerhub, slack-secrets]
-      service: healthz
-      notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-protocol-dashboard
-      context: [GCP, dockerhub, slack-secrets]
-      service: dashboard
-      notify_slack_on_failure: true
-  - push-docker-image:
       name: push-uptime
       context: [Vercel, dockerhub]
       service: uptime
@@ -105,123 +95,12 @@ jobs:
       context: [GCP, dockerhub, slack-secrets]
       service: ddex-processor
       notify_slack_on_failure: true
-
-  - push-arm-image:
-      name: push-core-arm
-      context: [Vercel, dockerhub]
-      service: core
-      requires:
-        - push-core
-  - push-arm-image:
-      name: push-discovery-provider-arm
-      context: [Vercel, dockerhub]
-      service: discovery-provider
-      requires:
-        - push-discovery-provider
-  - push-arm-image:
-      name: push-discovery-provider-notifications-arm
-      context: [Vercel, dockerhub]
-      service: discovery-provider-notifications
-      requires:
-        - push-discovery-provider-notifications
-  - push-arm-image:
-      name: push-pedalboard-trending-challenge-rewards-arm
-      context: [Vercel, dockerhub]
-      service: trending-challenge-rewards
-      requires:
-        - push-pedalboard-trending-challenge-rewards
-  - push-arm-image:
-      name: push-pedalboard-relay-arm
-      context: [Vercel, dockerhub]
-      service: relay
-      requires:
-        - push-pedalboard-relay
-  - push-arm-image:
-      name: push-pedalboard-solana-relay-arm
-      context: [Vercel, dockerhub, slack-secrets]
-      service: solana-relay
-      requires:
-        - push-pedalboard-solana-relay
-  - push-arm-image:
-      name: push-pedalboard-sla-auditor-arm
-      context: [Vercel, dockerhub]
-      service: sla-auditor
-      requires:
-        - push-pedalboard-sla-auditor
-  - push-arm-image:
-      name: push-pedalboard-crm-arm
-      context: [Vercel, dockerhub]
-      service: crm
-      requires:
-        - push-pedalboard-crm
-  - push-arm-image:
-      name: push-pedalboard-backfill-audio-analyses-arm
-      context: [Vercel, dockerhub]
-      service: backfill-audio-analyses
-      requires:
-        - push-pedalboard-backfill-audio-analyses
-  - push-arm-image:
-      name: push-pedalboard-mri-arm
-      context: [Vercel, dockerhub]
-      service: mri
-      requires:
-        - push-pedalboard-mri
-  - push-arm-image:
-      name: push-pedalboard-verified-notifications-arm
-      context: [Vercel, dockerhub]
-      service: verified-notifications
-      requires:
-        - push-pedalboard-verified-notifications
-  - push-arm-image:
-      name: push-comms-arm
-      context: [Vercel, dockerhub]
-      service: comms
-      requires:
-        - push-comms
-  - push-arm-image:
-      name: push-trpc-arm
-      context: [Vercel, dockerhub]
-      service: trpc
-      requires:
-        - push-trpc
-  - push-arm-image:
-      name: push-protocol-dashboard-arm
-      context: [Vercel, dockerhub]
-      service: dashboard
-      requires:
-        - push-protocol-dashboard
-  - push-arm-image:
-      name: push-healthz-arm
-      context: [Vercel, dockerhub]
-      service: healthz
-      requires:
-        - push-healthz
-  - push-arm-image:
-      name: push-identity-service-arm
-      context: [Vercel, dockerhub]
-      service: identity-service
-      requires:
-        - push-identity-service
-  - push-arm-image:
-      name: push-mediorum-arm
-      context: [Vercel, dockerhub]
-      service: mediorum
-      requires:
-        - push-mediorum
-  - push-arm-image:
-      name: push-uptime-arm
-      context: [Vercel, dockerhub]
-      service: uptime
-      requires:
-        - push-uptime
-
   - release-governance-trigger:
       type: approval
   - release-governance:
       context: [Vercel, governance, slack-secrets]
       requires:
         - release-governance-trigger
-
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
@@ -240,26 +119,8 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-healthz
-        - push-protocol-dashboard
         - push-uptime
         - push-ddex-processor
-        # uncomment these when arm builds are stable
-        # - push-core-arm
-        # - push-identity-service-arm
-        # - push-mediorum-arm
-        # - push-discovery-provider-arm
-        # - push-discovery-provider-notifications-arm
-        # - push-pedalboard-trending-challenge-rewards-arm
-        # - push-pedalboard-relay-arm
-        # - push-pedalboard-sla-auditor-arm
-        # - push-pedalboard-crm-arm
-        # - push-pedalboard-mri-arm
-        # - push-comms-arm
-        # - push-trpc-arm
-        # - push-healthz-arm
-        # - push-protocol-dashboard-arm
-        # - push-uptime-arm
 
   - deploy-foundation-nodes-trigger:
       requires:

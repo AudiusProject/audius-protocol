@@ -269,14 +269,6 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     setIsGestureEnabled(true)
   }, [setIsGestureEnabled])
 
-  const handlePressArtist = useCallback(() => {
-    if (!user) {
-      return
-    }
-    navigation?.push('Profile', { handle: user.handle })
-    onClose()
-  }, [onClose, navigation, user])
-
   const handlePressTitle = useCallback(() => {
     if (!trackId) {
       return
@@ -332,7 +324,6 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
         </Pressable>
         <View style={styles.trackInfoContainer}>
           <TrackInfo
-            onPressArtist={handlePressArtist}
             onPressTitle={handlePressTitle}
             track={track}
             user={user}

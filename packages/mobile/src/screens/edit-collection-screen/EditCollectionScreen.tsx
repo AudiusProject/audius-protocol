@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
+import { AlbumSchema, PlaylistSchema } from '@audius/common/schemas'
 import type { EditCollectionValues } from '@audius/common/store'
 import {
   cacheCollectionsActions,
@@ -8,10 +9,12 @@ import {
 } from '@audius/common/store'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ModalScreen } from 'app/components/core'
 import { useCollectionImage } from 'app/components/image/CollectionImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { EditCollectionNavigator } from './EditCollectionNavigator'
@@ -21,6 +24,7 @@ const { getCollection } = cacheCollectionsSelectors
 
 export const EditCollectionScreen = () => {
   const { params } = useRoute<'EditCollection'>()
+  const navigation = useNavigation()
   const playlist = useSelector((state) =>
     getCollection(state, { id: params.id })
   )
@@ -36,8 +40,9 @@ export const EditCollectionScreen = () => {
       if (playlist) {
         dispatch(editPlaylist(playlist.playlist_id, values))
       }
+      navigation.goBack()
     },
-    [dispatch, playlist]
+    [dispatch, navigation, playlist]
   )
 
   if (!playlist) return null
@@ -47,6 +52,7 @@ export const EditCollectionScreen = () => {
   const initialValues: EditCollectionValues = {
     entityType: restPlaylist.is_album ? 'album' : 'playlist',
     ...restPlaylist,
+    description: restPlaylist.description ?? '',
     artwork: {
       url:
         trackImage && isImageUriSource(trackImage.source)
@@ -55,12 +61,15 @@ export const EditCollectionScreen = () => {
     }
   }
 
+  const validationSchema = playlist.is_album ? AlbumSchema : PlaylistSchema
+
   return (
     <ModalScreen>
       <Formik
         initialValues={initialValues}
         initialStatus={{ imageLoading: false, imageGenerating: false }}
         onSubmit={handleSubmit}
+        validationSchema={toFormikValidationSchema(validationSchema)}
       >
         {(formikProps) => (
           <EditCollectionNavigator

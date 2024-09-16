@@ -44,7 +44,8 @@ export const messages = {
   sendFirstTipShortDescriptionAlt:
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
   sendFirstTipButton: 'Send a Tip',
-  sendFirstTipButtonAlt: 'Find Artists to Support' // iOS only
+  sendFirstTipButtonAlt: 'Find Artists to Support', // iOS only
+  sendFirstTipCompletedLabelAlt: 'Support Another Artist' // iOS only
 }
 
 export type ChallengesParamList = {
@@ -62,6 +63,7 @@ export type MobileChallengeConfig = {
   description?: (amount?: OptimisticUserChallenge) => string
   shortDescription?: string
   panelButtonText?: string
+  completedLabel?: string
   buttonInfo?: {
     navigation?: {
       screen: keyof ChallengesParamList
@@ -131,10 +133,15 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         Platform.OS === 'ios'
           ? messages.sendFirstTipButtonAlt
           : messages.sendFirstTipButton,
+      completedLabel:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipCompletedLabelAlt
+          : undefined,
       buttonInfo: {
         navigation: {
           screen: 'library'
-        }
+        },
+        iconRight: IconArrowRight
       }
     },
     'first-playlist': {
@@ -143,7 +150,8 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         navigation: {
           screen: 'explore',
           params: { screen: 'Explore' }
-        }
+        },
+        iconRight: IconArrowRight
       }
     },
     'trending-playlist': {

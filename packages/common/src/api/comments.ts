@@ -1,10 +1,15 @@
-import { EntityType, Comment } from '@audius/sdk'
-import { CommentMetadata } from '@audius/sdk/dist/sdk/api/comments/CommentsAPI'
+import {
+  EntityType,
+  Comment,
+  TrackCommentsSortMethodEnum,
+  CommentMetadata,
+  ReplyComment
+} from '@audius/sdk'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models'
-import { decodeHashId, encodeHashId } from '~/utils'
+import { Nullable, decodeHashId, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
 // Updates the array of all comments
@@ -12,12 +17,13 @@ const optimisticUpdateCommentList = (
   entityId: number,
   updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
   dispatch: ThunkDispatch<any, any, any>,
+  currentUserId?: number,
   page: number = 0
 ) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
-      { entityId, limit: 5, offset: page },
+      { entityId, currentUserId, limit: 5, offset: page },
       updateRecipe
     )
   )
@@ -27,7 +33,9 @@ const optimisticUpdateCommentList = (
 // Updates a specific comment
 const optimisticUpdateComment = (
   id: string,
-  updateRecipe: (prevState: Comment | undefined) => Comment | void,
+  updateRecipe: (
+    prevState: Comment | ReplyComment | undefined
+  ) => Comment | ReplyComment | void,
   dispatch: ThunkDispatch<any, any, any>
 ) => {
   dispatch(
@@ -50,15 +58,25 @@ const commentsApi = createApi({
         {
           entityId,
           offset,
-          limit
-        }: { entityId: ID; offset?: number; limit?: number },
+          limit,
+          sortMethod,
+          currentUserId
+        }: {
+          entityId: ID
+          offset?: number
+          limit?: number
+          sortMethod?: TrackCommentsSortMethodEnum
+          currentUserId?: Nullable<ID>
+        },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.tracks.trackComments({
           trackId: encodeHashId(entityId),
           offset,
-          limit
+          limit,
+          sortMethod,
+          userId: currentUserId?.toString() ?? undefined
         })
         return commentsRes?.data ?? []
       },
@@ -66,6 +84,9 @@ const commentsApi = createApi({
       async onQuerySuccess(comments: Comment[], _args, { dispatch }) {
         comments.forEach((comment) => {
           optimisticUpdateComment(comment.id, () => comment, dispatch)
+          comment.replies?.forEach((reply: ReplyComment) => {
+            optimisticUpdateComment(reply.id, () => reply, dispatch)
+          })
         })
       }
     },
@@ -73,6 +94,7 @@ const commentsApi = createApi({
       async fetch({ id: _id }: { id: string }): Promise<Comment | undefined> {
         // NOTE: we currently do not have an endpoint for this
         // We ultimately only use this query expecting to hit the cache
+        // TODO: add this endpoint "just in case"
         return undefined
       },
       options: {}
@@ -88,10 +110,15 @@ const commentsApi = createApi({
           limit,
           offset
         })
-        // TODO: type issue here?
-        return commentsRes?.data as unknown as Comment[]
+        return commentsRes?.data
       },
-      options: { type: 'paginatedQuery' }
+      options: { type: 'paginatedQuery' },
+      onQuerySuccess(replies: Comment[], _args, { dispatch }) {
+        // Insert new replies to our getCommentById slice
+        replies.forEach((reply) => {
+          optimisticUpdateComment(reply.id, () => reply, dispatch)
+        })
+      }
     },
     // Non-optimistically updated mutations (updates after confirmation)
     postComment: {
@@ -119,6 +146,7 @@ const commentsApi = createApi({
           userId: `${userId}`,
           message: body,
           isPinned: false,
+          isEdited: false,
           trackTimestampS,
           reactCount: 0,
           replyCount: 0,
@@ -126,40 +154,38 @@ const commentsApi = createApi({
           createdAt: new Date().toISOString(),
           updatedAt: undefined
         }
-        optimisticUpdateComment(
-          parentCommentId ?? newId,
-          (parentComment) => {
-            // Handle replies. Need to find the parent and add the new comment to the replies array
-            if (parentCommentId && parentComment) {
-              parentComment.replies = parentComment.replies || []
-              parentComment.replies.push(newComment)
-              return parentComment
-            } else {
-              return newComment
-            }
-          },
-          dispatch
-        )
-        optimisticUpdateCommentList(
-          entityId,
-          (prevState) => {
-            if (prevState) {
-              if (parentCommentId) {
-                const parentCommentIndex = prevState?.findIndex(
-                  (comment) => comment.id === parentCommentId
-                )
-                if (parentCommentIndex && parentCommentIndex >= 0) {
-                  const parentComment = prevState[parentCommentIndex]
-                  parentComment.replies = parentComment.replies || []
-                  parentComment.replies.push(newComment)
-                }
-              } else {
-                prevState.unshift(newComment) // add new comment to top of comment section
+        // Add our new comment to the store
+        optimisticUpdateComment(newId, () => newComment, dispatch)
+        // If the comment is a reply, we need to update the parent comment's replies array
+        if (parentCommentId) {
+          optimisticUpdateComment(
+            parentCommentId,
+            (parentComment) => {
+              // Handle replies. Need to find the parent and add the new comment to the replies array
+              if (parentComment && 'replies' in parentComment) {
+                parentComment.replies = parentComment.replies || []
+                parentComment.replies.push(newComment)
               }
-            }
-          },
-          dispatch
-        )
+              return parentComment
+            },
+            dispatch
+          )
+        } else {
+          // If the comment is not a reply we need to add it to the list of root level comments
+          optimisticUpdateCommentList(
+            entityId,
+            (prevState) => {
+              if (prevState) {
+                prevState.unshift(newComment) // add new comment to top of comment section
+                return prevState
+              } else {
+                return [newComment]
+              }
+            },
+            dispatch,
+            userId
+          )
+        }
       }
     },
     deleteCommentById: {
@@ -182,19 +208,12 @@ const commentsApi = createApi({
         return await sdk.comments.deleteComment(commentData)
       },
       options: { type: 'mutation' },
-      onQuerySuccess(_res, { id, entityId }, { dispatch }) {
+      onQuerySuccess(_res, { id, entityId, userId }, { dispatch }) {
         optimisticUpdateCommentList(
           entityId,
-          (prevState) => {
-            const indexToRemove = prevState?.findIndex(
-              (comment: Comment) => comment.id === id
-            )
-            if (indexToRemove !== undefined && indexToRemove >= 0) {
-              prevState?.splice(indexToRemove, 1)
-            }
-            return prevState
-          },
-          dispatch
+          (prevState) => prevState?.filter((comment) => comment.id !== id),
+          dispatch,
+          userId
         )
       }
     },
@@ -234,30 +253,36 @@ const commentsApi = createApi({
       async onQueryStarted({ id, newMessage }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...(comment as Comment), message: newMessage }),
+          (comment) => ({
+            ...(comment as Comment),
+            message: newMessage,
+            isEdited: true
+          }),
           dispatch
         )
       }
     },
     pinCommentById: {
-      async fetch({
-        id: _id,
-        userId: _userId,
-        isPinned
-      }: {
-        id: string
-        userId: ID
-        isPinned: boolean
-      }) {
-        // TODO: call sdk here
-        // return null
+      async fetch(
+        { id, userId, isPinned }: { id: string; userId: ID; isPinned: boolean },
+        { audiusSdk }
+      ) {
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to react to comment. Id ${id} could not be decoded`
+          )
+          return
+        }
+        const sdk = await audiusSdk()
+        await sdk.comments.pinComment(userId, decodedId, isPinned)
       },
       options: { type: 'mutation' },
       onQueryStarted({ id, isPinned }, { dispatch }) {
         optimisticUpdateComment(
           id,
           (comment) => {
-            if (comment) {
+            if (comment && 'isPinned' in comment) {
               comment.isPinned = isPinned
             }
           },
@@ -267,7 +292,17 @@ const commentsApi = createApi({
     },
     reactToCommentById: {
       async fetch(
-        { id, userId, isLiked }: { id: string; userId: ID; isLiked: boolean },
+        {
+          id,
+          userId,
+          isLiked,
+          isEntityOwner: _isEntityOwner
+        }: {
+          id: string
+          userId: ID
+          isLiked: boolean
+          isEntityOwner?: boolean
+        },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
@@ -281,12 +316,13 @@ const commentsApi = createApi({
         await sdk.comments.reactComment(userId, decodedId, isLiked)
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id, isLiked }, { dispatch }) {
+      async onQueryStarted({ id, isLiked, isEntityOwner }, { dispatch }) {
         optimisticUpdateComment(
           id,
           (comment) => ({
             ...(comment as Comment),
-            reactCount: (comment?.reactCount ?? 0) + (isLiked ? 1 : -1)
+            reactCount: (comment?.reactCount ?? 0) + (isLiked ? 1 : -1),
+            isArtistReacted: isEntityOwner && isLiked
           }),
           dispatch
         )

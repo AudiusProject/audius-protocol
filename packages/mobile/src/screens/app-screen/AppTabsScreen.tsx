@@ -38,7 +38,7 @@ const tabBar = (props: BottomTabBarProps) => <AppTabBar {...props} />
 export const AppTabsScreen = () => {
   const dispatch = useDispatch()
   const appState = useAppState()
-  usePhantomConnect()
+  usePhantomConnect((route) => route?.params?.params?.params ?? ({} as any))
 
   useEffect(() => {
     if (appState === 'active') {

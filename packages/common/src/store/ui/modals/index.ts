@@ -1,4 +1,5 @@
 export * from './types'
+
 export * as modalsSelectors from './selectors'
 export { actions as modalsActions } from './parentSlice'
 export { rootModalReducer as modalsReducer } from './reducers'

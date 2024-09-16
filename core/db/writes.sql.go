@@ -62,37 +62,6 @@ func (q *Queries) CommitSlaRollup(ctx context.Context, arg CommitSlaRollupParams
 	return id, err
 }
 
-const insertKVStore = `-- name: InsertKVStore :one
-insert into core_kvstore (key, value, tx_hash)
-values ($1, $2, $3)
-on conflict (key) 
-do update set
-    value = excluded.value,
-    tx_hash = excluded.tx_hash,
-    updated_at = now()
-returning id, key, value, tx_hash, created_at, updated_at
-`
-
-type InsertKVStoreParams struct {
-	Key    string
-	Value  string
-	TxHash string
-}
-
-func (q *Queries) InsertKVStore(ctx context.Context, arg InsertKVStoreParams) (CoreKvstore, error) {
-	row := q.db.QueryRow(ctx, insertKVStore, arg.Key, arg.Value, arg.TxHash)
-	var i CoreKvstore
-	err := row.Scan(
-		&i.ID,
-		&i.Key,
-		&i.Value,
-		&i.TxHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const insertRegisteredNode = `-- name: InsertRegisteredNode :exec
 insert into core_validators(pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id)
 values ($1, $2, $3, $4, $5, $6, $7)
