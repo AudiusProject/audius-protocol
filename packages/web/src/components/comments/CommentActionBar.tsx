@@ -77,10 +77,10 @@ export const CommentActionBar = ({
   onClickReply,
   onClickDelete
 }: CommentActionBarProps) => {
-    const dispatch = useDispatch()
+  const dispatch = useDispatch()
   // comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
-    const isParentComment = 'isPinned' in comment
+  const isParentComment = 'isPinned' in comment
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
   // API actions
   const [reactToComment] = useReactToComment()
@@ -105,7 +105,7 @@ export const CommentActionBar = ({
 
   // component state
   const [reactionState, setReactionState] = useState(isCurrentUserReacted)
-    const [notificationsMuted, setNotificationsMuted] = useState(false) // TODO: Need to set up API to provide this
+  const [notificationsMuted, setNotificationsMuted] = useState(false) // TODO: Need to set up API to provide this
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
