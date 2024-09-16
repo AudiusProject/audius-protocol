@@ -89,11 +89,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       ? track?.title
       : album?.playlist_name
     : undefined
-  const artwork = audienceContentId
-    ? audienceContentType === 'track'
-      ? track?.cover_art
-      : album?.cover_art
-    : undefined
 
   const chatBlastTitle = getChatBlastTitle(audience)
   const chatBlastSecondaryTitle = getChatBlastSecondaryTitle({
@@ -107,7 +102,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     chatBlastSecondaryTitle,
     chatBlastCTA,
     contentTitle,
-    audienceCount,
-    artwork
+    audienceCount
   }
 }
