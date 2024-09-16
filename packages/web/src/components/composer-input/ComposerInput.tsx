@@ -13,6 +13,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType } from '@audius/sdk'
+
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
