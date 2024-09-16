@@ -26,7 +26,7 @@ const messages = {
   profileCheckRepost: 'Repost Track/Playlist',
   profileCheckFollow: 'Follow Five People',
 
-  profileCompletionButton: 'Your Profile'
+  profileCompletionButton: 'View Your Profile'
 }
 const useStyles = makeStyles(({ palette }) => ({
   columnContainer: {
