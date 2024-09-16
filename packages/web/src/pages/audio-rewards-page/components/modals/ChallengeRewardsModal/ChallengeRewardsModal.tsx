@@ -195,6 +195,7 @@ const TwitterShareButton = ({
 const ProfileChecks = () => {
   const completionStages = useSelector(getCompletionStages)
   const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
 
   const config: Record<string, boolean> = {
     [messages.profileCheckNameAndHandle]: completionStages.hasNameAndHandle,
@@ -212,8 +213,8 @@ const ProfileChecks = () => {
       column
       gap='m'
       wrap='wrap'
-      ph='xl'
-      pv='m'
+      ph={isMobile ? undefined : 'xl'}
+      pv={isMobile ? undefined : 'm'}
       justifyContent='center'
       css={{
         maxHeight: '150px'
@@ -445,28 +446,32 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const renderProgressBar = () => {
     if (showProgressBar && challenge.max_steps) {
-      return (
+      return isMobile ? (
         <Flex
-          ph={isMobile ? 'l' : undefined}
-          pv={isMobile ? 'xl' : undefined}
-          borderLeft={isMobile ? 'strong' : undefined}
+          column
+          gap='s'
+          ph='l'
+          pv='xl'
+          borderLeft='strong'
           css={{
-            flex: isMobile ? '1 1 0%' : undefined
+            flex: '1 1 0%'
           }}
-          column={isMobile}
-          gap={isMobile ? 's' : undefined}
         >
-          {isMobile ? (
-            <Text variant='label' size='l' strength='strong' color='subdued'>
-              {messages.progress}
-            </Text>
-          ) : null}
+          <Text variant='label' size='l' strength='strong' color='subdued'>
+            {messages.progress}
+          </Text>
           <ProgressBar
             className={wm(styles.progressBar)}
             value={currentStepCount}
             max={challenge?.max_steps}
           />
         </Flex>
+      ) : (
+        <ProgressBar
+          className={wm(styles.progressBar)}
+          value={currentStepCount}
+          max={challenge?.max_steps}
+        />
       )
     }
     return null
@@ -579,7 +584,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               w='100%'
               backgroundColor='surface1'
             >
-              <Flex justifyContent='center'>
+              <Flex justifyContent='space-between'>
                 <ProgressDescription
                   label={progressDescriptionLabel}
                   description={progressDescription}
