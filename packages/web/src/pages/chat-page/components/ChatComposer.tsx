@@ -64,14 +64,14 @@ export const ChatComposer = (props: ChatComposerProps) => {
         <ComposerCollectionInfo collectionId={collectionId} />
       ) : null}
       <Box p='l'>
-        <ComposerInput
+        {/* <ComposerInput
           placeholder={messages.sendMessagePlaceholder}
           messageId={messageId}
           onChange={handleChange}
           onSubmit={handleSubmit}
           maxLength={MAX_MESSAGE_LENGTH}
           presetMessage={presetMessage}
-        />
+        /> */}
       </Box>
     </Box>
   )

@@ -166,3 +166,52 @@ export const getChatBlastTitle = (audience: ChatBlastAudience) => {
       return 'Remix Creators'
   }
 }
+
+export const getChatBlastSecondaryTitle = ({
+  audience,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentId: string | undefined
+}) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return 'All Followers'
+    case ChatBlastAudience.TIPPERS:
+      return 'Tip Supporters'
+    case ChatBlastAudience.CUSTOMERS:
+      return audienceContentId ? 'Purchasers' : 'All Purchasers'
+    case ChatBlastAudience.REMIXERS:
+      return audienceContentId ? 'Remixed' : 'Remix Creators'
+  }
+}
+
+export const getChatBlastCTA = ({
+  audience,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentId: string | undefined
+}) => {
+  const base = 'Send a message blast to '
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return base + 'each of your followers'
+    case ChatBlastAudience.TIPPERS:
+      return base + 'everyone who has sent you a tip'
+    case ChatBlastAudience.CUSTOMERS:
+      return (
+        base +
+        (audienceContentId
+          ? 'all purchasers'
+          : 'everyone who has purchased your content')
+      )
+    case ChatBlastAudience.REMIXERS:
+      return (
+        base +
+        (audienceContentId
+          ? 'everyone who remixed this track'
+          : 'everyone who has remixed your tracks')
+      )
+  }
+}
