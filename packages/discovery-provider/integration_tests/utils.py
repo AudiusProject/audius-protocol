@@ -803,6 +803,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 text=comment_meta.get("text", ""),
                 created_at=comment_meta.get("created_at", datetime.now()),
                 updated_at=comment_meta.get("updated_at", datetime.now()),
+                track_timestamp_s=comment_meta.get("track_timestamp_s", None),
                 txhash=comment_meta.get("txhash", str(i + block_offset)),
                 blockhash=comment_meta.get("blockhash", str(i + block_offset)),
             )
