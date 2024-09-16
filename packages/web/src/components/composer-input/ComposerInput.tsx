@@ -1,7 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
 import { splitOnNewline } from '@audius/common/utils'
@@ -71,13 +70,13 @@ export const ComposerInput = (props: ComposerInputProps) => {
     maxLength = 400,
     placeholder,
     isLoading,
+    entityId,
+    entityType,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
-  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const { data: track } = useGetTrackById({
-    id: entityType === EntityType.TRACK && entityId ? entityId : -1,
-    currentUserId
+    id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
   const firstAutocompleteResult = useRef<UserMetadata | null>(null)
