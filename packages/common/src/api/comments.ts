@@ -146,6 +146,7 @@ const commentsApi = createApi({
           userId: `${userId}`,
           message: body,
           isPinned: false,
+          isEdited: false,
           trackTimestampS,
           reactCount: 0,
           replyCount: 0,
@@ -252,7 +253,11 @@ const commentsApi = createApi({
       async onQueryStarted({ id, newMessage }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...(comment as Comment), message: newMessage }),
+          (comment) => ({
+            ...(comment as Comment),
+            message: newMessage,
+            isEdited: true
+          }),
           dispatch
         )
       }

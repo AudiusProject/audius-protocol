@@ -6,6 +6,7 @@ import {
   useDeleteComment,
   usePostComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
@@ -42,6 +43,7 @@ const CommentBlockInternal = (
     trackTimestampS,
     createdAt,
     userId: commentUserIdStr,
+    isEdited,
     isArtistReacted
   } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
@@ -125,6 +127,9 @@ const CommentBlockInternal = (
         ) : (
           <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
             {message}
+            {isEdited ? (
+              <Text color='subdued'> ({messages.edited})</Text>
+            ) : null}
           </Text>
         )}
         {hideActions ? null : (

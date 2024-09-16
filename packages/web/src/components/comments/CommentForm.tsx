@@ -9,7 +9,6 @@ import { commentsMessages as messages } from '@audius/common/messages'
 import { SquareSizes, Status } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
-import { Form, Formik, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
 import { usePrevious, useToggle } from 'react-use'
 
@@ -31,24 +30,6 @@ type CommentFormProps = {
   commentId?: string
   parentCommentId?: string
   isEdit?: boolean
-}
-
-// TODO: KJ - There is a bit of hacky-ness here with the input. It does not actually work with the form so the form can probably be taken out
-
-// This is annoying af to have to make a component for; but necessary so that can use the resetForm method from context
-const FormResetHandler = ({
-  isLoading
-}: {
-  isLoading: boolean | undefined
-}) => {
-  const prevIsLoading = usePrevious(isLoading)
-  const { resetForm } = useFormikContext()
-  useEffect(() => {
-    if (!isLoading && prevIsLoading) {
-      resetForm()
-    }
-  }, [prevIsLoading, isLoading, resetForm])
-  return null
 }
 
 export const CommentForm = ({
@@ -118,45 +99,41 @@ export const CommentForm = ({
     }
   }, [prevIsLoading, isLoading])
 
-  const formInitialValues: CommentFormValues = { commentMessage: initialValue }
   return (
-    <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
-      <Form style={{ width: '100%' }}>
-        <FormResetHandler isLoading={isLoading} />
-        <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>
-          {!hideAvatar ? (
-            <Avatar
-              size='auto'
-              isLoading={false} // loading is not working correctly?
-              src={profileImage}
-              css={{ width: 44, height: 44, flexShrink: 0 }}
-            />
-          ) : null}
-          <ComposerInput
-            placeholder={
-              isFirstComment && isMobile
-                ? messages.firstComment
-                : messages.addComment
-            }
-            name='commentMessage'
-            entityId={entityId}
-            entityType={entityType}
-            readOnly={isMobile}
-            disabled={isLoading}
-            onClick={handleClickInput}
-            messageId={messageId}
-            maxLength={400}
-            isLoading={isLoading}
-            onSubmit={(value: string) => {
-              handleSubmit({ commentMessage: value })
-            }}
+    <>
+      <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>
+        {!hideAvatar ? (
+          <Avatar
+            size='auto'
+            isLoading={false} // loading is not working correctly?
+            src={profileImage}
+            css={{ width: 44, height: 44, flexShrink: 0 }}
           />
-        </Flex>
-        <DownloadMobileAppDrawer
-          isOpen={isMobileAppDrawerOpen}
-          onClose={toggleIsMobileAppDrawer}
+        ) : null}
+        <ComposerInput
+          placeholder={
+            isFirstComment && isMobile
+              ? messages.firstComment
+              : messages.addComment
+          }
+          entityId={entityId}
+          entityType={entityType}
+          presetMessage={initialValue}
+          readOnly={isMobile}
+          disabled={isLoading}
+          onClick={handleClickInput}
+          messageId={messageId}
+          maxLength={400}
+          isLoading={isLoading}
+          onSubmit={(value: string) => {
+            handleSubmit({ commentMessage: value })
+          }}
         />
-      </Form>
-    </Formik>
+      </Flex>
+      <DownloadMobileAppDrawer
+        isOpen={isMobileAppDrawerOpen}
+        onClose={toggleIsMobileAppDrawer}
+      />
+    </>
   )
 }
