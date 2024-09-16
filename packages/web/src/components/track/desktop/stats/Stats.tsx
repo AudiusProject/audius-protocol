@@ -3,7 +3,11 @@ import { memo, useMemo, MouseEvent, useCallback } from 'react'
 import { Favorite, ID, Repost } from '@audius/common/models'
 import { cacheUsersSelectors, CommonState } from '@audius/common/store'
 import { createShallowSelector } from '@audius/common/utils'
-import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
+import {
+  IconHeart as IconFavorite,
+  IconMessage,
+  IconRepost
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -25,7 +29,7 @@ const makeFolloweeActionsUsers = () =>
 
 type StatsProps = {
   count: number
-  followeeActions: Repost[] | Favorite[]
+  followeeActions?: Repost[] | Favorite[]
   size: 'small' | 'medium' | 'large'
   showSkeleton?: boolean
   contentTitle: string
@@ -71,7 +75,12 @@ const Stats = memo((props: StatsProps) => {
     .slice(0, MAX_IMAGES)
     .map((item) => <ProfileImage key={item.user_id} userId={item.user_id} />)
 
-  const Icon = flavor === Flavor.REPOST ? IconRepost : IconFavorite
+  const Icon =
+    flavor === Flavor.REPOST
+      ? IconRepost
+      : flavor === Flavor.FAVORITE
+      ? IconFavorite
+      : IconMessage
 
   return (
     <div

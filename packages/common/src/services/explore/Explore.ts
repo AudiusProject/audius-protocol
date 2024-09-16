@@ -1,15 +1,11 @@
 import { AudiusSdk } from '@audius/sdk'
 
-import {
-  transformAndCleanList,
-  userFeedItemFromSDK,
-  userTrackMetadataFromSDK
-} from '~/adapters'
+import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 
 import {
   Collection,
+  FeedFilter,
   ID,
-  Id,
   OptionalId,
   UserCollectionMetadata,
   UserTrack,
@@ -20,6 +16,7 @@ import {
   APIActivityV2,
   APIPlaylist,
   APITrack,
+  AudiusAPIClient,
   responseAdapter,
   makeActivity
 } from '../audius-api-client'
@@ -37,15 +34,18 @@ type TopUserListen = {
 
 type ExploreConfig = {
   audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
 }
 
 export class Explore {
   audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
 
   constructor(config: ExploreConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
+    this.apiClient = config.apiClient
     this.audiusSdk = config.audiusSdk
   }
 
@@ -95,20 +95,15 @@ export class Explore {
   async getFeedNotListenedTo(currentUserId: ID, limit = 25) {
     const sdk = await this.audiusSdk()
     try {
-      const userId = Id.parse(currentUserId)
-      const { data = [] } = await sdk.full.users.getUserFeed({
+      const lineupItems = (await this.apiClient.getSocialFeed({
         offset: 0,
         limit,
-        withUsers: true,
-        filter: 'original',
-        tracksOnly: true,
-        id: userId,
-        userId
-      })
-      const lineupItems = transformAndCleanList(data, userFeedItemFromSDK).map(
-        ({ item }) => item
-      )
-      if (!lineupItems.length) return []
+        with_users: true,
+        filter: FeedFilter.ORIGINAL,
+        tracks_only: true,
+        current_user_id: currentUserId
+      })) as UserTrackMetadata[] | null
+      if (!lineupItems) return []
 
       const tracks = lineupItems.filter(
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem

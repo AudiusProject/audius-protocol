@@ -56,7 +56,7 @@ import {
   IconError,
   Button
 } from '@audius/harmony-native'
-import { LockedStatusBadge, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -72,7 +72,6 @@ import { PaymentMethod } from '../payment-method/PaymentMethod'
 import { TrackDetailsTile } from '../track-details-tile'
 import { USDCManualTransfer } from '../usdc-manual-transfer'
 
-import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
@@ -88,21 +87,13 @@ const messages = {
   buy: 'Buy',
   title: 'Complete Purchase',
   summary: 'Summary',
-  artistCut: 'Artist Cut',
-  audiusCut: 'Audius Cut',
-  alwaysZero: 'Always $0',
-  youPay: 'You Pay',
-  youPaid: 'You Paid',
   price: (price: string) => `$${price}`,
-  payToUnlock: 'Pay-To-Unlock',
   purchasing: 'Purchasing',
   disclaimer: (termsOfUse: ReactNode) => (
     <>
-      {'By clicking on "Buy", you agree to our '}
+      {'By proceeding, you agree to our '}
       {termsOfUse}
-      {
-        ' Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction.'
-      }
+      {' Additional payment provider fees may apply.'}
     </>
   ),
   termsOfUse: 'Terms of Use.',
@@ -155,13 +146,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     borderRadius: spacing(2),
     backgroundColor: palette.neutralLight10
   },
-  payToUnlockTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing(2),
-    marginBottom: spacing(2)
-  },
   errorContainer: {
     ...flexRowCentered(),
     gap: spacing(2),
@@ -174,7 +158,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     ...flexRowCentered()
   },
   disclaimer: {
-    lineHeight: typography.fontSize.medium * 1.25
+    lineHeight: typography.fontSize.xs * 1.25
   },
   bottomSection: {
     gap: spacing(6)
@@ -256,7 +240,7 @@ const RenderForm = ({
   const navigation = useNavigation()
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { primary } = useThemeColors()
+  const { primaryDark2 } = useThemeColors()
   const presetValues = usePayExtraPresets()
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
@@ -264,11 +248,9 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
-  // TODO Re-enable pay with anything (mobile) when fully working
-  // const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
-  //   FeatureFlags.PAY_WITH_ANYTHING_ENABLED
-  // )
-  const isPayWithAnythingEnabledFlag = false
+  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
+    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
+  )
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
@@ -360,11 +342,12 @@ const RenderForm = ({
       {page === PurchaseContentPage.PURCHASE ? (
         <>
           <ScrollView contentContainerStyle={styles.formContentContainer}>
-            {stage !== PurchaseContentStage.FINISH ? (
-              <AudioMatchSection amount={Math.round(price / 100)} />
-            ) : null}
             <View style={styles.formContentSection}>
-              <TrackDetailsTile trackId={contentId} showLabel={false} />
+              <TrackDetailsTile
+                trackId={contentId}
+                showLabel={false}
+                earnAmount={Math.round(price / 100).toString()}
+              />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
                   amountPresets={presetValues}
@@ -408,19 +391,13 @@ const RenderForm = ({
                 />
               ) : isUnlocking ? null : (
                 <View>
-                  <View style={styles.payToUnlockTitleContainer}>
-                    <Text
-                      weight='heavy'
-                      textTransform='uppercase'
-                      fontSize='small'
-                    >
-                      {messages.payToUnlock}
-                    </Text>
-                    <LockedStatusBadge locked />
-                  </View>
-                  <Text style={styles.disclaimer}>
+                  <Text style={styles.disclaimer} fontSize='xs'>
                     {messages.disclaimer(
-                      <Text colorValue={primary} onPress={handleTermsPress}>
+                      <Text
+                        fontSize='xs'
+                        colorValue={primaryDark2}
+                        onPress={handleTermsPress}
+                      >
                         {messages.termsOfUse}
                       </Text>
                     )}

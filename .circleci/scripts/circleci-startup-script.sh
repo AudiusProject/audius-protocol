@@ -15,10 +15,6 @@ gcp_key="circleci-auth-token"
 cpus="$(lscpu | grep -E '^CPU\(s\)\:\s+[0-9]+$' | awk '{print $2}')"
 
 case "$(uname -m)" in
-    "arm64" | "aarch64" | "arm")
-        platform="linux/arm64"
-        gcp_key="circleci-auth-token-arm"
-        ;;
     "x86_64" | *)
         platform="linux/amd64"
         case "$cpus" in

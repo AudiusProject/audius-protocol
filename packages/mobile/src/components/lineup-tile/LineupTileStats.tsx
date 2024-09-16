@@ -19,7 +19,8 @@ import {
   IconHeart,
   IconVisibilityHidden,
   IconRepost,
-  IconStar
+  IconStar,
+  IconMessage
 } from '@audius/harmony-native'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
@@ -88,6 +89,7 @@ type Props = {
   favoriteType: FavoriteType
   repostType: RepostType
   hidePlays?: boolean
+  hideComments?: boolean
   id: ID
   index: number
   isCollection?: boolean
@@ -97,6 +99,7 @@ type Props = {
   playCount?: number
   repostCount: number
   saveCount: number
+  commentCount?: number
   showRankIcon?: boolean
   hasStreamAccess?: boolean
   streamConditions: Nullable<AccessConditions>
@@ -112,6 +115,7 @@ export const LineupTileStats = ({
   favoriteType,
   repostType,
   hidePlays,
+  hideComments,
   id,
   index,
   isCollection,
@@ -121,6 +125,7 @@ export const LineupTileStats = ({
   playCount,
   repostCount,
   saveCount,
+  commentCount,
   showRankIcon,
   hasStreamAccess,
   streamConditions,
@@ -256,6 +261,21 @@ export const LineupTileStats = ({
                   {formatCount(saveCount)}
                 </Text>
               </TouchableOpacity>
+              {hideComments ? null : (
+                <TouchableOpacity
+                  style={[
+                    trackTileStyles.statItem,
+                    styles.statItem,
+                    !commentCount ? styles.disabledStatItem : null
+                  ]}
+                  disabled
+                >
+                  <IconMessage color='subdued' size='s' />
+                  <Text style={trackTileStyles.statText}>
+                    {formatCount(commentCount ?? 0)}
+                  </Text>
+                </TouchableOpacity>
+              )}
               <View style={trackTileStyles.statItem}>
                 {downloadStatusIndicator}
               </View>

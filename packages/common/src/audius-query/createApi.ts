@@ -1,11 +1,4 @@
-import {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -342,7 +335,8 @@ const fetchData = async <Args, Data>(
   endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   context: AudiusQueryContextType,
-  force?: MutableRefObject<ForceType>,
+  force?: ForceType,
+  setForce?: (force: ForceType) => void,
   currentUserId?: Nullable<number>
 ) => {
   const { audiusBackend, dispatch } = context
@@ -380,8 +374,8 @@ const fetchData = async <Args, Data>(
       : await fetch(fetchArgs, context)
 
     if (apiData === null || apiData === undefined) {
-      if (force?.current) {
-        force.current = false
+      if (force && setForce) {
+        setForce(false)
       }
       throw new RemoteDataNotFoundError('Remote data not found')
     }
@@ -408,7 +402,7 @@ const fetchData = async <Args, Data>(
       // Hack alert: We can't overwrite the current user, since it contains
       // special account data. Once this is removed from user cache we can
       // remove this line.
-      if (force?.current && currentUserId) {
+      if (force && currentUserId) {
         delete entities[Kind.USERS][currentUserId]
       }
 
@@ -421,14 +415,14 @@ const fetchData = async <Args, Data>(
             omitUser: false
           })
       )
-      dispatch(addEntries(entities, !!force?.current))
+      dispatch(addEntries(entities, !!force))
       data = result
     } else {
       data = apiData
     }
 
-    if (force?.current) {
-      force.current = false
+    if (force && setForce) {
+      setForce(false)
     }
 
     dispatch(
@@ -480,7 +474,9 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const force = useRef<ForceType>(hookOptions?.force ? 'force' : false)
+    const [force, setForce] = useState<ForceType>(
+      hookOptions?.force ? 'force' : false
+    )
     const currentUserId = useSelector(getUserId)
     const queryState = useQueryState(
       fetchArgs,
@@ -490,10 +486,10 @@ const buildEndpointHooks = <
     )
 
     // If `force`, ignore queryState and force a fetch
-    const state = force.current
+    const state = force
       ? {
           normalizedData: null,
-          status: force.current === 'forcing' ? Status.LOADING : Status.IDLE
+          status: force === 'forcing' ? Status.LOADING : Status.IDLE
         }
       : queryState
 
@@ -511,10 +507,10 @@ const buildEndpointHooks = <
       if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
         return
       if (hookOptions?.disabled) return
-      if (force.current === 'forcing') return
+      if (force === 'forcing') return
 
-      if (force.current === 'force') {
-        force.current = 'forcing'
+      if (force === 'force') {
+        setForce('forcing')
       }
       fetchData(
         fetchArgs,
@@ -523,9 +519,17 @@ const buildEndpointHooks = <
         actions,
         context,
         force,
+        setForce,
         currentUserId
       )
-    }, [context, fetchArgs, hookOptions?.disabled, status, currentUserId])
+    }, [
+      context,
+      status,
+      hookOptions?.disabled,
+      force,
+      fetchArgs,
+      currentUserId
+    ])
 
     useDebounce(
       () => {
@@ -562,7 +566,12 @@ const buildEndpointHooks = <
     options: PaginatedQueryHookOptions
   ): PaginatedQueryHookResults<Data> => {
     const dispatch = useDispatch()
-    const { pageSize = 5, singlePageData, ...queryHookOptions } = options
+    const {
+      pageSize = 5,
+      startOffset = 0,
+      singlePageData,
+      ...queryHookOptions
+    } = options
     const [forceLoad, setForceLoad] = useState(false)
     const [page, setPage] = useState(0)
     const [status, setStatus] = useState<Status | PaginatedStatus>(Status.IDLE)
@@ -572,7 +581,7 @@ const buildEndpointHooks = <
     const reset = useCallback(
       (hardReset?: boolean) => {
         setPage(0)
-        setStatus(Status.LOADING)
+        setStatus(Status.IDLE)
 
         // If requesting a hard refresh we also reset the cached data in the store
         if (hardReset) {
@@ -583,35 +592,41 @@ const buildEndpointHooks = <
       [dispatch]
     )
 
-    // Only need to soft reset when args or pagesize changes - leaves all cached data intact
+    // Should reset if args change - (soft reset - leaves all cached data intact)
     useCustomCompareEffect(reset, [baseArgs], isEqual)
 
     const args = {
       ...baseArgs,
       limit: pageSize,
-      offset: page * pageSize
+      offset: startOffset + page * pageSize
     } as ArgsType & PaginatedQueryArgs
 
     const allPageData = useSelector((state: CommonState) => {
       // If in single page mode we only return the current page of data (no aggregation)
       if (singlePageData) {
-        return state?.api?.[reducerPath]?.[endpointName]?.[
-          getKeyFromFetchArgs(args)
-        ]?.normalizedData
+        return (
+          state?.api?.[reducerPath]?.[endpointName]?.[getKeyFromFetchArgs(args)]
+            ?.normalizedData ?? []
+        )
       }
 
       // By default, select data for every page up to the current page and aggregate the results
-      const pageAccumulator: Data[] = []
+      let pageAccumulator: Data[] = []
 
       for (let i = 0; i <= page; i++) {
         const key = getKeyFromFetchArgs({
           ...args,
-          offset: i * pageSize
+          offset: startOffset + i * pageSize
         })
         const normalizedPageData =
-          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData
+          state?.api?.[reducerPath]?.[endpointName]?.[key]?.normalizedData ?? []
         if (normalizedPageData) {
-          pageAccumulator.push(...normalizedPageData)
+          // If an endpoint is paginated it "should" be in an array format but in case it's not we just append it to the accumulator
+          if (!Array.isArray(normalizedPageData)) {
+            pageAccumulator.push(normalizedPageData)
+          } else {
+            pageAccumulator = [...pageAccumulator, ...normalizedPageData]
+          }
         }
       }
       return pageAccumulator
@@ -629,14 +644,21 @@ const buildEndpointHooks = <
       }
     }, [result, forceLoad])
 
-    // Track status of the latest page fetches in order to update loadingMore
-    useCustomCompareEffect(
-      () => {
+    // Track status of the latest page fetches
+    useEffect(() => {
+      if (
+        !(
+          // If the status was set to LOADING_MORE, we've requested a new page; in which case we don't want to reset the status to IDLE or LOADING
+          (
+            status === PaginatedStatus.LOADING_MORE &&
+            (result.status === Status.LOADING || result.status === Status.IDLE)
+          )
+        ) &&
+        status !== result.status // redudant changes
+      ) {
         setStatus(result.status)
-      },
-      [result.status],
-      isEqual
-    )
+      }
+    }, [result.status, status])
 
     const notError = result.status !== Status.ERROR
     const stillLoadingCurrentPage =
@@ -657,14 +679,12 @@ const buildEndpointHooks = <
         return
       }
       setStatus(PaginatedStatus.LOADING_MORE)
-      setPage(page + 1)
-    }, [stillLoadingCurrentPage, hasMore, page])
+      setPage((page) => page + 1)
+    }, [stillLoadingCurrentPage, hasMore])
 
     return {
       ...result,
-      status:
-        // If not in singlePageData mode, we treat the status based on whether the first page succeeded. After that, use isLoadingMore for load statuses
-        allPageData?.length > 0 && !singlePageData ? Status.SUCCESS : status,
+      status,
       data: allPageData,
       reset,
       loadMore,

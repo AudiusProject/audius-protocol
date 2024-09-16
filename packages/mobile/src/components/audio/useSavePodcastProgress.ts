@@ -6,7 +6,7 @@ import {
   playerSelectors,
   playbackPositionActions
 } from '@audius/common/store'
-import { Genre } from '@audius/common/utils'
+import { isLongFormContent } from '@audius/common/utils'
 import { useProgress } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -23,12 +23,9 @@ export const useSavePodcastProgress = () => {
     const trackId = getTrackId(state)
     const track = getTrack(state, { id: trackId })
     if (!track) return false
-    const isLongFormContent = [Genre.PODCASTS, Genre.AUDIOBOOKS].includes(
-      track.genre as Genre
-    )
     const isPlaying = getPlaying(state)
 
-    return isLongFormContent && isPlaying
+    return isLongFormContent(track) && isPlaying
   })
 
   const userId = useSelector(getUserId)

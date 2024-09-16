@@ -15,12 +15,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   IconCreditCard,
   IconDonate,
-  IconTransaction,
-  IconMerch,
   Text,
-  Flex
+  Flex,
+  IconQrCode,
+  IconPhantomPlain,
+  IconCaretRight
 } from '@audius/harmony-native'
-import { Divider, GradientText, RadioButton } from 'app/components/core'
+import { Divider, RadioButton } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -34,13 +36,14 @@ import { CardSelectionButton } from './CardSelectionButton'
 import { TokenPicker } from './TokenPicker'
 
 const messages = {
-  title: 'Payment Method',
-  existingBalance: 'Existing balance',
-  withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer',
-  payWith: 'Pay with',
-  anything: 'anything',
-  requiresPhantom: 'Phantom wallet required'
+  title: 'Payment Options',
+  existingBalance: 'Balance (USDC)',
+  withCard: 'Credit/Debit Card',
+  withCrypto: 'USDC Transfer',
+  withAnything: 'Pay with Anything',
+  withAnyToken: 'Pay with any Solana token',
+  showAdvanced: 'Show advanced options',
+  hideAdvanced: 'Hide advanced options'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -50,6 +53,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   rowTitle: {
     ...flexRowCentered(),
+    alignItems: 'flex-start',
     gap: spacing(3)
   },
   rowTitleText: {
@@ -173,9 +177,12 @@ export const PaymentMethod = ({
       id: PurchaseMethod.CRYPTO,
       value: PurchaseMethod.CRYPTO,
       label: <Text size='m'>{messages.withCrypto}</Text>,
-      icon: IconTransaction
+      icon: IconQrCode
     }
   ]
+
+  const navigation = useNavigation()
+
   if (
     isPayWithAnythingEnabled &&
     selectedPurchaseMethodMintAddress &&
@@ -185,36 +192,40 @@ export const PaymentMethod = ({
       id: PurchaseMethod.WALLET,
       value: PurchaseMethod.WALLET,
       label: (
-        <Flex flex={1}>
+        <Flex flex={1} gap='m'>
           <Flex direction='row' justifyContent='space-between'>
-            <Flex direction='row' gap='xs' alignItems='center'>
-              <Text>{`${messages.payWith}`}</Text>
-              <GradientText
-                colors={[
-                  'red',
-                  'orange',
-                  'yellow',
-                  'green',
-                  'blue',
-                  'indigo',
-                  'violet'
-                ]}
-              >
-                {messages.anything}
-              </GradientText>
-            </Flex>
-            <TokenPicker
-              selectedTokenAddress={selectedPurchaseMethodMintAddress}
-              onChange={setSelectedPurchaseMethodMintAddress}
-              onOpen={handleOpenTokenPicker}
-            />
+            <Text>{messages.withAnything}</Text>
           </Flex>
-          <Text size='xs' color='subdued'>
-            {messages.requiresPhantom}
-          </Text>
+          {selectedMethod === PurchaseMethod.WALLET ? (
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('TokenPicker')
+                handleOpenTokenPicker()
+              }}
+              hitSlop={spacing(6)}
+            >
+              <Flex gap='s'>
+                <Flex
+                  direction='row'
+                  justifyContent='space-between'
+                  alignItems='center'
+                >
+                  <Text strength='strong'>{messages.withAnyToken}</Text>
+                  <IconCaretRight color='subdued' size='m' />
+                </Flex>
+                <Flex direction='row' justifyContent='space-between'>
+                  <TokenPicker
+                    selectedTokenAddress={selectedPurchaseMethodMintAddress}
+                    onChange={setSelectedPurchaseMethodMintAddress}
+                    onOpen={handleOpenTokenPicker}
+                  />
+                </Flex>
+              </Flex>
+            </TouchableOpacity>
+          ) : null}
         </Flex>
       ),
-      icon: IconMerch
+      icon: IconPhantomPlain
     })
   }
 
@@ -246,6 +257,12 @@ export const PaymentMethod = ({
       title={messages.title}
       items={items}
       extraItems={extraItems}
+      showExtraItemsCopy={messages.showAdvanced}
+      disableExtraItemsToggle={
+        selectedMethod === PurchaseMethod.WALLET ||
+        selectedMethod === PurchaseMethod.CRYPTO
+      }
+      hideExtraItemsCopy={messages.hideAdvanced}
       renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}

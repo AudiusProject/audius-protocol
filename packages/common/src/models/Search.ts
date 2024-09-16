@@ -90,6 +90,7 @@ export type SearchTrack = TrackImage & {
   _remixes: undefined
   _remixes_count: undefined
   comments_disabled: boolean
+  comment_count: number
 }
 
 export type SearchPlaylist = CollectionImage & {

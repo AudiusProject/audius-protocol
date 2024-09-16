@@ -153,3 +153,16 @@ export const makeBlastChatId = ({
     (audienceContentId ? `:${audienceContentId}` : '')
   )
 }
+
+export const getChatBlastTitle = (audience: ChatBlastAudience) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return 'All Followers'
+    case ChatBlastAudience.TIPPERS:
+      return 'Tip Supporters'
+    case ChatBlastAudience.CUSTOMERS:
+      return 'Purchasers'
+    case ChatBlastAudience.REMIXERS:
+      return 'Remix Creators'
+  }
+}

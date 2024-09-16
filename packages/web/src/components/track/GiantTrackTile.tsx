@@ -43,7 +43,6 @@ import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
-import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -60,6 +59,7 @@ import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import { PlayPauseButton } from './PlayPauseButton'
 import { TrackMetadataList } from './TrackMetadataList'
+import { TrackStats } from './TrackStats'
 
 const DownloadSection = lazy(() =>
   import('./DownloadSection').then((module) => ({
@@ -359,7 +359,7 @@ export const GiantTrackTile = ({
       return null
     }
     return (
-      <div className={styles.listens}>
+      <Text variant='title' color='subdued' size='l'>
         {!isOwner && listenCount === 0 ? (
           <span className={styles.firstListen}>
             Be the first to listen to this track!
@@ -368,13 +368,13 @@ export const GiantTrackTile = ({
           <>
             <span className={styles.numberOfListens}>
               {listenCount.toLocaleString()}
-            </span>
+            </span>{' '}
             <span className={styles.listenText}>
               {listenCount === 1 ? 'Play' : 'Plays'}
             </span>
           </>
         )}
-      </div>
+      </Text>
     )
   }
 
@@ -392,24 +392,6 @@ export const GiantTrackTile = ({
             </SearchTag>
           ))}
       </Flex>
-    )
-  }
-
-  const renderStatsRow = () => {
-    const isLongFormContent =
-      genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
-
-    return (
-      <>
-        <RepostFavoritesStats
-          isUnlisted={isUnlisted}
-          repostCount={repostCount}
-          saveCount={saveCount}
-          onClickReposts={onClickReposts}
-          onClickFavorites={onClickFavorites}
-        />
-        {isLongFormContent ? renderListenCount() : null}
-      </>
     )
   }
 
@@ -467,69 +449,76 @@ export const GiantTrackTile = ({
         elevation='mid'
         css={{ width: '100%' }}
       >
-        <div className={styles.topSection}>
+        <Flex p='l' gap='xl' css={{ flexWrap: 'wrap' }}>
           <GiantArtwork
             trackId={trackId}
             coverArtSizes={coverArtSizes}
             coSign={coSign}
             callback={onArtworkLoad}
           />
-          <div className={styles.infoSection}>
-            <div className={styles.infoSectionHeader}>
-              {renderCardTitle(cn(fadeIn))}
-              <div className={styles.title}>
-                <Text variant='heading' size='xl' className={cn(fadeIn)}>
-                  {trackTitle}
-                </Text>
-                {isLoading && <Skeleton className={styles.skeleton} />}
-              </div>
-              <Flex>
-                <Text
-                  variant='title'
-                  strength='weak'
-                  tag='h2'
-                  className={cn(fadeIn)}
-                >
-                  <Text color='subdued'>By </Text>
-                  <UserLink userId={userId} popover />
-                </Text>
-                {isLoading && (
-                  <Skeleton className={styles.skeleton} width='60%' />
-                )}
+          <Flex
+            column
+            justifyContent='space-between'
+            flex={1}
+            css={{ minWidth: '386px', flexBasis: '386px' }}
+          >
+            <Flex column gap='2xl'>
+              <Flex column gap='xl'>
+                <Flex column gap='l' alignItems='flex-start'>
+                  {renderCardTitle(cn(fadeIn))}
+                  <Box>
+                    <Text variant='heading' size='xl' className={cn(fadeIn)}>
+                      {trackTitle}
+                    </Text>
+                    {isLoading && <Skeleton className={styles.skeleton} />}
+                  </Box>
+                  <Flex>
+                    <Text
+                      variant='title'
+                      strength='weak'
+                      tag='h2'
+                      className={cn(fadeIn)}
+                    >
+                      <Text color='subdued'>By </Text>
+                      <UserLink userId={userId} popover />
+                    </Text>
+                    {isLoading && (
+                      <Skeleton className={styles.skeleton} width='60%' />
+                    )}
+                  </Flex>
+                  <div className={cn(fadeIn)}>
+                    <TrackStats trackId={trackId} />
+                  </div>
+                </Flex>
+
+                <Flex gap='xl' alignItems='center' className={cn(fadeIn)}>
+                  {showPlay ? (
+                    <PlayPauseButton
+                      disabled={!hasStreamAccess}
+                      playing={playing && !previewing}
+                      onPlay={onPlay}
+                      trackId={trackId}
+                    />
+                  ) : null}
+                  {showPreview ? (
+                    <PlayPauseButton
+                      playing={playing && previewing}
+                      onPlay={onPreview}
+                      trackId={trackId}
+                      isPreview
+                    />
+                  ) : null}
+                  {isLongFormContent ? (
+                    <GiantTrackTileProgressInfo
+                      duration={duration}
+                      trackId={trackId}
+                    />
+                  ) : (
+                    renderListenCount()
+                  )}
+                </Flex>
               </Flex>
-            </div>
-
-            <div className={cn(styles.playSection, fadeIn)}>
-              {showPlay ? (
-                <PlayPauseButton
-                  disabled={!hasStreamAccess}
-                  playing={playing && !previewing}
-                  onPlay={onPlay}
-                  trackId={trackId}
-                />
-              ) : null}
-              {showPreview ? (
-                <PlayPauseButton
-                  playing={playing && previewing}
-                  onPlay={onPreview}
-                  trackId={trackId}
-                  isPreview
-                />
-              ) : null}
-              {isLongFormContent ? (
-                <GiantTrackTileProgressInfo
-                  duration={duration}
-                  trackId={trackId}
-                />
-              ) : (
-                renderListenCount()
-              )}
-            </div>
-
-            <div className={cn(styles.statsSection, fadeIn)}>
-              {renderStatsRow()}
-            </div>
-
+            </Flex>
             {isUnlisted && !isOwner ? null : (
               <div
                 className={cn(styles.actionButtons, fadeIn)}
@@ -558,7 +547,7 @@ export const GiantTrackTile = ({
                 </span>
               </div>
             )}
-          </div>
+          </Flex>
           <Flex
             gap='s'
             justifyContent='flex-end'
@@ -584,10 +573,10 @@ export const GiantTrackTile = ({
               </MusicBadge>
             ) : null}
           </Flex>
-        </div>
+        </Flex>
 
         {isStreamGated && streamConditions ? (
-          <Box mb='xl' ph='xl' w='100%'>
+          <Box pb='xl' ph='xl' w='100%' backgroundColor='surface1'>
             <GatedContentSection
               isLoading={isLoading}
               contentId={trackId}
@@ -604,7 +593,13 @@ export const GiantTrackTile = ({
           <AiTrackSection attributedUserId={aiAttributionUserId} />
         ) : null}
 
-        <div className={cn(styles.bottomSection, fadeIn)}>
+        <Flex
+          column
+          p='l'
+          backgroundColor='surface1'
+          borderTop='default'
+          className={cn(fadeIn)}
+        >
           <TrackMetadataList trackId={trackId} />
           {description ? (
             <UserGeneratedText tag='h3' size='s' className={styles.description}>
@@ -620,7 +615,7 @@ export const GiantTrackTile = ({
               </Suspense>
             </Box>
           ) : null}
-        </div>
+        </Flex>
       </Tile>
     </Flex>
   )

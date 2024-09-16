@@ -1,23 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
+
+import { AudiusSdk, Playlist, ResolveApi, Track, User } from '@audius/sdk'
 
 import {
-  AudiusSdk,
-  instanceOfPlaylist,
-  instanceOfTrack,
-  Playlist,
-  ResolveApi,
-  Track,
-  User
-} from '@audius/sdk'
-
-import { ID } from '~/models'
-import {
-  decodeHashId,
   formatCollectionName,
   formatTrackName,
   formatUserName,
-  matchAudiusLinks,
-  Nullable
+  matchAudiusLinks
 } from '~/utils'
 
 const {
@@ -26,6 +15,29 @@ const {
   instanceOfUserResponse
 } = ResolveApi
 
+// TODO: Move this to util file
+const escapeRegexSpecialChars = (str: string): string => {
+  const specialChars = /[.*+?^${}()|[\]\\]/g
+  return str.replace(specialChars, '\\$&')
+}
+
+export type LinkEntity =
+  | {
+      link: string
+      type: 'track'
+      data: Track
+    }
+  | {
+      link: string
+      type: 'collection'
+      data: Playlist
+    }
+  | {
+      link: string
+      type: 'user'
+      data: User
+    }
+
 /**
  * Hook to use within chat composition interfaces.
  * It pulls Audius links out into display text
@@ -33,9 +45,7 @@ const {
  * @param hostname audius hostname for this instance, e.g. audius.co
  * @param audiusSdk sdk instantiation interface
  * @returns {Object} Object containing helper methods and state:
- * - trackId: The ID of the first track resolved (or null if none found).
- *
- * - collectionId: The ID of the first collection resolved (or null if none found).
+ * - linkEntities: Array of the linked entities within the current value.
  *
  * - resolveLinks: Async function that takes the input text and
  *     replaces Audius links with their human-readable counterparts.
@@ -50,9 +60,6 @@ const {
  * - handleBackspace: Function that checks if the user backspaced over a resolved link
  *      and modifies the text accordingly, deleting the whole display text/link on a
  *      single keystroke.
- *
- * - clearLinks: Function that resets the `trackId` and `collectionId` state to null.
- *      Call this method when submitting.
  *
  * @example
  * const Input = () => {
@@ -89,14 +96,17 @@ export const useAudiusLinkResolver = ({
 }) => {
   // Maintain bidirectional maps of audius links to human readable format
   const linkToHuman = useRef<{ [key: string]: string }>({}).current
-  const humanToData = useRef<{
-    [key: string]: { link: string; data: Track | Playlist | User }
-  }>({}).current
+  const humanToData = useRef<{ [key: string]: LinkEntity }>({}).current
 
-  // The track id used to render the composer preview
-  const [trackId, setTrackId] = useState<Nullable<ID>>(null)
-  // The collection id used to render the composer preview
-  const [collectionId, setCollectionId] = useState<Nullable<ID>>(null)
+  const getSortedMatchStrings = useCallback(() => {
+    return Object.keys(humanToData).sort((a, b) => b.length - a.length)
+  }, [humanToData])
+
+  const getSortedRegex = useCallback(() => {
+    return getSortedMatchStrings()
+      .map((str) => escapeRegexSpecialChars(str))
+      .join('|')
+  }, [getSortedMatchStrings])
 
   /**
    * Resolves Audius links in the provided text to their display text equivalent.
@@ -116,15 +126,27 @@ export const useAudiusLinkResolver = ({
             if (instanceOfTrackResponse(res)) {
               const human = formatTrackName({ track: res.data })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data: res.data }
+              humanToData[human] = {
+                link: match,
+                type: 'track',
+                data: res.data
+              }
             } else if (instanceOfPlaylistResponse(res)) {
               const human = formatCollectionName({ collection: res.data[0] })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data: res.data[0] }
+              humanToData[human] = {
+                link: match,
+                type: 'collection',
+                data: res.data[0]
+              }
             } else if (instanceOfUserResponse(res)) {
               const human = formatUserName({ user: res.data })
               linkToHuman[match] = human
-              humanToData[human] = { link: match, data: res.data }
+              humanToData[human] = {
+                link: match,
+                type: 'user',
+                data: res.data
+              }
             }
           }
         } else {
@@ -161,12 +183,13 @@ export const useAudiusLinkResolver = ({
   const restoreLinks = useCallback(
     (value: string) => {
       let editedValue = value
-      for (const [human, { link }] of Object.entries(humanToData)) {
+      getSortedMatchStrings().forEach((human) => {
+        const { link } = humanToData[human]
         editedValue = editedValue.replaceAll(human, link)
-      }
+      })
       return editedValue
     },
-    [humanToData]
+    [getSortedMatchStrings, humanToData]
   )
 
   const handleBackspace = useCallback(
@@ -177,64 +200,47 @@ export const useAudiusLinkResolver = ({
       cursorPosition: number
       textBeforeCursor: string
     }) => {
-      const matched = Object.keys(humanToData).find((i) =>
-        textBeforeCursor.endsWith(i)
-      )
+      const sortedStrings = getSortedMatchStrings()
+      const matched = sortedStrings.find((i) => textBeforeCursor.endsWith(i))
       if (matched) {
-        return (value: string) =>
-          value.slice(0, cursorPosition - matched.length) +
-          value.slice(cursorPosition)
+        const newCursorPosition = cursorPosition - matched.length
+        return {
+          editValue: (value: string) =>
+            value.slice(0, newCursorPosition) + value.slice(cursorPosition),
+          newCursorPosition
+        }
       }
-      return null
+      return {
+        editValue: null,
+        newCursorPosition: cursorPosition
+      }
     },
-    [humanToData]
+    [getSortedMatchStrings]
   )
 
   const getMatches = useCallback(
     (value: string) => {
-      const regexString = Object.keys(humanToData).join('|')
-      const regex = regexString ? new RegExp(regexString, 'gi') : null
-      if (regex) {
-        return value.matchAll(regex)
-      }
-      return null
+      const regexString = getSortedRegex()
+      const regex = regexString ? new RegExp(regexString, 'g') : null
+
+      return regex
+        ? Array.from(value.matchAll(regex)).map((match) => ({
+            type: 'match',
+            text: match[0],
+            index: match.index,
+            link: humanToData[match[0]].link
+          }))
+        : null
     },
-    [humanToData]
+    [getSortedRegex, humanToData]
   )
 
-  /**
-   * Resets any found track id / collection id
-   */
-  const clearLinks = useCallback(() => {
-    setTrackId(null)
-    setCollectionId(null)
-  }, [setTrackId, setCollectionId])
-
-  /**
-   * Updates the track id and/or collection id state if found in matching text
-   */
-  useEffect(() => {
-    for (const [human, { data }] of Object.entries(humanToData)) {
-      if (value.includes(human)) {
-        if (instanceOfTrack(data)) {
-          setTrackId(decodeHashId(data.id))
-        } else if (instanceOfPlaylist(data)) {
-          setCollectionId(decodeHashId(data.id))
-        }
-        return
-      }
-    }
-    setTrackId(null)
-    setCollectionId(null)
-  }, [trackId, humanToData, value])
-
   return {
-    trackId,
-    collectionId,
+    linkEntities:
+      getMatches(value)?.map((match) => humanToData[match.text]) ?? [],
     resolveLinks,
     restoreLinks,
     getMatches,
-    handleBackspace,
-    clearLinks
+    handleBackspace
   }
 }

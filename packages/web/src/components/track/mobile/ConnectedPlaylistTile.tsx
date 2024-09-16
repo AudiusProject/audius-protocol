@@ -33,13 +33,12 @@ import { Dispatch } from 'redux'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
 import { AppState } from 'store/types'
-import { collectionPage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 
 import PlaylistTile from './PlaylistTile'
-const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
+const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE, collectionPage } = route
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions

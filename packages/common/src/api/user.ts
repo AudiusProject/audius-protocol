@@ -52,6 +52,7 @@ const userApi = createApi({
         { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
+        if (!id || id === -1) return null
         const sdk = await audiusSdk()
         const { data: users = [] } = await sdk.full.users.getUser({
           id: Id.parse(id),
@@ -65,7 +66,7 @@ const userApi = createApi({
       ) => {
         const sdk = await audiusSdk()
         const { data: users = [] } = await sdk.full.users.getBulkUsers({
-          id: ids.map((id) => Id.parse(id)),
+          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
           userId: OptionalId.parse(currentUserId)
         })
         return userMetadataListFromSDK(users)
@@ -213,7 +214,7 @@ const userApi = createApi({
           userId,
           contentId,
           contentType
-        }: { userId: ID; contentId?: number; contentType: string },
+        }: { userId: ID; contentId?: number; contentType?: string },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()

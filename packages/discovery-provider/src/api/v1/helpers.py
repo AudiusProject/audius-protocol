@@ -305,6 +305,50 @@ def extend_user(user, current_user_id=None):
     return user
 
 
+def extend_account_playlist(playlist):
+    playlist["id"] = encode_int_id(playlist["id"])
+    if playlist.get("user"):
+        playlist["user"]["id"] = encode_int_id(playlist["user"]["id"])
+    return playlist
+
+
+def extend_playlist_library_item(item):
+    if item.get("contents"):
+        item["contents"] = [
+            extend_playlist_library_item(content) for content in item["contents"]
+        ]
+        return item
+    elif item.get("playlist_id"):
+        item["playlist_id"] = encode_int_id(item["playlist_id"])
+        return item
+    logger.error(f"Invalid playlist library item: {item}")
+    return None
+
+
+def extend_playlist_library(playlist_library):
+    if playlist_library is None:
+        return None
+    extended_contents = [
+        extend_playlist_library_item(item) for item in playlist_library["contents"]
+    ]
+    return {"contents": [item for item in extended_contents if item is not None]}
+
+
+def extend_account(account):
+    user = account["user"]
+    # Extract before extend_user as it will delete this
+    playlist_library = user.get("playlist_library", None)
+    return {
+        "user": extend_user(user),
+        "playlist_library": extend_playlist_library(playlist_library),
+        "playlists": [
+            extend_account_playlist(playlist)
+            for playlist in account.get("playlists", [])
+        ],
+        "track_save_count": user.get("track_save_count", 0),
+    }
+
+
 def extend_repost(repost):
     repost["user_id"] = encode_int_id(repost["user_id"])
     repost["repost_item_id"] = encode_int_id(repost["repost_item_id"])
@@ -619,6 +663,10 @@ def abort_bad_request_param(param, namespace):
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
+
+
+def abort_forbidden(namespace):
+    namespace.abort(403, "Oh no! User is not allowed to access this resource.")
 
 
 def abort_unauthorized(namespace):

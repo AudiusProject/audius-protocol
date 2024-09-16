@@ -81,8 +81,6 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 		return fmt.Errorf("invalid register node event: %v", err)
 	}
 
-	core.logger.Info("finalizing register node")
-
 	qtx := core.getDb()
 
 	event := e.GetRegisterNode()

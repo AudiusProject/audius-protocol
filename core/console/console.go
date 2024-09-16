@@ -48,6 +48,7 @@ func (c *Console) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
 		g.GET("/block/:block", c.blockPage)
 		g.GET("/node", c.networkPage)
 		g.GET("/node/:node", c.nodePage)
+		g.GET("/sla/:rollup", c.slaPage)
 
 		g.GET("/headerinfo", c.headerInfo)
 	}
