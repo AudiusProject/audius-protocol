@@ -1,4 +1,10 @@
-import { EntityType, Comment, CommentMetadata, ReplyComment } from '@audius/sdk'
+import {
+  EntityType,
+  Comment,
+  TrackCommentsSortMethodEnum,
+  CommentMetadata,
+  ReplyComment
+} from '@audius/sdk'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
 import { createApi } from '~/audius-query'
@@ -51,14 +57,16 @@ const commentsApi = createApi({
       async fetch(
         {
           entityId,
-          currentUserId,
           offset,
-          limit
+          limit,
+          sortMethod,
+          currentUserId
         }: {
           entityId: ID
-          currentUserId?: Nullable<ID>
           offset?: number
           limit?: number
+          sortMethod?: TrackCommentsSortMethodEnum
+          currentUserId?: Nullable<ID>
         },
         { audiusSdk }
       ) {
@@ -67,6 +75,7 @@ const commentsApi = createApi({
           trackId: encodeHashId(entityId),
           offset,
           limit,
+          sortMethod,
           userId: currentUserId?.toString() ?? undefined
         })
         return commentsRes?.data ?? []

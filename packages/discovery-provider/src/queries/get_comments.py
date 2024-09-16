@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import asc, func
+from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -114,6 +114,13 @@ def get_comment_replies(args, comment_id, current_user_id=None):
 
 def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    sort_method = args.get("sort_method", "top")
+    if sort_method == "top":
+        order_by = desc(func.count(CommentReaction.comment_id))
+    elif sort_method == "newest":
+        order_by = desc(Comment.created_at)
+    elif sort_method == "timestamp":
+        order_by = asc(Comment.track_timestamp_s).nullslast()
 
     track_comments = []
     db = get_db_read_replica()
@@ -126,11 +133,13 @@ def get_track_comments(args, track_id, current_user_id=None):
         )
 
         track_comments = (
-            session.query(Comment)
+            session.query(Comment, func.count(CommentReaction.comment_id).label("react_count"))
             .outerjoin(
                 CommentThreadAlias,
                 Comment.comment_id == CommentThreadAlias.comment_id,
             )
+            .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+            .group_by(Comment.comment_id)
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
@@ -138,7 +147,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
             )
-            .order_by(asc(Comment.created_at))
+            .order_by(order_by)
             .offset(offset)
             .limit(limit)
             .all()
