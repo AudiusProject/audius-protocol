@@ -31,7 +31,9 @@ export const TokenPicker = ({
   onChange: (address: string) => void
   onOpen: () => void
 }) => {
-  const [selectedAddress, setSelectedAddress] = useState(selectedTokenAddress)
+  const [selectedAddress, setSelectedAddress] = useState<string | undefined>(
+    selectedTokenAddress
+  )
 
   const assets = useAsync(async () => {
     const res = await fetch(TOKEN_LIST_URL)
@@ -40,7 +42,9 @@ export const TokenPicker = ({
   }, [])
 
   const handleSubmit = useCallback(() => {
-    onChange(selectedAddress)
+    if (selectedAddress) {
+      onChange(selectedAddress)
+    }
   }, [onChange, selectedAddress])
 
   const navigation = useNavigation()
@@ -69,8 +73,8 @@ export const TokenPicker = ({
   )
 
   const selectedOption = useMemo(
-    () => options.find((option) => option.value === selectedTokenAddress),
-    [selectedTokenAddress, options]
+    () => options.find((option) => option.value === selectedAddress),
+    [selectedAddress, options]
   )
 
   if (assets.loading || assets.error) {
@@ -107,9 +111,10 @@ export const TokenPicker = ({
       />
       <Portal hostName='TokenPickerPortal'>
         <ListSelectionScreen
-          value={selectedAddress}
+          value={selectedAddress ?? ''}
           data={options}
           itemContentStyles={{ flexGrow: 1 }}
+          searchText='Search for tokens'
           renderItem={({ item }) => {
             const asset = optionsMap[item.value]
             return (
@@ -132,7 +137,7 @@ export const TokenPicker = ({
                   numberOfLines={1}
                   ellipsizeMode='tail'
                 >
-                  {asset.name}
+                  {`(${asset.name})`}
                 </Text>
               </Flex>
             )

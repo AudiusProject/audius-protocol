@@ -98,7 +98,6 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
-    logger.info(f"asdf params.existing_records {params.existing_records}")
     if (
         params.action == Action.REACT
         and (user_id, comment_id)

@@ -95,6 +95,7 @@ const FeedPageContent = ({
         endOfLineup={<EndOfLineup key='endOfLineup' />}
         key='feed'
         showFeedTipTile={!isUSDCEnabled}
+        showLeadingElementArtistPick={false}
         {...feedLineupProps}
         {...mainLineupProps}
       />

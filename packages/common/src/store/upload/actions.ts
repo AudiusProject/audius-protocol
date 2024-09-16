@@ -45,16 +45,23 @@ export const uploadTracksRequested = (payload: UploadPayload) => {
   }
 }
 
-export const uploadTracksSucceeded = (
-  id: number | null,
-  trackMetadatas: Partial<Track>[],
+export const uploadTracksSucceeded = ({
+  id,
+  trackMetadatas,
+  completedEntity,
+  uploadType
+}: {
+  id: number | null
+  trackMetadatas: Partial<Track>[]
   completedEntity: Track | Collection
-) => {
+  uploadType: UploadType
+}) => {
   return {
     type: UPLOAD_TRACKS_SUCCEEDED,
     id: id ?? null,
     trackMetadatas,
-    completedEntity
+    completedEntity,
+    uploadType
   }
 }
 

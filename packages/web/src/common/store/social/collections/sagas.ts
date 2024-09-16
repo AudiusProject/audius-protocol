@@ -22,7 +22,12 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import { formatShareText, makeUid, makeKindId } from '@audius/common/utils'
+import {
+  formatShareText,
+  makeUid,
+  makeKindId,
+  route
+} from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -32,7 +37,7 @@ import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
 } from 'common/store/playlist-library/sagas'
-import { audioNftPlaylistPage, collectionPage } from 'utils/route'
+import { audioNftPlaylistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
@@ -43,6 +48,7 @@ const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { addLocalCollection, removeLocalCollection } = savedPageActions
 const { getPlaylistLibrary, getUserId } = accountSelectors
+const { collectionPage } = route
 
 /* REPOST COLLECTION */
 
