@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
-import { MenuProps } from 'components/internal/Menu'
+import { MenuContentProps, MenuProps } from 'components/internal/Menu'
 
 export type SelectOption<Value extends string> = {
   value: Value
@@ -46,6 +46,6 @@ export type SelectProps<Value extends string = string> = {
    */
   optionsLabel?: string
   InputProps?: Partial<TextInputProps>
-  menuProps?: Partial<MenuProps>
+  menuProps?: Partial<MenuProps> & Partial<MenuContentProps>
   clearable?: boolean
 } & Omit<TextInputProps, 'value' | 'onChange' | 'children'>
