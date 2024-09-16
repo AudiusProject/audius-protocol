@@ -8,12 +8,12 @@ import (
 )
 
 func (core *CoreApplication) finalizeEvent(ctx context.Context, msg *gen_proto.SignedTransaction, txHash string) error {
-	switch t := msg.Body.(type) {
-	case *gen_proto.Event_Plays:
+	switch t := msg.Transaction.(type) {
+	case *gen_proto.SignedTransaction_Plays:
 		return nil
-	case *gen_proto.Event_RegisterNode:
+	case *gen_proto.SignedTransaction_ValidatorRegistration:
 		return core.finalizeRegisterNode(ctx, msg)
-	case *gen_proto.Event_SlaRollup:
+	case *gen_proto.SignedTransaction_SlaRollup:
 		return core.finalizeSlaRollup(ctx, msg, txHash)
 	default:
 		return fmt.Errorf("unhandled proto event: %v %T", msg, t)

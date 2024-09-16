@@ -83,7 +83,7 @@ func (app *CoreApplication) Query(ctx context.Context, req *abcitypes.QueryReque
 
 func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
 	// check if protobuf event
-	_, err := app.isValidProtoEvent(check.Tx)
+	_, err := app.isValidSignedTransaction(check.Tx)
 	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
@@ -131,7 +131,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
-		protoEvent, err := app.isValidProtoEvent(tx)
+		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err == nil {
 			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
@@ -251,15 +251,11 @@ func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcit
 func (app *CoreApplication) isValidKVTx(tx []byte) bool {
 	// check format
 	parts := bytes.Split(tx, []byte("="))
-	if len(parts) != 2 {
-		return false
-	}
-
-	return true
+	return len(parts) == 2
 }
 
-func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
-	var msg gen_proto.Event
+func (app *CoreApplication) isValidSignedTransaction(tx []byte) (*gen_proto.SignedTransaction, error) {
+	var msg gen_proto.SignedTransaction
 	err := proto.Unmarshal(tx, &msg)
 	if err != nil {
 		return nil, err
@@ -267,16 +263,10 @@ func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, erro
 	return &msg, nil
 }
 
-func (app *CoreApplication) isValidSlaRollup(tx []byte) bool {
-	var msg gen_proto.SlaRollupEvent
-	err := proto.Unmarshal(tx, &msg)
-	return err == nil
-}
-
 func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
 	for _, tx := range txs {
-		protoEvent, err := app.isValidProtoEvent(tx)
+		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err != nil {
 			if app.isValidKVTx(tx) {
 				continue
@@ -286,13 +276,13 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 			}
 		}
 
-		switch protoEvent.Body.(type) {
-		case *gen_proto.Event_Plays:
-		case *gen_proto.Event_RegisterNode:
-		case *gen_proto.Event_SlaRollup:
+		switch protoEvent.Transaction.(type) {
+		case *gen_proto.SignedTransaction_Plays:
+		case *gen_proto.SignedTransaction_ValidatorRegistration:
+		case *gen_proto.SignedTransaction_SlaRollup:
 			if alreadyContainsRollup {
-				return false, nil
 				app.logger.Error(" **** Invalid block already have rollup")
+				return false, nil
 			} else if valid, err := app.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
 				app.logger.Error(" **** Invalid block bcuz err", "error", err)
 				return false, err
