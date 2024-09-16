@@ -1,5 +1,12 @@
 # @audius/spl
 
+## 1.0.1
+
+### Patch Changes
+
+- 9a50c42: Fix instanceof check for version mismatches of @solana/web3.js and skip preflight on evaluateAttestations
+- 975b630: Improve error messages from Claimable Tokens program
+
 ## 1.0.0
 
 ### Major Changes
