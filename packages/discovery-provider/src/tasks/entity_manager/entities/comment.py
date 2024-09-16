@@ -155,11 +155,6 @@ def validate_pin_tx(params: ManageEntityParameters, is_pin):
     comment_id = params.entity_id
     comment_records = params.existing_records[EntityType.COMMENT.value]
 
-    # TODO: See if we can pre-fetch the track associated with the comment
-    # track_id = comment.entity_id
-    # track = params.existing_records[EntityType.TRACK.value][track_id]
-    # user_id = params.user_id
-
     if comment_id not in comment_records:
         raise IndexingValidationError(f"Comment {comment_id} doesn't exist")
 
@@ -168,8 +163,6 @@ def validate_pin_tx(params: ManageEntityParameters, is_pin):
         raise IndexingValidationError(f"Comment {comment_id} already pinned")
     elif not is_pin and not comment.is_pinned:
         raise IndexingValidationError(f"Comment {comment_id} already unpinned")
-    # elif (user_id != track.owner_id):
-    #     raise IndexingValidationError(f"User {user_id} cannot pin Comment {comment_id}")
 
 
 def pin_comment(params: ManageEntityParameters):
