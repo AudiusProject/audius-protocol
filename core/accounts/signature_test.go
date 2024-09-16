@@ -17,7 +17,7 @@ func TestSignAndRecover(t *testing.T) {
 	privKey, err := EthToEthKey(privKeyHex)
 	require.Nil(t, err)
 
-	registerEvent := &gen_proto.RegisterNodeEvent{
+	registerEvent := &gen_proto.ValidatorRegistration{
 		Endpoint:     "http://road-to-uninode.audius.co",
 		CometAddress: "12345",
 	}

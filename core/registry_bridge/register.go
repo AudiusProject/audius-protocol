@@ -101,7 +101,7 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("invalid node type: %v", err)
 	}
 
-	registerEvent := &gen_proto.RegisterNodeEvent{
+	registrationTx := &gen_proto.ValidatorRegistration{
 		Endpoint:     r.config.NodeEndpoint,
 		CometAddress: r.config.ProposerAddress,
 		EthBlock:     ethBlock,
@@ -109,7 +109,7 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		SpId:         spID,
 	}
 
-	eventBytes, err := proto.Marshal(registerEvent)
+	eventBytes, err := proto.Marshal(registrationTx)
 	if err != nil {
 		return fmt.Errorf("failure to marshal register event: %v", err)
 	}
@@ -119,11 +119,11 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("could not sign register event: %v", err)
 	}
 
-	event := &gen_proto.Event{
+	event := &gen_proto.SignedTransaction{
 		Signature: sig,
 		RequestId: uuid.NewString(),
-		Body: &gen_proto.Event_RegisterNode{
-			RegisterNode: registerEvent,
+		Transaction: &gen_proto.SignedTransaction_ValidatorRegistration{
+			ValidatorRegistration: registrationTx,
 		},
 	}
 
