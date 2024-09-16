@@ -3,15 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
-	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func checkErr(e error) {
 	if e != nil {
@@ -20,7 +17,6 @@ func checkErr(e error) {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	ctx := context.Background()
 
 	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
@@ -30,12 +26,20 @@ func main() {
 	checkErr(err)
 
 	for {
-		randString := uuid.NewString()
-		log.Printf("Setting 'randomString' to '%s'", randString)
 		time.Sleep(1 * time.Second)
-		_, err = sdk.SetKeyValue(ctx, &proto.SetKeyValueRequest{
-			Key:   "randomString",
-			Value: randString,
+		_, err = sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
+			Event: &proto.Event{
+				Body: &proto.Event_Plays{
+					Plays: &proto.PlaysEvent{
+						Listens: []*proto.Listen{{
+							UserId:    "uuid.NewString()",
+							TrackId:   "uuid.NewString()",
+							Timestamp: timestamppb.Now(),
+							Signature: "sig",
+						}},
+					},
+				},
+			},
 		})
 		checkErr(err)
 	}
