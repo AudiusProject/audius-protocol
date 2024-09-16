@@ -15,7 +15,8 @@ import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
 import { TextInput, TextInputSize } from 'components/input/TextInput'
 import { Menu } from 'components/internal/Menu'
-import { Flex, Box } from 'components/layout'
+import { Flex, Box, Paper } from 'components/layout'
+import { Popup } from 'components/popup'
 import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
@@ -247,59 +248,65 @@ export const FilterButton = forwardRef(function FilterButton<
     >
       {leadingElement}
       {selectedLabel ? renderLabel(selectedLabel) : label}
-      <Menu
-        anchorRef={anchorRef}
-        isVisible={isOpen}
-        onClose={() => setIsOpen(false)}
-        aria-label={selectedLabel ?? label ?? props['aria-label']}
-        aria-activedescendant={selectedLabel}
-        scrollRef={scrollRef}
-        {...menuProps}
-      >
-        {children ? (
-          children({
-            onChange: handleChange,
-            options: optionElements,
-            setIsOpen
-          })
-        ) : (
-          <>
-            {showFilterInput && filterInputProps ? (
-              <TextInput
-                ref={inputRef}
-                size={TextInputSize.SMALL}
-                startIcon={IconSearch}
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}
-                onChange={(e) => {
-                  setFilterInputValue(e.target.value)
-                }}
-                autoComplete='off'
-                {...filterInputProps}
-              />
-            ) : null}
-            {optionsLabel ? (
-              <Box pt='s' ph='m'>
-                <Text variant='label' size='xs'>
-                  {optionsLabel}
-                </Text>
-              </Box>
-            ) : null}
-            {filteredOptions && filteredOptions.length === 0 ? (
-              <Flex justifyContent='center'>
-                <Text variant='body' color='subdued' size='s'>
-                  {messages.noMatches}
-                </Text>
-              </Flex>
-            ) : (
-              <Flex direction='column' w='100%'>
-                {optionElements}
-              </Flex>
-            )}
-          </>
-        )}
-      </Menu>
+      {children ? (
+        <Popup
+          anchorRef={anchorRef}
+          isVisible={isOpen}
+          onClose={() => setIsOpen(false)}
+        >
+          <Paper mt='s' border='strong' shadow='far'>
+            {children({
+              onChange: handleChange,
+              options: optionElements,
+              setIsOpen
+            })}
+          </Paper>
+        </Popup>
+      ) : (
+        <Menu
+          anchorRef={anchorRef}
+          isVisible={isOpen}
+          onClose={() => setIsOpen(false)}
+          aria-label={selectedLabel ?? label ?? props['aria-label']}
+          aria-activedescendant={selectedLabel}
+          scrollRef={scrollRef}
+          {...menuProps}
+        >
+          {showFilterInput && filterInputProps ? (
+            <TextInput
+              ref={inputRef}
+              size={TextInputSize.SMALL}
+              startIcon={IconSearch}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+              onChange={(e) => {
+                setFilterInputValue(e.target.value)
+              }}
+              autoComplete='off'
+              {...filterInputProps}
+            />
+          ) : null}
+          {optionsLabel ? (
+            <Box pt='s' ph='m'>
+              <Text variant='label' size='xs'>
+                {optionsLabel}
+              </Text>
+            </Box>
+          ) : null}
+          {filteredOptions && filteredOptions.length === 0 ? (
+            <Flex justifyContent='center'>
+              <Text variant='body' color='subdued' size='s'>
+                {messages.noMatches}
+              </Text>
+            </Flex>
+          ) : (
+            <Flex direction='column' w='100%'>
+              {optionElements}
+            </Flex>
+          )}
+        </Menu>
+      )}
     </BaseButton>
   )
 })
