@@ -40,8 +40,15 @@ const messages = {
   block: 'Mute User',
   muteNotifs: (isMuted: boolean) =>
     isMuted ? 'Turn on notifications' : 'Turn off notifications',
-  notifsMuted: (isMuted: boolean) =>
-    isMuted ? 'Notifications unmuted' : 'Notifications muted'
+  toasts: {
+    pin: (isPinned: boolean) =>
+      isPinned ? 'Comment unpinned' : 'Comment pinned',
+    delete: 'Comment deleted',
+    muteUser: 'User muted and comment removed',
+    flagAndRemove: 'Comment flagged and removed',
+    muteNotifs: (isMuted: boolean) =>
+      isMuted ? 'Notifications turned on' : 'Notifications turned off'
+  }
 }
 
 type ConfirmationAction =
@@ -50,7 +57,6 @@ type ConfirmationAction =
   | 'muteUser'
   | 'delete'
   | 'artistDelete'
-  | 'report'
 
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
@@ -108,18 +114,21 @@ export const CommentActionBar = ({
   }, [onClickDelete])
   const handleMute = useCallback(() => {
     // TODO: call something here
-  }, [])
+    dispatch(toast({ content: messages.toasts.muteUser }))
+  }, [dispatch])
   const handleReport = useCallback(() => {
     // TODO: call something here
-  }, [])
+    dispatch(toast({ content: messages.toasts.flagAndRemove }))
+  }, [dispatch])
   const handleMuteNotifs = useCallback(() => {
     setNotificationsMuted((prev) => !prev)
     // TODO: call something here
-    dispatch(toast({ content: messages.notifsMuted(notificationsMuted) }))
+    dispatch(toast({ content: messages.toasts.muteNotifs(notificationsMuted) }))
   }, [dispatch, notificationsMuted])
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
-  }, [commentId, isPinned, pinComment])
+    dispatch(toast({ content: messages.toasts.pin(isPinned) }))
+  }, [commentId, dispatch, isPinned, pinComment])
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
@@ -213,16 +222,6 @@ export const CommentActionBar = ({
         },
         confirmCallback: handleReport,
         cancelCallback: closeConfirmationModal
-      },
-      report: {
-        messages: {
-          title: 'Flag comment?',
-          body: <Text color='default'> Flag this comment? </Text>,
-          confirm: 'Flag',
-          cancel: 'Cancel'
-        },
-        confirmCallback: handleReport,
-        cancelCallback: closeConfirmationModal
       }
     }),
     [
@@ -255,9 +254,7 @@ export const CommentActionBar = ({
     ]
     const nonCommentOwnerItems: PopupMenuItem[] = [
       {
-        onClick: handleConfirmationPopup(
-          isEntityOwner ? 'flagAndRemove' : 'report'
-        ),
+        onClick: handleConfirmationPopup('flagAndRemove'),
         text: messages.report
       },
       { onClick: handleConfirmationPopup('muteUser'), text: messages.block }
