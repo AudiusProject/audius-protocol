@@ -2,8 +2,6 @@ import { ReactNode } from 'react'
 
 import { Flex, Text } from '@audius/harmony'
 
-import styles from './styles.module.css'
-
 const messages = {
   task: 'Task'
 }
@@ -21,13 +19,7 @@ export const ProgressDescription = ({
   return (
     <Flex>
       <Flex column gap='m' p='xl'>
-        <Text
-          variant='label'
-          size='l'
-          strength='strong'
-          color='subdued'
-          className={styles.verifiedChallenge}
-        >
+        <Text variant='label' size='l' strength='strong' color='subdued'>
           {label}
         </Text>
         <Text variant='body'>{description}</Text>

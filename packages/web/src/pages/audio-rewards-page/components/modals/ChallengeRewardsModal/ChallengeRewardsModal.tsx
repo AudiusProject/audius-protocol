@@ -32,7 +32,8 @@ import {
   Button,
   Text,
   ProgressBar,
-  Flex
+  Flex,
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -217,7 +218,7 @@ const ProfileChecks = () => {
       pv={isMobile ? undefined : 'm'}
       justifyContent='center'
       css={{
-        maxHeight: '150px'
+        maxHeight: 150
       }}
     >
       {Object.keys(config).map((key) => (
@@ -351,7 +352,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           size='l'
           strength='strong'
           color='subdued'
-          css={{ whiteSpace: 'nowrap' }}
+          ellipses
         >
           {fillString(
             progressLabel,
@@ -553,12 +554,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               label={progressDescriptionLabel}
               description={progressDescription}
             />
-            <Flex
+            <Paper
               column
+              shadow='flat'
               border='strong'
               borderRadius='m'
               w='100%'
-              justifyContent='center'
               backgroundColor='surface1'
             >
               <Flex justifyContent='center' borderBottom='strong'>
@@ -571,14 +572,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               <Flex justifyContent='center' ph='xl' pv='l'>
                 {renderProgressStatusLabel()}
               </Flex>
-            </Flex>
+            </Paper>
             {modalType === 'profile-completion' ? <ProfileChecks /> : null}
             {renderCooldownSummaryTable()}
           </>
         ) : (
           <>
-            <Flex
+            <Paper
               column
+              shadow='flat'
               border='strong'
               borderRadius='m'
               w='100%'
@@ -607,7 +609,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                 {renderProgressBar()}
               </Flex>
               {modalType === 'profile-completion' ? <ProfileChecks /> : null}
-            </Flex>
+            </Paper>
             {renderCooldownSummaryTable()}
           </>
         )}

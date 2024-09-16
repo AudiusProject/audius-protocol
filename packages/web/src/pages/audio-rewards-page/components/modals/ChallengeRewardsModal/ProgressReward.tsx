@@ -24,7 +24,7 @@ export const ProgressReward = ({
       borderLeft={isMobile ? undefined : 'strong'}
       css={{
         textAlign: 'center',
-        maxWidth: '200px'
+        maxWidth: 200
       }}
     >
       <Text variant='label' size='l' strength='strong' color='subdued'>

@@ -17,6 +17,7 @@ import {
   Flex,
   IconArrowRight,
   IconCloudUpload,
+  Paper,
   Text
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -25,7 +26,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
@@ -186,8 +186,9 @@ export const AudioMatchingRewardsModalContent = ({
       {isMobile ? (
         <>
           {progressDescription}
-          <Flex
+          <Paper
             column
+            shadow='flat'
             border='strong'
             borderRadius='m'
             w='100%'
@@ -195,13 +196,13 @@ export const AudioMatchingRewardsModalContent = ({
           >
             <Flex justifyContent='center'>{progressReward}</Flex>
             {progressStatusLabel}
-          </Flex>
+          </Paper>
           {renderCooldownSummaryTable()}
         </>
       ) : (
         <>
-          <Flex
-            column
+          <Paper
+            shadow='flat'
             border='strong'
             borderRadius='m'
             w='100%'
@@ -212,7 +213,7 @@ export const AudioMatchingRewardsModalContent = ({
               {progressReward}
             </Flex>
             {progressStatusLabel}
-          </Flex>
+          </Paper>
           {renderCooldownSummaryTable()}
         </>
       )}
