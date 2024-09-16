@@ -141,7 +141,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [userMentions]
   )
 
-
   const getTimestamps = useCallback(
     (value: string) => {
       if (!track) return []
@@ -157,6 +156,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
         }))
     },
     [track]
+  )
 
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
@@ -186,7 +186,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
       setIsUserAutocompleteActive(false)
     },
     [isUserAutocompleteActive, userMentions, value]
-
   )
 
   const handleChange = useCallback(
