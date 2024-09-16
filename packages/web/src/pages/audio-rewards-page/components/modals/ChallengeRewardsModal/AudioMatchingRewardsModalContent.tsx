@@ -14,11 +14,11 @@ import {
 import {
   Button,
   ButtonProps,
+  Flex,
   IconArrowRight,
   IconCloudUpload,
   Text
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -94,7 +94,6 @@ export const AudioMatchingRewardsModalContent = ({
   onNavigateAway,
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
-  const wm = useWithMobileStyle(styles.mobile)
   const isMobile = useIsMobile()
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
@@ -109,12 +108,12 @@ export const AudioMatchingRewardsModalContent = ({
   const progressDescription = (
     <ProgressDescription
       description={
-        <div className={styles.audioMatchingDescription}>
+        <Flex column gap='m'>
           <Text variant='body'>{fullDescription?.(challenge)}</Text>
           <Text variant='body' color='subdued'>
             {messages.descriptionSubtext[challengeName]}
           </Text>
-        </div>
+        </Flex>
       }
     />
   )
@@ -127,13 +126,20 @@ export const AudioMatchingRewardsModalContent = ({
 
   const progressStatusLabel =
     userChallenge && userChallenge?.disbursed_amount > 0 ? (
-      <div className={styles.audioMatchingTotalContainer}>
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        ph='xl'
+        pv='l'
+        borderTop='strong'
+        backgroundColor='surface2'
+      >
         <Text variant='label' size='l' strength='strong'>
           {messages.totalClaimed(
             formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
         </Text>
-      </div>
+      </Flex>
     ) : null
 
   const handleClickCTA = useCallback(() => {
@@ -176,25 +182,37 @@ export const AudioMatchingRewardsModalContent = ({
   }
 
   return (
-    <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
+    <Flex column gap='2xl'>
       {isMobile ? (
         <>
           {progressDescription}
-          <div className={wm(styles.progressCard)}>
-            <div className={wm(styles.progressInfo)}>{progressReward}</div>
+          <Flex
+            column
+            border='strong'
+            borderRadius='m'
+            w='100%'
+            css={{ overflow: 'hidden' }}
+          >
+            <Flex justifyContent='center'>{progressReward}</Flex>
             {progressStatusLabel}
-          </div>
+          </Flex>
           {renderCooldownSummaryTable()}
         </>
       ) : (
         <>
-          <div className={styles.progressCard}>
-            <div className={styles.progressInfo}>
+          <Flex
+            column
+            border='strong'
+            borderRadius='m'
+            w='100%'
+            css={{ overflow: 'hidden' }}
+          >
+            <Flex justifyContent='center'>
               {progressDescription}
               {progressReward}
-            </div>
+            </Flex>
             {progressStatusLabel}
-          </div>
+          </Flex>
           {renderCooldownSummaryTable()}
         </>
       )}
@@ -216,6 +234,6 @@ export const AudioMatchingRewardsModalContent = ({
         />
       )}
       {errorContent}
-    </div>
+    </Flex>
   )
 }

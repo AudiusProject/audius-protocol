@@ -1,6 +1,4 @@
-import { Text } from '@audius/harmony'
-
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { Flex, Text } from '@audius/harmony'
 
 import styles from './styles.module.css'
 
@@ -16,16 +14,24 @@ export const ProgressReward = ({
   amount: string
   subtext: string
 }) => {
-  const wm = useWithMobileStyle(styles.mobile)
   return (
-    <div className={wm(styles.progressReward)}>
-      <Text variant='heading'>{messages.reward}</Text>
+    <Flex
+      m='xl'
+      column
+      css={{
+        textAlign: 'center',
+        maxWidth: '200px'
+      }}
+    >
+      <Text variant='label' size='l' strength='strong' color='subdued'>
+        {messages.reward}
+      </Text>
       <Text variant='display' className={styles.rewardAmount}>
         {amount}
       </Text>
       <Text variant='label' size='s' strength='strong' color='subdued'>
         {subtext}
       </Text>
-    </div>
+    </Flex>
   )
 }

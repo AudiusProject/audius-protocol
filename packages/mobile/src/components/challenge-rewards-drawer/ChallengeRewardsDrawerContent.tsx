@@ -130,10 +130,6 @@ export const ChallengeRewardsDrawerContent = ({
       )
     : messages.incomplete
 
-  const claimableAmountText = `${formatNumberCommas(claimableAmount)} ${
-    messages.claimableLabel
-  }`
-
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
       return (
@@ -216,15 +212,6 @@ export const ChallengeRewardsDrawerContent = ({
               renderCooldownSummaryTable()
             ) : (
               <>
-                <Text
-                  key='claimableAmount'
-                  style={styles.claimableAmount}
-                  variant='label'
-                  strength='strong'
-                  textTransform='uppercase'
-                >
-                  {claimableAmountText}
-                </Text>
                 <Button
                   style={styles.claimButton}
                   variant={claimInProgress ? 'secondary' : 'primary'}
