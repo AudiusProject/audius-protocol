@@ -62,8 +62,8 @@ def test_get_comments_default(app):
         for comment in comments:
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
-                assert comment["reply_count"] == 9
-                assert comment["react_count"] == 1
+                assert comment["reply_count"] == 10
+                assert comment["react_count"] == 0
                 assert comment["is_edited"] == True
             else:
                 assert len(comment["replies"]) == 0

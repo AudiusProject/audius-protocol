@@ -802,6 +802,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 entity_type=comment_meta.get("entity_type", "Track"),
                 text=comment_meta.get("text", ""),
                 is_pinned=comment_meta.get("is_pinned", False),
+                is_edited=comment_meta.get("is_edited", False),
                 created_at=comment_meta.get("created_at", datetime.now()),
                 updated_at=comment_meta.get("updated_at", datetime.now()),
                 track_timestamp_s=comment_meta.get("track_timestamp_s", None),

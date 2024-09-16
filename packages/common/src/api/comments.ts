@@ -253,7 +253,11 @@ const commentsApi = createApi({
       async onQueryStarted({ id, newMessage }, { dispatch }) {
         optimisticUpdateComment(
           id,
-          (comment) => ({ ...(comment as Comment), message: newMessage }),
+          (comment) => ({
+            ...(comment as Comment),
+            message: newMessage,
+            isEdited: true
+          }),
           dispatch
         )
       }

@@ -34,19 +34,6 @@ def get_is_reacted(session, user_id, comment_id):
     return not is_react.is_delete if is_react else False
 
 
-# Sum up reactions to a comment
-def get_reaction_count(session, parent_comment_id):
-    reaction_count = (
-        session.query(func.count(CommentReaction.comment_id))
-        .filter(
-            CommentReaction.comment_id == parent_comment_id,
-            CommentReaction.is_delete == False,
-        )
-        .first()
-    )
-    return reaction_count[0]
-
-
 def get_replies(
     session,
     parent_comment_id,
@@ -167,6 +154,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "user_id": track_comment.user_id,
                 "message": track_comment.text,
                 "is_pinned": track_comment.is_pinned,
+                "is_edited": track_comment.is_edited,
                 "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": react_count,
                 "is_current_user_reacted": get_is_reacted(
