@@ -314,50 +314,6 @@ def test_comment_unpin(app, mocker):
         assert comments[0].is_pinned == False
 
 
-# def test_invalid_user_pin(app, mocker):
-#     entities = {
-#         "users": [
-#             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-#             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
-#         ],
-#         "tracks": [{"track_id": 1, "owner_id": 1},],
-#         "comments": [{"comment_id": 1, "user_id": 2}]
-#     }
-
-#     tx_receipts = {
-#         "PinComment": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": 1,
-#                         "_entityType": "Comment",
-#                         # Only track owner can pin comments
-#                         "_userId": 2,
-#                         "_action": "Pin",
-#                         "_metadata": "",
-#                         "_signer": "user2wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#     }
-
-#     entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
-
-#     with db.scoped_session() as session:
-#         entity_manager_update(
-#             update_task,
-#             session,
-#             entity_manager_txs,
-#             block_number=0,
-#             block_timestamp=1585336422,
-#             block_hash=hex(0),
-#         )
-
-#         comments = session.query(Comment).all()
-#         assert comments[0].is_pinned == False
-
-
 def test_dupe_pin(app, mocker):
     entities = {
         "users": [
