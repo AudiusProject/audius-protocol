@@ -1,6 +1,5 @@
 import { useCallback, type ReactNode } from 'react'
 
-import { css } from '@emotion/native'
 import { Keyboard } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
