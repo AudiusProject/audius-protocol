@@ -10,6 +10,7 @@ from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 
@@ -55,14 +56,18 @@ def setup_test(app, mocker, entities, tx_receipts):
 def test_dupe_comment_create(app, mocker):
     "Tests duplicate comment create txs are ignored"
 
-    # setup db and mocked txs
-    with app.app_context():
-        db = get_db()
-        web3 = Web3()
-        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(web3, challenge_event_bus)
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {
+                "track_id": 1,
+                "owner_id": 1,
+            },
+        ],
+    }
 
-    create_comment_json = json.dumps(default_metadata)
     tx_receipts = {
         "CreateComment": [
             {
@@ -72,7 +77,7 @@ def test_dupe_comment_create(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {create_comment_json}}}',
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -86,7 +91,7 @@ def test_dupe_comment_create(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {create_comment_json}}}',
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -94,32 +99,7 @@ def test_dupe_comment_create(app, mocker):
         ],
     }
 
-    entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
-        for tx_receipt in tx_receipts
-    ]
-
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
-
-    mocker.patch(
-        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-        side_effect=get_events_side_effect,
-        autospec=True,
-    )
-
-    entities = {
-        "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-        ],
-        "tracks": [
-            {
-                "track_id": 1,
-                "owner_id": 1,
-            },
-        ],
-    }
-    populate_mock_db(db, entities)
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
 
     with db.scoped_session() as session:
         # index transactions
@@ -140,12 +120,18 @@ def test_dupe_comment_create(app, mocker):
 def test_dupe_comment_react(app, mocker):
     "Tests duplicate comment create txs are ignored"
 
-    # setup db and mocked txs
-    with app.app_context():
-        db = get_db()
-        web3 = Web3()
-        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(web3, challenge_event_bus)
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "comments": [{"comment_id": 1}],
+        "tracks": [
+            {
+                "track_id": 1,
+                "owner_id": 1,
+            },
+        ],
+    }
 
     tx_receipts = {
         "CreateCommentReact": [
@@ -178,33 +164,7 @@ def test_dupe_comment_react(app, mocker):
         ],
     }
 
-    entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
-        for tx_receipt in tx_receipts
-    ]
-
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
-
-    mocker.patch(
-        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-        side_effect=get_events_side_effect,
-        autospec=True,
-    )
-
-    entities = {
-        "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-        ],
-        "comments": [{"comment_id": 1}],
-        "tracks": [
-            {
-                "track_id": 1,
-                "owner_id": 1,
-            },
-        ],
-    }
-    populate_mock_db(db, entities)
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
 
     with db.scoped_session() as session:
         # index transactions
@@ -429,3 +389,50 @@ def test_pin_missing_comment(app, mocker):
         comments = session.query(Comment).all()
         # Assert no comments and no blow-up
         assert len(comments) == 0
+
+
+def test_report_comment(app, mocker):
+    "Tests users can report a comment"
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist", "wallet": "user1wallet"},
+        ],
+        "comments": [{"comment_id": 1}],
+    }
+
+    tx_receipts = {
+        "ReportComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Report",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        all_reported_comments: List[CommentReport] = session.query(CommentReport).all()
+        assert len(all_reported_comments) == 1
+        assert all_reported_comments[0].comment_id == 1
+        assert all_reported_comments[0].user_id == 1
