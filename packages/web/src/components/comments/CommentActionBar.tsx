@@ -1,17 +1,22 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
+import { useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   usePinComment,
   useReactToComment,
-  useReportComment
+  useReportComment,
+  useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { cacheUsersSelectors } from '@audius/common/store'
+import { decodeHashId } from '@audius/common/utils'
 import {
   Flex,
   IconButton,
   IconHeart,
   IconKebabHorizontal,
+  IconMessageBlock,
   IconNotificationOff,
   IconPencil,
   IconPin,
@@ -24,7 +29,7 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
@@ -35,6 +40,7 @@ import {
   useAuthenticatedCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AppState } from 'store/types'
 
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
@@ -43,6 +49,8 @@ type CommentActionBarProps = {
   onClickReply: () => void
   onClickDelete: () => void
 }
+const { getUser } = cacheUsersSelectors
+
 export const CommentActionBar = ({
   comment,
   isDisabled,
@@ -52,6 +60,15 @@ export const CommentActionBar = ({
 }: CommentActionBarProps) => {
   // comment from props
   const { reactCount, id: commentId, isCurrentUserReacted } = comment
+  const commentOwnerName = useSelector(
+    (state: AppState) =>
+      getUser(state, { id: Number(comment.userId) })?.name ?? ''
+  )
+
+  // if (!commentOwnerName) {
+  //   throw new Error('Failed to get commenter name.')
+  // }
+
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
@@ -61,7 +78,11 @@ export const CommentActionBar = ({
   const [reactToComment] = useReactToComment()
 
   const [reportComment] = useReportComment()
+  const [muteUser] = useMuteUser()
+
   const [isFlagConfirmationOpen, toggleFlagConfirmationOpen] = useToggle(false)
+  const [isMuteUserConfirmationOpen, toggleMuteUserConfirmationOpen] =
+    useToggle(false)
 
   const [pinComment] = usePinComment()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
@@ -93,6 +114,11 @@ export const CommentActionBar = ({
     toast(messages.flaggedConfirmation)
   }, [commentId, reportComment, toast])
 
+  const handleMuteUser = useCallback(() => {
+    muteUser(comment.userId)
+    toast(messages.mutedUserConfirmation)
+  }, [comment.userId, muteUser, toast])
+
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
@@ -123,7 +149,11 @@ export const CommentActionBar = ({
         text: messages.report,
         icon: <IconShieldCheck /> // TODO: temporary icon
       },
-      { onClick: () => {}, text: messages.block, icon: <IconUserUnfollow /> } // TODO - nothing implemented yet
+      {
+        onClick: toggleMuteUserConfirmationOpen,
+        text: messages.muteUser,
+        icon: <IconUserUnfollow /> // TODO: temporary icon
+      }
     ]
     const muteNotifs: PopupMenuItem = {
       onClick: () => {}, // TODO - nothing implemented yet here
@@ -157,6 +187,7 @@ export const CommentActionBar = ({
     isPinned,
     onClickEdit,
     toggleFlagConfirmationOpen,
+    toggleMuteUserConfirmationOpen,
     notificationsMuted,
     handleCommentDelete,
     isEntityOwner,
@@ -224,6 +255,18 @@ export const CommentActionBar = ({
         title={messages.flagComment}
         description={messages.flagCommentDescription}
         onConfirm={handleCommentReport}
+      />
+      <ConfirmationModal
+        messages={{
+          header: messages.muteUser,
+          description: messages.muteUserDescription(commentOwnerName),
+          confirm: messages.muteUser
+        }}
+        isOpen={isMuteUserConfirmationOpen}
+        onClose={toggleMuteUserConfirmationOpen}
+        title={messages.muteUser}
+        description={messages.muteUserDescription(commentOwnerName)}
+        onConfirm={handleMuteUser}
       />
     </Flex>
   )

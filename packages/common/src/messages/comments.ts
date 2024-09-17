@@ -29,6 +29,9 @@ export const commentsMessages = {
   flaggedConfirmation: 'Comment flagged and hidden',
   removed: 'Comment removed',
   muteUser: 'Mute User',
+  muteUserDescription: (name: string) =>
+    `Mute ${name} from commenting on your tracks?`,
+  mutedUserConfirmation: 'User muted and comment removed',
   muteUserHint:
     'This will not affect their ability to view your profile or interact with your content. ',
   turnOnNotifications: 'Turn On Notifications',
