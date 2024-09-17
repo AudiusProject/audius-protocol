@@ -4,6 +4,7 @@ import { logger } from './logger'
 export const LISTEN_TABLES = [
   'aggregate_plays',
   'aggregate_user',
+  'aggregate_track',
   'follows',
   'playlists',
   'reposts',
@@ -24,6 +25,8 @@ begin
       PERFORM pg_notify(TG_TABLE_NAME, json_build_object('user_id', new.user_id)::text);
     when 'playlists' then
       PERFORM pg_notify(TG_TABLE_NAME, json_build_object('playlist_id', new.playlist_id)::text);
+    when 'comments' then
+      PERFORM pg_notify(TG_TABLE_NAME, json_build_object('comment_id', new.comment_id)::text);
     else
       PERFORM pg_notify(TG_TABLE_NAME, to_json(new)::text);
   end case;
