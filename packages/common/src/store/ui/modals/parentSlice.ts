@@ -69,7 +69,7 @@ export const initialState: BasicModalsState = {
   WaitForDownloadModal: { isOpen: false },
   ArtistPick: { isOpen: false },
   PayoutWallet: { isOpen: false },
-  CommentConfirmation: { isOpen: false }
+  ConfirmationModal: { isOpen: false }
 }
 
 const slice = createSlice({
