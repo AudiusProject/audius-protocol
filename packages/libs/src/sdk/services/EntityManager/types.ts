@@ -66,6 +66,7 @@ export enum Action {
   DOWNLOAD = 'Download',
   REACT = 'React',
   UNREACT = 'Unreact',
+  REPORT = 'Report',
   PIN = 'Pin',
   UNPIN = 'Unpin'
 }

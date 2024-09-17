@@ -6,6 +6,7 @@ from sqlalchemy.orm import aliased
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.tracks.track import Track
 from src.utils import redis_connection
@@ -22,6 +23,8 @@ COMMENT_REPLIES_LIMIT = 3
 
 # Returns whether a comment has been reacted to by a particular user
 def get_is_reacted(session, user_id, comment_id):
+    if not user_id:
+        return False
     is_react = (
         session.query(CommentReaction)
         .filter(
@@ -132,6 +135,10 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment.comment_id == CommentThreadAlias.comment_id,
             )
             .outerjoin(
+                CommentReport,
+                Comment.comment_id == CommentReport.comment_id,
+            )
+            .outerjoin(
                 CommentReaction, Comment.comment_id == CommentReaction.comment_id
             )
             .group_by(Comment.comment_id)
@@ -141,6 +148,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
+                (CommentReport.comment_id == None)
+                | (current_user_id == None)
+                | (CommentReport.user_id != current_user_id),
             )
             .order_by(desc(Comment.is_pinned), sort_method_order_by)
             .offset(offset)

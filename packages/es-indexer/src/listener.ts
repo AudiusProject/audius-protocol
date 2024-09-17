@@ -1,5 +1,6 @@
 import {
   AggregatePlayRow,
+  AggregateTrackRow,
   AggregateUserRow,
   FollowRow,
   PlaylistRow,
@@ -14,6 +15,7 @@ import { logger } from './logger'
 export const LISTEN_TABLES = [
   'aggregate_plays',
   'aggregate_user',
+  'aggregate_track',
   'follows',
   'playlists',
   'reposts',
@@ -67,6 +69,10 @@ export async function startListener() {
     aggregate_plays: (row: AggregatePlayRow) => {
       if (!row.play_item_id) return // when could this happen?
       pending.trackIds.add(row.play_item_id)
+    },
+    aggregate_track: (row: AggregateTrackRow) => {
+      if (!row.track_id) return // when could this happen?
+      pending.trackIds.add(row.track_id)
     },
     // TODO: can we do trigger on agg playlist matview?
     saves: (save: SaveRow) => {

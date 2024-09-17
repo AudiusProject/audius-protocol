@@ -14,6 +14,26 @@ import dayjs from './dayjs'
 export const CHAT_BLOG_POST_URL =
   'http://support.audius.co/help/How-to-Send-Messages-on-Audius'
 
+const messages = {
+  blastTitleFollowers: 'All Followers',
+  blastTitleSupporters: 'Tip Supporters',
+  blastTitleCustomers: 'Purchasers',
+  blastTitleRemixers: 'Remix Creators',
+  blastTitleCustomers2: 'All Purchasers',
+  blastTitleRemixers2: 'Remixed',
+  blastCTABase: 'Send a message blast to ',
+  blastCTAFollowers: 'each of your followers',
+  blastCTASupporters: 'everyone who has sent you a tip',
+  blastCTACustomers: (audienceContentId?: string) =>
+    audienceContentId
+      ? 'all purchasers'
+      : 'everyone who has purchased your content',
+  blastCTARemixers: (audienceContentId?: string) =>
+    audienceContentId
+      ? 'everyone who remixed this track'
+      : 'everyone who has remixed your tracks'
+}
+
 /**
  * Checks to see if the message was sent within the time threshold for grouping it with the next message
  */
@@ -157,12 +177,58 @@ export const makeBlastChatId = ({
 export const getChatBlastTitle = (audience: ChatBlastAudience) => {
   switch (audience) {
     case ChatBlastAudience.FOLLOWERS:
-      return 'All Followers'
+      return messages.blastTitleFollowers
     case ChatBlastAudience.TIPPERS:
-      return 'Tip Supporters'
+      return messages.blastTitleSupporters
     case ChatBlastAudience.CUSTOMERS:
-      return 'Purchasers'
+      return messages.blastTitleCustomers
     case ChatBlastAudience.REMIXERS:
-      return 'Remix Creators'
+      return messages.blastTitleRemixers
+  }
+}
+
+export const getChatBlastSecondaryTitle = ({
+  audience,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentId: string | undefined
+}) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return messages.blastTitleFollowers
+    case ChatBlastAudience.TIPPERS:
+      return messages.blastTitleSupporters
+    case ChatBlastAudience.CUSTOMERS:
+      return audienceContentId
+        ? messages.blastTitleCustomers
+        : messages.blastTitleCustomers2
+    case ChatBlastAudience.REMIXERS:
+      return audienceContentId
+        ? messages.blastTitleRemixers2
+        : messages.blastTitleRemixers
+  }
+}
+
+export const getChatBlastCTA = ({
+  audience,
+  audienceContentId
+}: {
+  audience: ChatBlastAudience
+  audienceContentId: string | undefined
+}) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return messages.blastCTABase + messages.blastCTAFollowers
+    case ChatBlastAudience.TIPPERS:
+      return messages.blastCTABase + messages.blastCTASupporters
+    case ChatBlastAudience.CUSTOMERS:
+      return (
+        messages.blastCTABase + messages.blastCTACustomers(audienceContentId)
+      )
+    case ChatBlastAudience.REMIXERS:
+      return (
+        messages.blastCTABase + messages.blastCTARemixers(audienceContentId)
+      )
   }
 }

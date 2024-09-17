@@ -1,9 +1,10 @@
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
   usePinComment,
-  useReactToComment
+  useReactToComment,
+  useReportComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
@@ -28,7 +29,9 @@ import { Comment, ReplyComment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
+import { ConfirmationModal } from 'components/confirmation-modal'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import { ToastContext } from 'components/toast/ToastContext'
 import {
   openAuthModal,
   useAuthenticatedCallback
@@ -66,6 +69,10 @@ export const CommentActionBar = ({
 
   // API actions
   const [reactToComment] = useReactToComment()
+
+  const [reportComment] = useReportComment()
+  const [isFlagConfirmationOpen, toggleFlagConfirmationOpen] = useToggle(false)
+
   const [pinComment] = usePinComment()
 
   // Context data
@@ -84,6 +91,7 @@ export const CommentActionBar = ({
   } = useCommentConfirmationModal()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
   const isMobile = useIsMobile()
+  const { toast } = useContext(ToastContext)
 
   // component state
   const [reactionState, setReactionState] = useState(isCurrentUserReacted)
@@ -114,7 +122,10 @@ export const CommentActionBar = ({
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
     dispatch(toast({ content: messages.toasts.pin(isPinned) }))
-  }, [commentId, dispatch, isPinned, pinComment])
+  }, [commentId, dispatch, isPinned, pinComment])const handleCommentReport = useCallback(() => {
+    reportComment(commentId)
+    toast(messages.flaggedConfirmation)
+  }, [commentId, reportComment, toast])
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
@@ -332,6 +343,18 @@ export const CommentActionBar = ({
       <DownloadMobileAppDrawer
         isOpen={isMobileAppDrawerOpen}
         onClose={toggleIsMobileAppDrawer}
+      />
+      <ConfirmationModal
+        messages={{
+          header: messages.flagComment,
+          description: messages.flagCommentDescription,
+          confirm: messages.flag
+        }}
+        isOpen={isFlagConfirmationOpen}
+        onClose={toggleFlagConfirmationOpen}
+        title={messages.flagComment}
+        description={messages.flagCommentDescription}
+        onConfirm={handleCommentReport}
       />
     </Flex>
   )
