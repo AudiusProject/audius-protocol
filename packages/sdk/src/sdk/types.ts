@@ -6,10 +6,18 @@ import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
 import {
+  AudiusTokenClient,
+  ClaimsManagerClient,
+  DelegateManagerClient,
   EthRewardsManagerClient,
-  ServiceProviderFactoryClient
+  GovernanceClient,
+  RegistryClient,
+  ServiceProviderFactoryClient,
+  TrustedNotifierManagerClient,
+  WormholeClient
 } from './services/Ethereum'
 import { ServiceTypeManagerClient } from './services/Ethereum/contracts/ServiceTypeManager'
+import { StakingClient } from './services/Ethereum/contracts/Staking/StakingClient'
 import type { LoggerService } from './services/Logger'
 import type {
   PaymentRouterClient,
@@ -47,6 +55,46 @@ export type ServicesContainer = {
    * Helpers to faciliate requests that require signatures or encryption
    */
   auth: AuthService
+
+  /**
+   * Contract client to interact with the Audius token
+   */
+  audiusTokenClient: AudiusTokenClient
+
+  /**
+   * Contract client to interact with claiming rewards
+   */
+  claimsManagerClient: ClaimsManagerClient
+
+  /**
+   * Contract client to interact with staking and delegating stake
+   */
+  delegateManagerClient: DelegateManagerClient
+
+  /**
+   * Contract client to interact with the staking system
+   */
+  stakingClient: StakingClient
+
+  /**
+   * Contract client to interact with the trusted notifier services
+   */
+  trustedNotifierManagerClient: TrustedNotifierManagerClient
+
+  /**
+   * Contract client to interact with wormhole
+   */
+  wormholeClient: WormholeClient
+
+  /**
+   * Contract client to interact with the eth contract registry
+   */
+  registryClient: RegistryClient
+
+  /**
+   * Contract client to interact with the governance contract
+   */
+  governanceClient: GovernanceClient
 
   /**
    * Contract client to interact with service types

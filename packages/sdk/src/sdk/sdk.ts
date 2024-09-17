@@ -55,7 +55,23 @@ import {
   getDefaultServiceProviderFactoryConfig,
   getDefaultServiceTypeManagerConfig,
   ServiceProviderFactoryClient,
-  ServiceTypeManagerClient
+  ServiceTypeManagerClient,
+  AudiusTokenClient,
+  getDefaultAudiusTokenConfig,
+  ClaimsManagerClient,
+  getDefaultClaimsManagerConfig,
+  DelegateManagerClient,
+  getDefaultDelegateManagerConfig,
+  StakingClient,
+  getDefaultStakingConfig,
+  TrustedNotifierManagerClient,
+  getDefaultTrustedNotifierManagerConfig,
+  WormholeClient,
+  getDefaultWormholeConfig,
+  RegistryClient,
+  getDefaultRegistryConfig,
+  GovernanceClient,
+  getDefaultGovernanceConfig
 } from './services/Ethereum'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
@@ -232,6 +248,54 @@ const initializeServices = (config: SdkConfig) => {
     })
 
   /* Ethereum Contracts */
+  const audiusTokenClient =
+    config.services?.audiusTokenClient ??
+    new AudiusTokenClient({
+      ...getDefaultAudiusTokenConfig(servicesConfig)
+    })
+
+  const claimsManagerClient =
+    config.services?.claimsManagerClient ??
+    new ClaimsManagerClient({
+      ...getDefaultClaimsManagerConfig(servicesConfig)
+    })
+
+  const delegateManagerClient =
+    config.services?.delegateManagerClient ??
+    new DelegateManagerClient({
+      ...getDefaultDelegateManagerConfig(servicesConfig)
+    })
+
+  const stakingClient =
+    config.services?.stakingClient ??
+    new StakingClient({
+      ...getDefaultStakingConfig(servicesConfig)
+    })
+
+  const trustedNotifierManagerClient =
+    config.services?.trustedNotifierManagerClient ??
+    new TrustedNotifierManagerClient({
+      ...getDefaultTrustedNotifierManagerConfig(servicesConfig)
+    })
+
+  const wormholeClient =
+    config.services?.wormholeClient ??
+    new WormholeClient({
+      ...getDefaultWormholeConfig(servicesConfig)
+    })
+
+  const registryClient =
+    config.services?.registryClient ??
+    new RegistryClient({
+      ...getDefaultRegistryConfig(servicesConfig)
+    })
+
+  const governanceClient =
+    config.services?.governanceClient ??
+    new GovernanceClient({
+      ...getDefaultGovernanceConfig(servicesConfig)
+    })
+
   const serviceTypeManagerClient =
     config.services?.serviceTypeManagerClient ??
     new ServiceTypeManagerClient({
@@ -264,6 +328,14 @@ const initializeServices = (config: SdkConfig) => {
     solanaWalletAdapter,
     solanaRelay,
     antiAbuseOracle,
+    audiusTokenClient,
+    claimsManagerClient,
+    delegateManagerClient,
+    stakingClient,
+    trustedNotifierManagerClient,
+    wormholeClient,
+    registryClient,
+    governanceClient,
     serviceTypeManagerClient,
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
