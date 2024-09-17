@@ -27,9 +27,6 @@ const { getOtherChatUsers, getBlockees } = chatSelectors
 const { profilePage } = route
 
 const messages = {
-  header: 'Messages',
-  settings: 'Settings',
-  compose: 'Compose',
   chatSettings: 'Chat Settings',
   block: 'Block Messages',
   unblock: 'Unblock Messages',

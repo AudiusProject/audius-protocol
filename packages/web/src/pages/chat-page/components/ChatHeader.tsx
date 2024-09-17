@@ -1,12 +1,10 @@
 import { forwardRef, useCallback } from 'react'
 
-import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import {
   chatSelectors,
   CommonState,
   useCreateChatModal
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   IconCompose,
   IconSettings,
@@ -14,9 +12,7 @@ import {
   Paper,
   Flex
 } from '@audius/harmony'
-import { ChatBlast } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
@@ -25,21 +21,11 @@ import { ChatBlastHeader } from './ChatBlastHeader'
 import styles from './ChatHeader.module.css'
 import { UserChatHeader } from './UserChatHeader'
 
-const { profilePage } = route
-
 const messages = {
   header: 'Messages',
   settings: 'Settings',
-  compose: 'Compose',
-  chatSettings: 'Chat Settings',
-  block: 'Block Messages',
-  unblock: 'Unblock Messages',
-  report: 'Report Abuse',
-  delete: 'Delete Conversation',
-  visit: "Visit User's Profile"
+  compose: 'Compose'
 }
-
-const { getOtherChatUsers, getBlockees } = chatSelectors
 
 type ChatHeaderProps = {
   currentChatId?: string
@@ -55,10 +41,6 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       chatSelectors.getChat(state, currentChatId ?? '')
     )
     const isBlast = chat?.is_blast
-    const { chatBlastTitle, contentTitle, audienceCount } =
-      useChatBlastAudienceContent({
-        chat: isBlast ? chat : ({} as ChatBlast)
-      })
 
     const handleComposeClicked = useCallback(() => {
       openCreateChatModal()
