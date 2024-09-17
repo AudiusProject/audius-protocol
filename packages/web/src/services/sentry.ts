@@ -27,7 +27,7 @@ export const initializeSentry = () => {
       Sentry.extraErrorDataIntegration(),
       // Catch failed network requests
       Sentry.httpClientIntegration(),
-      // Capture console.errors in sentry
+      // Capture cgit sonsole.errors in sentry
       Sentry.captureConsoleIntegration({ levels: ['error'] }),
       Sentry.replayIntegration({
         maskAllText: false,
