@@ -98,10 +98,10 @@ export const Box = styled(View, {
       paddingLeft: padL && (spacing[padL] ?? padL),
       paddingRight: padR && (spacing[padR] ?? padR),
       paddingBottom: padB && (spacing[padB] ?? padB),
-      marginTop: (marginT && spacing[marginT]) ?? marginT,
-      marginLeft: (marginL && spacing[marginL]) ?? marginL,
-      marginRight: (marginR && spacing[marginR]) ?? marginR,
-      marginBottom: (marginB && spacing[marginB]) ?? marginB,
+      marginTop: marginT && (spacing[marginT] ?? marginT),
+      marginLeft: marginL && (spacing[marginL] ?? marginL),
+      marginRight: marginR && (spacing[marginR] ?? marginR),
+      marginBottom: marginB && (spacing[marginB] ?? marginB),
       backgroundColor:
         (backgroundColor && theme.color.background[backgroundColor]) ??
         backgroundColor,
