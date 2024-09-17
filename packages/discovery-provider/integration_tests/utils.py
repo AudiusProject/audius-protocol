@@ -255,7 +255,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 playlists_previously_containing_track=track_meta.get(
                     "playlists_previously_containing_track", {}
                 ),
-                comments_disabled=track_meta.get("comments_disabled", False)
+                comments_disabled=track_meta.get("comments_disabled", False),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
