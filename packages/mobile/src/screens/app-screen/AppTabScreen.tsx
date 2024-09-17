@@ -128,6 +128,12 @@ export type AppTabScreenParamList = {
     chatId: string
     presetMessage?: string
   }
+  ChatBlastSelectContent: {
+    valueName: string
+    title: string
+    searchLabel: string
+    content: { label: string; value: string }[]
+  }
   FilterButton: FilterButtonScreenParams
 }
 
