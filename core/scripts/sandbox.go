@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -26,8 +25,6 @@ func main() {
 
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
-
-	fmt.Println("pinged")
 
 	for {
 		time.Sleep(1 * time.Second)
