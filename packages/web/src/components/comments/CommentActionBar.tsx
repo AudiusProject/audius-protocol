@@ -7,13 +7,9 @@ import {
   useReportComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { toast } from '@audius/common/src/store/ui/toast/slice'
+import { cacheUsersSelectors } from '@audius/common/store'
 import {
-  cacheUsersSelectors,
-  CommentConfirmationModalState,
-  useCommentConfirmationModal
-} from '@audius/common/store'
-import {
+  ButtonVariant,
   Flex,
   Hint,
   IconButton,
@@ -47,6 +43,18 @@ type ConfirmationAction =
   | 'delete'
   | 'artistDelete'
 
+type ConfirmationModalState = {
+  messages: {
+    title: string
+    body: ReactNode
+    cancel: string
+    confirm: String
+  }
+  confirmButtonType?: ButtonVariant
+  confirmCallback: () => void
+  cancelCallback?: () => void
+}
+
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
   isDisabled: boolean
@@ -69,27 +77,23 @@ export const CommentActionBar = ({
 
   // API actions
   const [reactToComment] = useReactToComment()
-
   const [reportComment] = useReportComment()
-  const [isFlagConfirmationOpen, toggleFlagConfirmationOpen] = useToggle(false)
-
   const [pinComment] = usePinComment()
 
-  // Context data
+  // Comment context data
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = isCommentOwner && isParentComment
+
+  // Selectors
   const userDisplayName = useSelector(
     (state: AppState) => getUser(state, { id: Number(userId) })?.name
   )
 
   // Modals
-  const {
-    onClose: closeConfirmationModal,
-    onOpen: openConfirmationModal,
-    setData: setConfirmationModalData
-  } = useCommentConfirmationModal()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
+  const [currentConfirmationModalType, setCurrentConfirmationModalType] =
+    useState<ConfirmationAction | undefined>(undefined)
   const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
@@ -106,26 +110,28 @@ export const CommentActionBar = ({
   const handleDelete = useCallback(() => {
     onClickDelete()
   }, [onClickDelete])
+
   const handleMute = useCallback(() => {
     // TODO: call something here
-    dispatch(toast({ content: messages.toasts.muteUser }))
-  }, [dispatch])
-  const handleReport = useCallback(() => {
-    // TODO: call something here
-    dispatch(toast({ content: messages.toasts.flagAndRemove }))
-  }, [dispatch])
+    toast(messages.toasts.muteUser)
+  }, [toast])
+
   const handleMuteNotifs = useCallback(() => {
     setNotificationsMuted((prev) => !prev)
     // TODO: call something here
-    dispatch(toast({ content: messages.toasts.muteNotifs(notificationsMuted) }))
-  }, [dispatch, notificationsMuted])
+    toast(messages.toasts.muteNotifs(notificationsMuted))
+  }, [notificationsMuted, toast])
+
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
-    dispatch(toast({ content: messages.toasts.pin(isPinned) }))
-  }, [commentId, dispatch, isPinned, pinComment])const handleCommentReport = useCallback(() => {
+    toast(messages.toasts.pin(isPinned))
+  }, [commentId, isPinned, pinComment, toast])
+
+  const handleReport = useCallback(() => {
     reportComment(commentId)
     toast(messages.flaggedConfirmation)
   }, [commentId, reportComment, toast])
+
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
@@ -139,8 +145,9 @@ export const CommentActionBar = ({
   }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   // Confirmation Modal state
+
   const confirmationModals: {
-    [k in ConfirmationAction]: CommentConfirmationModalState
+    [k in ConfirmationAction]: ConfirmationModalState
   } = useMemo(
     () => ({
       pin: {
@@ -150,8 +157,7 @@ export const CommentActionBar = ({
           confirm: 'Pin',
           cancel: 'Cancel'
         },
-        confirmCallback: handlePin,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handlePin
       },
       unpin: {
         messages: {
@@ -160,8 +166,7 @@ export const CommentActionBar = ({
           confirm: 'Pin',
           cancel: 'Cancel'
         },
-        confirmCallback: handlePin,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handlePin
       },
       // Specifically for an artist deleting someone else's comment
       artistDelete: {
@@ -175,8 +180,7 @@ export const CommentActionBar = ({
           confirm: 'Delete',
           cancel: 'Cancel'
         },
-        confirmCallback: handleDelete,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handleDelete
       },
       // An individual deleting their own comment
       delete: {
@@ -186,8 +190,7 @@ export const CommentActionBar = ({
           confirm: 'Delete',
           cancel: 'Cancel'
         },
-        confirmCallback: handleDelete,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handleDelete
       },
       muteUser: {
         messages: {
@@ -206,8 +209,7 @@ export const CommentActionBar = ({
           cancel: 'Cancel'
         },
         confirmButtonType: 'destructive',
-        confirmCallback: handleMute,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handleMute
       },
       flagAndRemove: {
         messages: {
@@ -216,32 +218,27 @@ export const CommentActionBar = ({
           confirm: 'Flag',
           cancel: 'Cancel'
         },
-        confirmCallback: handleReport,
-        cancelCallback: closeConfirmationModal
+        confirmCallback: handleReport
       }
     }),
-    [
-      closeConfirmationModal,
-      handleDelete,
-      handleMute,
-      handlePin,
-      handleReport,
-      userDisplayName
-    ]
+    [handleDelete, handleMute, handlePin, handleReport, userDisplayName]
+  )
+
+  const currentConfirmationModal = useMemo(
+    () =>
+      currentConfirmationModalType
+        ? confirmationModals[currentConfirmationModalType]
+        : undefined,
+    [confirmationModals, currentConfirmationModalType]
   )
 
   // Popup menu items
   const popupMenuItems = useMemo(() => {
-    const handleConfirmationPopup =
-      (confirmationType: ConfirmationAction) => () => {
-        openConfirmationModal()
-        setConfirmationModalData(confirmationModals[confirmationType])
-      }
     let items: PopupMenuItem[] = []
     // Pin
     const entityOwnerMenuItems: PopupMenuItem[] = [
       {
-        onClick: handleConfirmationPopup('pin'),
+        onClick: () => setCurrentConfirmationModalType('pin'),
         text: messages.pin(isPinned)
       }
     ]
@@ -250,19 +247,23 @@ export const CommentActionBar = ({
     ]
     const nonCommentOwnerItems: PopupMenuItem[] = [
       {
-        onClick: handleConfirmationPopup('flagAndRemove'),
-        text: messages.report
+        onClick: () => setCurrentConfirmationModalType('flagAndRemove'),
+        text: messages.flagAndRemove
       },
-      { onClick: handleConfirmationPopup('muteUser'), text: messages.block }
+      {
+        onClick: () => setCurrentConfirmationModalType('muteUser'),
+        text: messages.block
+      }
     ]
     const muteNotifs: PopupMenuItem = {
       onClick: handleMuteNotifs,
       text: messages.muteNotifs(notificationsMuted)
     }
     const deleteComment: PopupMenuItem = {
-      onClick: handleConfirmationPopup(
-        !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
-      ),
+      onClick: () =>
+        setCurrentConfirmationModalType(
+          !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
+        ),
       text: messages.delete
     }
 
@@ -289,9 +290,6 @@ export const CommentActionBar = ({
     notificationsMuted,
     isCommentOwner,
     isEntityOwner,
-    openConfirmationModal,
-    setConfirmationModalData,
-    confirmationModals,
     isUserGettingNotifs
   ])
 
@@ -346,15 +344,15 @@ export const CommentActionBar = ({
       />
       <ConfirmationModal
         messages={{
-          header: messages.flagComment,
-          description: messages.flagCommentDescription,
+          header: currentConfirmationModal?.messages?.title,
+          description: currentConfirmationModal?.messages?.body,
           confirm: messages.flag
         }}
-        isOpen={isFlagConfirmationOpen}
-        onClose={toggleFlagConfirmationOpen}
-        title={messages.flagComment}
-        description={messages.flagCommentDescription}
-        onConfirm={handleCommentReport}
+        isOpen={currentConfirmationModalType !== undefined}
+        onConfirm={currentConfirmationModal?.confirmCallback}
+        onClose={() => {
+          setCurrentConfirmationModalType(undefined)
+        }}
       />
     </Flex>
   )

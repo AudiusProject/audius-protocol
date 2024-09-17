@@ -2,7 +2,6 @@ import { ComponentType, lazy } from 'react'
 
 import { Modals as ModalTypes } from '@audius/common/store'
 
-import { ConfirmationModal } from 'components/ConfirmationModal'
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
@@ -119,8 +118,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
-  PayoutWallet: PayoutWalletModal,
-  ConfirmationModal
+  PayoutWallet: PayoutWalletModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

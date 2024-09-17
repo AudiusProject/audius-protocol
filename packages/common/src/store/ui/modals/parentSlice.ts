@@ -68,8 +68,7 @@ export const initialState: BasicModalsState = {
   CoinflowWithdraw: { isOpen: false },
   WaitForDownloadModal: { isOpen: false },
   ArtistPick: { isOpen: false },
-  PayoutWallet: { isOpen: false },
-  ConfirmationModal: { isOpen: false }
+  PayoutWallet: { isOpen: false }
 }
 
 const slice = createSlice({

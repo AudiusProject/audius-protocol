@@ -14,7 +14,6 @@ export const commentsMessages = {
     `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
-  pin: 'Pin',
   pinned: 'Comment pinned',
   pinComment: 'Pin Comment',
   pinCommentDescription:
@@ -24,7 +23,6 @@ export const commentsMessages = {
   muted: 'User muted',
   flag: 'Flag',
   flagAndRemove: 'Flag & Remove',
-  flagComment: 'Flag Comment',
   flagged: 'Flagged comment',
   flaggedConfirmation: 'Comment flagged and hidden',
   removed: 'Comment removed',
@@ -39,10 +37,7 @@ export const commentsMessages = {
   deleteComment: 'Delete Comment',
   deleteCommentDescription: 'Delete your comment permanently?',
   moreActions: 'more actions',
-  report: 'Report Comment',
   block: 'Mute User',
-  muteNotifs: 'Mute Notifications',
-  unmuteNotifs: 'Unmute Notifications',
   flagCommentDescription: 'Flag and hide comment?',
   edited: 'edited',
   reply: 'Reply',
@@ -69,10 +64,6 @@ export const commentsMessages = {
     flagAndRemove: 'Flag and hide this comment?'
   },
   pin: (isPinned: boolean) => (isPinned ? 'Unpin' : 'Pin'),
-  edit: 'Edit',
-  delete: 'Delete',
-  report: 'Flag & Remove',
-  block: 'Mute User',
   muteNotifs: (isMuted: boolean) =>
     isMuted ? 'Turn on notifications' : 'Turn off notifications'
 }
