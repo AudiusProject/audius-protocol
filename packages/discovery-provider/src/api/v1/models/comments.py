@@ -34,6 +34,7 @@ base_comment_model = ns.model(
         "is_edited": fields.Boolean(required=True),
         "is_current_user_reacted": fields.Boolean(required=False),
         "is_artist_reacted": fields.Boolean(required=False),
+        "is_tombstone": fields.Boolean(required=False),
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=False),
         "replies": fields.List(fields.Nested(reply_comment_model), require=True),

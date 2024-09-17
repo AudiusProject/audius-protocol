@@ -59,6 +59,7 @@ export const CommentActionBar = ({
 }: CommentActionBarProps) => {
   // comment from props
   const { reactCount, id: commentId, isCurrentUserReacted } = comment
+  const isTombstone = 'isTombstone' in comment ? comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
@@ -177,7 +178,7 @@ export const CommentActionBar = ({
         variant='subdued'
         onClick={handleClickReply}
         size='m'
-        disabled={isDisabled}
+        disabled={isDisabled || isTombstone}
       >
         {messages.reply}
       </TextLink>

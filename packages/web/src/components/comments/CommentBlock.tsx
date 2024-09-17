@@ -46,7 +46,9 @@ const CommentBlockInternal = (
     isEdited,
     isArtistReacted
   } = comment
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
+  const isParentComment = 'isPinned' in comment
+  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+  const isTombstone = isParentComment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const commentUserId = Number(commentUserIdStr)
@@ -79,11 +81,19 @@ const CommentBlockInternal = (
   const isCommentByArtist = commentUserId === artistId
 
   return (
-    <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
+    <Flex
+      w='100%'
+      gap='l'
+      css={{ opacity: isDeleting || isTombstone ? 0.5 : 1 }}
+    >
       <Box css={{ flexShrink: 0 }}>
         <Avatar
           userId={commentUserId}
-          css={{ width: 44, height: 44 }}
+          css={{
+            width: 44,
+            height: 44,
+            cursor: isTombstone ? 'default' : 'pointer'
+          }}
           popover
         />
       </Box>
@@ -100,7 +110,11 @@ const CommentBlockInternal = (
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
-          <UserLink userId={commentUserId} disabled={isDeleting} popover />
+          {isTombstone ? (
+            '[Deleted]'
+          ) : (
+            <UserLink userId={commentUserId} disabled={isDeleting} popover />
+          )}
           <Flex gap='xs' alignItems='flex-end' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
@@ -138,7 +152,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isDeleting}
+            isDisabled={isDeleting || isTombstone}
           />
         )}
 
