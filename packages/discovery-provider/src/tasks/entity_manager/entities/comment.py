@@ -99,7 +99,6 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
-    logger.info(f"asdf params.existing_records {params.existing_records}")
     if (
         params.action == Action.REACT
         and (user_id, comment_id)
@@ -180,3 +179,52 @@ def report_comment(params: ManageEntityParameters):
         is_delete=False,
     )
     params.add_record((user_id, comment_id), comment_report, EntityType.COMMENT_REPORT)
+
+
+def validate_pin_tx(params: ManageEntityParameters, is_pin):
+    validate_signer(params)
+    comment_id = params.entity_id
+    comment_records = params.existing_records[EntityType.COMMENT.value]
+
+    if comment_id not in comment_records:
+        raise IndexingValidationError(f"Comment {comment_id} doesn't exist")
+
+    comment = comment_records[comment_id]
+    if is_pin and comment.is_pinned:
+        raise IndexingValidationError(f"Comment {comment_id} already pinned")
+    elif not is_pin and not comment.is_pinned:
+        raise IndexingValidationError(f"Comment {comment_id} already unpinned")
+
+
+def pin_comment(params: ManageEntityParameters):
+    validate_pin_tx(params, True)
+    comment_id = params.entity_id
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+
+    comment = copy_record(
+        existing_comment,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+    comment.is_pinned = True
+
+    params.add_record(comment_id, comment)
+
+
+def unpin_comment(params: ManageEntityParameters):
+    validate_pin_tx(params, False)
+    comment_id = params.entity_id
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+
+    comment = copy_record(
+        existing_comment,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+    comment.is_pinned = False
+
+    params.add_record(comment_id, comment)

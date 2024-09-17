@@ -43,5 +43,7 @@ export const commentsMessages = {
   block: 'Mute User',
   muteNotifs: 'Mute Notifications',
   unmuteNotifs: 'Unmute Notifications',
-  flagCommentDescription: 'Flag and hide comment?'
+  flagCommentDescription: 'Flag and hide comment?',
+  edited: 'edited',
+  reply: 'Reply'
 }

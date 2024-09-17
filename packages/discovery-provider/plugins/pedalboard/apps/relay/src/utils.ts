@@ -23,6 +23,11 @@ export const isTrackDownload = (encodedABI: string) => {
   return decodedAbi.action === 'Download' && decodedAbi.entityType === 'Track'
 }
 
+export const isViewNotification = (encodedABI: string): boolean => {
+  const decodedAbi = decodeAbi(encodedABI)
+  return decodedAbi.action === 'View' && decodedAbi.entityType === 'Notification'
+}
+
 export const unknownToError = (e: unknown): Error => {
   return e instanceof Error ? e : new Error(String(e))
 }

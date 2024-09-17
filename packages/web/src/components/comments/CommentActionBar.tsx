@@ -24,11 +24,16 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import {
+  openAuthModal,
+  useAuthenticatedCallback
+} from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 type CommentActionBarProps = {
@@ -46,11 +51,12 @@ export const CommentActionBar = ({
   onClickDelete
 }: CommentActionBarProps) => {
   // comment from props
-  const { reactCount, id: commentId } = comment
+  const { reactCount, id: commentId, isCurrentUserReacted } = comment
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   // context actions & values
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const dispatch = useDispatch()
 
   const [reactToComment] = useReactToComment()
 
@@ -63,13 +69,13 @@ export const CommentActionBar = ({
   const { toast } = useContext(ToastContext)
 
   // component state
-  const [reactionState, setReactionState] = useState(false) // TODO: temporary - eventually this will live in metadata
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
 
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = true // TODO: Need to set up API to provide this
   const notificationsMuted = false // TODO: Need to set up API to provide this
 
-  const handleCommentReact = useCallback(() => {
+  const handleCommentReact = useAuthenticatedCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
   }, [commentId, reactToComment, reactionState])
@@ -91,9 +97,13 @@ export const CommentActionBar = ({
     if (isMobile) {
       toggleIsMobileAppDrawer()
     } else {
-      onClickReply()
+      if (currentUserId === undefined) {
+        openAuthModal(dispatch)
+      } else {
+        onClickReply()
+      }
     }
-  }, [isMobile, onClickReply, toggleIsMobileAppDrawer])
+  }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   const popupMenuItems = useMemo(() => {
     let items: PopupMenuItem[] = []
@@ -173,7 +183,7 @@ export const CommentActionBar = ({
         size='m'
         disabled={isDisabled}
       >
-        Reply
+        {messages.reply}
       </TextLink>
 
       <PopupMenu
@@ -189,7 +199,11 @@ export const CommentActionBar = ({
               if (isMobile) {
                 toggleIsMobileAppDrawer()
               } else {
-                triggerPopup()
+                if (currentUserId === undefined) {
+                  openAuthModal(dispatch)
+                } else {
+                  triggerPopup()
+                }
               }
             }}
           />

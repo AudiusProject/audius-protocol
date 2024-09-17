@@ -359,16 +359,19 @@ const TrackTile = (props: CombinedProps) => {
               isActive={isActive}
               applyHoverStylesToInnerSvg
             >
-              <Text ellipses>{title}</Text>
+              <Text ellipses>{title || messages.loading}</Text>
               {isPlaying ? <IconVolume size='m' /> : null}
-              {showSkeleton && (
+              {showSkeleton ? (
                 <Skeleton className={styles.skeleton} height='20px' />
-              )}
+              ) : null}
             </TextLink>
             <UserLink userId={userId} badgeSize='xs'>
-              {showSkeleton && (
-                <Skeleton className={styles.skeleton} height='20px' />
-              )}
+              {showSkeleton ? (
+                <>
+                  <Text>{messages.loading}</Text>
+                  <Skeleton className={styles.skeleton} height='20px' />
+                </>
+              ) : null}
             </UserLink>
           </Flex>
           {coSign && (

@@ -56,6 +56,7 @@ const CollectionListRow = ({
             playingState={playingState}
             iconColor={iconColor}
             className={styles.playButton}
+            iconSize='2xs'
           />
         ) : (
           trackIndex
@@ -97,6 +98,7 @@ const CollectionPlayerCard = ({
 }) => {
   const makeOnTogglePlay = (index) => () => onTogglePlay(index)
   const permalink = `${stripLeadingSlash(collection.permalink)}`
+  const isGated = !!streamConditions
   const isPurchaseable =
     streamConditions && instanceOfPurchaseGate(streamConditions)
   return (
@@ -105,7 +107,9 @@ const CollectionPlayerCard = ({
       backgroundColor={backgroundColor}
       twitterURL={permalink}
     >
-      {isPurchaseable ? <DogEar size='s' /> : null}
+      {isGated ? (
+        <DogEar size='s' variant={isPurchaseable ? 'purchase' : 'special'} />
+      ) : null}
       <div className={styles.padding}>
         <div className={styles.topRow}>
           <div className={styles.logo}>

@@ -35,10 +35,6 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-const messages = {
-  coSign: 'Co-Sign'
-}
-
 type Props = {
   coSign?: Remix | null
   onPressTitle?: GestureResponderHandler
@@ -119,11 +115,12 @@ export const LineupTileMetadata = ({
           userId={user.user_id}
         />
       </FadeInView>
-      {coSign && (
+      {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
+      {/* {coSign && (
         <Text style={styles.coSignLabel} weight='heavy'>
           {messages.coSign}
         </Text>
-      )}
+      )} */}
     </View>
   )
 }

@@ -1,88 +1,95 @@
-import type { ID } from '@audius/common/models'
-import { View } from 'react-native'
+import { useEffect } from 'react'
 
-import { Button, IconArrowRight, IconRemix } from '@audius/harmony-native'
-import { Tile, GradientText } from 'app/components/core'
-import { flexRowCentered, makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import type { Track } from '@audius/common/models'
+import {
+  lineupSelectors,
+  remixesPageLineupActions,
+  remixesPageSelectors
+} from '@audius/common/store'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { TrackScreenRemix } from './TrackScreenRemix'
+import {
+  Button,
+  Flex,
+  IconRemix,
+  IconArrowRight,
+  Text
+} from '@audius/harmony-native'
+import { Lineup } from 'app/components/lineup'
+import { useNavigation } from 'app/hooks/useNavigation'
+
+const { getLineup: getRemixesLineup } = remixesPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getRemixesTracksLineup = makeGetLineupMetadatas(getRemixesLineup)
 
 const messages = {
-  title: 'Remixes',
-  viewAll: (count: number | null) =>
-    `View All ${count && count > 6 ? `${count} ` : ''}Remixes`
+  viewAllRemixes: 'View All Remixes',
+  remixes: 'Remixes Of This Track'
 }
+
+const MAX_REMIXES_TO_DISPLAY = 6
 
 type TrackScreenRemixesProps = {
-  trackIds: ID[]
-  onPressGoToRemixes: () => void
-  count: number | null
+  track: Track
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: {
-    marginBottom: spacing(6)
-  },
-  tile: {
-    padding: spacing(6)
-  },
+export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
+  const { track } = props
+  const { _remixes } = track
+  const navigation = useNavigation()
+  const dispatch = useDispatch()
+  const remixesLineup = useSelector(getRemixesTracksLineup)
 
-  header: {
-    ...flexRowCentered(),
-    justifyContent: 'center',
-    marginBottom: spacing(6)
-  },
+  useEffect(() => {
+    if (track) {
+      dispatch(
+        remixesPageLineupActions.fetchLineupMetadatas(0, 10, false, {
+          trackId: track.track_id
+        })
+      )
+    }
 
-  headerText: {
-    lineHeight: 30,
-    fontSize: 28
-  },
+    return function cleanup() {
+      dispatch(remixesPageLineupActions.reset())
+    }
+  }, [dispatch, track])
 
-  iconRemix: {
-    height: spacing(12),
-    width: spacing(12),
-    marginRight: spacing(2)
-  },
-
-  tracks: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    flexWrap: 'wrap'
-  },
-
-  track: {
-    marginHorizontal: spacing(3),
-    marginBottom: spacing(5)
+  const handlePressGoToAllRemixes = () => {
+    navigation.push('TrackRemixes', { id: track.track_id })
   }
-}))
 
-export const TrackScreenRemixes = ({
-  trackIds,
-  onPressGoToRemixes,
-  count
-}: TrackScreenRemixesProps) => {
-  const styles = useStyles()
-  const { pageHeaderGradientColor2 } = useThemeColors()
+  const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
+
+  if (!remixTrackIds || !remixTrackIds.length) {
+    return null
+  }
+
   return (
-    <Tile styles={{ root: styles.root, tile: styles.tile }}>
-      <View style={styles.header}>
-        <IconRemix style={styles.iconRemix} fill={pageHeaderGradientColor2} />
-        <GradientText style={styles.headerText}>{messages.title}</GradientText>
-      </View>
-      <View style={styles.tracks}>
-        {trackIds.map((id) => {
-          return <TrackScreenRemix id={id} key={id} style={styles.track} />
-        })}
-      </View>
-      <Button
-        iconRight={IconArrowRight}
-        variant='primary'
-        onPress={onPressGoToRemixes}
-      >
-        {messages.viewAll(count)}
-      </Button>
-    </Tile>
+    <Flex>
+      <Flex row alignItems='center' gap='s'>
+        <IconRemix color='default' />
+        <Text variant='title'>{messages.remixes}</Text>
+      </Flex>
+      <Lineup
+        lineup={remixesLineup}
+        actions={remixesPageLineupActions}
+        count={Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)}
+        itemStyles={{
+          padding: 0,
+          paddingVertical: 12
+        }}
+      />
+      {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
+        <Flex pt='m' alignItems='flex-start'>
+          <Button
+            iconRight={IconArrowRight}
+            size='xs'
+            onPress={handlePressGoToAllRemixes}
+          >
+            {messages.viewAllRemixes}
+          </Button>
+        </Flex>
+      ) : null}
+    </Flex>
   )
 }

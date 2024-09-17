@@ -27,7 +27,9 @@ export enum Action {
   DOWNLOAD = 'Download',
   REACT = 'React',
   UNREACT = 'Unreact',
-  REPORT = 'Report'
+  REPORT = 'Report',
+  PIN = 'Pin',
+  UNPIN = 'Unpin'
 }
 
 export enum EntityType {

@@ -98,7 +98,7 @@ const CommentSectionContent = () => {
     )
   }
 
-  return <CommentBlock comment={comments[0]} hideActions />
+  return <CommentBlock commentId={comments[0].id} hideActions />
 }
 
 type CommentSectionProps = {

@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
+import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
@@ -25,8 +26,12 @@ import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
 const CommentDrawerContent = () => {
-  const { comments, commentSectionLoading: isLoading } =
-    useCurrentCommentSection()
+  const {
+    comments,
+    commentSectionLoading: isLoading,
+    loadMorePages,
+    isLoadingMorePages
+  } = useCurrentCommentSection()
 
   // Loading state
   if (isLoading) {
@@ -53,10 +58,22 @@ const CommentDrawerContent = () => {
       data={comments}
       keyExtractor={({ id }) => id}
       ListHeaderComponent={<Box h='l' />}
-      ListFooterComponent={<Box h='l' />}
+      ListFooterComponent={
+        <>
+          {isLoadingMorePages ? (
+            <Flex row justifyContent='center' mb='xl' w='100%'>
+              <LoadingSpinner style={{ width: 20, height: 20 }} />
+            </Flex>
+          ) : null}
+
+          <Box h='l' />
+        </>
+      }
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
       keyboardShouldPersistTaps='handled'
+      onEndReached={loadMorePages}
+      onEndReachedThreshold={0.3}
       renderItem={({ item }) => (
         <Box ph='l'>
           <CommentThread commentId={item.id} />
