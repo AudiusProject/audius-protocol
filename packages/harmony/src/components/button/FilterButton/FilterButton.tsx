@@ -252,8 +252,6 @@ export const FilterButton = forwardRef(function FilterButton<
         anchorRef={anchorRef}
         isVisible={isOpen}
         onClose={() => setIsOpen(false)}
-        aria-label={selectedLabel ?? label ?? props['aria-label']}
-        aria-activedescendant={selectedLabel}
         PaperProps={menuProps?.PaperProps}
       >
         {children ? (
@@ -270,6 +268,8 @@ export const FilterButton = forwardRef(function FilterButton<
             width={menuProps?.width}
             scrollRef={scrollRef}
             MenuListProps={menuProps?.MenuListProps}
+            aria-label={selectedLabel ?? label ?? props['aria-label']}
+            aria-activedescendant={selectedLabel}
           >
             {showFilterInput && filterInputProps ? (
               <TextInput
