@@ -8,6 +8,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/console/components"
 	"github.com/AudiusProject/audius-protocol/core/console/middleware"
 	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/cometbft/cometbft/rpc/client"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -15,7 +16,7 @@ import (
 
 type Console struct {
 	config *config.Config
-	rpc    *local.Local
+	rpc    client.Client
 	db     *db.Queries
 	e      *echo.Echo
 	logger *common.Logger
