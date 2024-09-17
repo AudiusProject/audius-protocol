@@ -34,6 +34,7 @@ import useMeasure from 'react-use-measure'
 import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { InboxUnavailableMessage } from './InboxUnavailableMessage'
@@ -212,6 +213,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         scrollBottomThreshold={SCROLL_BOTTOM_THRESHOLD}
         {...other}
       >
+        {chat?.is_blast ? <ChatBlastAudienceDisplay chat={chat} /> : null}
         <div className={styles.listRoot} ref={messageListRef}>
           {!canSendMessage && firstOtherUser ? (
             <InboxUnavailableMessage
