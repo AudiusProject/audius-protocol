@@ -85,7 +85,7 @@ func run(logger *common.Logger) error {
 		return fmt.Errorf("server init error: %v", err)
 	}
 
-	_, err = console.NewConsole(config, logger, e, rpc, pool)
+	csl, err := console.NewConsole(config, logger, e, cometConfig.RPC.ListenAddress, pool)
 	if err != nil {
 		return fmt.Errorf("console init error: %v", err)
 	}
@@ -114,6 +114,15 @@ func run(logger *common.Logger) error {
 	eg.Go(func() error {
 		logger.Info("core http server starting")
 		return e.Start(config.CoreServerAddr)
+	})
+
+	eg.Go(func() error {
+		err := csl.AwaitLocalRpc(rpc)
+		if err != nil {
+			logger.Errorf("could not setup local rpc for console, using http: %v", err)
+		}
+
+		return nil
 	})
 
 	// cometbft
