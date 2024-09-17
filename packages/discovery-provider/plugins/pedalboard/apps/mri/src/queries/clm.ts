@@ -77,7 +77,7 @@ export const clm = async (
     .select(
       `tracks.track_id as UniqueTrackIdentifier`,
       `tracks.title as TrackTitle`,
-      `coalesce(users.name, users.handle) as Artist`,
+      db.raw(`coalesce(users.name, users.handle) as Artist`),
       `playlists.playlist_name as AlbumTitle`,
       `playlists.playlist_id as AlbumId`,
       db.raw(`'' as "ReleaseLabel"`),
