@@ -56,6 +56,10 @@ dev: gen
 	audius-compose down
 	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache
 
+.PHONY: test
+test: gen
+	go test -v ./... -timeout 60s
+
 .PHONY: sandbox-node
 sandbox-node:
 	@docker compose -f ./infra/docker-compose.yml down

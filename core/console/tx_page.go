@@ -47,20 +47,20 @@ func gatherTxMetadata(txResult []byte) (string, map[string]string) {
 
 	tx := result.Tx
 
-	var event gen_proto.Event
-	err = proto.Unmarshal(tx, &event)
+	var transaction gen_proto.SignedTransaction
+	err = proto.Unmarshal(tx, &transaction)
 	if err != nil {
 		return txType, data
 	}
 
-	switch event.Body.(type) {
-	case *gen_proto.Event_Plays:
-		playsEvent := event.GetPlays()
+	switch transaction.Transaction.(type) {
+	case *gen_proto.SignedTransaction_Plays:
+		playsEvent := transaction.GetPlays()
 
 		txType = "Play Event"
 
 		// only one play per event for now
-		for _, listen := range playsEvent.Listens {
+		for _, listen := range playsEvent.Plays {
 			data["Track ID"] = listen.TrackId
 			data["User ID"] = listen.UserId
 			data["Signature"] = listen.Signature

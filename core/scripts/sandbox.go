@@ -7,6 +7,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -27,13 +28,13 @@ func main() {
 
 	for {
 		time.Sleep(1 * time.Second)
-		_, err = sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
-			Event: &proto.Event{
-				Body: &proto.Event_Plays{
-					Plays: &proto.PlaysEvent{
-						Listens: []*proto.Listen{{
-							UserId:    "uuid.NewString()",
-							TrackId:   "uuid.NewString()",
+		_, err = sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
+			Transaction: &proto.SignedTransaction{
+				Transaction: &proto.SignedTransaction_Plays{
+					Plays: &proto.TrackPlays{
+						Plays: []*proto.TrackPlay{{
+							UserId:    uuid.NewString(),
+							TrackId:   uuid.NewString(),
 							Timestamp: timestamppb.Now(),
 							Signature: "sig",
 						}},

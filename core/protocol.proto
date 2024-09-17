@@ -7,42 +7,39 @@ package protocol;
 option go_package = "./proto;proto";
 
 service Protocol {
-  rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse);
-  rpc GetEvent (GetEventRequest) returns (GetEventResponse);
+  rpc SendTransaction (SendTransactionRequest) returns (TransactionResponse);
+  rpc GetTransaction (GetTransactionRequest) returns (TransactionResponse);
   rpc Ping (PingRequest) returns (PingResponse);
 }
 
-message Event {
+message SignedTransaction {
   string signature = 1;
   string request_id = 2;
-  oneof body {
-    PlaysEvent plays = 1000;
-    RegisterNodeEvent registerNode = 1001;
-    SlaRollupEvent slaRollup = 1002;
+  oneof transaction {
+    TrackPlays plays = 1000;
+    ValidatorRegistration validator_registration = 1001;
+    SlaRollup sla_rollup = 1002;
   }
 }
 
-message SubmitEventRequest {
-  Event event = 1;
+message SendTransactionRequest {
+  SignedTransaction transaction = 1;
 }
 
-message SubmitEventResponse {
+message GetTransactionRequest {
   string txhash = 1;
 }
 
-message GetEventRequest {
+message TransactionResponse {
   string txhash = 1;
+  SignedTransaction transaction = 2;
 }
 
-message GetEventResponse {
-  Event event = 1;
+message TrackPlays {
+  repeated TrackPlay plays = 1;
 }
 
-message PlaysEvent {
-  repeated Listen listens = 1;
-}
-
-message RegisterNodeEvent {
+message ValidatorRegistration {
   string endpoint = 1;
   string comet_address = 2;
   string eth_block = 3;
@@ -50,7 +47,7 @@ message RegisterNodeEvent {
   string sp_id = 5;
 }
 
-message Listen {
+message TrackPlay {
   string user_id = 1;
   string track_id = 2;
   google.protobuf.Timestamp timestamp = 3;
@@ -64,7 +61,7 @@ message PingResponse {
   string message = 1;
 }
 
-message SlaRollupEvent {
+message SlaRollup {
   google.protobuf.Timestamp timestamp = 1;
   int64 block_start = 2;
   int64 block_end = 3;
