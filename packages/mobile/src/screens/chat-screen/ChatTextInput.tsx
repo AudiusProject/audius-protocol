@@ -74,12 +74,14 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type ChatTextInputProps = {
   chatId: string
+  extraOffset?: number
   presetMessage?: string
   onMessageSent: () => void
 }
 
 export const ChatTextInput = ({
   chatId,
+  extraOffset = 0,
   presetMessage,
   onMessageSent
 }: ChatTextInputProps) => {
@@ -244,7 +246,8 @@ export const ChatTextInput = ({
         style={{
           position: 'relative',
           maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-          paddingBottom: Platform.OS === 'ios' ? spacing(1.5) : undefined
+          paddingBottom:
+            Platform.OS === 'ios' ? spacing(1.5) + extraOffset : undefined
         }}
       >
         <View

@@ -12,6 +12,7 @@ import {
 } from '~/api'
 import {
   decodeHashId,
+  getChatBlastAudienceDescription,
   getChatBlastCTA,
   getChatBlastSecondaryTitle,
   getChatBlastTitle
@@ -95,11 +96,15 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     audience,
     audienceContentId
   })
+  const chatBlastAudienceDescription = getChatBlastAudienceDescription({
+    audience
+  })
   const chatBlastCTA = getChatBlastCTA({ audience, audienceContentId })
 
   return {
     chatBlastTitle,
     chatBlastSecondaryTitle,
+    chatBlastAudienceDescription,
     chatBlastCTA,
     contentTitle,
     audienceCount

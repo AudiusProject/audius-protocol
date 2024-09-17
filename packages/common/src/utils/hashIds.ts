@@ -7,7 +7,8 @@ const MIN_LENGTH = 5
 const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 /** Decodes a string id into an int. Returns null if an invalid ID. */
-export const decodeHashId = (id: string): Nullable<number> => {
+export const decodeHashId = (id?: string): Nullable<number> => {
+  if (!id) return null
   try {
     const ids = hashids.decode(id)
     if (!ids.length) return null

@@ -21,6 +21,10 @@ const messages = {
   blastTitleRemixers: 'Remix Creators',
   blastTitleCustomers2: 'All Purchasers',
   blastTitleRemixers2: 'Remixed',
+  blastFollowersDescription: 'Everyone who follows you.',
+  blastSupportersDescription: 'Everyone who has sent you a tip.',
+  blastCustomersDescription: 'Everyone who has paid for your content.',
+  blastRemixersDescription: 'Everyone who has remixed your tracks.',
   blastCTABase: 'Send a message blast to ',
   blastCTAFollowers: 'each of your followers',
   blastCTASupporters: 'everyone who has sent you a tip',
@@ -207,6 +211,23 @@ export const getChatBlastSecondaryTitle = ({
       return audienceContentId
         ? messages.blastTitleRemixers2
         : messages.blastTitleRemixers
+  }
+}
+
+export const getChatBlastAudienceDescription = ({
+  audience
+}: {
+  audience: ChatBlastAudience
+}) => {
+  switch (audience) {
+    case ChatBlastAudience.FOLLOWERS:
+      return messages.blastFollowersDescription
+    case ChatBlastAudience.TIPPERS:
+      return messages.blastSupportersDescription
+    case ChatBlastAudience.CUSTOMERS:
+      return messages.blastCustomersDescription
+    case ChatBlastAudience.REMIXERS:
+      return messages.blastRemixersDescription
   }
 }
 
