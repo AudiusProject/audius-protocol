@@ -1,21 +1,23 @@
 import { ReactNode } from 'react'
 
+import { ButtonVariant } from '@audius/harmony'
+
 import { createModal } from '../createModal'
 
-export type CommentConfirmationModalState = {
+export type ConfirmationModalState = {
   messages: {
     title: string
     body: ReactNode
     cancel: string
     confirm: String
   }
-  confirmButtonType?: 'primary' | 'destructive'
+  confirmButtonType?: ButtonVariant
   confirmCallback: () => void
   cancelCallback?: () => void
 }
 
-const commentConfirmationModal = createModal<CommentConfirmationModalState>({
-  reducerPath: 'CommentConfirmation',
+const confirmationModal = createModal<ConfirmationModalState>({
+  reducerPath: 'ConfirmationModal',
   initialState: {
     isOpen: false,
     messages: {
@@ -31,7 +33,7 @@ const commentConfirmationModal = createModal<CommentConfirmationModalState>({
 })
 
 export const {
-  hook: useCommentConfirmationModal,
-  actions: commentConfirmationModalActions,
-  reducer: commentConfirmationModalReducer
-} = commentConfirmationModal
+  hook: useConfirmationModal,
+  actions: confirmationModalActions,
+  reducer: confirmationModalReducer
+} = confirmationModal

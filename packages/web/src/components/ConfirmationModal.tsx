@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCommentConfirmationModal } from '@audius/common/store'
+import { useConfirmationModal } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -11,8 +11,8 @@ import {
   Flex
 } from '@audius/harmony'
 
-export const CommentConfirmationModal = () => {
-  const { data, isOpen, onClose } = useCommentConfirmationModal()
+export const ConfirmationModal = () => {
+  const { data, isOpen, onClose } = useConfirmationModal()
   const { confirmCallback, cancelCallback } = data
 
   const handleConfirm = useCallback(() => {

@@ -5,6 +5,7 @@ import {
   usePinComment,
   useReactToComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import {
   cacheUsersSelectors,
@@ -36,26 +37,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
 const { getUser } = cacheUsersSelectors
 
-const messages = {
-  pin: (isPinned: boolean) => (isPinned ? 'Unpin' : 'Pin'),
-  reply: 'Reply',
-  edit: 'Edit',
-  delete: 'Delete',
-  report: 'Flag & Remove',
-  block: 'Mute User',
-  muteNotifs: (isMuted: boolean) =>
-    isMuted ? 'Turn on notifications' : 'Turn off notifications',
-  toasts: {
-    pin: (isPinned: boolean) =>
-      isPinned ? 'Comment unpinned' : 'Comment pinned',
-    delete: 'Comment deleted',
-    muteUser: 'User muted and comment removed',
-    flagAndRemove: 'Comment flagged and removed',
-    muteNotifs: (isMuted: boolean) =>
-      isMuted ? 'Notifications turned on' : 'Notifications turned off'
-  }
-}
-
 type ConfirmationAction =
   | 'pin'
   | 'flagAndRemove'
@@ -78,15 +59,16 @@ export const CommentActionBar = ({
   onClickDelete
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
-  // comment from props
+  // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const isParentComment = 'isPinned' in comment
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+
   // API actions
   const [reactToComment] = useReactToComment()
   const [pinComment] = usePinComment()
 
-  // context data
+  // Context data
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = isCommentOwner && isParentComment
@@ -153,11 +135,7 @@ export const CommentActionBar = ({
       pin: {
         messages: {
           title: 'Pin this comment?',
-          body: (
-            <Text color='default'>
-              If you already pinned a comment, this will replace it
-            </Text>
-          ),
+          body: <Text color='default'>{messages.popups.pin}</Text>,
           confirm: 'Pin',
           cancel: 'Cancel'
         },
@@ -167,7 +145,7 @@ export const CommentActionBar = ({
       unpin: {
         messages: {
           title: 'Unpin this comment?',
-          body: <Text color='default'>Unpin this comment?</Text>,
+          body: <Text color='default'>{messages.popups.unpin}</Text>,
           confirm: 'Pin',
           cancel: 'Cancel'
         },
@@ -180,7 +158,7 @@ export const CommentActionBar = ({
           title: 'Delete comment',
           body: (
             <Text color='default'>
-              Delete {userDisplayName}&apos;s comment?
+              {messages.popups.artistDelete(userDisplayName as string)}
             </Text>
           ),
           confirm: 'Delete',
@@ -193,7 +171,7 @@ export const CommentActionBar = ({
       delete: {
         messages: {
           title: 'Delete comment',
-          body: <Text color='default'> Delete your comment permanently? </Text>,
+          body: <Text color='default'> {messages.popups.delete}</Text>,
           confirm: 'Delete',
           cancel: 'Cancel'
         },
@@ -206,11 +184,10 @@ export const CommentActionBar = ({
           body: (
             <Flex gap='l' direction='column'>
               <Text color='default' textAlign='left'>
-                Mute {userDisplayName} from commenting on your content?
+                {messages.popups.mute.body(userDisplayName as string)}
               </Text>
               <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
-                This will not affect their ability to view your profile or
-                interact with your content.
+                {messages.popups.mute.hint}
               </Hint>
             </Flex>
           ) as ReactNode,
@@ -224,7 +201,7 @@ export const CommentActionBar = ({
       flagAndRemove: {
         messages: {
           title: 'Flag comment?',
-          body: <Text color='default'> Flag and hide this comment? </Text>,
+          body: <Text color='default'> {messages.popups.flagAndRemove}</Text>,
           confirm: 'Flag',
           cancel: 'Cancel'
         },

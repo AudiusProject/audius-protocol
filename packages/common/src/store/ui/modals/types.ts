@@ -7,7 +7,7 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
-import { CommentConfirmationModalState } from './comment-confirmation-modal/commentConfirmationModal'
+import { ConfirmationModalState } from './confirmation-modal/confirmationModal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
@@ -95,7 +95,7 @@ export type Modals =
   | 'ArtistPick'
   | 'AlbumTrackRemoveConfirmation'
   | 'PayoutWallet'
-  | 'CommentConfirmation'
+  | 'ConfirmationModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -122,7 +122,7 @@ export type StatefulModalsState = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
-  CommentConfirmation: CommentConfirmationModalState
+  ConfirmationModal: ConfirmationModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState
