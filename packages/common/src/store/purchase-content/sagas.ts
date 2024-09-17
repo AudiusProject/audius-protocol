@@ -955,8 +955,11 @@ function* purchaseWithAnything({
       if (!provider) {
         throw new Error('No solana provider / wallet found')
       }
-      sourceWallet = (yield* call(provider.connect)).publicKey
+      sourceWallet = new PublicKey(
+        (yield* call(provider.connect)).publicKey.toString()
+      )
     }
+    console.log(sourceWallet.toString())
 
     let transaction: VersionedTransaction
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
