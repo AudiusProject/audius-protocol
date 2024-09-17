@@ -24,7 +24,7 @@ def test_search_track_tags(app_module):
             {"track_id": 1, "tags": "", "owner_id": 1},
             {"track_id": 2, "owner_id": 1, "tags": "pop,rock,electric"},
             {"track_id": 3, "owner_id": 2},
-            {"track_id": 4, "owner_id": 2, "tags": "funk,pop", "is_stream_gated": True},
+            {"track_id": 4, "owner_id": 2, "tags": "funk,pop", "is_stream_gated": True,  "comments_disabled": True},
             {"track_id": 5, "owner_id": 2, "tags": "funk,pop"},
             {"track_id": 6, "owner_id": 2, "tags": "funk,Funk,kpop"},
         ],
@@ -41,6 +41,9 @@ def test_search_track_tags(app_module):
             {"repost_item_id": 5, "repost_type": "track", "user_id": 1},
             {"repost_item_id": 5, "repost_type": "track", "user_id": 2},
             {"repost_item_id": 5, "repost_type": "track", "user_id": 3},
+        ],
+        "comments": [
+            {"comment_id": 1, "entity_id": 5, "user_id": 1}
         ],
     }
 
@@ -64,6 +67,9 @@ def test_search_track_tags(app_module):
         assert tracks[0]["track_id"] == 5  # First w/ 3 reposts
         assert tracks[1]["track_id"] == 2  # Sec w/ 2 reposts
         assert tracks[2]["track_id"] == 4  # Third w/ 1 reposts
+        assert tracks[2]["comments_disabled"] == True  # Third w/ 1 reposts
+
+        assert tracks[0]["comment_count"] == 1
         # Track id 6 does not appear b/c kpop and pop are not exact matches
 
         # curent user
