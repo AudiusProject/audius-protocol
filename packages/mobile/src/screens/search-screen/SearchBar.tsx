@@ -111,6 +111,8 @@ export const SearchBar = (props: SearchBarProps) => {
   return (
     <TextInput
       {...props}
+      autoCapitalize='none'
+      autoCorrect={false}
       startIcon={IconSearch}
       size={TextInputSize.SMALL}
       label={messages.label}

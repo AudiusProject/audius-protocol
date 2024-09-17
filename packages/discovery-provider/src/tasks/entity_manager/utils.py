@@ -77,6 +77,8 @@ class Action(str, Enum):
     DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    PIN = "Pin"
+    UNPIN = "Unpin"
     MUTE = "Mute"
     UNMUTE = "Unmute"
     REPORT = "Report"

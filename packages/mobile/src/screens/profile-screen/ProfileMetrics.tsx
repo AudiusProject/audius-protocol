@@ -25,8 +25,7 @@ const messages = {
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: spacing(2)
+    justifyContent: 'flex-start'
   },
   metric: {
     flexDirection: 'row',

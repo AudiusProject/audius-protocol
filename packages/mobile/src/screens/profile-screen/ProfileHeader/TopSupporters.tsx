@@ -14,7 +14,7 @@ import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCaretRight, IconTrophy } from '@audius/harmony-native'
+import { Flex, IconCaretRight, IconTrophy } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
 import { ProfilePictureListSkeleton } from 'app/screens/notifications-screen/Notification/NotificationProfilePictureListSkeleton'
@@ -32,11 +32,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    marginVertical: spacing(2),
-    paddingTop: spacing(2),
-    alignItems: 'center'
-  },
   touchableRoot: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -121,7 +116,7 @@ export const TopSupporters = () => {
   }, [navigation, user_id])
 
   return supporter_count ? (
-    <View style={styles.root} pointerEvents='box-none'>
+    <Flex pv='s' alignItems='center' pointerEvents='box-none'>
       <TouchableOpacity style={styles.touchableRoot} onPress={handlePress}>
         {topSupporters.length > 0 ? (
           <ProfilePictureList
@@ -150,6 +145,6 @@ export const TopSupporters = () => {
           <IconCaretRight fill={secondary} width={14} height={14} />
         </View>
       </TouchableOpacity>
-    </View>
+    </Flex>
   ) : null
 }

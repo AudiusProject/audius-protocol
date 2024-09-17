@@ -46,8 +46,6 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
-    paddingTop: spacing(2),
-    paddingBottom: spacing(4),
     paddingHorizontal: spacing(3),
     marginHorizontal: spacing(-3),
     marginBottom: spacing(2),

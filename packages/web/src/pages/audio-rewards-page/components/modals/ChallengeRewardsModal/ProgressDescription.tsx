@@ -1,10 +1,6 @@
 import { ReactNode } from 'react'
 
-import { Text } from '@audius/harmony'
-
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-
-import styles from './styles.module.css'
+import { Flex, Text } from '@audius/harmony'
 
 const messages = {
   task: 'Task'
@@ -20,18 +16,14 @@ export const ProgressDescription = ({
   label?: ReactNode
   description: ReactNode
 }) => {
-  const wm = useWithMobileStyle(styles.mobile)
   return (
-    <div className={wm(styles.progressDescription)}>
-      <Text
-        variant='label'
-        size='l'
-        strength='strong'
-        className={styles.verifiedChallenge}
-      >
-        {label}
-      </Text>
-      <Text variant='body'>{description}</Text>
-    </div>
+    <Flex>
+      <Flex column gap='m' p='xl'>
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {label}
+        </Text>
+        <Text variant='body'>{description}</Text>
+      </Flex>
+    </Flex>
   )
 }
