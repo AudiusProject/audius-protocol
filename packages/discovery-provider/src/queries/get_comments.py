@@ -148,7 +148,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
-                (CommentReport.comment_id == None) | (current_user_id == None) | (CommentReport.user_id != current_user_id),
+                (CommentReport.comment_id == None)
+                | (current_user_id == None)
+                | (CommentReport.user_id != current_user_id),
             )
             .order_by(desc(Comment.is_pinned), sort_method_order_by)
             .offset(offset)
