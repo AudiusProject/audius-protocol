@@ -1,6 +1,7 @@
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.tasks.entity_manager.utils import (
     Action,
@@ -148,6 +149,36 @@ def unreact_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), deleted_comment_reaction, EntityType.COMMENT_REACTION
     )
+
+
+def validate_report_comment_tx(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+    comment_reports = params.existing_records[EntityType.COMMENT_REPORT.value]
+
+    if (user_id, comment_id) in comment_reports:
+        raise IndexingValidationError(
+            f"User {user_id} already reported comment {comment_id}"
+        )
+
+
+def report_comment(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+
+    comment_report = CommentReport(
+        comment_id=comment_id,
+        user_id=user_id,
+        txhash=params.txhash,
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+        created_at=params.block_datetime,
+        updated_at=params.block_datetime,
+        is_delete=False,
+    )
+    params.add_record((user_id, comment_id), comment_report, EntityType.COMMENT_REPORT)
 
 
 def validate_pin_tx(params: ManageEntityParameters, is_pin):

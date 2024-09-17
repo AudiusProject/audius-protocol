@@ -3,7 +3,8 @@ import {
   useEditCommentById,
   usePinCommentById,
   usePostComment as useAQueryPostComment,
-  useReactToCommentById
+  useReactToCommentById,
+  useReportCommentById
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
@@ -71,8 +72,14 @@ export const usePinComment = () => {
 }
 
 export const useReportComment = () => {
-  const wrappedHandler = (commentId: string) => {}
-  return [wrappedHandler] as const
+  const { currentUserId, entityId } = useCurrentCommentSection()
+  const [reportComment, response] = useReportCommentById()
+  const wrappedHandler = (commentId: string) => {
+    if (currentUserId) {
+      reportComment({ id: commentId, userId: currentUserId, entityId })
+    }
+  }
+  return [wrappedHandler, response] as const
 }
 
 export const useDeleteComment = () => {
@@ -84,5 +91,5 @@ export const useDeleteComment = () => {
       deleteComment({ id: commentId, userId: currentUserId, entityId })
     }
   }
-  return [wrappedHandler, response] as const // as const is needed to return a tuple
+  return [wrappedHandler, response] as const
 }

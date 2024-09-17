@@ -8,6 +8,7 @@ import {
   usePinComment,
   useReportComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { removeNullable } from '@audius/common/utils'
 import type { Comment, ReplyComment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
@@ -20,33 +21,6 @@ import {
   type ActionDrawerRow
 } from '../action-drawer'
 import { ConfirmationDrawerWithoutRedux } from '../drawers'
-
-const messages = {
-  pin: 'Pin',
-  pinned: 'Comment pinned',
-  pinComment: 'Pin Comment',
-  pinCommentDescription:
-    'If you already pinned a comment, this will replace it',
-  unpin: 'Unpin',
-  unpinned: 'Comment unpinned',
-  muted: 'User muted',
-  flag: 'Flag',
-  flagAndRemove: 'Flag & Remove',
-  flagComment: 'Flag Comment',
-  flagged: 'Flagged comment',
-  removed: 'Comment removed',
-  muteUser: 'Mute User',
-  muteUserHint:
-    'This will not affect their ability to view your profile or interact with your content. ',
-  turnOnNotifications: 'Turn On Notifications',
-  turnOffNotifications: 'Turn Off Notifications',
-  edit: 'Edit',
-  delete: 'Delete',
-  deleted: 'Comment deleted',
-  deleteComment: 'Delete Comment',
-  deleteCommentDescription: 'Delete your comment permanently?',
-  moreActions: 'more actions'
-}
 
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
@@ -167,7 +141,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const handleFlagComment = useCallback(() => {
     reportComment(id)
     toast({
-      content: messages.flagged,
+      content: messages.flaggedConfirmation,
       type: 'info'
     })
   }, [reportComment, id, toast])

@@ -84,7 +84,7 @@ export const CommentSectionProvider = (
     reset,
     hasMore: hasMorePages
   } = useGetCommentsByTrackId(
-    { entityId, sortMethod: currentSort, currentUserId },
+    { entityId, sortMethod: currentSort, userId: currentUserId },
     {
       pageSize: 5,
       disabled: entityId === 0

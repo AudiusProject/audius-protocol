@@ -1,10 +1,12 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
   usePinComment,
-  useReactToComment
+  useReactToComment,
+  useReportComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
   Flex,
   IconButton,
@@ -25,23 +27,14 @@ import { Comment, ReplyComment } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
+import { ConfirmationModal } from 'components/confirmation-modal'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import { ToastContext } from 'components/toast/ToastContext'
 import {
   openAuthModal,
   useAuthenticatedCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
-
-const messages = {
-  pin: (isPinned: boolean) => (isPinned ? 'Unpin Comment' : 'Pin Comment'),
-  reply: 'Reply',
-  edit: 'Edit Comment',
-  delete: 'Delete Comment',
-  report: 'Report Comment',
-  block: 'Mute User',
-  muteNotifs: (isMuted: boolean) =>
-    isMuted ? 'Unmute Notifications' : 'Mute Notifications'
-}
 
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
@@ -66,9 +59,14 @@ export const CommentActionBar = ({
   const dispatch = useDispatch()
 
   const [reactToComment] = useReactToComment()
+
+  const [reportComment] = useReportComment()
+  const [isFlagConfirmationOpen, toggleFlagConfirmationOpen] = useToggle(false)
+
   const [pinComment] = usePinComment()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
   const isMobile = useIsMobile()
+  const { toast } = useContext(ToastContext)
 
   // component state
   const [reactionState, setReactionState] = useState(isCurrentUserReacted)
@@ -90,6 +88,11 @@ export const CommentActionBar = ({
     pinComment(commentId, !isPinned)
   }, [commentId, isPinned, pinComment])
 
+  const handleCommentReport = useCallback(() => {
+    reportComment(commentId)
+    toast(messages.flaggedConfirmation)
+  }, [commentId, reportComment, toast])
+
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
@@ -107,7 +110,7 @@ export const CommentActionBar = ({
     const entityOwnerMenuItems: PopupMenuItem[] = [
       {
         onClick: handleCommentPin,
-        text: messages.pin(isPinned),
+        text: isPinned ? messages.unpin : messages.pin,
         icon: <IconPin />
       }
     ]
@@ -116,7 +119,7 @@ export const CommentActionBar = ({
     ]
     const nonCommentOwnerItems: PopupMenuItem[] = [
       {
-        onClick: () => {}, // TODO - nothing implemented yet
+        onClick: toggleFlagConfirmationOpen,
         text: messages.report,
         icon: <IconShieldCheck /> // TODO: temporary icon
       },
@@ -124,7 +127,7 @@ export const CommentActionBar = ({
     ]
     const muteNotifs: PopupMenuItem = {
       onClick: () => {}, // TODO - nothing implemented yet here
-      text: messages.muteNotifs(notificationsMuted),
+      text: notificationsMuted ? messages.unmuteNotifs : messages.muteNotifs,
       icon: <IconNotificationOff />
     }
     const deleteComment: PopupMenuItem = {
@@ -150,14 +153,15 @@ export const CommentActionBar = ({
     }
     return items
   }, [
-    isCommentOwner,
-    isEntityOwner,
+    handleCommentPin,
     isPinned,
-    isUserGettingNotifs,
-    notificationsMuted,
     onClickEdit,
+    toggleFlagConfirmationOpen,
+    notificationsMuted,
     handleCommentDelete,
-    handleCommentPin
+    isEntityOwner,
+    isCommentOwner,
+    isUserGettingNotifs
   ])
 
   return (
@@ -208,6 +212,18 @@ export const CommentActionBar = ({
       <DownloadMobileAppDrawer
         isOpen={isMobileAppDrawerOpen}
         onClose={toggleIsMobileAppDrawer}
+      />
+      <ConfirmationModal
+        messages={{
+          header: messages.flagComment,
+          description: messages.flagCommentDescription,
+          confirm: messages.flag
+        }}
+        isOpen={isFlagConfirmationOpen}
+        onClose={toggleFlagConfirmationOpen}
+        title={messages.flagComment}
+        description={messages.flagCommentDescription}
+        onConfirm={handleCommentReport}
       />
     </Flex>
   )
