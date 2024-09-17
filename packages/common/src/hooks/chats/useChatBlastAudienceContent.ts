@@ -10,7 +10,12 @@ import {
   useGetRemixersCount,
   useGetTrackById
 } from '~/api'
-import { decodeHashId, getChatBlastTitle } from '~/utils'
+import {
+  decodeHashId,
+  getChatBlastCTA,
+  getChatBlastSecondaryTitle,
+  getChatBlastTitle
+} from '~/utils'
 
 export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   const {
@@ -86,9 +91,16 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     : undefined
 
   const chatBlastTitle = getChatBlastTitle(audience)
+  const chatBlastSecondaryTitle = getChatBlastSecondaryTitle({
+    audience,
+    audienceContentId
+  })
+  const chatBlastCTA = getChatBlastCTA({ audience, audienceContentId })
 
   return {
     chatBlastTitle,
+    chatBlastSecondaryTitle,
+    chatBlastCTA,
     contentTitle,
     audienceCount
   }
