@@ -3,12 +3,23 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { ETH_REWARDS_MANAGER_CONTRACT_ADDRESS } from './constants'
 
-export const getAntiAbuseOracleAddresses = (
-  client: PublicClient,
-  { serviceType }: { serviceType: `0x${string}` }
-) =>
-  client.readContract({
-    address: ETH_REWARDS_MANAGER_CONTRACT_ADDRESS,
-    abi,
-    functionName: 'getAntiAbuseOracleAddresses'
-  })
+export class EthRewardsManager {
+  client: PublicClient
+  address: `0x${string}`
+
+  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+    this.client = client
+    this.address = address ?? ETH_REWARDS_MANAGER_CONTRACT_ADDRESS
+  }
+
+  getAntiAbuseOracleAddresses = ({
+    serviceType
+  }: {
+    serviceType: `0x${string}`
+  }) =>
+    this.client.readContract({
+      address: this.address,
+      abi,
+      functionName: 'getAntiAbuseOracleAddresses'
+    })
+}

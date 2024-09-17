@@ -3,24 +3,38 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { SERVICE_PROVIDER_FACTORY_CONTRACT_ADDRESS } from './constants'
 
-export const getTotalServiceTypeProviders = (
-  client: PublicClient,
-  { serviceType }: { serviceType: `0x${string}` }
-) =>
-  client.readContract({
-    address: SERVICE_PROVIDER_FACTORY_CONTRACT_ADDRESS,
-    abi,
-    functionName: 'getTotalServiceTypeProviders',
-    args: [serviceType]
-  })
+export class ServiceProviderFactory {
+  client: PublicClient
+  address: `0x${string}`
 
-export const getServiceEndpointInfo = (
-  client: PublicClient,
-  { serviceType, index }: { serviceType: `0x${string}`; index: bigint }
-) =>
-  client.readContract({
-    address: SERVICE_PROVIDER_FACTORY_CONTRACT_ADDRESS,
-    abi,
-    functionName: 'getServiceEndpointInfo',
-    args: [serviceType, index]
-  })
+  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+    this.client = client
+    this.address = address ?? SERVICE_PROVIDER_FACTORY_CONTRACT_ADDRESS
+  }
+
+  getTotalServiceTypeProviders = ({
+    serviceType
+  }: {
+    serviceType: `0x${string}`
+  }) =>
+    this.client.readContract({
+      address: this.address,
+      abi,
+      functionName: 'getTotalServiceTypeProviders',
+      args: [serviceType]
+    })
+
+  getServiceEndpointInfo = ({
+    serviceType,
+    index
+  }: {
+    serviceType: `0x${string}`
+    index: bigint
+  }) =>
+    this.client.readContract({
+      address: this.address,
+      abi,
+      functionName: 'getServiceEndpointInfo',
+      args: [serviceType, index]
+    })
+}

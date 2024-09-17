@@ -27,5 +27,8 @@ export type SdkServicesConfig = {
   }
   ethereum: {
     rpcEndpoint: string
+    serviceTypeManagerAddress: string
+    serviceProviderFactoryAddress: string
+    ethRewardsManagerAddress: string
   }
 }

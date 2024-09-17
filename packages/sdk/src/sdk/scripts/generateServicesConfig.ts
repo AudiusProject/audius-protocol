@@ -1,61 +1,17 @@
 import { promises } from 'fs'
 import path from 'path'
 
-import { EthContracts } from '../../services/ethContracts'
-// import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import type { SdkServicesConfig } from '../config/types'
-import { EthRewardsManagerClient } from '../services/Ethereum'
-import { IdentityService } from '../services/IdentityService'
+import {
+  EthRewardsManagerClient,
+  getDefaultEthRewardsManagerConfig,
+  getDefaultServiceProviderFactoryConfig,
+  getDefaultServiceTypeManagerConfig,
+  ServiceProviderFactoryClient,
+  ServiceTypeManagerClient
+} from '../services/Ethereum'
 
 const { writeFile } = promises
-
-type EnvironmentConfig = {
-  CLAIM_DISTRIBUTION_CONTRACT_ADDRESS: string
-  ETH_OWNER_WALLET: string
-  ETH_PROVIDER_URL: string
-  ETH_REGISTRY_ADDRESS: string
-  ETH_TOKEN_ADDRESS: string
-  IDENTITY_SERVICE_URL: string
-  WORMHOLE_ADDRESS: string
-  ENTITY_MANAGER_CONTRACT_ADDRESS: string
-  WEB3_PROVIDER_URL: string
-  AAO_ENDPOINTS: string[]
-}
-
-const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
-  production: {
-    CLAIM_DISTRIBUTION_CONTRACT_ADDRESS:
-      '0x683c19E621A0F107a291fdAB38f80179809d61B5',
-    ETH_OWNER_WALLET: '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5',
-    ETH_PROVIDER_URL: 'https://eth.audius.co',
-    ETH_REGISTRY_ADDRESS: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
-    ETH_TOKEN_ADDRESS: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
-    IDENTITY_SERVICE_URL: 'https://identityservice.audius.co',
-    WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
-    WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
-    ENTITY_MANAGER_CONTRACT_ADDRESS:
-      '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
-    AAO_ENDPOINTS: [
-      'https://antiabuseoracle.audius.co',
-      'https://audius-oracle.creatorseed.com',
-      'https://oracle.audius.endl.net'
-    ]
-  },
-  staging: {
-    CLAIM_DISTRIBUTION_CONTRACT_ADDRESS:
-      '0x74b89B916c97d50557E8F944F32662fE52Ce378d',
-    ETH_OWNER_WALLET: '',
-    ETH_PROVIDER_URL: 'https://eth.staging.audius.co',
-    ETH_REGISTRY_ADDRESS: '0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0',
-    ETH_TOKEN_ADDRESS: '0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2',
-    IDENTITY_SERVICE_URL: 'https://identityservice.staging.audius.co',
-    WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
-    WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
-    ENTITY_MANAGER_CONTRACT_ADDRESS:
-      '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
-    AAO_ENDPOINTS: ['https://antiabuseoracle.staging.audius.co']
-  }
-}
 
 const productionConfig: SdkServicesConfig = {
   network: {
@@ -86,6 +42,12 @@ const productionConfig: SdkServicesConfig = {
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     wAudioTokenMint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+  },
+  ethereum: {
+    rpcEndpoint: 'https://eth.audius.co',
+    ethRewardsManagerAddress: '',
+    serviceProviderFactoryAddress: '',
+    serviceTypeManagerAddress: ''
   }
 }
 
@@ -114,6 +76,12 @@ const stagingConfig: SdkServicesConfig = {
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     wAudioTokenMint: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo'
+  },
+  ethereum: {
+    rpcEndpoint: 'https://eth.staging.audius.co',
+    ethRewardsManagerAddress: '',
+    serviceProviderFactoryAddress: '',
+    serviceTypeManagerAddress: ''
   }
 }
 
@@ -155,66 +123,44 @@ const developmentConfig: SdkServicesConfig = {
     rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
     usdcTokenMint: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
     wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3'
+  },
+  ethereum: {
+    rpcEndpoint: 'https://audius-protocol-eth-ganache-1',
+    ethRewardsManagerAddress: '',
+    serviceProviderFactoryAddress: '',
+    serviceTypeManagerAddress: ''
   }
 }
 
 const generateServicesConfig = async (
-  env: EnvironmentConfig,
   config: SdkServicesConfig
 ): Promise<SdkServicesConfig> => {
-  // const contracts = new EthContracts({
-  //   ethWeb3Manager: new EthWeb3Manager({
-  //     identityService: new IdentityService({
-  //       identityServiceEndpoint: env.IDENTITY_SERVICE_URL
-  //     }),
-  //     web3Config: {
-  //       ownerWallet: env.ETH_OWNER_WALLET,
-  //       providers: [env.ETH_PROVIDER_URL],
-  //       tokenAddress: env.ETH_TOKEN_ADDRESS,
-  //       registryAddress: env.ETH_REGISTRY_ADDRESS,
-  //       claimDistributionContractAddress:
-  //         env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-  //       wormholeContractAddress: env.WORMHOLE_ADDRESS
-  //     }
-  //   }),
-  //   tokenContractAddress: env.ETH_TOKEN_ADDRESS,
-  //   registryAddress: env.ETH_REGISTRY_ADDRESS,
-  //   claimDistributionContractAddress: env.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-  //   wormholeContractAddress: env.WORMHOLE_ADDRESS
-  // })
+  const serviceProviderFactory = new ServiceProviderFactoryClient(
+    getDefaultServiceProviderFactoryConfig(config)
+  )
+  const ethRewardsManager = new EthRewardsManagerClient(
+    getDefaultEthRewardsManagerConfig(config)
+  )
+  const serviceTypeManager = new ServiceTypeManagerClient(
+    getDefaultServiceTypeManagerConfig(config)
+  )
 
-  const discoveryNodes =
-    await contracts.ServiceProviderFactoryClient.getServiceProviderList(
-      'discovery-node'
-    )
+  const discoveryNodes = await serviceProviderFactory.getDiscoveryNodes()
   if (!discoveryNodes || discoveryNodes.length === 0) {
     throw Error('Discovery node services not found')
   }
-
-  const storageNodes =
-    await contracts.ServiceProviderFactoryClient.getServiceProviderList(
-      'content-node'
-    )
-  if (!storageNodes || storageNodes.length === 0) {
+  const contentNodes = await serviceProviderFactory.getContentNodes()
+  if (!contentNodes || contentNodes.length === 0) {
     throw Error('Storage node services not found')
   }
-
-  // const antiAbuseAddresses =
-  //   await contracts.EthRewardsManagerClient.getAntiAbuseOracleAddresses()
-  const ethRewardsManager = new EthRewardsManagerClient({
-    rpcEndpoint: ''
-  })
   const antiAbuseAddresses =
     await ethRewardsManager.contract.getAntiAbuseOracleAddresses()
-  const antiAbuseAddresses = await new EthRewardsManagerClient({
-    rpcEndpoint: ''
-  }).contract.getAntiAbuseOracleAddresses()
 
   if (!antiAbuseAddresses || antiAbuseAddresses.length === 0) {
     throw Error('Anti Abuse node services not found')
   }
 
-  const minVersion = await contracts.getCurrentVersion('discovery-node')
+  const minVersion = await serviceTypeManager.getDiscoveryNodeVersion()
 
   config.network.minVersion = minVersion
   config.network.discoveryNodes = discoveryNodes.map((n: any) => ({
@@ -222,7 +168,7 @@ const generateServicesConfig = async (
     ownerWallet: n.owner,
     delegateOwnerWallet: n.delegateOwnerWallet
   }))
-  config.network.storageNodes = storageNodes.map((n: any) => ({
+  config.network.storageNodes = contentNodes.map((n: any) => ({
     endpoint: n.endpoint,
     delegateOwnerWallet: n.delegateOwnerWallet
   }))
@@ -232,14 +178,8 @@ const generateServicesConfig = async (
 }
 
 const writeServicesConfig = async () => {
-  const production = await generateServicesConfig(
-    envConfigs.production,
-    productionConfig
-  )
-  const staging = await generateServicesConfig(
-    envConfigs.staging,
-    stagingConfig
-  )
+  const production = await generateServicesConfig(productionConfig)
+  const staging = await generateServicesConfig(stagingConfig)
   const development = developmentConfig
   const config: Record<string, SdkServicesConfig> = {
     development,

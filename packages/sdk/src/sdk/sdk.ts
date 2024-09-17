@@ -181,6 +181,7 @@ const initializeServices = (config: SdkConfig) => {
       antiAbuseOracleSelector
     })
 
+  /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
         addRequestSignatureMiddleware({ services: { auth, logger } })
@@ -230,6 +231,7 @@ const initializeServices = (config: SdkConfig) => {
       solanaClient
     })
 
+  /* Ethereum Contracts */
   const serviceTypeManagerClient =
     config.services?.serviceTypeManagerClient ??
     new ServiceTypeManagerClient({

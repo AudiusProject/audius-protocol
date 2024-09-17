@@ -10,6 +10,6 @@ export class EthRewardsManagerClient extends EthereumContract {
   constructor(config: EthRewardsManagerConfig) {
     super(config)
 
-    this.contract = EthRewardsManager
+    this.contract = new EthRewardsManager()
   }
 }

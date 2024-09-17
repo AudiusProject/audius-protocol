@@ -3,8 +3,8 @@ import { getDefaultEthereumClientConfig } from '../getDefaultConfig'
 
 import type { EthRewardsManagerConfig } from './types'
 
-export const getDefaultEthRewardsManagerConfig = (
-  config: SdkServicesConfig
-): EthRewardsManagerConfig => ({
+export const getDefaultEthRewardsManagerConfig = (config: {
+  ethereum: SdkServicesConfig['ethereum']
+}): EthRewardsManagerConfig => ({
   ...getDefaultEthereumClientConfig(config)
 })

@@ -11,8 +11,18 @@ export class ServiceTypeManagerClient extends EthereumContract {
 
   constructor(config: ServiceTypeManagerConfig) {
     super(config)
+
     this.discoveryNodeServiceType = config.discoveryNodeServiceType
     this.contentNodeServiceType = config.contentNodeServiceType
-    this.contract = ServiceTypeManager
+
+    this.contract = new ServiceTypeManager()
+  }
+
+  getDiscoveryNodeVersion = () => {
+    return this.contract.getCurrentVersion(this.discoveryNodeServiceType)
+  }
+
+  getContentNodeVersion = () => {
+    return this.contract.getCurrentVersion(this.contentNodeServiceType)
   }
 }
