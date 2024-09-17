@@ -45,15 +45,6 @@ type CoreEvent struct {
 	Type    string
 }
 
-type CoreKvstore struct {
-	ID        int32
-	Key       string
-	Value     string
-	TxHash    string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
-}
-
 type CoreTxResult struct {
 	Rowid     int64
 	BlockID   int64

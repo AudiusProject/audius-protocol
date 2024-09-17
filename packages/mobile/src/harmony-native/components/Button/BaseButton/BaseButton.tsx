@@ -123,6 +123,7 @@ export const BaseButton = (props: BaseButtonProps) => {
         ) : LeftIconComponent ? (
           <LeftIconComponent
             {...innerProps?.icon}
+            style={styles?.icon}
             color={isStaticIcon ? 'default' : innerProps?.icon?.color}
           />
         ) : null}
@@ -130,6 +131,7 @@ export const BaseButton = (props: BaseButtonProps) => {
         {RightIconComponent ? (
           <RightIconComponent
             {...innerProps?.icon}
+            style={styles?.icon}
             color={isStaticIcon ? 'default' : innerProps?.icon?.color}
           />
         ) : null}

@@ -1,7 +1,6 @@
 package chain
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -66,33 +65,16 @@ func (app *CoreApplication) Info(ctx context.Context, info *abcitypes.InfoReques
 }
 
 func (app *CoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
-	resp := abcitypes.QueryResponse{Key: req.Data}
-
-	kv, err := app.queries.GetKey(ctx, string(req.Data))
-	if err != nil {
-		resp.Log = err.Error()
-		return &resp, err
-	}
-
-	value := []byte(kv.Value)
-	resp.Log = "exists"
-	resp.Value = value
-
-	return &resp, nil
+	return &abcitypes.QueryResponse{}, nil
 }
 
 func (app *CoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
 	// check if protobuf event
-	_, err := app.isValidProtoEvent(check.Tx)
+	_, err := app.isValidSignedTransaction(check.Tx)
 	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
-	// else check if kv store tx, this is hacky and kv store should be in protobuf if we later want to keep it
-	if app.isValidKVTx(check.Tx) {
-		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
-	} else {
-		return &abcitypes.CheckTxResponse{Code: 1}, nil
-	}
+	return &abcitypes.CheckTxResponse{Code: 1}, nil
 }
 
 func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
@@ -131,41 +113,13 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
-		protoEvent, err := app.isValidProtoEvent(tx)
+		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err == nil {
 			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-		} else if app.isValidKVTx(tx) {
-			parts := bytes.SplitN(tx, []byte("="), 2)
-			key, value := parts[0], parts[1]
-			logger.Infof("Adding key %s with value %s", key, value)
-
-			params := db.InsertKVStoreParams{
-				Key:    string(key),
-				Value:  string(value),
-				TxHash: app.toTxHash(tx),
-			}
-
-			record, err := app.getDb().InsertKVStore(ctx, params)
-			if err != nil {
-				logger.Errorf("failed to persisted kv entry %v", err)
-			}
-
-			txs[i] = &abcitypes.ExecTxResult{
-				Code: 0,
-				Events: []abcitypes.Event{
-					{
-						Type: "app",
-						Attributes: []abcitypes.EventAttribute{
-							{Key: "key", Value: record.Key, Index: true},
-							{Key: "value", Value: record.Value, Index: true},
-						},
-					},
-				},
-			}
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}
@@ -248,18 +202,8 @@ func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcit
 	return &abcitypes.VerifyVoteExtensionResponse{}, nil
 }
 
-func (app *CoreApplication) isValidKVTx(tx []byte) bool {
-	// check format
-	parts := bytes.Split(tx, []byte("="))
-	if len(parts) != 2 {
-		return false
-	}
-
-	return true
-}
-
-func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, error) {
-	var msg gen_proto.Event
+func (app *CoreApplication) isValidSignedTransaction(tx []byte) (*gen_proto.SignedTransaction, error) {
+	var msg gen_proto.SignedTransaction
 	err := proto.Unmarshal(tx, &msg)
 	if err != nil {
 		return nil, err
@@ -267,32 +211,22 @@ func (app *CoreApplication) isValidProtoEvent(tx []byte) (*gen_proto.Event, erro
 	return &msg, nil
 }
 
-func (app *CoreApplication) isValidSlaRollup(tx []byte) bool {
-	var msg gen_proto.SlaRollupEvent
-	err := proto.Unmarshal(tx, &msg)
-	return err == nil
-}
-
 func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
 	for _, tx := range txs {
-		protoEvent, err := app.isValidProtoEvent(tx)
+		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err != nil {
-			if app.isValidKVTx(tx) {
-				continue
-			} else {
-				app.logger.Error(" **** Invalid block bcz not proto event or KVp")
-				return false, nil
-			}
+			app.logger.Error(" **** Invalid block bcz not proto event or KVp")
+			return false, nil
 		}
 
-		switch protoEvent.Body.(type) {
-		case *gen_proto.Event_Plays:
-		case *gen_proto.Event_RegisterNode:
-		case *gen_proto.Event_SlaRollup:
+		switch protoEvent.Transaction.(type) {
+		case *gen_proto.SignedTransaction_Plays:
+		case *gen_proto.SignedTransaction_ValidatorRegistration:
+		case *gen_proto.SignedTransaction_SlaRollup:
 			if alreadyContainsRollup {
-				return false, nil
 				app.logger.Error(" **** Invalid block already have rollup")
+				return false, nil
 			} else if valid, err := app.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
 				app.logger.Error(" **** Invalid block bcuz err", "error", err)
 				return false, err

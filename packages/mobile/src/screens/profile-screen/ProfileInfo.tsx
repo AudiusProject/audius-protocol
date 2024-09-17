@@ -103,7 +103,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         {isReachable ? actionButtons : null}
       </Flex>
       <Flex pointerEvents='none' alignItems='flex-start' gap='2xs'>
-        <UserLink userId={user_id} textVariant='title' size='l' />
+        <UserLink userId={user_id} textVariant='title' size='l' badgeSize='m' />
         <Flex direction='row' gap='s'>
           <Text size='l' color='subdued'>
             @{handle}
