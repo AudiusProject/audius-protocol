@@ -195,8 +195,6 @@ export const Select = forwardRef(function Select<Value extends string>(
       <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
-        aria-label={selectedLabel ?? label ?? props['aria-label']}
-        aria-activedescendant={selectedLabel}
         onClose={() => setIsOpen(false)}
         {...defaultMenuProps}
         PaperProps={menuProps?.PaperProps}
@@ -206,6 +204,8 @@ export const Select = forwardRef(function Select<Value extends string>(
           width={menuProps?.width}
           scrollRef={scrollRef}
           MenuListProps={menuProps?.MenuListProps}
+          aria-label={selectedLabel ?? label ?? props['aria-label']}
+          aria-activedescendant={selectedLabel}
         >
           {children
             ? children({ onChange: handleChange, options: optionElements })
