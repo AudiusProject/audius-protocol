@@ -19,9 +19,7 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
     useChatBlastAudienceContent({
       chat
     })
-  const decodedId = audienceContentId
-    ? decodeHashId(audienceContentId) ?? undefined
-    : undefined
+  const decodedId = decodeHashId(audienceContentId) ?? undefined
   const albumArtwork = useCollectionCoverArt2(
     decodedId,
     SquareSizes.SIZE_150_BY_150

@@ -86,7 +86,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
             {isBlast ? (
               <ChatBlastHeader chat={chat} />
             ) : (
-              <UserChatHeader chatId={chat?.chat_id ?? ''} />
+              <UserChatHeader chatId={chat?.chat_id} />
             )}
           </Flex>
         </Paper>

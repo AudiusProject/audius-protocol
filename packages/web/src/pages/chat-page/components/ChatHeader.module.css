@@ -1,9 +1,3 @@
-.root {
-  display: flex;
-  height: 112px;
-  margin-left: -20px;
-}
-
 .left {
   display: flex;
   align-items: flex-end;

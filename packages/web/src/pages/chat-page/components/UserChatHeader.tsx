@@ -18,7 +18,6 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { BlockUserConfirmationModal } from './BlockUserConfirmationModal'
-import styles from './ChatHeader.module.css'
 import { ChatUser } from './ChatUser'
 import { DeleteChatConfirmationModal } from './DeleteChatConfirmationModal'
 import { UnblockUserConfirmationModal } from './UnblockUserConfirmationModal'
@@ -35,7 +34,7 @@ const messages = {
   visit: "Visit User's Profile"
 }
 
-export const UserChatHeader = ({ chatId }: { chatId: string }) => {
+export const UserChatHeader = ({ chatId }: { chatId?: string }) => {
   const dispatch = useDispatch()
   const [isUnblockUserModalVisible, setIsUnblockUserModalVisible] =
     useState(false)
@@ -108,7 +107,7 @@ export const UserChatHeader = ({ chatId }: { chatId: string }) => {
     <>
       {user ? <ChatUser user={user} key={user.user_id} /> : null}
       {user ? (
-        <div className={styles.overflow}>
+        <>
           <PopupMenu
             items={overflowItems}
             transformOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -139,7 +138,7 @@ export const UserChatHeader = ({ chatId }: { chatId: string }) => {
             isVisible={isDeleteChatModalVisible}
             onClose={() => setIsDeleteChatModalVisible(false)}
           />
-        </div>
+        </>
       ) : null}
     </>
   )
