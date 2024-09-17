@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -20,11 +21,13 @@ func checkErr(e error) {
 func main() {
 	ctx := context.Background()
 
-	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6612"), sdk.WithJrpcendpoint("http://0.0.0.0:6611"))
+	sdk, err := sdk.NewSdk(sdk.WithGrpcendpoint("0.0.0.0:6613"), sdk.WithJrpcendpoint("http://0.0.0.0:6612"))
 	checkErr(err)
 
 	_, err = sdk.Ping(ctx, &proto.PingRequest{})
 	checkErr(err)
+
+	fmt.Println("pinged")
 
 	for {
 		time.Sleep(1 * time.Second)
