@@ -17,13 +17,13 @@ const optimisticUpdateCommentList = (
   entityId: number,
   updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
   dispatch: ThunkDispatch<any, any, any>,
-  currentUserId?: number,
+  userId?: number,
   page: number = 0
 ) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
-      { entityId, currentUserId, limit: 5, offset: page },
+      { entityId, userId, limit: 5, offset: page },
       updateRecipe
     )
   )
@@ -60,13 +60,13 @@ const commentsApi = createApi({
           offset,
           limit,
           sortMethod,
-          currentUserId
+          userId
         }: {
           entityId: ID
           offset?: number
           limit?: number
           sortMethod?: TrackCommentsSortMethodEnum
-          currentUserId?: Nullable<ID>
+          userId?: Nullable<ID>
         },
         { audiusSdk }
       ) {
@@ -76,7 +76,7 @@ const commentsApi = createApi({
           offset,
           limit,
           sortMethod,
-          userId: currentUserId?.toString() ?? undefined
+          userId: userId?.toString() ?? undefined
         })
         return commentsRes?.data ?? []
       },
@@ -344,7 +344,7 @@ const commentsApi = createApi({
         await sdk.comments.reportComment(userId, decodedId)
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id, entityId }, { dispatch }) {
+      async onQueryStarted({ id, entityId, userId }, { dispatch }) {
         optimisticUpdateCommentList(
           entityId,
           (prevState) => {
@@ -356,7 +356,8 @@ const commentsApi = createApi({
             }
             return prevState
           },
-          dispatch
+          dispatch,
+          userId
         )
       }
     }

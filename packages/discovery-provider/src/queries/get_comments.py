@@ -3,7 +3,7 @@ import logging  # pylint: disable=C0302
 from sqlalchemy import asc, desc, func
 from sqlalchemy.orm import aliased
 
-from src.api.v1.helpers import format_limit, format_offset, get_current_user_id
+from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
@@ -23,6 +23,8 @@ COMMENT_REPLIES_LIMIT = 3
 
 # Returns whether a comment has been reacted to by a particular user
 def get_is_reacted(session, user_id, comment_id):
+    if not user_id:
+        return False
     is_react = (
         session.query(CommentReaction)
         .filter(
@@ -106,7 +108,6 @@ def get_comment_replies(args, comment_id, current_user_id=None):
 
 def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
-    user_id = get_current_user_id(args)
     sort_method = args.get("sort_method", "top")
     if sort_method == "top":
         sort_method_order_by = desc(func.count(CommentReaction.comment_id))
@@ -147,7 +148,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 Comment.is_delete == False,
-                CommentReport.user_id != user_id,
+                (CommentReport.comment_id == None) | (current_user_id == None) | (CommentReport.user_id != current_user_id),
             )
             .order_by(desc(Comment.is_pinned), sort_method_order_by)
             .offset(offset)
