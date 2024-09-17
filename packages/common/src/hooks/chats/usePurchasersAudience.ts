@@ -23,7 +23,7 @@ export const usePurchasersAudience = ({
   const { data: salesAggregate } = useGetSalesAggegrate({
     userId: currentUserId!
   })
-  const isDisabled = salesAggregate?.length === 0
+  const isDisabled = !salesAggregate?.length
 
   const trackAggregates = salesAggregate?.filter(
     (sale) => sale.contentType === 'track'

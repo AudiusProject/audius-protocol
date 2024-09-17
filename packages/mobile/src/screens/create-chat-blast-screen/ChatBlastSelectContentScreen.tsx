@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
+import { fuzzySearch } from '@audius/common/utils'
 import { useField, useFormikContext } from 'formik'
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 
@@ -40,11 +41,11 @@ export const ChatBlastSelectContentScreen = () => {
   })
   const { submitForm } = useFormikContext()
   const [search, setSearch] = useState('')
-  const filteredOptions = content.filter((option) => {
+  const filteredOptions = useMemo(() => {
     return search
-      ? option.label.toLowerCase().includes(search.toLowerCase())
-      : true
-  })
+      ? fuzzySearch(search, content, 3, (option) => option.label)
+      : content
+  }, [content, search])
   const radioGroupValue = value ?? ''
 
   const handleClear = useCallback(() => {
@@ -66,8 +67,8 @@ export const ChatBlastSelectContentScreen = () => {
       onSubmit={submitForm}
     >
       <ScreenContent>
-        {/* TODO: 70% bad */}
-        <Flex justifyContent='flex-start' h='70%'>
+        {/* TODO: 70% bad PAY-3429 */}
+        <Flex h='70%'>
           <Flex p='l' backgroundColor='white' justifyContent='flex-start'>
             <TextInput
               label={searchLabel}

@@ -13,19 +13,24 @@ const messages = {
 }
 
 export const ChatBlastSelectAudienceScreen = () => {
-  const { submitForm } = useFormikContext()
+  const { submitForm, isSubmitting } = useFormikContext()
   return (
     <FormScreen
       title={messages.title}
       icon={IconTowerBroadcast}
       variant='white'
       bottomSection={
-        <Button variant='primary' fullWidth onPress={submitForm}>
+        <Button
+          variant='primary'
+          fullWidth
+          onPress={submitForm}
+          disabled={!!isSubmitting}
+        >
           {messages.continue}
         </Button>
       }
     >
-      <Flex gap='l'>
+      <Flex gap='l' h='100%'>
         <HeaderShadow />
         <ChatBlastSelectAudienceFields />
       </Flex>

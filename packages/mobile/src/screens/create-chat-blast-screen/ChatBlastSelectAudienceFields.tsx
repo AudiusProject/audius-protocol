@@ -30,7 +30,7 @@ const messages = {
     description:
       'Send a bulk message to everyone who has purchased content from you on Audius.',
     placeholder: 'Premium Content',
-    filterBy: 'Filter by Tracks With Purchases',
+    filterBy: 'Filter by Purchased Content',
     search: 'Search for premium content'
   },
   remixCreators: {
@@ -157,7 +157,7 @@ const PastPurchasersMessageField = () => {
             borderTop='default'
             justifyContent='space-between'
             alignItems='center'
-            pt='xl' // TODO: should be l
+            pt='xl' // TODO: should be l PAY-3430
           >
             <Text variant='body' size='l' strength='strong'>
               {messages.purchasers.filterBy}
