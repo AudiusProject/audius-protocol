@@ -75,7 +75,6 @@ from src.tasks.entity_manager.entities.playlist import (
     delete_playlist,
     update_playlist,
 )
-from src.tasks.entity_manager.entities.reported_comment import report_comment
 from src.tasks.entity_manager.entities.social_features import (
     action_to_record_types,
     create_social_action_types,
