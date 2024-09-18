@@ -1,4 +1,4 @@
-package components
+package htmlviews
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ type BlockPageProps struct {
 	Txs       []*TxProps
 }
 
-templ (c *Components) BlockPage(props BlockPageProps) {
-	@c.HeaderBar() {
+templ BlockPage(props BlockPageProps) {
+	@HeaderBar() {
 		<div class="bg-white shadow-md rounded-lg p-4">
 			<h1 class="text-xl">
 				Block Details

@@ -41,15 +41,15 @@ message TrackPlays {
 
 message ValidatorRegistration {
   string endpoint = 1;
-  string comet_address = 2;
-  string eth_block = 3;
-  string node_type = 4;
-  string sp_id = 5;
+  string comet_address = 2 [json_name = "comet_address"];
+  string eth_block = 3 [json_name = "eth_block"];
+  string node_type = 4 [json_name = "node_type"];
+  string sp_id = 5 [json_name = "sp_id"];
 }
 
 message TrackPlay {
-  string user_id = 1;
-  string track_id = 2;
+  string user_id = 1 [json_name = "user_id"];
+  string track_id = 2 [json_name = "track_id"];
   google.protobuf.Timestamp timestamp = 3;
   string signature = 4;
 }
@@ -63,8 +63,8 @@ message PingResponse {
 
 message SlaRollup {
   google.protobuf.Timestamp timestamp = 1;
-  int64 block_start = 2;
-  int64 block_end = 3;
+  int64 block_start = 2 [json_name = "block_start"];
+  int64 block_end = 3 [json_name = "block_end"];
   repeated SlaNodeReport reports = 4;
 }
 

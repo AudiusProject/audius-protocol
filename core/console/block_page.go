@@ -2,15 +2,23 @@ package console
 
 import (
 	"encoding/hex"
-	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/AudiusProject/audius-protocol/core/console/components"
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews"
+	"github.com/AudiusProject/audius-protocol/core/console/jsonviews"
 	"github.com/AudiusProject/audius-protocol/core/console/utils"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/labstack/echo/v4"
 )
+
+type BlockPage struct {
+	Hash      string                   `json:"block_hash"`
+	Height    int64                    `json:"block_height"`
+	Timestamp time.Time                `json:"block_time"`
+	Txs       []map[string]interface{} `json:"transactions"`
+}
 
 func (cs *Console) blockPage(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -41,20 +49,8 @@ func (cs *Console) blockPage(c echo.Context) error {
 		block = resultBlock
 	}
 
-	txResults := []*components.TxProps{}
-	for _, tx := range block.Block.Txs {
-		txResults = append(txResults, &components.TxProps{
-			Block:     block.Block.Height,
-			Hash:      hex.EncodeToString(tx.Hash()),
-			GasUsed:   0,
-			Timestamp: block.Block.Time,
-		})
+	if utils.ShouldRenderJSON(c) {
+		return jsonviews.BlockPageJSON(c, block)
 	}
-
-	return utils.Render(c, cs.c.BlockPage(components.BlockPageProps{
-		Hash:      hex.EncodeToString(block.Block.Hash()),
-		Height:    fmt.Sprint(block.Block.Height),
-		Timestamp: block.Block.Time,
-		Txs:       txResults,
-	}))
+	return htmlviews.BlockPageHTML(c, block)
 }

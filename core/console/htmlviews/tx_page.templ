@@ -1,4 +1,4 @@
-package components
+package htmlviews
 
 import (
 	"fmt"
@@ -13,8 +13,8 @@ type TxPageProps struct {
 	Timestamp time.Time
 }
 
-templ (c *Components) TxPage(props TxPageProps) {
-	@c.HeaderBar() {
+templ TxPage(props TxPageProps) {
+	@HeaderBar() {
 		<div class="bg-white shadow-md rounded-lg p-4">
 			<h1 class="text-xl">
 				Transaction

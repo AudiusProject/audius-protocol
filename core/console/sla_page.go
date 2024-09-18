@@ -3,8 +3,7 @@ package console
 import (
 	"strconv"
 
-	"github.com/AudiusProject/audius-protocol/core/console/components"
-	"github.com/AudiusProject/audius-protocol/core/console/utils"
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
@@ -43,9 +42,5 @@ func (cs *Console) slaPage(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, cs.c.SlaPage(components.SlaPageProps{
-		Rollup:        rollup,
-		Reports:       reports,
-		RecentRollups: recentRollups,
-	}))
+	return htmlviews.SlaPageHTML(c, rollup, reports, recentRollups)
 }

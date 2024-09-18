@@ -3,7 +3,7 @@ package console
 import (
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/console/components"
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews"
 	"github.com/AudiusProject/audius-protocol/core/console/utils"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -24,7 +24,7 @@ func (cs *Console) txPage(c echo.Context) error {
 
 	txType, txData := gatherTxMetadata(tx.TxResult)
 
-	comp := cs.c.TxPage(components.TxPageProps{
+	comp := cs.c.TxPage(htmlviews.TxPageProps{
 		Hash:      txhash,
 		Height:    fmt.Sprint(tx.BlockID),
 		Timestamp: tx.CreatedAt.Time,

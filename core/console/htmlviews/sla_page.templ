@@ -1,4 +1,4 @@
-package components
+package htmlviews
 
 import (
 	"fmt"
@@ -69,8 +69,8 @@ css recentRollupItem() {
     border-bottom: 2px solid gray;
 }
 
-templ (c *Components) SlaPage(props SlaPageProps) {
-	@c.HeaderBar() {
+templ SlaPage(props SlaPageProps) {
+	@HeaderBar() {
 		<div class="bg-white shadow-md rounded-lg p-4">
 			<h1 class="text-xl">
                 SLA Rollup For Blocks { fmt.Sprintf("%d - %d", props.Rollup.BlockStart, props.Rollup.BlockEnd) }

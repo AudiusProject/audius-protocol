@@ -1,17 +1,17 @@
-package components
+package htmlviews
 
 import "github.com/AudiusProject/audius-protocol/core/console/assets"
 
-templ (c *Components) HeaderInfo(blockHeight, txCount string) {
+templ HeaderInfo(walletAddress, proposerAddress, blockHeight, txCount string) {
 	<div class="text-left text-xs p-4">
 		<div>Current Block Height: { blockHeight }</div>
 		<div>Total Transactions: { txCount }</div>
-		<div>Eth Address: { c.config.WalletAddress }</div>
-		<div>Core Address: { c.config.ProposerAddress }</div>
+		<div>Eth Address: { walletAddress }</div>
+		<div>Core Address: { proposerAddress }</div>
 	</div>
 }
 
-templ (c *Components) HeaderBar() {
+templ HeaderBar() {
 	@Base() {
 		<div class="flex flex-col h-screen bg-white shadow-md">
 			<div class="h-[10vh] w-full flex items-center justify-between rounded-lg p-3">

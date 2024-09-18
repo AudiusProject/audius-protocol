@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"math"
 
-	"github.com/AudiusProject/audius-protocol/core/console/components"
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews"
 	"github.com/AudiusProject/audius-protocol/core/console/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -31,7 +31,7 @@ func (cs *Console) homePage(c echo.Context) error {
 		return err
 	}
 
-	txResults := []*components.TxProps{}
+	txResults := []*htmlviews.TxProps{}
 
 	for _, blockMeta := range blockchainInfo.BlockMetas {
 		block, err := rpc.Block(ctx, &blockMeta.Header.Height)
@@ -40,7 +40,7 @@ func (cs *Console) homePage(c echo.Context) error {
 		}
 
 		for _, tx := range block.Block.Txs {
-			txResults = append(txResults, &components.TxProps{
+			txResults = append(txResults, &htmlviews.TxProps{
 				Block:     block.Block.Height,
 				Hash:      hex.EncodeToString(tx.Hash()),
 				GasUsed:   0,
@@ -49,7 +49,7 @@ func (cs *Console) homePage(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, cs.c.HomePage(components.HomePageProps{
+	return utils.Render(c, cs.c.HomePage(htmlviews.HomePageProps{
 		Blocks: blockchainInfo.BlockMetas,
 		Txs:    txResults,
 	}))

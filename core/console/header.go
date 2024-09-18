@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews"
 	"github.com/AudiusProject/audius-protocol/core/console/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -22,6 +23,9 @@ func (cs *Console) headerInfo(c echo.Context) error {
 		return err
 	}
 
-	comp := cs.c.HeaderInfo(fmt.Sprint(status.SyncInfo.LatestBlockHeight), fmt.Sprint(tx))
+	walletAddress := cs.config.WalletAddress
+	proposerAddress := cs.config.ProposerAddress
+
+	comp := htmlviews.HeaderInfo(walletAddress, proposerAddress, fmt.Sprint(status.SyncInfo.LatestBlockHeight), fmt.Sprint(tx))
 	return utils.Render(c, comp)
 }
