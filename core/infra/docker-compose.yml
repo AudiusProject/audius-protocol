@@ -8,10 +8,10 @@ services:
       - ./dev_config/sandbox-one.env
     restart: unless-stopped
     ports:
-      - "6610:26656" # CometBFT P2P Server
-      - "6611:26657" # CometBFT RPC Server
-      - "6612:50051" # Core GRPC Server
-      - "6613:26659" # Core Web Server
+      - "6611:26656" # CometBFT P2P Server
+      - "6612:26657" # CometBFT RPC Server
+      - "6613:50051" # Core GRPC Server
+      - "6614:26659" # Core Web Server
     networks:
       - sandbox-core-net
 
