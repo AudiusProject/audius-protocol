@@ -1,22 +1,19 @@
-//go:generate templ generate
-
-package console
+package pages
 
 import (
-	"fmt"
-
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console/components"
 	"github.com/AudiusProject/audius-protocol/core/console/middleware"
-	"github.com/AudiusProject/audius-protocol/core/console/pages"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
-type Console struct {
+const routeBase = "test"
+
+type Pages struct {
 	config *config.Config
 	rpc    client.Client
 	db     *db.Queries
@@ -25,39 +22,28 @@ type Console struct {
 	c      *components.Components
 }
 
-func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Console, error) {
-	c := &Console{
+func NewPages(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Pages, error) {
+	c := &Pages{
 		config: config,
 		rpc:    rpc,
 		e:      e,
-		logger: logger.Child("console"),
+		logger: logger.Child(routeBase),
 		db:     db.New(pool),
 		c:      components.NewComponents(config, rpc, db.New(pool)),
 	}
 
-	consoleBase := e.Group("/console")
+	consoleBase := e.Group("/" + routeBase)
 
 	c.registerRoutes(logger, consoleBase)
-
-	_, err := pages.NewPages(config, logger, e, rpc, pool)
-	if err != nil {
-		return nil, fmt.Errorf("pages could not be created: %v", err)
-	}
 
 	return c, nil
 }
 
-func (c *Console) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
+func (c *Pages) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
 	for _, g := range groups {
+		g.Use(middleware.JsonExtensionMiddleware)
 		g.Use(middleware.ErrorLoggerMiddleware(logger))
 
-		g.GET("", c.homePage)
-		g.GET("/tx/:tx", c.txPage)
 		g.GET("/block/:block", c.blockPage)
-		g.GET("/node", c.networkPage)
-		g.GET("/node/:node", c.nodePage)
-		g.GET("/sla/:rollup", c.slaPage)
-
-		g.GET("/headerinfo", c.headerInfo)
 	}
 }

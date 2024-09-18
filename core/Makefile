@@ -8,8 +8,8 @@ SQL_ARTIFACTS := $(wildcard db/*.sql.go)
 PROTO_SRCS := protocol.proto
 PROTO_ARTIFACTS := $(wildcard gen/proto/*.pb.go)
 
-TEMPL_SRCS := $(wildcard console/**/*.templ)
-TEMPL_ARTIFACTS := $(wildcard console/**/*_templ.go)
+TEMPL_SRCS := $(shell find console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find console -type f -name "*_templ.go")
 
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)

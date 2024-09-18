@@ -1,4 +1,4 @@
-package utils
+package pages
 
 import (
 	"context"
@@ -7,6 +7,11 @@ import (
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 )
+
+type CanRender interface {
+	RenderHTML(c echo.Context) error
+	RenderJSON(c echo.Context) error
+}
 
 func ShouldRenderJSON(c echo.Context) bool {
 	return c.Request().Header.Get(echo.HeaderAccept) == echo.MIMEApplicationJSON
