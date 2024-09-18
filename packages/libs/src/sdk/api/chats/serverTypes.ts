@@ -131,7 +131,7 @@ export type UserChat = {
   cleared_history_at: string
 
   // If blast:
-  is_blast: boolean
+  is_blast: false
   audience: ChatBlastAudience
   audience_content_id?: string
   audience_content_type?: string
@@ -240,6 +240,7 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
+    userId: string
     senderUserId: string
     receiverUserId: string
     timestamp: string

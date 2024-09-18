@@ -261,6 +261,7 @@ type Metadata struct {
 	ReceiverUserID string `json:"receiverUserId"`
 	SenderUserID   string `json:"senderUserId"`
 	Timestamp      string `json:"timestamp"`
+	UserID         string `json:"userId"`
 }
 
 type RPCPayload struct {
