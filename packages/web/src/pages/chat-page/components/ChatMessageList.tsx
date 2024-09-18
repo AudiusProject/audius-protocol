@@ -213,7 +213,6 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         scrollBottomThreshold={SCROLL_BOTTOM_THRESHOLD}
         {...other}
       >
-        {chat?.is_blast ? <ChatBlastAudienceDisplay chat={chat} /> : null}
         <div className={styles.listRoot} ref={messageListRef}>
           {!canSendMessage && firstOtherUser ? (
             <InboxUnavailableMessage
@@ -259,6 +258,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
               <span className={styles.tag}>{messages.endOfMessages}</span>
             </div>
           ) : null}
+          {chat?.is_blast ? <ChatBlastAudienceDisplay chat={chat} /> : null}
         </div>
       </StickyScrollList>
     )
