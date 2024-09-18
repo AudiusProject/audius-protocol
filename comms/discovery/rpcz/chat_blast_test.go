@@ -24,6 +24,8 @@ func TestChatBlast(t *testing.T) {
 	t6 := time.Now().Add(time.Second * -40).UTC()
 	t7 := time.Now().Add(time.Second * -30).UTC()
 
+	trackContentType := schema.AudienceContentType("track")
+
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
 	defer tx.Rollback()
@@ -166,7 +168,7 @@ func TestChatBlast(t *testing.T) {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "follower_audience", chats[1].ChatID)
+		assert.Equal(t, "D79jn:eYZmn", chats[1].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
@@ -515,7 +517,7 @@ func TestChatBlast(t *testing.T) {
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:             "blast_remixers_1",
 		Audience:            schema.RemixerAudience,
-		AudienceContentType: stringPointer("track"),
+		AudienceContentType: &trackContentType,
 		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
 		Message:             "thanks for your remix",
 	})
@@ -569,7 +571,7 @@ func TestChatBlast(t *testing.T) {
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:             "blast_remixers_3",
 		Audience:            schema.RemixerAudience,
-		AudienceContentType: stringPointer("track"),
+		AudienceContentType: &trackContentType,
 		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
 		Message:             "yall are the best",
 	})
