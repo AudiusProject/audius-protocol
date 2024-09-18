@@ -256,6 +256,8 @@ export const ChatScreen = () => {
   const userIdEncoded = encodeHashId(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
   const { is_blast: isBlast } = chat ?? {}
+  // Need additional bottom padding for composer for chat blasts
+  // because there is an extra screen header.
   const chatBlastWithContentOffset = isBlast ? spacing(6) : 0
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')

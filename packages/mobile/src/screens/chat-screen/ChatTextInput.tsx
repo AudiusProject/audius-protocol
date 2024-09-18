@@ -74,7 +74,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type ChatTextInputProps = {
   chatId: string
-  extraOffset?: number
+  extraOffset?: number // Additional padding needed if screen header size changes
   presetMessage?: string
   onMessageSent: () => void
 }
@@ -235,6 +235,18 @@ export const ChatTextInput = ({
     return parts
   }
 
+  // For iOS: default padding + extra padding
+  // For Android: extra padding is slightly larger than iOS, and only
+  // needed if the screen header size changes
+  const offset =
+    Platform.OS === 'ios'
+      ? spacing(1.5) + extraOffset
+      : Platform.OS === 'android'
+      ? extraOffset
+        ? spacing(1.5) + extraOffset
+        : undefined
+      : undefined
+
   return (
     <Flex>
       {trackId ? (
@@ -246,8 +258,7 @@ export const ChatTextInput = ({
         style={{
           position: 'relative',
           maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-          paddingBottom:
-            Platform.OS === 'ios' ? spacing(1.5) + extraOffset : undefined
+          paddingBottom: offset
         }}
       >
         <View
