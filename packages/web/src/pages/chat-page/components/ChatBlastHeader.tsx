@@ -1,14 +1,17 @@
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
-import { Flex, IconTowerBroadcast, IconUserList, Text } from '@audius/harmony'
+import {
+  Artwork,
+  Flex,
+  IconTowerBroadcast,
+  IconUserList,
+  Text
+} from '@audius/harmony'
 import { ChatBlast } from '@audius/sdk'
 
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 import { decodeHashId } from 'utils/hashIds'
-
-import styles from './ChatHeader.module.css'
 
 export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
   const {
@@ -30,11 +33,9 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
     <Flex justifyContent='space-between' w='100%'>
       <Flex gap='s' alignItems='center'>
         {audienceContentId ? (
-          <DynamicImage
-            image={
-              audienceContentType === 'track' ? trackArtwork : albumArtwork
-            }
-            wrapperClassName={styles.artworkContainer}
+          <Artwork
+            src={audienceContentType === 'track' ? trackArtwork : albumArtwork}
+            w='48px'
           />
         ) : null}
         <Flex column gap='xs' alignItems='flex-start'>
