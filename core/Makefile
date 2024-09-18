@@ -8,8 +8,8 @@ SQL_ARTIFACTS := $(wildcard db/*.sql.go)
 PROTO_SRCS := protocol.proto
 PROTO_ARTIFACTS := $(wildcard gen/proto/*.pb.go)
 
-TEMPL_SRCS := $(wildcard console/components/*.templ)
-TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
+TEMPL_SRCS := $(wildcard console/**/*.templ)
+TEMPL_ARTIFACTS := $(wildcard console/**/*_templ.go)
 
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
@@ -74,5 +74,5 @@ livereload:
 	modd
 
 .PHONY: console
-console:
+console: gen
 	@NO_DOCKER=on modd
