@@ -47,6 +47,7 @@ export type NotificationProcessor =
   | TierChange
   | TipReceive
   | TipSend
+  | Comment
 
 export const notificationTypeMapping = {
   follow: MappingVariable.PushFollow,

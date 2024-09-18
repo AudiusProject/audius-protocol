@@ -36,7 +36,8 @@ export enum MappingVariable {
   PushUSDCWithdrawal = 'push_usdc_withdrawal',
   PushRequestManager = 'push_request_manager',
   PushApproveManagerRequest = 'push_approve_manager_request',
-  PushRewardInCooldown = 'push_reward_in_cooldown'
+  PushRewardInCooldown = 'push_reward_in_cooldown',
+  PushComment = 'push_comment'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'
@@ -80,7 +81,8 @@ const defaultMappingVariable = {
   [MappingVariable.PushUSDCTransfer]: false,
   [MappingVariable.PushUSDCWithdrawal]: false,
   [MappingVariable.PushRequestManager]: false,
-  [MappingVariable.PushApproveManagerRequest]: false
+  [MappingVariable.PushApproveManagerRequest]: false,
+  [MappingVariable.PushComment]: false
 }
 
 export const BrowserPushPlugin = 'browser_push_plugin'
