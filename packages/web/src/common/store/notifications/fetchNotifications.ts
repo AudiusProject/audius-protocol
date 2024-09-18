@@ -97,7 +97,5 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
 
-  console.log('here?', notifications)
-
   return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
 }

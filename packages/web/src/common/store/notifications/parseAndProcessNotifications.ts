@@ -165,11 +165,11 @@ export function* parseAndProcessNotifications(
       userIdsToFetch.add(notification.userId)
     }
 
-    console.log('notification stuff', notification)
-
     if (type === NotificationType.Comment) {
-      console.log('notification stuff', notification)
-      // userIdsToFetch.add(notification.userId)
+      if (notification.entityType === Entity.Track) {
+        trackIdsToFetch.add(notification.entityId)
+      }
+      userIdsToFetch = new Set([...userIdsToFetch, ...notification.userIds])
     }
   })
 

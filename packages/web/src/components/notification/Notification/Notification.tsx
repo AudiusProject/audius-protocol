@@ -10,6 +10,7 @@ import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
+import { CommentNotification } from './CommentNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -41,7 +42,6 @@ type NotificationProps = {
 
 export const Notification = (props: NotificationProps) => {
   const { notification } = props
-  console.log(notification.type)
 
   const getNotificationElement = () => {
     switch (notification.type) {
@@ -135,7 +135,7 @@ export const Notification = (props: NotificationProps) => {
         return <SupporterDethronedNotification notification={notification} />
       }
       case NotificationType.Comment: {
-        return <div>hello world</div>
+        return <CommentNotification notification={notification} />
       }
 
       default: {
