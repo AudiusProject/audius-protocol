@@ -51,6 +51,7 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
 
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
 import { ChatBlastHeader } from './ChatBlastHeader'
 import { ChatBlastSubHeader } from './ChatBlastSubHeader'
 import { ChatMessageListItem } from './ChatMessageListItem'
@@ -639,13 +640,15 @@ export const ChatScreen = () => {
                     </View>
                   }
                   ListHeaderComponent={
-                    canSendMessage ? null : <ChatUnavailable chatId={chatId} />
+                    !canSendMessage ? <ChatUnavailable chatId={chatId} /> : null
                   }
                   ListFooterComponent={
                     shouldShowEndReachedIndicator ? (
                       <ChatMessageSeparator
                         content={messages.beginningReached}
                       />
+                    ) : chat?.is_blast ? (
+                      <ChatBlastAudienceDisplay chat={chat as ChatBlast} />
                     ) : null
                   }
                   scrollEnabled={popupMessageId == null}

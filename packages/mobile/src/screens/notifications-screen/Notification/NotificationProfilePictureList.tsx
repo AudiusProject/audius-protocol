@@ -11,6 +11,11 @@ import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
 const USER_LENGTH_LIMIT = 9
 const BASE_ZINDEX = 1
 
+const messages = {
+  count: (remainingUsersCount: number) =>
+    `${remainingUsersCount < 100 ? '+' : ''}${formatCount(remainingUsersCount)}`
+}
+
 /**
  * Not all profile picture lists have the same profile picture size.
  * Some components pass in the dimensions (width and height) while others
@@ -46,7 +51,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   imageCount: {
     textAlign: 'center',
     color: palette.staticWhite,
-    fontSize: typography.fontSize.small,
+    fontSize: typography.fontSize.xs,
     fontFamily: typography.fontByWeight.bold,
     textShadowColor: 'rgba(0,0,0,0.25)',
     textShadowOffset: { width: 0, height: 2 },
@@ -154,8 +159,10 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
                 styles.imageCount,
                 useSmallText && styles.imageCountSmall
               ]}
+              numberOfLines={1}
+              ellipsizeMode='clip'
             >
-              {`+${formatCount(remainingUsersCount)}`}
+              {messages.count(remainingUsersCount)}
             </Text>
           </View>
         </View>
