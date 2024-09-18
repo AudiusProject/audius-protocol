@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -13,12 +12,19 @@ type CanRender interface {
 	RenderJSON(c echo.Context) error
 }
 
-func ShouldRenderJSON(c echo.Context) bool {
+func render(c echo.Context, page CanRender) error {
+	if shouldRenderJSON(c) {
+		return page.RenderJSON(c)
+	}
+	return page.RenderHTML(c)
+}
+
+func shouldRenderJSON(c echo.Context) bool {
 	return c.Request().Header.Get(echo.HeaderAccept) == echo.MIMEApplicationJSON
 }
 
-func Render(c echo.Context, t templ.Component) error {
-	err := t.Render(context.Background(), c.Response().Writer)
+func renderTempl(c echo.Context, t templ.Component) error {
+	err := t.Render(c.Request().Context(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render response template")
 	}

@@ -1,9 +1,9 @@
 package pages
 
-import "github.com/AudiusProject/audius-protocol/core/console/pages"
+import "github.com/AudiusProject/audius-protocol/core/console/types"
 import "github.com/AudiusProject/audius-protocol/core/console/htmlviews/layout"
 
-templ BlockPage(data pages.BlockPageData) {
+templ BlockPage(data *types.BlockPageData) {
   @layout.HeaderBar() {
     <div>Height: { data.Height }</div>
     <div>Hash: { data.Hash }</div>

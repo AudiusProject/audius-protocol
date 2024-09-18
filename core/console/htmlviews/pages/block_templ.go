@@ -8,10 +8,10 @@ package pages
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/AudiusProject/audius-protocol/core/console/pages"
+import "github.com/AudiusProject/audius-protocol/core/console/types"
 import "github.com/AudiusProject/audius-protocol/core/console/htmlviews/layout"
 
-func BlockPage(data pages.BlockPageData) templ.Component {
+func BlockPage(data *types.BlockPageData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)

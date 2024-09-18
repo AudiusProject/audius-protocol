@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AudiusProject/audius-protocol/core/console/pages"
+	"github.com/AudiusProject/audius-protocol/core/console/types"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -19,7 +19,7 @@ type BlockPageResponse struct {
 	Txs      []map[string]interface{} `json:"transactions"`
 }
 
-func BlockPage(c echo.Context, data pages.BlockPageData) error {
+func RenderBlockPage(c echo.Context, data *types.BlockPageData) error {
 	txs := data.Txs
 
 	jsonDataArray := [][]byte{}

@@ -2,28 +2,16 @@ package pages
 
 import (
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/AudiusProject/audius-protocol/core/console/htmlviews/pages"
+	"github.com/AudiusProject/audius-protocol/core/console/jsonviews"
+	"github.com/AudiusProject/audius-protocol/core/console/types"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 )
-
-type BlockPageData struct {
-	Height   string
-	Hash     string
-	Proposer string
-	Txs      [][]byte
-}
-
-func (b *BlockPageData) RenderHTML(c echo.Context) error {
-	return nil
-}
-
-func (b *BlockPageData) RenderJSON(c echo.Context) error {
-	return nil
-}
 
 func (p *Pages) blockPage(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -54,7 +42,15 @@ func (p *Pages) blockPage(c echo.Context) error {
 		block = resultBlock
 	}
 
-	spew.Dump(block)
+	data := &types.BlockPageData{
+		Height:   fmt.Sprint(block.Block.Height),
+		Hash:     hex.EncodeToString(block.Block.Hash()),
+		Proposer: block.Block.Header.ProposerAddress.String(),
+		Txs:      block.Block.Txs.ToSliceOfBytes(),
+	}
 
-	return c.String(200, "block page")
+	if shouldRenderJSON(c) {
+		return jsonviews.RenderBlockPage(c, data)
+	}
+	return pages.RenderBlockPage(c, data)
 }
