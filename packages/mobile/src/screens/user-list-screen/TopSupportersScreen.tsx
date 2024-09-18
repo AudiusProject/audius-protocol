@@ -9,6 +9,7 @@ import {
   topSupportersUserListSelectors
 } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
+import { css } from '@emotion/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -37,11 +38,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   titleName: {
     maxWidth: 120
-  },
-  footerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%'
   }
 }))
 
@@ -84,7 +80,13 @@ export const TopSupportersScreen = () => {
           setUserList={handleSetSupporters}
         />
         {isOneToManyDMsEnabled && currentUserId === userId ? (
-          <Box style={styles.footerContainer}>
+          <Box
+            style={css({
+              position: 'absolute',
+              bottom: 0,
+              width: '100%'
+            })}
+          >
             <ChatBlastWithAudienceCTA audience={ChatBlastAudience.TIPPERS} />
           </Box>
         ) : null}

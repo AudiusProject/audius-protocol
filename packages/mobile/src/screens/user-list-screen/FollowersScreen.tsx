@@ -8,11 +8,11 @@ import {
   followersUserListSelectors
 } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
+import { css } from '@emotion/native'
 import { useDispatch } from 'react-redux'
 
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 
 import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastFollowersCTA'
 
@@ -25,21 +25,11 @@ const messages = {
   title: 'Followers'
 }
 
-const useStyles = makeStyles(() => ({
-  footerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%'
-  }
-}))
-
 export const FollowersScreen = () => {
   const { params } = useProfileRoute<'Followers'>()
   const { userId } = params
   const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
-
-  const styles = useStyles()
 
   const handleSetFollowers = useCallback(() => {
     dispatch(setFollowers(userId))
@@ -57,7 +47,13 @@ export const FollowersScreen = () => {
           setUserList={handleSetFollowers}
         />
         {isOneToManyDMsEnabled && currentUserId === userId ? (
-          <Box style={styles.footerContainer}>
+          <Box
+            style={css({
+              position: 'absolute',
+              bottom: 0,
+              width: '100%'
+            })}
+          >
             <ChatBlastWithAudienceCTA audience={ChatBlastAudience.FOLLOWERS} />
           </Box>
         ) : null}

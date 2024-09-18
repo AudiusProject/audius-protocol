@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useCanSendChatBlast } from '@audius/common/hooks'
 import { chatActions } from '@audius/common/store'
@@ -42,7 +42,7 @@ export const ChatBlastWithAudienceCTA = (
   const messages = getMessages(audience)
 
   const dispatch = useDispatch()
-  const handleClick = useCallback(() => {
+  const handlePress = useCallback(() => {
     dispatch(createChatBlast({ audience }))
   }, [audience, dispatch])
 
@@ -52,7 +52,7 @@ export const ChatBlastWithAudienceCTA = (
   }
 
   return (
-    <TouchableHighlight onPress={handleClick}>
+    <TouchableHighlight onPress={handlePress}>
       <Box backgroundColor='surface1' ph='xl' pv='l' borderTop='strong'>
         <Flex
           direction='row'
