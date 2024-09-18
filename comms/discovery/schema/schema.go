@@ -149,20 +149,20 @@ type TentacledInvite struct {
 }
 
 type UserChat struct {
-	Audience               ChatBlastAudience    `json:"audience"`
-	AudienceContentID      *string              `json:"audience_content_id,omitempty"`
-	AudienceContentType    *AudienceContentType `json:"audience_content_type,omitempty"`
-	ChatID                 string               `json:"chat_id"`
-	ChatMembers            []ChatMember         `json:"chat_members"`
-	ClearedHistoryAt       string               `json:"cleared_history_at"`
-	InviteCode             string               `json:"invite_code"`
-	IsBlast                bool                 `json:"is_blast"`
-	LastMessage            string               `json:"last_message"`
-	LastMessageAt          string               `json:"last_message_at"`
-	LastMessageIsPlaintext bool                 `json:"last_message_is_plaintext"`
-	LastReadAt             string               `json:"last_read_at"`
-	RecheckPermissions     bool                 `json:"recheck_permissions"`
-	UnreadMessageCount     float64              `json:"unread_message_count"`
+	Audience               ChatBlastAudience `json:"audience"`
+	AudienceContentID      *string           `json:"audience_content_id,omitempty"`
+	AudienceContentType    *string           `json:"audience_content_type,omitempty"`
+	ChatID                 string            `json:"chat_id"`
+	ChatMembers            []ChatMember      `json:"chat_members"`
+	ClearedHistoryAt       string            `json:"cleared_history_at"`
+	InviteCode             string            `json:"invite_code"`
+	IsBlast                bool              `json:"is_blast"`
+	LastMessage            string            `json:"last_message"`
+	LastMessageAt          string            `json:"last_message_at"`
+	LastMessageIsPlaintext bool              `json:"last_message_is_plaintext"`
+	LastReadAt             string            `json:"last_read_at"`
+	RecheckPermissions     bool              `json:"recheck_permissions"`
+	UnreadMessageCount     float64           `json:"unread_message_count"`
 }
 
 type ChatMember struct {

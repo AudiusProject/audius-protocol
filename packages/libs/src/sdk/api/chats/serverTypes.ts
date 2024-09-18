@@ -134,7 +134,7 @@ export type UserChat = {
   is_blast: boolean
   audience: ChatBlastAudience
   audience_content_id?: string
-  audience_content_type?: 'track' | 'album'
+  audience_content_type?: string
 }
 
 export type ChatMessageReaction = {

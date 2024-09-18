@@ -34,10 +34,9 @@ func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.Us
 		encodedContentId = &id
 	}
 
-	var audienceContentType *schema.AudienceContentType
+	var audienceContentType *string
 	if chat.AudienceContentType.Valid {
-		contentType := schema.AudienceContentType(chat.AudienceContentType.String)
-		audienceContentType = &contentType
+		audienceContentType = &chat.AudienceContentType.String
 	}
 
 	chatData := schema.UserChat{
