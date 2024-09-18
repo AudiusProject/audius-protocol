@@ -136,7 +136,7 @@ func (c *Components) HomePage(props HomePageProps) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"w-1/2 bg-white shadow-md rounded-lg h-full flex flex-col\"><div class=\"px-4 py-8 p font-bold text-l border-b border-gray-500\">Recent Transactions</div><div class=\"flex-grow overflow-y-auto\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"w-1/2 bg-white shadow-md rounded-lg h-full flex flex-col\"><div class=\"px-4 py-8 p font-bold text-l border-b border-gray-500\">Recent Txs</div><div class=\"flex-grow overflow-y-auto\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

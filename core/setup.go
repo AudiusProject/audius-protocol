@@ -34,6 +34,10 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	}
 	envConfig.GenesisFile = genDoc
 
+	if envConfig.StandaloneConsole {
+		return envConfig, nil, nil
+	}
+
 	// gather chain id
 	chainID := genDoc.ChainID
 

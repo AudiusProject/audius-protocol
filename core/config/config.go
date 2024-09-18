@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -66,8 +67,12 @@ type Config struct {
 	CoreServerAddr     string
 	NodeEndpoint       string
 
+	/* Ethereum Config */
 	EthRPCUrl          string
 	EthRegistryAddress string
+
+	/* Console Config */
+	StandaloneConsole bool
 
 	/* System Config */
 	RunDownMigration bool
@@ -102,6 +107,13 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	cfg.GRPCladdr = getEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
 	cfg.CoreServerAddr = getEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
+
+	standaloneConsoleStr := getEnvWithDefault("standaloneConsole", "false")
+	standaloneConsole, err := strconv.ParseBool(standaloneConsoleStr)
+	if err != nil {
+		standaloneConsole = false
+	}
+	cfg.StandaloneConsole = standaloneConsole
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
@@ -177,4 +189,11 @@ func getEnvWithDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func (c *Config) RunDownMigrations() bool {
+	if c.StandaloneConsole {
+		return false
+	}
+	return c.RunDownMigration
 }

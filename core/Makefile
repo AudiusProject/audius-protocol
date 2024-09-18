@@ -72,3 +72,7 @@ sandbox:
 .PHONY: livereload
 livereload:
 	modd
+
+.PHONY: console
+console:
+	@NO_DOCKER=on modd
