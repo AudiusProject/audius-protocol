@@ -22,7 +22,9 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
   })
   const { data: purchasers } = useGetPurchasers({
     userId: currentUserId!,
-    contentId: parseInt(chat.audience_content_id ?? '0'),
+    contentId: chat.audience_content_id
+      ? parseInt(chat.audience_content_id)
+      : undefined,
     contentType: chat.audience_content_type,
     limit
   })
