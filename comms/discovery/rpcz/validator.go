@@ -443,72 +443,19 @@ func RecheckPermissionsRequired(lastMessageAt time.Time, members []db.ChatMember
 	return false
 }
 
-// Validate receiver follows sender
-func validateFollow(q db.Queryable, sender int32, receiver int32) (bool, error) {
-	count, err := queries.CountFollows(q, context.Background(), queries.CountFollowsParams{
-		FollowerUserID: receiver,
-		FolloweeUserID: sender,
-	})
-	if err != nil {
-		return false, err
-	}
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
-}
-
-// Validate sender has tipped receiver
-func validateTipper(q db.Queryable, sender int32, receiver int32) (bool, error) {
-	count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
-		SenderUserID:   sender,
-		ReceiverUserID: receiver,
-	})
-	if err != nil {
-		return false, err
-	}
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
-}
-
 func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 	permissionFailure := errors.New("Not permitted to send messages to this user")
-	permits, err := queries.GetChatPermissions(q, context.Background(), receiver)
+
+	ok := false
+	err := q.Get(&ok, `select chat_allowed($1, $2)`, sender, receiver)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			return err
-		}
-		// No permissions set; default to 'all'
-		return nil
+		return err
 	}
-
-	if permits == schema.None {
+	if !ok {
 		return permissionFailure
-	} else if permits == schema.Followees {
-		// Only allow messages from users that receiver follows
-		follows, err := validateFollow(q, sender, receiver)
-		if err != nil {
-			return err
-		}
-		if !follows {
-			return permissionFailure
-		}
-	} else if permits == schema.Tippers {
-		// Only allow messages from users that have tipped the receiver
-		tipper, err := validateTipper(q, sender, receiver)
-		if err != nil {
-			return err
-		}
-		if !tipper {
-			return permissionFailure
-		}
 	}
-
 	return nil
+
 }
 
 func validatePermittedToMessage(q db.Queryable, userId int32, chatId string) error {

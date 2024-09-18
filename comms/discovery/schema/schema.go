@@ -118,6 +118,7 @@ type ChatPermitRPC struct {
 }
 
 type ChatPermitRPCParams struct {
+	Allow  *bool          `json:"allow,omitempty"`
 	Permit ChatPermission `json:"permit"`
 }
 
@@ -140,6 +141,7 @@ type RPCPayloadRequestParams struct {
 	ParentMessageID     *string              `json:"parent_message_id,omitempty"`
 	Reaction            *string              `json:"reaction"`
 	UserID              *string              `json:"user_id,omitempty"`
+	Allow               *bool                `json:"allow,omitempty"`
 	Permit              *ChatPermission      `json:"permit,omitempty"`
 }
 
@@ -285,6 +287,7 @@ type RPCPayloadParams struct {
 	ParentMessageID     *string              `json:"parent_message_id,omitempty"`
 	Reaction            *string              `json:"reaction"`
 	UserID              *string              `json:"user_id,omitempty"`
+	Allow               *bool                `json:"allow,omitempty"`
 	Permit              *ChatPermission      `json:"permit,omitempty"`
 }
 
@@ -381,8 +384,11 @@ type ChatPermission string
 const (
 	All       ChatPermission = "all"
 	Followees ChatPermission = "followees"
+	Followers ChatPermission = "followers"
 	None      ChatPermission = "none"
+	Tippees   ChatPermission = "tippees"
 	Tippers   ChatPermission = "tippers"
+	Verified  ChatPermission = "verified"
 )
 
 type RPCMethod string

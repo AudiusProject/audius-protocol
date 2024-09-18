@@ -92,6 +92,7 @@ export type ChatPermitRPC = {
   method: 'chat.permit'
   params: {
     permit: ChatPermission
+    allow?: boolean
   }
 }
 
@@ -196,21 +197,12 @@ export type ValidatedChatPermissions = {
  * Defines who the user allows to message them
  */
 export enum ChatPermission {
-  /**
-   * Messages are allowed for everyone
-   */
   ALL = 'all',
-  /**
-   * Messages are only allowed for users that have tipped me
-   */
+  TIPPEES = 'tippees',
   TIPPERS = 'tippers',
-  /**
-   * Messages are only allowed for users I follow
-   */
   FOLLOWEES = 'followees',
-  /**
-   * Messages are not allowed
-   */
+  FOLLOWERS = 'followers',
+  VERIFIED = 'verified',
   NONE = 'none'
 }
 
