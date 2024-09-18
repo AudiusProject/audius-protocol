@@ -22,15 +22,6 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     groupIdOffset
   } = config
 
-  return yield* call(fetchDiscoveryNotifications, {
-    limit,
-    timeOffset,
-    groupIdOffset
-  })
-}
-
-function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
-  const { timeOffset, groupIdOffset, limit } = params
   const sdk = yield* getSDK()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const userId = yield* select(accountSelectors.getUserId)
@@ -72,6 +63,11 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     FeatureFlags.MANAGER_MODE
   )
 
+  const isCommentsEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.COMMENTS_ENABLED
+  )
+
   const validTypes = [
     isRepostOfRepostEnabled ? ValidTypes.RepostOfRepost : null,
     isSaveOfRepostEnabled ? ValidTypes.SaveOfRepost : null,
@@ -83,6 +79,7 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
     isManagerModeEnabled ? ValidTypes.RequestManager : null,
     isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
+    isCommentsEnabled ? ValidTypes.Comment : null,
     ValidTypes.ClaimableReward
   ].filter(removeNullable)
 
@@ -99,6 +96,8 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
   const notifications = data
     ? transformAndCleanList(data.notifications, notificationFromSDK)
     : []
+
+  console.log('here?', notifications)
 
   return { notifications, totalUnviewed: data?.unreadCount ?? 0 }
 }

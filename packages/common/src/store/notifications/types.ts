@@ -39,7 +39,8 @@ export enum NotificationType {
   USDCPurchaseSeller = 'USDCPurchaseSeller',
   USDCPurchaseBuyer = 'USDCPurchaseBuyer',
   RequestManager = 'RequestManager',
-  ApproveManagerRequest = 'ApproveManagerRequest'
+  ApproveManagerRequest = 'ApproveManagerRequest',
+  Comment = 'Comment'
 }
 
 export enum PushNotificationType {
@@ -293,6 +294,12 @@ export type DiscoveryTrendingNotificationAction = {
   time_range: TrendingRange
 }
 
+export type DiscoveryCommentNotificationAction = {
+  type: string
+  user_id: string
+  entity_id: string
+}
+
 export type DiscoveryAnnouncementNotification = DiscoveryBaseNotification<
   'announcement',
   DiscoveryAnnouncementNotificationAction
@@ -428,6 +435,11 @@ export type DiscoverySaveOfRepostNotification = DiscoveryBaseNotification<
   DiscoverySaveOfRepostNotificationAction
 >
 
+export type DiscoveryCommentNotification = DiscoveryBaseNotification<
+  'comment',
+  DiscoveryCommentNotificationAction
+>
+
 export type DiscoveryNotification =
   | DiscoveryAnnouncementNotification
   | DiscoveryFollowNotification
@@ -458,6 +470,7 @@ export type DiscoveryNotification =
   | DiscoveryUSDCPurchaseSellerNotification
   | DiscoveryRequestManagerNotification
   | DiscoveryApproveManagerRequestNotification
+  | DiscoveryCommentNotification
 
 export type AnnouncementNotification = BaseNotification & {
   type: NotificationType.Announcement
@@ -997,6 +1010,13 @@ export type ApproveManagerRequestNotification = BaseNotification & {
   userId: ID
 }
 
+export type CommentNotification = BaseNotification & {
+  type: NotificationType.Comment
+  entityId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -1027,6 +1047,7 @@ export type Notification =
   | USDCPurchaseBuyerNotification
   | RequestManagerNotification
   | ApproveManagerRequestNotification
+  | CommentNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

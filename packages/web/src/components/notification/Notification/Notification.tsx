@@ -41,6 +41,7 @@ type NotificationProps = {
 
 export const Notification = (props: NotificationProps) => {
   const { notification } = props
+  console.log(notification.type)
 
   const getNotificationElement = () => {
     switch (notification.type) {
@@ -53,7 +54,6 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ClaimableReward: {
         return <ClaimableRewardNotification notification={notification} />
       }
-
       case NotificationType.Favorite: {
         return <FavoriteNotification notification={notification} />
       }
@@ -131,10 +131,13 @@ export const Notification = (props: NotificationProps) => {
           <TrackAddedToPurchasedAlbumNotification notification={notification} />
         )
       }
-
       case NotificationType.SupporterDethroned: {
         return <SupporterDethronedNotification notification={notification} />
       }
+      case NotificationType.Comment: {
+        return <div>hello world</div>
+      }
+
       default: {
         return null
       }
