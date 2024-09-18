@@ -58,9 +58,8 @@ const commonJsInternal = ['micro-aes-gcm']
 
 export const outputConfigs = {
   /**
-   * SDK (and Libs) Node Package (Common JS)
-   * Used by the Audius Content Node Service and Identity Service
-   * - Includes libs
+   * SDK Node Package (Common JS)
+   * Can be used in node environments
    * - Makes external ES modules internal to prevent issues w/ using require()
    */
   sdkConfigCjs: {
@@ -84,10 +83,8 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK (and Libs) Node Package (ES Module)
+   * SDK Node Package (ES Module)
    * Used by third parties using ES Modules
-   * Could be used by Audius Content Node and Identity Service after moving those services to ES module
-   * - Includes libs
    */
   sdkConfigEs: {
     input: 'src/index.ts',
@@ -107,6 +104,31 @@ export const outputConfigs = {
       pluginTypescript
     ],
     external
+  },
+
+  /**
+   * Libs Node Package (Common JS)
+   * Used by the Identity Service
+   * - Makes external ES modules internal to prevent issues w/ using require()
+   */
+  libsConfigCjs: {
+    input: 'src/libs.ts',
+    output: [
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
+        entryFileNames: '[name].js'
+      }
+    ],
+    plugins: [
+      resolve({ extensions, preferBuiltins: true }),
+      commonjs({ extensions }),
+      babel({ babelHelpers: 'bundled', extensions }),
+      json(),
+      pluginTypescript
+    ],
+    external: external.filter((id) => !commonJsInternal.includes(id))
   },
 
   /**

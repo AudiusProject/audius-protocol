@@ -6,7 +6,7 @@ import { createApi } from '~/audius-query'
 import { Name, SearchSource, UserTrackMetadata } from '~/models'
 import { ID, OptionalId } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
-import { SearchKind } from '~/store'
+import { SearchKind, SearchSortMethod } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
@@ -30,6 +30,7 @@ type getSearchArgs = {
   limit?: number
   offset?: number
   source?: SearchSource
+  sortMethod?: SearchSortMethod
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -123,7 +124,8 @@ const searchApi = createApi({
             mood: filters.mood ? [filters.mood] : undefined,
             isVerified: filters.isVerified,
             hasDownloads: filters.hasDownloads,
-            isPurchaseable: filters.isPremium
+            isPurchaseable: filters.isPremium,
+            sortMethod: filters.sortMethod
           }
           // Fire analytics only for the first page of results
           if (offset === 0) {

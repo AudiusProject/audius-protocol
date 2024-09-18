@@ -1,12 +1,12 @@
 import {
-  Utils as AudiusUtils,
   sdk as AudiusSdk,
-  libs as AudiusLibs,
   DiscoveryNodeSelector,
   SolanaRelay,
-  Configuration,
-} from "@audius/sdk";
-import { PublicKey } from "@solana/web3.js";
+  Configuration
+} from '@audius/sdk/dist/libs'
+
+import { Utils as AudiusUtils, libs as AudiusLibs } from '@audius/sdk'
+import { PublicKey } from '@solana/web3.js'
 
 export const initializeAudiusLibs = async (handle) => {
   const audiusLibs = new AudiusLibs({
@@ -24,7 +24,7 @@ export const initializeAudiusLibs = async (handle) => {
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
-      solanaTokenAddress: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      solanaTokenAddress: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
       mintAddress: process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY,
       usdcMintAddress: process.env.SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY,
       claimableTokenProgramAddress:
@@ -35,17 +35,17 @@ export const initializeAudiusLibs = async (handle) => {
       rewardsManagerTokenPDA:
         process.env.SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY,
       feePayerSecretKeys: [
-        Uint8Array.from(JSON.parse(process.env.SOLANA_FEEPAYER_SECRET_KEY)),
+        Uint8Array.from(JSON.parse(process.env.SOLANA_FEEPAYER_SECRET_KEY))
       ],
-      useRelay: true,
+      useRelay: true
     }),
     discoveryProviderConfig: {
       discoveryNodeSelector: new DiscoveryNodeSelector({
-        initialSelectedNode: "http://audius-protocol-discovery-provider-1",
-      }),
+        initialSelectedNode: 'http://audius-protocol-discovery-provider-1'
+      })
     },
     creatorNodeConfig: AudiusLibs.configCreatorNode(
-      "http://audius-protocol-creator-node-1"
+      'http://audius-protocol-creator-node-1'
       // process.env.FALLBACK_CREATOR_NODE_URL,
     ),
     identityServiceConfig: AudiusLibs.configIdentityService(
@@ -55,27 +55,29 @@ export const initializeAudiusLibs = async (handle) => {
     enableUserReplicaSetManagerContract: true,
     isStorageV2Only: true,
     useDiscoveryRelay: true
-  });
+  })
 
-  await audiusLibs.init();
+  await audiusLibs.init()
 
   if (handle) {
     // Log out of existing user, log in as new user, and re-init
-    await audiusLibs.Account.logout();
-    await audiusLibs.localStorage.removeItem("hedgehog-entropy-key");
+    await audiusLibs.Account.logout()
+    await audiusLibs.localStorage.removeItem('hedgehog-entropy-key')
     await audiusLibs.localStorage.setItem(
-      "hedgehog-entropy-key",
+      'hedgehog-entropy-key',
       audiusLibs.localStorage.getItem(`handle-${handle}`)
-    );
-    await audiusLibs.init();
+    )
+    await audiusLibs.init()
   }
 
-  return audiusLibs;
-};
+  return audiusLibs
+}
 
-let audiusSdk;
-export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = undefined } = {}) => {
-
+let audiusSdk
+export const initializeAudiusSdk = async ({
+  apiKey = undefined,
+  apiSecret = undefined
+} = {}) => {
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
@@ -96,56 +98,56 @@ export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = unde
 
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
-      appName: "audius-cmd",
+      appName: 'audius-cmd',
       apiKey,
       apiSecret,
       environment: 'development',
       services: {
         solanaRelay
       }
-    });
+    })
   }
 
-  return audiusSdk;
-};
+  return audiusSdk
+}
 
 export const parseUserId = async (arg) => {
-  if (arg.startsWith("@")) {
+  if (arg.startsWith('@')) {
     // @handle
-    const audiusSdk = await initializeAudiusSdk();
+    const audiusSdk = await initializeAudiusSdk()
     const {
-      data: { id },
-    } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) });
-    return AudiusUtils.decodeHashId(id);
-  } else if (arg.startsWith("#")) {
+      data: { id }
+    } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) })
+    return AudiusUtils.decodeHashId(id)
+  } else if (arg.startsWith('#')) {
     // #userId
-    return Number(arg.slice(1));
+    return Number(arg.slice(1))
   } else {
     // encoded user id
-    return AudiusUtils.decodeHashId(arg);
+    return AudiusUtils.decodeHashId(arg)
   }
-};
+}
 
 export const parseSplWallet = async (arg) => {
-  if (arg.startsWith("@") || arg.startsWith("#") || arg.length < 32) {
+  if (arg.startsWith('@') || arg.startsWith('#') || arg.length < 32) {
     // not splWallet
-    const audiusSdk = await initializeAudiusSdk();
-    const audiusLibs = await initializeAudiusLibs();
+    const audiusSdk = await initializeAudiusSdk()
+    const audiusLibs = await initializeAudiusLibs()
     const {
-      data: { splWallet, ercWallet },
+      data: { splWallet, ercWallet }
     } = await audiusSdk.users.getUser({
-      id: AudiusUtils.encodeHashId(await parseUserId(arg)),
-    });
+      id: AudiusUtils.encodeHashId(await parseUserId(arg))
+    })
     if (!splWallet) {
       const { userbank } =
         await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded({
-          ethAddress: ercWallet,
-        });
-      return userbank;
+          ethAddress: ercWallet
+        })
+      return userbank
     }
-    return new PublicKey(splWallet);
+    return new PublicKey(splWallet)
   } else {
     // splWallet
-    return new PublicKey(arg);
+    return new PublicKey(arg)
   }
-};
+}
