@@ -1,6 +1,6 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
-import type { createJupiterApiClient } from '@jup-ag/api'
+import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
   PublicKey,
@@ -1000,15 +1000,22 @@ function* purchaseWithAnything({
       )
 
       const jup = yield* call(getJupiterInstance)
-      const quote = yield* call([jup, jup.quoteGet], {
-        inputMint,
-        outputMint: TOKEN_LISTING_MAP.USDC.address,
-        amount: totalAmountWithDecimals,
-        onlyDirectRoutes: true,
-        swapMode: 'ExactOut'
-      })
-      if (!quote) {
-        throw new Error(`Failed to get Jupiter quote for ${inputMint} => USDC`)
+      let quote: QuoteResponse
+      try {
+        quote = yield* call([jup, jup.quoteGet], {
+          inputMint,
+          outputMint: TOKEN_LISTING_MAP.USDC.address,
+          amount: totalAmountWithDecimals,
+          swapMode: 'ExactOut'
+        })
+        if (!quote) {
+          throw new Error()
+        }
+      } catch (e) {
+        throw new PurchaseContentError(
+          PurchaseErrorCode.NoQuote,
+          `Failed to get Jupiter quote for ${inputMint} => USDC`
+        )
       }
 
       // Make sure user has enough funds to purchase content
