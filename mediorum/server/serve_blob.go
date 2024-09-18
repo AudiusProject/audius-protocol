@@ -384,7 +384,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}()
 
 		sdk, err := ss.getCoreSdk()
-		if err != nil {
+		if err != nil || sdk == nil {
 			return
 		}
 

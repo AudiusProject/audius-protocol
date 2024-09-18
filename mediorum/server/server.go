@@ -113,6 +113,8 @@ type MediorumServer struct {
 	imageCache            *imcache.Cache[string, []byte]
 	failsPeerReachability bool
 
+	coreHealth *coreHealthResponseData
+
 	StartedAt time.Time
 	Config    MediorumConfig
 
