@@ -1,7 +1,5 @@
-import { IconCaretDown } from '@audius/harmony-native'
-import type { TextButtonProps } from 'app/components/core'
-import { TextButton } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import type { PlainButtonProps } from '@audius/harmony-native'
+import { IconCaretDown, PlainButton } from '@audius/harmony-native'
 import { spacing } from 'app/styles/spacing'
 
 const messages = {
@@ -16,18 +14,7 @@ const hitSlop = {
   bottom: spacing(4)
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  expandButton: {
-    justifyContent: 'center',
-    marginVertical: spacing(4),
-    alignSelf: 'center'
-  },
-  seeLessIcon: {
-    transform: [{ rotate: '180deg' }]
-  }
-}))
-
-type ExpandHeaderToggleButtonProps = Partial<TextButtonProps> & {
+type ExpandHeaderToggleButtonProps = Partial<PlainButtonProps> & {
   isExpanded?: boolean
 }
 
@@ -35,22 +22,20 @@ export const ExpandHeaderToggleButton = (
   props: ExpandHeaderToggleButtonProps
 ) => {
   const { isExpanded, ...other } = props
-  const styles = useStyles()
 
   return (
-    <TextButton
-      variant='neutralLight4'
-      hitSlop={hitSlop}
-      title={isExpanded ? messages.seeLess : messages.seeMore}
-      icon={IconCaretDown}
-      iconPosition='right'
-      IconProps={{ height: 12, width: 12 }}
-      TextProps={{ fontSize: 'small', weight: 'bold' }}
+    <PlainButton
+      variant='subdued'
+      fullWidth={false}
+      style={{ alignSelf: 'center' }}
+      iconRight={IconCaretDown}
       styles={{
-        root: styles.expandButton,
-        icon: isExpanded && styles.seeLessIcon
+        icon: isExpanded ? { transform: [{ rotate: '180deg' }] } : undefined
       }}
+      hitSlop={hitSlop}
       {...other}
-    />
+    >
+      {isExpanded ? messages.seeLess : messages.seeMore}
+    </PlainButton>
   )
 }

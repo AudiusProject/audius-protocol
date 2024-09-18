@@ -21,6 +21,8 @@ export type MenuContentProps = {
   width?: CSSObject['width']
   MenuListProps?: WithCSS<Partial<FlexProps>>
   scrollRef: Ref<HTMLDivElement>
+  'aria-label'?: string
+  'aria-activedescendent'?: string
 }
 
 export const Menu = (props: MenuProps) => {
@@ -36,7 +38,15 @@ export const Menu = (props: MenuProps) => {
 }
 
 export const MenuContent = (props: MenuContentProps) => {
-  const { children, maxHeight, width, MenuListProps, scrollRef } = props
+  const {
+    children,
+    maxHeight,
+    width,
+    MenuListProps,
+    scrollRef,
+    'aria-label': ariaLabel,
+    'aria-activedescendent': ariaActiveDescendant
+  } = props
 
   return (
     <Flex
@@ -48,6 +58,8 @@ export const MenuContent = (props: MenuContentProps) => {
       css={{ maxHeight, width, overflowY: 'auto' }}
       ref={scrollRef}
       onClick={(e) => e.stopPropagation()}
+      aria-label={ariaLabel}
+      aria-activedescendant={ariaActiveDescendant}
       {...MenuListProps}
     >
       {children}

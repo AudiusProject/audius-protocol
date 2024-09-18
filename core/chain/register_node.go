@@ -13,13 +13,13 @@ import (
 
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_proto.Event) error {
+func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_proto.SignedTransaction) error {
 	sig := e.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
 	}
 
-	event := e.GetRegisterNode()
+	event := e.GetValidatorRegistration()
 	if event == nil {
 		return fmt.Errorf("unknown event fell into finalizeRegisterNode: %v", e)
 	}
@@ -76,14 +76,14 @@ func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_
 }
 
 // persists the register node request should it pass validation
-func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.Event) error {
+func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.SignedTransaction) error {
 	if err := core.isValidRegisterNodeEvent(ctx, e); err != nil {
 		return fmt.Errorf("invalid register node event: %v", err)
 	}
 
 	qtx := core.getDb()
 
-	event := e.GetRegisterNode()
+	event := e.GetValidatorRegistration()
 	sig := e.GetSignature()
 	eventBytes, err := proto.Marshal(event)
 	if err != nil {
@@ -100,7 +100,7 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 		return fmt.Errorf("could not serialize pubkey: %v", err)
 	}
 
-	registerNode := e.GetRegisterNode()
+	registerNode := e.GetValidatorRegistration()
 
 	err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
 		PubKey:       serializedPubKey,

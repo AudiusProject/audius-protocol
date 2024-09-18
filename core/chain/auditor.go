@@ -19,8 +19,8 @@ func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, he
 	if err != nil {
 		return []byte{}, err
 	}
-	e := gen_proto.Event{
-		Body: &gen_proto.Event_SlaRollup{
+	e := gen_proto.SignedTransaction{
+		Transaction: &gen_proto.SignedTransaction_SlaRollup{
 			SlaRollup: rollup,
 		},
 	}
@@ -31,8 +31,8 @@ func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, he
 	return rollupTx, nil
 }
 
-func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*gen_proto.SlaRollupEvent, error) {
-	var rollup *gen_proto.SlaRollupEvent
+func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*gen_proto.SlaRollup, error) {
+	var rollup *gen_proto.SlaRollup
 	var start int64 = 0
 	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
 	if err == nil {
@@ -44,7 +44,7 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 		return rollup, err
 	}
 
-	rollup = &gen_proto.SlaRollupEvent{
+	rollup = &gen_proto.SlaRollup{
 		Timestamp:  timestamppb.New(timestamp),
 		BlockStart: start,
 		BlockEnd:   height - 1, // exclude current block
@@ -62,7 +62,7 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 }
 
 // Checks if the given sla rollup matches our local tallies
-func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *gen_proto.SlaRollupEvent) (bool, error) {
+func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *gen_proto.SlaRollup) (bool, error) {
 	if !app.shouldProposeNewRollup(ctx, timestamp, height) {
 		return false, nil
 	}
@@ -99,7 +99,7 @@ func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.
 	return height-previousHeight == int64(app.config.SlaRollupInterval)
 }
 
-func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.Event, txHash string) error {
+func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.SignedTransaction, txHash string) error {
 	appDb := app.getDb()
 	rollup := event.GetSlaRollup()
 

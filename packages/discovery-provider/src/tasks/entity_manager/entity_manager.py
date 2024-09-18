@@ -44,6 +44,7 @@ from src.tasks.entity_manager.entities.comment import (
     delete_comment,
     pin_comment,
     react_comment,
+    report_comment,
     unpin_comment,
     unreact_comment,
     update_comment,
@@ -74,7 +75,6 @@ from src.tasks.entity_manager.entities.playlist import (
     delete_playlist,
     update_playlist,
 )
-from src.tasks.entity_manager.entities.reported_comment import report_comment
 from src.tasks.entity_manager.entities.social_features import (
     action_to_record_types,
     create_social_action_types,

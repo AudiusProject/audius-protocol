@@ -143,6 +143,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	for _, result := range results {
 		messageID := params.BlastID + result.ChatID
 
+		isPlaintext := true
 		outgoingMessages = append(outgoingMessages, OutgoingChatMessage{
 			ChatMessageRPC: schema.ChatMessageRPC{
 				Method: schema.MethodChatMessage,
@@ -150,7 +151,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 					ChatID:      result.ChatID,
 					Message:     params.Message,
 					MessageID:   messageID,
-					IsPlaintext: true,
+					IsPlaintext: &isPlaintext,
 				}}})
 
 		if err := chatUpdateLatestFields(tx, result.ChatID); err != nil {

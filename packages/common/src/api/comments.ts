@@ -17,13 +17,13 @@ const optimisticUpdateCommentList = (
   entityId: number,
   updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
   dispatch: ThunkDispatch<any, any, any>,
-  currentUserId?: number,
+  userId?: number,
   page: number = 0
 ) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
-      { entityId, currentUserId, limit: 5, offset: page },
+      { entityId, userId, limit: 5, offset: page },
       updateRecipe
     )
   )
@@ -60,13 +60,13 @@ const commentsApi = createApi({
           offset,
           limit,
           sortMethod,
-          currentUserId
+          userId
         }: {
           entityId: ID
           offset?: number
           limit?: number
           sortMethod?: TrackCommentsSortMethodEnum
-          currentUserId?: Nullable<ID>
+          userId?: Nullable<ID>
         },
         { audiusSdk }
       ) {
@@ -76,7 +76,7 @@ const commentsApi = createApi({
           offset,
           limit,
           sortMethod,
-          userId: currentUserId?.toString() ?? undefined
+          userId: userId?.toString() ?? undefined
         })
         return commentsRes?.data ?? []
       },
@@ -327,6 +327,39 @@ const commentsApi = createApi({
           dispatch
         )
       }
+    },
+    reportCommentById: {
+      async fetch(
+        { id, userId }: { id: string; userId: ID; entityId: ID },
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        const decodedId = decodeHashId(id)
+        if (!decodedId) {
+          console.error(
+            `Error: Unable to react to comment. Id ${id} could not be decoded`
+          )
+          return
+        }
+        await sdk.comments.reportComment(userId, decodedId)
+      },
+      options: { type: 'mutation' },
+      async onQueryStarted({ id, entityId, userId }, { dispatch }) {
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            const indexToRemove = prevState?.findIndex(
+              (comment: Comment) => comment.id === id
+            )
+            if (indexToRemove !== undefined && indexToRemove >= 0) {
+              prevState?.splice(indexToRemove, 1)
+            }
+            return prevState
+          },
+          dispatch,
+          userId
+        )
+      }
     }
   }
 })
@@ -339,7 +372,8 @@ export const {
   usePostComment,
   usePinCommentById,
   useReactToCommentById,
-  useGetCommentRepliesById
+  useGetCommentRepliesById,
+  useReportCommentById
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
@@ -6,13 +6,13 @@ import {
   useDeleteComment,
   usePostComment
 } from '@audius/common/context'
+import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
@@ -60,19 +60,13 @@ const CommentBlockInternal = (
   const { artistId } = useCurrentCommentSection()
 
   const [deleteComment, { status: deleteStatus }] = useDeleteComment()
-
   const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
-  const prevPostStatus = usePrevious(commentPostStatus)
   const isDeleting = deleteStatus === Status.LOADING
-  // wait for the comment to be posted before hiding the input
-  useEffect(() => {
-    if (
-      prevPostStatus !== commentPostStatus &&
-      commentPostStatus === Status.SUCCESS
-    ) {
-      setShowReplyInput(false)
-    }
-  }, [commentPostStatus, prevPostStatus])
+
+  useStatusChange(commentPostStatus, {
+    onSuccess: () => setShowReplyInput(false)
+  })
+
   // triggers a fetch to get user profile info
   useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
 

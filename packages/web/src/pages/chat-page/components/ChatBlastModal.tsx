@@ -1,17 +1,9 @@
-import { useMemo } from 'react'
-
+import { useGetCurrentUser } from '@audius/common/api'
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetPlaylistsByIds,
-  useGetPurchasersCount,
-  useGetRemixedTracks,
-  useGetRemixersCount,
-  useGetSalesAggegrate,
-  useGetTracksByIds
-} from '@audius/common/api'
+  usePurchasersAudience,
+  useRemixersAudience
+} from '@audius/common/hooks'
 import { useChatBlastModal, chatActions } from '@audius/common/src/store'
-import { removeNullable } from '@audius/common/utils'
 import {
   Flex,
   IconTowerBroadcast,
@@ -29,7 +21,6 @@ import {
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, useField } from 'formik'
-import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 const { createChatBlast } = chatActions
@@ -238,7 +229,6 @@ const TipSupportersMessageField = () => {
 }
 
 const PastPurchasersMessageField = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [
     purchasedContentMetadataField,
@@ -249,52 +239,11 @@ const PastPurchasersMessageField = () => {
     type: 'select'
   })
   const isSelected = value === ChatBlastAudience.CUSTOMERS
-  const { data: salesAggregate } = useGetSalesAggegrate({
-    userId: currentUserId!
-  })
-  const isDisabled = salesAggregate?.length === 0
-
-  const trackAggregates = salesAggregate?.filter(
-    (sale) => sale.contentType === 'track'
-  )
-  const albumAggregates = salesAggregate?.filter(
-    (sale) => sale.contentType === 'album'
-  )
-
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
-  const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
-  const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
-  const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
-
-  const premiumContentOptions = useMemo(
-    () =>
-      (salesAggregate ?? [])
-        .map((sale) => {
-          const content =
-            sale.contentType === 'track'
-              ? tracksById[sale.contentId]
-              : albumsById[sale.contentId]
-          if (!content) return null
-          return {
-            value: { contentId: sale.contentId, contentType: sale.contentType },
-            label: 'title' in content ? content?.title : content?.playlist_name
-          }
-        })
-        .filter(removeNullable),
-    [salesAggregate, tracksById, albumsById]
-  )
-
-  const { data: purchasersCount } = useGetPurchasersCount({
-    userId: currentUserId!,
-    contentId: purchasedContentMetadataField.value?.contentId,
-    contentType: purchasedContentMetadataField.value?.contentType
-  })
+  const { isDisabled, purchasersCount, premiumContentOptions } =
+    usePurchasersAudience({
+      contentId: purchasedContentMetadataField.value?.contentId,
+      contentType: purchasedContentMetadataField.value?.contentType
+    })
 
   return (
     <Flex
@@ -329,34 +278,16 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
+  const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
-  const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId!,
-    trackId: remixedTrackField.value
-      ? parseInt(remixedTrackField.value)
-      : undefined
-  })
-
-  const { data: remixedTracks } = useGetRemixedTracks({
-    userId: currentUserId!
-  })
-  const isDisabled = remixedTracks?.length === 0
-
-  const isSelected = value === ChatBlastAudience.REMIXERS
-
-  const premiumTrackOptions = useMemo(
-    () =>
-      (remixedTracks ?? []).map((track) => ({
-        value: track.track_id.toString(),
-        label: track.title
-      })),
-    [remixedTracks]
-  )
+  const { isDisabled, remixersCount, remixedTracksOptions } =
+    useRemixersAudience({
+      remixedTrackId: remixedTrackField.value?.contentId
+    })
+  const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 
   return (
     <Flex
@@ -378,7 +309,7 @@ const RemixCreatorsMessageField = () => {
             <Text size='s'>{messages.remixCreators.description}</Text>
             <Select
               {...remixedTrackField}
-              options={premiumTrackOptions}
+              options={remixedTracksOptions}
               label={messages.remixCreators.placeholder}
               onChange={setRemixedTrackId}
               clearable

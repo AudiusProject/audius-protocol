@@ -384,7 +384,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}()
 
 		sdk, err := ss.getCoreSdk()
-		if err != nil {
+		if err != nil || sdk == nil {
 			return
 		}
 
@@ -395,8 +395,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
-		// construct listen data into event
-		listen := &proto.Listen{
+		// construct play data into event
+		play := &proto.TrackPlay{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
 			Timestamp: timestamppb.New(parsedTime),
@@ -404,28 +404,28 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// form actual proto event for signing
-		playsEvent := &proto.PlaysEvent{
-			Listens: []*proto.Listen{listen},
+		playsTx := &proto.TrackPlays{
+			Plays: []*proto.TrackPlay{play},
 		}
 
 		// sign plays event payload with mediorum priv key
-		signedPlaysEvent, err := signature.SignCoreBytes(playsEvent, ss.Config.privateKey)
+		signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
 		if err != nil {
 			ss.logger.Error("core error signing listen proto event", "err", err)
 			return
 		}
 
-		// construct proto listen event alongside signature of plays event
-		event := &proto.Event{
+		// construct proto listen signedTx alongside signature of plays signedTx
+		signedTx := &proto.SignedTransaction{
 			Signature: signedPlaysEvent,
-			Body: &proto.Event_Plays{
-				Plays: playsEvent,
+			Transaction: &proto.SignedTransaction_Plays{
+				Plays: playsTx,
 			},
 		}
 
 		// submit to configured core node
-		res, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
-			Event: event,
+		res, err := sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
+			Transaction: signedTx,
 		})
 
 		if err != nil {

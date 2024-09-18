@@ -130,8 +130,11 @@ export type UserChat = {
   last_read_at: string
   cleared_history_at: string
 
-  // User chats are not blasts
+  // If blast:
   is_blast: false
+  audience: ChatBlastAudience
+  audience_content_id?: string
+  audience_content_type?: string
 }
 
 export type ChatMessageReaction = {
@@ -237,6 +240,7 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
+    userId: string
     senderUserId: string
     receiverUserId: string
     timestamp: string
