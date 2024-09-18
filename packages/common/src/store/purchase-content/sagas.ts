@@ -955,10 +955,14 @@ function* purchaseWithAnything({
       if (!provider) {
         throw new Error('No solana provider / wallet found')
       }
-      sourceWallet = (yield* call(provider.connect)).publicKey
+      sourceWallet = new PublicKey(
+        (yield* call(provider.connect)).publicKey.toString()
+      )
     }
 
     let transaction: VersionedTransaction
+    let message: TransactionMessage
+    let addressLookupTableAccounts: AddressLookupTableAccount[] | undefined
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
       const instruction = yield* call(
         [
@@ -979,6 +983,7 @@ function* purchaseWithAnything({
           instructions: [instruction]
         }
       )
+      message = TransactionMessage.decompile(transaction.message)
     } else {
       const paymentRouterTokenAccount = yield* call(
         [
@@ -1046,28 +1051,28 @@ function* purchaseWithAnything({
       })
       const decoded = Buffer.from(swapTransaction, 'base64')
       transaction = VersionedTransaction.deserialize(decoded)
-    }
 
-    // Get address lookup table accounts
-    const getLUTs = async () => {
-      return await Promise.all(
-        transaction.message.addressTableLookups.map(async (lookup) => {
-          return new AddressLookupTableAccount({
-            key: lookup.accountKey,
-            state: AddressLookupTableAccount.deserialize(
-              await connection
-                .getAccountInfo(lookup.accountKey)
-                .then((res: any) => res.data)
-            )
+      // Get address lookup table accounts
+      const getLUTs = async () => {
+        return await Promise.all(
+          transaction.message.addressTableLookups.map(async (lookup) => {
+            return new AddressLookupTableAccount({
+              key: lookup.accountKey,
+              state: AddressLookupTableAccount.deserialize(
+                await connection
+                  .getAccountInfo(lookup.accountKey)
+                  .then((res: any) => res.data)
+              )
+            })
           })
-        })
-      )
+        )
+      }
+      addressLookupTableAccounts = yield* call(getLUTs)
+      // Decompile transaction message and add transfer instruction
+      message = TransactionMessage.decompile(transaction.message, {
+        addressLookupTableAccounts
+      })
     }
-    const addressLookupTableAccounts = yield* call(getLUTs)
-    // Decompile transaction message and add transfer instruction
-    const message = TransactionMessage.decompile(transaction.message, {
-      addressLookupTableAccounts
-    })
 
     if (contentType === PurchaseableContentType.TRACK) {
       const {
