@@ -170,6 +170,7 @@ class NotificationType(str, Enum):
     REQUEST_MANAGER = "request_manager"
     APPROVE_MANAGER_REQUEST = "approve_manager_request"
     CLAIMABLE_REWARD = "claimable_reward"
+    COMMENT = "comment"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -446,6 +447,12 @@ class AnnouncementNotification(TypedDict):
     long_description: Optional[str]
 
 
+class CommentNotification(TypedDict):
+    type: str
+    entity_id: int
+    user_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -473,6 +480,7 @@ NotificationData = Union[
     TrendingNotification,
     UsdcPurchaseBuyerNotification,
     UsdcPurchaseSellerNotification,
+    CommentNotification,
 ]
 
 

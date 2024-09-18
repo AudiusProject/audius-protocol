@@ -30,7 +30,8 @@ import {
   USDCPurchaseSellerNotification,
   USDCPurchaseBuyerNotification,
   ApproveManagerRequestNotification,
-  RequestManagerNotification
+  RequestManagerNotification,
+  CommentNotification
 } from './Notifications'
 import { TrackAddedToPurchasedAlbumNotification } from './Notifications/TrackAddedToPurchasedAlbumNotification'
 
@@ -113,6 +114,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RequestManagerNotification notification={notification} />
       case NotificationType.ApproveManagerRequest:
         return <ApproveManagerRequestNotification notification={notification} />
+      case NotificationType.Comment:
+        return <CommentNotification notification={notification} />
       default:
         return null
     }
