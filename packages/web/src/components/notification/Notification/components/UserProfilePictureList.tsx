@@ -89,7 +89,9 @@ export const UserProfilePictureList = ({
               user={lastUser}
             />
             <span className={styles.profilePictureCount}>
-              {`+${formatCount(remainingUsersCount)}`}
+              {`${remainingUsersCount < 100 ? '+' : ''}${formatCount(
+                remainingUsersCount
+              )}`}
             </span>
           </div>
         </Tooltip>

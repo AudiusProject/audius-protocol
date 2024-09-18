@@ -20,7 +20,7 @@ const USER_LIST_LIMIT = 10
 const messages = {
   title: 'Send a Message Blast',
   description: 'Send direct messages in bulk.',
-  tooltip: 'This message will be sent to all users in the selected audience.'
+  tooltip: 'Replies will appear in your inbox as new threads.'
 }
 
 interface ChatBlastAudienceDisplayProps {
