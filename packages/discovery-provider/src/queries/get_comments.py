@@ -154,9 +154,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     track_comment.user_id if not track_comment.is_delete else None
                 ),
                 "message": (
-                    track_comment.text
-                    if not track_comment.is_delete
-                    else "[Comment removed]"
+                    track_comment.text if not track_comment.is_delete else "[Removed]"
                 ),
                 "is_pinned": track_comment.is_pinned,
                 "is_edited": track_comment.is_edited,

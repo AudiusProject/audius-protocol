@@ -49,13 +49,15 @@ type CommentActionBarProps = {
   onClickEdit: () => void
   onClickReply: () => void
   onClickDelete: () => void
+  hideReactCount?: boolean
 }
 export const CommentActionBar = ({
   comment,
   isDisabled,
   onClickEdit,
   onClickReply,
-  onClickDelete
+  onClickDelete,
+  hideReactCount
 }: CommentActionBarProps) => {
   // comment from props
   const { reactCount, id: commentId, isCurrentUserReacted } = comment
@@ -172,7 +174,9 @@ export const CommentActionBar = ({
           onClick={handleCommentReact}
           disabled={isDisabled}
         />
-        <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        {!hideReactCount ? (
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        ) : null}
       </Flex>
       <TextLink
         variant='subdued'

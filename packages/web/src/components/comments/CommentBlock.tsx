@@ -86,7 +86,7 @@ const CommentBlockInternal = (
       gap='l'
       css={{ opacity: isDeleting || isTombstone ? 0.5 : 1 }}
     >
-      <Box css={{ flexShrink: 0 }}>
+      <Box css={{ flexShrink: 0, width: 44 }}>
         <Avatar
           userId={commentUserId}
           css={{
@@ -94,6 +94,8 @@ const CommentBlockInternal = (
             height: 44,
             cursor: isTombstone ? 'default' : 'pointer'
           }}
+          // TODO: This is a hack - currently if you provide an undefined userId it will be
+          onClick={isTombstone ? () => {} : undefined}
           popover
         />
       </Box>
@@ -109,25 +111,23 @@ const CommentBlockInternal = (
             <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
-        <Flex gap='s' alignItems='center'>
-          {isTombstone ? (
-            '[Deleted]'
-          ) : (
+        {!isTombstone ? (
+          <Flex gap='s' alignItems='center'>
             <UserLink userId={commentUserId} disabled={isDeleting} popover />
-          )}
-          <Flex gap='xs' alignItems='flex-end' h='100%'>
-            <Timestamp time={createdAtDate} />
-            {trackTimestampS !== undefined ? (
-              <>
-                <Text color='subdued' size='xs'>
-                  •
-                </Text>
+            <Flex gap='xs' alignItems='flex-end' h='100%'>
+              <Timestamp time={createdAtDate} />
+              {trackTimestampS !== undefined ? (
+                <>
+                  <Text color='subdued' size='xs'>
+                    •
+                  </Text>
 
-                <TimestampLink trackTimestampS={trackTimestampS} />
-              </>
-            ) : null}
+                  <TimestampLink trackTimestampS={trackTimestampS} />
+                </>
+              ) : null}
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
         {showEditInput ? (
           <CommentForm
             onSubmit={() => {
@@ -153,6 +153,7 @@ const CommentBlockInternal = (
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
             isDisabled={isDeleting || isTombstone}
+            hideReactCount={isTombstone}
           />
         )}
 
