@@ -10,6 +10,7 @@ import { useUSDCPurchaseConfig } from './useUSDCPurchaseConfig'
 
 const messages = {
   generic: 'Your purchase was unsuccessful.',
+  noQuote: 'Unable to get quote',
   insufficientExternalTokenBalance: 'Insufficient token balance.',
   minimumPurchase: (minAmount: number) =>
     `Total purchase amount must be at least $${formatPrice(minAmount)}.`,
@@ -44,6 +45,8 @@ export const usePurchaseContentErrorMessage = (
       )
     case PurchaseErrorCode.InsufficientExternalTokenBalance:
       return messages.insufficientExternalTokenBalance
+    case PurchaseErrorCode.NoQuote:
+      return messages.noQuote
     case BuyCryptoErrorCode.BAD_FEE_PAYER:
     case BuyCryptoErrorCode.BAD_PROVIDER:
     case BuyCryptoErrorCode.BAD_TOKEN:
