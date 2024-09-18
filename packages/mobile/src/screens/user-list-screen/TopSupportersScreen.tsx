@@ -1,17 +1,23 @@
 import { useCallback } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   topSupportersUserListActions,
   topSupportersUserListSelectors
 } from '@audius/common/store'
+import { ChatBlastAudience } from '@audius/sdk'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconTrophy } from '@audius/harmony-native'
+import { Box, IconTrophy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
+
+import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastFollowersCTA'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
@@ -31,6 +37,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   titleName: {
     maxWidth: 120
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%'
   }
 }))
 
@@ -38,11 +49,15 @@ export const TopSupportersScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'TopSupporters'>()
   const { userId, source } = params
+  const { data: currentUserId } = useGetCurrentUserId({})
   const supportersId = useSelector(getSupportersId)
   const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
   )
   const dispatch = useDispatch()
+  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
 
   const handleSetSupporters = useCallback(() => {
     dispatch(setTopSupporters(userId))
@@ -62,11 +77,18 @@ export const TopSupportersScreen = () => {
 
   return (
     <UserListScreen title={title} titleIcon={IconTrophy}>
-      <UserList
-        userSelector={getUserList}
-        tag='TOP SUPPORTERS'
-        setUserList={handleSetSupporters}
-      />
+      <>
+        <UserList
+          userSelector={getUserList}
+          tag='TOP SUPPORTERS'
+          setUserList={handleSetSupporters}
+        />
+        {isOneToManyDMsEnabled && currentUserId === userId ? (
+          <Box style={styles.footerContainer}>
+            <ChatBlastWithAudienceCTA audience={ChatBlastAudience.TIPPERS} />
+          </Box>
+        ) : null}
+      </>
     </UserListScreen>
   )
 }
