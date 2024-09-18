@@ -635,20 +635,22 @@ export const ChatScreen = () => {
                     // https://github.com/facebook/react-native/issues/21196
                     // This is better than doing a rotation transform because when the react bug is fixed,
                     // our workaround won't re-introduce the bug!
-                    <View style={styles.emptyContainer}>
-                      <EmptyChatMessages />
-                    </View>
+                    !chat?.is_blast ? (
+                      <View style={styles.emptyContainer}>
+                        <EmptyChatMessages />
+                      </View>
+                    ) : null
                   }
                   ListHeaderComponent={
                     !canSendMessage ? <ChatUnavailable chatId={chatId} /> : null
                   }
                   ListFooterComponent={
-                    shouldShowEndReachedIndicator ? (
+                    chat?.is_blast ? (
+                      <ChatBlastAudienceDisplay chat={chat as ChatBlast} />
+                    ) : shouldShowEndReachedIndicator ? (
                       <ChatMessageSeparator
                         content={messages.beginningReached}
                       />
-                    ) : chat?.is_blast ? (
-                      <ChatBlastAudienceDisplay chat={chat as ChatBlast} />
                     ) : null
                   }
                   scrollEnabled={popupMessageId == null}
