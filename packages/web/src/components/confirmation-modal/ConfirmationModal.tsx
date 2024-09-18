@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import {
   Button,
   Modal,
@@ -16,13 +18,11 @@ const defaultMessages = {
 
 type ConfirmationModalProps = Omit<ModalProps, 'children'> & {
   messages: {
-    header: string
-    description: string
+    header: string | undefined
+    description: string | ReactNode | undefined
     confirm?: string
     cancel?: string
   }
-  title: string
-  description: string
   onCancel?: () => void
   onConfirm?: () => void
   cancelButtonText?: string
