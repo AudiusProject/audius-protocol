@@ -26,6 +26,7 @@ export enum PurchaseErrorCode {
   Canceled = 'Canceled',
   InsufficientBalance = 'InsufficientBalance',
   InsufficientExternalTokenBalance = 'InsufficientExternalTokenBalance',
+  NoQuote = 'NoQuote',
   Unknown = 'Unknown'
 }
 
