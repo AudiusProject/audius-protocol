@@ -118,28 +118,24 @@ func HeaderBar() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col h-screen bg-white shadow-md\"><div class=\"h-[10vh] w-full flex items-center justify-between rounded-lg p-3\"><a href=\"/console\" class=\"flex items-center\"><img src=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav class=\"uk-navbar-container\"><div class=\"uk-container\"><div uk-navbar><div class=\"uk-navbar-item\"><a href=\"/console\" class=\"flex items-center\"><img src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(assets.AudiusLogoBlackGlyph)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `htmlviews/layout/header_bar.templ`, Line: 19, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `htmlviews/layout/header_bar.templ`, Line: 21, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-12 w-12 object-contain\"><h1 class=\"p-3\">Console</h1></a><div hx-get=\"/console/headerinfo\" hx-trigger=\"load, every 2s\" hx-swap=\"innerHTML\"></div></div><div class=\"w-full flex-1 bg-gray-100 overflow-auto p-5\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-12 w-12 object-contain\"><h1 class=\"p-3\">Console</h1></a></div><div class=\"uk-navbar-item\"><div><a href=\"#\">Blocks</a></div></div><div class=\"uk-navbar-item\"><div><a href=\"#\">Transactions</a></div></div><div class=\"uk-navbar-item\"><form action=\"javascript:void(0)\"><input class=\"uk-input uk-width-large\" type=\"text\" placeholder=\"Input\" aria-label=\"Input\"> <button class=\"uk-button uk-button-default\">Button</button></form></div></div></div></nav>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = templ_7745c5c3_Var6.Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
