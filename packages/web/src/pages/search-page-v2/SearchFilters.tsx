@@ -114,11 +114,7 @@ const KeyFilter = () => {
   }))
 
   const renderLabel = useCallback(
-    (label: string) => {
-      const musicalKey = MUSICAL_KEYS.find((key) => key.match(label))
-      if (!musicalKey) return messages.key
-      return `${musicalKey} ${scale}`
-    },
+    (label: string) => (label ? `${label} ${scale}` : messages.key),
     [scale]
   )
 
