@@ -27,5 +27,5 @@ class SendFirstTipChallengeUpdater(ChallengeUpdater):
 
 
 send_first_tip_challenge_manager = ChallengeManager(
-    "send-first-tip", SendFirstTipChallengeUpdater()
+    "ft", SendFirstTipChallengeUpdater()
 )
