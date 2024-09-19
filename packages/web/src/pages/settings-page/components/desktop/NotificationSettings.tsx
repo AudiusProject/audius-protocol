@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { useIsManagedAccount } from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
@@ -78,6 +79,11 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
   const isManagedAccount = useIsManagedAccount()
   const browserPushEnabled =
     props.settings[BrowserNotificationSetting.BrowserPush]
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
+
   const notificationToggles = [
     {
       text: messages.milestonesAndAchievements,
@@ -120,15 +126,18 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
         browserPushEnabled &&
         props.settings[BrowserNotificationSetting.Messages],
       type: BrowserNotificationSetting.Messages
-    },
-    {
+    }
+  ]
+
+  if (isCommentsEnabled) {
+    notificationToggles.push({
       text: messages.comments,
       isOn:
         browserPushEnabled &&
         props.settings[BrowserNotificationSetting.Comments],
       type: BrowserNotificationSetting.Comments
-    }
-  ]
+    })
+  }
 
   const emailOptions = [
     { key: EmailFrequency.Live, text: 'Live' },
