@@ -28,6 +28,7 @@ const messages = {
   favorites: 'Favorites',
   remixes: 'Remixes of My Tracks',
   messages: 'Messages',
+  comments: 'Comments',
   emailFrequency: '‘What You Missed’ Email Frequency',
   enablePermissions:
     'Notifications for Audius are blocked. Please enable in your browser settings and reload the page.'
@@ -112,14 +113,22 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
         browserPushEnabled &&
         props.settings[BrowserNotificationSetting.Remixes],
       type: BrowserNotificationSetting.Remixes
+    },
+    {
+      text: messages.messages,
+      isOn:
+        browserPushEnabled &&
+        props.settings[BrowserNotificationSetting.Messages],
+      type: BrowserNotificationSetting.Messages
+    },
+    {
+      text: messages.comments,
+      isOn:
+        browserPushEnabled &&
+        props.settings[BrowserNotificationSetting.Comments],
+      type: BrowserNotificationSetting.Comments
     }
   ]
-  notificationToggles.push({
-    text: messages.messages,
-    isOn:
-      browserPushEnabled && props.settings[BrowserNotificationSetting.Messages],
-    type: BrowserNotificationSetting.Messages
-  })
 
   const emailOptions = [
     { key: EmailFrequency.Live, text: 'Live' },

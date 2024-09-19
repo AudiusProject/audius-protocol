@@ -22,7 +22,8 @@ const messages = {
   reposts: 'Reposts',
   favorites: 'Favorites',
   remixes: 'Remixes of My Tracks',
-  messages: 'Messages'
+  messages: 'Messages',
+  comments: 'Comments'
 }
 
 export const NotificationSettingsScreen = () => {
@@ -64,6 +65,10 @@ export const NotificationSettingsScreen = () => {
         <NotificationRow
           label={messages.messages}
           type={PushNotificationSetting.Messages}
+        />
+        <NotificationRow
+          label={messages.comments}
+          type={PushNotificationSetting.Comments}
         />
         <Divider />
         <EmailFrequencyControlRow />
