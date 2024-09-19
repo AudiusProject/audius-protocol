@@ -1,10 +1,5 @@
-import {
-  AudiusLibs,
-  AudiusSdk,
-  sdk,
-  Configuration,
-  SolanaRelay
-} from '@audius/sdk'
+import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
+import { AudiusLibs } from '@audius/sdk/dist/libs'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
