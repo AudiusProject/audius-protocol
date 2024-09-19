@@ -34,7 +34,7 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = userIds[0]
     this.entityId = this.notification.data.entity_id
-    this.entityType = this.notification.data.type
+    this.entityType = this.notification.data.type.toLowerCase() as EntityType
     this.commenterUserId = this.notification.data.user_id
   }
 
