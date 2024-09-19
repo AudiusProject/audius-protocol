@@ -468,6 +468,17 @@ const notificationMap = {
         />
       </span>
     )
+  },
+  ['comment'](notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return (
+      <span className={'notificationText'}>
+        {user}
+        <BodyText text={` commented on your `} />
+        {entity}
+      </span>
+    )
   }
 }
 

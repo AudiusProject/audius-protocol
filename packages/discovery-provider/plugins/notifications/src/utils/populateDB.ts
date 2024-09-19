@@ -19,7 +19,8 @@ import {
   UsdcPurchaseRow,
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
-  GrantRow
+  GrantRow,
+  CommentRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -766,6 +767,25 @@ export async function insertAbusiveSettings(
       }))
     )
     .into('Users')
+}
+
+type CreateComment = Pick<CommentRow, 'user_id' | 'entity_id' | 'entity_type'> &
+  Partial<CommentRow>
+export const createComments = async (db: Knex, comments: CreateComment[]) => {
+  await db
+    .insert(
+      comments.map((comment, index) => ({
+        comment_id: index,
+        is_delete: false,
+        created_at: new Date(Date.now()),
+        text: '',
+        txhash: `0x${comment.entity_id}`,
+        blockhash: `0x${comment.entity_id}`,
+        // blocknumber: 0,
+        ...comment
+      }))
+    )
+    .into('comments')
 }
 
 export type UserWithDevice = {
