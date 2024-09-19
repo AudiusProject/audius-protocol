@@ -51,6 +51,7 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
 
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
 import { ChatBlastHeader } from './ChatBlastHeader'
 import { ChatBlastSubHeader } from './ChatBlastSubHeader'
 import { ChatMessageListItem } from './ChatMessageListItem'
@@ -634,15 +635,19 @@ export const ChatScreen = () => {
                     // https://github.com/facebook/react-native/issues/21196
                     // This is better than doing a rotation transform because when the react bug is fixed,
                     // our workaround won't re-introduce the bug!
-                    <View style={styles.emptyContainer}>
-                      <EmptyChatMessages />
-                    </View>
+                    !chat?.is_blast ? (
+                      <View style={styles.emptyContainer}>
+                        <EmptyChatMessages />
+                      </View>
+                    ) : null
                   }
                   ListHeaderComponent={
-                    canSendMessage ? null : <ChatUnavailable chatId={chatId} />
+                    !canSendMessage ? <ChatUnavailable chatId={chatId} /> : null
                   }
                   ListFooterComponent={
-                    shouldShowEndReachedIndicator ? (
+                    chat?.is_blast ? (
+                      <ChatBlastAudienceDisplay chat={chat as ChatBlast} />
+                    ) : shouldShowEndReachedIndicator ? (
                       <ChatMessageSeparator
                         content={messages.beginningReached}
                       />
