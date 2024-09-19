@@ -86,7 +86,7 @@ export const ChatMessageTrack = ({
   })
 
   useEffect(() => {
-    if (track && uid && !track.is_delete && !track.is_unlisted) {
+    if (track && uid && !track.is_delete) {
       dispatch(make(Name.MESSAGE_UNFURL_TRACK, {}))
       onSuccess?.()
     } else {
