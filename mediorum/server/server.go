@@ -122,6 +122,7 @@ type MediorumServer struct {
 }
 
 type PeerHealth struct {
+	Version        string               `json:"version"`
 	LastReachable  time.Time            `json:"lastReachable"`
 	LastHealthy    time.Time            `json:"lastHealthy"`
 	ReachablePeers map[string]time.Time `json:"reachablePeers"`

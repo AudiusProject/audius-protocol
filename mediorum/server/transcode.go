@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
@@ -69,6 +70,35 @@ func (ss *MediorumServer) startTranscoder() {
 	// start workers
 	for i := 0; i < numWorkers; i++ {
 		go ss.startTranscodeWorker(i)
+	}
+
+	// add a callback to handle older servers that don't do inline-transcode:
+	// if upload server is on older version... pick up job
+	// remove this after servers are all > 0.6.190
+	if ss.Config.Env == "prod" && ss.Config.StoreAll {
+		ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
+			if op.Table != "uploads" || op.Action != crudr.ActionCreate {
+				return
+			}
+
+			uploads, ok := records.(*[]*Upload)
+			if !ok {
+				return
+			}
+			for _, upload := range *uploads {
+				uploadServerHealth := ss.getPeerHealth(upload.CreatedBy)
+				if uploadServerHealth == nil {
+					continue
+				}
+
+				ver := uploadServerHealth.Version
+				if ver != "" && ver < "0.6.190" && upload.Status == JobStatusNew {
+					ss.logger.Info("handling non-inline transcode", "id", upload.ID)
+					ss.findAndPullBlob(context.Background(), upload.OrigFileCID)
+					ss.transcodeWork <- upload
+				}
+			}
+		})
 	}
 
 	// hash-migration: the findMissedJobs was using the og `mirrors` list
