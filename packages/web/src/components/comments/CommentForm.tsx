@@ -46,9 +46,10 @@ export const CommentForm = ({
   const isFirstComment = comments.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
-  const [editComment] = useEditComment()
+  const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
   const currentlyPlayingTrackId = useSelector(getTrackId)
   const [postComment] = usePostComment()
+  const [editComment] = useEditComment()
 
   const handlePostComment = (message: string) => {
     const trackPosition = audioPlayer
@@ -87,6 +88,9 @@ export const CommentForm = ({
     }
 
     onSubmit?.({ commentMessage })
+    // Each instance of form state is tracked with a message id
+    // Incrementing the message id "clears" the input value
+    setMessageId((prev) => prev + 1)
   }
 
   return (
@@ -111,7 +115,7 @@ export const CommentForm = ({
           presetMessage={initialValue}
           readOnly={isMobile}
           onClick={handleClickInput}
-          messageId={0}
+          messageId={messageId}
           maxLength={400}
           onSubmit={(value: string) => {
             handleSubmit({ commentMessage: value })
