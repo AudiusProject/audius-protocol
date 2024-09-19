@@ -141,11 +141,13 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.P2P.AddrBookStrict = false
 	cometConfig.P2P.MaxNumInboundPeers = 100
 	cometConfig.P2P.MaxNumOutboundPeers = 100
-	if envConfig.PersistentPeers != "" {
-		cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers
-	}
+	// if envConfig.PersistentPeers != "" {
+	// 	cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers
+	// }
 	if envConfig.Seeds != "" {
 		cometConfig.P2P.Seeds = envConfig.Seeds
+	} else {
+		cometConfig.P2P.Seeds = envConfig.PersistentPeers
 	}
 
 	if envConfig.ExternalAddress != "" {

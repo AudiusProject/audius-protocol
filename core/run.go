@@ -11,6 +11,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/contracts"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
+	peerdiscovery "github.com/AudiusProject/audius-protocol/core/peer_discovery"
 	"github.com/AudiusProject/audius-protocol/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/core/server"
 	"github.com/cometbft/cometbft/rpc/client/local"
@@ -44,10 +45,6 @@ func run(logger *common.Logger) error {
 	}
 	defer pool.Close()
 
-	// if err := insertInitialAppState(config.GenesisFile.AppState, pool); err != nil {
-	// 	return fmt.Errorf("couldn't set initial app state: %v", err)
-	// }
-
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
 		return fmt.Errorf("eth client dial err: %v", err)
@@ -73,6 +70,11 @@ func run(logger *common.Logger) error {
 	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
 	if err != nil {
 		return fmt.Errorf("registry bridge init error: %v", err)
+	}
+
+	peerDiscovery, err := peerdiscovery.NewPeerDiscovery(config, logger, rpc, node.Switch(), c)
+	if err != nil {
+		return fmt.Errorf("peer discovery init error: %v", err)
 	}
 
 	e := echo.New()
@@ -132,6 +134,12 @@ func run(logger *common.Logger) error {
 	eg.Go(func() error {
 		logger.Info("core registry bridge starting")
 		return registryBridge.Start()
+	})
+
+	// peer discovery
+	eg.Go(func() error {
+		logger.Info("peer discovery starting")
+		return peerDiscovery.Start()
 	})
 
 	return eg.Wait()

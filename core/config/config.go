@@ -55,6 +55,7 @@ type Config struct {
 	PersistentPeers string
 	Seeds           string
 	ExternalAddress string
+	PeerCount       int
 
 	/* Audius Config */
 	Environment        string
@@ -139,6 +140,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		}
 
 		cfg.SlaRollupInterval = 3600 * 24
+		cfg.PeerCount = 12
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
@@ -148,6 +150,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = StageEthRpc
 		}
 		cfg.SlaRollupInterval = 3600 * 24
+		cfg.PeerCount = 5
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
@@ -159,7 +162,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
 		cfg.SlaRollupInterval = 12
-
+		cfg.PeerCount = 2
 	}
 
 	// Disable ssl for local postgres db connection
