@@ -4,23 +4,31 @@ import (
 	"context"
 
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
 )
 
 type ChatPermissionsRow struct {
-	UserID  int32                 `db:"user_id" json:"user_id"`
-	Permits schema.ChatPermission `json:"permits"`
+	UserID                   int    `db:"user_id" json:"user_id"`
+	Permits                  string `db:"permits" json:"permits"`
+	CurrentUserHasPermission bool   `db:"current_user_has_permission" json:"current_user_has_permission"`
 }
 
 const bulkGetChatPermissions = `
-select user_id, permits from chat_permissions where user_id in (:Users)
+select
+	user_id,
+	string_agg(permits, ',') as permits,
+	chat_allowed(:CurrentUserID, user_id) as current_user_has_permission
+from chat_permissions
+where user_id in (:Users)
+  and allowed = true
+group by user_id;
 `
 
-func BulkGetChatPermissions(q db.Queryable, ctx context.Context, userIds []int32) ([]ChatPermissionsRow, error) {
+func BulkGetChatPermissions(q db.Queryable, ctx context.Context, currentUserId int32, userIds []int32) ([]ChatPermissionsRow, error) {
 	var permissions []ChatPermissionsRow
 	argMap := map[string]interface{}{
-		"Users": userIds,
+		"CurrentUserID": currentUserId,
+		"Users":         userIds,
 	}
 	query, args, err := sqlx.Named(bulkGetChatPermissions, argMap)
 	if err != nil {

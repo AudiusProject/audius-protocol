@@ -231,9 +231,9 @@ type ChatBlast struct {
 }
 
 type ValidatedChatPermissions struct {
-	CurrentUserHasPermission bool           `json:"current_user_has_permission"`
-	Permits                  ChatPermission `json:"permits"`
-	UserID                   string         `json:"user_id"`
+	CurrentUserHasPermission bool   `json:"current_user_has_permission"`
+	Permits                  string `json:"permits"`
+	UserID                   string `json:"user_id"`
 }
 
 type CommsResponse struct {

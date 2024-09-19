@@ -8,8 +8,11 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM chat_blocked_users
-    WHERE blocker_user_id = to_user_id
-    AND blockee_user_id = from_user_id
+    WHERE
+      -- don't allow blockee to message blocker
+      (blocker_user_id = to_user_id AND blockee_user_id = from_user_id)
+      -- also don't allower blocker to message blockee (prohibit one way send)
+      OR (blocker_user_id = from_user_id AND blockee_user_id = to_user_id)
   ) THEN
     RETURN FALSE;
   END IF;

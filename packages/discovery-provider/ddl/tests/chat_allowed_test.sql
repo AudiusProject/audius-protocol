@@ -29,4 +29,4 @@ ASSERT (SELECT chat_allowed(2,10) = FALSE);
 
 
 end; $$ LANGUAGE plpgsql;
-rollback;
+commit;

@@ -189,7 +189,7 @@ export type ChatBlast = ChatBlastBase & {
 
 export type ValidatedChatPermissions = {
   user_id: string
-  permits: ChatPermission
+  permits: string // comma joined list of pre-requisits to receive message
   current_user_has_permission: boolean
 }
 
