@@ -88,7 +88,7 @@ const CommentBlockInternal = (
             height: 44,
             cursor: isTombstone ? 'default' : 'pointer'
           }}
-          // TODO: This is a hack - currently if you provide an undefined userId it will be
+          // TODO: This is a hack - currently if you provide an undefined userId it will link to signin/feed
           onClick={isTombstone ? () => {} : undefined}
           popover
         />
