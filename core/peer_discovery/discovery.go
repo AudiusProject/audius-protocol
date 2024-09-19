@@ -2,7 +2,6 @@ package peerdiscovery
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -132,13 +131,16 @@ func (pd *PeerDiscovery) connectToPeers() error {
 	for _, peer := range pd.expectedPeers {
 		g.Go(func() error {
 			peerRpc, err := http.New(fmt.Sprintf("%s/core/comet", peer))
+			logger := pd.logger.Child(peer)
 			if err != nil {
-				return fmt.Errorf("could not create new rpc client: %v", err)
+				logger.Errorf("could not create new rpc client: %v", err)
+				return nil
 			}
 
 			status, err := peerRpc.Status(ctx)
 			if err != nil {
-				return fmt.Errorf("could not get peer status: %v", err)
+				logger.Errorf("could not get peer status: %v", err)
+				return nil
 			}
 
 			nodeID := status.NodeInfo.ID()
@@ -151,11 +153,12 @@ func (pd *PeerDiscovery) connectToPeers() error {
 			ipCheckUrl = strings.TrimPrefix(ipCheckUrl, "https://")
 			ips, err := net.LookupIP(ipCheckUrl)
 			if err != nil {
-				return fmt.Errorf("could not get node ip: %v", err)
+				logger.Errorf("could not get node ip: %v", err)
+				return nil
 			}
 
 			if len(ips) == 0 {
-				return errors.New("no ips found for host")
+				logger.Error("no ips found for host")
 			}
 
 			p2pUrl := status.NodeInfo.ListenAddr
@@ -163,7 +166,8 @@ func (pd *PeerDiscovery) connectToPeers() error {
 
 			_, port, err := net.SplitHostPort(p2pUrl)
 			if err != nil {
-				return fmt.Errorf("could not extract port: %v", err)
+				logger.Errorf("could not extract port: %v", err)
+				return nil
 			}
 
 			ip := ips[0]
@@ -171,11 +175,13 @@ func (pd *PeerDiscovery) connectToPeers() error {
 			peerConnStr := fmt.Sprintf("%s@%s:%s", nodeID, ip, port)
 			addr, err := p2p.NewNetAddressString(peerConnStr)
 			if err != nil {
-				return fmt.Errorf("could not form comet address: %v", err)
+				logger.Errorf("could not form comet address: %v", err)
+				return nil
 			}
 
 			if err := pd.p2pSwitch.DialPeerWithAddress(addr); err != nil {
-				return fmt.Errorf("could not dial peer: %v", err)
+				logger.Errorf("could not dial peer: %v", err)
+				return nil
 			}
 
 			pd.logger.Infof("successfully peered with %s", peer)
