@@ -62,18 +62,21 @@ type CommentActionBarProps = {
   onClickEdit: () => void
   onClickReply: () => void
   onClickDelete: () => void
+  hideReactCount?: boolean
 }
 export const CommentActionBar = ({
   comment,
   isDisabled,
   onClickEdit,
   onClickReply,
-  onClickDelete
+  onClickDelete,
+  hideReactCount
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const isParentComment = 'isPinned' in comment
+  const isTombstone = isParentComment ? comment.isTombstone : false
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
 
   // API actions
@@ -286,13 +289,15 @@ export const CommentActionBar = ({
           onClick={handleReact}
           disabled={isDisabled}
         />
-        <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        {!hideReactCount ? (
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        ) : null}
       </Flex>
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
         size='m'
-        disabled={isDisabled}
+        disabled={isDisabled || isTombstone}
       >
         {messages.reply}
       </TextLink>
