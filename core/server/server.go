@@ -43,4 +43,6 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/discovery/verbose", s.getRegisteredNodes)
 	e.GET("/nodes/content", s.getRegisteredNodes)
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
+
+	e.GET("/comet*", s.proxyCometRequest)
 }

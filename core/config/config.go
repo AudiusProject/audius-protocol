@@ -55,7 +55,6 @@ type Config struct {
 	PersistentPeers string
 	Seeds           string
 	ExternalAddress string
-	AddrBookStrict  bool
 
 	/* Audius Config */
 	Environment        string
@@ -131,7 +130,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	}
 	cfg.WalletAddress = ethAddress
 
-	cfg.AddrBookStrict = true
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656")
@@ -153,7 +151,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = os.Getenv("persistentPeers")
 		cfg.ExternalAddress = os.Getenv("externalAddress")
-		cfg.AddrBookStrict = false
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = DevEthRpc
 		}
