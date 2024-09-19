@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 

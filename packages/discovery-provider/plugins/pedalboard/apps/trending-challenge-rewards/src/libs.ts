@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from "@audius/sdk";
 
 // TODO: promote this into a packages instead of tcr
 export const initAudiusLibs = async (): Promise<AudiusLibs> => {
@@ -14,7 +14,7 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
       rewardsManagerProgramPDA: process.env.rewardsManagerProgramPDA,
       rewardsManagerTokenPDA: process.env.rewardsManagerTokenPDA,
       usdcMintAddress: process.env.usdcMintAddress,
-      useRelay: process.env.useRelay
+      useRelay: process.env.useRelay,
     },
     ethWeb3Config: {
       tokenAddress: process.env.tokenAddress,
@@ -23,12 +23,12 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
       ownerWallet: process.env.ownerWallet,
       claimDistributionContractAddress:
         process.env.claimDistributionContractAddress,
-      wormholeContractAddress: process.env.wormholeContractAddress
+      wormholeContractAddress: process.env.wormholeContractAddress,
     },
 
     identityServiceConfig: {
       url: process.env.identityUrl,
-      useHedgehogLocalStorage: false
+      useHedgehogLocalStorage: false,
     },
     web3Config: {
       entityManagerAddress: process.env.audius_contracts_entity_manager_address,
@@ -36,9 +36,9 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
       internalWeb3Config: {
         web3ProviderEndpoints: [process.env.audius_web3_localhost]
       },
-      useExternalWeb3: false
+      useExternalWeb3: false,
     }
-  }
+  };
 
   const libsConfig = {
     solanaWeb3Config: config.solanaWeb3Config,
@@ -49,10 +49,10 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
     logger: console,
     isDebug: false,
     localStorage: false,
-    isStorageV2Only: false
-  }
+    isStorageV2Only: false,
+  };
   // @ts-ignore
-  const libs = new AudiusLibs(libsConfig)
-  await libs.init()
-  return libs
-}
+  const libs = new AudiusLibs(libsConfig);
+  await libs.init();
+  return libs;
+};

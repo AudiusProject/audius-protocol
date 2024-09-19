@@ -1,7 +1,7 @@
 import { App } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { Ok, Err, Result } from 'ts-results'
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk'
 import { SharedData } from './config'
 import {
   getChallengesDisbursementsUserbanksFriendlyEnsureSlots,
@@ -27,7 +27,7 @@ export const disburseTrendingRewards = async (
 export const onDisburse = async (
   app: App<SharedData>,
   dryRun: boolean,
-  targetSpecifier?: string
+  targetSpecifier?: string,
 ): Promise<Result<undefined, string>> => {
   const db = discoveryDb
   const libs = app.viewAppData().libs
@@ -37,7 +37,7 @@ export const onDisburse = async (
 
   console.log(`doing ${dryRun ? 'a dry run' : 'the real deal'}`)
 
-  let completedBlock, specifier
+  let completedBlock, specifier;
   if (!targetSpecifier) {
     const completedBlockRes = await findStartingBlock(db)
     if (completedBlockRes.err) return completedBlockRes
@@ -151,11 +151,11 @@ const canSuccessfullyAttest = async (
     oracleEthAddress
   )
   try {
-    const res = await fetch(url)
-    return res && res.ok
+      const res = await fetch(url)
+      return res && res.ok;
   } catch (e) {
-    console.warn("Can't attest", e, url)
-    return false
+      console.warn("Can't attest", e, url)
+      return false
   }
 }
 
@@ -266,8 +266,9 @@ const getAllChallenges = async (
     // did we succeed?
     if (possibleNodeSet.length !== 3) {
       console.log(
-        `Could not find a valid node set for challenge: ${challenge.specifier}, skipping.`,
-        possibleNodeSet
+        `Could not find a valid node set for challenge: ${
+          challenge.specifier
+        }, skipping.`, possibleNodeSet
       )
       impossibleChallenges.push(challenge)
       // reset it for next time
