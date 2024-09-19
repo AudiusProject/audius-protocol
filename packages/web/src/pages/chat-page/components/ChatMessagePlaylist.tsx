@@ -123,7 +123,7 @@ export const ChatMessagePlaylist = ({
   const pauseTrack = usePauseTrack()
 
   useEffect(() => {
-    if (collection && uid) {
+    if (collection && uid && !collection.is_delete) {
       dispatch(make(Name.MESSAGE_UNFURL_PLAYLIST, {}))
       onSuccess?.()
     } else {
