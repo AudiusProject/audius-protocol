@@ -125,8 +125,7 @@ const searchApi = createApi({
             sortMethod: filters.sortMethod,
             isVerified: filters.isVerified,
             hasDownloads: filters.hasDownloads,
-            isPurchaseable: filters.isPremium,
-            sortMethod: filters.sortMethod
+            isPurchaseable: filters.isPremium
           }
           // Fire analytics only for the first page of results
           if (offset === 0) {
