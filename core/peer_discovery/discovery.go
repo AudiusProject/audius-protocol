@@ -147,7 +147,9 @@ func (pd *PeerDiscovery) connectToPeers() error {
 				return nil
 			}
 
-			ips, err := net.LookupIP(peer)
+			ipCheckUrl := strings.TrimPrefix(peer, "http://")
+			ipCheckUrl = strings.TrimPrefix(ipCheckUrl, "https://")
+			ips, err := net.LookupIP(ipCheckUrl)
 			if err != nil {
 				return fmt.Errorf("could not get node ip: %v", err)
 			}
