@@ -50,9 +50,9 @@ export const CommentBlockInternal = (
     userId: commentUserIdStr,
     isEdited,
     isArtistReacted,
-    isCurrentUserReacted,
-    isTombstone
+    isCurrentUserReacted
   } = comment
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   const [reactToComment] = useReactToComment()
