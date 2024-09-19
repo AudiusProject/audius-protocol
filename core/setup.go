@@ -136,6 +136,8 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.Mempool.Recheck = true
 	cometConfig.Mempool.Size = 100000
 
+	cometConfig.P2P.AddrBookStrict = false
+
 	// peering
 	cometConfig.P2P.PexReactor = true
 	cometConfig.P2P.AddrBookStrict = envConfig.AddrBookStrict
