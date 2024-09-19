@@ -58,7 +58,7 @@ type ConfirmationModalState = {
 
 type CommentActionBarProps = {
   comment: Comment | ReplyComment
-  isDisabled: boolean
+  isDisabled?: boolean
   onClickEdit: () => void
   onClickReply: () => void
   onClickDelete: () => void

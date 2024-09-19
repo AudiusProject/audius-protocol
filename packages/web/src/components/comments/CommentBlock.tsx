@@ -8,7 +8,6 @@ import {
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { Comment, ReplyComment } from '@audius/sdk'
@@ -57,9 +56,8 @@ const CommentBlockInternal = (
 
   const { artistId } = useCurrentCommentSection()
 
-  const [deleteComment, { status: deleteStatus }] = useDeleteComment()
+  const [deleteComment] = useDeleteComment()
   const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
-  const isDeleting = deleteStatus === Status.LOADING
 
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
@@ -73,7 +71,7 @@ const CommentBlockInternal = (
   const isCommentByArtist = commentUserId === artistId
 
   return (
-    <Flex w='100%' gap='l' css={{ opacity: isDeleting ? 0.5 : 1 }}>
+    <Flex w='100%' gap='l'>
       <Box css={{ flexShrink: 0 }}>
         <Avatar
           userId={commentUserId}
@@ -94,7 +92,7 @@ const CommentBlockInternal = (
           </Flex>
         ) : null}
         <Flex gap='s' alignItems='center'>
-          <UserLink userId={commentUserId} disabled={isDeleting} popover />
+          <UserLink userId={commentUserId} popover />
           <Flex gap='xs' alignItems='flex-end' h='100%'>
             <Timestamp time={createdAtDate} />
             {trackTimestampS !== undefined ? (
@@ -132,7 +130,6 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isDeleting}
           />
         )}
 
