@@ -36,8 +36,31 @@ export const challengeRewardsConfig: Record<
     remainingLabel: '%0/%1 Invites Remain',
     panelButtonText: 'Invite Your Friends'
   },
+  [ChallengeName.Referrals]: {
+    id: ChallengeName.Referrals,
+    title: 'Invite Your Friends!',
+    description: (challenge) =>
+      `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
+    fullDescription: (challenge) =>
+      `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
+    progressLabel: '%0/%1 Invites Accepted',
+    remainingLabel: '%0/%1 Invites Remain',
+    panelButtonText: 'Invite Your Friends'
+  },
   'ref-v': {
     id: 'ref-v',
+    title: 'Invite your Fans',
+    description: (challenge) =>
+      `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
+    fullDescription: (challenge) =>
+      `Invite your fans! You’ll earn ${challenge?.amount} $AUDIO for each fan who joins with your link (and they’ll get an $AUDIO too)`,
+    progressLabel: '%0/%1 Invites Accepted',
+    remainingLabel: '%0/%1 Invites Remain',
+    panelButtonText: 'Invite your Fans',
+    isVerifiedChallenge: true
+  },
+  [ChallengeName.ReferralsVerified]: {
+    id: ChallengeName.ReferralsVerified,
     title: 'Invite your Fans',
     description: (challenge) =>
       `Earn up to ${formatNumberCommas(challenge?.totalAmount ?? '')} $AUDIO`,
@@ -58,8 +81,28 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Invites',
     panelButtonText: 'More Info'
   },
+  [ChallengeName.Referred]: {
+    id: ChallengeName.Referred,
+    title: 'You Accepted An Invite',
+    description: (challenge) =>
+      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
+    fullDescription: (challenge) =>
+      `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
+    progressLabel: '%0/%1 Invites',
+    panelButtonText: 'More Info'
+  },
   'connect-verified': {
     id: 'connect-verified',
+    title: 'Link Verified Accounts',
+    description: (challenge) =>
+      `Link your verified social media accounts to earn ${challenge?.amount} $AUDIO.`,
+    fullDescription: () =>
+      'Get verified on Audius by linking your verified Twitter or Instagram account!',
+    progressLabel: 'Not Linked',
+    panelButtonText: 'Link Verified Account'
+  },
+  [ChallengeName.ConnectVerified]: {
+    id: ChallengeName.ConnectVerified,
     title: 'Link Verified Accounts',
     description: (challenge) =>
       `Link your verified social media accounts to earn ${challenge?.amount} $AUDIO.`,
@@ -78,8 +121,27 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Days',
     panelButtonText: 'Trending on Audius'
   },
+  [ChallengeName.ListenStreak]: {
+    id: 'listen-streak',
+    title: 'Listening Streak: 7 Days',
+    description: (challenge) =>
+      `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO.`,
+    fullDescription: () =>
+      'Sign in and listen to at least one track every day for 7 days',
+    progressLabel: '%0/%1 Days',
+    panelButtonText: 'Trending on Audius'
+  },
   'mobile-install': {
     id: 'mobile-install',
+    title: 'Get the Audius Mobile App',
+    description: (challenge) => `Earn ${challenge?.amount} $AUDIO.`,
+    fullDescription: () =>
+      'Install the Audius app for iPhone and Android and Sign in to your account!',
+    progressLabel: 'Not Installed',
+    panelButtonText: 'Get the App'
+  },
+  [ChallengeName.MobileInstall]: {
+    id: ChallengeName.MobileInstall,
     title: 'Get the Audius Mobile App',
     description: (challenge) => `Earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () =>
@@ -97,8 +159,27 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Complete',
     panelButtonText: 'More Info'
   },
+  [ChallengeName.ProfileCompletion]: {
+    id: ChallengeName.ProfileCompletion,
+    title: 'Complete Your Profile',
+    description: (challenge) =>
+      `Complete your Audius profile to earn ${challenge?.amount} $AUDIO.`,
+    fullDescription: () =>
+      'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
+    progressLabel: '%0/%1 Complete',
+    panelButtonText: 'More Info'
+  },
   'track-upload': {
     id: 'track-upload',
+    title: 'Upload 3 Tracks',
+    description: (challenge) =>
+      `Earn ${challenge?.amount} $AUDIO for uploading 3 tracks.`,
+    fullDescription: () => 'Upload 3 tracks to your profile',
+    progressLabel: '%0/%1 Uploaded',
+    panelButtonText: 'Upload Tracks'
+  },
+  [ChallengeName.TrackUpload]: {
+    id: ChallengeName.TrackUpload,
     title: 'Upload 3 Tracks',
     description: (challenge) =>
       `Earn ${challenge?.amount} $AUDIO for uploading 3 tracks.`,
@@ -116,8 +197,26 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Send a Tip'
   },
+  [ChallengeName.FirstTip]: {
+    id: ChallengeName.FirstTip,
+    title: 'Send Your First Tip',
+    description: (_) =>
+      'Show some love to your favorite artist and send them a tip.',
+    fullDescription: () =>
+      'Show some love to your favorite artist and send them a tip.',
+    progressLabel: 'Not Earned',
+    panelButtonText: 'Send a Tip'
+  },
   'first-playlist': {
     id: 'first-playlist',
+    title: 'Create a Playlist',
+    description: (_) => 'Create a playlist and add a track to it.',
+    fullDescription: () => 'Create a playlist and add a track to it.',
+    progressLabel: 'Not Earned',
+    panelButtonText: 'Discover Some Tracks'
+  },
+  [ChallengeName.FirstPlaylist]: {
+    id: ChallengeName.FirstPlaylist,
     title: 'Create a Playlist',
     description: (_) => 'Create a playlist and add a track to it.',
     fullDescription: () => 'Create a playlist and add a track to it.',

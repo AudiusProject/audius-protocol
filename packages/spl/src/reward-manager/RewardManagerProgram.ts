@@ -77,25 +77,26 @@ export class RewardManagerProgram {
       publicKey('manager'),
       u8('minVotes')
     ]),
-    attestationsAccountData: struct<AttestationsAccountData>([
-      u8('version'),
-      publicKey('rewardManagerState'),
-      u8('count'),
-      seq(
-        struct<VerifiedMessage>([
-          ethAddress('senderEthAddress'),
-          attestationLayout('attestation'),
-          // Though the actual attestation message is only 83 bytes, we allocate
-          // 128 bytes for each element of this array on the program side.
-          // Thus we add 45 bytes of padding here to be consistent.
-          // See: https://github.com/AudiusProject/audius-protocol/blob/dde78ad7e26d9f6fb358fef5d240c5c7e2d25c66/solana-programs/reward-manager/program/src/state/verified_messages.rs#L99
-          blob(45),
-          ethAddress('operator')
-        ]),
-        4,
-        'messages'
-      )
-    ])
+    attestationsAccountData: (maxAttestations: number) =>
+      struct<AttestationsAccountData>([
+        u8('version'),
+        publicKey('rewardManagerState'),
+        u8('count'),
+        seq(
+          struct<VerifiedMessage>([
+            ethAddress('senderEthAddress'),
+            attestationLayout('attestation'),
+            // Though the actual attestation message is only 83 bytes, we allocate
+            // 128 bytes for each element of this array on the program side.
+            // Thus we add 45 bytes of padding here to be consistent.
+            // See: https://github.com/AudiusProject/audius-protocol/blob/dde78ad7e26d9f6fb358fef5d240c5c7e2d25c66/solana-programs/reward-manager/program/src/state/verified_messages.rs#L99
+            blob(45),
+            ethAddress('operator')
+          ]),
+          maxAttestations,
+          'messages'
+        )
+      ])
   }
 
   public static createSenderInstruction({
@@ -506,8 +507,13 @@ export class RewardManagerProgram {
     return attestationLayout().decode(data)
   }
 
-  public static decodeAttestationsAccountData(data: Buffer | Uint8Array) {
-    const decoded = this.layouts.attestationsAccountData.decode(data)
+  public static decodeAttestationsAccountData(
+    maxAttestations: number,
+    data: Buffer | Uint8Array
+  ) {
+    const decoded = this.layouts
+      .attestationsAccountData(maxAttestations)
+      .decode(data)
     decoded.messages = decoded.messages.slice(0, decoded.count)
     for (let i = 0; i < decoded.messages.length; i++) {
       if (

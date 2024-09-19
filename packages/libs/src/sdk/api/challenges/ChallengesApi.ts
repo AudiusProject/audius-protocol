@@ -1,5 +1,5 @@
 import { wAUDIO } from '@audius/fixed-decimal'
-import { PublicKey, type TransactionInstruction } from '@solana/web3.js'
+import { type TransactionInstruction } from '@solana/web3.js'
 
 import type {
   ClaimableTokensClient,
@@ -10,6 +10,7 @@ import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { AntiAbuseOracleAttestationError } from '../../utils/errors'
+import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import {
   ChallengesApi as GeneratedChallengesApi,
@@ -68,14 +69,18 @@ export class ChallengesApi extends GeneratedChallengesApi {
       case ChallengeId.MOBILE_INSTALL:
       case ChallengeId.SEND_FIRST_TIP:
       case ChallengeId.TRACK_UPLOADS:
-        return `${args.userId}`
+        return `${encodeHashId(args.userId)}`
       case ChallengeId.AUDIO_MATCHING_BUYER:
-        return `${args.sellerUserId}=>${args.trackId}`
+        return `${encodeHashId(args.sellerUserId)}:${encodeHashId(
+          args.trackId
+        )}`
       case ChallengeId.AUDIO_MATCHING_SELLER:
-        return `${args.buyerUserId}=>${args.trackId}`
+        return `${encodeHashId(args.buyerUserId)}:${encodeHashId(args.trackId)}`
       case ChallengeId.REFERRALS:
       case ChallengeId.VERIFIED_REFERRALS:
-        return `${args.userId}=>${args.referredUserId}`
+        return `${encodeHashId(args.userId)}:${encodeHashId(
+          args.referredUserId
+        )}`
       default:
         throw new Error(`Unknown challenge ID: ${args.challengeId}`)
     }
@@ -160,6 +165,29 @@ export class ChallengesApi extends GeneratedChallengesApi {
       instructions = instructions.concat(ix)
     }
 
+    const txSoFar = await this.solanaClient.buildTransaction({
+      instructions,
+      addressLookupTables: [this.rewardManager.lookupTable],
+      priorityFee: null
+    })
+    const maxTransactionSize = 1232
+    // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
+    const estimatedEvaluateInstructionSize = 145
+    const threshold = maxTransactionSize - estimatedEvaluateInstructionSize
+    if (txSoFar.serialize().byteLength >= threshold) {
+      logger.debug(
+        `Transaction size too large (size: ${
+          txSoFar.serialize().byteLength
+        }), submitting attestations separately...`
+      )
+      const submissionSignature = await this.rewardManager.sendTransaction(
+        txSoFar
+      )
+      logger.debug('Confirming attestation submissions...')
+      await this.solanaClient.confirmAllTransactions([submissionSignature])
+      instructions = []
+    }
+
     logger.debug('Creating evaluate instruction...')
     const { userBank: destinationUserBank } = await userBankPromise
     const evaluate =
@@ -175,12 +203,12 @@ export class ChallengesApi extends GeneratedChallengesApi {
     logger.debug('Disbursing...')
     const tx = await this.solanaClient.buildTransaction({
       instructions,
-      addressLookupTables: [
-        new PublicKey('5KoSjDqnKriuNpGANiXE8M1EPk4bSD51TgZhjCcLuR1f')
-      ],
+      addressLookupTables: [this.rewardManager.lookupTable],
       priorityFee: null
     })
-    const signature = await this.rewardManager.sendTransaction(tx)
+    const signature = await this.rewardManager.sendTransaction(tx, {
+      preflightCommitment: 'confirmed'
+    })
     return signature
   }
 
