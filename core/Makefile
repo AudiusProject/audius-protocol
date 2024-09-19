@@ -29,7 +29,7 @@ $(AMD64_BIN): $(GO_SRCS)
 .PHONY: deps
 deps:
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
-	@brew install protobuf
+	@brew install protobuf crane
 	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -72,3 +72,8 @@ sandbox:
 .PHONY: livereload
 livereload:
 	modd
+
+.PHONY: push-stage
+push-stage:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"

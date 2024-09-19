@@ -146,8 +146,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	}
 	if envConfig.Seeds != "" {
 		cometConfig.P2P.Seeds = envConfig.Seeds
-	} else {
-		cometConfig.P2P.Seeds = envConfig.PersistentPeers
 	}
 
 	if envConfig.ExternalAddress != "" {

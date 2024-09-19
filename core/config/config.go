@@ -142,6 +142,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
+		cfg.Seeds = getEnvWithDefault("seeds", "2f13439b2ee4c34bafe643f89575f40b7863a079@34.136.137.33:26656")
 		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
