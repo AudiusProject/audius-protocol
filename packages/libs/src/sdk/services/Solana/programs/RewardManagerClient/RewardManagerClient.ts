@@ -329,10 +329,15 @@ export class RewardManagerClient {
               })
             }
           }
-        } catch (e) {
-          if (!(e instanceof RewardManagerError)) {
+        } catch (nestedError) {
+          if (nestedError instanceof RewardManagerError) {
+            throw nestedError
+          } else {
             // If failed to provide user friendly error, surface original error
-            this.logger.warn('Failed to parse RewardManagerError error', e)
+            this.logger.warn(
+              'Failed to parse RewardManagerError error',
+              nestedError
+            )
           }
         }
       }
