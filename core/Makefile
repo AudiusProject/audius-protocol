@@ -78,9 +78,9 @@ livereload:
 .PHONY: push-prerelease
 push-prerelease:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
+	crane copy "audius/core:$(GIT_COMMIT)" "audius/core:prerelease"
 
 .PHONY: push-edge
 push-edge:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
+	crane copy "audius/core:$(GIT_COMMIT)" "audius/core:edge"
