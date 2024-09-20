@@ -77,8 +77,8 @@ func TestChatBlocking(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, user1IdEncoded, user2IdEncoded)),
 		}
 
-		err = testValidator.validateChatCreate(tx, user1Id, exampleRpc)
-		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
+		err = testValidator.validateChatCreate(tx, user2Id, exampleRpc)
+		assert.ErrorContains(t, err, "Not permitted to send messages to this user")
 	}
 
 	// validate user1Id and user2Id cannot message each other
@@ -92,7 +92,7 @@ func TestChatBlocking(t *testing.T) {
 		}
 
 		err = testValidator.validateChatMessage(tx, user1Id, exampleRpc)
-		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
+		assert.ErrorContains(t, err, "Not permitted to send messages to this user")
 	}
 
 	// user1Id unblocks user2Id
