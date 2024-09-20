@@ -71,7 +71,7 @@ const config = {
       announcementBar: {
         id: 'amplify_hackathon',
         content:
-          '👩‍💻 <a target="_blank" rel="noopener noreferrer" href="https://www.audius.events/e/hackathon">Join the Amplify Hackathon!</a> 🚀   Registration Open September 23-30, 2024',
+          '👩‍💻 <a target="_blank" rel="noopener noreferrer" href="https://www.audius.events/e/hackathon">Join the Amplify Hackathon! September 23-30, 2024</a>🚀',
         backgroundColor: '#7e1bcc',
         textColor: '#fff',
         isCloseable: false,
