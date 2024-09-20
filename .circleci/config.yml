@@ -326,6 +326,7 @@ workflows:
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
+            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -352,6 +353,8 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
+            pkg/.* run-audiusd-workflow true
+            cmd/.* run-audiusd-workflow true
           requires:
             - generate-config
             - init
