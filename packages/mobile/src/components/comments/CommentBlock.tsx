@@ -1,20 +1,17 @@
-import { useState } from 'react'
-
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
-import {
-  useCurrentCommentSection,
-  useReactToComment
-} from '@audius/common/context'
+import { getKeyFromFetchArgs } from '@audius/common/audius-query/utils'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/sdk'
+import type { Comment, ReplyComment, CommentMetadata } from '@audius/sdk'
+import { EntityType } from '@audius/sdk'
 import { css } from '@emotion/native'
+import { useSelector } from 'react-redux'
 
 import {
   ArtistPick,
   Box,
   CommentText,
   Flex,
-  PlainButton,
   Text,
   TextLink,
   Timestamp
@@ -22,11 +19,10 @@ import {
 import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
-import { FavoriteButton } from '../favorite-button'
 import { UserLink } from '../user-link'
 
+import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
-import { CommentOverflowMenu } from './CommentOverflowMenu'
 
 export type CommentBlockProps = {
   commentId: string
@@ -40,32 +36,49 @@ export const CommentBlockInternal = (
   }
 ) => {
   const { comment, hideActions } = props
-  const { artistId, setReplyingToComment } = useCurrentCommentSection()
+  const { artistId } = useCurrentCommentSection()
   const {
     message,
-    reactCount = 0,
     trackTimestampS,
-    id: commentId,
     createdAt,
     userId: commentUserIdStr,
     isEdited,
     isArtistReacted,
-    isCurrentUserReacted
+    entityId,
+    parentCommentId
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
-  const [reactToComment] = useReactToComment()
+  // TODO: whats a better way to package this?
+  // Need to get the status of this comment regardless of where the usePostComment hook was called
+  const commentPostStatus = useSelector(
+    (state) =>
+      state.api.commentsApi.postComment[
+        getKeyFromFetchArgs({
+          body: message,
+          userId: commentUserId,
+          entityId,
+          entityType: EntityType.TRACK,
+          parentCommentId,
+          trackTimestampS
+        } as CommentMetadata)
+      ]?.status
+  )
+  const isLoading = commentPostStatus === 'loading'
+  console.log({
+    body: message,
+    userId: commentUserId,
+    entityId,
+    entityType: EntityType.TRACK,
+    parentCommentId,
+    trackTimestampS
+  })
+
   const commentUserId = Number(commentUserIdStr)
   useGetUserById({ id: commentUserId })
 
-  const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
   const isCommentByArtist = commentUserId === artistId
-
-  const handleCommentReact = () => {
-    setReactionState(!reactionState)
-    reactToComment(commentId, !reactionState)
-  }
 
   return (
     <Flex
@@ -114,33 +127,10 @@ export const CommentBlockInternal = (
           {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
         </CommentText>
         {!hideActions ? (
-          <>
-            <Flex direction='row' gap='l' alignItems='center'>
-              <Flex direction='row' alignItems='center' gap='xs'>
-                <FavoriteButton
-                  onPress={handleCommentReact}
-                  isActive={reactionState}
-                  wrapperStyle={{ height: 20, width: 20 }}
-                  isDisabled={isTombstone}
-                />
-                {!isTombstone ? (
-                  <Text color='default' size='s'>
-                    {reactCount}
-                  </Text>
-                ) : null}
-              </Flex>
-              <PlainButton
-                variant='subdued'
-                onPress={() => {
-                  setReplyingToComment?.(comment)
-                }}
-                disabled={isTombstone}
-              >
-                {messages.reply}
-              </PlainButton>
-              <CommentOverflowMenu comment={comment} disabled={isTombstone} />
-            </Flex>
-          </>
+          <CommentActionBar
+            comment={comment}
+            isDisabled={isLoading || isTombstone}
+          />
         ) : null}
       </Flex>
     </Flex>
