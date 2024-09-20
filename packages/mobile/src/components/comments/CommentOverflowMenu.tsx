@@ -24,11 +24,13 @@ import { ConfirmationDrawerWithoutRedux } from '../drawers'
 
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
+  disabled?: boolean
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
-    comment: { id, userId }
+    comment: { id, userId },
+    disabled
   } = props
 
   const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
@@ -182,6 +184,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsOpen(!isOpen)
           setIsVisible(!isVisible)
         }}
+        disabled={disabled}
       />
 
       <Portal hostName='DrawerPortal'>

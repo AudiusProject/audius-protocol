@@ -16,7 +16,7 @@ export const NotificationFooter = (props: NotificationFooterProps) => {
   return (
     <div className={styles.root}>
       <span className={styles.timeLabel}>{timeLabel}</span>
-      {!isViewed ? null : <Pill variant='active'>{messages.unread}</Pill>}
+      {isViewed ? null : <Pill variant='active'>{messages.unread}</Pill>}
     </div>
   )
 }

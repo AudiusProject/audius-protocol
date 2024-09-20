@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react'
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
-  useDeleteComment,
-  usePostComment
+  useDeleteComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
@@ -47,7 +46,9 @@ const CommentBlockInternal = (
     isEdited,
     isArtistReacted
   } = comment
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
+  const isParentComment = 'isPinned' in comment
+  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+  const isTombstone = isParentComment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const commentUserId = Number(commentUserIdStr)
@@ -89,11 +90,17 @@ const CommentBlockInternal = (
   const isCommentByArtist = commentUserId === artistId
 
   return (
-    <Flex w='100%' gap='l'>
-      <Box css={{ flexShrink: 0 }}>
+    <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
+      <Box css={{ flexShrink: 0, width: 44 }}>
         <Avatar
           userId={commentUserId}
-          css={{ width: 44, height: 44 }}
+          css={{
+            width: 44,
+            height: 44,
+            cursor: isTombstone ? 'default' : 'pointer'
+          }}
+          // TODO: This is a hack - currently if you provide an undefined userId it will link to signin/feed
+          onClick={isTombstone ? () => {} : undefined}
           popover
         />
       </Box>
@@ -109,21 +116,23 @@ const CommentBlockInternal = (
             <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
-        <Flex gap='s' alignItems='center'>
-          <UserLink userId={commentUserId} popover />
-          <Flex gap='xs' alignItems='flex-end' h='100%'>
-            <Timestamp time={createdAtDate} />
-            {trackTimestampS !== undefined ? (
-              <>
-                <Text color='subdued' size='xs'>
-                  •
-                </Text>
+        {!isTombstone ? (
+          <Flex gap='s' alignItems='center'>
+            <UserLink userId={commentUserId} popover />
+            <Flex gap='xs' alignItems='flex-end' h='100%'>
+              <Timestamp time={createdAtDate} />
+              {trackTimestampS !== undefined ? (
+                <>
+                  <Text color='subdued' size='xs'>
+                    •
+                  </Text>
 
-                <TimestampLink trackTimestampS={trackTimestampS} />
-              </>
-            ) : null}
+                  <TimestampLink trackTimestampS={trackTimestampS} />
+                </>
+              ) : null}
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
         {showEditInput ? (
           <CommentForm
             onSubmit={() => {
@@ -148,7 +157,8 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isCommentLoading}
+            isDisabled={isCommentLoading || isTombstone}
+            hideReactCount={isTombstone}
           />
         )}
 

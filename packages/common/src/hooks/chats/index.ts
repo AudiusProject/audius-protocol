@@ -1,4 +1,5 @@
 export * from './types'
+export * from './useAudienceUsers'
 export * from './useCanSendMessage'
 export * from './useSetInboxPermissions'
 export * from './useTrackPlayer'

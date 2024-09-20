@@ -32,6 +32,7 @@ export type NotificationSettings = {
   followers: boolean
   remixes: boolean
   messages: boolean
+  comments: boolean
 }
 
 type UserBrowserSettings = {
@@ -251,6 +252,7 @@ export class UserNotificationSettings {
       followers: boolean
       remixes: boolean
       messages: boolean
+      comments: boolean
       deviceType: string
       awsARN: string
       deviceToken: string
@@ -265,6 +267,7 @@ export class UserNotificationSettings {
         'UserNotificationMobileSettings.followers',
         'UserNotificationMobileSettings.remixes',
         'UserNotificationMobileSettings.messages',
+        'UserNotificationMobileSettings.comments',
         'NotificationDeviceTokens.deviceType',
         'NotificationDeviceTokens.awsARN',
         'NotificationDeviceTokens.deviceToken',
@@ -297,7 +300,8 @@ export class UserNotificationSettings {
             announcements: setting.announcements,
             followers: setting.followers,
             remixes: setting.remixes,
-            messages: setting.messages
+            messages: setting.messages,
+            comments: setting.comments
           },
           devices: [
             ...(acc?.[setting.userId]?.devices ?? []),
@@ -376,6 +380,7 @@ export class UserNotificationSettings {
       followers: boolean
       remixes: boolean
       messages: boolean
+      comments: boolean
       deviceType?: string
       awsARN?: string
       deviceToken?: string
@@ -436,7 +441,8 @@ export class UserNotificationSettings {
             announcements: setting.announcements,
             followers: setting.followers,
             remixes: setting.remixes,
-            messages: setting.messages
+            messages: setting.messages,
+            comments: setting.comments
           },
           browser: acc?.[setting.userId]?.browser ?? []
         }

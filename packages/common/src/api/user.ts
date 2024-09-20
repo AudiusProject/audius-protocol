@@ -176,15 +176,66 @@ const userApi = createApi({
       },
       options: { retry: true }
     },
+    getFollowers: {
+      fetch: async (
+        {
+          userId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; offset?: number; limit?: number },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getFollowers({
+          id: Id.parse(userId),
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data)
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
+    getSupporters: {
+      fetch: async (
+        {
+          userId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; offset?: number; limit?: number },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getSupporters({
+          id: Id.parse(userId),
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data.map((user) => user.sender))
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
     getRemixers: {
       fetch: async (
-        { userId, trackId }: { userId: ID; trackId?: string },
+        {
+          userId,
+          trackId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; trackId?: string; offset?: number; limit?: number },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data: users = [] } = await sdk.full.users.getRemixers({
           id: Id.parse(userId),
-          trackId
+          trackId,
+          limit,
+          offset
         })
         return userMetadataListFromSDK(users)
       },
@@ -207,6 +258,38 @@ const userApi = createApi({
         return data
       },
       options: {}
+    },
+    getPurchasers: {
+      fetch: async (
+        {
+          userId,
+          contentId,
+          contentType,
+          limit = 10,
+          offset = 0
+        }: {
+          userId: ID
+          contentId?: number
+          contentType?: string
+          offset?: number
+          limit?: number
+        },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getPurchasers({
+          id: Id.parse(userId),
+          contentId: contentId ? encodeHashId(contentId) : undefined,
+          contentType,
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data)
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
     },
     getPurchasersCount: {
       fetch: async (
@@ -260,8 +343,11 @@ export const {
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
+  useGetFollowers,
+  useGetSupporters,
   useGetRemixers,
   useGetRemixersCount,
+  useGetPurchasers,
   useGetPurchasersCount,
   useGetRemixedTracks,
   useGetSalesAggegrate

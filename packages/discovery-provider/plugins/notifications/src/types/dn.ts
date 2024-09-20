@@ -825,6 +825,22 @@ export interface UserRow {
   user_storage_account?: string | null
   wallet?: string | null
 }
+export interface CommentRow {
+  comment_id: number
+  blockhash?: string | null
+  blocknumber?: number | null
+  created_at?: Date
+  updated_at?: Date
+  entity_id: number
+  entity_type: commenttype
+  user_id: number
+  text: string
+  is_delete: boolean
+  is_visible: boolean
+  is_pinned: boolean
+  is_edited: boolean
+  txhash?: string
+}
 export enum wallet_chain {
   'eth' = 'eth',
   'sol' = 'sol'
@@ -871,4 +887,10 @@ export enum challengetype {
   'numeric' = 'numeric',
   'aggregate' = 'aggregate',
   'trending' = 'trending'
+}
+
+export enum commenttype {
+  'track' = 'Track',
+  'playlist' = 'Playlist',
+  'album' = 'Album'
 }

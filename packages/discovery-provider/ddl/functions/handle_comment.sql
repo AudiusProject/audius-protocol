@@ -26,7 +26,7 @@ begin
   end if;
 
   begin
-    if new.is_delete is false then
+    if new.user_id != owner_user_id then
       insert into notification
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
