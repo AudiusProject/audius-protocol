@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux'
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
-import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastFollowersCTA'
+import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
