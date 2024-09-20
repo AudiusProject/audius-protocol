@@ -54,16 +54,24 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 			return err
 		}
 
+		// Update unread count for the invited user. Do not update for the sender of the blast.
+		var unreadCount = 0
+		for _, blast := range blasts {
+			if int(blast.FromUserID) != invitedUserId {
+				unreadCount++
+			}
+		}
+
 		// similar to above... if there is a conflict when creating chat_member records
 		// keep the version with the earliest relayed_at (created_at) timestamp.
 		_, err = tx.Exec(`
 		insert into chat_member
-			(chat_id, invited_by_user_id, invite_code, user_id, created_at)
+			(chat_id, invited_by_user_id, invite_code, user_id, unread_count, created_at)
 		values
-			($1, $2, $3, $4, $5)
+			($1, $2, $3, $4, $5, $6)
 		on conflict (chat_id, user_id)
-		do update set invited_by_user_id=$2, invite_code=$3, created_at=$5 where chat_member.created_at > $5`,
-			params.ChatID, userId, invite.InviteCode, invitedUserId, ts)
+		do update set invited_by_user_id=$2, invite_code=$3, unread_count=$5, created_at=$6 where chat_member.created_at > $6`,
+			params.ChatID, userId, invite.InviteCode, invitedUserId, unreadCount, ts)
 		if err != nil {
 			return err
 		}
