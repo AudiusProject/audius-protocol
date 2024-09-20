@@ -1,1 +1,0 @@
-export { AddToCollectionDrawer } from './AddToCollectionDrawer';
