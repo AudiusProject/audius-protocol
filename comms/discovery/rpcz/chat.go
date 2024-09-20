@@ -123,21 +123,33 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 	}
 
 	// set chat_member.is_hidden to false
-	// if there are any non-blast messages
+	// if there are any non-blast messages, reactions,
 	// or any blasts from the other party
 	_, err = tx.Exec(`
 	UPDATE chat_member member
 	SET is_hidden = NOT EXISTS(
-		SELECT *
-		FROM chat_message msg
-		LEFT JOIN chat_blast b USING (blast_id)
-		LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
-		WHERE msg.chat_id = member.chat_id
-		AND (
-			msg.blast_id IS NULL OR
-			b.from_user_id != member.user_id OR
-			r.user_id != member.user_id
-		)
+	    SELECT * FROM (
+        -- Check for chat messages
+        SELECT msg.message_id
+        FROM chat_message msg
+        LEFT JOIN chat_blast b USING (blast_id)
+        LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
+        WHERE msg.chat_id = member.chat_id
+        AND (
+            msg.blast_id IS NULL OR
+            b.from_user_id != member.user_id OR
+            r.user_id != member.user_id
+        )
+
+        UNION
+
+        -- Check for chat message reactions
+        SELECT r.message_id
+        FROM chat_message_reactions r
+        LEFT JOIN chat_message msg ON r.message_id = msg.message_id
+        WHERE msg.chat_id = member.chat_id
+        AND r.user_id != member.user_id
+    ) combined
 	)
 	WHERE member.chat_id = $1
 	`, chatId)
