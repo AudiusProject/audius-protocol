@@ -8,7 +8,11 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/AudiusProject/audius-protocol/core/console/assets"
+import (
+	"fmt"
+	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/assets"
+)
 
 func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -38,7 +42,7 @@ func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(blockHeight)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 7, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 11, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -51,7 +55,7 @@ func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(txCount)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 8, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 12, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -64,7 +68,7 @@ func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(c.config.WalletAddress)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 9, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 13, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -77,7 +81,7 @@ func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(c.config.ProposerAddress)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 10, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 14, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -90,6 +94,8 @@ func (c *Components) HeaderInfo(blockHeight, txCount string) templ.Component {
 		return templ_7745c5c3_Err
 	})
 }
+
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
 
 func (c *Components) HeaderBar() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -124,20 +130,20 @@ func (c *Components) HeaderBar() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col h-screen bg-white shadow-md\"><div class=\"h-[10vh] w-full flex items-center justify-between rounded-lg p-3\"><a href=\"/console\" class=\"flex items-center\"><img src=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col h-screen bg-white shadow-md\"><!-- Header Section --><div class=\"h-[10vh] w-full flex items-center justify-between rounded-lg p-3\"><a href=\"/console\" class=\"flex items-center\"><img src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(assets.AudiusLogoBlackGlyph)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 19, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 26, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-12 w-12 object-contain\"><h1 class=\"p-3\">Console</h1></a><div hx-get=\"/console/headerinfo\" hx-trigger=\"load, every 2s\" hx-swap=\"innerHTML\"></div></div><div class=\"w-full flex-1 bg-gray-100 overflow-auto p-5\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"audius logo\" class=\"h-12 w-12 object-contain\"><h1 class=\"p-3\">Console</h1></a><div hx-get=\"/console/headerinfo\" hx-trigger=\"load, every 2s\" hx-swap=\"innerHTML\"></div></div><!-- Main Content Section --><div class=\"w-full flex-1 bg-gray-100 overflow-auto p-5\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -145,7 +151,29 @@ func (c *Components) HeaderBar() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><!-- Footer Section --><footer class=\"h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3\"><div class=\"text-sm text-gray-600 flex justify-between w-full px-5\"><span>made with ⚡️ by the protocol team</span> <span>version: <a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 templ.SafeURL = gitCommit
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var9)))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" target=\"_blank\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(config.Version)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/header_bar.templ`, Line: 39, Col: 74}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></span></div></footer></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

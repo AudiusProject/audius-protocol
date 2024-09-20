@@ -30,10 +30,11 @@ export const usePostComment = () => {
       })
     }
   }
+
   return [wrappedHandler, postCommentResponse] as const
 }
 
-export const useReactToComment = (authFlowCallback?: () => void) => {
+export const useReactToComment = () => {
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const wrappedHandler = async (commentId: string, isLiked: boolean) => {

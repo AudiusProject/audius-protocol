@@ -23,6 +23,17 @@ def validate_comment_tx(params: ManageEntityParameters):
         and comment_id in params.existing_records[EntityType.COMMENT.value]
     ):
         raise IndexingValidationError(f"Comment {comment_id} already exists")
+    # Entity type only supports track at the moment
+    if params.metadata["entity_type"] != "Track":
+        raise IndexingValidationError(
+            f"Entity type {params.metadata['entity_type']} does not exist"
+        )
+    if params.metadata["entity_id"] is None:
+        raise IndexingValidationError(
+            "Entitiy id for a track is required to create comment"
+        )
+    if params.metadata["body"] is None or params.metadata["body"] == "":
+        raise IndexingValidationError("Comment body is empty")
 
 
 def create_comment(params: ManageEntityParameters):
@@ -33,7 +44,7 @@ def create_comment(params: ManageEntityParameters):
         comment_id=comment_id,
         user_id=params.user_id,
         text=params.metadata["body"],
-        entity_type=params.metadata["entity_type"] or EntityType.TRACK.value,
+        entity_type=params.metadata.get("entity_type", EntityType.TRACK.value),
         entity_id=params.metadata["entity_id"],
         track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
@@ -47,11 +58,22 @@ def create_comment(params: ManageEntityParameters):
     params.add_record(comment_id, comment_record)
 
     if params.metadata["parent_comment_id"]:
-        remix = CommentThread(
+        existing_comment_thread = (
+            params.session.query(CommentThread)
+            .filter_by(
+                parent_comment_id=params.metadata["parent_comment_id"],
+                comment_id=comment_id,
+            )
+            .first()
+        )
+        if existing_comment_thread:
+            return
+
+        comment_thread = CommentThread(
             parent_comment_id=params.metadata["parent_comment_id"],
             comment_id=comment_id,
         )
-        params.session.add(remix)
+        params.session.add(comment_thread)
 
 
 def update_comment(params: ManageEntityParameters):

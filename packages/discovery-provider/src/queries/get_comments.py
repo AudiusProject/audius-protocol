@@ -147,7 +147,6 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment.entity_type == "Track",
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
-                Comment.is_delete == False,
                 (CommentReport.comment_id == None)
                 | (current_user_id == None)
                 | (CommentReport.user_id != current_user_id),
@@ -161,8 +160,12 @@ def get_track_comments(args, track_id, current_user_id=None):
         return [
             {
                 "id": encode_int_id(track_comment.comment_id),
-                "user_id": track_comment.user_id,
-                "message": track_comment.text,
+                "user_id": (
+                    track_comment.user_id if not track_comment.is_delete else None
+                ),
+                "message": (
+                    track_comment.text if not track_comment.is_delete else "[Removed]"
+                ),
                 "is_pinned": track_comment.is_pinned,
                 "is_edited": track_comment.is_edited,
                 "track_timestamp_s": track_comment.track_timestamp_s,
@@ -176,9 +179,13 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "replies": get_replies(
                     session, track_comment.comment_id, current_user_id, artist_id
                 ),
-                "reply_count": get_reply_count(session, track_comment.comment_id),
+                "reply_count": reply_count,
                 "created_at": str(track_comment.created_at),
                 "updated_at": str(track_comment.updated_at),
+                "is_tombstone": track_comment.is_delete and reply_count != 0,
             }
             for [track_comment, react_count] in track_comments
+            # We show comments that have replies or are not deleted
+            if (reply_count := get_reply_count(session, track_comment.comment_id))
+            or track_comment.is_delete is False
         ]

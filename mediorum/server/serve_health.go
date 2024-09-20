@@ -133,9 +133,10 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		IsDbLocalhost:             ss.Config.PostgresDSN == "postgres://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "postgresql://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "localhost",
 		IsDiscoveryListensEnabled: ss.Config.discoveryListensEnabled(),
 		DiskHasSpace:              ss.diskHasSpace(),
+		CoreHealthResponse:        ss.coreHealth,
 	}
 
-	func() {
+	go func() {
 		defer func() {
 			if r := recover(); r != nil {
 				ss.logger.Error("panic recovered in getting core sdk status", "err", r)
@@ -148,7 +149,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		ctx := c.Request().Context()
 		coreHealthResponse := &coreHealthResponseData{}
 
-		if err == nil {
+		if err == nil && sdk != nil {
 			status, err := sdk.Status(ctx)
 			if err == nil {
 				coreHealthResponse.CoreStatus = status
@@ -168,9 +169,9 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 			coreHealthResponse.CoreGRPCHealthy = err == nil
 		}
 
-		data.CoreHealthResponse = coreHealthResponse
-
+		ss.coreHealth = coreHealthResponse
 	}()
+
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to marshal health check data: " + err.Error()})
