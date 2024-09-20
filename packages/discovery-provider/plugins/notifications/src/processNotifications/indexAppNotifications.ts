@@ -17,6 +17,7 @@ import { TierChange } from './mappers/tierChange'
 import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
 import { Milestone } from './mappers/milestone'
+import { Comment } from './mappers/comment'
 import {
   BrowserPluginMappings,
   BrowserPushPlugin,
@@ -47,6 +48,7 @@ export type NotificationProcessor =
   | TierChange
   | TipReceive
   | TipSend
+  | Comment
 
 export const notificationTypeMapping = {
   follow: MappingVariable.PushFollow,
@@ -79,7 +81,8 @@ export const notificationTypeMapping = {
   approve_manager_request: MappingVariable.PushApproveManagerRequest,
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction,
-  reward_in_cooldown: MappingVariable.PushRewardInCooldown
+  reward_in_cooldown: MappingVariable.PushRewardInCooldown,
+  comment: MappingVariable.PushComment
 }
 
 export class AppNotificationsProcessor {
@@ -154,6 +157,7 @@ export class AppNotificationsProcessor {
       this.dnDB,
       this.identityDB
     )
+
     for (const notification of mappedNotifications) {
       const isEnabled = this.getIsPushNotificationEnabled(
         notification.notification.type

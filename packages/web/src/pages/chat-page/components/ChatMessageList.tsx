@@ -34,6 +34,7 @@ import useMeasure from 'react-use-measure'
 import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { InboxUnavailableMessage } from './InboxUnavailableMessage'
@@ -257,6 +258,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
               <span className={styles.tag}>{messages.endOfMessages}</span>
             </div>
           ) : null}
+          {chat?.is_blast ? <ChatBlastAudienceDisplay chat={chat} /> : null}
         </div>
       </StickyScrollList>
     )

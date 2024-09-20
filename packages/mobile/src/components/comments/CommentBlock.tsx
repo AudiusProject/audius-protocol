@@ -7,6 +7,7 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ReplyComment } from '@audius/sdk'
+import { css } from '@emotion/native'
 
 import {
   ArtistPick,
@@ -51,6 +52,7 @@ export const CommentBlockInternal = (
     isArtistReacted,
     isCurrentUserReacted
   } = comment
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   const [reactToComment] = useReactToComment()
@@ -66,7 +68,12 @@ export const CommentBlockInternal = (
   }
 
   return (
-    <Flex direction='row' w='100%' gap='s'>
+    <Flex
+      direction='row'
+      w='100%'
+      gap='s'
+      style={css({ opacity: isTombstone ? 0.5 : 1 })}
+    >
       <ProfilePicture
         style={{ width: 32, height: 32, flexShrink: 0 }}
         userId={commentUserId}
@@ -83,23 +90,25 @@ export const CommentBlockInternal = (
             <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
-        <Flex direction='row' gap='s' alignItems='center'>
-          <UserLink size='s' userId={commentUserId} strength='strong' />
-          <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-            <Timestamp time={new Date(createdAt)} />
-            {trackTimestampS !== undefined ? (
-              <>
-                <Text color='subdued' size='xs'>
-                  •
-                </Text>
+        {!isTombstone ? (
+          <Flex direction='row' gap='s' alignItems='center'>
+            <UserLink size='s' userId={commentUserId} strength='strong' />
+            <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+              <Timestamp time={new Date(createdAt)} />
+              {trackTimestampS !== undefined ? (
+                <>
+                  <Text color='subdued' size='xs'>
+                    •
+                  </Text>
 
-                <TextLink size='xs' variant='active'>
-                  {formatCommentTrackTimestamp(trackTimestampS)}
-                </TextLink>
-              </>
-            ) : null}
+                  <TextLink size='xs' variant='active'>
+                    {formatCommentTrackTimestamp(trackTimestampS)}
+                  </TextLink>
+                </>
+              ) : null}
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
         <CommentText>
           {message}
           {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
@@ -112,20 +121,24 @@ export const CommentBlockInternal = (
                   onPress={handleCommentReact}
                   isActive={reactionState}
                   wrapperStyle={{ height: 20, width: 20 }}
+                  isDisabled={isTombstone}
                 />
-                <Text color='default' size='s'>
-                  {reactCount}
-                </Text>
+                {!isTombstone ? (
+                  <Text color='default' size='s'>
+                    {reactCount}
+                  </Text>
+                ) : null}
               </Flex>
               <PlainButton
                 variant='subdued'
                 onPress={() => {
                   setReplyingToComment?.(comment)
                 }}
+                disabled={isTombstone}
               >
                 {messages.reply}
               </PlainButton>
-              <CommentOverflowMenu comment={comment} />
+              <CommentOverflowMenu comment={comment} disabled={isTombstone} />
             </Flex>
           </>
         ) : null}

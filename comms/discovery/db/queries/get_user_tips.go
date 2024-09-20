@@ -7,27 +7,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const countTips = `
-select count(*) from aggregate_user_tips where sender_user_id = $1 and receiver_user_id = $2;
-`
-
-type CountTipsParams struct {
-	SenderUserID   int32 `db:"sender_user_id" json:"sender_user_id"`
-	ReceiverUserID int32 `db:"receiver_user_id" json:"receiver_user_id"`
-}
-
-func CountTips(q db.Queryable, ctx context.Context, arg CountTipsParams) (int64, error) {
-	var count int64
-	err := q.GetContext(ctx, &count, countTips, arg.SenderUserID, arg.ReceiverUserID)
-	return count, err
-}
-
 const bulkGetTipReceivers = `
 select
   sender_user_id,
 	receiver_user_id
 from aggregate_user_tips
-where 
+where
 	sender_user_id = :SenderUserID
   and receiver_user_id in (:ReceiverUserIDs)
 group by receiver_user_id, sender_user_id;

@@ -113,6 +113,8 @@ type MediorumServer struct {
 	imageCache            *imcache.Cache[string, []byte]
 	failsPeerReachability bool
 
+	coreHealth *coreHealthResponseData
+
 	StartedAt time.Time
 	Config    MediorumConfig
 
@@ -120,6 +122,7 @@ type MediorumServer struct {
 }
 
 type PeerHealth struct {
+	Version        string               `json:"version"`
 	LastReachable  time.Time            `json:"lastReachable"`
 	LastHealthy    time.Time            `json:"lastHealthy"`
 	ReachablePeers map[string]time.Time `json:"reachablePeers"`

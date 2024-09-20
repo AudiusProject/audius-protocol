@@ -342,7 +342,9 @@ export const staticRoutes = new Set([
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  CHAT_PAGE,
+  CHATS_PAGE
 ])
 
 export const profilePage = (handle: string) => {

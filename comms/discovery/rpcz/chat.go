@@ -201,8 +201,35 @@ func chatReadMessages(tx *sqlx.Tx, userId int32, chatId string, readTimestamp ti
 	return err
 }
 
-func chatSetPermissions(tx *sqlx.Tx, userId int32, permit schema.ChatPermission, messageTimestamp time.Time) error {
-	_, err := tx.Exec("insert into chat_permissions (user_id, permits, updated_at) values ($1, $2, $3) on conflict (user_id) do update set permits = $2 where chat_permissions.updated_at < $3", userId, permit, messageTimestamp)
+func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission, allow *bool, messageTimestamp time.Time) error {
+
+	// if "all" or "none" or is singular permission style (allow == nil) delete any old rows
+	if allow == nil || permits == schema.All || permits == schema.None {
+		_, err := tx.Exec(`
+			delete from chat_permissions where user_id = $1 and updated_at < $2
+		`, userId, messageTimestamp)
+		if err != nil {
+			return err
+		}
+	}
+
+	// old: singular permission style
+	if allow == nil {
+		// insert
+		_, err := tx.Exec(`
+		insert into chat_permissions (user_id, permits, updated_at)
+		values ($1, $2, $3)
+		on conflict do nothing`, userId, permits, messageTimestamp)
+		return err
+	}
+
+	// new: multiple (checkbox) permission style
+	_, err := tx.Exec(`
+	insert into chat_permissions (user_id, permits, allow, updated_at)
+	values ($1, $2, $3, $4)
+	on conflict (user_id, permits)
+	do update set allow = $3 where updated_at < $4
+	`, userId, permits, *allow, messageTimestamp)
 	return err
 }
 

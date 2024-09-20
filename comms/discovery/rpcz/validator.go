@@ -108,11 +108,6 @@ func (vtor *Validator) validateChatCreate(tx *sqlx.Tx, userId int32, rpc schema.
 		if err != nil {
 			return err
 		}
-		// validate chat members are not a <blocker, blockee> pair
-		err = validateNotBlocked(q, int32(user1), int32(user2))
-		if err != nil {
-			return err
-		}
 
 		// validate receiver permits chats from sender
 		receiver := int32(user1)
@@ -417,21 +412,6 @@ func validateChatMembership(q db.Queryable, userId int32, chatId string) (db.Cha
 	return member, err
 }
 
-func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
-	blockedCount, err := queries.CountChatBlocks(q, context.Background(), queries.CountChatBlocksParams{
-		User1: user1,
-		User2: user2,
-	})
-	if err != nil {
-		return err
-	}
-	if blockedCount > 0 {
-		return errors.New("Cannot chat with a user you have blocked or user who has blocked you")
-	}
-
-	return nil
-}
-
 // Recheck chat permissions before sending further messages if a member of the chat
 // has cleared their chat history
 func RecheckPermissionsRequired(lastMessageAt time.Time, members []db.ChatMember) bool {
@@ -443,72 +423,19 @@ func RecheckPermissionsRequired(lastMessageAt time.Time, members []db.ChatMember
 	return false
 }
 
-// Validate receiver follows sender
-func validateFollow(q db.Queryable, sender int32, receiver int32) (bool, error) {
-	count, err := queries.CountFollows(q, context.Background(), queries.CountFollowsParams{
-		FollowerUserID: receiver,
-		FolloweeUserID: sender,
-	})
-	if err != nil {
-		return false, err
-	}
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
-}
-
-// Validate sender has tipped receiver
-func validateTipper(q db.Queryable, sender int32, receiver int32) (bool, error) {
-	count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
-		SenderUserID:   sender,
-		ReceiverUserID: receiver,
-	})
-	if err != nil {
-		return false, err
-	}
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
-}
-
 func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 	permissionFailure := errors.New("Not permitted to send messages to this user")
-	permits, err := queries.GetChatPermissions(q, context.Background(), receiver)
+
+	ok := false
+	err := q.Get(&ok, `select chat_allowed($1, $2)`, sender, receiver)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			return err
-		}
-		// No permissions set; default to 'all'
-		return nil
+		return err
 	}
-
-	if permits == schema.None {
+	if !ok {
 		return permissionFailure
-	} else if permits == schema.Followees {
-		// Only allow messages from users that receiver follows
-		follows, err := validateFollow(q, sender, receiver)
-		if err != nil {
-			return err
-		}
-		if !follows {
-			return permissionFailure
-		}
-	} else if permits == schema.Tippers {
-		// Only allow messages from users that have tipped the receiver
-		tipper, err := validateTipper(q, sender, receiver)
-		if err != nil {
-			return err
-		}
-		if !tipper {
-			return permissionFailure
-		}
 	}
-
 	return nil
+
 }
 
 func validatePermittedToMessage(q db.Queryable, userId int32, chatId string) error {
@@ -522,27 +449,13 @@ func validatePermittedToMessage(q db.Queryable, userId int32, chatId string) err
 	user1 := chatMembers[0].UserID
 	user2 := chatMembers[1].UserID
 
-	// validate chat members are not a <blocker, blockee> pair
-	err = validateNotBlocked(q, user1, user2)
+	receiver := int32(user1)
+	if receiver == userId {
+		receiver = int32(user2)
+	}
+	err = validatePermissions(q, userId, receiver)
 	if err != nil {
 		return err
-	}
-
-	// re-validate permissions if a member of the chat has recently cleared their
-	// chat history, in case their permissions have changed
-	lastMessageAt, err := queries.ChatLastMessageAt(q, context.Background(), chatId)
-	if err != nil {
-		return err
-	}
-	if RecheckPermissionsRequired(lastMessageAt, chatMembers) {
-		receiver := int32(user1)
-		if receiver == userId {
-			receiver = int32(user2)
-		}
-		err = validatePermissions(q, userId, receiver)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
