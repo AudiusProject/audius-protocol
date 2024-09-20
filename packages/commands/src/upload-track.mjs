@@ -2,7 +2,7 @@ import { randomBytes, randomInt } from 'crypto'
 import { createReadStream } from 'fs'
 import { spawn } from 'child_process'
 import fs from 'fs'
-import { Utils } from '@audius/sdk'
+import { Utils } from '@audius/sdk/dist/libs'
 
 import chalk from 'chalk'
 import { program } from 'commander'
