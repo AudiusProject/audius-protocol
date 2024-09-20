@@ -14,6 +14,8 @@ TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
 
+export GIT_COMMIT = $(shell git rev-parse HEAD)
+
 .PHONY: build-native
 build-native: $(NATIVE_BIN)
 
@@ -54,7 +56,7 @@ $(GEN_ARTIFACTS): $(GEN_SRCS)
 .PHONY: dev
 dev: gen
 	audius-compose down
-	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache
+	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
 
 .PHONY: test
 test: gen
@@ -73,12 +75,12 @@ sandbox:
 livereload:
 	modd
 
-.PHONY: push-stage
-push-stage:
+.PHONY: push-prerelease
+push-prerelease:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
 	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
 
-.PHONY: push-foundation
-push-stage:
+.PHONY: push-edge
+push-edge:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
 	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"

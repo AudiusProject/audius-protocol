@@ -24,4 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
 
 COPY --from=build /bin/server /bin/
 
+ARG git_sha
+ENV GIT_SHA=$git_sha
+
 ENTRYPOINT [ "/bin/server" ]

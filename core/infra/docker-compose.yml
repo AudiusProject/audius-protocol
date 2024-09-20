@@ -4,6 +4,8 @@ services:
     build:
       context: ../
       dockerfile: ./infra/Dockerfile.dev
+      args:
+        git_sha: '${GIT_COMMIT}'
     env_file:
       - ./dev_config/sandbox-one.env
     restart: unless-stopped
