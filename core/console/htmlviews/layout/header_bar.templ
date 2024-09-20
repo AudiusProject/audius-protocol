@@ -13,6 +13,130 @@ templ HeaderInfo(walletAddress, proposerAddress, blockHeight, txCount string) {
 
 templ HeaderBar() {
 	@Base() {
+		<div class="flex-1 space-y-4 p-8 pt-6">
+			<div class="flex items-center justify-between space-y-2">
+				<div class="uk-navbar-item">
+					<a href="/console" class="flex items-center">
+						<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-12 w-12 object-contain"/>
+						<h1 class="p-3">Console</h1>
+					</a>
+				</div>
+				<div class="flex items-center space-x-2">
+					<button class="uk-button uk-button-default w-[260px]">
+						<div class="flex gap-x-2" uk-toggle="#demo">
+							<span class="size-4">
+								<uk-icon icon="calendar-days"></uk-icon>
+							</span>
+							Jan 20, 2024 - Feb 09, 2024
+						</div>
+					</button>
+					<button class="uk-button uk-button-primary" uk-toggle="#demo">
+						Download
+					</button>
+				</div>
+			</div>
+			<div class="space-y-4">
+				<ul class="uk-tab-alt max-w-96">
+					<li class="uk-active">
+						<a href="#demo" uk-toggle>Overview</a>
+					</li>
+					<li>
+						<a href="#demo" uk-toggle>Analytics</a>
+					</li>
+					<li>
+						<a href="#demo" uk-toggle>Reports</a>
+					</li>
+					<li>
+						<a href="#demo" uk-toggle>Notifications</a>
+					</li>
+				</ul>
+				<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+					<div class="uk-card">
+						<div
+							class="uk-card-header flex flex-row items-center justify-between"
+						>
+							<h3 class="text-sm font-medium tracking-tight">Total Revenue</h3>
+							<span class="size-4 text-muted-foreground">
+								<uk-icon icon="dollar-sign"></uk-icon>
+							</span>
+						</div>
+						<div class="uk-card-body">
+							<div class="text-2xl font-bold">$45,231.89</div>
+							<p class="text-xs text-muted-foreground">+20.1% from last month</p>
+						</div>
+					</div>
+					<div class="uk-card">
+						<div
+							class="uk-card-header flex flex-row items-center justify-between"
+						>
+							<h3 class="text-sm font-medium tracking-tight">Subscriptions</h3>
+							<span class="size-4 text-muted-foreground">
+								<uk-icon icon="users"></uk-icon>
+							</span>
+						</div>
+						<div class="uk-card-body">
+							<div class="text-2xl font-bold">+2350</div>
+							<p class="text-xs text-muted-foreground">+180.1% from last month</p>
+						</div>
+					</div>
+					<div class="uk-card">
+						<div
+							class="uk-card-header flex flex-row items-center justify-between"
+						>
+							<h3 class="text-sm font-medium tracking-tight">Sales</h3>
+							<span class="size-4 text-muted-foreground">
+								<uk-icon icon="credit-card"></uk-icon>
+							</span>
+						</div>
+						<div class="uk-card-body">
+							<div class="text-2xl font-bold">+12,234</div>
+							<p class="text-xs text-muted-foreground">+19% from last month</p>
+						</div>
+					</div>
+					<div class="uk-card">
+						<div
+							class="uk-card-header flex flex-row items-center justify-between"
+						>
+							<h3 class="text-sm font-medium tracking-tight">Active Now</h3>
+							<span class="size-4 text-muted-foreground">
+								<uk-icon icon="chart-line"></uk-icon>
+							</span>
+						</div>
+						<div class="uk-card-body">
+							<div class="text-2xl font-bold">+573</div>
+							<p class="text-xs text-muted-foreground">+201 since last hour</p>
+						</div>
+					</div>
+				</div>
+				<div class="grid gap-4 lg:grid-cols-7">
+					<div
+						class="uk-card flex min-h-64 items-center justify-center lg:col-span-4"
+					>
+						<div
+							class="flex flex-1 items-center justify-center gap-x-2 text-destructive"
+						>
+							<span class="size-4">
+								<uk-icon icon="info"></uk-icon>
+							</span>
+							Graph not available
+						</div>
+					</div>
+					<div class="uk-card lg:col-span-3">
+						<div class="uk-card-header">
+							<h3 class="font-semibold leading-none tracking-tight">
+								Recent Sales
+							</h3>
+							<p class="text-sm text-muted-foreground">
+								You made 265 sales this month.
+							</p>
+						</div>
+						<div class="uk-card-body">
+							<div class="space-y-8"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<nav class="uk-navbar-container">
 			<div class="uk-container">
 				<div uk-navbar>
