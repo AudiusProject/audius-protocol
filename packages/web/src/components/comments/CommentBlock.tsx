@@ -3,15 +3,15 @@ import { useMemo, useState } from 'react'
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
-  useDeleteComment,
-  usePostComment
+  useDeleteComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
+import { getKeyFromFetchArgs } from '@audius/common/src/audius-query/utils'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
-import { Comment, ReplyComment } from '@audius/sdk'
+import { Comment, CommentMetadata, EntityType, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
@@ -57,12 +57,27 @@ const CommentBlockInternal = (
     (state: AppState) => getUser(state, { id: commentUserId })?.handle
   )
 
-  const { artistId } = useCurrentCommentSection()
+  const { artistId, entityId } = useCurrentCommentSection()
 
-  const [deleteComment, { status: deleteStatus }] = useDeleteComment()
-  const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
-  const isDeleting = deleteStatus === Status.LOADING
+  const [deleteComment] = useDeleteComment()
 
+  // TODO: whats a better way to package this?
+  // Need to get the status of this comment regardless of where the usePostComment hook was called
+  const commentPostStatus = useSelector(
+    (state: AppState) =>
+      state.api.commentsApi.postComment[
+        getKeyFromFetchArgs({
+          body: message,
+          userId: commentUserId,
+          entityId,
+          entityType: EntityType.TRACK,
+          parentCommentId,
+          trackTimestampS
+        } as CommentMetadata)
+      ]?.status
+  )
+
+  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
@@ -75,11 +90,7 @@ const CommentBlockInternal = (
   const isCommentByArtist = commentUserId === artistId
 
   return (
-    <Flex
-      w='100%'
-      gap='l'
-      css={{ opacity: isDeleting || isTombstone ? 0.5 : 1 }}
-    >
+    <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
         <Avatar
           userId={commentUserId}
@@ -107,7 +118,7 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={commentUserId} disabled={isDeleting} popover />
+            <UserLink userId={commentUserId} popover />
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
@@ -146,7 +157,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isDeleting || isTombstone}
+            isDisabled={isCommentLoading || isTombstone}
             hideReactCount={isTombstone}
           />
         )}

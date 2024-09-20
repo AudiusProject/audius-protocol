@@ -348,7 +348,9 @@ const fetchData = async <Args, Data>(
       }) as FetchLoadingAction
     )
 
-    endpoint.onQueryStarted?.(fetchArgs, { dispatch })
+    const onQueryStartedData = await endpoint.onQueryStarted?.(fetchArgs, {
+      dispatch
+    })
 
     // Batch the request if `fetchBatch` is defined
     const fetch = endpoint.fetchBatch
@@ -361,7 +363,7 @@ const fetchData = async <Args, Data>(
       ? await retry(
           async (bail) => {
             try {
-              return fetch(fetchArgs, context)
+              return fetch(fetchArgs, context, onQueryStartedData)
             } catch (e) {
               if (isNonRetryableError(e)) {
                 bail(new Error(`Non-retryable error: ${e}`))
@@ -371,7 +373,7 @@ const fetchData = async <Args, Data>(
           },
           { ...defaultRetryConfig, ...endpoint.options.retryConfig }
         )
-      : await fetch(fetchArgs, context)
+      : await fetch(fetchArgs, context, onQueryStartedData)
 
     if (apiData === null || apiData === undefined) {
       if (force && setForce) {
@@ -433,7 +435,7 @@ const fetchData = async <Args, Data>(
       }) as FetchSucceededAction
     )
 
-    endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch })
+    endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch }, onQueryStartedData)
     return apiData
   } catch (e) {
     if (!(e instanceof RemoteDataNotFoundError)) {
