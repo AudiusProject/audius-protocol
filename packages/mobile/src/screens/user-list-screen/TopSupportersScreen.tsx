@@ -18,7 +18,7 @@ import { Text } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
-import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastFollowersCTA'
+import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'

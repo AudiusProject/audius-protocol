@@ -1,6 +1,8 @@
 import { ReactElement, useRef } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   profilePageSelectors,
@@ -22,7 +24,8 @@ import {
   FOLLOWERS_USER_LIST_TAG as FOLLOWER_TAG,
   FAVORITES_USER_LIST_TAG as FAVORITES_TAG,
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
-  UserListStoreState
+  UserListStoreState,
+  CommonState
 } from '@audius/common/store'
 import {
   Modal,
@@ -33,15 +36,19 @@ import {
   IconTrophy,
   IconUserFollowing as IconFollowing
 } from '@audius/harmony'
+import { ChatBlastAudience } from '@audius/sdk'
 
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { ChatBlastWithAudienceCTA } from 'pages/chat-page/components/ChatBlastWithAudienceCTA'
 import { UserListType } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 
 import styles from './UserListModal.module.css'
 const { getUserList: favoritesSelector } = favoritesUserListSelectors
-const { getUserList: followersSelector } = followersUserListSelectors
+const { getUserList: followersSelector, getId: getFollowerId } =
+  followersUserListSelectors
 const { getUserList: followingSelector } = followingUserListSelectors
 const { getUserList: mutualsSelector } = mutualsUserListSelectors
 const { getUserList: relatedArtistsSelector, getId: getRelatedArtistsId } =
@@ -80,7 +87,7 @@ const UserListModal = ({
 }: UserListModalProps) => {
   let tag: string
   let selector: (state: AppState) => UserListStoreState
-  let userIdSelector: ((state: AppState) => ID | null) | undefined
+  let userIdSelector: ((state: CommonState) => ID | null) | undefined
   let title: ReactElement | string
   const notificationTitle = useSelector(getPageTitle)
   const scrollParentRef = useRef<HTMLElement>()
@@ -88,6 +95,11 @@ const UserListModal = ({
   const supportersId = useSelector(getSupportersId)
   const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
+  )
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  const { isEnabled: isOneToManyDmsEnabled } = useFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
   )
 
   switch (userListType) {
@@ -104,6 +116,7 @@ const UserListModal = ({
     case UserListType.FOLLOWER:
       tag = FOLLOWER_TAG
       selector = followersSelector
+      userIdSelector = getFollowerId
       title = (
         <div className={styles.titleContainer}>
           <IconUser className={styles.icon} />
@@ -189,6 +202,8 @@ const UserListModal = ({
       break
   }
 
+  const userId = useSelector((state) => userIdSelector?.(state))
+
   return (
     <Modal
       title={title}
@@ -217,6 +232,19 @@ const UserListModal = ({
           afterUnfollow={onClose}
         />
       </Scrollbar>
+      {isOneToManyDmsEnabled &&
+      (userListType === UserListType.FOLLOWER ||
+        userListType === UserListType.SUPPORTER) &&
+      userId === currentUserId ? (
+        <ChatBlastWithAudienceCTA
+          audience={
+            userListType === UserListType.FOLLOWER
+              ? ChatBlastAudience.FOLLOWERS
+              : ChatBlastAudience.TIPPERS
+          }
+          onClick={onClose}
+        />
+      ) : null}
     </Modal>
   )
 }
