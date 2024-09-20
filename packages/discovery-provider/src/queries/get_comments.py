@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import asc, desc, func
+from sqlalchemy import and_, asc, desc, func
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -8,10 +8,13 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
+from src.models.users.user import User
 from src.models.tracks.track import Track
 from src.utils import redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
+from src.models.moderation.muted_user import MutedUser
+from src.queries.query_helpers import helpers, populate_user_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +144,13 @@ def get_track_comments(args, track_id, current_user_id=None):
             .outerjoin(
                 CommentReaction, Comment.comment_id == CommentReaction.comment_id
             )
+            .outerjoin(
+                MutedUser,
+                and_(
+                    MutedUser.muted_user_id == Comment.user_id,
+                    MutedUser.user_id == current_user_id,
+                ),
+            )
             .group_by(Comment.comment_id)
             .filter(
                 Comment.entity_id == track_id,
@@ -151,6 +161,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 (CommentReport.comment_id == None)
                 | (current_user_id == None)
                 | (CommentReport.user_id != current_user_id),
+                MutedUser.muted_user_id == None,  # Exclude muted users' comments
             )
             .order_by(desc(Comment.is_pinned), sort_method_order_by)
             .offset(offset)
@@ -182,3 +193,26 @@ def get_track_comments(args, track_id, current_user_id=None):
             }
             for [track_comment, react_count] in track_comments
         ]
+
+
+def get_muted_users(current_user_id):
+    db = get_db_read_replica()
+    users = []
+    with db.scoped_session() as session:
+        muted_users = (
+            session.query(User)
+            .join(MutedUser, MutedUser.muted_user_id == User.user_id)
+            .filter(MutedUser.user_id == current_user_id)
+            .all()
+        )
+        muted_users_list = helpers.query_result_to_list(muted_users)
+        logger.info(f"asdf muted_users_list {muted_users_list}")
+        user_ids = list(map(lambda user: user["user_id"], muted_users_list))
+        logger.info(f"asdf user_ids {user_ids}")
+
+        users = populate_user_metadata(
+            session, user_ids, muted_users_list, current_user_id
+        )
+        logger.info(f"asdf users {users}")
+
+    return users

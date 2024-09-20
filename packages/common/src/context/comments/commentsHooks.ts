@@ -87,8 +87,9 @@ export const useMuteUser = () => {
   const { currentUserId } = useCurrentCommentSection()
   const [muteUser, response] = useMuteUserById()
   const wrappedHandler = (mutedUserId: string) => {
+    console.log('asdf wrapped handler ', mutedUserId)
     if (currentUserId) {
-      muteUser({ mutedUserId, userId: currentUserId })
+      muteUser({ mutedUserId: Number(mutedUserId), userId: currentUserId })
     }
   }
   return [wrappedHandler, response] as const

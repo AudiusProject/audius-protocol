@@ -22,7 +22,9 @@ import {
   FOLLOWERS_USER_LIST_TAG as FOLLOWER_TAG,
   FAVORITES_USER_LIST_TAG as FAVORITES_TAG,
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
-  UserListStoreState
+  MUTED_USER_LIST_TAG as MUTED_USERS_TAG,
+  UserListStoreState,
+  mutedUserListSelectors
 } from '@audius/common/store'
 import {
   Modal,
@@ -31,7 +33,8 @@ import {
   IconUser,
   IconUserGroup,
   IconTrophy,
-  IconUserFollowing as IconFollowing
+  IconUserFollowing as IconFollowing,
+  IconMessageBlock
 } from '@audius/harmony'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -46,6 +49,8 @@ const { getUserList: followingSelector } = followingUserListSelectors
 const { getUserList: mutualsSelector } = mutualsUserListSelectors
 const { getUserList: relatedArtistsSelector, getId: getRelatedArtistsId } =
   relatedArtistsUserListSelectors
+const { getUserList: mutedSelector } = mutedUserListSelectors
+
 const { getPageTitle, getUserList: notificationSelector } =
   notificationsUserListSelectors
 const { getUserList: repostsSelector } = repostsUserListSelectors
@@ -70,7 +75,8 @@ const messages = {
   topSupporters: 'Top Supporters',
   supporting: 'Supporting',
   relatedArtists: 'Related Artists',
-  mutuals: 'Mutuals'
+  mutuals: 'Mutuals',
+  muted: 'Comment Settings'
 }
 
 const UserListModal = ({
@@ -180,6 +186,18 @@ const UserListModal = ({
         </div>
       )
       break
+    case UserListType.MUTED:
+      tag = RELATED_ARTISTS_TAG
+      selector = relatedArtistsSelector
+      userIdSelector = getRelatedArtistsId
+      title = (
+        <div className={styles.titleContainer}>
+          <IconMessageBlock className={styles.icon} />
+          <span>{messages.muted}</span>
+        </div>
+      )
+      break
+
     // Should not happen but typescript doesn't seem to be
     // smart enough to pass props to components below
     default:

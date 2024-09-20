@@ -338,6 +338,7 @@ export type CommonState = {
       topSupporters: ReturnType<typeof topSupportersUserListReducer>
       supporting: ReturnType<typeof supportingUserListReducer>
       relatedArtists: ReturnType<typeof relatedArtistsListReducer>
+      muted: ReturnType<typeof mutedUserListReducer>
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState

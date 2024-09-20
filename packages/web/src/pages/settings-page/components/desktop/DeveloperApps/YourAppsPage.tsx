@@ -16,7 +16,7 @@ const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Your Apps',
-  description: 'Create your own apps using the Audius API.',
+  description: 'Create your own apps fdsa the Audius API.',
   yourAppsTitle: 'Your Apps',
   noApps: "You haven't created any apps yet.",
   newAppButton: 'New',

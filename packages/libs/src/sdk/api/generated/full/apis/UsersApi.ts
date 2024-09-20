@@ -190,6 +190,12 @@ export interface GetManagersRequest {
     encodedDataSignature?: string;
 }
 
+export interface GetMutedUsersRequest {
+    id: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface GetPurchasersRequest {
     id: string;
     offset?: number;
@@ -971,6 +977,45 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getManagers(params: GetManagersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagersResponse> {
         const response = await this.getManagersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a single user by their user ID
+     */
+    async getMutedUsersRaw(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getMutedUsers.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/muted`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullUserResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a single user by their user ID
+     */
+    async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getMutedUsersRaw(params, initOverrides);
         return await response.value();
     }
 

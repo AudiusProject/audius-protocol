@@ -249,6 +249,18 @@ const userApi = createApi({
         return data
       },
       options: {}
+    },
+    getMutedUsers: {
+      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
+        const encodedUserId = encodeHashId(userId) as string
+        const sdk = await audiusSdk()
+        const { data: users } = await sdk.full.users.getMutedUsers({
+          id: encodedUserId
+        })
+        return userMetadataListFromSDK(users)
+      },
+
+      options: { kind: Kind.USERS, schemaKey: 'users' }
     }
   }
 })
@@ -264,7 +276,8 @@ export const {
   useGetRemixersCount,
   useGetPurchasersCount,
   useGetRemixedTracks,
-  useGetSalesAggegrate
+  useGetSalesAggegrate,
+  useGetMutedUsers
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

@@ -35,6 +35,7 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -49,6 +50,14 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
@@ -138,6 +147,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
     emailFrequency
   } = props
   const isManagedAccount = useIsManagedAccount()
+  const dispatch = useDispatch()
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -151,6 +161,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
     useState(false)
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
+  const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
+
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
     'AiAttributionSettings'
   )
@@ -222,6 +234,19 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const openInboxSettingsModal = useCallback(() => {
     setIsInboxSettingsModalVisible(true)
   }, [setIsInboxSettingsModalVisible])
+
+  const openCommentSettingsModal = useCallback(() => {
+    // dispatch(setVisibility(true))
+    // dispatch(
+    //   setUsers({
+    //     userListType: UserListType.MUTED,
+    //     entityType: UserListEntityType.USER,
+    //     id: userId
+    //   })
+    // )
+
+    setIsCommentSettingsModalVisible(true)
+  }, [setIsCommentSettingsModalVisible])
 
   const openAiAttributionSettingsModal = useCallback(() => {
     setIsAIAttributionSettingsModalVisible(true)
@@ -311,6 +336,20 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
+        <SettingsCard
+          icon={<IconMessage />}
+          title={messages.commentSettingsCardTitle}
+          description={messages.commentSettingsCardDescription}
+        >
+          <Button
+            variant='secondary'
+            onClick={openCommentSettingsModal}
+            fullWidth
+          >
+            {messages.commentSettingsButtonText}
+          </Button>
+        </SettingsCard>
+
         <SettingsCard
           icon={<IconNotification />}
           title={messages.notificationsCardTitle}

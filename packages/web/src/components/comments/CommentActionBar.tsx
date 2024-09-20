@@ -115,6 +115,7 @@ export const CommentActionBar = ({
   }, [commentId, reportComment, toast])
 
   const handleMuteUser = useCallback(() => {
+    console.log('asdf handle mute user')
     muteUser(comment.userId)
     toast(messages.mutedUserConfirmation)
   }, [comment.userId, muteUser, toast])
