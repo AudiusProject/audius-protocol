@@ -26,7 +26,10 @@ export class CommentsApi extends GeneratedCommentsApi {
 
   async postComment(metadata: CommentMetadata) {
     const { userId, entityType = EntityType.TRACK, commentId } = metadata
-    const newCommentId = commentId ?? Math.floor(Math.random() * 1000000) // TODO: request an unused id instead of a random number
+    const newCommentId =
+      commentId !== undefined
+        ? Number(commentId)
+        : Math.floor(Math.random() * 1000000) // TODO: request an unused id instead of a random number
     await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
