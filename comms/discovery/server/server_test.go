@@ -503,6 +503,10 @@ func TestGetPermissions(t *testing.T) {
 	assert.NoError(t, err)
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
 
+	privateKey7, err := crypto.GenerateKey()
+	assert.NoError(t, err)
+	wallet7 := crypto.PubkeyToAddress(privateKey7.PublicKey).Hex()
+
 	// Set up db
 	db.Conn.MustExec("truncate table chat cascade")
 	db.Conn.MustExec("truncate table users cascade")
@@ -519,6 +523,7 @@ func TestGetPermissions(t *testing.T) {
 	user4Id := seededRand.Int31()
 	user5Id := seededRand.Int31()
 	user6Id := seededRand.Int31()
+	user7Id := seededRand.Int31()
 
 	encodedUser1 := misc.MustEncodeHashID(int(user1Id))
 	encodedUser2 := misc.MustEncodeHashID(int(user2Id))
@@ -526,15 +531,24 @@ func TestGetPermissions(t *testing.T) {
 	encodedUser4 := misc.MustEncodeHashID(int(user4Id))
 	encodedUser5 := misc.MustEncodeHashID(int(user5Id))
 	encodedUser6 := misc.MustEncodeHashID(int(user6Id))
+	encodedUser7 := misc.MustEncodeHashID(int(user7Id))
 
-	// Create 2 users with wallets
-	tx.MustExec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true), ($3, $4::text, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
+	// user 1, 2, 7 have wallets
+	tx.MustExec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true), ($3, $4::text, lower($4), true), ($5, $6::text, lower($6), true)",
+		user1Id, wallet1,
+		user2Id, wallet2,
+		user7Id, wallet7)
+
+	tx.MustExec("update users set is_verified = true where user_id = $1", user2Id)
 
 	// user 2 follows user 1
 	tx.MustExec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
 
 	// user 2 has tipped user 3
 	tx.MustExec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user2Id, user3Id)
+
+	// user 1 has tipped user 7
+	tx.MustExec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user1Id, user7Id)
 
 	// Set permissions:
 	// - user 1: implicit all
@@ -543,14 +557,19 @@ func TestGetPermissions(t *testing.T) {
 	// - user 4: followees
 	// - user 5: explicit all
 	// - user 6: none
+	// - user 7: tippers + followers + verified
 	tx.MustExec(`
 	insert into chat_permissions (user_id, permits)
-	values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)`,
+	values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10), ($11, $12), ($13, $14), ($15, $16)`,
 		user2Id, schema.Followees,
 		user3Id, schema.Tippers,
 		user4Id, schema.Followees,
 		user5Id, schema.All,
-		user6Id, schema.None)
+		user6Id, schema.None,
+		user7Id, schema.Tippers,
+		user7Id, schema.Followers,
+		user7Id, schema.Verified,
+	)
 
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -560,23 +579,32 @@ func TestGetPermissions(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chats/permissions (current user)
-	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&timestamp=%d", encodedUser2, time.Now().UnixMilli())
+	makePermissionRequest := func(privateKey *ecdsa.PrivateKey, otherUserId ...string) (int, string) {
+		uv := &url.Values{}
+		uv.Set("timestamp", fmt.Sprintf("%d", time.Now().UnixMilli()))
+		for _, id := range otherUserId {
+			uv.Add("id", id)
+		}
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?%s", uv.Encode())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
-		// Set sig header from user 2
-		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey2)
+		sigBase64 := signPayload(t, []byte(reqUrl), privateKey)
 		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
 
-		res := rec.Result()
-		defer res.Body.Close()
+		err = testServer.getChatPermissions(c)
+		assert.NoError(t, err)
+		got := rec.Body.String()
+
+		return rec.Code, got
+	}
+
+	// Test GET /chats/permissions (current user)
+	{
+		code, got := makePermissionRequest(privateKey2, encodedUser2)
 
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
@@ -596,29 +624,14 @@ func TestGetPermissions(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
 	}
 
 	// Test GET /chats/permissions (implicit all, explicit all, none)
 	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&id=%s&timestamp=%d", encodedUser1, encodedUser5, encodedUser6, time.Now().UnixMilli())
-		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
-		assert.NoError(t, err)
 
-		// Set sig header from user 2
-		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(signing.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
+		code, got := makePermissionRequest(privateKey2, encodedUser1, encodedUser5, encodedUser6)
 
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
@@ -643,29 +656,14 @@ func TestGetPermissions(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
 	}
 
 	// Test GET /chats/permissions (followees, tippers) -> (true, false)
 	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&timestamp=%d", encodedUser2, encodedUser3, time.Now().UnixMilli())
-		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
-		assert.NoError(t, err)
 
-		// Set sig header from user 1
-		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(signing.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
+		code, got := makePermissionRequest(privateKey1, encodedUser2, encodedUser3)
 
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
@@ -685,29 +683,14 @@ func TestGetPermissions(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
+
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
 	}
 
 	// Test GET /chats/permissions (followees, tippers) -> (false, true)
 	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&timestamp=%d", encodedUser3, encodedUser4, time.Now().UnixMilli())
-		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
-		assert.NoError(t, err)
-
-		// Set sig header from user 2
-		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(signing.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
+		code, got := makePermissionRequest(privateKey2, encodedUser3, encodedUser4)
 
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
@@ -727,10 +710,60 @@ func TestGetPermissions(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
+
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
+	}
+
+	// multi-permissions test: follower
+	{
+		code, got := makePermissionRequest(privateKey1, encodedUser2, encodedUser7)
+
+		// Assertions
+		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
+			encodedUser2: {
+				Permits:                  string(schema.Followees),
+				CurrentUserHasPermission: true,
+			},
+			encodedUser7: {
+				Permits:                  fmt.Sprintf("%s,%s,%s", schema.Followers, schema.Tippers, schema.Verified),
+				CurrentUserHasPermission: true,
+			},
+		})
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
+	}
+
+	// multi-permissions test: verified
+	{
+		code, got := makePermissionRequest(privateKey2, encodedUser7)
+
+		// Assertions
+		expectedData := ToChatPermissionsResponse(map[string]queries.ChatPermissionsRow{
+			encodedUser7: {
+				Permits:                  fmt.Sprintf("%s,%s,%s", schema.Followers, schema.Tippers, schema.Verified),
+				CurrentUserHasPermission: true,
+			},
+		})
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, code)
+		assert.JSONEq(t, string(expectedResponse), got)
+		assert.Equal(t, expectedData[0].PermitList, []schema.ChatPermission{schema.Followers, schema.Tippers, schema.Verified})
 	}
 }
 

@@ -106,7 +106,10 @@ func ToChatPermissionsResponse(validatedPermissions map[string]queries.ChatPermi
 	var chatPermissions []schema.ValidatedChatPermissions
 	for encodedId, row := range validatedPermissions {
 		var permitList []schema.ChatPermission
-		for _, v := range strings.Split(row.Permits, ",") {
+
+		permitSplit := strings.Split(row.Permits, ",")
+		sort.Strings(permitSplit)
+		for _, v := range permitSplit {
 			permitList = append(permitList, schema.ChatPermission(v))
 		}
 		if len(permitList) == 0 {
