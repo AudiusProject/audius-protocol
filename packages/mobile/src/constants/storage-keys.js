@@ -1,0 +1,9 @@
+export var DEVICE_TOKEN = '@device-token';
+export var IS_MOBILE_USER = 'is-mobile-user';
+export var RATE_CTA_STORAGE_KEY = '@rate-cta-response';
+export var IP_STORAGE_KEY = 'user-ip-timetstamp';
+export var SESSION_COUNT_KEY = '@session-count';
+export var ENTROPY_KEY = 'hedgehog-entropy-key';
+export var THEME_STORAGE_KEY = 'theme';
+export var OFFLINE_OVERRIDE_STORAGE_KEY = 'offline_mode_release_local_override';
+export var SEARCH_HISTORY_KEY = '@search-history';
