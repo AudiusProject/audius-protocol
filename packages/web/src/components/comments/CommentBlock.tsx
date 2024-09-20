@@ -8,9 +8,11 @@ import {
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { Status } from '@audius/common/models'
+import { getKeyFromFetchArgs } from '@audius/common/src/audius-query/utils'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
-import { Comment, ReplyComment } from '@audius/sdk'
+import { Comment, CommentMetadata, EntityType, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
@@ -54,11 +56,27 @@ const CommentBlockInternal = (
     (state: AppState) => getUser(state, { id: commentUserId })?.handle
   )
 
-  const { artistId } = useCurrentCommentSection()
+  const { artistId, entityId } = useCurrentCommentSection()
 
   const [deleteComment] = useDeleteComment()
-  const [, { status: commentPostStatus }] = usePostComment() // Note: comment post status is shared across all inputs they may have open
 
+  // TODO: whats a better way to package this?
+  // Need to get the status of this comment regardless of where the usePostComment hook was called
+  const commentPostStatus = useSelector(
+    (state: AppState) =>
+      state.api.commentsApi.postComment[
+        getKeyFromFetchArgs({
+          body: message,
+          userId: commentUserId,
+          entityId,
+          entityType: EntityType.TRACK,
+          parentCommentId,
+          trackTimestampS
+        } as CommentMetadata)
+      ]?.status
+  )
+
+  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
@@ -130,6 +148,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
+            isDisabled={isCommentLoading}
           />
         )}
 

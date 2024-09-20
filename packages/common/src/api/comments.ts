@@ -9,7 +9,7 @@ import { ThunkDispatch } from '@reduxjs/toolkit'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models'
-import { Nullable, decodeHashId, encodeHashId, uuid } from '~/utils'
+import { Nullable, decodeHashId, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
 // Updates the array of all comments
@@ -126,16 +126,14 @@ const commentsApi = createApi({
       async fetch(
         { parentCommentId, ...commentData }: CommentMetadata,
         { audiusSdk },
-        { newId }
+        { newId }: { newId: string }
       ) {
         const sdk = await audiusSdk()
-        const decodedParentCommentId =
-          decodeHashId(parentCommentId?.toString() ?? '') ?? undefined // undefined is allowed but null is not
 
         const commentsRes = await sdk.comments.postComment({
           ...commentData,
           commentId: newId,
-          parentCommentId: decodedParentCommentId
+          parentCommentId
         })
         return commentsRes
       },
