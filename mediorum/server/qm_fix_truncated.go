@@ -13,7 +13,7 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 	ctx := context.Background()
 	var err error
 
-	_, err = ss.pgPool.Exec(ctx, `insert into cursors (hosts, last_ulid) values ('qm_fix_truncated', '') on conflict do nothing`)
+	_, err = ss.pgPool.Exec(ctx, `insert into cursors (host, last_ulid) values ('qm_fix_truncated', '') on conflict do nothing`)
 	if err != nil {
 		logger.Error("create cursor failed", "err", err)
 		return
@@ -56,7 +56,7 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 					u := fmt.Sprintf("%s/internal/blobs/location/%s?sniff=1&fix=1", hostBlob.Host, cid)
 					_, err := ss.reqClient.R().Get(u)
 					if err != nil {
-						logger.Info("fix failed", "host", "url", u, "err", err)
+						logger.Info("fix failed", "url", u, "err", err)
 					}
 				}
 			}
