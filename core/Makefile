@@ -14,7 +14,7 @@ TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
 
-VERSION_LDFLAG := -X main.Version=$(shell git rev-parse HEAD)
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
 
 .PHONY: build-native
 build-native: $(NATIVE_BIN)

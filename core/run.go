@@ -24,7 +24,7 @@ import (
 func run(logger *common.Logger) error {
 	logger.Info("good morning!")
 
-	config, cometConfig, err := setupNode(logger, Version)
+	config, cometConfig, err := setupNode(logger)
 	if err != nil {
 		return fmt.Errorf("setting up node: %v", err)
 	}
