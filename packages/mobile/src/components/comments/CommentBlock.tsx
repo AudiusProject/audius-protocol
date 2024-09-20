@@ -49,8 +49,6 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
-  // TODO: whats a better way to package this?
-  // Need to get the status of this comment regardless of where the usePostComment hook was called
   const commentPostStatus = useCommentPostStatus(comment)
   const isLoading = commentPostStatus === Status.LOADING
 
