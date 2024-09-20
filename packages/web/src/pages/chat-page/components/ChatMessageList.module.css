@@ -1,9 +1,6 @@
 .root {
   flex: 1;
   overflow-y: scroll;
-  width: 100%;
-  display: flex;
-  justify-content: center;
 }
 
 .listRoot {
@@ -13,8 +10,6 @@
   gap: 8px;
   padding: 32px;
   height: 100%;
-  max-width: 1080px;
-  flex: 1;
 }
 
 .separator {
