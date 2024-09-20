@@ -1,17 +1,22 @@
 import { useCallback, useContext } from 'react'
 
 import { Name, ShareSource, Track, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   tracksSocialActions,
   usersSocialActions,
   ShareContent,
-  UploadType
+  UploadType,
+  shareModalUIActions,
+  createChatModalActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
   IconLink,
+  IconMessage,
+  IconShare,
   IconTwitter as IconTwitterBird,
   Text
 } from '@audius/harmony'
@@ -24,7 +29,8 @@ import {
   getTwitterShareText
 } from 'components/share-modal/utils'
 import { ToastContext } from 'components/toast/ToastContext'
-import { copyLinkToClipboard } from 'utils/clipboardUtil'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { copyLinkToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 import { openTwitterLink } from 'utils/tweet'
@@ -33,6 +39,8 @@ import styles from './ShareBanner.module.css'
 
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openCreateChatModal } = createChatModalActions
 
 const { getAccountUser } = accountSelectors
 const { collectionPage } = route
@@ -51,7 +59,9 @@ const messages = {
   twitterButtonText: 'Twitter',
   copyLinkButtonText: 'Copy Link',
   copyLinkToast: (uploadType: UploadType) =>
-    `Copied Link to your ${uploadTypeMap[uploadType]}`
+    `Copied Link to your ${uploadTypeMap[uploadType]}`,
+  share: 'Share',
+  shareToDirectMessage: 'Direct Message'
 }
 
 const twitterSharMessages: ShareMessageConfig = {
@@ -77,6 +87,10 @@ export const ShareBanner = (props: ShareBannerProps) => {
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const record = useRecord()
+
+  const { isEnabled: isOneToManyDmsEnabled } = useFlag(
+    FeatureFlags.ONE_TO_MANY_DMS
+  )
 
   const handleTwitterShare = useCallback(async () => {
     let twitterShareContent: ShareContent
@@ -179,6 +193,104 @@ export const ShareBanner = (props: ShareBannerProps) => {
     toast(messages.copyLinkToast(uploadType), SHARE_TOAST_TIMEOUT_MILLIS)
   }, [uploadType, toast, upload, dispatch, accountUser])
 
+  const handleShare = useCallback(() => {
+    switch (uploadType) {
+      case UploadType.INDIVIDUAL_TRACK: {
+        const trackId = upload.tracks?.[0].metadata.track_id
+        if (!trackId) return
+        dispatch(
+          requestOpenShareModal({
+            type: 'track',
+            trackId,
+            source: ShareSource.UPLOAD
+          })
+        )
+        break
+      }
+      case UploadType.INDIVIDUAL_TRACKS: {
+        dispatch(
+          requestOpenShareModal({
+            type: 'profile',
+            profileId: accountUser.user_id,
+            source: ShareSource.UPLOAD
+          })
+        )
+        break
+      }
+      case UploadType.ALBUM:
+      case UploadType.PLAYLIST: {
+        const collectionId = upload.completionId
+        if (!collectionId) return
+        dispatch(
+          requestOpenShareModal({
+            type: 'collection',
+            collectionId,
+            source: ShareSource.UPLOAD
+          })
+        )
+        break
+      }
+    }
+  }, [
+    accountUser.user_id,
+    dispatch,
+    upload.completionId,
+    upload.tracks,
+    uploadType
+  ])
+
+  const handleShareToDirectMessage = useCallback(async () => {
+    let permalink: string | undefined
+    switch (uploadType) {
+      case UploadType.INDIVIDUAL_TRACK:
+        permalink = upload.tracks?.[0].metadata.permalink
+        break
+      case UploadType.INDIVIDUAL_TRACKS:
+        permalink = accountUser.handle
+        break
+      case UploadType.ALBUM:
+      case UploadType.PLAYLIST:
+        permalink = upload.completedEntity?.permalink
+        break
+    }
+
+    dispatch(
+      openCreateChatModal({
+        // Just care about the link
+        presetMessage: permalink ? getCopyableLink(permalink) : undefined,
+        defaultUserList: 'chats'
+      })
+    )
+    dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'upload' }))
+  }, [
+    accountUser.handle,
+    dispatch,
+    upload.completedEntity?.permalink,
+    upload.tracks,
+    uploadType
+  ])
+
+  const legacyShareButtons = (
+    <>
+      <Button
+        variant='tertiary'
+        fullWidth
+        iconLeft={IconTwitterBird}
+        onClick={handleTwitterShare}
+      >
+        {messages.twitterButtonText}
+      </Button>
+      <Button
+        variant='tertiary'
+        fullWidth
+        iconLeft={IconLink}
+        onClick={handleCopyLink}
+      >
+        {messages.copyLinkButtonText}
+      </Button>
+    </>
+  )
+
   return (
     <div
       className={styles.root}
@@ -195,22 +307,28 @@ export const ShareBanner = (props: ShareBannerProps) => {
             {messages.shareText(uploadType)}
           </Text>
           <div className={styles.buttonContainer}>
-            <Button
-              variant='tertiary'
-              fullWidth
-              iconLeft={IconTwitterBird}
-              onClick={handleTwitterShare}
-            >
-              {messages.twitterButtonText}
-            </Button>
-            <Button
-              variant='tertiary'
-              fullWidth
-              iconLeft={IconLink}
-              onClick={handleCopyLink}
-            >
-              {messages.copyLinkButtonText}
-            </Button>
+            {!isOneToManyDmsEnabled ? (
+              legacyShareButtons
+            ) : (
+              <>
+                <Button
+                  variant='tertiary'
+                  fullWidth
+                  iconLeft={IconMessage}
+                  onClick={handleShareToDirectMessage}
+                >
+                  {messages.shareToDirectMessage}
+                </Button>
+                <Button
+                  variant='tertiary'
+                  fullWidth
+                  iconLeft={IconShare}
+                  onClick={handleShare}
+                >
+                  {messages.share}
+                </Button>
+              </>
+            )}
           </div>
         </>
       ) : null}
