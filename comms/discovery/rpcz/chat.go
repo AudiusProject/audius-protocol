@@ -83,7 +83,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		}
 	}
 
-	err = chatUpdateLatestFields(tx, params.ChatID)
+	err = chatUpdateLatestFields(tx, params.ChatID, len(blasts))
 
 	return err
 }
@@ -93,7 +93,7 @@ func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.
 	return err
 }
 
-func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
+func chatUpdateLatestFields(tx *sqlx.Tx, chatId string, numBlasts int) error {
 	// universal latest message thing
 	_, err := tx.Exec(`
 	with latest as (
@@ -138,9 +138,10 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 			b.from_user_id != member.user_id OR
 			r.user_id != member.user_id
 		)
-	)
+	),
+	unread_count = unread_count + $2
 	WHERE member.chat_id = $1
-	`, chatId)
+	`, chatId, numBlasts)
 	return err
 }
 
@@ -154,7 +155,7 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	}
 
 	// update chat's info on last message
-	err = chatUpdateLatestFields(tx, chatId)
+	err = chatUpdateLatestFields(tx, chatId, 0)
 	if err != nil {
 		return err
 	}
@@ -191,7 +192,7 @@ func chatReactMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string
 	}
 
 	// update chat's info on reaction
-	err = chatUpdateLatestFields(tx, chatId)
+	err = chatUpdateLatestFields(tx, chatId, 0)
 	return err
 }
 
