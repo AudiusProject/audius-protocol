@@ -221,7 +221,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
             />
           ) : null}
           {chat?.messagesStatus === Status.SUCCESS &&
-          chatMessages?.length === 0 ? (
+          chatMessages?.length === 0 &&
+          !chat?.is_blast ? (
             <SendMessagePrompt />
           ) : null}
           {chatId &&
