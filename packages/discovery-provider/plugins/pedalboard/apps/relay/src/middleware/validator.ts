@@ -2,14 +2,9 @@ import { NextFunction, Request, Response } from 'express'
 import { RelayRequest } from '../types/relay'
 import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
-import { AudiusABIDecoder } from '@audius/sdk/dist/libs'
+import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
-import {
-  isTrackDownload,
-  isUserCreate,
-  isUserDeactivate,
-  isViewNotification
-} from '../utils'
+import { isTrackDownload, isUserCreate, isUserDeactivate, isViewNotification } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
 const MAX_ACDC_GAS_LIMIT = 10485760
@@ -56,10 +51,10 @@ export const validator = async (
   }
 
   const loggerInfo: {
-    operation?: string
-    handle?: string
-    address?: string
-    userId?: number
+    operation?: string,
+    handle?: string,
+    address?: string,
+    userId?: number,
     isApp?: boolean
   } = {
     isApp: false
@@ -67,7 +62,7 @@ export const validator = async (
 
   const operation = getEntityManagerActionKey(encodedABI)
   loggerInfo.operation = operation
-  logger.info({ operation, encodedABI }, 'retrieved operation')
+  logger.info({ operation, encodedABI }, "retrieved operation")
 
   // Gather user from input data
   // @ts-ignore, partially populate for now
@@ -94,33 +89,25 @@ export const validator = async (
     loggerInfo.handle = user.handle_lc || undefined
     loggerInfo.address = user.wallet || undefined
     loggerInfo.userId = user.user_id || undefined
-
-    logger.info(
-      {
-        handle: user.handle_lc,
-        address: user.wallet,
-        userId: user.user_id,
-        operation
-      },
-      `retrieved user ${user.handle_lc}`
-    )
+    
+    logger.info({ handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
   }
 
   if (signerIsUser) {
     const isDeactivated = (recoveredSigner as Users).is_deactivated
     if (isUserDeactivate(isDeactivated, encodedABI)) {
-      logger.info('user deactivation')
+      logger.info("user deactivation")
       isAnonymousAllowed = true
     }
   }
 
   if (isUserCreate(encodedABI)) {
-    logger.info('user create')
+    logger.info("user create")
     isAnonymousAllowed = true
   }
 
   if (isTrackDownload(encodedABI)) {
-    logger.info('track download')
+    logger.info("track download")
     isAnonymousAllowed = true
   }
 
@@ -130,12 +117,9 @@ export const validator = async (
 
   // could not find user and is not create, find app
   if (!signerIsUser && !isAnonymousAllowed && !isSenderVerifier) {
-    const developerApp = await retrieveDeveloperApp({
-      encodedABI,
-      contractAddress
-    })
+    const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
-      logger.error('neither user nor developer app could be found for address')
+      logger.error("neither user nor developer app could be found for address")
       validationError(next, 'recoveredSigner not valid')
       return
     }
@@ -145,15 +129,7 @@ export const validator = async (
     loggerInfo.userId = developerApp.user_id || undefined
     loggerInfo.handle = developerApp.name
     loggerInfo.isApp = true
-    logger.info(
-      {
-        address: developerApp.address,
-        userId: developerApp.user_id,
-        handle: developerApp.name,
-        operation
-      },
-      `retrieved developer app ${developerApp.name}`
-    )
+    logger.info({ address: developerApp.address, userId: developerApp.user_id, handle: developerApp.name, operation }, `retrieved developer app ${developerApp.name}`)
   }
 
   // inject remaining fields into ctx for downstream middleware
@@ -161,7 +137,7 @@ export const validator = async (
 
   const oldCtx = response.locals.ctx
   // create child logger with additional
-  const newLogger = logger.child({ ...loggerInfo })
+  const newLogger = logger.child({...loggerInfo})
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
@@ -223,17 +199,12 @@ export const retrieveUser = async (
   return user
 }
 
-export const retrieveDeveloperApp = async (params: {
-  encodedABI: string
-  contractAddress: string
-}): Promise<DeveloperApps | undefined> => {
+export const retrieveDeveloperApp = async (params: { encodedABI: string, contractAddress: string }): Promise<DeveloperApps | undefined> => {
   const { encodedABI, contractAddress } = params
   const recoveredAddress = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
     entityManagerAddress: contractAddress,
     chainId: config.acdcChainId!
   })
-  return await discoveryDb<DeveloperApps>(Table.DeveloperApps)
-    .where('address', '=', recoveredAddress)
-    .first()
+  return await discoveryDb<DeveloperApps>(Table.DeveloperApps).where('address', '=', recoveredAddress).first()
 }

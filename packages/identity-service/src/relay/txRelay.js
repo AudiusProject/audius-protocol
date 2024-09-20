@@ -8,7 +8,7 @@ const { logger } = require('../logging')
 const { Lock } = require('../redis')
 const RelayReporter = require('../utils/relayReporter')
 
-const { libs } = require('@audius/sdk/dist/libs')
+const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 const { primaryWeb3, nethermindWeb3, secondaryWeb3 } = require('../web3')
 

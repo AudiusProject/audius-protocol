@@ -2,6 +2,7 @@ package server
 
 import (
 	"sort"
+	"strings"
 	"time"
 
 	"comms.audius.co/discovery/db"
@@ -101,13 +102,24 @@ func ToMessageResponse(message queries.ChatMessageAndReactionsRow) schema.ChatMe
 	return messageData
 }
 
-func ToChatPermissionsResponse(validatedPermissions map[string]*ValidatedPermission) []schema.ValidatedChatPermissions {
+func ToChatPermissionsResponse(validatedPermissions map[string]queries.ChatPermissionsRow) []schema.ValidatedChatPermissions {
 	var chatPermissions []schema.ValidatedChatPermissions
-	for encodedId, permission := range validatedPermissions {
+	for encodedId, row := range validatedPermissions {
+		var permitList []schema.ChatPermission
+
+		permitSplit := strings.Split(row.Permits, ",")
+		sort.Strings(permitSplit)
+		for _, v := range permitSplit {
+			permitList = append(permitList, schema.ChatPermission(v))
+		}
+		if len(permitList) == 0 {
+			continue
+		}
 		chatPermissions = append(chatPermissions, schema.ValidatedChatPermissions{
 			UserID:                   encodedId,
-			Permits:                  (*permission).Permits,
-			CurrentUserHasPermission: (*permission).CurrentUserHasPermission,
+			Permits:                  permitList[0],
+			PermitList:               permitList,
+			CurrentUserHasPermission: row.CurrentUserHasPermission,
 		})
 	}
 	sort.Slice(chatPermissions, func(i, j int) bool {
