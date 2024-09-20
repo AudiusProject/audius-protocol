@@ -20,9 +20,9 @@ based on setup configuration.
 - determines env
 - gathers chain id
 */
-func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
+func setupNode(logger *common.Logger, version string) (*config.Config, *cconfig.Config, error) {
 	// read in env / dotenv config
-	envConfig, err := config.ReadConfig(logger)
+	envConfig, err := config.ReadConfig(logger, version)
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading env config: %v", err)
 	}

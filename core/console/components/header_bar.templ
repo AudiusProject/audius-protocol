@@ -15,7 +15,7 @@ templ (c *Components) HeaderInfo(blockHeight, txCount string) {
 	</div>
 }
 
-var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.GitHash))
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
 
 templ (c *Components) HeaderBar() {
 	@Base() {
@@ -36,7 +36,7 @@ templ (c *Components) HeaderBar() {
 			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
 				<div class="text-sm text-gray-600 flex justify-between w-full px-5">
 					<span>made with ⚡️ by the protocol team</span>
-					<span>version: <a href={ gitCommit } target="_blank">{ config.GitHash }</a></span>
+					<span>version: <a href={ gitCommit } target="_blank">{ config.Version }</a></span>
 				</div>
 			</footer>
 		</div>

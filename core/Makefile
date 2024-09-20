@@ -14,19 +14,19 @@ TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
 
-export GIT_COMMIT = $(shell git rev-parse HEAD)
+VERSION_LDFLAG := -X main.Version=$(shell git rev-parse HEAD)
 
 .PHONY: build-native
 build-native: $(NATIVE_BIN)
 
 $(NATIVE_BIN): $(GO_SRCS)
-	@go build -o ./tmp/core
+	@go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core
 
 .PHONY: build-amd64
 build-amd64: $(AMD64_BIN)
 
 $(AMD64_BIN): $(GO_SRCS)
-	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core-amd64
 
 .PHONY: deps
 deps:
@@ -78,9 +78,9 @@ livereload:
 .PHONY: push-prerelease
 push-prerelease:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(GIT_COMMIT)" "audius/core:prerelease"
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
 
 .PHONY: push-edge
 push-edge:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(GIT_COMMIT)" "audius/core:edge"
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"

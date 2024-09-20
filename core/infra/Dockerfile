@@ -8,8 +8,10 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
   go mod download -x
 
 COPY . .
+
+ARG git_sha
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-  CGO_ENABLED=0 go build -o /bin/server .
+  CGO_ENABLED=0 go build -ldflags "-X main.Version=${git_sha}" -o /bin/server .
 
 FROM alpine:latest AS final
 
@@ -23,8 +25,5 @@ RUN --mount=type=cache,target=/var/cache/apk \
   update-ca-certificates
 
 COPY --from=build /bin/server /bin/
-
-ARG git_sha
-ENV GIT_SHA=$git_sha
 
 ENTRYPOINT [ "/bin/server" ]

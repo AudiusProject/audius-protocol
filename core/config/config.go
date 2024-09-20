@@ -45,6 +45,11 @@ const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost):.*`
 
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
 
+// constants updated later for downstream modules
+var (
+	Version = ""
+)
+
 type Config struct {
 	/* Comet Config */
 	RootDir         string
@@ -80,7 +85,7 @@ type Config struct {
 	SlaRollupInterval int
 }
 
-func ReadConfig(logger *common.Logger) (*Config, error) {
+func ReadConfig(logger *common.Logger, version string) (*Config, error) {
 	// read in dotenv if passed in via flag
 	envFile := flag.String("env-file", "", ".env file to read for config")
 
@@ -93,6 +98,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			return nil, fmt.Errorf("dot env provided but couldn't load %v", err)
 		}
 	}
+
+	Version = version
 
 	var cfg Config
 	// comet config
