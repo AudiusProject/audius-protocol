@@ -72,3 +72,13 @@ sandbox:
 .PHONY: livereload
 livereload:
 	modd
+
+.PHONY: push-stage
+push-stage:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
+
+.PHONY: push-foundation
+push-stage:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
