@@ -1,5 +1,5 @@
 import { wAUDIO } from '@audius/fixed-decimal'
-import { type TransactionInstruction } from '@solana/web3.js'
+import { PACKET_DATA_SIZE, type TransactionInstruction } from '@solana/web3.js'
 
 import type {
   ClaimableTokensClient,
@@ -170,10 +170,9 @@ export class ChallengesApi extends GeneratedChallengesApi {
       addressLookupTables: [this.rewardManager.lookupTable],
       priorityFee: null
     })
-    const maxTransactionSize = 1232
     // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
     const estimatedEvaluateInstructionSize = 145
-    const threshold = maxTransactionSize - estimatedEvaluateInstructionSize
+    const threshold = PACKET_DATA_SIZE - estimatedEvaluateInstructionSize
     if (txSoFar.serialize().byteLength >= threshold) {
       logger.debug(
         `Transaction size too large (size: ${
