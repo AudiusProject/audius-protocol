@@ -10,7 +10,4 @@ COPY ./tmp/core-amd64 ./core
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-ARG git_sha
-ENV GIT_SHA=$git_sha
-
 CMD ["./core"]
