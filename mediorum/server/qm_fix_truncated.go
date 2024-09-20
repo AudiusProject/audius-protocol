@@ -15,7 +15,8 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 
 	_, err = ss.pgPool.Exec(ctx, `insert into cursors (hosts, last_ulid) values ('qm_fix_truncated', '') on conflict do nothing`)
 	if err != nil {
-		panic(err)
+		logger.Error("create cursor failed", "err", err)
+		return
 	}
 
 	for {
@@ -24,7 +25,8 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 		var cidCursor string
 		err = pgxscan.Select(ctx, ss.pgPool, &cidCursor, `select last_ulid from cursors where host = 'qm_fix_truncated'`)
 		if err != nil {
-			panic(err)
+			logger.Error("select cursor failed", "err", err)
+			continue
 		}
 
 		var cidBatch []string
