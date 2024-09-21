@@ -23,10 +23,9 @@ begin
           'comment_thread:' || new.parent_comment_id,
           json_build_object
           (
-            'entity_id', entity_id,
             'type', entity_type,
+            'entity_id', entity_id,
             'entity_user_id', entity_user_id,
-            'parent_comment_user_id', parent_comment_user_id,
             'comment_user_id', comment_user_id
           )
         )

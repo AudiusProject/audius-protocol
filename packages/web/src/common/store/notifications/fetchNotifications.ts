@@ -80,6 +80,7 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     isManagerModeEnabled ? ValidTypes.RequestManager : null,
     isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
     isCommentsEnabled ? ValidTypes.Comment : null,
+    isCommentsEnabled ? ValidTypes.CommentThread : null,
     ValidTypes.ClaimableReward
   ].filter(removeNullable)
 

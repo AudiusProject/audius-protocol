@@ -1,8 +1,9 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import {
   notificationsSelectors,
-  CommentNotification as CommentNotificationType
+  CommentThreadNotification as CommentThreadNotificationType
 } from '@audius/common/store'
 import { IconMessage } from '@audius/harmony'
 import { push } from 'connected-react-router'
@@ -28,13 +29,17 @@ import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  commented: ' commented on your '
+  replied: ' replied to your comment on',
+  your: 'your'
 }
 
-type CommentNotificationProps = {
-  notification: CommentNotificationType
+type CommentThreadNotificationProps = {
+  notification: CommentThreadNotificationType
 }
-export const CommentNotification = (props: CommentNotificationProps) => {
+
+export const CommentThreadNotification = (
+  props: CommentThreadNotificationProps
+) => {
   const { notification } = props
   const { id, userIds, entityType, timeLabel, isViewed } = notification
   const users = useSelector((state) =>
@@ -47,6 +52,10 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const entity = useSelector((state) =>
     getNotificationEntity(state, notification)
   )
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  const isOwner = entity?.user?.user_id === currentUserId
 
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
@@ -75,7 +84,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
     [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
   )
 
-  if (!users || !firstUser || !entity) return null
+  if (!users || !firstUser || !entity || !entity.user) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -91,7 +100,12 @@ export const CommentNotification = (props: CommentNotificationProps) => {
         {otherUsersCount > 0 ? (
           <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
         ) : null}
-        {messages.commented}
+        {messages.replied}{' '}
+        {isOwner ? (
+          messages.your
+        ) : (
+          <UserNameLink user={entity.user} notification={notification} />
+        )}{' '}
         {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>

@@ -37,7 +37,6 @@ def test_get_comment_reply_notification(app):
             assert notification_data["type"] == "Track"
             assert notification_data["entity_user_id"] == 1
             assert notification_data["comment_user_id"] == 1
-            assert notification_data["parent_comment_user_id"] == 2
 
 
 # If parent comment owner replies on their own comment, they do not receive a notification

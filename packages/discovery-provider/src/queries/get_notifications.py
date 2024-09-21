@@ -453,6 +453,14 @@ class CommentNotification(TypedDict):
     user_id: int
 
 
+class CommentThreadNotification(TypedDict):
+    type: str
+    entity_id: int
+    entity_user_id: int
+    parent_comment_user_id: int
+    comment_user_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -481,6 +489,7 @@ NotificationData = Union[
     UsdcPurchaseBuyerNotification,
     UsdcPurchaseSellerNotification,
     CommentNotification,
+    CommentThreadNotification,
 ]
 
 
