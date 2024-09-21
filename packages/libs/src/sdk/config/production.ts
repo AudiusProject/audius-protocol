@@ -289,11 +289,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x16e8DF288BF5DcD507615A715A2a6155F149a865"
       },
       {
-        "endpoint": "https://audius.w3coins.io",
-        "ownerWallet": "0x53B954C36b8f9f7AefdC9791280b95232C255D1b",
-        "delegateOwnerWallet": "0x1cBC80a8A4A6fd5793e535B758A71f332DEc1551"
-      },
-      {
         "endpoint": "https://audius-nodes.com",
         "ownerWallet": "0xE83699015c8eb793A0678eA7dC398ac58f7928c4",
         "delegateOwnerWallet": "0xE83699015c8eb793A0678eA7dC398ac58f7928c4"
@@ -307,6 +302,11 @@ export const productionConfig: SdkServicesConfig = {
         "endpoint": "https://blockchange-audius-discovery-04.bdnodes.net",
         "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
         "delegateOwnerWallet": "0xC7562a5CF872450744C3DC5cDb00e9f105D2EfDc"
+      },
+      {
+        "endpoint": "https://blockchange-audius-discovery-05.bdnodes.net",
+        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
+        "delegateOwnerWallet": "0x319211E15876156BD992dd047587d0cd7b88Be77"
       }
     ],
     "storageNodes": [
@@ -613,6 +613,7 @@ export const productionConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "stkB5DZziVJT1C1VmzvDdRtdWxfs5nwcHViiaNBDK31",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "wAudioTokenMint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM"
+    "wAudioTokenMint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+    "rewardManagerLookupTableAddress": "4UQwpGupH66RgQrWRqmPM9Two6VJEE68VZ7GeqZ3mvVv"
   }
 }

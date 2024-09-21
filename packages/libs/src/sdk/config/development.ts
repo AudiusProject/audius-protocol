@@ -42,6 +42,7 @@ export const developmentConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "",
     "rpcEndpoint": "http://audius-protocol-solana-test-validator-1",
     "usdcTokenMint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
-    "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3"
+    "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3",
+    "rewardManagerLookupTableAddress": "GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J"
   }
 }

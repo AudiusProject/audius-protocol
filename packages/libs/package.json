@@ -182,6 +182,7 @@
     "type-fest": "2.17.0",
     "typed-emitter": "2.1.0",
     "typescript": "5.4.5",
+    "untildify": "5.0.0",
     "wait-for-expect": "3.0.2"
   },
   "repository": {
