@@ -87,3 +87,27 @@ def test_prevent_reply_spam(app):
             u1_notifications = get_notifications(session, args)
 
             assert len(u1_notifications) == 1
+
+
+def test_reply_priority(app):
+    with app.app_context():
+        db_mock = get_db()
+
+        populate_mock_db(db_mock, test_entities)
+
+        test_actions = {
+            "comments": [
+                {"comment_id": 1, "user_id": 1, "entity_id": 1},
+                {"comment_id": 2, "user_id": 2, "entity_id": 1},
+            ],
+            "comment_threads": [
+                {"parent_comment_id": 1, "comment_id": 2},
+            ],
+        }
+        populate_mock_db(db_mock, test_actions)
+
+        with db_mock.scoped_session() as session:
+            args = {"user_id": 1, "valid_types": [NotificationType.COMMENT, NotificationType.COMMENT_THREAD]}
+            u1_notifications = get_notifications(session, args)
+
+            assert len(u1_notifications) == 1

@@ -6,9 +6,21 @@ declare
   entity_id int;
   entity_type text;
 begin
-	select comments.user_id, comments.entity_id, comments.entity_type into parent_comment_user_id, entity_id, entity_type from comments where comment_id = new.parent_comment_id;
-	select comments.user_id into comment_user_id from comments where comment_id = new.comment_id;
-	select tracks.owner_id into entity_user_id from tracks where track_id = entity_id;
+  select comments.user_id, comments.entity_id, comments.entity_type 
+  into parent_comment_user_id, entity_id, entity_type 
+  from comments 
+  where comment_id = new.parent_comment_id;
+
+  select comments.user_id 
+  into comment_user_id 
+  from comments 
+  where comment_id = new.comment_id;
+
+  select tracks.owner_id 
+  into entity_user_id 
+  from tracks 
+  where track_id = entity_id;
+
   begin
     if comment_user_id != parent_comment_user_id then
       insert into notification
