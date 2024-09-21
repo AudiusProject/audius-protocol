@@ -3,7 +3,6 @@ package pages
 import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/components"
 	"github.com/AudiusProject/audius-protocol/core/console/middleware"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client"
@@ -19,7 +18,6 @@ type Pages struct {
 	db     *db.Queries
 	e      *echo.Echo
 	logger *common.Logger
-	c      *components.Components
 }
 
 func NewPages(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Pages, error) {
@@ -29,7 +27,6 @@ func NewPages(config *config.Config, logger *common.Logger, e *echo.Echo, rpc cl
 		e:      e,
 		logger: logger.Child(routeBase),
 		db:     db.New(pool),
-		c:      components.NewComponents(config, rpc, db.New(pool)),
 	}
 
 	consoleBase := e.Group("/" + routeBase)
@@ -44,6 +41,7 @@ func (c *Pages) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
 		g.Use(middleware.JsonExtensionMiddleware)
 		g.Use(middleware.ErrorLoggerMiddleware(logger))
 
+		g.GET("", c.homePage)
 		g.GET("/block/:block", c.blockPage)
 	}
 }

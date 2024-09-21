@@ -8,6 +8,8 @@ package pages
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "github.com/AudiusProject/audius-protocol/core/console/htmlviews/layout"
+
 func HomePage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -29,6 +31,28 @@ func HomePage() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"grid grid-cols-2 gap-4 lg:grid-cols-3\"><div class=\"uk-card\"><div class=\"uk-card-header flex flex-row items-center justify-between\"><h3 class=\"text-sm font-medium tracking-tight\">Latest Block</h3><span class=\"size-4 text-muted-foreground\"><uk-icon icon=\"dollar-sign\"></uk-icon></span></div><div class=\"uk-card-body\"><div class=\"text-2xl font-bold\">$45,231.89</div><p class=\"text-xs text-muted-foreground\">+20.1% from last month</p></div></div><div class=\"uk-card\"><div class=\"uk-card-header flex flex-row items-center justify-between\"><h3 class=\"text-sm font-medium tracking-tight\">Latest Transaction</h3><span class=\"size-4 text-muted-foreground\"><uk-icon icon=\"users\"></uk-icon></span></div><div class=\"uk-card-body\"><div class=\"text-2xl font-bold\">+2350</div><p class=\"text-xs text-muted-foreground\">+180.1% from last month</p></div></div><div class=\"uk-card\"><div class=\"uk-card-header flex flex-row items-center justify-between\"><h3 class=\"text-sm font-medium tracking-tight\">Latest Play</h3><span class=\"size-4 text-muted-foreground\"><uk-icon icon=\"credit-card\"></uk-icon></span></div><div class=\"uk-card-body\"><div class=\"text-2xl font-bold\">+12,234</div><p class=\"text-xs text-muted-foreground\">+19% from last month</p></div></div></div><div class=\"grid gap-4 lg:grid-cols-7\"><div class=\"uk-card flex min-h-64 items-center justify-center lg:col-span-4\"><div class=\"flex flex-1 items-center justify-center gap-x-2 text-destructive\"><span class=\"size-4\"><uk-icon icon=\"info\"></uk-icon></span> Transactions Per Seconds</div></div><div class=\"uk-card lg:col-span-3\"><div class=\"uk-card-header\"><h3 class=\"font-semibold leading-none tracking-tight\">Recent Sales</h3><p class=\"text-sm text-muted-foreground\">You made 265 sales this month.</p></div><div class=\"uk-card-body\"><div class=\"space-y-8\"></div></div></div></div>[]")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return templ_7745c5c3_Err
+		})
+		templ_7745c5c3_Err = layout.HeaderBar().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		return templ_7745c5c3_Err
 	})
 }
