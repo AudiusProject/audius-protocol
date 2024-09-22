@@ -7,7 +7,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/middleware"
 	"github.com/AudiusProject/audius-protocol/core/console/views"
 	"github.com/AudiusProject/audius-protocol/core/db"
 	"github.com/cometbft/cometbft/rpc/client"
@@ -41,13 +40,4 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 	c.registerRoutes(logger, e.Group(baseURL))
 
 	return c, nil
-}
-
-func (c *Console) registerRoutes(logger *common.Logger, groups ...*echo.Group) {
-	for _, g := range groups {
-		g.Use(middleware.JsonExtensionMiddleware)
-		g.Use(middleware.ErrorLoggerMiddleware(logger))
-
-		g.GET("/block/:block", c.blockPage)
-	}
 }
