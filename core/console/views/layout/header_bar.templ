@@ -21,7 +21,14 @@ templ (l *Layout) HeaderBar() {
 					</div>
 					<div class="flex items-center space-x-2">
 						<div class="text-left text-sm font-bold tracking-tight">
-							<div>Eth Address: { l.config.WalletAddress }</div>
+							<div>
+								Eth Address: 
+								<span>
+									@l.components.Link("/nodes/%s", l.config.WalletAddress) {
+										<span>{ l.config.WalletAddress }</span>
+									}
+								</span>
+							</div>
 							<div>Core Address: { l.config.ProposerAddress }</div>
 						</div>
 					</div>
@@ -29,19 +36,29 @@ templ (l *Layout) HeaderBar() {
 				<div class="space-y-4">
 					<ul class="uk-tab-alt max-w-96">
 						<li class="uk-active">
-							<a href="" uk-toggle>Overview</a>
+							@l.components.Link("") {
+								<div>Overview</div>
+							}
 						</li>
 						<li>
-							<a href="/analytics" uk-toggle>Analytics</a>
+							@l.components.Link("/analytics") {
+								<div>Analytics</div>
+							}
 						</li>
 						<li>
-							<a href="/nodes" uk-toggle>Nodes</a>
+							@l.components.Link("/nodes") {
+								<div>Nodes</div>
+							}
 						</li>
 						<li>
-							<a href="/content" uk-toggle>Content</a>
+							@l.components.Link("/content") {
+								<div>Content</div>
+							}
 						</li>
 						<li>
-							<a href="/apps" uk-toggle>Apps</a>
+							@l.components.Link("/apps") {
+								<div>Apps</div>
+							}
 						</li>
 					</ul>
 				</div>
