@@ -26,8 +26,6 @@ type Console struct {
 }
 
 func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Console, error) {
-	baseURL := "/console"
-
 	c := &Console{
 		config: config,
 		rpc:    rpc,
