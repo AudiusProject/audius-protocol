@@ -5,6 +5,6 @@ import (
 	"time"
 )
 
-templ TimeSince(t time.Time) {
+templ (c *Components) TimeSince(t time.Time) {
 	<span>{ humanize.Time(t) }</span>
 }

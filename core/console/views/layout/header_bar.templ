@@ -1,0 +1,60 @@
+package layout
+
+import (
+	"fmt"
+	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/assets"
+)
+
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
+
+templ (l *Layout) HeaderBar() {
+	@l.Base() {
+		<div class="min-h-screen flex flex-col">
+			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
+				<div class="flex items-center justify-between space-y-2">
+					<div class="uk-navbar-item">
+						<a href="/console" class="flex items-center">
+							<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-12 w-12 object-contain"/>
+							<h1 class="text-2xl font-bold tracking-tight">Console</h1>
+						</a>
+					</div>
+					<div class="flex items-center space-x-2">
+						<div class="text-left text-sm font-bold tracking-tight">
+							<div>Eth Address: { l.config.WalletAddress }</div>
+							<div>Core Address: { l.config.ProposerAddress }</div>
+						</div>
+					</div>
+				</div>
+				<div class="space-y-4">
+					<ul class="uk-tab-alt max-w-96">
+						<li class="uk-active">
+							<a href="" uk-toggle>Overview</a>
+						</li>
+						<li>
+							<a href="/analytics" uk-toggle>Analytics</a>
+						</li>
+						<li>
+							<a href="/nodes" uk-toggle>Nodes</a>
+						</li>
+						<li>
+							<a href="/content" uk-toggle>Content</a>
+						</li>
+						<li>
+							<a href="/apps" uk-toggle>Apps</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="flex-grow space-y-4 p-8 pt-6">
+				{ children... }
+			</div>
+			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
+				<div class="text-sm text-gray-600 flex justify-between w-full px-5">
+					<span>made with ⚡️ by the protocol team</span>
+					<span>version: <a href={ gitCommit } target="_blank">{ config.Version }</a></span>
+				</div>
+			</footer>
+		</div>
+	}
+}
