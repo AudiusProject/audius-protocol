@@ -8,7 +8,7 @@ import (
 
 var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
 
-templ (l *Layout) HeaderBar() {
+templ (l *Layout) SiteFrame() {
 	@l.Base() {
 		<div class="min-h-screen flex flex-col">
 			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
