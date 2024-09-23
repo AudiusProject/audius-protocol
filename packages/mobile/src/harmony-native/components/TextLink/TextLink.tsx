@@ -33,9 +33,6 @@ const TextLinkAnimation = (props: TextLinkAnimationProps) => {
     showUnderline,
     style,
     animatedPressed,
-    onPressIn,
-    onPressOut,
-    onPress,
     ...other
   } = props
 
@@ -68,14 +65,7 @@ const TextLinkAnimation = (props: TextLinkAnimationProps) => {
   // Need to nest the AnimatedText inside a Text so the handlers & animation work
   // while still supporting proper Text layout
   return (
-    <Text
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      onPress={onPress}
-      suppressHighlighting
-      variant={textVariant}
-      {...other}
-    >
+    <Text suppressHighlighting variant={textVariant} {...other}>
       <AnimatedText
         style={[
           style,
