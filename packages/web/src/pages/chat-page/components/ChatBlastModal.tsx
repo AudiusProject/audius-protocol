@@ -186,7 +186,7 @@ const FollowersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.FOLLOWERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.followers.label}
           count={user?.follower_count}
@@ -214,7 +214,7 @@ const TipSupportersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.TIPPERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.supporters.label}
           count={user?.supporter_count ?? 0}
@@ -254,7 +254,7 @@ const PastPurchasersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.CUSTOMERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.purchasers.label}
           count={purchasersCount}
@@ -298,7 +298,7 @@ const RemixCreatorsMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.REMIXERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.remixCreators.label}
           count={remixersCount ?? 0}
