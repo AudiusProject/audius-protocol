@@ -70,7 +70,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
-import { collectionPage, getPathname } from 'utils/route'
+import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
 
@@ -79,6 +79,7 @@ import { CollectionPageProps as MobileCollectionPageProps } from './components/m
 
 const {
   profilePage,
+  collectionPage,
   NOT_FOUND_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE

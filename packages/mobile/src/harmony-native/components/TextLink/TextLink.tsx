@@ -1,12 +1,5 @@
-import { useCallback, useState } from 'react'
-
 import { isInteralAudiusUrl } from '@audius/common/utils'
-import { css } from '@emotion/native'
-import {
-  type GestureResponderEvent,
-  TouchableWithoutFeedback
-} from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native'
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -16,6 +9,7 @@ import Animated, {
 
 import { useTheme } from '../../foundations/theme/useTheme'
 import { Text } from '../Text/Text'
+import { Flex } from '../layout'
 
 import { ExternalLink } from './ExternalLink'
 import { InternalLink, InternalLinkTo } from './InternalLink'
@@ -34,19 +28,11 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     showUnderline,
     source,
     style,
+    endAdornment,
     ...other
   } = props
   const { color, motion } = useTheme()
-  const [isPressing, setIsPressing] = useState(showUnderline)
   const pressed = useSharedValue(0)
-
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      onPress?.(e)
-      pressed.value = withTiming(0, motion.press)
-    },
-    [motion.press, onPress, pressed]
-  )
 
   const variantColors = {
     default: color.link.default,
@@ -64,15 +50,7 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     active: color.primary.primary
   }
 
-  const tap = Gesture.Tap()
-    .onBegin(() => {
-      pressed.value = withTiming(1, motion.press)
-    })
-    .onFinalize(() => {
-      pressed.value = withTiming(0, motion.press)
-    })
-
-  const animatedLinkStyles = useAnimatedStyle(() => ({
+  const animatedStyles = useAnimatedStyle(() => ({
     color: interpolateColor(
       pressed.value,
       [0, 1],
@@ -80,53 +58,52 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
     )
   }))
 
-  let element = (
-    <AnimatedText
-      style={[
-        style,
-        animatedLinkStyles,
-        css({
-          textDecorationLine: isPressing || showUnderline ? 'underline' : 'none'
-        })
-      ]}
-      variant={textVariant}
-      {...other}
-    >
-      {children}
-    </AnimatedText>
+  const element = (
+    <Flex row gap='xs' alignItems='center'>
+      <AnimatedText
+        style={[
+          style,
+          animatedStyles,
+          { textDecorationLine: showUnderline ? 'underline' : 'none' }
+        ]}
+        variant={textVariant}
+        {...other}
+      >
+        {children}
+      </AnimatedText>
+      {endAdornment}
+    </Flex>
   )
 
   const rootProps = {
-    onPress: handlePress,
-    onPressIn: () => setIsPressing(true),
-    onPressOut: () => setIsPressing(false)
+    onPress,
+    onPressIn: () => {
+      pressed.value = withTiming(1, motion.press)
+    },
+    onPressOut: () => {
+      pressed.value = withTiming(0, motion.press)
+    }
   }
 
   if ('to' in other) {
-    element = (
+    return (
       <InternalLinkTo to={other.to} action={other.action} {...rootProps}>
         {element}
       </InternalLinkTo>
     )
   } else if ('url' in other && isInteralAudiusUrl(other.url)) {
-    element = (
+    return (
       <InternalLink url={other.url} {...rootProps}>
         {element}
       </InternalLink>
     )
   } else if ('url' in other) {
-    element = (
+    return (
       <ExternalLink url={other.url} source={source} {...rootProps}>
         {element}
       </ExternalLink>
     )
   } else {
-    element = (
-      <TouchableWithoutFeedback {...rootProps}>
-        {element}
-      </TouchableWithoutFeedback>
-    )
+    return <TouchableOpacity {...rootProps}>{element}</TouchableOpacity>
   }
-
-  return <GestureDetector gesture={tap}>{element}</GestureDetector>
 }

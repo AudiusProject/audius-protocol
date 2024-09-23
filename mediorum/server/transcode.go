@@ -25,7 +25,6 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
-	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 )
 
@@ -35,7 +34,6 @@ var (
 
 func (ss *MediorumServer) startTranscoder() {
 	myHost := ss.Config.Self.Host
-	work := make(chan *Upload)
 
 	// use most cpus for transcode
 	numWorkers := runtime.NumCPU() - 2
@@ -69,55 +67,38 @@ func (ss *MediorumServer) startTranscoder() {
 		}
 	}
 
-	// add a callback to crudr that so we can consider new uploads
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionCreate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			// only the first mirror transcodes
-			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
-				ss.logger.Info("got transcode job", "id", upload.ID)
-				work <- upload
-			}
-		}
-	})
-
-	// add a callback to crudr that so we can consider audio preview retranscodes
-	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
-		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
-			return
-		}
-
-		uploads, ok := records.(*[]*Upload)
-		if !ok {
-			log.Printf("unexpected type in transcode callback %T", records)
-			return
-		}
-		for _, upload := range *uploads {
-			if upload.Status == JobStatusRetranscode {
-				if upload.TranscodedMirrors == nil {
-					ss.logger.Warn("missing full transcoded mp3 data in retranscode job. skipping", "id", upload.ID)
-					continue
-				}
-				// only the first mirror transcodes
-				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
-					ss.logger.Info("got retranscode job", "id", upload.ID)
-					work <- upload
-				}
-			}
-		}
-	})
-
 	// start workers
 	for i := 0; i < numWorkers; i++ {
-		go ss.startTranscodeWorker(i, work)
+		go ss.startTranscodeWorker(i)
+	}
+
+	// add a callback to handle older servers that don't do inline-transcode:
+	// if upload server is on older version... pick up job
+	// remove this after servers are all > 0.6.190
+	if ss.Config.Env == "prod" && ss.Config.StoreAll {
+		ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
+			if op.Table != "uploads" || op.Action != crudr.ActionCreate {
+				return
+			}
+
+			uploads, ok := records.(*[]*Upload)
+			if !ok {
+				return
+			}
+			for _, upload := range *uploads {
+				uploadServerHealth := ss.getPeerHealth(upload.CreatedBy)
+				if uploadServerHealth == nil {
+					continue
+				}
+
+				ver := uploadServerHealth.Version
+				if ver != "" && ver < "0.6.190" && upload.Status == JobStatusNew {
+					ss.logger.Info("handling non-inline transcode", "id", upload.ID)
+					ss.findAndPullBlob(context.Background(), upload.OrigFileCID)
+					ss.transcodeWork <- upload
+				}
+			}
+		})
 	}
 
 	// hash-migration: the findMissedJobs was using the og `mirrors` list
@@ -139,9 +120,9 @@ func (ss *MediorumServer) startTranscoder() {
 	for {
 		time.Sleep(time.Minute)
 		// find missed transcode jobs
-		ss.findMissedJobs(work, myHost, false)
+		ss.findMissedJobs(ss.transcodeWork, myHost, false)
 		// find missed retranscode jobs
-		ss.findMissedJobs(work, myHost, true)
+		ss.findMissedJobs(ss.transcodeWork, myHost, true)
 	}
 }
 
@@ -172,13 +153,12 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		// if we have orig file... try to reprocess
 		if ok, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); ok {
 			work <- upload
-			continue
 		}
 	}
 }
 
-func (ss *MediorumServer) startTranscodeWorker(_ int, work chan *Upload) {
-	for upload := range work {
+func (ss *MediorumServer) startTranscodeWorker(_ int) {
+	for upload := range ss.transcodeWork {
 		ss.logger.Debug("transcoding", "upload", upload.ID)
 		err := ss.transcode(upload)
 		if err != nil {
@@ -352,7 +332,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		upload.TranscodeProgress = 0
 		upload.TranscodedAt = time.Now().UTC()
 		upload.Status = JobStatusBusyRetranscode
-		ss.crud.Update(upload)
+		// ss.crud.Update(upload)
 
 		return ss.transcodeAudioPreview(upload, dest, logger, onError)
 	}
@@ -448,7 +428,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	} else {
 		upload.Status = JobStatusBusy
 	}
-	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
 	if upload.Status == JobStatusBusyRetranscode {
@@ -492,46 +471,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
-	case JobTemplateImgSquare:
-		// 150x150, 480x480, 1000x1000
-		squares := []int{150, 480, 1000}
-		for _, targetBox := range squares {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
-	case JobTemplateImgBackdrop:
-		// 640x, 2000x
-		widths := []int{640, 2000}
-		for _, targetWidth := range widths {
-			temp.Seek(0, 0)
-			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			resultHash, err := cidutil.ComputeFileCID(out)
-			if err != nil {
-				return onError(err, upload.Status, "computeFileCID")
-			}
-			mirrors, err := ss.replicateFile(resultHash, out)
-			if err != nil {
-				return onError(err, upload.Status, "replicate")
-			}
-			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
-
-			variantName := fmt.Sprintf("%dx.jpg", targetWidth)
-			upload.TranscodeResults[variantName] = resultHash
-		}
-
 	case JobTemplateAudio, "":
 		if upload.Template == "" {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
@@ -552,6 +491,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			// analyze audio for new full audio uploads
 			ss.analyzeAudio(upload, time.Minute)
 		}
+	default:
+		return fmt.Errorf("unsupported format: %s", upload.Template)
 	}
 
 	upload.TranscodeProgress = 1

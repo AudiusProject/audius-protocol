@@ -14,4 +14,4 @@ export type PlainButtonProps = {
    * The button size
    */
   size?: PlainButtonSize
-} & Omit<BaseButtonProps, 'styles'>
+} & BaseButtonProps

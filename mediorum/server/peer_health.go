@@ -59,6 +59,10 @@ func (ss *MediorumServer) startHealthPoller() {
 						}
 						ss.peerHealths[peer.Host].LastReachable = time.Now()
 
+						if v, ok := data["version"].(string); ok {
+							ss.peerHealths[peer.Host].Version = v
+						}
+
 						// set node's reachable peers
 						for host, hostPeerHealths := range peerHealthsMap {
 							if peerHealth, ok := hostPeerHealths.(map[string]interface{}); ok {
@@ -92,6 +96,12 @@ func (ss *MediorumServer) startHealthPoller() {
 			time.Sleep(time.Minute * 2)
 		}
 	}
+}
+
+func (ss *MediorumServer) getPeerHealth(peer string) *PeerHealth {
+	ss.peerHealthsMutex.Lock()
+	defer ss.peerHealthsMutex.Unlock()
+	return ss.peerHealths[peer]
 }
 
 // @dev lock ss.peerHealthsMutex before calling this

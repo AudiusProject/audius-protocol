@@ -223,6 +223,14 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       path = path.replace('#embed', '')
 
+      const connectPath = /^\/(connect)/
+      if (path.match(connectPath)) {
+        path = `${path.replace(
+          connectPath,
+          routeNameRef.current ?? '/feed'
+        )}&path=connect`
+      }
+
       const walletConnectPath = /^\/(wallet-connect)/
       if (path.match(walletConnectPath)) {
         path = `${path.replace(

@@ -112,6 +112,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       end as purchaseable_download,
       tracks.is_downloadable as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
+      coalesce(aggregate_track.comment_count, 0) as comment_count,
   
       json_build_object(
         'handle', users.handle,
@@ -165,6 +166,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
+      left join aggregate_track using (track_id)
     WHERE 1=1 
     `
   }

@@ -31,8 +31,14 @@ export const UserDisplayName = (props: UserDisplayProps) => {
   const badgeSize = fontSize - 2
 
   return (
-    <Flex direction='row' gap='xs' alignItems='center' style={style}>
-      <Text variant={variant} size={size} {...other}>
+    <Flex
+      row
+      gap='xs'
+      alignItems='center'
+      style={style}
+      ph={isVerified ? 'xl' : 'l'}
+    >
+      <Text ellipses variant={variant} size={size} {...other} numberOfLines={1}>
         {displayName}
       </Text>
       {isVerified ? (

@@ -4,15 +4,16 @@ import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-import { collectionPage } from 'utils/route'
 
 import { CollectionNavItem } from './CollectionNavItem'
 
 const { selectPlaylistUpdateById } = playlistUpdatesSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
+const { collectionPage } = route
 
 type PlaylistNavItemProps = {
   playlistId: number

@@ -14,7 +14,7 @@ import { mergeRefs } from 'react-merge-refs'
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
 import { IconComponent, IconProps } from 'components/icon'
 import { TextInput, TextInputSize } from 'components/input/TextInput'
-import { Menu } from 'components/internal/Menu'
+import { Menu, MenuContent } from 'components/internal/Menu'
 import { Flex, Box } from 'components/layout'
 import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
@@ -247,23 +247,30 @@ export const FilterButton = forwardRef(function FilterButton<
     >
       {leadingElement}
       {selectedLabel ? renderLabel(selectedLabel) : label}
+
       <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
         onClose={() => setIsOpen(false)}
-        aria-label={selectedLabel ?? label ?? props['aria-label']}
-        aria-activedescendant={selectedLabel}
-        scrollRef={scrollRef}
-        {...menuProps}
+        PaperProps={menuProps?.PaperProps}
       >
         {children ? (
-          children({
-            onChange: handleChange,
-            options: optionElements,
-            setIsOpen
-          })
+          <Flex onClick={(e) => e.stopPropagation()}>
+            {children({
+              onChange: handleChange,
+              options: optionElements,
+              setIsOpen
+            })}
+          </Flex>
         ) : (
-          <>
+          <MenuContent
+            maxHeight={menuProps?.maxHeight}
+            width={menuProps?.width}
+            scrollRef={scrollRef}
+            MenuListProps={menuProps?.MenuListProps}
+            aria-label={selectedLabel ?? label ?? props['aria-label']}
+            aria-activedescendant={selectedLabel}
+          >
             {showFilterInput && filterInputProps ? (
               <TextInput
                 ref={inputRef}
@@ -297,7 +304,7 @@ export const FilterButton = forwardRef(function FilterButton<
                 {optionElements}
               </Flex>
             )}
-          </>
+          </MenuContent>
         )}
       </Menu>
     </BaseButton>

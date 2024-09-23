@@ -585,6 +585,14 @@ def track_dsl(
                                 "boost": len(search_str) * 0.5,
                             }
                         },
+                        {
+                            "term": {
+                                "title": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": len(search_str) * 0.5,
+                                }
+                            }
+                        },
                         *[
                             {
                                 "match": {
@@ -1094,7 +1102,6 @@ def base_playlist_dsl(
     }
 
     if tag_search:
-        print("sebastian tag search appending", tag_search)
         dsl["must"].append(
             {
                 "bool": {

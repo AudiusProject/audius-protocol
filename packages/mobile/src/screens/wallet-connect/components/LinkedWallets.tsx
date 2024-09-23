@@ -1,10 +1,12 @@
-import { Chain } from '@audius/common/models'
+import { Chain, Status } from '@audius/common/models'
 import type { AssociatedWallet } from '@audius/common/store'
 import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Divider, Text } from 'app/components/core'
+import { Flex, Text } from '@audius/harmony-native'
+import { Divider } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { LinkedWallet } from './LinkedWallet'
@@ -50,12 +52,12 @@ export const LinkedWallets = () => {
   const styles = useStyles()
 
   const {
+    loadingStatus,
+    errorMessage,
     confirmingWallet,
     connectedEthWallets = [],
     connectedSolWallets
   } = useSelector(getAssociatedWallets)
-
-  // TODO C-3163 - Add loading state for loading associated wallets. Currently behaves as if you have no associated wallets until loading is finished.
 
   const removeWallets = useSelector(getRemoveWallet)
 
@@ -88,39 +90,50 @@ export const LinkedWallets = () => {
       <View style={styles.linkedWalletsHeader}>
         <Text
           style={styles.linkedWalletsText}
-          fontSize='medium'
-          textTransform='uppercase'
-          weight='bold'
-          color='neutralLight4'
+          size='m'
+          variant='label'
+          color='subdued'
         >
           {messages.linkedWallets}
         </Text>
         <Text
           style={styles.audioAmountText}
-          fontSize='medium'
-          textTransform='uppercase'
-          weight='bold'
-          color='neutralLight4'
+          size='m'
+          variant='label'
+          color='subdued'
         >
           {messages.audio}
         </Text>
         <View style={styles.gap} />
       </View>
       <Divider style={styles.divider} />
-      <FlatList
-        renderItem={({ item }) => (
-          <LinkedWallet
-            chain={item.chain}
-            address={item.address}
-            audioBalance={item.balance}
-            isLoading={Boolean(
-              removeWallets.wallet === item.address || item.isConfirming
-            )}
-          />
-        )}
-        data={wallets}
-        ItemSeparatorComponent={() => <Divider style={styles.divider} />}
-      />
+      {loadingStatus === Status.SUCCESS ? (
+        <FlatList
+          renderItem={({ item }) => (
+            <LinkedWallet
+              chain={item.chain}
+              address={item.address}
+              audioBalance={item.balance}
+              isLoading={Boolean(
+                removeWallets.wallet === item.address || item.isConfirming
+              )}
+            />
+          )}
+          data={wallets}
+          ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+        />
+      ) : loadingStatus === Status.IDLE || loadingStatus === Status.LOADING ? (
+        <Flex alignSelf='center'>
+          <LoadingSpinner style={{ width: 40, height: 40 }} />
+        </Flex>
+      ) : null}
+      {errorMessage && (
+        <Flex alignSelf='center'>
+          <Text variant='body' color='danger'>
+            {errorMessage}
+          </Text>
+        </Flex>
+      )}
     </View>
   )
 }

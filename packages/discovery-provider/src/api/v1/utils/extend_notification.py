@@ -7,6 +7,7 @@ from src.queries.get_notifications import (
     ApproveManagerNotification,
     ChallengeRewardNotification,
     ClaimableRewardNotification,
+    CommentNotification,
     CosignRemixNotification,
     CreatePlaylistNotification,
     CreateTrackNotification,
@@ -662,6 +663,24 @@ def extend_announcement(action: NotificationAction):
     return notification
 
 
+def extend_comment(action: NotificationAction):
+    data: CommentNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "type": data["type"],
+            "entity_id": encode_int_id(data["entity_id"]),
+            "user_id": encode_int_id(data["user_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -692,4 +711,5 @@ notification_action_handler = {
     "request_manager": extend_request_manager,
     "approve_manager_request": extend_approve_manager_request,
     "announcement": extend_announcement,
+    "comment": extend_comment,
 }

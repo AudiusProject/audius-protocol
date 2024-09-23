@@ -18,13 +18,14 @@ import type { JsonMap } from 'app/types/analytics'
 
 import { getDappKeyPair } from '../selectors'
 import {
+  connect,
   connectNewWallet,
   setConnectionStatus,
   setPublicKey,
   setSession,
   setSharedSecret
 } from '../slice'
-import type { ConnectNewWalletAction } from '../types'
+import type { ConnectAction, ConnectNewWalletAction } from '../types'
 import { buildUrl, decryptPayload, encryptPayload } from '../utils'
 const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
   tokenDashboardPageActions
@@ -37,6 +38,7 @@ export function* convertToChecksumAddress(address: WalletAddress) {
   return ethWeb3.utils.toChecksumAddress(address)
 }
 
+// Connection a new wallet to an Audius account
 function* connectNewWalletAsync(action: ConnectNewWalletAction) {
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
@@ -64,6 +66,11 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
       )
       const connectData = decryptPayload(data, nonce, sharedSecretDapp)
       const { session, public_key } = connectData
+      yield* put(
+        setSharedSecret({ sharedSecret: bs58.encode(sharedSecretDapp) })
+      )
+      yield* put(setSession({ session }))
+      yield* put(setPublicKey({ publicKey: public_key }))
 
       const isNewWallet = yield* checkIsNewWallet(public_key, Chain.Sol)
       if (!isNewWallet) return
@@ -72,12 +79,6 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         public_key,
         Chain.Sol
       )
-
-      yield* put(
-        setSharedSecret({ sharedSecret: bs58.encode(sharedSecretDapp) })
-      )
-      yield* put(setSession({ session }))
-      yield* put(setPublicKey({ publicKey: public_key }))
       yield* put(
         setIsConnectingWallet({
           wallet: public_key,
@@ -181,6 +182,42 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
       properties: eventProperties
     })
   }
+}
+
+// Connect a wallet to establish a session, but don't connect
+// to an Audius account
+function* connectAsync(action: ConnectAction) {
+  const accountUserId = yield* select(getUserId)
+  if (!accountUserId) return
+  switch (action.payload.connectionType) {
+    case null:
+      console.error('No connection type set')
+      break
+    case 'phantom': {
+      const { phantom_encryption_public_key, data, nonce } = action.payload
+      const dappKeyPair = yield* select(getDappKeyPair)
+
+      if (!dappKeyPair) return
+
+      const sharedSecretDapp = nacl.box.before(
+        bs58.decode(phantom_encryption_public_key),
+        dappKeyPair.secretKey
+      )
+      const connectData = decryptPayload(data, nonce, sharedSecretDapp)
+      const { session, public_key } = connectData
+      yield* put(
+        setSharedSecret({ sharedSecret: bs58.encode(sharedSecretDapp) })
+      )
+      yield* put(setSession({ session }))
+      yield* put(setPublicKey({ publicKey: public_key }))
+    }
+  }
+}
+
+export function* watchConnect() {
+  yield* takeEvery(connect.type, function* (action: ConnectAction) {
+    yield* call(connectAsync, action)
+  })
 }
 
 export function* watchConnectNewWallet() {

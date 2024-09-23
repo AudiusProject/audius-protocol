@@ -154,7 +154,7 @@ export const ChallengeRewardsDrawerProvider = () => {
             onPress={openUploadModal}
             fullWidth
           >
-            {config.panelButtonText}
+            {config.completedLabel}
           </Button>
         )
         break
@@ -167,7 +167,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         )
         break
       default:
-        contents = config?.buttonInfo && (
+        contents = config?.buttonInfo ? (
           <Button
             iconRight={config.buttonInfo.iconRight}
             iconLeft={config.buttonInfo.iconLeft}
@@ -175,9 +175,11 @@ export const ChallengeRewardsDrawerProvider = () => {
             onPress={handleNavigation}
             fullWidth
           >
-            {config.panelButtonText}
+            {challenge?.state === 'disbursed'
+              ? config.completedLabel
+              : config.panelButtonText}
           </Button>
-        )
+        ) : undefined
     }
   }
 
@@ -210,6 +212,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         <ChallengeRewardsDrawerContent
           description={config.description(challenge)}
           progressLabel={config.progressLabel ?? 'Completed'}
+          completedLabel={config.completedLabel}
           amount={challenge.totalAmount}
           challengeId={challenge.challenge_id}
           isCooldownChallenge={challenge && challenge.cooldown_days > 0}

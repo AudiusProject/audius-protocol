@@ -3,6 +3,7 @@ import { View } from 'react-native'
 import type { ViewStyle } from 'react-native/types'
 
 import { useTheme } from '../../../foundations/theme'
+import { Flex } from '../Flex/Flex'
 
 import type { DividerProps } from './types'
 
@@ -10,7 +11,7 @@ import type { DividerProps } from './types'
  * A separator between two elements, usually consisting of a horizontal or vertical line.
  */
 export const Divider = (props: DividerProps) => {
-  const { children, orientation = 'horizontal' } = props
+  const { children, orientation = 'horizontal', style, ...other } = props
   const { color, spacing } = useTheme()
 
   const viewCss: ViewStyle = {
@@ -62,10 +63,15 @@ export const Divider = (props: DividerProps) => {
   const role = children ? 'separator' : undefined
 
   return (
-    <View role={role} style={css(viewCss)}>
+    <Flex
+      direction={orientation === 'horizontal' ? 'row' : 'column'}
+      role={role}
+      style={[css(viewCss), style]}
+      {...other}
+    >
       {children ? <View style={css(lineCss)} /> : null}
       {children}
       {children ? <View style={css(lineCss)} /> : null}
-    </View>
+    </Flex>
   )
 }

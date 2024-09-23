@@ -188,7 +188,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { isOpen: isModalOpen } = useDrawer('LockedContent')
+  const { isOpen: isModalOpen, onClose } = useDrawer('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
@@ -212,9 +212,10 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   }, [followee, dispatch, followSource, trackId])
 
   const handleSendTip = useCallback(() => {
+    onClose()
     dispatch(beginTip({ user: tippedUser, source, trackId }))
     navigation.navigate('TipArtist')
-  }, [tippedUser, navigation, dispatch, source, trackId])
+  }, [dispatch, tippedUser, source, trackId, navigation, onClose])
 
   const handlePurchasePress = useCallback(() => {
     track(
@@ -225,6 +226,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
       })
     )
 
+    onClose()
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType },
       {
@@ -234,7 +236,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             : ModalSource.TrackDetails
       }
     )
-  }, [trackId, openPremiumContentPurchaseModal, contentType])
+  }, [trackId, contentType, openPremiumContentPurchaseModal, onClose])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {

@@ -522,5 +522,25 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'comment': {
+      let entityId = 0
+      let entityType = Entity.Track
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = HashId.parse(data.entityId)
+          // @ts-ignore
+          entityType = data.type
+          return HashId.parse(data.userId)
+        })
+        .filter(removeNullable)
+      return {
+        type: NotificationType.Comment,
+        userIds,
+        entityId,
+        entityType,
+        ...formatBaseNotification(notification)
+      }
+    }
   }
 }

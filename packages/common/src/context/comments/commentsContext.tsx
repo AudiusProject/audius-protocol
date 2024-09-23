@@ -7,7 +7,12 @@ import {
   useState
 } from 'react'
 
-import { EntityType, Comment, ReplyComment } from '@audius/sdk'
+import {
+  EntityType,
+  Comment,
+  ReplyComment,
+  TrackCommentsSortMethodEnum
+} from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -19,12 +24,6 @@ import { ID, PaginatedStatus, Status } from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
 import { Nullable } from '../../utils'
-
-export enum CommentSortMethod {
-  top = 'top',
-  newest = 'newest',
-  timestamp = 'timestamp'
-}
 
 type CommentSectionProviderProps = {
   entityId: ID
@@ -45,11 +44,11 @@ type CommentSectionContextType = {
   playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
-  currentSort: CommentSortMethod
+  currentSort: TrackCommentsSortMethodEnum
   isLoadingMorePages: boolean
   hasMorePages: boolean
   reset: (hard?: boolean) => void
-  setCurrentSort: (sort: CommentSortMethod) => void
+  setCurrentSort: (sort: TrackCommentsSortMethodEnum) => void
   loadMorePages: () => void
   handleLoadMoreReplies: (commentId: string) => void
   handleMuteEntityNotifications: () => void
@@ -72,6 +71,12 @@ export const CommentSectionProvider = (
     setEditingComment
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
+
+  const [currentSort, setCurrentSort] = useState<TrackCommentsSortMethodEnum>(
+    TrackCommentsSortMethodEnum.Top
+  )
+
+  const { data: currentUserId } = useGetCurrentUserId({})
   const {
     data: comments = [],
     status,
@@ -79,15 +84,11 @@ export const CommentSectionProvider = (
     reset,
     hasMore: hasMorePages
   } = useGetCommentsByTrackId(
-    { entityId },
+    { entityId, sortMethod: currentSort, userId: currentUserId },
     {
       pageSize: 5,
       disabled: entityId === 0
     }
-  )
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
-    CommentSortMethod.top
   )
   const dispatch = useDispatch()
   const playerUid = useSelector(playerSelectors.getUid) ?? undefined

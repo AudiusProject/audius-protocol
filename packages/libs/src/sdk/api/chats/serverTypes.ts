@@ -92,6 +92,7 @@ export type ChatPermitRPC = {
   method: 'chat.permit'
   params: {
     permit: ChatPermission
+    allow?: boolean
   }
 }
 
@@ -130,8 +131,11 @@ export type UserChat = {
   last_read_at: string
   cleared_history_at: string
 
-  // User chats are not blasts
+  // If blast:
   is_blast: false
+  audience: ChatBlastAudience
+  audience_content_id?: string
+  audience_content_type?: string
 }
 
 export type ChatMessageReaction = {
@@ -185,7 +189,8 @@ export type ChatBlast = ChatBlastBase & {
 
 export type ValidatedChatPermissions = {
   user_id: string
-  permits: ChatPermission
+  permits: ChatPermission // depricated: use multi-value permit_list in future
+  permit_list: ChatPermission[]
   current_user_has_permission: boolean
 }
 
@@ -193,21 +198,12 @@ export type ValidatedChatPermissions = {
  * Defines who the user allows to message them
  */
 export enum ChatPermission {
-  /**
-   * Messages are allowed for everyone
-   */
   ALL = 'all',
-  /**
-   * Messages are only allowed for users that have tipped me
-   */
+  TIPPEES = 'tippees',
   TIPPERS = 'tippers',
-  /**
-   * Messages are only allowed for users I follow
-   */
   FOLLOWEES = 'followees',
-  /**
-   * Messages are not allowed
-   */
+  FOLLOWERS = 'followers',
+  VERIFIED = 'verified',
   NONE = 'none'
 }
 
@@ -237,6 +233,7 @@ export type CommsResponse = {
 export type ChatWebsocketEventData = {
   rpc: RPCPayload
   metadata: {
+    userId: string
     senderUserId: string
     receiverUserId: string
     timestamp: string

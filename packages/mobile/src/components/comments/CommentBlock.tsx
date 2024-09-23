@@ -1,11 +1,13 @@
 import { useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useReactToComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ReplyComment } from '@audius/sdk'
+import { css } from '@emotion/native'
 
 import {
   ArtistPick,
@@ -26,19 +28,17 @@ import { UserLink } from '../user-link'
 import { CommentBadge } from './CommentBadge'
 import { CommentOverflowMenu } from './CommentOverflowMenu'
 
-const messages = {
-  pinned: 'Pinned by artist',
-  topSupporters: 'Top Supporters',
-  reply: 'Reply'
-}
-
 export type CommentBlockProps = {
-  comment: Comment | ReplyComment
+  commentId: string
   parentCommentId?: string
   hideActions?: boolean
 }
 
-export const CommentBlock = (props: CommentBlockProps) => {
+export const CommentBlockInternal = (
+  props: Omit<CommentBlockProps, 'commentId'> & {
+    comment: Comment | ReplyComment
+  }
+) => {
   const { comment, hideActions } = props
   const { artistId, setReplyingToComment } = useCurrentCommentSection()
   const {
@@ -47,18 +47,20 @@ export const CommentBlock = (props: CommentBlockProps) => {
     trackTimestampS,
     id: commentId,
     createdAt,
-    userId: commentUserIdStr
+    userId: commentUserIdStr,
+    isEdited,
+    isArtistReacted,
+    isCurrentUserReacted
   } = comment
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
   const [reactToComment] = useReactToComment()
   const commentUserId = Number(commentUserIdStr)
   useGetUserById({ id: commentUserId })
 
-  const [reactionState, setReactionState] = useState(false) // TODO: need to pull starting value from metadata
+  const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
   const isCommentByArtist = commentUserId === artistId
-
-  const isLikedByArtist = false // TODO: need to add this to backend metadata
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -66,7 +68,12 @@ export const CommentBlock = (props: CommentBlockProps) => {
   }
 
   return (
-    <Flex direction='row' w='100%' gap='s'>
+    <Flex
+      direction='row'
+      w='100%'
+      gap='s'
+      style={css({ opacity: isTombstone ? 0.5 : 1 })}
+    >
       <ProfilePicture
         style={{ width: 32, height: 32, flexShrink: 0 }}
         userId={commentUserId}
@@ -78,30 +85,34 @@ export const CommentBlock = (props: CommentBlockProps) => {
             commentUserId={commentUserId}
           />
         </Box>
-        {isPinned || isLikedByArtist ? (
+        {isPinned || isArtistReacted ? (
           <Flex direction='row' justifyContent='space-between' w='100%'>
-            <ArtistPick isLiked={isLikedByArtist} isPinned={isPinned} />
+            <ArtistPick isLiked={isArtistReacted} isPinned={isPinned} />
           </Flex>
         ) : null}
-        <Flex direction='row' gap='s' alignItems='center'>
-          <UserLink size='s' userId={commentUserId} strength='strong' />
-          <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-            <Timestamp time={new Date(createdAt)} />
-            {trackTimestampS !== undefined ? (
-              <>
-                <Text color='subdued' size='xs'>
-                  •
-                </Text>
+        {!isTombstone ? (
+          <Flex direction='row' gap='s' alignItems='center'>
+            <UserLink size='s' userId={commentUserId} strength='strong' />
+            <Flex direction='row' gap='xs' alignItems='center' h='100%'>
+              <Timestamp time={new Date(createdAt)} />
+              {trackTimestampS !== undefined ? (
+                <>
+                  <Text color='subdued' size='xs'>
+                    •
+                  </Text>
 
-                <TextLink size='xs' variant='active'>
-                  {formatCommentTrackTimestamp(trackTimestampS)}
-                </TextLink>
-              </>
-            ) : null}
+                  <TextLink size='xs' variant='active'>
+                    {formatCommentTrackTimestamp(trackTimestampS)}
+                  </TextLink>
+                </>
+              ) : null}
+            </Flex>
           </Flex>
-        </Flex>
-        <CommentText>{message}</CommentText>
-
+        ) : null}
+        <CommentText>
+          {message}
+          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
+        </CommentText>
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>
@@ -110,24 +121,36 @@ export const CommentBlock = (props: CommentBlockProps) => {
                   onPress={handleCommentReact}
                   isActive={reactionState}
                   wrapperStyle={{ height: 20, width: 20 }}
+                  isDisabled={isTombstone}
                 />
-                <Text color='default' size='s'>
-                  {reactCount}
-                </Text>
+                {!isTombstone ? (
+                  <Text color='default' size='s'>
+                    {reactCount}
+                  </Text>
+                ) : null}
               </Flex>
               <PlainButton
                 variant='subdued'
                 onPress={() => {
                   setReplyingToComment?.(comment)
                 }}
+                disabled={isTombstone}
               >
                 {messages.reply}
               </PlainButton>
-              <CommentOverflowMenu comment={comment} />
+              <CommentOverflowMenu comment={comment} disabled={isTombstone} />
             </Flex>
           </>
         ) : null}
       </Flex>
     </Flex>
   )
+}
+
+// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// There's no way to return early in the above component due to rules of hooks ordering
+export const CommentBlock = (props: CommentBlockProps) => {
+  const { data: comment } = useGetCommentById({ id: props.commentId })
+  if (!comment) return null
+  return <CommentBlockInternal {...props} comment={comment} />
 }

@@ -1,4 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
+import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
   AuthService,
@@ -338,8 +339,13 @@ export class AlbumsApi {
         buyerUserId: userId,
         accessType
       })
-    const locationMemoInstruction =
-      await this.solanaRelay.getLocationInstruction()
+
+    let locationMemoInstruction
+    try {
+      locationMemoInstruction = await this.solanaRelay.getLocationInstruction()
+    } catch (e) {
+      this.logger.warn('Unable to compute location memo instruction')
+    }
 
     return {
       instructions: {
@@ -391,7 +397,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     } else {
       // Use the authed wallet's userbank and relay
@@ -430,7 +436,7 @@ export class AlbumsApi {
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
     }
 

@@ -124,9 +124,9 @@ export const Dropzone = ({
         {!isTruncated ? (
           <>
             {textAboveIcon ? (
-              <div className={cn(styles.textAboveIcon, titleTextClassName)}>
+              <Text className={cn(styles.textAboveIcon, titleTextClassName)}>
                 {textAboveIcon}
-              </div>
+              </Text>
             ) : null}
             {subtextAboveIcon ? (
               <Text size='s' variant='body' className={subtitleTextClassName}>

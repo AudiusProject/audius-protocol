@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { chatActions, playerSelectors } from '@audius/common/store'
 import { decodeHashId, splitOnNewline } from '@audius/common/utils'
+import { Platform, TouchableOpacity, View } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native'
-import { Platform, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, IconSend } from '@audius/harmony-native'
@@ -74,12 +74,14 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type ChatTextInputProps = {
   chatId: string
+  extraOffset?: number // Additional padding needed if screen header size changes
   presetMessage?: string
   onMessageSent: () => void
 }
 
 export const ChatTextInput = ({
   chatId,
+  extraOffset = 0,
   presetMessage,
   onMessageSent
 }: ChatTextInputProps) => {
@@ -145,7 +147,6 @@ export const ChatTextInput = ({
       if (e.nativeEvent.key === BACKSPACE_KEY && selection) {
         const textBeforeCursor = inputMessage.slice(0, selection.start)
         const cursorPosition = selection.start
-        // TODO: KJ - Update caret position if not handled natively
         const { editValue } = handleBackspace({
           cursorPosition,
           textBeforeCursor
@@ -198,7 +199,7 @@ export const ChatTextInput = ({
     const parts: JSX.Element[] = []
     let lastIndex = 0
     for (const match of matches) {
-      const { index } = match
+      const { index, text } = match
       if (index === undefined) {
         continue
       }
@@ -215,11 +216,12 @@ export const ChatTextInput = ({
       // Add the matched word with accent color
       parts.push(
         <Text color='secondary' key={index}>
-          {match[0]}
+          {text}
         </Text>
       )
+
       // Update lastIndex to the end of the current match
-      lastIndex = index + match[0].length
+      lastIndex = index + text.length
     }
 
     // Add remaining text after the last match
@@ -233,6 +235,18 @@ export const ChatTextInput = ({
     return parts
   }
 
+  // For iOS: default padding + extra padding
+  // For Android: extra padding is slightly larger than iOS, and only
+  // needed if the screen header size changes
+  const offset =
+    Platform.OS === 'ios'
+      ? spacing(1.5) + extraOffset
+      : Platform.OS === 'android'
+      ? extraOffset
+        ? spacing(1.5) + extraOffset
+        : undefined
+      : undefined
+
   return (
     <Flex>
       {trackId ? (
@@ -244,7 +258,7 @@ export const ChatTextInput = ({
         style={{
           position: 'relative',
           maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-          paddingBottom: Platform.OS === 'ios' ? spacing(1.5) : undefined
+          paddingBottom: offset
         }}
       >
         <View

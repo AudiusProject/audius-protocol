@@ -753,7 +753,8 @@ export function* handleUploads({
 export function* uploadCollection(
   tracks: TrackForUpload[],
   collectionMetadata: CollectionValues,
-  isAlbum: boolean
+  isAlbum: boolean,
+  uploadType: UploadType
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
@@ -854,11 +855,12 @@ export function* uploadCollection(
       },
       function* (confirmedPlaylist: Collection) {
         yield* put(
-          uploadActions.uploadTracksSucceeded(
-            confirmedPlaylist.playlist_id,
-            [],
-            confirmedPlaylist
-          )
+          uploadActions.uploadTracksSucceeded({
+            id: confirmedPlaylist.playlist_id,
+            trackMetadatas: [],
+            completedEntity: confirmedPlaylist,
+            uploadType
+          })
         )
         const user = yield* select(cacheUsersSelectors.getUser, { id: userId })
         yield* put(
@@ -963,7 +965,10 @@ export function* uploadCollection(
  * Uploads any number of standalone tracks.
  * @param tracks the tracks to upload
  */
-export function* uploadMultipleTracks(tracks: TrackForUpload[]) {
+export function* uploadMultipleTracks(
+  tracks: TrackForUpload[],
+  uploadType: UploadType
+) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const audiusLibs = yield* call([
     audiusBackendInstance,
@@ -1017,11 +1022,12 @@ export function* uploadMultipleTracks(tracks: TrackForUpload[]) {
 
   // At this point, the upload was success! The rest is metrics.
   yield* put(
-    uploadActions.uploadTracksSucceeded(
-      newTracks[0].track_id,
-      newTracks,
-      newTracks[0]
-    )
+    uploadActions.uploadTracksSucceeded({
+      id: newTracks[0].track_id,
+      trackMetadatas: newTracks,
+      completedEntity: newTracks[0],
+      uploadType
+    })
   )
 
   // Send analytics for any gated content
@@ -1099,9 +1105,15 @@ export function* uploadTracksAsync(
     const isAlbum = payload.uploadType === UploadType.ALBUM
     const isCollection = payload.uploadType === UploadType.PLAYLIST || isAlbum
     if (isCollection) {
-      yield* call(uploadCollection, tracks, payload.metadata, isAlbum)
+      yield* call(
+        uploadCollection,
+        tracks,
+        payload.metadata,
+        isAlbum,
+        payload.uploadType
+      )
     } else {
-      yield* call(uploadMultipleTracks, tracks)
+      yield* call(uploadMultipleTracks, tracks, payload.uploadType)
     }
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e))

@@ -4,6 +4,7 @@
   "description": "plugin for broadcasting verified notifications",
   "main": "src/index.js",
   "type": "module",
+  "private": true,
   "scripts": {
     "start": "node ./src/index.js",
     "build": "",
