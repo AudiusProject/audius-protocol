@@ -128,6 +128,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			$2,
 			blast_id
 		FROM targ
+		WHERE chat_allowed(from_user_id, to_user_id)
 		ON conflict do nothing
 	)
 	SELECT chat_id FROM targ;
