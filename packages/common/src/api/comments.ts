@@ -38,6 +38,7 @@ const optimisticUpdateComment = (
   ) => Comment | ReplyComment | void,
   dispatch: ThunkDispatch<any, any, any>
 ) => {
+  console.log('asdf id: ', id)
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentById',
@@ -348,6 +349,7 @@ const commentsApi = createApi({
         optimisticUpdateCommentList(
           entityId,
           (prevState) => {
+            console.log('asdf prevState: ', prevState)
             const indexToRemove = prevState?.findIndex(
               (comment: Comment) => comment.id === id
             )
@@ -367,7 +369,7 @@ const commentsApi = createApi({
           mutedUserId,
           userId,
           isMuted
-        }: { mutedUserId: ID; userId: ID; isMuted: boolean },
+        }: { mutedUserId: ID; userId: ID; isMuted: boolean; entityId: any },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
@@ -375,15 +377,14 @@ const commentsApi = createApi({
         await sdk.comments.muteUser(userId, mutedUserId, isMuted)
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ mutedUserId, entityId, userId }, { dispatch }) {
-        console.log('asdf optimistic', { mutedUserId, entityId, userId })
-        if (!entityId) return // unmute doesn't need optimistic update
+      async onQueryStarted({ id, entityId, userId }, { dispatch }) {
         optimisticUpdateCommentList(
           entityId,
           (prevState) => {
             const indexToRemove = prevState?.findIndex(
-              (comment: Comment) => comment.userId === mutedUserId
+              (comment: Comment) => comment.userId === userId
             )
+            console.log('asdf indexToRemove', indexToRemove)
             if (indexToRemove !== undefined && indexToRemove >= 0) {
               prevState?.splice(indexToRemove, 1)
             }

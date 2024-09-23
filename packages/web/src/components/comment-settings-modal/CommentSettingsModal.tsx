@@ -112,11 +112,6 @@ export const CommentSettingsModal = () => {
           }}
         >
           {mutedUsers.map((user) => {
-            // return (
-            //   <div key={user.id}>
-            //     <p>{user.name}</p>
-            //   </div>
-            // )
             return (
               <>
                 <Flex
@@ -143,7 +138,8 @@ export const MutedUser = (props: { user: any }) => {
   const onNavigateAway = () => {}
   const isMobile = useIsMobile()
   const [muteUser] = useMuteUser()
-  const [isMuteUser, toggleMuteUser] = useToggle(false)
+
+  const [isMuted, toggleMuted] = useToggle(true)
 
   return (
     <>
@@ -158,13 +154,13 @@ export const MutedUser = (props: { user: any }) => {
       />
       <Button
         size='small'
-        variant={isMuteUser ? 'secondary' : 'primary'}
+        variant={isMuted ? 'primary' : 'secondary'}
         onClick={() => {
-          muteUser(user.user_id, !isMuteUser)
-          toggleMuteUser()
+          muteUser({ mutedUserId: user.user_id, isMuted })
+          toggleMuted()
         }}
       >
-        {isMuteUser ? messages.mute : messages.unmute}
+        {isMuted ? messages.unmute : messages.mute}
       </Button>
     </>
   )

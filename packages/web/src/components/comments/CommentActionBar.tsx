@@ -118,11 +118,6 @@ export const CommentActionBar = ({
     onClickDelete()
   }, [onClickDelete])
 
-  const handleMute = useCallback(() => {
-    muteUser(comment.userId, false)
-    toast(messages.toasts.mutedUser)
-  }, [comment.userId, muteUser, toast])
-
   const handleMuteNotifs = useCallback(() => {
     // TODO: call backend here
     setNotificationsMuted((prev) => !prev)
@@ -137,6 +132,15 @@ export const CommentActionBar = ({
     pinComment(commentId, !isPinned)
     toast(isPinned ? messages.toasts.unpinned : messages.toasts.pinned)
   }, [commentId, isPinned, pinComment, toast])
+
+  const handleMute = useCallback(() => {
+    muteUser({
+      mutedUserId: comment.userId,
+      isMuted: false,
+      entityId: comment.id
+    })
+    toast(messages.toasts.mutedUser)
+  }, [comment.id, comment.userId, muteUser, toast])
 
   const handleReport = useCallback(() => {
     reportComment(commentId)

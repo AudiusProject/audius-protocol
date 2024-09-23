@@ -212,7 +212,7 @@ def get_muted_users(current_user_id):
         muted_users = (
             session.query(User)
             .join(MutedUser, MutedUser.muted_user_id == User.user_id)
-            .filter(MutedUser.user_id == current_user_id)
+            .filter(MutedUser.user_id == current_user_id, MutedUser.is_delete == False)
             .all()
         )
         muted_users_list = helpers.query_result_to_list(muted_users)

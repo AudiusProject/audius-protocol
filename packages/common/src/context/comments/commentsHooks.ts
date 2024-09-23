@@ -1,3 +1,5 @@
+import { decodeHashId } from '~/utils/hashIds'
+
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -87,13 +89,22 @@ export const useReportComment = () => {
 export const useMuteUser = () => {
   const { data: currentUserId } = useGetCurrentUserId({})
   const [muteUser, response] = useMuteUserById()
-  const wrappedHandler = (mutedUserId: string, isMuted: boolean) => {
-    console.log('asdf wrapped handler ', mutedUserId, isMuted)
+  const wrappedHandler = ({
+    mutedUserId,
+    isMuted,
+    entityId
+  }: {
+    mutedUserId: string
+    isMuted: boolean
+    entityId?: string
+  }) => {
+    console.log('asdf wrapped handler ', entityId, mutedUserId)
     if (currentUserId) {
       muteUser({
         mutedUserId: Number(mutedUserId),
         userId: currentUserId,
-        isMuted
+        isMuted,
+        entityId
       })
     }
   }

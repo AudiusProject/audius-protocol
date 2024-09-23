@@ -20,7 +20,6 @@ const initialState: UsersCacheState = {
 }
 
 const addEntries = (state: UsersCacheState, entries: Entry[]) => {
-  console.log('asdf addEntries', entries)
   const newHandles: Record<string, ID> = {}
 
   for (const entry of entries) {
