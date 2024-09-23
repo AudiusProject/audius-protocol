@@ -147,9 +147,11 @@ services:
         SOLANA_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
         SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
         SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET: '${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET}'
+        SOLANA_REWARD_MANAGER_LOOKUP_TABLE: '${SOLANA_REWARD_MANAGER_LOOKUP_TABLE}'
       x-bake:
         platforms:
           - linux/amd64
+          - linux/arm64
     profiles:
       - solana-build
     ports:

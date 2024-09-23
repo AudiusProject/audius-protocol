@@ -298,7 +298,7 @@ async function claimRewardsForChallenge({
                 challengeId,
                 specifier: specifierWithAmount.specifier,
                 amount: specifierWithAmount.amount,
-                error: error.customErrorName ?? 'Unkown',
+                error: error.customErrorName ?? 'Unknown',
                 instruction: error.instructionName
               })
             )
