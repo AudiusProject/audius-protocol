@@ -109,9 +109,11 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const isCommentingEnabled =
+    commentsFlagEnabled && !heroTrack?.comments_disabled
   const loading = !heroTrack || isFetchingNFTAccess
 
   const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
@@ -249,7 +251,7 @@ const TrackPage = ({
           css={{ maxWidth: 1080 }}
           justifyContent='center'
         >
-          {isCommentingEnabled && !heroTrack?.comments_disabled ? (
+          {isCommentingEnabled ? (
             <Flex flex='3'>
               <CommentSection entityId={defaults.trackId} />
             </Flex>
