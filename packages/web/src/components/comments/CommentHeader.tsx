@@ -1,6 +1,4 @@
-import { useContext } from 'react'
-
-import { CommentSectionContext } from '@audius/common/context'
+import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Flex,
   IconButton,
@@ -16,15 +14,13 @@ const messages = {
 }
 
 type CommentHeaderProps = {
-  commentCount?: number
   isLoading?: boolean
 }
 
 export const CommentHeader = (props: CommentHeaderProps) => {
-  const { commentCount, isLoading } = props
-  const { handleMuteEntityNotifications, isEntityOwner } = useContext(
-    CommentSectionContext
-  )!
+  const { isLoading } = props
+  const { handleMuteEntityNotifications, isEntityOwner, commentCount } =
+    useCurrentCommentSection()
   const { motion } = useTheme()
   const popupMenuItems: PopupMenuItem[] = [
     { onClick: handleMuteEntityNotifications, text: messages.turnOffNotifs }
