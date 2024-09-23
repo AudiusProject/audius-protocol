@@ -36,6 +36,9 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
   linkProps?: Partial<TextLinkProps>
+
+  // If true, only linkify Audius URLs
+  internalLinksOnly?: boolean
 }
 
 const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
@@ -151,17 +154,23 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   )
 
   const renderLink = useCallback(
-    (text: string, match: Match) => (
-      <Link
-        {...other}
-        variant='visible'
-        textVariant={other.variant}
-        url={match.getAnchorHref()}
-        {...linkProps}
-      >
-        {text}
-      </Link>
-    ),
+    (text: string, match: Match) => {
+      const url = match.getAnchorHref()
+      const shouldLinkify = !props.internalLinksOnly || isAudiusUrl(url)
+      return shouldLinkify ? (
+        <Link
+          {...other}
+          variant='visible'
+          textVariant={other.variant}
+          url={url}
+          {...linkProps}
+        >
+          {text}
+        </Link>
+      ) : (
+        renderText(text)
+      )
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
