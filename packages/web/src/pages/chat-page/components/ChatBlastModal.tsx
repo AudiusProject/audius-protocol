@@ -1,5 +1,6 @@
 import { useGetCurrentUser } from '@audius/common/api'
 import {
+  useFirstAvailableBlastAudience,
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
@@ -68,8 +69,9 @@ export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
 
+  const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -98,6 +100,7 @@ export const ChatBlastModal = () => {
       <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize
       >
         {({ submitForm }) => (
           <>
