@@ -26,17 +26,10 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 		return ctx.Redirect(http.StatusMovedPermanently, basePath+"/overview")
 	})
 
-	// pages of the console site
-	cg.GET("*", c.render)
+	// render the top level site
+	cg.GET("/*", c.renderSiteFrame)
 
-	cg.GET("/overview", c.overviewPage)
-	cg.GET("/analytics", c.analyticsPage)
-	cg.GET("/nodes", c.nodesPage)
-	cg.GET("/content", c.contentPage)
-	cg.GET("/uptime", c.uptimePage)
-	cg.GET("/block/:block", c.blockPage)
-
-	// htmx fragments that make up pages
+	// htmx fragments that make up pages derived from routes
 	fg.GET("/overview", c.overviewFragment)
 	fg.GET("/analytics", c.analyticsFragment)
 	fg.GET("/nodes", c.nodesFragment)

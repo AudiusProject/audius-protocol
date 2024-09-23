@@ -11,10 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (con *Console) blockPage(c echo.Context) error {
-	return con.render(c)
-}
-
 func (con *Console) blockFragment(c echo.Context) error {
 	ctx := c.Request().Context()
 	blockID := c.Param("block")

@@ -123,7 +123,7 @@ func (l *Layout) SiteFrame(props SiteFrameProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div></div><div class=\"space-y-4\"><ul class=\"uk-tab-alt max-w-96\"><li class=\"uk-active\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div></div><div class=\"space-y-4\"><ul class=\"uk-tab-alt max-w-96\"><li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
