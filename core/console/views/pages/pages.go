@@ -11,9 +11,8 @@ type Pages struct {
 	layout     *layout.Layout
 }
 
-func NewPages(config *config.Config, baseUrl string) *Pages {
+func NewPages(config *config.Config, baseUrl, fragmentUrl string) *Pages {
 	return &Pages{
-		components: components.NewComponents(config, baseUrl),
-		layout:     layout.NewLayout(config, baseUrl),
+		components: components.NewComponents(config, baseUrl, fragmentUrl),
 	}
 }

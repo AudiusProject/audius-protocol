@@ -4,11 +4,20 @@ import (
 	"fmt"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console/assets"
+	"github.com/labstack/echo/v4"
 )
 
 var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
 
-templ (l *Layout) SiteFrame() {
+type SiteFrameProps struct {
+	Path string
+}
+
+func (l *Layout) RenderSiteFrame(c echo.Context, props SiteFrameProps) error {
+	return l.SiteFrame(props).Render(c.Request().Context(), c.Response().Writer)
+}
+
+templ (l *Layout) SiteFrame(props SiteFrameProps) {
 	@l.Base() {
 		<div class="min-h-screen flex flex-col">
 			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
@@ -36,36 +45,34 @@ templ (l *Layout) SiteFrame() {
 				<div class="space-y-4">
 					<ul class="uk-tab-alt max-w-96">
 						<li class="uk-active">
-							@l.components.Link("") {
+							@l.components.FragmentLink("/overview") {
 								<div>Overview</div>
 							}
 						</li>
 						<li>
-							@l.components.Link("/analytics") {
+							@l.components.FragmentLink("/analytics") {
 								<div>Analytics</div>
 							}
 						</li>
 						<li>
-							@l.components.Link("/nodes") {
+							@l.components.FragmentLink("/nodes") {
 								<div>Nodes</div>
 							}
 						</li>
 						<li>
-							@l.components.Link("/content") {
+							@l.components.FragmentLink("/content") {
 								<div>Content</div>
 							}
 						</li>
 						<li>
-							@l.components.Link("/uptime") {
+							@l.components.FragmentLink("/uptime") {
 								<div>Uptime</div>
 							}
 						</li>
 					</ul>
 				</div>
 			</div>
-			<div class="flex-grow space-y-4 p-8 pt-6">
-				{ children... }
-			</div>
+			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6" hx-get={ props.Path } hx-trigger="load" hx-target="#page-content"></div>
 			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
 				<div class="text-sm text-gray-600 flex justify-between w-full px-5">
 					<span>made with ⚡️ by the protocol team</span>
