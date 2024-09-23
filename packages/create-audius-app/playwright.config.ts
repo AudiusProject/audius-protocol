@@ -27,7 +27,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run start-examples',
+    command: `npm run start-example -- ${process.argv[1]}`,
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',

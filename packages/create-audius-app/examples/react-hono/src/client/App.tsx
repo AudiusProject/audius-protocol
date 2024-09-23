@@ -12,15 +12,18 @@ import {
   TextInputSize
 } from '@audius/harmony'
 import { Button, Flex } from '@audius/harmony'
+import { hc } from 'hono/client'
 import { css } from '@emotion/react'
 import { useSdk } from './hooks/useSdk'
+import { useAuth } from './contexts/AuthProvider'
+import { AppType } from '..'
 
-type User = { userId: string; handle: string }
+const client = hc<AppType>('/')
 
 export default function App() {
   const { sdk } = useSdk()
+  const { user, login } = useAuth()
 
-  const [user, setUser] = useState<User | null>(null)
   const [tracks, setTracks] = useState<FullSdk.TrackFull[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
   const [playingTrackId, setPlayingTrackId] = useState<string | null>()
@@ -36,7 +39,15 @@ export default function App() {
    */
   useEffect(() => {
     sdk.oauth?.init({
-      successCallback: (user: User) => setUser(user),
+      successCallback: async (u, token) => {
+        const userRes = await sdk.users.getUser({ id: u.userId })
+        if (!userRes?.data) {
+          return
+        }
+
+        const user = userRes.data
+        login(user, token)
+      },
       errorCallback: (error: string) => console.log('Got error', error)
     })
 
@@ -46,7 +57,7 @@ export default function App() {
         scope: 'write'
       })
     }
-  }, [])
+  }, [loginWithAudiusButtonRef, sdk.users, sdk.oauth, login])
 
   /**
    * Fetch tracks based on the user handle present in handleInputRef
@@ -59,7 +70,7 @@ export default function App() {
 
     const { data: tracks } = await sdk.full.users.getTracksByUser({
       id: selectedUser?.id ?? '',
-      userId: user?.userId ?? ''
+      userId: user?.id ?? ''
     })
 
     setTracks(tracks ?? [])
@@ -99,9 +110,21 @@ export default function App() {
       if (user) {
         setFavorites((prev) => ({ ...prev, [trackId]: favorite }))
         try {
-          await audiusSdk.tracks[
-            favorite ? 'favoriteTrack' : 'unfavoriteTrack'
-          ]({ userId: user.userId, trackId })
+          if (favorite) {
+            await client.favorite.$post({
+              json: {
+                userId: user.id,
+                trackId
+              }
+            })
+          } else {
+            await client.unfavorite.$post({
+              json: {
+                userId: user.id,
+                trackId
+              }
+            })
+          }
         } catch (e) {
           console.error('Failed to favorite track', e)
           setFavorites((prev) => ({ ...prev, [trackId]: !favorite }))
@@ -127,7 +150,7 @@ export default function App() {
       <Flex direction='column' gap='m' m='2xl' alignItems='center'>
         <Flex direction='column'>
           <Text color='heading' strength='strong' variant='display'>
-            React + @audius/sdk
+            React + Hono + @audius/sdk
           </Text>
           <Text color='accent' variant='heading'>
             Stream and favorite tracks!

@@ -1,0 +1,13 @@
+diff --git a/node_modules/levelup/lib/write-stream.js b/node_modules/levelup/lib/write-stream.js
+index 6b50b98..0359555 100644
+--- a/node_modules/levelup/lib/write-stream.js
++++ b/node_modules/levelup/lib/write-stream.js
+@@ -4,7 +4,7 @@
+  * <https://github.com/rvagg/node-levelup/blob/master/LICENSE.md>
+  */
+ 
+-var Stream       = require('stream').Stream
++var Stream       = require('node:stream').Stream
+   , inherits     = require('util').inherits
+   , extend       = require('xtend')
+   , bl           = require('bl')
