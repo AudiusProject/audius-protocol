@@ -1,17 +1,14 @@
 import { useCallback, useState } from 'react'
 
+import { commentsMessages as messages } from '@audius/common/messages'
 import type { CommentTextProps } from '@audius/harmony/src/components/comments/CommentText/types'
 
-import { Flex, Text, TextLink } from '../..'
+import { Flex, Text, TextLink } from '@audius/harmony-native'
+import { UserGeneratedText } from 'app/components/core'
 
 const MAX_LINES = 3
 
-const messages = {
-  seeMore: 'See More',
-  seeLess: 'See Less'
-}
-
-export const CommentText = ({ children }: CommentTextProps) => {
+export const CommentText = ({ children, isEdited }: CommentTextProps) => {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -26,15 +23,27 @@ export const CommentText = ({ children }: CommentTextProps) => {
 
   return (
     <Flex alignItems='flex-start' gap='xs'>
-      <Text
+      <UserGeneratedText
         variant='body'
         size='s'
         lineHeight='multi'
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
+        internalLinksOnly
+        suffix={
+          isEdited ? (
+            <>
+              <Text size='s'>&nbsp;</Text>
+              <Text color='subdued' size='xs'>
+                ({messages.edited})
+              </Text>
+            </>
+          ) : null
+        }
       >
         {children}
-      </Text>
+      </UserGeneratedText>
+
       {isOverflowing ? (
         <TextLink
           size='s'

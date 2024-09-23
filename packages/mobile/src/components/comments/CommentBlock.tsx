@@ -109,10 +109,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText>
-          {message}
-          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
-        </CommentText>
+        <CommentText isEdited={isEdited}>{message}</CommentText>
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>

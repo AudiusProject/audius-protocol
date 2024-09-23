@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -39,6 +40,9 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
 
   // If true, only linkify Audius URLs
   internalLinksOnly?: boolean
+
+  // Suffix to append after the text. Used for "edited" text in comments
+  suffix?: ReactNode
 }
 
 const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
@@ -80,6 +84,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     style,
     children,
     linkProps,
+    suffix,
     ...other
   } = props
 
@@ -191,16 +196,19 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
       >
-        <Autolink
-          renderLink={
-            allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
-          }
-          renderText={renderText}
-          email
-          url
-          style={[{ marginBottom: 3 }, style]}
-          text={squashNewLines(children) as string}
-        />
+        <Text>
+          <Autolink
+            renderLink={
+              allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
+            }
+            renderText={renderText}
+            email
+            url
+            style={[{ marginBottom: 3 }, style]}
+            text={squashNewLines(children) as string}
+          />
+          {suffix}
+        </Text>
       </View>
       {/* We overlay copies of each link on top of the invisible links */}
       <View style={{ position: 'absolute' }}>
