@@ -8,16 +8,21 @@ test_entities = {
 }
 
 
-def test_get_comment_reply_notification(app):
+def test_get_comment_thread_notification(app):
     with app.app_context():
         db_mock = get_db()
-        populate_mock_db(db_mock, test_entities)
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comments": [
+                    {"comment_id": 1, "user_id": 2, "entity_id": 1},
+                    {"comment_id": 2, "user_id": 1, "entity_id": 1},
+                ],
+            },
+        )
 
         test_actions = {
-            "comments": [
-                {"comment_id": 1, "user_id": 2, "entity_id": 1},
-                {"comment_id": 2, "user_id": 1, "entity_id": 1},
-            ],
             "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
         }
         populate_mock_db(db_mock, test_actions)
@@ -44,13 +49,18 @@ def test_get_owner_comment_notifications(app):
     with app.app_context():
         db_mock = get_db()
 
-        populate_mock_db(db_mock, test_entities)
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comments": [
+                    {"comment_id": 1, "user_id": 1, "entity_id": 1},
+                    {"comment_id": 2, "user_id": 1, "entity_id": 1},
+                ],
+            },
+        )
 
         test_actions = {
-            "comments": [
-                {"comment_id": 1, "user_id": 1, "entity_id": 1},
-                {"comment_id": 2, "user_id": 1, "entity_id": 1},
-            ],
             "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
         }
         populate_mock_db(db_mock, test_actions)
@@ -63,18 +73,23 @@ def test_get_owner_comment_notifications(app):
 
 
 # Parent comment owner only gets one notification per replier
-def test_prevent_reply_spam(app):
+def test_prevent_thread_spam(app):
     with app.app_context():
         db_mock = get_db()
 
-        populate_mock_db(db_mock, test_entities)
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comments": [
+                    {"comment_id": 1, "user_id": 1, "entity_id": 1},
+                    {"comment_id": 2, "user_id": 2, "entity_id": 1},
+                    {"comment_id": 3, "user_id": 2, "entity_id": 1},
+                ],
+            },
+        )
 
         test_actions = {
-            "comments": [
-                {"comment_id": 1, "user_id": 1, "entity_id": 1},
-                {"comment_id": 2, "user_id": 2, "entity_id": 1},
-                {"comment_id": 3, "user_id": 2, "entity_id": 1},
-            ],
             "comment_threads": [
                 {"parent_comment_id": 1, "comment_id": 2},
                 {"parent_comment_id": 1, "comment_id": 3},
@@ -89,17 +104,22 @@ def test_prevent_reply_spam(app):
             assert len(u1_notifications) == 1
 
 
-def test_reply_priority(app):
+def test_thread_priority(app):
     with app.app_context():
         db_mock = get_db()
 
-        populate_mock_db(db_mock, test_entities)
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comments": [
+                    {"comment_id": 1, "user_id": 1, "entity_id": 1},
+                    {"comment_id": 2, "user_id": 2, "entity_id": 1},
+                ],
+            },
+        )
 
         test_actions = {
-            "comments": [
-                {"comment_id": 1, "user_id": 1, "entity_id": 1},
-                {"comment_id": 2, "user_id": 2, "entity_id": 1},
-            ],
             "comment_threads": [
                 {"parent_comment_id": 1, "comment_id": 2},
             ],
@@ -107,7 +127,15 @@ def test_reply_priority(app):
         populate_mock_db(db_mock, test_actions)
 
         with db_mock.scoped_session() as session:
-            args = {"user_id": 1, "valid_types": [NotificationType.COMMENT, NotificationType.COMMENT_THREAD]}
+            args = {
+                "user_id": 1,
+                "valid_types": [
+                    NotificationType.COMMENT,
+                    NotificationType.COMMENT_THREAD,
+                ],
+            }
             u1_notifications = get_notifications(session, args)
 
-            assert len(u1_notifications) == 1
+            assert len(u1_notifications) == 2
+            assert u1_notifications[0]["type"] == "comment_thread"
+            assert u1_notifications[1]["type"] == "comment"

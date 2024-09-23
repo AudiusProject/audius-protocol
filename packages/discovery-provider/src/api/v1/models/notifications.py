@@ -853,7 +853,8 @@ comment_thread_notification = ns.clone(
     notification_base,
     {
         "actions": fields.List(
-            fields.Nested(comment_thread_notification_action, required=True), required=True
+            fields.Nested(comment_thread_notification_action, required=True),
+            required=True,
         )
     },
 )

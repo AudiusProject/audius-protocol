@@ -28,10 +28,10 @@ begin
         values
         ( 
           new.blocknumber,
-          ARRAY [parent_comment_user_id], 
+          ARRAY [parent_comment_user_id],
           new.created_at, 
           'comment_thread',
-          parent_comment_user_id,
+          comment_user_id,
           'comment_thread:' || new.parent_comment_id,
           json_build_object
           (
