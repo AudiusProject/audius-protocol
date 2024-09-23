@@ -15,10 +15,22 @@ logger = StructuredLogger(__name__)
 def validate_mute_user_tx(params: ManageEntityParameters):
     muted_user_id = params.entity_id
     validate_signer(params)
+    logger.info(
+        f"asdf params.existing_records[EntityType.MUTED_USER.value] {params.existing_records[EntityType.MUTED_USER.value]}"
+    )
+    existing_record = None
+    if (params.user_id, muted_user_id) in params.existing_records[
+        EntityType.MUTED_USER.value
+    ]:
+
+        existing_record = params.existing_records[EntityType.MUTED_USER.value][
+            (params.user_id, muted_user_id)
+        ]
+
     if (
         params.action == Action.MUTE
-        and (params.user_id, muted_user_id)
-        in params.existing_records[EntityType.MUTED_USER.value]
+        and existing_record
+        and existing_record.is_delete == False
     ):
         raise IndexingValidationError(
             f"User {params.user_id} already muted user {muted_user_id}"

@@ -107,13 +107,13 @@ export class CommentsApi extends GeneratedCommentsApi {
     return response
   }
 
-  async muteUser(userId: number, mutedUserId: number) {
+  async muteUser(userId: number, mutedUserId: number, isMuted: boolean) {
     console.log('asdf sdk mute user manage entity')
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: mutedUserId,
-      action: Action.MUTE,
+      action: isMuted ? Action.UNMUTE : Action.MUTE,
       metadata: '',
       auth: this.auth
     })

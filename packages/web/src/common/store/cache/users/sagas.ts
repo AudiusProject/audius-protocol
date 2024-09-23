@@ -232,7 +232,6 @@ function* watchFetchProfilePicture() {
 
       try {
         const user: User | null = yield* select(getUser, { id: userId })
-        console.log('asdf fetch profile pic user', user)
         if (!user || (!user.profile_picture_sizes && !user.profile_picture))
           return
         if (user.profile_picture_sizes) {

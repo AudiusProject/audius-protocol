@@ -1,6 +1,5 @@
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   usePinComment,
@@ -10,7 +9,6 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
 import {
   ButtonVariant,
   Flex,
@@ -18,13 +16,6 @@ import {
   IconButton,
   IconHeart,
   IconKebabHorizontal,
-  IconMessageBlock,
-  IconNotificationOff,
-  IconPencil,
-  IconPin,
-  IconShieldCheck,
-  IconTrash,
-  IconUserUnfollow,
   IconQuestionCircle,
   PopupMenu,
   PopupMenuItem,
@@ -74,8 +65,6 @@ type CommentActionBarProps = {
   onClickDelete: () => void
   hideReactCount?: boolean
 }
-const { getUser } = cacheUsersSelectors
-
 export const CommentActionBar = ({
   comment,
   isDisabled,
@@ -84,21 +73,6 @@ export const CommentActionBar = ({
   onClickDelete,
   hideReactCount
 }: CommentActionBarProps) => {
-  // comment from props
-  const { reactCount, id: commentId, isCurrentUserReacted } = comment
-  const commentOwnerName = useSelector(
-    (state: AppState) =>
-      getUser(state, { id: Number(comment.userId) })?.name ?? ''
-  )
-
-  // if (!commentOwnerName) {
-  //   throw new Error('Failed to get commenter name.')
-  // }
-
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
-
-  // context actions & values
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
@@ -110,6 +84,7 @@ export const CommentActionBar = ({
   const [reactToComment] = useReactToComment()
   const [reportComment] = useReportComment()
   const [pinComment] = usePinComment()
+  const [muteUser] = useMuteUser()
 
   // Comment context data
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
@@ -144,9 +119,9 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMute = useCallback(() => {
-    // TODO: call backend here
+    muteUser(comment.userId, false)
     toast(messages.toasts.mutedUser)
-  }, [toast])
+  }, [comment.userId, muteUser, toast])
 
   const handleMuteNotifs = useCallback(() => {
     // TODO: call backend here
@@ -167,12 +142,6 @@ export const CommentActionBar = ({
     reportComment(commentId)
     toast(messages.toasts.flaggedAndRemoved)
   }, [commentId, reportComment, toast])
-
-  const handleMuteUser = useCallback(() => {
-    console.log('asdf handle mute user')
-    muteUser(comment.userId)
-    toast(messages.mutedUserConfirmation)
-  }, [comment.userId, muteUser, toast])
 
   const handleClickReply = useCallback(() => {
     if (isMobile) {
@@ -267,9 +236,8 @@ export const CommentActionBar = ({
         text: messages.menuActions.flagAndRemove
       },
       {
-        onClick: toggleMuteUserConfirmationOpen,
-        text: messages.muteUser,
-        icon: <IconUserUnfollow /> // TODO: temporary icon
+        onClick: () => setCurrentConfirmationModalType('muteUser'),
+        text: messages.menuActions.muteUser
       }
     ]
     const muteNotifs: PopupMenuItem = {
@@ -305,10 +273,10 @@ export const CommentActionBar = ({
   }, [
     isPinned,
     onClickEdit,
-    isEntityOwner,
     handleMuteNotifs,
     notificationsOn,
     isCommentOwner,
+    isEntityOwner,
     isUserGettingNotifs
   ])
 
@@ -374,18 +342,6 @@ export const CommentActionBar = ({
         onClose={() => {
           setCurrentConfirmationModalType(undefined)
         }}
-      />
-      <ConfirmationModal
-        messages={{
-          header: messages.muteUser,
-          description: messages.muteUserDescription(commentOwnerName),
-          confirm: messages.muteUser
-        }}
-        isOpen={isMuteUserConfirmationOpen}
-        onClose={toggleMuteUserConfirmationOpen}
-        title={messages.muteUser}
-        description={messages.muteUserDescription(commentOwnerName)}
-        onConfirm={handleMuteUser}
       />
     </Flex>
   )

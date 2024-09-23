@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import and_, asc, desc, func
+from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -155,19 +155,22 @@ def get_track_comments(args, track_id, current_user_id=None):
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
+                Comment.is_delete == False,
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 (CommentReport.comment_id == None)
                 | (current_user_id == None)
                 | (CommentReport.user_id != current_user_id),
-                MutedUser.muted_user_id == None,  # Exclude muted users' comments
+                or_(
+                    MutedUser.muted_user_id == None, MutedUser.is_delete == True
+                ),  # Exclude muted users' comments
             )
             .order_by(desc(Comment.is_pinned), sort_method_order_by)
             .offset(offset)
             .limit(limit)
             .all()
         )
-
+        logger.info(f"asdf track_comments {track_comments}")
         return [
             {
                 "id": encode_int_id(track_comment.comment_id),

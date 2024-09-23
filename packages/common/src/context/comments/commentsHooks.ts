@@ -5,7 +5,8 @@ import {
   usePostComment as useAQueryPostComment,
   useReactToCommentById,
   useReportCommentById,
-  useMuteUserById
+  useMuteUserById,
+  useGetCurrentUserId
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
@@ -84,12 +85,16 @@ export const useReportComment = () => {
 }
 
 export const useMuteUser = () => {
-  const { currentUserId } = useCurrentCommentSection()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [muteUser, response] = useMuteUserById()
-  const wrappedHandler = (mutedUserId: string) => {
-    console.log('asdf wrapped handler ', mutedUserId)
+  const wrappedHandler = (mutedUserId: string, isMuted: boolean) => {
+    console.log('asdf wrapped handler ', mutedUserId, isMuted)
     if (currentUserId) {
-      muteUser({ mutedUserId: Number(mutedUserId), userId: currentUserId })
+      muteUser({
+        mutedUserId: Number(mutedUserId),
+        userId: currentUserId,
+        isMuted
+      })
     }
   }
   return [wrappedHandler, response] as const

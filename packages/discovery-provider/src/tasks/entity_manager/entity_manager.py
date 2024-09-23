@@ -133,6 +133,7 @@ entity_type_table_mapping = {
     "Grant": Grant.__tablename__,
     "Comment": Comment.__tablename__,
     "CommentReaction": CommentReaction.__tablename__,
+    "MutedUser": MutedUser.__tablename__,
 }
 
 

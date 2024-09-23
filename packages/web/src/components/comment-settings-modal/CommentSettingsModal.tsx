@@ -5,10 +5,13 @@ import {
   useGetMutedUsers,
   useGetSalesAggegrate
 } from '@audius/common/api'
+import { useMuteUser } from '@audius/common/context'
 import { useSetInboxPermissions } from '@audius/common/hooks'
 import { Status, User } from '@audius/common/models'
 import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
+  Flex,
+  Text,
   Modal,
   ModalContent,
   ModalHeader,
@@ -18,10 +21,12 @@ import {
   RadioGroup,
   Button,
   IconMessageBlock,
-  Scrollbar
+  Scrollbar,
+  Divider
 } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
 import { useSelector } from 'react-redux'
+import { useToggle } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ArtistChip from 'components/artist/ArtistChip'
@@ -29,16 +34,15 @@ import { MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { audiusSdk } from 'services/audius-sdk'
 
-import styles from '../inbox-settings-modal/InboxSettingsModal.module.css'
 import { ModalRadioItem } from '../modal-radio/ModalRadioItem'
+
+import styles from './CommentSettingsModal.module.css'
 
 const messages = {
   title: 'Comment Settings',
   save: 'Save Changes',
   error: 'Something went wrong. Please try again.',
-  allTitle: 'Allow Messages from Everyone',
-  allDescription:
-    'Anyone can send you a direct message, regardless of whether you follow them or not.',
+  description: 'Prevent certain users from commenting on your tracks.',
   followeeTitle: 'Only Allow Messages From People You Follow',
   followeeDescription:
     'Only users that you follow can initiate direct messages with you. You can still send messages to anyone.',
@@ -47,7 +51,9 @@ const messages = {
     'Only users who have tipped you can initiate direct messages with you. You can still send messages to anyone.',
   noneTitle: 'No One Can Message You',
   noneDescription:
-    'Disable incoming direct messages entirely. You will no longer receive direct messages, but can still send messages to others.'
+    'Disable incoming direct messages entirely. You will no longer receive direct messages, but can still send messages to others.',
+  unmute: 'Unmute',
+  mute: 'Mute'
 }
 
 const options = [
@@ -78,10 +84,12 @@ export const CommentSettingsModal = () => {
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
   const { data: currentUserId } = useGetCurrentUserId({})
+
   console.log('asdf currentUserId', currentUserId)
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
+  if (!mutedUsers) return
   console.log('asdf mutedUsers', mutedUsers)
 
   return (
@@ -94,61 +102,72 @@ export const CommentSettingsModal = () => {
         <ModalTitle title={messages.title} icon={<IconMessageBlock />} />
       </ModalHeader>
       <ModalContent className={styles.modalContent}>
-        {' '}
+        <Flex p='xl'>
+          <Text>{messages.description}</Text>
+        </Flex>
         <Scrollbar
           className={styles.scrollable}
           containerRef={(containerRef) => {
             scrollParentRef.current = containerRef
           }}
         >
-          <MutedUserList users={mutedUsers} />
+          {mutedUsers.map((user) => {
+            // return (
+            //   <div key={user.id}>
+            //     <p>{user.name}</p>
+            //   </div>
+            // )
+            return (
+              <>
+                <Flex
+                  key={user.user_id}
+                  alignItems='center'
+                  direction='row'
+                  p='l'
+                >
+                  <MutedUser user={user} />
+                </Flex>
+                <Divider orientation='horizontal'></Divider>
+              </>
+            )
+          })}
         </Scrollbar>
       </ModalContent>
-      <ModalFooter>
-        <Button
-          variant='primary'
-          isLoading={false}
-          fullWidth
-          onClick={() => {}}
-        >
-          {messages.save}
-        </Button>
-      </ModalFooter>
     </Modal>
   )
 }
 
-export const MutedUserList = (props: { users: any }) => {
-  const { users } = props
+export const MutedUser = (props: { user: any }) => {
+  const { user } = props
   const onClickArtistName = (handle: string) => {}
   const onNavigateAway = () => {}
   const isMobile = useIsMobile()
-  if (!users) return <></>
+  const [muteUser] = useMuteUser()
+  const [isMuteUser, toggleMuteUser] = useToggle(false)
 
   return (
     <>
-      {users.map((user) => {
-        // return (
-        //   <div key={user.id}>
-        //     <p>{user.name}</p>
-        //   </div>
-        // )
-        console.log('asdf user: ', user)
-        return (
-          <div key={user.user_id}>
-            <ArtistChip
-              user={user}
-              onClickArtistName={() => {
-                onClickArtistName(user.handle)
-              }}
-              onNavigateAway={onNavigateAway}
-              showPopover={!isMobile}
-              popoverMount={MountPlacement.BODY}
-            />
-          </div>
-        )
-      })}
+      <ArtistChip
+        user={user}
+        onClickArtistName={() => {
+          onClickArtistName(user.handle)
+        }}
+        onNavigateAway={onNavigateAway}
+        showPopover={!isMobile}
+        popoverMount={MountPlacement.BODY}
+      />
+      <Button
+        size='small'
+        variant={isMuteUser ? 'secondary' : 'primary'}
+        onClick={() => {
+          muteUser(user.user_id, !isMuteUser)
+          toggleMuteUser()
+        }}
+      >
+        {isMuteUser ? messages.mute : messages.unmute}
+      </Button>
     </>
   )
 }
+
 export default CommentSettingsModal

@@ -363,16 +363,21 @@ const commentsApi = createApi({
     },
     muteUserById: {
       async fetch(
-        { mutedUserId, userId }: { mutedUserId: ID; userId: ID },
+        {
+          mutedUserId,
+          userId,
+          isMuted
+        }: { mutedUserId: ID; userId: ID; isMuted: boolean },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
         console.log('asdf comments api calling mute user')
-        await sdk.comments.muteUser(userId, mutedUserId)
+        await sdk.comments.muteUser(userId, mutedUserId, isMuted)
       },
       options: { type: 'mutation' },
       async onQueryStarted({ mutedUserId, entityId, userId }, { dispatch }) {
-        console.log('asdf onQueryStarted: ')
+        console.log('asdf optimistic', { mutedUserId, entityId, userId })
+        if (!entityId) return // unmute doesn't need optimistic update
         optimisticUpdateCommentList(
           entityId,
           (prevState) => {
@@ -380,7 +385,6 @@ const commentsApi = createApi({
               (comment: Comment) => comment.userId === mutedUserId
             )
             if (indexToRemove !== undefined && indexToRemove >= 0) {
-              console.log('asdf optimistic removing: ', comment)
               prevState?.splice(indexToRemove, 1)
             }
             return prevState
