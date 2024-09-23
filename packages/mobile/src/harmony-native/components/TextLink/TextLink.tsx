@@ -70,9 +70,7 @@ const TextLinkAnimation = (props: TextLinkAnimationProps) => {
         style={[
           style,
           animatedStyles,
-          {
-            textDecorationLine: showUnderline ? 'underline' : 'none'
-          }
+          { textDecorationLine: showUnderline ? 'underline' : 'none' }
         ]}
       >
         {children}
