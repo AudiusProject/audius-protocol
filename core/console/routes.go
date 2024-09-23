@@ -27,11 +27,14 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	})
 
 	// pages of the console site
+	cg.GET("*", c.render)
+
 	cg.GET("/overview", c.overviewPage)
 	cg.GET("/analytics", c.analyticsPage)
 	cg.GET("/nodes", c.nodesPage)
 	cg.GET("/content", c.contentPage)
 	cg.GET("/uptime", c.uptimePage)
+	cg.GET("/block/:block", c.blockPage)
 
 	// htmx fragments that make up pages
 	fg.GET("/overview", c.overviewFragment)
@@ -39,7 +42,7 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	fg.GET("/nodes", c.nodesFragment)
 	fg.GET("/content", c.contentFragment)
 	fg.GET("/uptime", c.uptimeFragment)
-	fg.GET("/block/:block", c.blockPage)
+	fg.GET("/block/:block", c.blockFragment)
 
 	// future pages
 	// g.GET("/blocks", c.blocksPage)
