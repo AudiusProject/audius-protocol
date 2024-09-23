@@ -93,3 +93,22 @@ def test_get_notifications(app):
 
             assert u1_notifications[0]["is_seen"] == False
             assert u1_notifications[1]["is_seen"] == True
+
+
+# If track owner comments on their own track, they do not receive a notification
+def test_get_owner_comment_notifications(app):
+    with app.app_context():
+        db_mock = get_db()
+
+        populate_mock_db(db_mock, test_entities)
+
+        test_actions = {
+            "comments": [{"user_id": 1, "entity_id": 1, "entity_type": "Track"}]
+        }
+        populate_mock_db(db_mock, test_actions)
+
+        with db_mock.scoped_session() as session:
+            args = {"user_id": 1, "valid_types": ["comment"]}
+            u1_notifications = get_notifications(session, args)
+
+            assert len(u1_notifications) == 0

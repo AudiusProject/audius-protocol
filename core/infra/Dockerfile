@@ -8,8 +8,10 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
   go mod download -x
 
 COPY . .
+
+ARG git_sha
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-  CGO_ENABLED=0 go build -o /bin/server .
+  CGO_ENABLED=0 go build -ldflags "-X github.com/AudiusProject/audius-protocol/core/config.Version=${git_sha}" -o /bin/server .
 
 FROM alpine:latest AS final
 

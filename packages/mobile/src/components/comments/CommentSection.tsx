@@ -26,7 +26,8 @@ const CommentSectionHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
-    comments
+    comments,
+    commentCount
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
 
@@ -46,7 +47,7 @@ const CommentSectionHeader = () => {
       <Text variant='title' size='m'>
         Comments
         {isShowingComments ? (
-          <Text color='subdued'>&nbsp;({comments.length})</Text>
+          <Text color='subdued'>&nbsp;({commentCount})</Text>
         ) : null}
       </Text>
       {isShowingComments ? (

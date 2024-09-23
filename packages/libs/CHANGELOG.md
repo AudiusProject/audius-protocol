@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 5.1.0
+
+### Minor Changes
+
+- 1c2edae: Separate legacy "libs" exports into a different bundle. Legacy code can import libs via @audius/sdk/dist/libs
+
 ## 5.0.0
 
 ### Major Changes

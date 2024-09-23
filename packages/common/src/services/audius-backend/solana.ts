@@ -1,4 +1,5 @@
-import { AudiusLibs, AudiusSdk } from '@audius/sdk'
+import { AudiusSdk } from '@audius/sdk'
+import { AudiusLibs } from '@audius/sdk/dist/libs'
 import { u8 } from '@solana/buffer-layout'
 import {
   Account,

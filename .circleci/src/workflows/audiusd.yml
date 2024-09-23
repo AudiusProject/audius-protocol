@@ -1,0 +1,29 @@
+when: << pipeline.parameters.run-audiusd-workflow >>
+jobs:
+  - build-audiusd:
+      context: github
+  - test-audiusd-devnet:
+      context: github
+      requires:
+        - build-audiusd
+  - test-config-subcommands:
+      context: github
+      requires:
+        - build-audiusd
+  - publish-audius-ctl:
+      context: github
+      requires:
+        - test-audiusd-devnet
+        - test-config-subcommands
+      filters:
+        branches:
+          only:
+            - main
+  - publish-audiusd:
+      context: [github, dockerhub]
+      requires:
+        - publish-audius-ctl
+      filters:
+        branches:
+          only:
+            - main
