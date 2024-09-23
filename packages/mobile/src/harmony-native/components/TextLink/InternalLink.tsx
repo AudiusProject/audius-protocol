@@ -8,6 +8,8 @@ import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 
+import type { GestureResponderHandler } from 'app/types/gesture'
+
 export type InternalLinkToProps<
   ParamList extends ReactNavigation.RootParamList
 > = {
@@ -45,11 +47,16 @@ type InternalLinkProps = {
   children?: ReactNode
 }
 
-export const InternalLink = (props: InternalLinkProps) => {
-  const { url, onPress, children } = props
+export const useInternalLinkHandlePress = ({
+  url,
+  onPress
+}: {
+  url: string
+  onPress?: GestureResponderHandler
+}) => {
   const linkTo = useLinkTo()
 
-  const handlePress = useCallback(
+  return useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e)
       const internalLink = getPathFromAudiusUrl(url)
@@ -59,7 +66,11 @@ export const InternalLink = (props: InternalLinkProps) => {
     },
     [onPress, url, linkTo]
   )
+}
 
+export const InternalLink = (props: InternalLinkProps) => {
+  const { url, onPress, children } = props
+  const handlePress = useInternalLinkHandlePress({ url, onPress })
   return (
     <TouchableOpacity onPress={handlePress} accessibilityRole='link'>
       {children}

@@ -15,7 +15,8 @@ import type { LayoutRectangle, Text as TextRef } from 'react-native'
 import Autolink from 'react-native-autolink'
 
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
-import { Text, TextLink } from '@audius/harmony-native'
+import { Text } from '@audius/harmony-native'
+import { TextLinkFlowing } from 'app/harmony-native/components/TextLink/TextLink'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 const {
@@ -39,9 +40,10 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
 
 const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
+  const shouldUnfurl = isAudiusUrl(url)
 
   useEffect(() => {
-    if (isAudiusUrl(url) && !unfurledContent) {
+    if (shouldUnfurl && !unfurledContent) {
       const fn = async () => {
         const sdk = await audiusSdk()
         const res = await sdk.resolve({ url })
@@ -59,12 +61,12 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
       }
       fn()
     }
-  }, [url, unfurledContent, setUnfurledContent])
+  }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
   return (
-    <TextLink {...other} url={url}>
+    <TextLinkFlowing {...other} url={url}>
       {unfurledContent ?? children}
-    </TextLink>
+    </TextLinkFlowing>
   )
 }
 
