@@ -49,8 +49,8 @@ const TextLinkAnimation = (props: TextLinkAnimationProps) => {
   const variantPressingColors = {
     default: color.primary.p300,
     subdued: color.primary.p300,
-    visible: color.static.primary,
-    inverted: color.static.primary,
+    visible: color.static.white,
+    inverted: color.link.visible,
     active: color.primary.primary
   }
 
