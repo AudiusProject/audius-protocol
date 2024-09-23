@@ -82,6 +82,7 @@ class FullAttest(Resource):
                     challenge_id=challenge_id,
                 )
 
+                # TODO PAY-3425: "owner_wallet" is actually "delegate_owner_wallet"
                 return success_response(
                     {"owner_wallet": owner_wallet, "attestation": signature}
                 )

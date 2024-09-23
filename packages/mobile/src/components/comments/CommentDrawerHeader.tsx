@@ -18,8 +18,7 @@ type CommentDrawerHeaderProps = {
 export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   const { bottomSheetModalRef } = props
 
-  const { comments, commentSectionLoading: isLoading } =
-    useCurrentCommentSection()
+  const { commentCount } = useCurrentCommentSection()
 
   const handlePressClose = () => {
     bottomSheetModalRef.current?.dismiss()
@@ -35,9 +34,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
       >
         <Text variant='body' size='m'>
           {messages.comments}
-          {!isLoading && comments?.length ? (
-            <Text color='subdued'>&nbsp;({comments.length})</Text>
-          ) : null}
+          <Text color='subdued'>&nbsp;({commentCount})</Text>
         </Text>
         <IconButton
           icon={IconCloseAlt}

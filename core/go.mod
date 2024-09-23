@@ -3,7 +3,7 @@ module github.com/AudiusProject/audius-protocol/core
 go 1.22.5
 
 require (
-	github.com/a-h/templ v0.2.771
+	github.com/a-h/templ v0.2.778
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/labstack/echo/v4 v4.12.0

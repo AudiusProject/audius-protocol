@@ -84,7 +84,9 @@ const productionConfig: SdkServicesConfig = {
     stakingBridgeProgramAddress: 'stkB5DZziVJT1C1VmzvDdRtdWxfs5nwcHViiaNBDK31',
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-    wAudioTokenMint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+    wAudioTokenMint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
+    rewardManagerLookupTableAddress:
+      '4UQwpGupH66RgQrWRqmPM9Two6VJEE68VZ7GeqZ3mvVv'
   }
 }
 
@@ -112,7 +114,9 @@ const stagingConfig: SdkServicesConfig = {
     stakingBridgeProgramAddress: 'stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj',
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-    wAudioTokenMint: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo'
+    wAudioTokenMint: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo',
+    rewardManagerLookupTableAddress:
+      'ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J'
   }
 }
 
@@ -153,7 +157,9 @@ const developmentConfig: SdkServicesConfig = {
     stakingBridgeProgramAddress: '',
     rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
     usdcTokenMint: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
-    wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3'
+    wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3',
+    rewardManagerLookupTableAddress:
+      'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   }
 }
 

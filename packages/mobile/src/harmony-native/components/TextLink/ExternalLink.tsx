@@ -9,6 +9,7 @@ import type {
 import { Linking, TouchableWithoutFeedback } from 'react-native'
 
 import { useToast } from 'app/hooks/useToast'
+import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { Source } from './types'
 
@@ -21,12 +22,16 @@ export type ExternalLinkProps = TouchableWithoutFeedbackProps & {
   source?: Source
 }
 
-export const ExternalLink = (props: ExternalLinkProps) => {
-  const { url, children, onPress, ...other } = props
+export const useExternalLinkHandlePress = ({
+  url,
+  onPress
+}: {
+  url: string
+  onPress?: GestureResponderHandler
+}) => {
   const { toast } = useToast()
   const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
-
-  const handlePress = useCallback(
+  return useCallback(
     async (e: GestureResponderEvent) => {
       const errorToastConfig = {
         content: messages.error,
@@ -52,6 +57,11 @@ export const ExternalLink = (props: ExternalLinkProps) => {
     },
     [onPress, openLeavingAudiusModal, toast, url]
   )
+}
+
+export const ExternalLink = (props: ExternalLinkProps) => {
+  const { url, children, onPress, ...other } = props
+  const handlePress = useExternalLinkHandlePress({ url, onPress })
 
   return (
     <TouchableWithoutFeedback onPress={handlePress} {...other}>

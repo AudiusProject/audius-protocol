@@ -361,7 +361,10 @@ const slice = createSlice({
       const { chatId, messageId, reaction } = action.payload
       delete state.optimisticReactions[messageId]
 
-      // Ensure the message exists
+      // Ensure the chat and message exists. If not, saga will fetch.
+      if (!(chatId in state.messages)) {
+        return
+      }
       const existingMessage = getMessage(state.messages[chatId], messageId)
       if (!existingMessage) {
         return

@@ -39,11 +39,13 @@ export const ChatBlastAudienceDisplay = (
       <Flex row gap='xs' alignItems='center'>
         <Text size='l'>{messages.description}</Text>
       </Flex>
-      <ProfilePictureList
-        users={users as User[]}
-        totalUserCount={audienceCount ?? 0}
-        limit={USER_LIST_LIMIT}
-      />
+      {users.length ? (
+        <ProfilePictureList
+          users={users as User[]}
+          totalUserCount={audienceCount ?? 0}
+          limit={USER_LIST_LIMIT}
+        />
+      ) : null}
     </Paper>
   )
 }

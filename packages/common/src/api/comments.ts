@@ -18,12 +18,13 @@ const optimisticUpdateCommentList = (
   updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
   dispatch: ThunkDispatch<any, any, any>,
   userId?: number,
-  page: number = 0
+  page: number = 0,
+  sortMethod: TrackCommentsSortMethodEnum = TrackCommentsSortMethodEnum.Top
 ) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
-      { entityId, userId, limit: 5, offset: page },
+      { entityId, userId, limit: 5, offset: page, sortMethod },
       updateRecipe
     )
   )
@@ -125,23 +126,24 @@ const commentsApi = createApi({
     postComment: {
       async fetch(
         { parentCommentId, ...commentData }: CommentMetadata,
-        { audiusSdk }
+        { audiusSdk },
+        { newId }: { newId: string }
       ) {
         const sdk = await audiusSdk()
-        const decodedParentCommentId =
-          decodeHashId(parentCommentId?.toString() ?? '') ?? undefined // undefined is allowed but null is not
+
         const commentsRes = await sdk.comments.postComment({
           ...commentData,
-          parentCommentId: decodedParentCommentId
+          commentId: newId,
+          parentCommentId
         })
         return commentsRes
       },
       options: { type: 'mutation' },
-      async onQuerySuccess(
-        newId,
+      async onQueryStarted(
         { entityId, body, userId, trackTimestampS, parentCommentId },
         { dispatch }
       ) {
+        const newId = Math.floor(Math.random() * 1000000).toString() // TODO: need to request an unused id instead of a random number
         const newComment: Comment = {
           id: newId,
           userId: `${userId}`,
@@ -176,7 +178,7 @@ const commentsApi = createApi({
           optimisticUpdateCommentList(
             entityId,
             (prevState) => {
-              if (prevState) {
+              if (prevState && Array.isArray(prevState)) {
                 prevState.unshift(newComment) // add new comment to top of comment section
                 return prevState
               } else {
@@ -187,6 +189,7 @@ const commentsApi = createApi({
             userId
           )
         }
+        return { tempId: newId }
       }
     },
     deleteCommentById: {
@@ -209,7 +212,7 @@ const commentsApi = createApi({
         return await sdk.comments.deleteComment(commentData)
       },
       options: { type: 'mutation' },
-      onQuerySuccess(_res, { id, entityId, userId }, { dispatch }) {
+      onQueryStarted({ id, entityId, userId }, { dispatch }) {
         optimisticUpdateCommentList(
           entityId,
           (prevState) => prevState?.filter((comment) => comment.id !== id),

@@ -54,16 +54,24 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 			return err
 		}
 
+		// Update unread count for the invited user. Do not update for the sender of the blast.
+		var unreadCount = 0
+		for _, blast := range blasts {
+			if int(blast.FromUserID) != invitedUserId {
+				unreadCount++
+			}
+		}
+
 		// similar to above... if there is a conflict when creating chat_member records
 		// keep the version with the earliest relayed_at (created_at) timestamp.
 		_, err = tx.Exec(`
 		insert into chat_member
-			(chat_id, invited_by_user_id, invite_code, user_id, created_at)
+			(chat_id, invited_by_user_id, invite_code, user_id, unread_count, created_at)
 		values
-			($1, $2, $3, $4, $5)
+			($1, $2, $3, $4, $5, $6)
 		on conflict (chat_id, user_id)
-		do update set invited_by_user_id=$2, invite_code=$3, created_at=$5 where chat_member.created_at > $5`,
-			params.ChatID, userId, invite.InviteCode, invitedUserId, ts)
+		do update set invited_by_user_id=$2, invite_code=$3, unread_count=$5, created_at=$6 where chat_member.created_at > $6`,
+			params.ChatID, userId, invite.InviteCode, invitedUserId, unreadCount, ts)
 		if err != nil {
 			return err
 		}
@@ -123,21 +131,33 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 	}
 
 	// set chat_member.is_hidden to false
-	// if there are any non-blast messages
+	// if there are any non-blast messages, reactions,
 	// or any blasts from the other party
 	_, err = tx.Exec(`
 	UPDATE chat_member member
 	SET is_hidden = NOT EXISTS(
-		SELECT *
-		FROM chat_message msg
-		LEFT JOIN chat_blast b USING (blast_id)
-		LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
-		WHERE msg.chat_id = member.chat_id
-		AND (
-			msg.blast_id IS NULL OR
-			b.from_user_id != member.user_id OR
-			r.user_id != member.user_id
-		)
+	    SELECT * FROM (
+        -- Check for chat messages
+        SELECT msg.message_id
+        FROM chat_message msg
+        LEFT JOIN chat_blast b USING (blast_id)
+        LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
+        WHERE msg.chat_id = member.chat_id
+        AND (
+            msg.blast_id IS NULL OR
+            b.from_user_id != member.user_id OR
+            r.user_id != member.user_id
+        )
+
+        UNION
+
+        -- Check for chat message reactions
+        SELECT r.message_id
+        FROM chat_message_reactions r
+        LEFT JOIN chat_message msg ON r.message_id = msg.message_id
+        WHERE msg.chat_id = member.chat_id
+        AND r.user_id != member.user_id
+    ) combined
 	)
 	WHERE member.chat_id = $1
 	`, chatId)
