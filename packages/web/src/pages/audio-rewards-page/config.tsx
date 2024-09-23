@@ -100,13 +100,30 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   referrals: {
     icon: <i className='emoji large incoming-envelope' />
   },
+  [ChallengeName.Referrals]: {
+    icon: <i className='emoji large incoming-envelope' />
+  },
   'ref-v': {
+    icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.ReferralsVerified]: {
     icon: <i className='emoji large incoming-envelope' />
   },
   referred: {
     icon: <i className='emoji large love-letter' />
   },
+  [ChallengeName.Referred]: {
+    icon: <i className='emoji large love-letter' />
+  },
   'connect-verified': {
+    icon: <i className='emoji large link-symbol' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.verifyAccount,
+      inProgress: linkButtonMap.verifyAccount,
+      complete: linkButtonMap.profile
+    }
+  },
+  [ChallengeName.ConnectVerified]: {
     icon: <i className='emoji large link-symbol' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.verifyAccount,
@@ -122,10 +139,29 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.trendingTracks
     }
   },
+  [ChallengeName.ListenStreak]: {
+    icon: <i className='emoji large headphone' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.trendingTracks,
+      inProgress: linkButtonMap.trendingTracks,
+      complete: linkButtonMap.trendingTracks
+    }
+  },
   'mobile-install': {
     icon: <i className='emoji large mobile-phone-with-arrow' />
   },
+  [ChallengeName.MobileInstall]: {
+    icon: <i className='emoji large mobile-phone-with-arrow' />
+  },
   'profile-completion': {
+    icon: <i className='emoji large ballot-box-tick' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.profile,
+      inProgress: linkButtonMap.profile,
+      complete: linkButtonMap.profile
+    }
+  },
+  [ChallengeName.ProfileCompletion]: {
     icon: <i className='emoji large ballot-box-tick' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.profile,
@@ -141,6 +177,14 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.trackUpload
     }
   },
+  [ChallengeName.TrackUpload]: {
+    icon: <i className='emoji large multiple-musical-notes' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.trackUpload,
+      inProgress: linkButtonMap.trackUpload,
+      complete: linkButtonMap.trackUpload
+    }
+  },
   'send-first-tip': {
     icon: <i className='emoji large money-wings' />,
     modalButtonInfo: {
@@ -149,7 +193,23 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.sendFirstTip
     }
   },
+  [ChallengeName.FirstTip]: {
+    icon: <i className='emoji large money-wings' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.sendFirstTip,
+      inProgress: linkButtonMap.sendFirstTip,
+      complete: linkButtonMap.sendFirstTip
+    }
+  },
   'first-playlist': {
+    icon: <i className='emoji large treble-clef' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
+    }
+  },
+  [ChallengeName.FirstPlaylist]: {
     icon: <i className='emoji large treble-clef' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,

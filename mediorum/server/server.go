@@ -457,6 +457,10 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startTranscoder()
 	go ss.startAudioAnalyzer()
 
+	if ss.Config.StoreAll {
+		go ss.startFixTruncatedQmWorker()
+	}
+
 	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker
 	err := ss.crud.DB.

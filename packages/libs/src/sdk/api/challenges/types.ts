@@ -7,21 +7,31 @@ import { HashId } from '../../types/HashId'
 import type { ChallengesApi } from './ChallengesApi'
 
 export enum ChallengeId {
-  TRACK_UPLOADS = 'track-upload',
-  REFERRALS = 'referrals',
-  VERIFIED_REFERRALS = 'ref-v',
-  REFERRED = 'referred',
-  MOBILE_INSTALL = 'mobile-install',
-  CONNECT_VERIFIED_ACCOUNT = 'connect-verified',
-  LISTEN_STREAK = 'listen-streak',
-  COMPLETE_PROFILE = 'profile-completion',
-  SEND_FIRST_TIP = 'send-first-tip',
-  CREATE_FIRST_PLAYLIST = 'first-playlist',
+  TRACK_UPLOADS = 'u',
+  REFERRALS = 'r',
+  VERIFIED_REFERRALS = 'rv',
+  REFERRED = 'rd',
+  MOBILE_INSTALL = 'm',
+  CONNECT_VERIFIED_ACCOUNT = 'v',
+  LISTEN_STREAK = 'l',
+  COMPLETE_PROFILE = 'p',
+  SEND_FIRST_TIP = 'ft',
+  CREATE_FIRST_PLAYLIST = 'fp',
   AUDIO_MATCHING_BUYER = 'b',
   AUDIO_MATCHING_SELLER = 's',
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
-  TRENDING_UNDERGROUND_TRACK = 'tut'
+  TRENDING_UNDERGROUND_TRACK = 'tut',
+  DEPRECATED_TRACK_UPLOADS = 'track-upload',
+  DEPRECATED_REFERRALS = 'referrals',
+  DEPRECATED_VERIFIED_REFERRALS = 'ref-v',
+  DEPRECATED_REFERRED = 'referred',
+  DEPRECATED_MOBILE_INSTALL = 'mobile-install',
+  DEPRECATED_CONNECT_VERIFIED_ACCOUNT = 'connect-verified',
+  DEPRECATED_LISTEN_STREAK = 'listen-streak',
+  DEPRECATED_COMPLETE_PROFILE = 'profile-completion',
+  DEPRECATED_SEND_FIRST_TIP = 'send-first-tip',
+  DEPRECATED_CREATE_FIRST_PLAYLIST = 'first-playlist'
 }
 
 const DefaultSpecifier = z.object({

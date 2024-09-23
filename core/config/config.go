@@ -45,6 +45,8 @@ const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost):.*`
 
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
 
+var Version string
+
 type Config struct {
 	/* Comet Config */
 	RootDir         string
