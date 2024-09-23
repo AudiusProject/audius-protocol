@@ -69,6 +69,8 @@ export class RewardManagerError extends Error {
  * oracle node.
  */
 export class RewardManagerClient {
+  public readonly lookupTable: PublicKey
+
   private readonly client: SolanaClient
   private readonly programId: PublicKey
   private readonly rewardManagerStateAccount: PublicKey
@@ -81,6 +83,7 @@ export class RewardManagerClient {
       config,
       getDefaultRewardManagerClentConfig(productionConfig)
     )
+    this.lookupTable = configWithDefaults.rewardManagerLookupTable
     this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.rewardManagerStateAccount = configWithDefaults.rewardManagerState
@@ -267,7 +270,13 @@ export class RewardManagerClient {
     if (!accountInfo) {
       return null
     }
-    return RewardManagerProgram.decodeAttestationsAccountData(accountInfo.data)
+    const rewardManagerState = await this.getRewardManagerState()
+    // Min Votes = discovery votes, +1 for AAO oracle
+    const maxAttestations = rewardManagerState.minVotes + 1
+    return RewardManagerProgram.decodeAttestationsAccountData(
+      maxAttestations,
+      accountInfo.data
+    )
   }
 
   private makeDisbursementId(challengeId: string, specifier: string) {
@@ -320,10 +329,15 @@ export class RewardManagerClient {
               })
             }
           }
-        } catch (e) {
-          if (!(e instanceof RewardManagerError)) {
+        } catch (nestedError) {
+          if (nestedError instanceof RewardManagerError) {
+            throw nestedError
+          } else {
             // If failed to provide user friendly error, surface original error
-            this.logger.warn('Failed to parse RewardManagerError error', e)
+            this.logger.warn(
+              'Failed to parse RewardManagerError error',
+              nestedError
+            )
           }
         }
       }

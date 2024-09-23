@@ -82,4 +82,5 @@ CMD solana-test-validator --ledger /usr/db \
     --account ${SOLANA_TOKEN_MINT_PUBLIC_KEY} ./fixtures/waudio.json \
     --account ${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY} ./fixtures/usdc.json \
     --account ${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET} ./fixtures/owner-usdc.json \
+    --account ${SOLANA_REWARD_MANAGER_LOOKUP_TABLE} ./fixtures/reward-manager-lookup-table.json\
     --reset

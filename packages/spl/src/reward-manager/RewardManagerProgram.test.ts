@@ -126,7 +126,7 @@ describe('RewardManagerProgram', () => {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ])
-    const decoded = RewardManagerProgram.decodeAttestationsAccountData(data)
+    const decoded = RewardManagerProgram.decodeAttestationsAccountData(4, data)
     expect(decoded.messages[0].attestation.recipientEthAddress).toBe(
       '0x34017d7abdf9e0cbc337980ae1763e0a49777df7'
     )
@@ -178,7 +178,7 @@ describe('RewardManagerProgram', () => {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 152, 17, 186, 62, 171, 31, 44,
       217, 162, 223, 237, 177, 158, 140, 42, 105, 114, 157, 200, 182
     ])
-    const decoded = RewardManagerProgram.decodeAttestationsAccountData(data)
+    const decoded = RewardManagerProgram.decodeAttestationsAccountData(4, data)
     expect(decoded.version).toBe(1)
     expect(decoded.rewardManagerState.toBase58()).toBe(
       '71hWFVYokLaN1PNYzTAWi13EfJ7Xt9VbSWUKsXUT8mxE'

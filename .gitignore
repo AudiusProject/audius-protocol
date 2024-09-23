@@ -8,6 +8,7 @@
 .idea
 
 dev-tools/startup/*.env
+bin/*
 
 ### GitHub VSCode .gitignore Template
 ### https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore

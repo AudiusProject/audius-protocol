@@ -1,3 +1,9 @@
+import { Comment, CommentMetadata, ReplyComment } from '@audius/sdk'
+import { useSelector } from 'react-redux'
+
+import { getKeyFromFetchArgs } from '~/audius-query/utils'
+import { CommonState } from '~/store'
+
 import {
   useDeleteCommentById,
   useEditCommentById,
@@ -32,6 +38,32 @@ export const usePostComment = () => {
   }
 
   return [wrappedHandler, postCommentResponse] as const
+}
+
+/**
+ * Returns the status of a specific comment post - without having to have bound the hook
+ * The status returned from usePostComment above is scoped to where the handler is called;
+ * this status is just based on what comment you're looking for
+ */
+export const useCommentPostStatus = (comment: Comment | ReplyComment) => {
+  const { entityId, entityType } = useCurrentCommentSection()
+  const { message, trackTimestampS, userId } = comment
+  const parentCommentId =
+    'parentCommentId' in comment ? comment.parentCommentId : undefined
+
+  return useSelector(
+    (state: CommonState) =>
+      state.api.commentsApi.postComment[
+        getKeyFromFetchArgs({
+          body: message,
+          userId: Number(userId),
+          entityId,
+          entityType,
+          parentCommentId,
+          trackTimestampS
+        } as CommentMetadata)
+      ]?.status
+  )
 }
 
 export const useReactToComment = () => {

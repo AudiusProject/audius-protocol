@@ -1,5 +1,5 @@
 import { wAUDIO } from '@audius/fixed-decimal'
-import type { PublicKey } from '@solana/web3.js'
+import { PACKET_DATA_SIZE, type TransactionInstruction } from '@solana/web3.js'
 
 import type {
   ClaimableTokensClient,
@@ -10,6 +10,7 @@ import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { AntiAbuseOracleAttestationError } from '../../utils/errors'
+import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import {
   ChallengesApi as GeneratedChallengesApi,
@@ -22,8 +23,6 @@ import {
 import type { UsersApi } from '../users/UsersApi'
 
 import {
-  AAOErrorResponse,
-  AttestationTransactionSignature,
   ChallengeId,
   ClaimRewardsRequest,
   ClaimRewardsSchema,
@@ -70,14 +69,18 @@ export class ChallengesApi extends GeneratedChallengesApi {
       case ChallengeId.MOBILE_INSTALL:
       case ChallengeId.SEND_FIRST_TIP:
       case ChallengeId.TRACK_UPLOADS:
-        return `${args.userId}`
+        return `${encodeHashId(args.userId)}`
       case ChallengeId.AUDIO_MATCHING_BUYER:
-        return `${args.sellerUserId}=>${args.trackId}`
+        return `${encodeHashId(args.sellerUserId)}:${encodeHashId(
+          args.trackId
+        )}`
       case ChallengeId.AUDIO_MATCHING_SELLER:
-        return `${args.buyerUserId}=>${args.trackId}`
+        return `${encodeHashId(args.buyerUserId)}:${encodeHashId(args.trackId)}`
       case ChallengeId.REFERRALS:
       case ChallengeId.VERIFIED_REFERRALS:
-        return `${args.userId}=>${args.referredUserId}`
+        return `${encodeHashId(args.userId)}:${encodeHashId(
+          args.referredUserId
+        )}`
       default:
         throw new Error(`Unknown challenge ID: ${args.challengeId}`)
     }
@@ -120,21 +123,20 @@ export class ChallengesApi extends GeneratedChallengesApi {
     })
     logger.debug('Existing attestations:', submissions)
 
-    const attestationPromises = []
+    let instructions: TransactionInstruction[] = []
     const hasSubmittedAntiAbuseOracle = submissions?.messages.find(
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
     if (!hasSubmittedAntiAbuseOracle) {
-      logger.debug('Submitting anti abuse oracle attestation...')
-      attestationPromises.push(
-        this.submitAntiAbuseOracleAttestation({
-          challengeId,
-          specifier,
-          amount,
-          recipientEthAddress,
-          handle
-        })
-      )
+      logger.debug('Adding anti abuse oracle attestation...')
+      const ix = await this.submitAntiAbuseOracleAttestation({
+        challengeId,
+        specifier,
+        amount,
+        recipientEthAddress,
+        handle
+      })
+      instructions = instructions.concat(ix)
     }
 
     const existingSenderOwners =
@@ -146,58 +148,67 @@ export class ChallengesApi extends GeneratedChallengesApi {
     const outstandingAttestations = state.minVotes - existingSenderOwners.length
     if (outstandingAttestations > 0) {
       logger.debug(
-        `Submitting ${outstandingAttestations} discovery node attestations...`
+        `Adding ${outstandingAttestations} discovery node attestations...`
       )
-      attestationPromises.push(
-        this.submitDiscoveryAttestations({
-          userId,
-          antiAbuseOracleEthAddress,
-          challengeId,
-          specifier,
-          amount,
-          recipientEthAddress,
-          numberOfNodes: outstandingAttestations,
-          excludeOwners: existingSenderOwners,
-          logger
-        })
-      )
-    }
-
-    const attestationResults = await Promise.all(attestationPromises)
-
-    const aaoError = attestationResults.find(
-      (result): result is AAOErrorResponse => 'aaoErrorCode' in result
-    )
-    if (aaoError) {
-      return aaoError
-    }
-
-    const attestationTransactionSignatures = attestationResults
-      .filter(
-        (result): result is AttestationTransactionSignature =>
-          'transactionSignature' in result
-      )
-      .map((attestationResult) => {
-        return attestationResult.transactionSignature
+      const ix = await this.submitDiscoveryAttestations({
+        userId,
+        antiAbuseOracleEthAddress,
+        challengeId,
+        specifier,
+        amount,
+        recipientEthAddress,
+        numberOfNodes: outstandingAttestations,
+        excludeOwners: existingSenderOwners,
+        instructionOffset: instructions.length,
+        logger
       })
+      instructions = instructions.concat(ix)
+    }
 
-    logger.debug('Confirming all attestation submissions...')
-    await this.solanaClient.confirmAllTransactions(
-      attestationTransactionSignatures
-    )
-
-    logger.debug('Disbursing claim...')
-    const { userBank: destinationUserBank } = await userBankPromise
-    const transactionSignature = await this.evaluateAttestations({
-      challengeId,
-      specifier,
-      recipientEthAddress,
-      destinationUserBank,
-      antiAbuseOracleEthAddress,
-      amount
+    const txSoFar = await this.solanaClient.buildTransaction({
+      instructions,
+      addressLookupTables: [this.rewardManager.lookupTable],
+      priorityFee: null
     })
+    // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
+    const estimatedEvaluateInstructionSize = 145
+    const threshold = PACKET_DATA_SIZE - estimatedEvaluateInstructionSize
+    if (txSoFar.serialize().byteLength >= threshold) {
+      logger.debug(
+        `Transaction size too large (size: ${
+          txSoFar.serialize().byteLength
+        }), submitting attestations separately...`
+      )
+      const submissionSignature = await this.rewardManager.sendTransaction(
+        txSoFar
+      )
+      logger.debug('Confirming attestation submissions...')
+      await this.solanaClient.confirmAllTransactions([submissionSignature])
+      instructions = []
+    }
 
-    return transactionSignature
+    logger.debug('Creating evaluate instruction...')
+    const { userBank: destinationUserBank } = await userBankPromise
+    const evaluate =
+      await this.rewardManager.createEvaluateAttestationsInstruction({
+        challengeId,
+        specifier,
+        recipientEthAddress,
+        destinationUserBank,
+        antiAbuseOracleEthAddress,
+        amount
+      })
+    instructions.push(evaluate)
+    logger.debug('Disbursing...')
+    const tx = await this.solanaClient.buildTransaction({
+      instructions,
+      addressLookupTables: [this.rewardManager.lookupTable],
+      priorityFee: null
+    })
+    const signature = await this.rewardManager.sendTransaction(tx, {
+      preflightCommitment: 'confirmed'
+    })
+    return signature
   }
 
   private async submitAntiAbuseOracleAttestation({
@@ -212,7 +223,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     amount: bigint
     recipientEthAddress: string
     handle: string
-  }): Promise<AttestationTransactionSignature | AAOErrorResponse> {
+  }) {
     const antiAbuseOracleAttestation =
       await this.antiAbuseOracle.getChallengeAttestation({
         handle,
@@ -232,6 +243,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       }
       throw new Error(errorMessage)
     }
+    const instructions = []
     const aaoSubmitSecpInstruction =
       await this.rewardManager.createSubmitAttestationSecpInstruction({
         challengeId,
@@ -239,7 +251,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
         amount,
         recipientEthAddress,
         senderEthAddress: antiAbuseOracleEthAddress,
-        senderSignature: antiAbuseOracleAttestation.result
+        senderSignature: antiAbuseOracleAttestation.result,
+        instructionIndex: instructions.length
       })
     const aaoSubmitInstruction =
       await this.rewardManager.createSubmitAttestationInstruction({
@@ -247,15 +260,9 @@ export class ChallengesApi extends GeneratedChallengesApi {
         specifier,
         senderEthAddress: antiAbuseOracleEthAddress
       })
-    const submitAAOTransaction = await this.solanaClient.buildTransaction({
-      instructions: [aaoSubmitSecpInstruction, aaoSubmitInstruction]
-    })
-    return {
-      transactionSignature: await this.rewardManager.sendTransaction(
-        submitAAOTransaction
-      ),
-      antiAbuseOracleEthAddress
-    }
+    instructions.push(aaoSubmitSecpInstruction)
+    instructions.push(aaoSubmitInstruction)
+    return instructions
   }
 
   private async submitDiscoveryAttestations({
@@ -266,6 +273,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     amount,
     recipientEthAddress,
     numberOfNodes,
+    instructionOffset = 0,
     excludeOwners = [],
     logger = this.logger
   }: {
@@ -276,6 +284,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     amount: bigint
     recipientEthAddress: string
     numberOfNodes: number
+    instructionOffset: number
     excludeOwners: string[]
     logger?: LoggerService
   }) {
@@ -301,7 +310,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       )
     )
     logger.debug('Got Discovery Node attestations', discoveryAttestations)
-    const transactions = []
+    const instructions = []
     for (const attestation of discoveryAttestations) {
       const senderEthAddress = attestation.data!.ownerWallet
       const senderSignature = attestation.data!.attestation
@@ -313,7 +322,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
           senderEthAddress,
           antiAbuseOracleEthAddress,
           amount,
-          senderSignature
+          senderSignature,
+          instructionIndex: instructions.length + instructionOffset
         })
       const submitInstruction =
         await this.rewardManager.createSubmitAttestationInstruction({
@@ -321,51 +331,9 @@ export class ChallengesApi extends GeneratedChallengesApi {
           specifier,
           senderEthAddress
         })
-      const submitTransaction = await this.solanaClient.buildTransaction({
-        instructions: [secpInstruction, submitInstruction]
-      })
-      transactions.push(submitTransaction)
+      instructions.push(secpInstruction)
+      instructions.push(submitInstruction)
     }
-    return await Promise.all(
-      transactions.map(async (t) => {
-        return {
-          transactionSignature: await this.rewardManager.sendTransaction(t)
-        }
-      })
-    )
-  }
-
-  private async evaluateAttestations({
-    challengeId,
-    specifier,
-    recipientEthAddress,
-    destinationUserBank,
-    antiAbuseOracleEthAddress,
-    amount
-  }: {
-    challengeId: ChallengeId
-    specifier: string
-    recipientEthAddress: string
-    destinationUserBank: PublicKey
-    antiAbuseOracleEthAddress: string
-    amount: bigint
-  }) {
-    const instruction =
-      await this.rewardManager.createEvaluateAttestationsInstruction({
-        challengeId,
-        specifier,
-        recipientEthAddress,
-        destinationUserBank,
-        antiAbuseOracleEthAddress,
-        amount
-      })
-    const transaction = await this.solanaClient.buildTransaction({
-      instructions: [instruction]
-    })
-    // Skip preflight since we likely just submitted the attestations and
-    // the chosen RPC's state might not yet reflect that
-    return await this.rewardManager.sendTransaction(transaction, {
-      skipPreflight: true
-    })
+    return instructions
   }
 }

@@ -87,6 +87,7 @@ export const stagingConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo"
+    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   }
 }
