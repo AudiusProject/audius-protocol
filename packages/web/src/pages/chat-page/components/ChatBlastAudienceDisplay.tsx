@@ -49,11 +49,13 @@ export const ChatBlastAudienceDisplay = (
           <IconInfo color='subdued' size='s' />
         </Tooltip>
       </Flex>
-      <UserProfilePictureList
-        users={users as User[]}
-        totalUserCount={audienceCount ?? 0}
-        limit={USER_LIST_LIMIT}
-      />
+      {users.length ? (
+        <UserProfilePictureList
+          users={users as User[]}
+          totalUserCount={audienceCount ?? 0}
+          limit={USER_LIST_LIMIT}
+        />
+      ) : null}
     </Paper>
   )
 }
