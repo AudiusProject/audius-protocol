@@ -43,7 +43,7 @@ export type TextLinkAnimationProps = TextLinkTextProps & {
 export type TextLinkProps<
   ParamList extends ReactNavigation.RootParamList = ParamListBase
 > = (InternalLinkToProps<ParamList> | ExternalLinkProps | NonLinkProps) &
-  TextLinkAnimationProps & {
+  Omit<TextLinkAnimationProps, 'animatedPressed'> & {
     source?: Source
 
     /**
@@ -55,6 +55,6 @@ export type TextLinkProps<
 export type TextLinkFlowingProps<
   ParamList extends ReactNavigation.RootParamList = ParamListBase
 > = (InternalLinkToProps<ParamList> | ExternalLinkProps | NonLinkProps) &
-  TextLinkAnimationProps & {
+  Omit<TextLinkAnimationProps, 'animatedPressed'> & {
     source?: Source
   }
