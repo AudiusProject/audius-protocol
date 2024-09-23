@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -25,7 +26,7 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 	}
 
 	for {
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second)
 
 		var cidCursor string
 		err = pgxscan.Get(ctx, ss.pgPool, &cidCursor, `select last_ulid from cursors where host = 'qm_fix_truncated'`)
@@ -40,7 +41,7 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 			 from qm_cids
 			 where key > $1 AND key not like '%.jpg'
 			 order by key
-			 limit 1000`, cidCursor)
+			 limit 20`, cidCursor)
 		if err != nil {
 			logger.Warn("select qm_cids batch failed", "err", err)
 			continue
@@ -50,30 +51,38 @@ func (ss *MediorumServer) startFixTruncatedQmWorker() {
 			break
 		}
 
+		wg := sync.WaitGroup{}
 		for _, cid := range cidBatch {
-			sniffResult := ss.sniffAndFix(cid, false)
-			if len(sniffResult) == 0 {
-				continue
-			}
-			best := sniffResult[0]
-			for _, hostBlob := range sniffResult {
-				if hostBlob.Attr.Size < best.Attr.Size {
-					u := fmt.Sprintf("%s/internal/blobs/location/%s?sniff=1&fix=1", hostBlob.Host, cid)
-					resp, err := client.Get(u)
-					if err != nil {
-						logger.Warn("failed", "err", err)
-						continue
-					}
-					if resp.StatusCode != 200 {
-						logger.Warn("failed bad status", "url", u, "status", resp.StatusCode)
-					} else {
-						logger.Info("ok", "url", u)
-
-					}
-					resp.Body.Close()
+			cid := cid
+			wg.Add(1)
+			time.Sleep(time.Millisecond)
+			go func() {
+				defer wg.Done()
+				sniffResult := ss.sniffAndFix(cid, false)
+				if len(sniffResult) == 0 {
+					return
 				}
-			}
+				best := sniffResult[0]
+				for _, hostBlob := range sniffResult {
+					if hostBlob.Attr.Size < best.Attr.Size {
+						u := fmt.Sprintf("%s/internal/blobs/location/%s?sniff=1&fix=1", hostBlob.Host, cid)
+						resp, err := client.Get(u)
+						if err != nil {
+							logger.Warn("failed", "err", err)
+							continue
+						}
+						if resp.StatusCode != 200 {
+							logger.Warn("failed bad status", "url", u, "status", resp.StatusCode)
+						} else {
+							logger.Info("ok", "url", u)
+						}
+						resp.Body.Close()
+					}
+				}
+			}()
 		}
+
+		wg.Wait()
 
 		_, err = ss.pgPool.Exec(ctx, `update cursors set last_ulid = $1 where host = 'qm_fix_truncated'`, cidBatch[len(cidBatch)-1])
 		if err != nil {
