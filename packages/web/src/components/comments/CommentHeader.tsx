@@ -1,9 +1,4 @@
-import { useContext } from 'react'
-
-import {
-  CommentSectionContext,
-  useCurrentCommentSection
-} from '@audius/common/context'
+import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Flex,
   IconButton,
