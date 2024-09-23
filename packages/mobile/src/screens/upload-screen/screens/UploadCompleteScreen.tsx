@@ -6,7 +6,6 @@ import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
   cacheTracksSelectors,
-  createChatModalActions,
   shareModalUIActions,
   trackPageActions,
   uploadActions,
@@ -45,7 +44,6 @@ const { getAccountUser } = accountSelectors
 const { fetchTrack } = trackPageActions
 const { getTrack } = cacheTracksSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { open: openCreateChatModal } = createChatModalActions
 
 const messages = {
   title: 'Upload',
