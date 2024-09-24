@@ -1,4 +1,4 @@
-import { MouseEventHandler, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { full as FullSdk } from '@audius/sdk'
 import {
   ThemeProvider as HarmonyThemeProvider,
@@ -25,7 +25,6 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [playingTrackId, setPlayingTrackId] = useState<string | null>()
   const [playingTrackSrc, setPlayingTrackSrc] = useState<string | undefined>()
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({})
 
   const audioRef = useRef<HTMLAudioElement>(null)
   const handleInputRef = useRef<HTMLInputElement>(null)
@@ -56,6 +55,7 @@ export default function App() {
     const { data: selectedUser } = await sdk.users.getUserByHandle({
       handle: handleInputRef.current?.value ?? ''
     })
+    console.log({ selectedUser })
 
     const { data: tracks } = await sdk.full.users.getTracksByUser({
       id: selectedUser?.id ?? '',
@@ -63,16 +63,6 @@ export default function App() {
     })
 
     setTracks(tracks ?? [])
-
-    const trackFavorites = (tracks ?? []).reduce<Record<string, boolean>>(
-      (result, track) => ({
-        ...result,
-        [track.id]: track.hasCurrentUserSaved
-      }),
-      {}
-    )
-
-    setFavorites(trackFavorites)
   }
 
   /**
@@ -87,29 +77,6 @@ export default function App() {
       setIsPlaying(true)
     }
   }
-
-  /**
-   * Favorite or unfavorite a track. This requires a user to be authenticated and granted
-   * write permissions to the app
-   */
-  const favoriteTrack =
-    (trackId: string, favorite = true): MouseEventHandler<HTMLButtonElement> =>
-    async (e) => {
-      e.stopPropagation()
-      if (user) {
-        setFavorites((prev) => ({ ...prev, [trackId]: favorite }))
-        try {
-          await audiusSdk.tracks[
-            favorite ? 'favoriteTrack' : 'unfavoriteTrack'
-          ]({ userId: user.userId, trackId })
-        } catch (e) {
-          console.error('Failed to favorite track', e)
-          setFavorites((prev) => ({ ...prev, [trackId]: !favorite }))
-        }
-      } else {
-        alert('Please log in with Audius to perform write operations')
-      }
-    }
 
   /**
    * Update the audio player based on the isPlaying state
@@ -130,7 +97,7 @@ export default function App() {
             React + @audius/sdk
           </Text>
           <Text color='accent' variant='heading'>
-            Stream and favorite tracks!
+            Stream tracks!
           </Text>
         </Flex>
         {!user ? (
@@ -141,8 +108,8 @@ export default function App() {
           >
             <Flex gap='m' direction='column'>
               <Text>
-                To perform writes with @audius/sdk please authorize this app to
-                perform writes on your behalf
+                To connect to your account with this app, please authorize with
+                the @audius/sdk
               </Text>
               <div ref={loginWithAudiusButtonRef} />
             </Flex>
@@ -194,13 +161,6 @@ export default function App() {
             <Flex direction='column' m='m' gap='s' css={{ width: '100%' }}>
               <Text>{track.title}</Text>
               <Text>{track.user.name}</Text>
-              <Button
-                fullWidth
-                onClick={favoriteTrack(track.id, !favorites[track.id])}
-                size='small'
-              >
-                {!favorites[track.id] ? 'Favorite' : 'Unfavorite'}
-              </Button>
             </Flex>
           </Paper>
         ))}

@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { logger } from 'hono/logger'
 import { HTTPException } from 'hono/http-exception'
-import { sdk } from '@audius/sdk'
+import { AudiusSdk } from '@audius/sdk'
 
 const apiKey = import.meta.env.VITE_AUDIUS_API_SECRET as string
 const apiSecret = import.meta.env.VITE_AUDIUS_API_SECRET as string
@@ -12,11 +12,22 @@ const apiSecret = import.meta.env.VITE_AUDIUS_API_SECRET as string
 const app = new Hono()
 app.use(logger())
 
-const audiusSdk = sdk({
-  appName: 'Audius SDK React Hono Example',
-  apiKey,
-  apiSecret
-})
+let audiusSdk: AudiusSdk
+
+const getAudiusSdk = async () => {
+  // Need to dynamically import the SDK to prevent exceeding startup CPU time limit
+  const { sdk } = await import('@audius/sdk')
+
+  if (!audiusSdk) {
+    audiusSdk = sdk({
+      appName: 'Audius SDK React Hono Example',
+      apiKey,
+      apiSecret
+    })
+  }
+
+  return audiusSdk
+}
 
 app.get('/', (c) => {
   return c.html(
@@ -50,6 +61,7 @@ app.post(
     })
   ),
   async (c) => {
+    const audiusSdk = await getAudiusSdk()
     try {
       const { trackId, userId } = c.req.valid('json')
       await audiusSdk.tracks.favoriteTrack({
@@ -76,6 +88,7 @@ app.post(
     })
   ),
   async (c) => {
+    const audiusSdk = await getAudiusSdk()
     try {
       const { trackId, userId } = c.req.valid('json')
       await audiusSdk.tracks.unfavoriteTrack({

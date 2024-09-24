@@ -2,31 +2,13 @@ import pages from '@hono/vite-cloudflare-pages'
 import devServer from '@hono/vite-dev-server'
 import { UserConfig, defineConfig } from 'vite'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
-import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-
-
-function replaceNodeImports(): Plugin {
-  return {
-    name: 'replace-node-imports',
-    generateBundle(options, bundle) {
-      for (const [fileName, chunk] of Object.entries(bundle)) {
-        if (chunk.type === 'chunk') {
-          chunk.code = chunk.code
-            .replace(/from\s*['"]fs['"]/g, 'from"browserify-fs"')
-            .replace(/from\s*['"]crypto['"]/g, 'from"node:crypto"')
-            .replace(/from\s*['"]stream['"]/g, 'from"node:stream"')
-        }
-      }
-    },
-  };
-}
+import path from 'path'
 
 export default defineConfig(({ mode }) => {
   if (mode === 'client') {
     return {
       plugins: [
-        react(),
         nodePolyfills({
           globals: {
             process: true,
@@ -59,7 +41,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      react(),
       pages({
         entry: 'src/index.tsx'
       }),
@@ -70,8 +51,11 @@ export default defineConfig(({ mode }) => {
         protocolImports: true,
         exclude: ['process']
       }),
-      replaceNodeImports(),
     ],
+    resolve: mode === 'production' ? {
+      // Need to alias this because vite only wants to resolve the "browser" bundle
+      alias: { '@audius/sdk': path.resolve(__dirname, 'node_modules/@audius/sdk/dist/index.esm.js') },
+    } : {},
     optimizeDeps: {
       esbuildOptions: {
         define: {
@@ -89,11 +73,11 @@ export default defineConfig(({ mode }) => {
       external: ['react', 'react-dom', 'process']
     },
     define: {
-      'process.env': {}
+      'process.env': {},
     },
     build: {
       commonjsOptions: {
-        transformMixedEsModules: true
+        transformMixedEsModules: true,
       }
     }
   } as UserConfig

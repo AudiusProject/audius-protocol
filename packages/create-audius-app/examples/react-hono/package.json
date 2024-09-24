@@ -9,26 +9,36 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "wrangler pages dev",
     "start": "npm run preview",
-    "deploy": "$npm_execpath run build && wrangler pages deploy",
-    "postinstall": "patch-package"
+    "deploy": "$npm_execpath run build && wrangler pages deploy"
   },
   "dependencies": {
-    "@audius/sdk": "latest",
-    "@audius/harmony": "latest",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@audius/harmony": "^0.1.0",
+    "@audius/sdk": "5.1.0",
+    "@hono/zod-validator": "^0.2.2",
+    "cross-fetch": "^4.0.0",
+    "hono": "^4.4.6",
+    "moment": "^2.30.1",
+    "web3": "1.8.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240529.0",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
-    "@types/react": "18.2.0",
+    "@hono/vite-cloudflare-pages": "^0.4.1",
+    "@hono/vite-dev-server": "^0.12.2",
+    "@rollup/plugin-replace": "^5.0.7",
+    "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",
-    "eslint": "8.56.0",
+    "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "patch-package": "^8.0.0",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "vite": "^5.3.1",
+    "vite-plugin-node-polyfills": "0.17.0",
+    "wrangler": "^3.57.2"
   }
 }
