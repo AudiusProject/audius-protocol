@@ -29,7 +29,9 @@ const messages = {
   error: 'Something went wrong. Please try again.',
   description: 'Prevent certain users from commenting on your tracks.',
   unmute: 'Unmute',
-  mute: 'Mute'
+  mute: 'Mute',
+  noMutedUsers:
+    'You haven’t muted any users. Once you do, they will appear here.'
 }
 
 export const CommentSettingsModal = () => {
@@ -41,7 +43,6 @@ export const CommentSettingsModal = () => {
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
-  if (!mutedUsers) return
 
   return (
     <Modal
@@ -53,9 +54,15 @@ export const CommentSettingsModal = () => {
         <ModalTitle title={messages.title} icon={<IconMessageBlock />} />
       </ModalHeader>
       <ModalContent className={styles.modalContent}>
-        <Flex p='xl'>
+        <Flex ph='xl' pt='xl' mb='l'>
           <Text>{messages.description}</Text>
         </Flex>
+        {mutedUsers.length === 0 ? (
+          <Flex ph='xl' pb='xl'>
+            <Text color='subdued'>{messages.noMutedUsers}</Text>
+          </Flex>
+        ) : null}
+
         <Scrollbar
           className={styles.scrollable}
           containerRef={(containerRef) => {

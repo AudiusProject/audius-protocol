@@ -48,8 +48,8 @@ export const settingsMessages = {
 
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
-  inboxSettingsButtonText: 'Configure Inbox',
-  commentSettingsButtonText: 'Configure Comments',
+  inboxSettingsButtonText: 'Inbox Settings',
+  commentSettingsButtonText: 'Comment Settings',
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
   changeEmailButtonText: 'Change Email',

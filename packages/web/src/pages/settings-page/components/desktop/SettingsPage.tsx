@@ -298,6 +298,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             icon={<IconAppearance />}
             title={messages.appearanceTitle}
             description={messages.appearanceDescription}
+            isFull={true}
           >
             <SegmentedControl
               fullWidth
@@ -309,7 +310,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
             />
           </SettingsCard>
         ) : null}
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconMessage />}
@@ -502,6 +502,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.showPrivateKey}
           </Link>
         ) : null}
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
       </div>
       <Modal
         isOpen={isSignOutModalVisible}

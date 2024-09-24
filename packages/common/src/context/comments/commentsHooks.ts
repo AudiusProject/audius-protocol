@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux'
 
 import { getKeyFromFetchArgs } from '~/audius-query/utils'
 import { CommonState } from '~/store'
-import { decodeHashId } from '~/utils/hashIds'
 
 import {
   useDeleteCommentById,
