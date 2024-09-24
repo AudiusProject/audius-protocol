@@ -70,7 +70,7 @@ export type ChallengeId =
   | 'rd'
   | 'r'
   | 'rv'
-  | 'connect-verified'
+  | 'v'
   | 'listen-streak'
   | 'mobile-install'
   | 'p'

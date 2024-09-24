@@ -443,7 +443,7 @@ const challengeInfoMap = {
     title: '📨 Invite your Fans',
     amount: 1
   },
-  'connect-verified': {
+  v: {
     title: '✅️ Link Verified Accounts',
     amount: 5
   },

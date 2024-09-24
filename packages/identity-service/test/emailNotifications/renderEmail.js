@@ -158,7 +158,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'connect-verified'
+      challenge_id: 'v'
     },
     slot: 112519146,
     type: 'ChallengeReward'

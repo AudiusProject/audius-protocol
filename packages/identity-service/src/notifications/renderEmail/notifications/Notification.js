@@ -145,7 +145,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'connect-verified': {
+  v: {
     title: 'Link Verified Accounts',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.WhiteHeavyCheckMarkIcon,

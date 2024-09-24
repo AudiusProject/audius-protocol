@@ -28,7 +28,7 @@ const challengeRewardsConfig = {
     title: 'Invite your Fans',
     icon: <IncomingEnvelopeIcon />
   },
-  'connect-verified': {
+  v: {
     title: 'Link Verified Accounts',
     icon: <WhiteHeavyCheckMarkIcon />
   },

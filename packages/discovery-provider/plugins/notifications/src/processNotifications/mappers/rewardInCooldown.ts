@@ -45,7 +45,7 @@ const challengeMessages = {
     description: 'You earned 1 $AUDIO for being invited.',
     imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
   },
-  'connect-verified': {
+  v: {
     title: 'Link Verified Accounts',
     description: 'Link your verified social media accounts to earn 5 $AUDIO.',
     imageUrl: 'bpwwTf7HiZxlMd1PkX82qw45tiEpXX.png'

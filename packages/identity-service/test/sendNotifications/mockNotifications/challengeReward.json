@@ -10,7 +10,7 @@
   {
     "initiator": 4,
     "metadata": {
-      "challenge_id": "connect-verified"
+      "challenge_id": "v"
     },
     "slot": 114983339,
     "type": "ChallengeReward"
