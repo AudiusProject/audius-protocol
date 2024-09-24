@@ -36,8 +36,8 @@ func (v *Views) RenderContentView(c echo.Context) error {
 	return v.pages.ContentPageHTML().Render(c.Request().Context(), c.Response().Writer)
 }
 
-func (v *Views) RenderUptimeView(c echo.Context) error {
-	return v.pages.UptimePageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderUptimeView(c echo.Context, data *pages.UptimePageView) error {
+	return v.pages.UptimePageHTML(data).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderBlockView(c echo.Context, view *pages.BlockView) error {
