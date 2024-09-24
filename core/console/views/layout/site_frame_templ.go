@@ -14,7 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/console/assets"
 )
 
-var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))
 
 func (l *Layout) SiteFrame() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
