@@ -174,7 +174,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'send-first-tip'
+      challenge_id: 'ft'
     },
     slot: 112519148,
     type: 'ChallengeReward'

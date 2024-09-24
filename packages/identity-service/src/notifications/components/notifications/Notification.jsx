@@ -48,7 +48,7 @@ const challengeRewardsConfig = {
     title: 'Upload 3 Tracks',
     icon: <MultipleMusicalNotesIcon />
   },
-  'send-first-tip': {
+  ft: {
     title: 'Send Your First Tip',
     icon: <MoneyMouthFaceIcon />
   },

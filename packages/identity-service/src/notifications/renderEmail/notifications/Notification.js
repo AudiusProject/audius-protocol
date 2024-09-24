@@ -180,7 +180,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'send-first-tip': {
+  ft: {
     title: 'Send Your First Tip',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MoneyMouthFaceIcon,

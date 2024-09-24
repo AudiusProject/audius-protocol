@@ -14,7 +14,7 @@ type RewardInCooldownRow = Omit<NotificationRow, 'data'> & {
 }
 
 const challengeMessages = {
-  'send-first-tip': {
+  ft: {
     title: 'Send Your First Tip',
     description:
       'Show some love to your favorite artist by sending them a tip.',

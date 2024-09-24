@@ -75,7 +75,7 @@ export type ChallengeId =
   | 'm'
   | 'p'
   | 'u'
-  | 'send-first-tip'
+  | 'ft'
   | 'first-playlist'
 
 export type NotificationType =
