@@ -5,6 +5,8 @@ services:
       context: ${PROJECT_ROOT}/core
       dockerfile: ./infra/Dockerfile
       target: final
+      args:
+        git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
     profiles:
       - discovery

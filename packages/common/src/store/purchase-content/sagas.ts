@@ -917,6 +917,11 @@ function* purchaseWithAnything({
     const sdk = yield* call(audiusSdk)
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const isNetworkCutEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.NETWORK_CUT_ENABLED
+    )
 
     // Get the USDC user bank
     const usdcUserBank = yield* call(getUSDCUserBank)
@@ -1092,7 +1097,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         trackId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {
@@ -1109,7 +1115,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         albumId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {

@@ -1,5 +1,6 @@
 import { useGetCurrentUser } from '@audius/common/api'
 import {
+  useFirstAvailableBlastAudience,
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
@@ -68,8 +69,9 @@ export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
 
+  const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -98,6 +100,7 @@ export const ChatBlastModal = () => {
       <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize
       >
         {({ submitForm }) => (
           <>
@@ -186,7 +189,7 @@ const FollowersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.FOLLOWERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.followers.label}
           count={user?.follower_count}
@@ -214,7 +217,7 @@ const TipSupportersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.TIPPERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.supporters.label}
           count={user?.supporter_count ?? 0}
@@ -254,7 +257,7 @@ const PastPurchasersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.CUSTOMERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.purchasers.label}
           count={purchasersCount}
@@ -298,7 +301,7 @@ const RemixCreatorsMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.REMIXERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.remixCreators.label}
           count={remixersCount ?? 0}

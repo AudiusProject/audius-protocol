@@ -47,7 +47,8 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
       borderTop='strong'
       css={{
         ':hover': {
-          backgroundColor: color.background.surface2
+          backgroundColor: color.background.surface2,
+          cursor: 'pointer'
         }
       }}
       onClick={handleClick}

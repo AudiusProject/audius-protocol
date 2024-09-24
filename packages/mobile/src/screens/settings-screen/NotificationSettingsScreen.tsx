@@ -1,3 +1,5 @@
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   settingsPageActions,
   PushNotificationSetting
@@ -22,11 +24,16 @@ const messages = {
   reposts: 'Reposts',
   favorites: 'Favorites',
   remixes: 'Remixes of My Tracks',
-  messages: 'Messages'
+  messages: 'Messages',
+  comments: 'Comments'
 }
 
 export const NotificationSettingsScreen = () => {
   const dispatch = useDispatch()
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   useEffectOnce(() => {
     dispatch(getPushNotificationSettings())
@@ -65,6 +72,12 @@ export const NotificationSettingsScreen = () => {
           label={messages.messages}
           type={PushNotificationSetting.Messages}
         />
+        {isCommentsEnabled ? (
+          <NotificationRow
+            label={messages.comments}
+            type={PushNotificationSetting.Comments}
+          />
+        ) : null}
         <Divider />
         <EmailFrequencyControlRow />
       </ScreenContent>

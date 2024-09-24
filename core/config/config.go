@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -41,9 +42,19 @@ const (
 	DevEthRpc   = "http://eth-ganache:8545"
 )
 
+const (
+	// discovery2, discovery3, creator2, creator3
+	ProdPersistentPeers = "53a2506dcf34b267c3e04bb63e0ee4f563c7850d@34.67.133.214:26656,f0d79ce5eb91847db0a1b9ad4c8a15824710f9c3@34.121.217.14:26656,edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656,35207ecb279b19ab53e0172f0e3ae47ac930d147@35.193.73.250:26656"
+	// discovery2, discovery3, discovery5, creator11, creator12
+	StagePersistentPeers = "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656,2f13439b2ee4c34bafe643f89575f40b7863a079@34.136.137.33:26656,c9b1ed3d3040e0c2ac70e3215f0ea9b16b401bca@34.68.24.207:26656,1eec5742f64fb243d22594e4143e14e77a38f232@34.71.167.168:26656,2da43f6e1b5614ea8fc8b7e89909863033ca6a27@35.208.173.168:26656"
+	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
+)
+
 const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost):.*`
 
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
+
+var Version string
 
 type Config struct {
 	/* Comet Config */
@@ -66,8 +77,12 @@ type Config struct {
 	CoreServerAddr     string
 	NodeEndpoint       string
 
+	/* Ethereum Config */
 	EthRPCUrl          string
 	EthRegistryAddress string
+
+	/* Console Config */
+	StandaloneConsole bool
 
 	/* System Config */
 	RunDownMigration bool
@@ -103,6 +118,13 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.GRPCladdr = getEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
 	cfg.CoreServerAddr = getEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
 
+	standaloneConsoleStr := getEnvWithDefault("standaloneConsole", "false")
+	standaloneConsole, err := strconv.ParseBool(standaloneConsoleStr)
+	if err != nil {
+		standaloneConsole = false
+	}
+	cfg.StandaloneConsole = standaloneConsole
+
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
 	if isDiscovery {
@@ -134,7 +156,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
-		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656")
+		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", ProdPersistentPeers)
 		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc
@@ -143,7 +165,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.SlaRollupInterval = 3600 * 24
 
 	case "stage", "staging", "testnet":
-		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656")
+		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
 		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
@@ -151,7 +173,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.SlaRollupInterval = 3600 * 24
 
 	case "dev", "development", "devnet", "local", "sandbox":
-		cfg.PersistentPeers = os.Getenv("persistentPeers")
+		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
 		cfg.ExternalAddress = os.Getenv("externalAddress")
 		cfg.AddrBookStrict = false
 		if cfg.EthRPCUrl == "" {
@@ -177,4 +199,11 @@ func getEnvWithDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func (c *Config) RunDownMigrations() bool {
+	if c.StandaloneConsole {
+		return false
+	}
+	return c.RunDownMigration
 }

@@ -41,6 +41,7 @@ type CommentSectionContextType = {
   currentUserId: Nullable<ID>
   artistId: ID
   isEntityOwner: boolean
+  commentCount: number
   playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
@@ -110,7 +111,7 @@ export const CommentSectionProvider = (
     return null
   }
 
-  const { owner_id } = track
+  const { owner_id, comment_count: commentCount } = track
 
   return (
     <CommentSectionContext.Provider
@@ -119,6 +120,7 @@ export const CommentSectionProvider = (
         artistId: owner_id,
         entityId,
         entityType,
+        commentCount,
         comments,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,

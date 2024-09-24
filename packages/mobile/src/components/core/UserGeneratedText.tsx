@@ -73,9 +73,9 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
   return (
-    <TextLink {...other} url={url}>
+    <TextLinkFlowing {...other} url={url}>
       {unfurledContent ?? children}
-    </TextLink>
+    </TextLinkFlowing>
   )
 }
 

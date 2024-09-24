@@ -124,9 +124,11 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const isCommentingEnabled =
+    commentsFlagEnabled && !heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 

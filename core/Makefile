@@ -8,23 +8,25 @@ SQL_ARTIFACTS := $(wildcard db/*.sql.go)
 PROTO_SRCS := protocol.proto
 PROTO_ARTIFACTS := $(wildcard gen/proto/*.pb.go)
 
-TEMPL_SRCS := $(wildcard console/components/*.templ)
-TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
+TEMPL_SRCS := $(shell find console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find console -type f -name "*_templ.go")
 
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
+
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
 
 .PHONY: build-native
 build-native: $(NATIVE_BIN)
 
 $(NATIVE_BIN): $(GO_SRCS)
-	@go build -o ./tmp/core
+	@go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core
 
 .PHONY: build-amd64
 build-amd64: $(AMD64_BIN)
 
 $(AMD64_BIN): $(GO_SRCS)
-	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core-amd64
 
 .PHONY: deps
 deps:
@@ -54,7 +56,7 @@ $(GEN_ARTIFACTS): $(GEN_SRCS)
 .PHONY: dev
 dev: gen
 	audius-compose down
-	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache
+	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
 
 .PHONY: test
 test: gen
@@ -72,3 +74,17 @@ sandbox:
 .PHONY: livereload
 livereload:
 	modd
+
+.PHONY: push-prerelease
+push-prerelease:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
+
+.PHONY: push-edge
+push-edge:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
+
+.PHONY: console
+console: gen
+	@NO_DOCKER=on modd

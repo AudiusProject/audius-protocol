@@ -1,6 +1,6 @@
 {
   "genesis_time": "2024-09-05T00:00:00.0000Z",
-  "chain_id": "audius-mainnet-test0",
+  "chain_id": "audius-mainnet-test2",
   "initial_height": "0",
   "consensus_params": {
     "block": {
@@ -56,6 +56,15 @@
       },
       "power": "10",
       "name": "foundation-discovery-3"
+    },
+    {
+      "address": "35207ECB279B19AB53E0172F0E3AE47AC930D147",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "nXbWXsfQaVG4o3vbLgcHMj91BXSwtzip3jnseHp9p28="
+      },
+      "power": "10",
+      "name": "foundation-creator-3"
     }
   ],
   "app_hash": ""

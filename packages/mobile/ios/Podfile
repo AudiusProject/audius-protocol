@@ -10,7 +10,7 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, 14
+platform :ios, 15.5
 prepare_react_native_project!
 
 setup_permissions([
@@ -60,6 +60,9 @@ target 'AudiusReactNative' do
       if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
         target.build_configurations.each do |config|
             config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+            if target.name != "Sentry"           
+               config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'NO' 
+            end
         end
       end
     end

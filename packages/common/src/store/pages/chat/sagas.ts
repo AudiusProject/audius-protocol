@@ -867,6 +867,12 @@ function* watchAddMessage() {
   yield takeEvery(addMessage, ({ payload }) => doFetchChatIfNecessary(payload))
 }
 
+function* watchSetMessageReactionSucceeded() {
+  yield takeEvery(setMessageReactionSucceeded, ({ payload }) =>
+    doFetchChatIfNecessary(payload)
+  )
+}
+
 function* watchFetchChatIfNecessary() {
   yield takeEvery(fetchChatIfNecessary, ({ payload }) =>
     doFetchChatIfNecessary(payload)
@@ -955,6 +961,7 @@ export const sagas = () => {
     watchMarkChatAsRead,
     watchSendMessage,
     watchAddMessage,
+    watchSetMessageReactionSucceeded,
     watchFetchBlockees,
     watchFetchBlockers,
     watchBlockUser,
