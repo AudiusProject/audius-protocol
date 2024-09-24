@@ -20,12 +20,12 @@ func (v *Views) RenderOverviewView(c echo.Context) error {
 	return v.pages.OverviewPageHTML().Render(c.Request().Context(), c.Response().Writer)
 }
 
-func (v *Views) RenderNodesView(c echo.Context) error {
-	return v.pages.NodesPageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderNodesView(c echo.Context, view *pages.NodesView) error {
+	return v.pages.NodesPageHTML(view).Render(c.Request().Context(), c.Response().Writer)
 }
 
-func (v *Views) RenderNodeView(c echo.Context) error {
-	return v.pages.NodePageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderNodeView(c echo.Context, view *pages.NodePageView) error {
+	return v.pages.NodePageHTML(view).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderAnalyticsView(c echo.Context) error {

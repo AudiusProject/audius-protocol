@@ -7,3 +7,9 @@ templ (c *Components) Link(format string, args ...interface{}) {
 		{ children... }
 	</a>
 }
+
+templ (c *Components) ExternalLink(format string, args ...interface{}) {
+	<a href={ templ.URL(fmt.Sprintf(format, args...)) } target="_blank">
+		{ children... }
+	</a>
+}

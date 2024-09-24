@@ -1,7 +1,15 @@
 package pages
 
-templ (p *Pages) NodePageHTML() {
+type NodePageView struct {
+	Endpoint     string
+	EthAddress   string
+	CometAddress string
+}
+
+templ (p *Pages) NodePageHTML(data *NodePageView) {
 	@p.layout.SiteFrame() {
-		<div>node!</div>
+		<div>Endpoint: { data.Endpoint }</div>
+		<div>Eth Address: { data.EthAddress }</div>
+		<div>Comet Address: { data.CometAddress }</div>
 	}
 }

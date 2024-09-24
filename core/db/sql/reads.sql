@@ -49,3 +49,9 @@ order by address;
 select * from sla_node_reports
 where sla_rollup_id = $1
 order by address;
+
+-- name: GetRegisteredNodeByEthAddress :one
+select * from core_validators where eth_address = $1;
+
+-- name: GetRegisteredNodeByCometAddress :one
+select * from core_validators where comet_address = $1;

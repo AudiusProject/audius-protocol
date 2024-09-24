@@ -184,6 +184,46 @@ func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
 	return items, nil
 }
 
+const getRegisteredNodeByCometAddress = `-- name: GetRegisteredNodeByCometAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where comet_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByCometAddress(ctx context.Context, cometAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByCometAddress, cometAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
+}
+
+const getRegisteredNodeByEthAddress = `-- name: GetRegisteredNodeByEthAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where eth_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByEthAddress(ctx context.Context, ethAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByEthAddress, ethAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
+}
+
 const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
 select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
 from core_validators

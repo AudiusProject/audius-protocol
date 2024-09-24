@@ -27,6 +27,7 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g.GET("/overview", c.overviewPage)
 	g.GET("/analytics", c.analyticsPage)
 	g.GET("/nodes", c.nodesPage)
+	g.GET("/node", c.nodesPage)
 	g.GET("/node/:node", c.nodePage)
 	g.GET("/content", c.contentFragment)
 	g.GET("/uptime", c.uptimeFragment)
