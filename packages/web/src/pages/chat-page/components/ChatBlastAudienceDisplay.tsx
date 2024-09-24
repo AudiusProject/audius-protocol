@@ -38,24 +38,35 @@ export const ChatBlastAudienceDisplay = (
   const users = useAudienceUsers(chat, USER_LIST_LIMIT + 1)
 
   return (
-    <Paper column gap='l' alignItems='center' p='xl' m='2xl'>
-      <IconTowerBroadcast color='subdued' size='3xl' />
-      <Text variant='heading' size='s'>
-        {messages.title}
-      </Text>
-      <Flex row gap='s' alignItems='center'>
-        <Text size='l'>{messages.description}</Text>
-        <Tooltip text={messages.tooltip}>
-          <IconInfo color='subdued' size='s' />
-        </Tooltip>
-      </Flex>
-      {users.length ? (
-        <UserProfilePictureList
-          users={users as User[]}
-          totalUserCount={audienceCount ?? 0}
-          limit={USER_LIST_LIMIT}
-        />
-      ) : null}
-    </Paper>
+    <Flex row w='100%' justifyContent='center'>
+      <Paper
+        column
+        gap='l'
+        alignItems='center'
+        p='xl'
+        m='2xl'
+        alignSelf='center'
+        flex={1}
+        css={{ maxWidth: 1080 }}
+      >
+        <IconTowerBroadcast color='subdued' size='3xl' />
+        <Text variant='heading' size='s'>
+          {messages.title}
+        </Text>
+        <Flex row gap='s' alignItems='center'>
+          <Text size='l'>{messages.description}</Text>
+          <Tooltip text={messages.tooltip}>
+            <IconInfo color='subdued' size='s' />
+          </Tooltip>
+        </Flex>
+        {users.length ? (
+          <UserProfilePictureList
+            users={users as User[]}
+            totalUserCount={audienceCount ?? 0}
+            limit={USER_LIST_LIMIT}
+          />
+        ) : null}
+      </Paper>
+    </Flex>
   )
 }
