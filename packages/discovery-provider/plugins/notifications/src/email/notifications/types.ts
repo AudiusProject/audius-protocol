@@ -71,7 +71,7 @@ export type ChallengeId =
   | 'r'
   | 'rv'
   | 'v'
-  | 'listen-streak'
+  | 'l'
   | 'm'
   | 'p'
   | 'u'

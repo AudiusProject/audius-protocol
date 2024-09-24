@@ -593,7 +593,7 @@ def setup_listen_streak_challenge(session):
 
     challenges = [
         Challenge(
-            id="listen-streak",
+            id="l",
             type=ChallengeType.numeric,
             active=True,
             amount="1",
@@ -603,7 +603,7 @@ def setup_listen_streak_challenge(session):
 
     user_challenges = [
         UserChallenge(
-            challenge_id="listen-streak",
+            challenge_id="l",
             user_id=1,
             specifier="1",
             is_complete=False,
@@ -612,7 +612,7 @@ def setup_listen_streak_challenge(session):
             completed_at=datetime.now(),
         ),
         UserChallenge(
-            challenge_id="listen-streak",
+            challenge_id="l",
             user_id=2,
             specifier="2",
             is_complete=False,
@@ -662,7 +662,7 @@ def test_get_challenges_with_no_override_step_count(app):
 
             challenges = get_challenges(1, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "listen-streak"
+            assert challenges[0]["challenge_id"] == "l"
             assert challenges[0]["current_step_count"] == 5
 
 
@@ -674,5 +674,5 @@ def test_get_challenges_with_override_step_count(app):
 
             challenges = get_challenges(2, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "listen-streak"
+            assert challenges[0]["challenge_id"] == "l"
             assert challenges[0]["current_step_count"] == 0

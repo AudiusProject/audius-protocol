@@ -55,7 +55,7 @@ const challengeMessages = {
     description: 'Complete your Audius profile to earn 1 $AUDIO.',
     imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'
   },
-  'listen-streak': {
+  l: {
     title: 'Listening Streak: 7 Days',
     description: 'Complete your Audius profile to earn 1 $AUDIO.',
     imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'

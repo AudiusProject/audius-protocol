@@ -423,7 +423,7 @@ const challengeInfoMap = {
     title: '✅️ Complete your Profile',
     amount: 1
   },
-  'listen-streak': {
+  l: {
     title: '🎧 Listening Streak: 7 Days',
     amount: 1
   },

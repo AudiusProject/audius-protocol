@@ -115,7 +115,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'listen-streak'
+      challenge_id: 'l'
     },
     slot: 112519141,
     type: 'ChallengeReward'

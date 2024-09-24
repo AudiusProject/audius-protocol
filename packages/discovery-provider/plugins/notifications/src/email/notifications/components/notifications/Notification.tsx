@@ -45,7 +45,7 @@ const challengeRewardsConfig: {
     title: 'Link Verified Accounts',
     icon: <WhiteHeavyCheckMarkIcon />
   },
-  'listen-streak': {
+  l: {
     title: 'Listening Streak: 7 Days',
     icon: <HeadphoneIcon />
   },

@@ -152,7 +152,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'listen-streak': {
+  l: {
     title: 'Listening Streak: 7 Days',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.HeadphoneIcon,

@@ -34,13 +34,13 @@ def test_get_disbursed_challenges_amount(app):
                 "created_at": datetime.now() - timedelta(days=8),
             },
             {
-                "challenge_id": "listen-streak",
+                "challenge_id": "l",
                 "specifier": "1",
                 "user_id": 1,
                 "amount": "400000000",
             },
             {
-                "challenge_id": "listen-streak",
+                "challenge_id": "l",
                 "specifier": "2",
                 "user_id": 2,
                 "amount": "1200000000",
