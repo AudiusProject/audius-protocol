@@ -9,20 +9,22 @@ import {
   Paper,
   Text,
   TextInput,
-  TextInputSize
+  TextInputSize,
+  Button,
+  Flex
 } from '@audius/harmony'
-import { Button, Flex } from '@audius/harmony'
 import { hc } from 'hono/client'
 import { css } from '@emotion/react'
 import { useSdk } from './hooks/useSdk'
-import { useAuth } from './contexts/AuthProvider'
+import { AuthProvider, useAuth } from './contexts/AuthProvider'
 import { AppType } from '..'
+import { Status } from './contexts/types'
 
 const client = hc<AppType>('/')
 
 export default function App() {
   const { sdk } = useSdk()
-  const { user, login } = useAuth()
+  const { user, login, status } = useAuth()
 
   const [tracks, setTracks] = useState<FullSdk.TrackFull[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
@@ -156,20 +158,27 @@ export default function App() {
             Stream and favorite tracks!
           </Text>
         </Flex>
-        {!user ? (
-          <Hint
-            icon={() => <IconInfo size='l' color='default' />}
-            m='m'
-            css={{ maxWidth: 400 }}
-          >
-            <Flex gap='m' direction='column'>
-              <Text>
-                To perform writes with @audius/sdk please authorize this app to
-                perform writes on your behalf
-              </Text>
-              <div ref={loginWithAudiusButtonRef} />
+        {status !== Status.LOADING ? (
+          !user ? (
+            <Hint
+              icon={() => <IconInfo size='l' color='default' />}
+              m='m'
+              css={{ maxWidth: 400 }}
+            >
+              <Flex gap='m' direction='column'>
+                <Text>
+                  To perform writes with @audius/sdk please authorize this app
+                  to perform writes on your behalf
+                </Text>
+                <div ref={loginWithAudiusButtonRef} />
+              </Flex>
+            </Hint>
+          ) : (
+            <Flex gap='xs'>
+              <Text>Logged in as:</Text>
+              <Text color='accent'>{`@${user.handle}`}</Text>
             </Flex>
-          </Hint>
+          )
         ) : null}
         <Flex direction='column' gap='s'>
           <Text>Enter a user handle to fetch their tracks:</Text>
