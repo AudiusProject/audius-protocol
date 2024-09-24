@@ -100,12 +100,12 @@ from src.queries.download_csv import (
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_challenges import get_challenges
-from src.queries.get_comments import get_muted_users
 from src.queries.get_collection_library import (
     CollectionType,
     GetCollectionLibraryArgs,
     get_collection_library,
 )
+from src.queries.get_comments import get_muted_users
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -2852,8 +2852,6 @@ class MutedUsers(Resource):
         check_authorized(decoded_id, authed_user_id)
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
-        logger.info(f"asdf muted_users {muted_users}")
-
         return success_response(muted_users)
 
 
@@ -2874,6 +2872,4 @@ class FullMutedUsers(Resource):
         check_authorized(decoded_id, authed_user_id)
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
-        logger.info(f"asdf muted_users {muted_users}")
-
         return success_response(muted_users)

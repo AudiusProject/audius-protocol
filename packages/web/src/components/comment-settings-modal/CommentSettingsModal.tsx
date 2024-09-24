@@ -28,15 +28,6 @@ const messages = {
   save: 'Save Changes',
   error: 'Something went wrong. Please try again.',
   description: 'Prevent certain users from commenting on your tracks.',
-  followeeTitle: 'Only Allow Messages From People You Follow',
-  followeeDescription:
-    'Only users that you follow can initiate direct messages with you. You can still send messages to anyone.',
-  tipperTitle: 'Only Allow Messages From Your Supporters',
-  tipperDescription:
-    'Only users who have tipped you can initiate direct messages with you. You can still send messages to anyone.',
-  noneTitle: 'No One Can Message You',
-  noneDescription:
-    'Disable incoming direct messages entirely. You will no longer receive direct messages, but can still send messages to others.',
   unmute: 'Unmute',
   mute: 'Mute'
 }
@@ -95,7 +86,6 @@ export const CommentSettingsModal = () => {
 export const MutedUser = (props: { user: any }) => {
   const { user } = props
   const onClickArtistName = (handle: string) => {}
-  const onNavigateAway = () => {}
   const isMobile = useIsMobile()
   const [muteUser] = useMuteUser()
 
@@ -108,7 +98,6 @@ export const MutedUser = (props: { user: any }) => {
         onClickArtistName={() => {
           onClickArtistName(user.handle)
         }}
-        onNavigateAway={onNavigateAway}
         showPopover={!isMobile}
         popoverMount={MountPlacement.BODY}
       />

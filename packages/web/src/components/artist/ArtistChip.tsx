@@ -108,7 +108,7 @@ const ArtistChip = ({
     profilePictureSizes,
     SquareSizes.SIZE_150_BY_150
   )
-  console.log('asdf profilePicture: ', profilePicture)
+
   return (
     <div
       className={cn(styles.artistChip, {

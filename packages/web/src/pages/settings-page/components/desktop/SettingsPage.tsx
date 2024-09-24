@@ -147,7 +147,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     emailFrequency
   } = props
   const isManagedAccount = useIsManagedAccount()
-  const dispatch = useDispatch()
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -162,7 +161,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
   const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
-
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
     'AiAttributionSettings'
   )

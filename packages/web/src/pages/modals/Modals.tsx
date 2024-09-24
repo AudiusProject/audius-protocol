@@ -99,7 +99,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
-
   LockedContent: LockedContentModal,
   HCaptcha: HCaptchaModal,
   APIRewardsExplainer: TopAPIModal,

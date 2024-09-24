@@ -8,13 +8,13 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
-from src.models.users.user import User
+from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
+from src.models.users.user import User
+from src.queries.query_helpers import helpers, populate_user_metadata
 from src.utils import redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
-from src.models.moderation.muted_user import MutedUser
-from src.queries.query_helpers import helpers, populate_user_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +170,6 @@ def get_track_comments(args, track_id, current_user_id=None):
             .limit(limit)
             .all()
         )
-        logger.info(f"asdf track_comments {track_comments}")
         return [
             {
                 "id": encode_int_id(track_comment.comment_id),
@@ -216,13 +215,9 @@ def get_muted_users(current_user_id):
             .all()
         )
         muted_users_list = helpers.query_result_to_list(muted_users)
-        logger.info(f"asdf muted_users_list {muted_users_list}")
         user_ids = list(map(lambda user: user["user_id"], muted_users_list))
-        logger.info(f"asdf user_ids {user_ids}")
-
         users = populate_user_metadata(
             session, user_ids, muted_users_list, current_user_id
         )
-        logger.info(f"asdf users {users}")
 
     return users

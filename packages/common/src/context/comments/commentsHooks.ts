@@ -130,7 +130,6 @@ export const useMuteUser = () => {
     isMuted: boolean
     entityId?: number
   }) => {
-    console.log('asdf wrapped handler ', entityId, mutedUserId, currentUserId)
     if (currentUserId) {
       muteUser({
         mutedUserId: Number(mutedUserId),
