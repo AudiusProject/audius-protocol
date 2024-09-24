@@ -6,6 +6,7 @@ templ (p *Pages) ErrorPageHTML(errorID string) {
 			<div>
 				<p>Something went wrong 🤕, hand this to a dev</p>
 				<p>error id: { errorID }</p>
+				<p>node: { p.config.NodeEndpoint }</p>
 			</div>
 		</div>
 	}
