@@ -15,7 +15,7 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g := e.Group(baseURL)
 
 	g.Use(middleware.JsonExtensionMiddleware)
-	g.Use(middleware.ErrorLoggerMiddleware(logger))
+	g.Use(middleware.ErrorLoggerMiddleware(logger, c.views))
 
 	g.GET("", func(ctx echo.Context) error {
 		// Redirect to the base group's overview page

@@ -40,6 +40,10 @@ func (v *Views) RenderUptimeView(c echo.Context, data *pages.UptimePageView) err
 	return v.pages.UptimePageHTML(data).Render(c.Request().Context(), c.Response().Writer)
 }
 
+func (v *Views) RenderErrorView(c echo.Context, errorID string) error {
+	return v.pages.ErrorPageHTML(errorID).Render(c.Request().Context(), c.Response().Writer)
+}
+
 func (v *Views) RenderBlockView(c echo.Context, view *pages.BlockView) error {
 	if v.shouldRenderJSON(c) {
 		res, err := v.pages.BlockPageJSON(view)
