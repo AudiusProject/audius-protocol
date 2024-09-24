@@ -33,8 +33,8 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 		e:       e,
 		logger:  logger.Child(strings.TrimPrefix(baseURL, "/")),
 		db:      db.New(pool),
-		views:   views.NewViews(config, baseURL, fragmentBaseURL),
-		layouts: layout.NewLayout(config, baseURL, fragmentBaseURL),
+		views:   views.NewViews(config, baseURL),
+		layouts: layout.NewLayout(config, baseURL),
 	}
 
 	c.registerRoutes(logger, e)

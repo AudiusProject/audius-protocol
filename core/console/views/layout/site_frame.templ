@@ -4,20 +4,11 @@ import (
 	"fmt"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/console/assets"
-	"github.com/labstack/echo/v4"
 )
 
 var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
 
-type SiteFrameProps struct {
-	Path string
-}
-
-func (l *Layout) RenderSiteFrame(c echo.Context, props SiteFrameProps) error {
-	return l.SiteFrame(props).Render(c.Request().Context(), c.Response().Writer)
-}
-
-templ (l *Layout) SiteFrame(props SiteFrameProps) {
+templ (l *Layout) SiteFrame() {
 	@l.Base() {
 		<div class="min-h-screen flex flex-col">
 			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
@@ -45,34 +36,36 @@ templ (l *Layout) SiteFrame(props SiteFrameProps) {
 				<div class="space-y-4">
 					<ul class="uk-tab-alt max-w-96">
 						<li>
-							@l.components.FragmentLink("/overview") {
+							@l.components.Link("/overview") {
 								<div>Overview</div>
 							}
 						</li>
 						<li>
-							@l.components.FragmentLink("/analytics") {
+							@l.components.Link("/analytics") {
 								<div>Analytics</div>
 							}
 						</li>
 						<li>
-							@l.components.FragmentLink("/nodes") {
+							@l.components.Link("/nodes") {
 								<div>Nodes</div>
 							}
 						</li>
 						<li>
-							@l.components.FragmentLink("/content") {
+							@l.components.Link("/content") {
 								<div>Content</div>
 							}
 						</li>
 						<li>
-							@l.components.FragmentLink("/uptime") {
+							@l.components.Link("/uptime") {
 								<div>Uptime</div>
 							}
 						</li>
 					</ul>
 				</div>
 			</div>
-			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6" hx-get={ props.Path } hx-trigger="load" hx-target="#page-content"></div>
+			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6">
+				{ children... }
+			</div>
 			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
 				<div class="text-sm text-gray-600 flex justify-between w-full px-5">
 					<span>made with ⚡️ by the protocol team</span>

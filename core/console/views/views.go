@@ -10,9 +10,9 @@ type Views struct {
 	pages *pages.Pages
 }
 
-func NewViews(config *config.Config, baseUrl, fragmentUrl string) *Views {
+func NewViews(config *config.Config, baseUrl string) *Views {
 	return &Views{
-		pages: pages.NewPages(config, baseUrl, fragmentUrl),
+		pages: pages.NewPages(config, baseUrl),
 	}
 }
 

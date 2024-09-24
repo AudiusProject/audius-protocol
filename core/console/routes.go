@@ -14,20 +14,19 @@ const fragmentBaseURL = baseURL + fragmentURL
 
 func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 
-	cg := e.Group(baseURL)
+	g := e.Group(baseURL)
 	fg := e.Group(fragmentBaseURL)
 
-	cg.Use(middleware.JsonExtensionMiddleware)
-	cg.Use(middleware.ErrorLoggerMiddleware(logger))
+	g.Use(middleware.JsonExtensionMiddleware)
+	g.Use(middleware.ErrorLoggerMiddleware(logger))
 
-	cg.GET("", func(ctx echo.Context) error {
+	g.GET("", func(ctx echo.Context) error {
 		// Redirect to the base group's overview page
 		basePath := ctx.Path()
 		return ctx.Redirect(http.StatusMovedPermanently, basePath+"/overview")
 	})
 
-	// render the top level site
-	cg.GET("/*", c.renderSiteFrame)
+	g.GET("/block/:block", c.blockFragment)
 
 	// htmx fragments that make up pages derived from routes
 	fg.GET("/overview", c.overviewFragment)

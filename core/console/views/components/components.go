@@ -3,15 +3,13 @@ package components
 import "github.com/AudiusProject/audius-protocol/core/config"
 
 type Components struct {
-	config      *config.Config
-	baseUrl     string
-	fragmentUrl string
+	config  *config.Config
+	baseUrl string
 }
 
-func NewComponents(config *config.Config, baseUrl string, fragmentUrl string) *Components {
+func NewComponents(config *config.Config, baseUrl string) *Components {
 	return &Components{
-		config:      config,
-		baseUrl:     baseUrl,
-		fragmentUrl: fragmentUrl,
+		config:  config,
+		baseUrl: baseUrl,
 	}
 }
