@@ -72,7 +72,7 @@
         "type": "tendermint/PubKeyEd25519",
         "value": "13uHBFeGkzFKUcmWxH3MnWeBJKNkGcW58FueOGdp6MM="
       },
-      "voting_power": "10",
+      "power": "10",
       "name": "foundation-creator-12"
     }
   ],
