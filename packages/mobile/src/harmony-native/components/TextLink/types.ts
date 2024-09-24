@@ -10,7 +10,7 @@ export type Source = 'profile page' | 'track page' | 'collection page'
 export type InternalLinkToProps<
   ParamList extends ReactNavigation.RootParamList
 > = {
-  to: To<ParamList>
+  to?: To<ParamList>
   action?: NavigationAction
   onPress?: (e: GestureResponderEvent) => void
 }
@@ -28,7 +28,7 @@ export type NonLinkProps = {
 export type TextLinkProps<
   ParamList extends ReactNavigation.RootParamList = ParamListBase
 > = (InternalLinkToProps<ParamList> | ExternalLinkProps | NonLinkProps) &
-  Omit<TextProps, 'variant'> & {
+  Omit<TextProps, 'variant' | 'onPress'> & {
     /**
      * Which variant to display. 'active' is temporary until this pattern is removed
      */

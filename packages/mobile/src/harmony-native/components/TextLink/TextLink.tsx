@@ -70,18 +70,18 @@ const TextPressable = (props: TextLinkProps) => {
   // Need to nest the AnimatedText inside a Text so the handlers & animation work
   // while still supporting proper Text layout. All this nesting is necessary
   return (
-    <Text>
-      <Text
-        suppressHighlighting
-        variant={textVariant}
-        onPressIn={(e) => {
-          animatedPressed.value = withTiming(1, motion.press)
-        }}
-        onPressOut={() => {
-          animatedPressed.value = withTiming(0, motion.press)
-        }}
-        {...other}
-      >
+    <Text
+      suppressHighlighting
+      variant={textVariant}
+      onPressIn={(e) => {
+        animatedPressed.value = withTiming(1, motion.press)
+      }}
+      onPressOut={() => {
+        animatedPressed.value = withTiming(0, motion.press)
+      }}
+      {...other}
+    >
+      <Text>
         <AnimatedText
           style={[
             style,
@@ -108,7 +108,6 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   props: TextLinkProps<ParamList>
 ) => {
   const { onPress: onPressProp = () => {} } = props
-
   const isTo = isInternalLinkToProps(props)
   const isUrl = isExternalLinkProps(props)
 
@@ -125,7 +124,7 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   })
 
   const { onPress: handlePressTo, ...linkProps } = useHandlePressTo({
-    to: isTo ? props.to : '',
+    to: isTo ? props.to ?? '' : '',
     action: isTo ? props.action : undefined
   })
 
