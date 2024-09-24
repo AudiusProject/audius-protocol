@@ -75,6 +75,7 @@ const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.FOLLOWERS
+
   const isDisabled = user?.follower_count === 0
 
   return (

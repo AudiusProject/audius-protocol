@@ -15,7 +15,7 @@ const audiusUrlRegex =
   /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?(staging\.)?(audius\.co)(\/.+)?/gim
 
 export const isAudiusUrl = (url: string) => new RegExp(audiusUrlRegex).test(url)
-export const isInteralAudiusUrl = (url: string) =>
+export const isInternalAudiusUrl = (url: string) =>
   url.startsWith('/') ||
   (isAudiusUrl(url) &&
     !externalAudiusLinks.some((externalLink) => externalLink.includes(url)))

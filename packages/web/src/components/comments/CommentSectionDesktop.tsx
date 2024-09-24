@@ -51,7 +51,7 @@ export const CommentSectionDesktop = () => {
       alignItems='flex-start'
       ref={commentSectionRef}
     >
-      <CommentHeader commentCount={comments.length} />
+      <CommentHeader />
       <Button
         onClick={() => {
           reset(true)

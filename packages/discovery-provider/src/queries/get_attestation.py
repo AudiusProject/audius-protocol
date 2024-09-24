@@ -122,7 +122,7 @@ def get_attestation(
     specifier: str,
 ):
     """
-    Returns a owner_wallet, signed_attestation tuple,
+    Returns a delegate_owner_wallet, signed_attestation tuple,
     or throws an error explaining why the attestation was
     not able to be created.
     """

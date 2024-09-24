@@ -275,10 +275,15 @@ export class ClaimableTokensClient {
               })
             }
           }
-        } catch (e) {
-          if (!(e instanceof ClaimableTokensError)) {
+        } catch (nestedError) {
+          if (nestedError instanceof ClaimableTokensError) {
+            throw nestedError
+          } else {
             // If failed to provide user friendly error, surface original error
-            this.logger.warn('Failed to parse ClaimableTokensError error', e)
+            this.logger.warn(
+              'Failed to parse ClaimableTokensError error',
+              nestedError
+            )
           }
         }
       }
