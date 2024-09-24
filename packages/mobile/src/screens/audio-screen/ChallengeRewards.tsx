@@ -62,7 +62,17 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
-  ChallengeName.AudioMatchingSell // $AUDIO matching seller
+  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
+  ChallengeName.ConnectVerified,
+  ChallengeName.FirstPlaylist,
+  ChallengeName.FirstTip,
+  ChallengeName.ListenStreak,
+  ChallengeName.MobileInstall,
+  ChallengeName.ProfileCompletion,
+  ChallengeName.Referrals,
+  ChallengeName.ReferralsVerified,
+  ChallengeName.Referred,
+  ChallengeName.TrackUpload
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {
