@@ -22,6 +22,14 @@ templ (l *Layout) SiteFrame() {
 					<div class="flex items-center space-x-2">
 						<div class="text-left text-sm font-bold tracking-tight">
 							<div>
+								Chain ID:
+								<span>
+									@l.components.Link("%s/genesis", l.config.NodeEndpoint) {
+										<span>{ l.config.GenesisFile.ChainID }</span>
+									}
+								</span>
+							</div>
+							<div>
 								Eth Address: 
 								<span>
 									@l.components.Link("/node/%s", l.config.WalletAddress) {

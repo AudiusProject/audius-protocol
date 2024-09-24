@@ -1,5 +1,12 @@
 package pages
 
+import "github.com/AudiusProject/audius-protocol/core/db"
+
+type OverviewPageView struct {
+	Blocks []db.CoreBlock
+	Txs    []db.CoreTxResult
+}
+
 func (p *Pages) OverviewPageJSON() {}
 
 templ (p *Pages) OverviewPageHTML() {

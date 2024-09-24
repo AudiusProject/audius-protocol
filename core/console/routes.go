@@ -33,6 +33,7 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g.GET("/uptime", c.uptimeFragment)
 	g.GET("/block/:block", c.blockPage)
 	g.GET("/tx/:tx", c.txPage)
+	g.GET("/genesis", c.genesisPage)
 
 	// future pages
 	// g.GET("/blocks", c.blocksPage)

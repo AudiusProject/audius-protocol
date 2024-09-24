@@ -44,6 +44,10 @@ func (v *Views) RenderErrorView(c echo.Context, errorID string) error {
 	return v.pages.ErrorPageHTML(errorID).Render(c.Request().Context(), c.Response().Writer)
 }
 
+func (v *Views) RenderGenesisView(c echo.Context, g map[string]interface{}) error {
+	return v.pages.GenesisHTML(g).Render(c.Request().Context(), c.Response().Writer)
+}
+
 func (v *Views) RenderBlockView(c echo.Context, view *pages.BlockView) error {
 	if v.shouldRenderJSON(c) {
 		res, err := v.pages.BlockPageJSON(view)
