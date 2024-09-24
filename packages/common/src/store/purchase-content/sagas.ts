@@ -1115,7 +1115,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         albumId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {
