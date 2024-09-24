@@ -219,6 +219,7 @@ const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
   const { data: user, status } = useGetUserById({ id })
+
   if (status === Status.LOADING) return <RecentSearchSkeleton />
 
   if (!user) return null
