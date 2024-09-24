@@ -41,7 +41,3 @@ export * from './favorites/types'
 export * as relatedArtistsUserListActions from './related-artists/actions'
 export * as relatedArtistsUserListSelectors from './related-artists/selectors'
 export * from './related-artists/types'
-
-// export * as relatedArtistsUserListActions from './related-artists/actions'
-export * as mutedUserListSelectors from './muted/selectors'
-export * from './muted/types'

@@ -236,15 +236,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
   }, [setIsInboxSettingsModalVisible])
 
   const openCommentSettingsModal = useCallback(() => {
-    // dispatch(setVisibility(true))
-    // dispatch(
-    //   setUsers({
-    //     userListType: UserListType.MUTED,
-    //     entityType: UserListEntityType.USER,
-    //     id: userId
-    //   })
-    // )
-
     setIsCommentSettingsModalVisible(true)
   }, [setIsCommentSettingsModalVisible])
 

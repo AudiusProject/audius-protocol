@@ -34,8 +34,7 @@ import {
   IconUser,
   IconUserGroup,
   IconTrophy,
-  IconUserFollowing as IconFollowing,
-  IconMessageBlock
+  IconUserFollowing as IconFollowing
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 
@@ -54,8 +53,6 @@ const { getUserList: followingSelector } = followingUserListSelectors
 const { getUserList: mutualsSelector } = mutualsUserListSelectors
 const { getUserList: relatedArtistsSelector, getId: getRelatedArtistsId } =
   relatedArtistsUserListSelectors
-const { getUserList: mutedSelector } = mutedUserListSelectors
-
 const { getPageTitle, getUserList: notificationSelector } =
   notificationsUserListSelectors
 const { getUserList: repostsSelector } = repostsUserListSelectors
@@ -80,8 +77,7 @@ const messages = {
   topSupporters: 'Top Supporters',
   supporting: 'Supporting',
   relatedArtists: 'Related Artists',
-  mutuals: 'Mutuals',
-  muted: 'Comment Settings'
+  mutuals: 'Mutuals'
 }
 
 const UserListModal = ({
@@ -197,18 +193,6 @@ const UserListModal = ({
         </div>
       )
       break
-    case UserListType.MUTED:
-      tag = RELATED_ARTISTS_TAG
-      selector = relatedArtistsSelector
-      userIdSelector = getRelatedArtistsId
-      title = (
-        <div className={styles.titleContainer}>
-          <IconMessageBlock className={styles.icon} />
-          <span>{messages.muted}</span>
-        </div>
-      )
-      break
-
     // Should not happen but typescript doesn't seem to be
     // smart enough to pass props to components below
     default:

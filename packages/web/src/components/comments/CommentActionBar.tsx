@@ -87,7 +87,7 @@ export const CommentActionBar = ({
   const [muteUser] = useMuteUser()
 
   // Comment context data
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, entityId } = useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = isCommentOwner && isParentComment
 
@@ -137,10 +137,10 @@ export const CommentActionBar = ({
     muteUser({
       mutedUserId: comment.userId,
       isMuted: false,
-      entityId: comment.id
+      entityId
     })
     toast(messages.toasts.mutedUser)
-  }, [comment.id, comment.userId, muteUser, toast])
+  }, [comment.userId, entityId, muteUser, toast])
 
   const handleReport = useCallback(() => {
     reportComment(commentId)

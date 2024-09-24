@@ -1,14 +1,7 @@
-import { ChangeEvent, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetMutedUsers,
-  useGetSalesAggegrate
-} from '@audius/common/api'
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
-import { useSetInboxPermissions } from '@audius/common/hooks'
-import { Status, User } from '@audius/common/models'
-import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
   Flex,
   Text,
@@ -16,25 +9,17 @@ import {
   ModalContent,
   ModalHeader,
   ModalTitle,
-  ModalFooter,
-  IconMessage,
-  RadioGroup,
   Button,
   IconMessageBlock,
   Scrollbar,
   Divider
 } from '@audius/harmony'
-import { ChatPermission } from '@audius/sdk'
-import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ArtistChip from 'components/artist/ArtistChip'
 import { MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { audiusSdk } from 'services/audius-sdk'
-
-import { ModalRadioItem } from '../modal-radio/ModalRadioItem'
 
 import styles from './CommentSettingsModal.module.css'
 
@@ -56,41 +41,16 @@ const messages = {
   mute: 'Mute'
 }
 
-const options = [
-  {
-    title: messages.allTitle,
-    description: messages.allDescription,
-    value: ChatPermission.ALL
-  },
-  {
-    title: messages.followeeTitle,
-    description: messages.followeeDescription,
-    value: ChatPermission.FOLLOWEES
-  },
-  {
-    title: messages.tipperTitle,
-    description: messages.tipperDescription,
-    value: ChatPermission.TIPPERS
-  },
-  {
-    title: messages.noneTitle,
-    description: messages.noneDescription,
-    value: ChatPermission.NONE
-  }
-]
-
 export const CommentSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('CommentSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
   const { data: currentUserId } = useGetCurrentUserId({})
 
-  console.log('asdf currentUserId', currentUserId)
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
   if (!mutedUsers) return
-  console.log('asdf mutedUsers', mutedUsers)
 
   return (
     <Modal
