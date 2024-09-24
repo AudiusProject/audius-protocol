@@ -64,7 +64,9 @@ templ (l *Layout) SiteFrame() {
 				</div>
 			</div>
 			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6">
-				{ children... }
+				<div class="bg-white shadow-md rounded-lg p-4 max-h-max">
+					{ children... }
+				</div>
 			</div>
 			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
 				<div class="text-sm text-gray-600 flex justify-between w-full px-5">

@@ -9,13 +9,10 @@ import (
 )
 
 const baseURL = "/console"
-const fragmentURL = "/fragment"
-const fragmentBaseURL = baseURL + fragmentURL
 
 func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 
 	g := e.Group(baseURL)
-	fg := e.Group(fragmentBaseURL)
 
 	g.Use(middleware.JsonExtensionMiddleware)
 	g.Use(middleware.ErrorLoggerMiddleware(logger))
@@ -26,20 +23,18 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 		return ctx.Redirect(http.StatusMovedPermanently, basePath+"/overview")
 	})
 
-	g.GET("/block/:block", c.blockFragment)
-
 	// htmx fragments that make up pages derived from routes
-	fg.GET("/overview", c.overviewFragment)
-	fg.GET("/analytics", c.analyticsFragment)
-	fg.GET("/nodes", c.nodesFragment)
-	fg.GET("/content", c.contentFragment)
-	fg.GET("/uptime", c.uptimeFragment)
-	fg.GET("/block/:block", c.blockFragment)
+	g.GET("/overview", c.overviewFragment)
+	g.GET("/analytics", c.analyticsFragment)
+	g.GET("/nodes", c.nodesFragment)
+	g.GET("/content", c.contentFragment)
+	g.GET("/uptime", c.uptimeFragment)
+	g.GET("/block/:block", c.blockPage)
+	g.GET("/tx/:tx", c.txPage)
 
 	// future pages
 	// g.GET("/blocks", c.blocksPage)
 	// g.GET("/txs", c.txsPage)
-	// g.GET("/tx/:tx", c.txPage)
 	//g.GET("/nodes/:node", c.nodePage)
 	//g.GET("/content/users", c.usersPage)
 	//g.GET("/content/tracks", c.tracksPage)

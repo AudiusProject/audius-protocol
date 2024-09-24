@@ -67,7 +67,7 @@ func (p *Pages) BlockPageJSON(data *BlockView) (*BlockPageJSONResponse, error) {
 
 templ (p *Pages) BlockPageHTML(view *BlockView) {
 	@p.layout.SiteFrame() {
-		<div class="bg-white shadow-md rounded-lg p-4 max-h-max">
+		<div>
 			<h1 class="text-xl">
 				Block Details
 			</h1>
@@ -78,6 +78,11 @@ templ (p *Pages) BlockPageHTML(view *BlockView) {
 					}
 				</div>
 				<div>
+					@p.components.Link("/nodes/%s", view.Proposer) {
+						<div>Proposer: { view.Proposer }</div>
+					}
+				</div>
+				<div>
 					@p.components.Link("/block/%s", view.Height) {
 						<div>Height: { view.Height }</div>
 					}
@@ -85,8 +90,19 @@ templ (p *Pages) BlockPageHTML(view *BlockView) {
 				<div>
 					Age: { humanize.Time(view.Timestamp) }
 				</div>
-				<div class="px-4 py-8 p font-bold text-l border-b border-gray-500">
+				<div class="px-4 py-8 p text-md text-l">
 					Transactions
+					for _, tx := range view.Txs {
+						<div class="uk-card-body">
+							<div>
+								<div>
+									@p.components.Link("/tx/%s", p.components.ToTxHash(tx)) {
+										<div>Hash: { p.components.ToTxHash(tx) }</div>
+									}
+								</div>
+							</div>
+						</div>
+					}
 				</div>
 			</div>
 		</div>

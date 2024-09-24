@@ -244,7 +244,7 @@ func (l *Layout) SiteFrame() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6\"><div class=\"bg-white shadow-md rounded-lg p-4 max-h-max\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -252,7 +252,7 @@ func (l *Layout) SiteFrame() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><footer class=\"h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3\"><div class=\"text-sm text-gray-600 flex justify-between w-full px-5\"><span>made with ⚡️ by the protocol team</span> <span>version: <a href=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><footer class=\"h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3\"><div class=\"text-sm text-gray-600 flex justify-between w-full px-5\"><span>made with ⚡️ by the protocol team</span> <span>version: <a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -268,7 +268,7 @@ func (l *Layout) SiteFrame() templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(config.Version)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout/site_frame.templ`, Line: 72, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout/site_frame.templ`, Line: 74, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
