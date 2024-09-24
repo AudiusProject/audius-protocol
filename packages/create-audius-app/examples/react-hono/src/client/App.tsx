@@ -16,7 +16,7 @@ import {
 import { hc } from 'hono/client'
 import { css } from '@emotion/react'
 import { useSdk } from './hooks/useSdk'
-import { AuthProvider, useAuth } from './contexts/AuthProvider'
+import { useAuth } from './contexts/AuthProvider'
 import { AppType } from '..'
 import { Status } from './contexts/types'
 

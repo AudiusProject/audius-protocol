@@ -3,6 +3,7 @@ import devServer from '@hono/vite-dev-server'
 import { UserConfig, defineConfig } from 'vite'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
@@ -14,6 +15,7 @@ export default defineConfig(({ mode }) => {
             process: true,
           },
         }),
+        cssInjectedByJsPlugin()
       ],
       optimizeDeps: {
         esbuildOptions: {
