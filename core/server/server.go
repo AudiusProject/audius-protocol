@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
 	"github.com/AudiusProject/audius-protocol/core/db"
@@ -16,6 +18,7 @@ type Server struct {
 	logger  *common.Logger
 	rpc     *local.Local
 	db      *db.Queries
+	self    *http.Client
 }
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, rpc *local.Local, pool *pgxpool.Pool, e *echo.Echo) (*Server, error) {
@@ -25,6 +28,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		rpc:     rpc,
 		logger:  logger.Child("http_server"),
 		db:      db.New(pool),
+		self:    nil,
 	}
 
 	g := e.Group("/core")
@@ -36,11 +40,11 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 func (s *Server) registerRoutes(e *echo.Group) {
 
 	e.GET("/genesis.json", s.getGenesisJSON)
-
 	e.GET("/nodes", s.getRegisteredNodes)
 	e.GET("/nodes/verbose", s.getRegisteredNodes)
 	e.GET("/nodes/discovery", s.getRegisteredNodes)
 	e.GET("/nodes/discovery/verbose", s.getRegisteredNodes)
 	e.GET("/nodes/content", s.getRegisteredNodes)
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
+	e.Any("/comet*", s.proxyCometRequest)
 }
