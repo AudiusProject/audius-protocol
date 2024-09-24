@@ -19,8 +19,16 @@ templ (p *Pages) NodesPageHTML(data *NodesView) {
 						</h2>
 					</div>
 					<div class="uk-card-body text-sm">
-						<div>Eth Address: { node.EthAddress } </div>
-						<div>Comet Address: { node.CometAddress }</div>
+						<div>
+							@p.components.Link("/node/%s", node.EthAddress) {
+								<div>Eth Address: { node.EthAddress } </div>
+							}
+						</div>
+						<div>
+							@p.components.Link("/node/%s", node.CometAddress) {
+								<div>Comet Address: { node.CometAddress } </div>
+							}
+						</div>
 						<div>Eth Block: { node.EthBlock }</div>
 					</div>
 				</div>
