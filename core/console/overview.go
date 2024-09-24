@@ -1,6 +1,9 @@
 package console
 
 import (
+	"encoding/hex"
+	"fmt"
+
 	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
 	"github.com/labstack/echo/v4"
 )
@@ -8,7 +11,7 @@ import (
 func (cs *Console) overviewPage(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	recentBlocks, err := cs.db.GetRecentBlocks(ctx)
+	block, err := cs.rpc.Block(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -18,9 +21,17 @@ func (cs *Console) overviewPage(c echo.Context) error {
 		return err
 	}
 
+	blockData := pages.BlockView{
+		Height:    fmt.Sprint(block.Block.Height),
+		Hash:      hex.EncodeToString(block.Block.Hash()),
+		Proposer:  block.Block.Header.ProposerAddress.String(),
+		Timestamp: block.Block.Time,
+		Txs:       block.Block.Txs.ToSliceOfBytes(),
+	}
+
 	view := &pages.OverviewPageView{
-		Blocks: recentBlocks,
-		Txs:    recentTxs,
+		Block: blockData,
+		Txs:   recentTxs,
 	}
 
 	return cs.views.RenderOverviewView(c, view)

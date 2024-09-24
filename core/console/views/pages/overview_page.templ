@@ -7,8 +7,8 @@ import (
 )
 
 type OverviewPageView struct {
-	Blocks []db.CoreBlock
-	Txs    []db.CoreTxResult
+	Block BlockView
+	Txs   []db.CoreTxResult
 }
 
 func (p *Pages) OverviewPageJSON() {}
@@ -18,16 +18,27 @@ templ (p *Pages) OverviewPageHTML(data *OverviewPageView) {
 		<div class="uk-grid-small uk-child-width-1-2@s uk-grid-match" uk-grid>
 			<div>
 				<div class="uk-card uk-card-default uk-card-body">
-					<h3 class="uk-card-title">Recent Blocks</h3>
-					for _, block := range data.Blocks {
-						<div class="text-sm">
-							<div class="p-1">
-								<div>
-									<a href={ templ.URL(fmt.Sprintf("/console/block/%s", fmt.Sprint(block.Height))) }>Block { fmt.Sprint(block.Height) }</a>
-								</div>
-							</div>
+					<h3 class="uk-card-title">Most Recent Block</h3>
+					<div class="p-4 h-full text-sm">
+						<div>
+							@p.components.Link("/block/%s", data.Block.Hash) {
+								<div>Hash: { data.Block.Hash }</div>
+							}
 						</div>
-					}
+						<div>
+							@p.components.Link("/nodes/%s", data.Block.Proposer) {
+								<div>Proposer: { data.Block.Proposer }</div>
+							}
+						</div>
+						<div>
+							@p.components.Link("/block/%s", data.Block.Height) {
+								<div>Height: { data.Block.Height }</div>
+							}
+						</div>
+						<div>
+							Age: { humanize.Time(data.Block.Timestamp) }
+						</div>
+					</div>
 				</div>
 			</div>
 			<div>
