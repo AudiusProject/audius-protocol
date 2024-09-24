@@ -19,11 +19,11 @@ type CommentHeaderProps = {
 
 export const CommentHeader = (props: CommentHeaderProps) => {
   const { isLoading } = props
-  const { handleMuteEntityNotifications, isEntityOwner, commentCount } =
-    useCurrentCommentSection()
+  const { isEntityOwner, commentCount } = useCurrentCommentSection()
   const { motion } = useTheme()
   const popupMenuItems: PopupMenuItem[] = [
-    { onClick: handleMuteEntityNotifications, text: messages.turnOffNotifs }
+    // TODO: mute notifs per track here
+    { onClick: () => {}, text: messages.turnOffNotifs }
   ]
 
   return (
