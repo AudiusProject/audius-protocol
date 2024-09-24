@@ -166,7 +166,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'mobile-install'
+      challenge_id: 'm'
     },
     slot: 112519147,
     type: 'ChallengeReward'

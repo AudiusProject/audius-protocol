@@ -58,7 +58,7 @@
   {
     "initiator": 12,
     "metadata": {
-      "challenge_id": "mobile-install"
+      "challenge_id": "m"
     },
     "slot": 115118978,
     "type": "ChallengeReward"

@@ -72,7 +72,7 @@ export type ChallengeId =
   | 'rv'
   | 'v'
   | 'listen-streak'
-  | 'mobile-install'
+  | 'm'
   | 'p'
   | 'u'
   | 'send-first-tip'

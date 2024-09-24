@@ -159,7 +159,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'mobile-install': {
+  m: {
     title: 'Get the Audius Mobile App',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MobilePhoneWithArrowIcon,

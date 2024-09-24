@@ -60,7 +60,7 @@ const challengeMessages = {
     description: 'Complete your Audius profile to earn 1 $AUDIO.',
     imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'
   },
-  'mobile-install': {
+  m: {
     title: 'Get the Audius Mobile App',
     description:
       'Download the Audius app for iOS or Android and sign in to Earn 1 $AUDIO.',

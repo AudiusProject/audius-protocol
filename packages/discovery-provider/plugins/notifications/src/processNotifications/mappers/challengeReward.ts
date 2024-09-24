@@ -55,7 +55,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       title: '✅️ Link Verified Accounts',
       amount: 5
     },
-    'mobile-install': {
+    m: {
       title: '📲 Get the App',
       amount: 1
     },

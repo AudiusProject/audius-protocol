@@ -49,7 +49,7 @@ const challengeRewardsConfig: {
     title: 'Listening Streak: 7 Days',
     icon: <HeadphoneIcon />
   },
-  'mobile-install': {
+  m: {
     title: 'Get the Audius Mobile App',
     icon: <MobilePhoneWithArrowIcon />
   },

@@ -447,7 +447,7 @@ const challengeInfoMap = {
     title: '✅️ Link Verified Accounts',
     amount: 5
   },
-  'mobile-install': {
+  m: {
     title: '📲 Get the App',
     amount: 1
   },
