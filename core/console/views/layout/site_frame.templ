@@ -24,12 +24,19 @@ templ (l *Layout) SiteFrame() {
 							<div>
 								Eth Address: 
 								<span>
-									@l.components.Link("/nodes/%s", l.config.WalletAddress) {
+									@l.components.Link("/node/%s", l.config.WalletAddress) {
 										<span>{ l.config.WalletAddress }</span>
 									}
 								</span>
 							</div>
-							<div>Core Address: { l.config.ProposerAddress }</div>
+							<div>
+								Comet Address: 
+								<span>
+									@l.components.Link("/node/%s", l.config.ProposerAddress) {
+										<span>{ l.config.ProposerAddress }</span>
+									}
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
