@@ -173,7 +173,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'track-upload': {
+  u: {
     title: 'Upload 3 Tracks',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MultipleMusicalNotesIcon,

@@ -123,7 +123,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'track-upload'
+      challenge_id: 'u'
     },
     slot: 112519142,
     type: 'ChallengeReward'
@@ -222,7 +222,10 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(__dirname, './renderedEmails/testEmail.html')
+    const testEmailPath = path.join(
+      __dirname,
+      './renderedEmails/testEmail.html'
+    )
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)
@@ -260,7 +263,10 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(__dirname, './renderedEmails/challengeEmail.html')
+    const testEmailPath = path.join(
+      __dirname,
+      './renderedEmails/challengeEmail.html'
+    )
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)
@@ -298,7 +304,10 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(__dirname, './renderedEmails/additionalChallengeEmail.html')
+    const testEmailPath = path.join(
+      __dirname,
+      './renderedEmails/additionalChallengeEmail.html'
+    )
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)

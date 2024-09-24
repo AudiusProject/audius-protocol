@@ -42,7 +42,7 @@
   {
     "initiator": 10,
     "metadata": {
-      "challenge_id": "track-upload"
+      "challenge_id": "u"
     },
     "slot": 114838855,
     "type": "ChallengeReward"

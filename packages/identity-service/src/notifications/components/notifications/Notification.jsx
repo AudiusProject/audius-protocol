@@ -44,7 +44,7 @@ const challengeRewardsConfig = {
     title: 'Complete Your Profile',
     icon: <WhiteHeavyCheckMarkIcon />
   },
-  'track-upload': {
+  u: {
     title: 'Upload 3 Tracks',
     icon: <MultipleMusicalNotesIcon />
   },

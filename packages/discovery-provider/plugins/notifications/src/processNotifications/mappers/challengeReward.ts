@@ -35,7 +35,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       title: '🎧 Listening Streak: 7 Days',
       amount: 1
     },
-    'track-upload': {
+    u: {
       title: '🎶 Upload 3 Tracks',
       amount: 1
     },

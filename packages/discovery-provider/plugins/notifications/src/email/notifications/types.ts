@@ -74,7 +74,7 @@ export type ChallengeId =
   | 'listen-streak'
   | 'mobile-install'
   | 'p'
-  | 'track-upload'
+  | 'u'
   | 'send-first-tip'
   | 'first-playlist'
 

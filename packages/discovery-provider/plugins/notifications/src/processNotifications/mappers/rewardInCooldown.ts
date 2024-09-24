@@ -20,7 +20,7 @@ const challengeMessages = {
       'Show some love to your favorite artist by sending them a tip.',
     imageUrl: 'Ky4Qr1byW9wnawVFUbRlpTaLf8d4n0.png'
   },
-  'track-upload': {
+  u: {
     title: 'Upload 3 Tracks',
     description: 'Earn 1 $AUDIO for uploading 3 tracks.',
     imageUrl: '72WyVN4Vds7CvNZr5yQA912GLFhDOs.png'
