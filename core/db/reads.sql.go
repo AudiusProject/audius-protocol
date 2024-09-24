@@ -154,6 +154,35 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 	return i, err
 }
 
+const getRecentBlocks = `-- name: GetRecentBlocks :many
+select rowid, height, chain_id, created_at from core_blocks order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentBlocks(ctx context.Context) ([]CoreBlock, error) {
+	rows, err := q.db.Query(ctx, getRecentBlocks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreBlock
+	for rows.Next() {
+		var i CoreBlock
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.Height,
+			&i.ChainID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRecentRollups = `-- name: GetRecentRollups :many
 select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
 `
@@ -182,6 +211,77 @@ func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRecentTxs = `-- name: GetRecentTxs :many
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentTxs(ctx context.Context) ([]CoreTxResult, error) {
+	rows, err := q.db.Query(ctx, getRecentTxs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreTxResult
+	for rows.Next() {
+		var i CoreTxResult
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.BlockID,
+			&i.Index,
+			&i.CreatedAt,
+			&i.TxHash,
+			&i.TxResult,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRegisteredNodeByCometAddress = `-- name: GetRegisteredNodeByCometAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where comet_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByCometAddress(ctx context.Context, cometAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByCometAddress, cometAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
+}
+
+const getRegisteredNodeByEthAddress = `-- name: GetRegisteredNodeByEthAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where eth_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByEthAddress(ctx context.Context, ethAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByEthAddress, ethAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
 }
 
 const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
