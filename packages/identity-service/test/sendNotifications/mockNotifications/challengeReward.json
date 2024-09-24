@@ -74,7 +74,7 @@
   {
     "initiator": 16,
     "metadata": {
-      "challenge_id": "first-playlist"
+      "challenge_id": "fp"
     },
     "slot": 115118980,
     "type": "ChallengeReward"

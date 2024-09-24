@@ -25,7 +25,7 @@ const challengeMessages = {
     description: 'Earn 1 $AUDIO for uploading 3 tracks.',
     imageUrl: '72WyVN4Vds7CvNZr5yQA912GLFhDOs.png'
   },
-  'first-playlist': {
+  fp: {
     title: 'Create a Playlist',
     description: 'Create a playlist and add a track.',
     imageUrl: 'PH1vcT5H8RRADIqSZwaKvNztiiKIDm.png'

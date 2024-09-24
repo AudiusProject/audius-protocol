@@ -63,7 +63,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       title: '🤑 Send Your First Tip',
       amount: 2
     },
-    'first-playlist': {
+    fp: {
       title: '🎼 Create a Playlist',
       amount: 2
     }

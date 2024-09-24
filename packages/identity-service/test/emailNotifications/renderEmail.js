@@ -182,7 +182,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'first-playlist'
+      challenge_id: 'fp'
     },
     slot: 112519149,
     type: 'ChallengeReward'

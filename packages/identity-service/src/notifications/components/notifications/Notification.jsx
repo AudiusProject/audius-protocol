@@ -52,7 +52,7 @@ const challengeRewardsConfig = {
     title: 'Send Your First Tip',
     icon: <MoneyMouthFaceIcon />
   },
-  'first-playlist': {
+  fp: {
     title: 'Create a Playlist',
     icon: <TrebleClefIcon />
   }

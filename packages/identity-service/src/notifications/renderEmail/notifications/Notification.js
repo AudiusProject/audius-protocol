@@ -187,7 +187,7 @@ const challengeRewardsConfig = {
       null
     )
   },
-  'first-playlist': {
+  fp: {
     title: 'Create a Playlist',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.TrebleClefIcon,

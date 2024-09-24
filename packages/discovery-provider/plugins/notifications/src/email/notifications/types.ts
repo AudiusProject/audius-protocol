@@ -76,7 +76,7 @@ export type ChallengeId =
   | 'p'
   | 'u'
   | 'ft'
-  | 'first-playlist'
+  | 'fp'
 
 export type NotificationType =
   | 'favorite'
