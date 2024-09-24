@@ -35,6 +35,13 @@ def validate_comment_tx(params: ManageEntityParameters):
     if params.metadata["body"] is None or params.metadata["body"] == "":
         raise IndexingValidationError("Comment body is empty")
 
+    # Validate parent_comment_id if it exists
+    parent_comment_id = params.metadata.get("parent_comment_id")
+    if parent_comment_id is not None and not isinstance(parent_comment_id, int):
+        raise IndexingValidationError(
+            f"parent_comment_id {parent_comment_id} must be a number"
+        )
+
 
 def create_comment(params: ManageEntityParameters):
     validate_comment_tx(params)
