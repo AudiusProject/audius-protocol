@@ -35,7 +35,6 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -50,14 +49,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListEntityType,
-  UserListType
-} from 'store/application/ui/userListModal/types'
 import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 

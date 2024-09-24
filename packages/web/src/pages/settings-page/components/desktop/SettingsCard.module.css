@@ -49,7 +49,8 @@
 
 /** Breakpoint for collapsed cards **/
 @media (max-width: 990px) {
-  .settingsCard, .settingsCardFull {
+  .settingsCard,
+  .settingsCardFull {
     text-align: center;
   }
 }
