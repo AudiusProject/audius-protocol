@@ -64,3 +64,5 @@ export const utcToLocalTime = (date: string) => {
 export const getLocalTimezone = () => {
   return dayjs().format('z')
 }
+
+export const timestampRegex = /(?:([0-9]?\d):)?([0-5]?\d):([0-5]\d)/gm

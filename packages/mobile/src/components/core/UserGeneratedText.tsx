@@ -13,11 +13,12 @@ import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
 import type { LayoutRectangle, Text as TextRef } from 'react-native'
+import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
 
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
-import { TextLinkFlowing } from 'app/harmony-native/components/TextLink/TextLink'
+import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 const {
@@ -31,19 +32,20 @@ type PositionedLink = {
   match: Match
 }
 
-export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
-  children: string
-  source?: 'profile page' | 'track page' | 'collection page'
-  // Pass touches through text elements
-  allowPointerEventsToPassThrough?: boolean
-  linkProps?: Partial<TextLinkProps>
+export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
+  Pick<AutolinkProps, 'matchers'> & {
+    children: string
+    source?: 'profile page' | 'track page' | 'collection page'
+    // Pass touches through text elements
+    allowPointerEventsToPassThrough?: boolean
+    linkProps?: Partial<TextLinkProps>
 
-  // If true, only linkify Audius URLs
-  internalLinksOnly?: boolean
+    // If true, only linkify Audius URLs
+    internalLinksOnly?: boolean
 
-  // Suffix to append after the text. Used for "edited" text in comments
-  suffix?: ReactNode
-}
+    // Suffix to append after the text. Used for "edited" text in comments
+    suffix?: ReactNode
+  }
 
 const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
@@ -71,9 +73,9 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
   return (
-    <TextLinkFlowing {...other} url={url}>
+    <TextLink {...other} url={url}>
       {unfurledContent ?? children}
-    </TextLinkFlowing>
+    </TextLink>
   )
 }
 
@@ -85,6 +87,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     children,
     linkProps,
     suffix,
+    matchers,
     ...other
   } = props
 
@@ -206,6 +209,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             url
             style={[{ marginBottom: 3 }, style]}
             text={squashNewLines(children) as string}
+            matchers={matchers}
           />
           {suffix}
         </Text>

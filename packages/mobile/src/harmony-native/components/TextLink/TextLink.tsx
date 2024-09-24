@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
+
 import { isInternalAudiusUrl } from '@audius/common/utils'
-import { TouchableOpacity } from 'react-native'
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -9,34 +10,38 @@ import Animated, {
 
 import { useTheme } from '../../foundations/theme/useTheme'
 import { Text } from '../Text/Text'
-import { Flex } from '../layout'
 
-import { ExternalLink, useExternalLinkHandlePress } from './ExternalLink'
 import {
-  InternalLink,
-  InternalLinkTo,
-  useInternalLinkHandlePress
-} from './InternalLink'
-import type {
-  TextLinkAnimationProps,
-  TextLinkFlowingProps,
-  TextLinkProps
+  useHandlePressExternalUrl,
+  useHandlePressInternalUrl,
+  useHandlePressTo
+} from './hooks'
+import {
+  isExternalLinkProps,
+  isInternalLinkToProps,
+  type TextLinkProps
 } from './types'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
-const TextLinkAnimation = (props: TextLinkAnimationProps) => {
+/**
+ * Simple component that styles a Text component as a link
+ */
+const TextPressable = (props: TextLinkProps) => {
   const {
     children,
     variant = 'default',
     textVariant,
     showUnderline,
     style,
-    animatedPressed,
+    animatedPressed: animatedPressedProp,
     ...other
   } = props
 
-  const { color } = useTheme()
+  const { color, motion } = useTheme()
+
+  const animatedPressedInternal = useSharedValue(0)
+  const animatedPressed = animatedPressedProp ?? animatedPressedInternal
 
   const variantColors = {
     default: color.link.default,
@@ -63,135 +68,90 @@ const TextLinkAnimation = (props: TextLinkAnimationProps) => {
   }))
 
   // Need to nest the AnimatedText inside a Text so the handlers & animation work
-  // while still supporting proper Text layout
+  // while still supporting proper Text layout. All this nesting is necessary
   return (
-    <Text suppressHighlighting variant={textVariant} {...other}>
-      <AnimatedText
-        style={[
-          style,
-          animatedStyles,
-          {
-            textDecorationLine: showUnderline ? 'underline' : 'none'
-          }
-        ]}
+    <Text>
+      <Text
+        suppressHighlighting
+        variant={textVariant}
+        onPressIn={(e) => {
+          animatedPressed.value = withTiming(1, motion.press)
+        }}
+        onPressOut={() => {
+          animatedPressed.value = withTiming(0, motion.press)
+        }}
+        {...other}
       >
-        {children}
-      </AnimatedText>
+        <AnimatedText
+          style={[
+            style,
+            animatedStyles,
+            {
+              textDecorationLine: showUnderline ? 'underline' : 'none'
+            }
+          ]}
+        >
+          {children}
+        </AnimatedText>
+      </Text>
     </Text>
   )
 }
 
 /**
- * TextLink component that supports internal and external links
+ * TextLink that supports 'url' | 'to' | 'onPress'
  *
- * If you want to use this component inline with other Text, such as in UserGeneratedText,
- * use TextLinkFlowing instead
+ * Notably this component is Text all the way down so that it flows properly inline
+ * with other Text components.
  */
 export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   props: TextLinkProps<ParamList>
 ) => {
-  const { onPress, source, endAdornment, ...other } = props
-  const { motion } = useTheme()
-  const animatedPressed = useSharedValue(0)
+  const { onPress: onPressProp = () => {} } = props
 
-  const textElement = (
-    <TextLinkAnimation {...props} animatedPressed={animatedPressed} />
-  )
+  const isTo = isInternalLinkToProps(props)
+  const isUrl = isExternalLinkProps(props)
 
-  const element = endAdornment ? (
-    <Flex row gap='xs' alignItems='center'>
-      {textElement}
-      {endAdornment}
-    </Flex>
-  ) : (
-    textElement
-  )
+  const url = isUrl ? props.url : ''
 
-  const rootProps = {
-    onPress,
-    onPressIn: () => {
-      animatedPressed.value = withTiming(1, motion.press)
-    },
-    onPressOut: () => {
-      animatedPressed.value = withTiming(0, motion.press)
-    }
-  }
-
-  if ('to' in other) {
-    return (
-      <InternalLinkTo to={other.to} action={other.action} {...rootProps}>
-        {element}
-      </InternalLinkTo>
-    )
-  } else if ('url' in other && isInternalAudiusUrl(other.url)) {
-    return (
-      <InternalLink url={other.url} {...rootProps}>
-        {element}
-      </InternalLink>
-    )
-  } else if ('url' in other) {
-    return (
-      <ExternalLink url={other.url} source={source} {...rootProps}>
-        {element}
-      </ExternalLink>
-    )
-  } else {
-    return <TouchableOpacity {...rootProps}>{element}</TouchableOpacity>
-  }
-}
-
-/**
- *
- * TextLink that flows inline with other Text components
- * Used in UserGeneratedText
- *
- * Note: Does not support endAdornment
- */
-export const TextLinkFlowing = <
-  ParamList extends ReactNavigation.RootParamList
->(
-  props: TextLinkFlowingProps<ParamList>
-) => {
-  const { onPress: onPressProp = () => {}, ...other } = props
-
-  const { motion } = useTheme()
-  const animatedPressed = useSharedValue(0)
-
-  const isUrl = 'url' in other
-
-  const handleExternalLinkPress = useExternalLinkHandlePress({
-    url: isUrl ? other.url : '',
+  const handlePressExternalUrl = useHandlePressExternalUrl({
+    url: isUrl ? props.url : '',
     onPress: onPressProp
   })
 
-  const handleInternalLinkPress = useInternalLinkHandlePress({
-    url: isUrl ? (other.url as string) : '',
+  const handlePressInternalUrl = useHandlePressInternalUrl({
+    url: isUrl ? props.url : '',
     onPress: onPressProp
   })
 
-  const getOnPress = () => {
+  const { onPress: handlePressTo, ...linkProps } = useHandlePressTo({
+    to: isTo ? props.to : '',
+    action: isTo ? props.action : undefined
+  })
+
+  const onPress = useMemo(() => {
     if (isUrl) {
-      if (isInternalAudiusUrl(other.url)) {
-        return handleInternalLinkPress
+      if (isInternalAudiusUrl(url)) {
+        return handlePressInternalUrl
       } else {
-        return handleExternalLinkPress
+        return handlePressExternalUrl
       }
+    } else if (isTo) {
+      return handlePressTo
     } else {
       return onPressProp
     }
-  }
+  }, [
+    url,
+    isUrl,
+    isTo,
+    handlePressInternalUrl,
+    handlePressExternalUrl,
+    handlePressTo,
+    onPressProp
+  ])
 
   return (
-    <TextLinkAnimation
-      {...props}
-      animatedPressed={animatedPressed}
-      onPress={getOnPress()}
-      onPressIn={(e) => {
-        animatedPressed.value = withTiming(1, motion.press)
-      }}
-      onPressOut={() => {
-        animatedPressed.value = withTiming(0, motion.press)
-      }}
-    />
+    <TextPressable {...props} onPress={onPress} {...(isTo ? linkProps : {})} />
   )
 }

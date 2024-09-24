@@ -3,7 +3,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
-import { splitOnNewline } from '@audius/common/utils'
+import { splitOnNewline, timestampRegex } from '@audius/common/utils'
 import {
   LoadingSpinner,
   SendIcon,
@@ -24,8 +24,6 @@ const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
 }
-
-const timestampRegex = /(?:([0-9]?\d):)?([0-5]?\d):([0-5]\d)/gm
 
 const getDurationFromTimestampMatch = (match: RegExpMatchArray) => {
   const h = match[1] ? Number(match[1]) : 0

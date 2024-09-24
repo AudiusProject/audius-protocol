@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { commentsMessages as messages } from '@audius/common/messages'
+import { timestampRegex } from '@audius/common/utils'
 import type { CommentTextProps } from '@audius/harmony/src/components/comments/CommentText/types'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
@@ -40,6 +41,24 @@ export const CommentText = ({ children, isEdited }: CommentTextProps) => {
             </>
           ) : null
         }
+        matchers={[
+          {
+            pattern: timestampRegex,
+            renderLink: (match) => {
+              return (
+                <TextLink
+                  onPress={() => {
+                    // TODO: play track at timestamp
+                  }}
+                  variant='visible'
+                  size='s'
+                >
+                  {match}
+                </TextLink>
+              )
+            }
+          }
+        ]}
       >
         {children}
       </UserGeneratedText>
