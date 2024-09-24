@@ -431,15 +431,15 @@ const challengeInfoMap = {
     title: '🎶 Upload 3 Tracks',
     amount: 1
   },
-  referrals: {
+  r: {
     title: '📨 Invite your Friends',
     amount: 1
   },
-  referred: {
+  rd: {
     title: '📨 Invite your Friends',
     amount: 1
   },
-  'ref-v': {
+  rv: {
     title: '📨 Invite your Fans',
     amount: 1
   },
@@ -561,7 +561,7 @@ const pushNotificationMessagesMap = {
     return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now! 🍾`
   },
   [notificationTypes.ChallengeReward](notification) {
-    return notification.challengeId === 'referred'
+    return notification.challengeId === 'rd'
       ? `You’ve received ${
           challengeInfoMap[notification.challengeId].amount
         } $AUDIO for being referred! Invite your friends to join to earn more!`

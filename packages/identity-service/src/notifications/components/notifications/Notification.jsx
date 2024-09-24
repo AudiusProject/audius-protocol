@@ -16,15 +16,15 @@ import { notificationTypes as NotificationType } from '../../constants'
 import { capitalize } from '../../processNotifications/utils'
 
 const challengeRewardsConfig = {
-  referred: {
+  rd: {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
   },
-  referrals: {
+  r: {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
   },
-  'ref-v': {
+  rv: {
     title: 'Invite your Fans',
     icon: <IncomingEnvelopeIcon />
   },
@@ -258,7 +258,7 @@ const notificationMap = {
     const { rewardAmount } = notification
     const { title, icon } = challengeRewardsConfig[notification.challengeId]
     let bodyText
-    if (notification.challengeId === 'referred') {
+    if (notification.challengeId === 'rd') {
       bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
     } else {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`

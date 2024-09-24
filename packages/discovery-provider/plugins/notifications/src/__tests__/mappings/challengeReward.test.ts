@@ -82,7 +82,7 @@ describe('Challenge Reward Notification', () => {
     const data: ChallengeRewardNotification = {
       amount: 100000000,
       specifier: '1=>2',
-      challenge_id: 'referrals'
+      challenge_id: 'r'
     }
 
     const notifications: AppEmailNotification[] = [
@@ -90,7 +90,7 @@ describe('Challenge Reward Notification', () => {
         type: 'challenge_reward',
         timestamp: new Date(),
         specifier: '1',
-        group_id: 'challenge_reward:2:challenge:referrals:specifier:1=>2',
+        group_id: 'challenge_reward:2:challenge:r:specifier:1=>2',
         data,
         user_ids: [1],
         receiver_user_id: 1

@@ -506,14 +506,14 @@ def setup_verified_test(session):
 
     challenges = [
         Challenge(
-            id="referrals",
+            id="r",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
             step_count=5,
         ),
         Challenge(
-            id="ref-v",
+            id="rv",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
@@ -545,7 +545,7 @@ def test_nonverified_referrals_invisible_to_verified_user(app):
 
             non_verified = get_challenges(1, False, session, bus)
             assert len(non_verified) == 1
-            assert non_verified[0]["challenge_id"] == "referrals"
+            assert non_verified[0]["challenge_id"] == "r"
 
 
 def test_verified_referrals_invisible_to_nonverified_user(app):
@@ -556,7 +556,7 @@ def test_verified_referrals_invisible_to_nonverified_user(app):
 
             verified = get_challenges(2, False, session, bus)
             assert len(verified) == 1
-            assert verified[0]["challenge_id"] == "ref-v"
+            assert verified[0]["challenge_id"] == "rv"
 
 
 # Testing getting listen streak challenges with override

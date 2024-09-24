@@ -131,7 +131,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'referrals'
+      challenge_id: 'r'
     },
     slot: 112519143,
     type: 'ChallengeReward'
@@ -142,7 +142,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'ref-v'
+      challenge_id: 'rv'
     },
     slot: 112519144,
     type: 'ChallengeReward'
@@ -150,7 +150,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'referred'
+      challenge_id: 'rd'
     },
     slot: 112519145,
     type: 'ChallengeReward'

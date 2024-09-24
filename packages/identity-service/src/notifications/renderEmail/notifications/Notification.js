@@ -124,21 +124,21 @@ function _arrayWithHoles(arr) {
 }
 
 const challengeRewardsConfig = {
-  referred: {
+  rd: {
     title: 'Invite your Friends',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
       null
     )
   },
-  referrals: {
+  r: {
     title: 'Invite your Friends',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
       null
     )
   },
-  'ref-v': {
+  rv: {
     title: 'Invite your Fans',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
@@ -540,7 +540,7 @@ const notificationMap =
       const icon = _challengeRewardsConf.icon
       let bodyText
 
-      if (notification.challengeId === 'referred') {
+      if (notification.challengeId === 'rd') {
         bodyText = 'You\u2019ve received '.concat(
           rewardAmount,
           ' $AUDIO for being referred! Invite your friends to join to earn more!'

@@ -18,7 +18,7 @@
   {
     "initiator": 6,
     "metadata": {
-      "challenge_id": "referrals"
+      "challenge_id": "r"
     },
     "slot": 114989028,
     "type": "ChallengeReward"
@@ -26,7 +26,7 @@
   {
     "initiator": 6,
     "metadata": {
-      "challenge_id": "ref-v"
+      "challenge_id": "rv"
     },
     "slot": 114989029,
     "type": "ChallengeReward"
@@ -34,7 +34,7 @@
   {
     "initiator": 8,
     "metadata": {
-      "challenge_id": "referred"
+      "challenge_id": "rd"
     },
     "slot": 114989029,
     "type": "ChallengeReward"

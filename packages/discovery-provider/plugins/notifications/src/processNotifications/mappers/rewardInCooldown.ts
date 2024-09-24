@@ -30,17 +30,17 @@ const challengeMessages = {
     description: 'Create a playlist and add a track.',
     imageUrl: 'PH1vcT5H8RRADIqSZwaKvNztiiKIDm.png'
   },
-  'ref-v': {
+  rv: {
     title: 'Link Verified Accounts',
     description: 'Link your verified social media accounts to get 5 $AUDIO.',
     imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
   },
-  referrals: {
+  r: {
     title: 'Invite Your Friends!',
     description: 'Earn 1 $AUDIO for you and your friend.',
     imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'
   },
-  referred: {
+  rd: {
     title: 'You Accepted An Invite!',
     description: 'You earned 1 $AUDIO for being invited.',
     imageUrl: 'XFmTX9RIkyTzsEEsQopzDdGXeGnxXA.png'

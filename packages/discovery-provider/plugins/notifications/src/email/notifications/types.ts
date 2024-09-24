@@ -67,9 +67,9 @@ export type UserSubscription = {
 export type Notification = Announcement | Follow | Repost
 
 export type ChallengeId =
-  | 'referred'
-  | 'referrals'
-  | 'ref-v'
+  | 'rd'
+  | 'r'
+  | 'rv'
   | 'connect-verified'
   | 'listen-streak'
   | 'mobile-install'
