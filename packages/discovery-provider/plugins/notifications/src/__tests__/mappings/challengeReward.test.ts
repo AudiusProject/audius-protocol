@@ -40,7 +40,7 @@ describe('Challenge Reward Notification', () => {
     ])
     await createChallengeReward(processor.discoveryDB, [
       {
-        challenge_id: 'profile-completion',
+        challenge_id: 'p
         user_id: 1,
         specifier: '1',
         amount: '100000000',
@@ -69,7 +69,7 @@ describe('Challenge Reward Notification', () => {
         title: `✅️ Complete your Profile`,
         body: `You’ve earned 1 $AUDIO for completing this challenge!`,
         data: {
-          id: 'timestamp:1589373:group_id:challenge_reward:1:challenge:profile-completion:specifier:1',
+          id: 'timestamp:1589373:group_id:challenge_reward:1:challenge:p:specifier:1',
           type: 'ChallengeReward'
         }
       }

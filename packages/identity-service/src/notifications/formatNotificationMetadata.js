@@ -419,7 +419,7 @@ const TipReceiveTitle = 'You Received a Tip!'
 const DethronedTitle = "👑 You've Been Dethroned!"
 
 const challengeInfoMap = {
-  'profile-completion': {
+  p: {
     title: '✅️ Complete your Profile',
     amount: 1
   },

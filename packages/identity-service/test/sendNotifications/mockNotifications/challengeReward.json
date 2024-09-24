@@ -2,7 +2,7 @@
   {
     "initiator": 2,
     "metadata": {
-      "challenge_id": "profile-completion"
+      "challenge_id": "p"
     },
     "slot": 112519136,
     "type": "ChallengeReward"

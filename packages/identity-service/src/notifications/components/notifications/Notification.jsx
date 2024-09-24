@@ -40,7 +40,7 @@ const challengeRewardsConfig = {
     title: 'Get the Audius Mobile App',
     icon: <MobilePhoneWithArrowIcon />
   },
-  'profile-completion': {
+  p: {
     title: 'Complete Your Profile',
     icon: <WhiteHeavyCheckMarkIcon />
   },
@@ -71,8 +71,7 @@ const HighlightText = ({ text }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -84,8 +83,7 @@ const BodyText = ({ text, className }) => (
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )

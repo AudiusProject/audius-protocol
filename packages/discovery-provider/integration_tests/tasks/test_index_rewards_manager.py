@@ -32,19 +32,19 @@ def test_decode_reward_manager_transfer_instruction():
     decoded_data = parse_transfer_instruction_data(transfer_data)
     assert decoded_data == {
         "amount": 10000000000,
-        "id": "profile-completion:123456789",
+        "id": "p:123456789",
         "eth_recipient": "0x0403be3560116a12b467855cb29a393174a59876",
     }
 
 
 def test_parse_transfer_instruction_id():
-    transfer_id = "profile-completion:123456789"
+    transfer_id = "p:123456789"
     parsed_id = parse_transfer_instruction_id(transfer_id)
-    assert parsed_id[0] == "profile-completion"
+    assert parsed_id[0] == "p"
     assert parsed_id[1] == "123456789"
 
     # Returns None on invalid transfer_id
-    transfer_id = "profile-completion_123456789"
+    transfer_id = "p_123456789"
     parsed_id = parse_transfer_instruction_id(transfer_id)
     assert parsed_id == None
 
@@ -272,7 +272,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     )
     assert (
         parsed_tx["transfer_instruction"]["challenge_id"]  # pylint: disable=E1136
-        == "profile-completion"
+        == "p"
     )
     assert parsed_tx["tx_sig"] == first_tx_sig
     assert parsed_tx["slot"] == 72131741

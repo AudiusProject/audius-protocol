@@ -53,7 +53,7 @@ const challengeRewardsConfig: {
     title: 'Get the Audius Mobile App',
     icon: <MobilePhoneWithArrowIcon />
   },
-  'profile-completion': {
+  p: {
     title: 'Complete Your Profile',
     icon: <WhiteHeavyCheckMarkIcon />
   },

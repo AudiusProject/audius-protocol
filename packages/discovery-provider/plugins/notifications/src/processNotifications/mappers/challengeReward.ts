@@ -27,7 +27,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
   challengeId: ChallengeId
 
   challengeInfoMap = {
-    'profile-completion': {
+    p: {
       title: '✅️ Complete your Profile',
       amount: 1
     },

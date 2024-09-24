@@ -73,7 +73,7 @@ export type ChallengeId =
   | 'connect-verified'
   | 'listen-streak'
   | 'mobile-install'
-  | 'profile-completion'
+  | 'p'
   | 'track-upload'
   | 'send-first-tip'
   | 'first-playlist'

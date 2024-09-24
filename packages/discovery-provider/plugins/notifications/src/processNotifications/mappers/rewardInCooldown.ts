@@ -50,7 +50,7 @@ const challengeMessages = {
     description: 'Link your verified social media accounts to earn 5 $AUDIO.',
     imageUrl: 'bpwwTf7HiZxlMd1PkX82qw45tiEpXX.png'
   },
-  'profile-completion': {
+  p: {
     title: 'Complete Your Profile',
     description: 'Complete your Audius profile to earn 1 $AUDIO.',
     imageUrl: '8JCdZg2rcQdqovWtNYfUA3RZDAiyX3.png'
