@@ -13,8 +13,10 @@ import {
 import { Entry } from '../types'
 
 import {
+  INCREMENT_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
   SET_STREAM_URLS,
+  incrementTrackCommentCount,
   setPermalink,
   setStreamUrls
 } from './actions'
@@ -93,6 +95,28 @@ const actionsMap = {
     return {
       ...state,
       streamUrls: { ...state.streamUrls, ...streamUrls }
+    }
+  },
+  [INCREMENT_TRACK_COMMENT_COUNT](
+    state: TracksCacheState,
+    action: ReturnType<typeof incrementTrackCommentCount>
+  ): TracksCacheState {
+    const { trackId, commentCountIncrement } = action
+
+    return {
+      ...state,
+      entries: {
+        ...state.entries,
+        [trackId]: {
+          ...state.entries[trackId],
+          metadata: {
+            ...state.entries[trackId].metadata,
+            comment_count:
+              (state.entries[trackId].metadata.comment_count || 0) +
+              commentCountIncrement
+          }
+        }
+      }
     }
   }
 }

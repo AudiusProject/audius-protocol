@@ -9,6 +9,7 @@ import { ThunkDispatch } from '@reduxjs/toolkit'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models'
+import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable, decodeHashId, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
@@ -156,6 +157,7 @@ const commentsApi = createApi({
           createdAt: new Date().toISOString(),
           updatedAt: undefined
         }
+        dispatch(incrementTrackCommentCount(entityId, 1))
         // Add our new comment to the store
         optimisticUpdateComment(newId, () => newComment, dispatch)
         // If the comment is a reply, we need to update the parent comment's replies array
@@ -212,6 +214,7 @@ const commentsApi = createApi({
       },
       options: { type: 'mutation' },
       onQueryStarted({ id, entityId, userId }, { dispatch }) {
+        dispatch(incrementTrackCommentCount(entityId, -1))
         optimisticUpdateCommentList(
           entityId,
           (prevState) => prevState?.filter((comment) => comment.id !== id),
