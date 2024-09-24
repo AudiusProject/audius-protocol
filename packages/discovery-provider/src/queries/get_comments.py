@@ -71,7 +71,7 @@ def get_replies(
     return [
         {
             "id": encode_int_id(reply.comment_id),
-            "user_id": reply.user_id,
+            "user_id": encode_int_id(reply.user_id),
             "message": reply.text,
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
@@ -161,7 +161,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             {
                 "id": encode_int_id(track_comment.comment_id),
                 "user_id": (
-                    track_comment.user_id if not track_comment.is_delete else None
+                    encode_int_id(track_comment.user_id) if not track_comment.is_delete else None
                 ),
                 "message": (
                     track_comment.text if not track_comment.is_delete else "[Removed]"

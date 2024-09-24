@@ -6,7 +6,7 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { SquareSizes } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -27,8 +27,8 @@ type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
-  commentId?: string
-  parentCommentId?: string
+  commentId?: ID
+  parentCommentId?: ID
   isEdit?: boolean
 }
 
