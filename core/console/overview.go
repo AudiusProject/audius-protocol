@@ -4,6 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (con *Console) overviewFragment(c echo.Context) error {
-	return c.String(200, "overview")
+func (con *Console) overviewPage(c echo.Context) error {
+	return con.views.RenderOverviewView(c)
 }

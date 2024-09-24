@@ -24,9 +24,10 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	})
 
 	// htmx fragments that make up pages derived from routes
-	g.GET("/overview", c.overviewFragment)
-	g.GET("/analytics", c.analyticsFragment)
-	g.GET("/nodes", c.nodesFragment)
+	g.GET("/overview", c.overviewPage)
+	g.GET("/analytics", c.analyticsPage)
+	g.GET("/nodes", c.nodesPage)
+	g.GET("/node/:node", c.nodePage)
 	g.GET("/content", c.contentFragment)
 	g.GET("/uptime", c.uptimeFragment)
 	g.GET("/block/:block", c.blockPage)

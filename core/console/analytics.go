@@ -2,6 +2,6 @@ package console
 
 import "github.com/labstack/echo/v4"
 
-func (con *Console) analyticsFragment(c echo.Context) error {
-	return c.String(200, "analytics")
+func (con *Console) analyticsPage(c echo.Context) error {
+	return con.views.RenderAnalyticsView(c)
 }

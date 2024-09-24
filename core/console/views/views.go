@@ -16,6 +16,30 @@ func NewViews(config *config.Config, baseUrl string) *Views {
 	}
 }
 
+func (v *Views) RenderOverviewView(c echo.Context) error {
+	return v.pages.OverviewPageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderNodesView(c echo.Context) error {
+	return v.pages.NodesPageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderNodeView(c echo.Context) error {
+	return v.pages.NodePageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderAnalyticsView(c echo.Context) error {
+	return v.pages.AnalyticsPageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderContentView(c echo.Context) error {
+	return v.pages.ContentPageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderUptimeView(c echo.Context) error {
+	return v.pages.UptimePageHTML().Render(c.Request().Context(), c.Response().Writer)
+}
+
 func (v *Views) RenderBlockView(c echo.Context, view *pages.BlockView) error {
 	if v.shouldRenderJSON(c) {
 		res, err := v.pages.BlockPageJSON(view)

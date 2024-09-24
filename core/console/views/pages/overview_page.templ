@@ -1,7 +1,9 @@
 package pages
 
-func OverviewPageJSON() {}
+func (p *Pages) OverviewPageJSON() {}
 
-templ OverviewPageHTML() {
-	<div>overview page</div>
+templ (p *Pages) OverviewPageHTML() {
+	@p.layout.SiteFrame() {
+		<div>overview page</div>
+	}
 }

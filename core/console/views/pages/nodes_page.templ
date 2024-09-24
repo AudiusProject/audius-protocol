@@ -1,0 +1,10 @@
+package pages
+
+templ (p *Pages) NodesPageJSON() {
+}
+
+templ (p *Pages) NodesPageHTML() {
+	@p.layout.SiteFrame() {
+		<div>nodes!</div>
+	}
+}
