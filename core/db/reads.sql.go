@@ -154,6 +154,35 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 	return i, err
 }
 
+const getRecentBlocks = `-- name: GetRecentBlocks :many
+select rowid, height, chain_id, created_at from core_blocks order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentBlocks(ctx context.Context) ([]CoreBlock, error) {
+	rows, err := q.db.Query(ctx, getRecentBlocks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreBlock
+	for rows.Next() {
+		var i CoreBlock
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.Height,
+			&i.ChainID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRecentRollups = `-- name: GetRecentRollups :many
 select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
 `
@@ -173,6 +202,37 @@ func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
 			&i.BlockStart,
 			&i.BlockEnd,
 			&i.Time,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRecentTxs = `-- name: GetRecentTxs :many
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentTxs(ctx context.Context) ([]CoreTxResult, error) {
+	rows, err := q.db.Query(ctx, getRecentTxs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreTxResult
+	for rows.Next() {
+		var i CoreTxResult
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.BlockID,
+			&i.Index,
+			&i.CreatedAt,
+			&i.TxHash,
+			&i.TxResult,
 		); err != nil {
 			return nil, err
 		}

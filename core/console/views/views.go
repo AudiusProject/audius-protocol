@@ -16,8 +16,8 @@ func NewViews(config *config.Config, baseUrl string) *Views {
 	}
 }
 
-func (v *Views) RenderOverviewView(c echo.Context) error {
-	return v.pages.OverviewPageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderOverviewView(c echo.Context, data *pages.OverviewPageView) error {
+	return v.pages.OverviewPageHTML(data).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderNodesView(c echo.Context, view *pages.NodesView) error {

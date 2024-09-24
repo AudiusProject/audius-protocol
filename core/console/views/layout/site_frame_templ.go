@@ -309,7 +309,7 @@ func (l *Layout) SiteFrame() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6\"><div class=\"bg-white shadow-md rounded-lg p-4 max-h-max\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6\"><div class=\"bg-white shadow-md rounded-lg p-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

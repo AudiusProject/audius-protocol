@@ -88,7 +88,7 @@ templ (p *Pages) TxPageHTML(view *TxView) {
 					Age: { humanize.Time(view.Timestamp) }
 				</div>
 				<div class="text-small p-4 rounded-lg">
-					<pre class="bg-gray-100 p-4">{ p.renderJSON(p.toJSON(view.Tx)) }</pre>
+					<pre class="bg-gray-100 p-4 rounded-lg overflow-x-scroll">{ p.renderJSON(p.toJSON(view.Tx)) }</pre>
 				</div>
 			</div>
 		</div>
