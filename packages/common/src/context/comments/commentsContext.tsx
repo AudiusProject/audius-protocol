@@ -42,17 +42,17 @@ type CommentSectionContextType = {
   artistId: ID
   isEntityOwner: boolean
   commentCount: number
-  playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
   currentSort: TrackCommentsSortMethodEnum
   isLoadingMorePages: boolean
   hasMorePages: boolean
+  isMutating: boolean
+  setIsMutating: (isMutating: boolean) => void
+  playTrack: () => void
   reset: (hard?: boolean) => void
   setCurrentSort: (sort: TrackCommentsSortMethodEnum) => void
   loadMorePages: () => void
-  handleLoadMoreReplies: (commentId: string) => void
-  handleMuteEntityNotifications: () => void
 } & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
@@ -76,6 +76,7 @@ export const CommentSectionProvider = (
   const [currentSort, setCurrentSort] = useState<TrackCommentsSortMethodEnum>(
     TrackCommentsSortMethodEnum.Top
   )
+  const [isMutating, setIsMutating] = useState(false)
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const {
@@ -100,13 +101,6 @@ export const CommentSectionProvider = (
   const commentSectionLoading =
     status === Status.LOADING || status === Status.IDLE
 
-  const handleLoadMoreReplies = (commentId: string) => {
-    console.log('Loading more replies for', commentId)
-  }
-  const handleMuteEntityNotifications = () => {
-    console.log('Muting all notifs for ', entityId)
-  }
-
   if (!track) {
     return null
   }
@@ -125,6 +119,8 @@ export const CommentSectionProvider = (
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        isMutating,
+        setIsMutating,
         reset,
         hasMorePages,
         currentSort,
@@ -134,9 +130,7 @@ export const CommentSectionProvider = (
         setEditingComment,
         setCurrentSort,
         playTrack,
-        handleLoadMoreReplies,
-        loadMorePages: loadMore,
-        handleMuteEntityNotifications
+        loadMorePages: loadMore
       }}
     >
       {children}

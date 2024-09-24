@@ -13,14 +13,21 @@ import { Nullable, decodeHashId, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
 // Updates the array of all comments
-const optimisticUpdateCommentList = (
-  entityId: number,
-  updateRecipe: (prevState: Comment[] | undefined) => void, // Could also return Comment[] but its easier to modify the prevState proxy array directly
-  dispatch: ThunkDispatch<any, any, any>,
-  userId?: number,
-  page: number = 0,
-  sortMethod: TrackCommentsSortMethodEnum = TrackCommentsSortMethodEnum.Top
-) => {
+const optimisticUpdateCommentList = ({
+  entityId,
+  updateRecipe, // Could also return Comment[] but its easier to modify the prevState proxy array directly
+  dispatch,
+  userId,
+  page = 0,
+  sortMethod = TrackCommentsSortMethodEnum.Top
+}: {
+  entityId: number
+  updateRecipe: (prevState: Comment[] | undefined) => void // Could also return Comment[] but its easier to modify the prevState proxy array directly
+  dispatch: ThunkDispatch<any, any, any>
+  userId?: number
+  page?: number
+  sortMethod?: TrackCommentsSortMethodEnum
+}) => {
   dispatch(
     commentsApi.util.updateQueryData(
       'getCommentsByTrackId',
@@ -124,7 +131,10 @@ const commentsApi = createApi({
     // Non-optimistically updated mutations (updates after confirmation)
     postComment: {
       async fetch(
-        { parentCommentId, ...commentData }: CommentMetadata,
+        {
+          parentCommentId,
+          ...commentData
+        }: CommentMetadata & { currentSort: TrackCommentsSortMethodEnum },
         { audiusSdk },
         { newId }: { newId: string }
       ) {
@@ -139,7 +149,14 @@ const commentsApi = createApi({
       },
       options: { type: 'mutation' },
       async onQueryStarted(
-        { entityId, body, userId, trackTimestampS, parentCommentId },
+        {
+          entityId,
+          body,
+          userId,
+          trackTimestampS,
+          parentCommentId,
+          currentSort
+        },
         { dispatch }
       ) {
         const newId = Math.floor(Math.random() * 1000000).toString() // TODO: need to request an unused id instead of a random number
@@ -174,9 +191,9 @@ const commentsApi = createApi({
           )
         } else {
           // If the comment is not a reply we need to add it to the list of root level comments
-          optimisticUpdateCommentList(
+          optimisticUpdateCommentList({
             entityId,
-            (prevState) => {
+            updateRecipe: (prevState) => {
               if (prevState && Array.isArray(prevState)) {
                 prevState.unshift(newComment) // add new comment to top of comment section
                 return prevState
@@ -185,15 +202,24 @@ const commentsApi = createApi({
               }
             },
             dispatch,
-            userId
-          )
+            userId,
+            sortMethod: currentSort
+          })
         }
         return { tempId: newId }
       }
     },
     deleteCommentById: {
       async fetch(
-        { id, userId }: { id: string; userId: ID; entityId: ID },
+        {
+          id,
+          userId
+        }: {
+          id: string
+          userId: ID
+          entityId: ID
+          currentSort: TrackCommentsSortMethodEnum
+        },
         { audiusSdk }
       ) {
         const decodedId = decodeHashId(id.toString())
@@ -211,13 +237,15 @@ const commentsApi = createApi({
         return await sdk.comments.deleteComment(commentData)
       },
       options: { type: 'mutation' },
-      onQueryStarted({ id, entityId, userId }, { dispatch }) {
-        optimisticUpdateCommentList(
+      onQueryStarted({ id, entityId, userId, currentSort }, { dispatch }) {
+        optimisticUpdateCommentList({
           entityId,
-          (prevState) => prevState?.filter((comment) => comment.id !== id),
+          updateRecipe: (prevState) =>
+            prevState?.filter((comment) => comment.id !== id),
           dispatch,
-          userId
-        )
+          userId,
+          sortMethod: currentSort
+        })
       }
     },
     // Optimistically updated mutations
@@ -347,10 +375,13 @@ const commentsApi = createApi({
         await sdk.comments.reportComment(userId, decodedId)
       },
       options: { type: 'mutation' },
-      async onQueryStarted({ id, entityId, userId }, { dispatch }) {
-        optimisticUpdateCommentList(
+      async onQueryStarted(
+        { id, entityId, userId, currentSort },
+        { dispatch }
+      ) {
+        optimisticUpdateCommentList({
           entityId,
-          (prevState) => {
+          updateRecipe: (prevState) => {
             const indexToRemove = prevState?.findIndex(
               (comment: Comment) => comment.id === id
             )
@@ -360,8 +391,9 @@ const commentsApi = createApi({
             return prevState
           },
           dispatch,
-          userId
-        )
+          userId,
+          sortMethod: currentSort
+        })
       }
     }
   }

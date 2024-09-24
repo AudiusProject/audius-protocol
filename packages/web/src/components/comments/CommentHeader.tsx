@@ -29,7 +29,7 @@ export const CommentHeader = (props: CommentHeaderProps) => {
   return (
     <Flex justifyContent='space-between' w='100%'>
       <Text variant='title' size='l'>
-        Comments ({!isLoading ? commentCount : '...'})
+        Comments {!isLoading ? `(${commentCount})` : null}
       </Text>
       {isEntityOwner && !isLoading ? (
         <PopupMenu

@@ -2,6 +2,7 @@ import { Comment, CommentMetadata, ReplyComment } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { getKeyFromFetchArgs } from '~/audius-query/utils'
+import { useStatusChange } from '~/hooks'
 import { CommonState } from '~/store'
 
 import {
@@ -16,8 +17,13 @@ import {
 import { useCurrentCommentSection } from './commentsContext'
 
 export const usePostComment = () => {
-  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
+  const { currentUserId, entityId, entityType, currentSort, setIsMutating } =
+    useCurrentCommentSection()
   const [postComment, postCommentResponse] = useAQueryPostComment()
+  useStatusChange(postCommentResponse.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
 
   const wrappedHandler = async (
     message: string,
@@ -25,6 +31,7 @@ export const usePostComment = () => {
     trackTimestampS?: number
   ) => {
     if (currentUserId) {
+      setIsMutating(true)
       postComment({
         userId: currentUserId,
         entityId,
@@ -32,7 +39,8 @@ export const usePostComment = () => {
         body: message,
         // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
         parentCommentId,
-        trackTimestampS
+        trackTimestampS,
+        currentSort
       })
     }
   }
@@ -68,9 +76,15 @@ export const useCommentPostStatus = (comment: Comment | ReplyComment) => {
 
 export const useReactToComment = () => {
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, setIsMutating } =
+    useCurrentCommentSection()
+  useStatusChange(reactToCommentResponse.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
   const wrappedHandler = async (commentId: string, isLiked: boolean) => {
     if (currentUserId) {
+      setIsMutating(true)
       reactToComment({
         id: commentId,
         userId: currentUserId,
@@ -83,10 +97,15 @@ export const useReactToComment = () => {
 }
 
 export const useEditComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
+  const { currentUserId, setIsMutating } = useCurrentCommentSection()
   const [editComment, editCommentResponse] = useEditCommentById()
+  useStatusChange(editCommentResponse.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
   const wrappedHandler = async (commentId: string, newMessage: string) => {
     if (currentUserId) {
+      setIsMutating(true)
       editComment({ id: commentId, newMessage, userId: currentUserId })
     }
   }
@@ -94,10 +113,15 @@ export const useEditComment = () => {
 }
 
 export const usePinComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
+  const { currentUserId, setIsMutating } = useCurrentCommentSection()
   const [pinComment, pinCommentResponse] = usePinCommentById()
+  useStatusChange(pinCommentResponse.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
   const wrappedHandler = (commentId: string, isPinned: boolean) => {
     if (currentUserId) {
+      setIsMutating(true)
       pinComment({ id: commentId, userId: currentUserId, isPinned })
     }
   }
@@ -105,10 +129,16 @@ export const usePinComment = () => {
 }
 
 export const useReportComment = () => {
-  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { currentUserId, entityId, setIsMutating } = useCurrentCommentSection()
+
   const [reportComment, response] = useReportCommentById()
+  useStatusChange(response.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
   const wrappedHandler = (commentId: string) => {
     if (currentUserId) {
+      setIsMutating(true)
       reportComment({ id: commentId, userId: currentUserId, entityId })
     }
   }
@@ -116,12 +146,22 @@ export const useReportComment = () => {
 }
 
 export const useDeleteComment = () => {
-  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { currentUserId, entityId, currentSort, setIsMutating } =
+    useCurrentCommentSection()
   const [deleteComment, response] = useDeleteCommentById()
-
+  useStatusChange(response.status, {
+    onSuccess: () => setIsMutating(false),
+    onError: () => setIsMutating(false)
+  })
   const wrappedHandler = (commentId: string) => {
     if (currentUserId) {
-      deleteComment({ id: commentId, userId: currentUserId, entityId })
+      setIsMutating(true)
+      deleteComment({
+        id: commentId,
+        userId: currentUserId,
+        entityId,
+        currentSort
+      })
     }
   }
   return [wrappedHandler, response] as const

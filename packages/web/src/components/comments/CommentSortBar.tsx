@@ -9,23 +9,30 @@ const messages = {
 }
 
 export const CommentSortBar = () => {
-  const { currentSort, setCurrentSort } = useCurrentCommentSection()
+  const { currentSort, setCurrentSort, isMutating } = useCurrentCommentSection()
   return (
     <Flex gap='s'>
       <SelectablePill
         label={messages.top}
         isSelected={currentSort === TrackCommentsSortMethodEnum.Top}
         onClick={() => setCurrentSort(TrackCommentsSortMethodEnum.Top)}
+        disabled={isMutating && currentSort !== TrackCommentsSortMethodEnum.Top}
       />
       <SelectablePill
         label={messages.newest}
         isSelected={currentSort === TrackCommentsSortMethodEnum.Newest}
         onClick={() => setCurrentSort(TrackCommentsSortMethodEnum.Newest)}
+        disabled={
+          isMutating && currentSort !== TrackCommentsSortMethodEnum.Newest
+        }
       />
       <SelectablePill
         label={messages.timestamp}
         isSelected={currentSort === TrackCommentsSortMethodEnum.Timestamp}
         onClick={() => setCurrentSort(TrackCommentsSortMethodEnum.Timestamp)}
+        disabled={
+          isMutating && currentSort !== TrackCommentsSortMethodEnum.Timestamp
+        }
       />
     </Flex>
   )
