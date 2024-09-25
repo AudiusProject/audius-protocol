@@ -692,7 +692,7 @@ access_info_parser = current_user_parser.copy()
 access_info_parser.add_argument(
     "include_network_cut",
     required=False,
-    type=inputs.bool,
+    type=inputs.boolean,
     description="Whether to include the staking system as a recipient",
 )
 
