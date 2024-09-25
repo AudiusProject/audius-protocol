@@ -7,6 +7,7 @@ from src.queries.get_notifications import (
     ApproveManagerNotification,
     ChallengeRewardNotification,
     ClaimableRewardNotification,
+    CommentMentionNotification,
     CommentNotification,
     CommentThreadNotification,
     CosignRemixNotification,
@@ -696,7 +697,25 @@ def extend_comment_thread(action: NotificationAction):
             "type": data["type"],
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
-            "parent_comment_user_id": encode_int_id(data["parent_comment_user_id"]),
+            "comment_user_id": encode_int_id(data["comment_user_id"]),
+        },
+    }
+
+
+def extend_comment_mention(action: NotificationAction):
+    data: CommentMentionNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "type": data["type"],
+            "entity_id": encode_int_id(data["entity_id"]),
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
         },
     }
@@ -734,4 +753,5 @@ notification_action_handler = {
     "announcement": extend_announcement,
     "comment": extend_comment,
     "comment_thread": extend_comment_thread,
+    "comment_mention": extend_comment_mention,
 }

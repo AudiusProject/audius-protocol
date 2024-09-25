@@ -24,7 +24,8 @@ export const usePostComment = () => {
   const wrappedHandler = async (
     message: string,
     parentCommentId?: ID,
-    trackTimestampS?: number
+    trackTimestampS?: number,
+    mentions?: ID[]
   ) => {
     if (currentUserId) {
       postComment({
@@ -33,7 +34,8 @@ export const usePostComment = () => {
         entityType,
         body: message,
         parentCommentId,
-        trackTimestampS
+        trackTimestampS,
+        mentions
       })
     }
   }
@@ -86,9 +88,18 @@ export const useReactToComment = () => {
 export const useEditComment = () => {
   const { currentUserId } = useCurrentCommentSection()
   const [editComment, editCommentResponse] = useEditCommentById()
-  const wrappedHandler = async (commentId: ID, newMessage: string) => {
+  const wrappedHandler = async (
+    commentId: ID,
+    newMessage: string,
+    mentions?: ID[]
+  ) => {
     if (currentUserId) {
-      editComment({ id: commentId, newMessage, userId: currentUserId })
+      editComment({
+        id: commentId,
+        newMessage,
+        userId: currentUserId,
+        mentions
+      })
     }
   }
   return [wrappedHandler, editCommentResponse] as const

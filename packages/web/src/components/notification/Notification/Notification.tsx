@@ -10,6 +10,7 @@ import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
+import { CommentMentionNotification } from './CommentMentionNotification'
 import { CommentNotification } from './CommentNotification'
 import { CommentThreadNotification } from './CommentThreadNotification'
 import { FavoriteNotification } from './FavoriteNotification'
@@ -140,6 +141,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.CommentThread: {
         return <CommentThreadNotification notification={notification} />
+      }
+      case NotificationType.CommentMention: {
+        return <CommentMentionNotification notification={notification} />
       }
       default: {
         return null

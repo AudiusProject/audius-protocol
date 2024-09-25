@@ -3,7 +3,7 @@ import { MouseEventHandler, useCallback } from 'react'
 import { useGetCurrentUserId } from '@audius/common/api'
 import {
   notificationsSelectors,
-  CommentThreadNotification as CommentThreadNotificationType
+  CommentMentionNotification as CommentMentionNotificationType
 } from '@audius/common/store'
 import { IconMessage } from '@audius/harmony'
 import { push } from 'connected-react-router'
@@ -29,16 +29,16 @@ import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  replied: ' replied to your comment on',
+  mentioned: ' tagged you in a comment on ',
   your: 'your'
 }
 
-type CommentThreadNotificationProps = {
-  notification: CommentThreadNotificationType
+type CommentMentionNotificationProps = {
+  notification: CommentMentionNotificationType
 }
 
-export const CommentThreadNotification = (
-  props: CommentThreadNotificationProps
+export const CommentMentionNotification = (
+  props: CommentMentionNotificationProps
 ) => {
   const { notification } = props
   const { id, userIds, entityType, timeLabel, isViewed } = notification
@@ -99,7 +99,7 @@ export const CommentThreadNotification = (
         {otherUsersCount > 0 ? (
           <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
         ) : null}
-        {messages.replied}{' '}
+        {messages.mentioned}{' '}
         {isOwner ? (
           messages.your
         ) : (

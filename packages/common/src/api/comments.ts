@@ -220,12 +220,14 @@ const commentsApi = createApi({
           id,
           userId,
           newMessage,
-          entityType = EntityType.TRACK // Comments only on tracks for now; likely to expand to collections in the future
+          entityType = EntityType.TRACK,
+          mentions
         }: {
           id: ID
           userId: ID
           newMessage: string
           entityType?: EntityType
+          mentions?: ID[]
         },
         { audiusSdk }
       ) {
@@ -233,7 +235,8 @@ const commentsApi = createApi({
           body: newMessage,
           userId,
           entityId: id,
-          entityType
+          entityType,
+          mentions
         }
         const sdk = await audiusSdk()
         await sdk.comments.editComment(commentData)

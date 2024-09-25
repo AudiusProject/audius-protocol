@@ -171,6 +171,7 @@ class NotificationType(str, Enum):
     CLAIMABLE_REWARD = "claimable_reward"
     COMMENT = "comment"
     COMMENT_THREAD = "comment_thread"
+    COMMENT_MENTION = "comment_mention"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -457,7 +458,13 @@ class CommentThreadNotification(TypedDict):
     type: str
     entity_id: int
     entity_user_id: int
-    parent_comment_user_id: int
+    comment_user_id: int
+
+
+class CommentMentionNotification(TypedDict):
+    type: str
+    entity_id: int
+    entity_user_id: int
     comment_user_id: int
 
 
@@ -490,6 +497,7 @@ NotificationData = Union[
     UsdcPurchaseSellerNotification,
     CommentNotification,
     CommentThreadNotification,
+    CommentMentionNotification,
 ]
 
 

@@ -235,6 +235,7 @@ comment_metadata_format = {
     "entity_id": None,
     "entity_type": None,
     "parent_comment_id": None,
+    "mentions": None,
     "track_timestamp_s": None,
 }
 
