@@ -9,7 +9,7 @@ export type ComposerInputProps = {
   entityId?: ID
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
-  onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
+  onSubmit?: (value: string, linkEntities: LinkEntity[], mentions: ID[]) => void
   presetMessage?: string
   isLoading?: boolean
 } & Pick<

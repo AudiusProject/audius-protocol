@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
-import type { CommentThreadNotification as CommentThreadNotificationType } from '@audius/common/store'
+import type { CommentMentionNotification as CommentMentionNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
@@ -24,16 +24,16 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
-  replied: ' replied to your comment on',
+  mentioned: ' tagged you in a comment on',
   your: 'your'
 }
 
-type CommentThreadNotificationProps = {
-  notification: CommentThreadNotificationType
+type CommentMentionNotificationProps = {
+  notification: CommentMentionNotificationType
 }
 
-export const CommentThreadNotification = (
-  props: CommentThreadNotificationProps
+export const CommentMentionNotification = (
+  props: CommentMentionNotificationProps
 ) => {
   const { notification } = props
   const { userIds, entityType } = notification
@@ -69,7 +69,7 @@ export const CommentThreadNotification = (
       <NotificationText>
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.replied}{' '}
+        {messages.mentioned}{' '}
         {isOwner ? messages.your : <UserNameLink user={entity.user} isOwner />}{' '}
         {entityType.toLowerCase()} <EntityLink entity={entity} />
       </NotificationText>

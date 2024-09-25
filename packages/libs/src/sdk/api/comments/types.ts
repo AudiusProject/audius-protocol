@@ -8,4 +8,5 @@ export type CommentMetadata = {
   entityType?: EntityType // For now just tracks are supported, but we left the door open for more
   parentCommentId?: number
   trackTimestampS?: number
+  mentions?: number[]
 }

@@ -1,5 +1,6 @@
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
@@ -64,6 +65,25 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record)
 
+    if params.metadata.get("mentions"):
+        new_mention_user_ids = set(params.metadata["mentions"])
+        for mention_user_id in new_mention_user_ids:
+            comment_mention = CommentMention(
+                comment_id=comment_id,
+                user_id=mention_user_id,
+                txhash=params.txhash,
+                blockhash=params.event_blockhash,
+                blocknumber=params.block_number,
+                created_at=params.block_datetime,
+                updated_at=params.block_datetime,
+                is_delete=False,
+            )
+            params.add_record(
+                (comment_id, mention_user_id),
+                comment_mention,
+                EntityType.COMMENT_MENTION,
+            )
+
     if params.metadata["parent_comment_id"]:
         existing_comment_thread = (
             params.session.query(CommentThread)
@@ -107,6 +127,44 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.text = params.metadata["body"]
 
     params.add_record(comment_id, edited_comment)
+
+    if "mentions" in params.metadata:
+        new_mentions = set(params.metadata["mentions"])
+
+        existing_mentions = {
+            k[1]: v
+            for k, v in params.existing_records[
+                EntityType.COMMENT_MENTION.value
+            ].items()
+            if k[0] == comment_id
+        }
+        existing_mention_ids = set(existing_mentions.keys())
+
+        # Delete mentions that are not in the new mentions list
+        for mention_user_id in existing_mention_ids - new_mentions:
+            existing_mention = existing_mentions[mention_user_id]
+
+            if existing_mention:
+                existing_mention.is_delete = True
+
+                params.add_record((comment_id, mention_user_id), existing_mention)
+
+        # Add new mentions
+        for mention_user_id in new_mentions - existing_mention_ids:
+            new_mention = CommentMention(
+                comment_id=comment_id,
+                user_id=mention_user_id,
+                txhash=params.txhash,
+                blockhash=params.event_blockhash,
+                blocknumber=params.block_number,
+                created_at=params.block_datetime,
+                updated_at=params.block_datetime,
+                is_delete=False,
+            )
+
+            params.add_record(
+                (comment_id, mention_user_id), new_mention, EntityType.COMMENT_MENTION
+            )
 
 
 def delete_comment(params: ManageEntityParameters):
