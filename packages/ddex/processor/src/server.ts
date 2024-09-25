@@ -16,7 +16,12 @@ import {
   userRepo,
   xmlRepo,
 } from './db'
-import { DDEXRelease, parseDdexXml, reParsePastXml } from './parseDelivery'
+import {
+  DDEXContributor,
+  DDEXRelease,
+  parseDdexXml,
+  reParsePastXml,
+} from './parseDelivery'
 import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { readAssetWithCaching } from './s3poller'
 import { sources } from './sources'
