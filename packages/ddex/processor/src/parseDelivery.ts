@@ -243,6 +243,15 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
     if (year && text) return { year, text }
   }
 
+  function parseGenres($el: CH): [genre: string, subGenre: string] {
+    const genres = toTexts($el.find('GenreText'))
+    let subGenres = toTexts($el.find('SubGenre'))
+    if (!subGenres.length) {
+      subGenres = genres.slice(1)
+    }
+    return [genres[0] || '', subGenres[0] || '']
+  }
+
   function parseContributor(
     tagName:
       | 'DisplayArtist'
@@ -392,6 +401,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
   $('ResourceList > SoundRecording').each((_, el) => {
     const $el = $(el)
 
+    const [genre, subGenre] = parseGenres($el)
+
     const recording: DDEXSoundRecording = {
       ref: $el.find('ResourceReference').text(),
       isrc: $el.find('ISRC').text(),
@@ -407,8 +418,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       ),
       labelName: $el.find('LabelName').text(),
       duration: parseDuration($el.find('Duration').text()),
-      genre: $el.find('GenreText').text(),
-      subGenre: $el.find('SubGenre').text(),
+      genre: genre,
+      subGenre: subGenre,
       releaseDate: $el
         .find('OriginalResourceReleaseDate, ResourceReleaseDate')
         .first()
@@ -429,8 +440,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
     }
 
     recording.audiusGenre = resolveAudiusGenre(
-      recording.subGenre,
-      recording.genre
+      recording.genre,
+      recording.subGenre
     )
 
     soundResources[recording.ref] = recording
@@ -472,6 +483,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
         $el.find('ReleaseDate').text() ||
         $el.find('GlobalOriginalReleaseDate').text()
 
+      const [genre, subGenre] = parseGenres($el)
+
       const release: DDEXRelease = {
         ref,
         title: $el.find('ReferenceTitle TitleText').text(),
@@ -483,8 +496,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
           $el
         ),
         labelName: $el.find('LabelName').text(),
-        genre: $el.find('GenreText').text(),
-        subGenre: $el.find('SubGenre').text(),
+        genre,
+        subGenre,
         releaseIds: parseReleaseIds($el),
         releaseDate,
         releaseType: $el.find('ReleaseType').text(),
@@ -502,7 +515,7 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       }
 
       // resolve audius genre
-      release.audiusGenre = resolveAudiusGenre(release.subGenre, release.genre)
+      release.audiusGenre = resolveAudiusGenre(release.genre, release.subGenre)
       if (!release.audiusGenre) {
         release.problems.push(`NoGenre`)
       }
@@ -631,8 +644,14 @@ function resolveAudiusGenre(
   }
 
   // hard code some genre matching??
-  if (subgenre == 'Dance') {
+  if (genre == 'Dance') {
     return Genre.ELECTRONIC
+  }
+  if (genre == 'Indie Rock') {
+    return Genre.ALTERNATIVE
+  }
+  if (genre == 'Inspirational') {
+    return Genre.AMBIENT
   }
 
   // maybe try some edit distance magic?

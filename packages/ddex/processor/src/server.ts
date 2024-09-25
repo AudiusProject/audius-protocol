@@ -321,7 +321,7 @@ app.get('/releases/:key', (c) => {
       <div style="display: flex; gap: 20px">
         <div style="text-align: center">
           <img
-            src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+            src="/release/${row.key}/images/${parsedRelease.images[0]?.ref}"
             style="width: 200px; height: 200px; display: block; margin-bottom: 10px"
           />
           <mark>${parsedRelease.parentalWarningType}</mark>
