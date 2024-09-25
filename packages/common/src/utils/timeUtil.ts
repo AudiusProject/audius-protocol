@@ -66,3 +66,10 @@ export const getLocalTimezone = () => {
 }
 
 export const timestampRegex = /(?:([0-9]?\d):)?([0-5]?\d):([0-5]\d)/gm
+
+export const getDurationFromTimestampMatch = (match: RegExpMatchArray) => {
+  const h = match[1] ? Number(match[1]) : 0
+  const m = match[2] ? Number(match[2]) : 0
+  const s = match[3] ? Number(match[3]) : 0
+  return s + m * 60 + h * 60 * 60
+}

@@ -1,17 +1,83 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { timestampRegex } from '@audius/common/utils'
+import {
+  playerActions,
+  PurchaseableContentType,
+  trackPageLineupActions,
+  trackPageSelectors,
+  usePremiumContentPurchaseModal
+} from '@audius/common/store'
+import {
+  getDurationFromTimestampMatch,
+  timestampRegex
+} from '@audius/common/utils'
 import type { CommentTextProps } from '@audius/harmony/src/components/comments/CommentText/types'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
+import { isContentUSDCPurchaseGated, ModalSource } from '@audius/common/models'
+import { useGatedContentAccess } from '@audius/common/hooks'
+const { tracksActions } = trackPageLineupActions
+const { getLineup } = trackPageSelectors
+
+const { seek } = playerActions
 
 const MAX_LINES = 3
+
+type TimestampLinkProps = {
+  timestamp: string
+  timestampSeconds: number
+}
+
+const TimestampLink = (props: TimestampLinkProps) => {
+  const { timestamp, timestampSeconds } = props
+
+  const dispatch = useDispatch()
+  const { track } = useCurrentCommentSection()
+  const lineup = useSelector(getLineup)
+  const { track_id: trackId, stream_conditions: streamConditions } = track
+
+  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const { hasStreamAccess } = useGatedContentAccess(track)
+
+  const isLocked = isUSDCPurchaseGated && !hasStreamAccess
+
+  const uid = lineup?.entries?.[0]?.uid
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+
+  return (
+    <TextLink
+      onPress={() => {
+        if (isLocked) {
+          openPremiumContentPurchaseModal(
+            { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+            {
+              source: ModalSource.Comment
+            }
+          )
+        } else {
+          dispatch(tracksActions.play(uid))
+          dispatch(seek({ seconds: timestampSeconds }))
+        }
+      }}
+      variant='visible'
+      size='s'
+    >
+      {timestamp}
+    </TextLink>
+  )
+}
 
 export const CommentText = ({ children, isEdited }: CommentTextProps) => {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const {
+    track: { duration }
+  } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
     (e) => {
@@ -44,17 +110,20 @@ export const CommentText = ({ children, isEdited }: CommentTextProps) => {
         matchers={[
           {
             pattern: timestampRegex,
-            renderLink: (match) => {
-              return (
-                <TextLink
-                  onPress={() => {
-                    // TODO: play track at timestamp
-                  }}
-                  variant='visible'
-                  size='s'
-                >
-                  {match}
-                </TextLink>
+            renderLink: (text) => {
+              const matches = [...text.matchAll(timestampRegex)]
+              if (matches.length === 0) return null
+
+              const timestampSeconds = getDurationFromTimestampMatch(matches[0])
+              const showLink = timestampSeconds <= duration
+
+              return showLink ? (
+                <TimestampLink
+                  timestamp={text}
+                  timestampSeconds={timestampSeconds}
+                />
+              ) : (
+                <Text size='s'>{text}</Text>
               )
             }
           }

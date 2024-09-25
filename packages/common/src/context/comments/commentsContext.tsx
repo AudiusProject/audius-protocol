@@ -20,7 +20,8 @@ import {
   PaginatedStatus,
   Comment,
   ReplyComment,
-  Status
+  Status,
+  UserTrackMetadata
 } from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
@@ -43,6 +44,7 @@ type CommentSectionContextType = {
   artistId: ID
   isEntityOwner: boolean
   commentCount: number
+  track: UserTrackMetadata
   playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
@@ -126,6 +128,7 @@ export const CommentSectionProvider = (
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        track,
         reset,
         hasMorePages,
         currentSort,
