@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, PrimaryKeyConstraint, Text
+from sqlalchemy import Column, Integer, PrimaryKeyConstraint
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
