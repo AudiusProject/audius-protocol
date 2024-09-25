@@ -8,7 +8,7 @@ import (
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 )
 
-func (core *CoreApplication) isValidPlayTransaction(_ context.Context, stx *gen_proto.SignedTransaction) error {
+func (core *CoreApplication) isValidPlayTransaction(_ context.Context, _ *gen_proto.SignedTransaction) error {
 	return nil
 }
 
