@@ -10,6 +10,11 @@ VERSION_LDFLAG := -X main.Version=$(shell git rev-parse HEAD)
 # Intentionally kept separate to allow dynamic versioning
 #LDFLAGS := ""
 
+# WIP
+bin/audiusd: $(SRC)
+	@echo "Building audiusd for local platform and architecture..."
+	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audiusd-native ./cmd/audiusd
+
 bin/audius-ctl-native: $(SRC)
 	@echo "Building audius-ctl for local platform and architecture..."
 	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-native ./cmd/audius-ctl
