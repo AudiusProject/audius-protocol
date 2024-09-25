@@ -64,9 +64,7 @@ const LabelWithCount = (props: {
   return (
     <Text>
       {label}
-      {isSelected && count !== undefined ? (
-        <Text color='subdued'> ({count})</Text>
-      ) : null}
+      {isSelected && count ? <Text color='subdued'> ({count})</Text> : null}
     </Text>
   )
 }
