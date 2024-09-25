@@ -96,13 +96,11 @@ const HandleLink = ({
     <TextLink
       {...other}
       to={{ screen: 'Profile', params: { id: user.user_id } }}
-      variant='visible'
-      size='s'
     >
       {handle}
     </TextLink>
   ) : (
-    <Text {...other} variant={other.textVariant} size='s'>
+    <Text {...other} variant={other.textVariant}>
       {handle}
     </Text>
   )
@@ -218,6 +216,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         variant='visible'
         textVariant={other.variant}
         handle={text}
+        {...linkProps}
       />
     ) : (
       renderText(text)
