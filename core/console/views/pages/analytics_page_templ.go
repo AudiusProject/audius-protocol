@@ -41,7 +41,7 @@ func (p *Pages) AnalyticsPageHTML() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div>analytics</div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"uk-container uk-padding-remove-horizontal\"><div class=\"uk-grid-small uk-child-width-1-4@m\" uk-grid><div><div class=\"uk-card uk-card-default uk-card-body\">Card 1</div></div><div><div class=\"uk-card uk-card-default uk-card-body\">Card 2</div></div><div><div class=\"uk-card uk-card-default uk-card-body\">Card 3</div></div><div><div class=\"uk-card uk-card-default uk-card-body\">Card 4</div></div></div><div class=\"uk-margin-top\"><div class=\"uk-card uk-card-large uk-card-default uk-card-body\">Large Card</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
