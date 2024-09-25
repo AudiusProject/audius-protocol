@@ -2,9 +2,10 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"errors"
+	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/joho/godotenv"
 )
 
@@ -109,9 +111,14 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		}
 	}
 
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("Failed to get user home directory: %v", err)
+	}
+
 	var cfg Config
 	// comet config
-	cfg.RootDir = os.Getenv("audius_core_root_dir")
+	cfg.RootDir = getEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
 	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
 	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
 
@@ -143,8 +150,12 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
+	// make it out of the box
 	if cfg.Environment == "" {
-		return nil, errors.New("no environment set")
+		cfg.Environment = "prod"
+	}
+	if cfg.DelegatePrivateKey == "" {
+		cfg.DelegatePrivateKey, _ = keyGen()
 	}
 
 	ethAddress, err := common.PrivKeyHexToAddress(cfg.DelegatePrivateKey)
@@ -199,6 +210,18 @@ func getEnvWithDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func keyGen() (pKey string, addr string) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %v", err)
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	privateKeyStr := hex.EncodeToString(privateKeyBytes)
+	address := crypto.PubkeyToAddress(privateKey.PublicKey)
+	fmt.Printf("address: %s, pKey: %s", address, privateKeyStr)
+	return privateKeyStr, address.Hex()
 }
 
 func (c *Config) RunDownMigrations() bool {
