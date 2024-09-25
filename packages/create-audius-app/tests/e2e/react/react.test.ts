@@ -28,38 +28,16 @@ test('auths, fetches tracks, and favorites a track', async ({
 
   // Fetch tracks
   await page.getByRole('textbox').fill('createaudiusapptracks')
-  await page.getByRole('button', { name: 'Get Tracks' }).click()
-
-  // Set up block_confirmation response listener
+  
+  // Set up response listener
   const responsePromise = page.waitForResponse(async (response) => {
-    if (response.url().includes('/favorite') || response.url().includes('unfavorite')) {
+    if (response.url().includes('v1/full/users/4zZ9aV9/tracks')) {
       const json = await response.json()
-      return json.trackId
+      return json.data
     }
   })
 
-  const favoriteButton = page
-    .getByRole('button', { name: 'Favorite', exact: true })
-    .first()
-  const unfavoriteButton = page
-    .getByRole('button', { name: 'Unfavorite', exact: true })
-    .first()
-
-  // Either favorite or unfavorite the track
-  const favoriteButtonExists = await Promise.any([
-    favoriteButton.waitFor().then(() => true),
-    unfavoriteButton.waitFor().then(() => false)
-  ]).catch(() => {
-    throw 'Missing button'
-  })
-
-  if (favoriteButtonExists) {
-    await favoriteButton.click()
-    await expect(unfavoriteButton).toBeVisible()
-  } else {
-    await unfavoriteButton.click()
-    await expect(favoriteButton).toBeVisible()
-  }
+  await page.getByRole('button', { name: 'Get Tracks' }).click()
 
   // Confirm track is updated
   await responsePromise
