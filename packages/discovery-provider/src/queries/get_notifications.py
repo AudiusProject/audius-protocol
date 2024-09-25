@@ -11,7 +11,6 @@ from src.models.tracks.track import Track
 
 logger = logging.getLogger(__name__)
 
-
 notification_groups_sql = text(
     """
 --- Create Intervals of user seen
@@ -171,6 +170,7 @@ class NotificationType(str, Enum):
     APPROVE_MANAGER_REQUEST = "approve_manager_request"
     CLAIMABLE_REWARD = "claimable_reward"
     COMMENT = "comment"
+    COMMENT_THREAD = "comment_thread"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -453,6 +453,14 @@ class CommentNotification(TypedDict):
     user_id: int
 
 
+class CommentThreadNotification(TypedDict):
+    type: str
+    entity_id: int
+    entity_user_id: int
+    parent_comment_user_id: int
+    comment_user_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -481,6 +489,7 @@ NotificationData = Union[
     UsdcPurchaseBuyerNotification,
     UsdcPurchaseSellerNotification,
     CommentNotification,
+    CommentThreadNotification,
 ]
 
 

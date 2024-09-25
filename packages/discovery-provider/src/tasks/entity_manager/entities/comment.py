@@ -79,6 +79,11 @@ def create_comment(params: ManageEntityParameters):
         comment_thread = CommentThread(
             parent_comment_id=params.metadata["parent_comment_id"],
             comment_id=comment_id,
+            txhash=params.txhash,
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+            created_at=params.block_datetime,
+            updated_at=params.block_datetime,
         )
         params.session.add(comment_thread)
 

@@ -158,6 +158,7 @@ export const GetNotificationsValidTypesEnum = {
     RequestManager: 'request_manager',
     ApproveManagerRequest: 'approve_manager_request',
     ClaimableReward: 'claimable_reward',
-    Comment: 'comment'
+    Comment: 'comment',
+    CommentThread: 'comment_thread'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

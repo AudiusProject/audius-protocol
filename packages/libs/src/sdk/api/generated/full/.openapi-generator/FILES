@@ -34,6 +34,9 @@ models/CollectionLibraryResponseFull.ts
 models/CommentNotification.ts
 models/CommentNotificationAction.ts
 models/CommentNotificationActionData.ts
+models/CommentThreadNotification.ts
+models/CommentThreadNotificationAction.ts
+models/CommentThreadNotificationActionData.ts
 models/CosignNotification.ts
 models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts

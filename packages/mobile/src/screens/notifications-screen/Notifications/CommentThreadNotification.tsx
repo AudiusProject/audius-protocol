@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
-import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
+import type { CommentThreadNotification as CommentThreadNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
@@ -23,14 +24,17 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
-  commented: ' commented on your'
+  replied: ' replied to your comment on',
+  your: 'your'
 }
 
-type CommentNotificationProps = {
-  notification: CommentNotificationType
+type CommentThreadNotificationProps = {
+  notification: CommentThreadNotificationType
 }
 
-export const CommentNotification = (props: CommentNotificationProps) => {
+export const CommentThreadNotification = (
+  props: CommentThreadNotificationProps
+) => {
   const { notification } = props
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
@@ -48,11 +52,14 @@ export const CommentNotification = (props: CommentNotificationProps) => {
     [notification]
   )
 
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const isOwner = entity?.user?.user_id === currentUserId
+
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  if (!users || !firstUser || !entity) return null
+  if (!users || !firstUser || !entity || !entity.user) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -62,8 +69,9 @@ export const CommentNotification = (props: CommentNotificationProps) => {
       <NotificationText>
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.commented} {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} />
+        {messages.replied}{' '}
+        {isOwner ? messages.your : <UserNameLink user={entity.user} />}{' '}
+        {entityType.toLowerCase()} <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>
   )
