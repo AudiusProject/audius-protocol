@@ -5,14 +5,16 @@ declare
   entity_user_id int;
   entity_id int;
   entity_type text;
+  blocknumber int;
+  created_at timestamp without time zone;
 begin
   select comments.user_id, comments.entity_id, comments.entity_type 
   into parent_comment_user_id, entity_id, entity_type 
   from comments 
   where comment_id = new.parent_comment_id;
 
-  select comments.user_id 
-  into comment_user_id 
+  select comments.user_id, comments.blocknumber, comments.created_at
+  into comment_user_id, blocknumber, created_at
   from comments 
   where comment_id = new.comment_id;
 
@@ -27,9 +29,9 @@ begin
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
         ( 
-          new.blocknumber,
+          blocknumber,
           ARRAY [parent_comment_user_id],
-          new.created_at, 
+          created_at, 
           'comment_thread',
           comment_user_id,
           'comment_thread:' || new.parent_comment_id,

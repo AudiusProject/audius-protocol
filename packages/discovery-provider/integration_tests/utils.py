@@ -819,11 +819,6 @@ def populate_mock_db(db, entities, block_offset=None):
             comment_thread_record = CommentThread(
                 parent_comment_id=comment_threads_meta.get("parent_comment_id", i),
                 comment_id=comment_threads_meta.get("comment_id", i),
-                created_at=comment_threads_meta.get("created_at", datetime.now()),
-                updated_at=comment_threads_meta.get("updated_at", datetime.now()),
-                txhash=comment_threads_meta.get("txhash", str(i + block_offset)),
-                blockhash=comment_threads_meta.get("blockhash", str(i + block_offset)),
-                blocknumber=i + block_offset,
             )
             session.add(comment_thread_record)
         for i, comment_reactions_meta in enumerate(comment_reactions):
