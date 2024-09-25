@@ -5,7 +5,7 @@ import {
   useReactToComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/common/models'
 
 import { Flex, PlainButton, Text } from '@audius/harmony-native'
 
