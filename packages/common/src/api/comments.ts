@@ -12,7 +12,7 @@ import {
 } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Comment, ReplyComment, ID } from '~/models'
-import { Nullable, decodeHashId, encodeHashId } from '~/utils'
+import { Nullable, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
 // Updates the array of all comments
