@@ -3,7 +3,6 @@ import {
   useCommentPostStatus,
   useCurrentCommentSection
 } from '@audius/common/context'
-import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { css } from '@emotion/native'
@@ -87,7 +86,13 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink size='xs' variant='active'>
+                  <TextLink
+                    size='xs'
+                    variant='active'
+                    onPress={() => {
+                      // TODO
+                    }}
+                  >
                     {formatCommentTrackTimestamp(trackTimestampS)}
                   </TextLink>
                 </>
@@ -95,10 +100,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText>
-          {message}
-          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
-        </CommentText>
+        <CommentText isEdited={isEdited}>{message}</CommentText>
         {!hideActions ? (
           <CommentActionBar
             comment={comment}

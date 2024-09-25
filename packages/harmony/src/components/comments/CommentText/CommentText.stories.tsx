@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
 import { Divider, Paper } from 'components/layout'
-import { TextLink } from 'components/text-link'
 
 import { CommentText } from './CommentText'
 
@@ -28,8 +27,8 @@ export const Default: Story = {
       <CommentText>This is a test with some short text.</CommentText>
       <Divider />
       <CommentText>
-        This is a test to see <TextLink variant='visible'>1:24</TextLink> how
-        the new component for the comment body handles text of different sizes.
+        This is a test to see how the new component for the comment body handles
+        text of different sizes.
       </CommentText>
       <Divider />
       <CommentText>
@@ -76,8 +75,8 @@ export const MultiLine: Story = {
       border='strong'
     >
       <CommentText>
-        This is a test to see <TextLink variant='visible'>1:24</TextLink> how
-        the new component for the comment body handles text of different sizes.
+        This is a test to see how the new component for the comment body handles
+        text of different sizes.
       </CommentText>
     </Paper>
   )
