@@ -6,9 +6,10 @@ import {
   formatTrackName,
   formatUserName,
   isAudiusUrl,
+  restrictedHandles,
   squashNewLines
 } from '@audius/common/utils'
-import { ResolveApi } from '@audius/sdk'
+import { ResolveApi, sdk } from '@audius/sdk'
 import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
@@ -20,6 +21,12 @@ import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { useAsync } from 'react-use'
+import { useGetUserByHandle } from '@audius/common/api'
+import { accountSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
+
+const { getUserId } = accountSelectors
 
 const {
   instanceOfTrackResponse,
@@ -51,24 +58,19 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
   const shouldUnfurl = isAudiusUrl(url)
 
-  useEffect(() => {
+  useAsync(async () => {
     if (shouldUnfurl && !unfurledContent) {
-      const fn = async () => {
-        const sdk = await audiusSdk()
-        const res = await sdk.resolve({ url })
-        if (res.data) {
-          if (instanceOfTrackResponse(res)) {
-            setUnfurledContent(formatTrackName({ track: res.data }))
-          } else if (instanceOfPlaylistResponse(res)) {
-            setUnfurledContent(
-              formatCollectionName({ collection: res.data[0] })
-            )
-          } else if (instanceOfUserResponse(res)) {
-            setUnfurledContent(formatUserName({ user: res.data }))
-          }
+      const sdk = await audiusSdk()
+      const res = await sdk.resolve({ url })
+      if (res.data) {
+        if (instanceOfTrackResponse(res)) {
+          setUnfurledContent(formatTrackName({ track: res.data }))
+        } else if (instanceOfPlaylistResponse(res)) {
+          setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+        } else if (instanceOfUserResponse(res)) {
+          setUnfurledContent(formatUserName({ user: res.data }))
         }
       }
-      fn()
     }
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
@@ -76,6 +78,33 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
     <TextLink {...other} url={url}>
       {unfurledContent ?? children}
     </TextLink>
+  )
+}
+
+const HandleLink = ({
+  handle,
+  ...other
+}: TextLinkProps & { handle: string }) => {
+  const currentUserId = useSelector(getUserId)
+
+  const { data: user } = useGetUserByHandle({
+    handle: handle.replace('@', ''),
+    currentUserId
+  })
+
+  return user ? (
+    <TextLink
+      {...other}
+      to={{ screen: 'Profile', params: { id: user.user_id } }}
+      variant='visible'
+      size='s'
+    >
+      {handle}
+    </TextLink>
+  ) : (
+    <Text {...other} variant={other.textVariant} size='s'>
+      {handle}
+    </Text>
   )
 }
 
@@ -172,9 +201,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
           textVariant={other.variant}
           url={url}
           {...linkProps}
-        >
-          {text}
-        </Link>
+        />
       ) : (
         renderText(text)
       )
@@ -182,6 +209,20 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
+
+  const renderHandleLink = useCallback((text: string) => {
+    const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
+    return isHandleUnrestricted ? (
+      <HandleLink
+        {...other}
+        variant='visible'
+        textVariant={other.variant}
+        handle={text}
+      />
+    ) : (
+      renderText(text)
+    )
+  }, [])
 
   const renderText = useCallback(
     (text: string) => (
@@ -206,10 +247,24 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             }
             renderText={renderText}
             email
-            url
+            url={false}
             style={[{ marginBottom: 3 }, style]}
             text={squashNewLines(children) as string}
-            matchers={matchers}
+            matchers={[
+              // Handle matcher e.g. @handle
+              {
+                pattern: /@[a-zA-Z0-9_.]{1,15}/,
+                renderLink: renderHandleLink
+              },
+              // URL match
+              // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
+              {
+                pattern:
+                  /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/g
+              },
+              // custom matchers provided via props
+              ...(matchers ?? [])
+            ]}
           />
           {suffix}
         </Text>
