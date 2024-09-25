@@ -21,6 +21,8 @@ begin
   from tracks 
   where track_id = entity_id;
 
+  raise warning 'parent_comment_user_id: %, comment_user_id: %, entity_user_id: %, entity_id: %, entity_type: %', parent_comment_user_id, comment_user_id, entity_user_id, entity_id, entity_type;
+
   begin
     if comment_user_id != parent_comment_user_id then
       insert into notification

@@ -84,20 +84,22 @@ def create_comment(params: ManageEntityParameters):
                 EntityType.COMMENT_MENTION,
             )
 
-    if params.metadata["parent_comment_id"]:
+    if params.metadata.get("parent_comment_id"):
+        parent_comment_id = params.metadata.get("parent_comment_id")
         existing_comment_thread = (
             params.session.query(CommentThread)
             .filter_by(
-                parent_comment_id=params.metadata["parent_comment_id"],
+                parent_comment_id=parent_comment_id,
                 comment_id=comment_id,
             )
             .first()
         )
+
         if existing_comment_thread:
             return
 
         comment_thread = CommentThread(
-            parent_comment_id=params.metadata["parent_comment_id"],
+            parent_comment_id=parent_comment_id,
             comment_id=comment_id,
             txhash=params.txhash,
             blockhash=params.event_blockhash,
@@ -105,7 +107,9 @@ def create_comment(params: ManageEntityParameters):
             created_at=params.block_datetime,
             updated_at=params.block_datetime,
         )
-        params.session.add(comment_thread)
+        params.add_record(
+            (parent_comment_id, comment_id), comment_thread, EntityType.COMMENT_THREAD
+        )
 
 
 def update_comment(params: ManageEntityParameters):

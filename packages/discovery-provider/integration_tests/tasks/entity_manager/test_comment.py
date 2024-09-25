@@ -12,6 +12,7 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_thread import CommentThread
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 
@@ -584,3 +585,69 @@ def test_comment_mentions(app, mocker):
 
         assert comment_mentions[2].is_delete == False
         assert comment_mentions[2].user_id == 3
+
+
+def test_comment_threads(app, mocker):
+    "Tests threads are saved to db"
+
+    reply_comment_metadata = {
+        "entity_id": 1,
+        "entity_type": "Track",
+        "user_id": 1,
+        "body": "reply comment text",
+        "parent_comment_id": 1,
+    }
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+        "comments": [
+            {"comment_id": 1, "user_id": 2, "entity_id": 1, "entity_type": "Track"},
+        ],
+    }
+
+    tx_receipts = {
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(reply_comment_metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        comments = session.query(Comment).all()
+        assert len(comments) == 2
+        assert comments[1].text == "reply comment text"
+
+        comment_threads = session.query(CommentThread).all()
+        assert len(comment_threads) == 1
+
+        assert comment_threads[0].parent_comment_id == 1
+        assert comment_threads[0].comment_id == 2

@@ -9,7 +9,7 @@ class CommentThread(Base, RepresentableMixin):
 
     comment_id = Column(Integer)
     parent_comment_id = Column(Integer)
-    PrimaryKeyConstraint(comment_id, parent_comment_id)
+    PrimaryKeyConstraint(parent_comment_id, comment_id)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     txhash = Column(Text, nullable=False)
