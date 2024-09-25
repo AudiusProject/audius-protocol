@@ -485,17 +485,24 @@ const slice = createSlice({
         return
       }
 
-      // Update the chat metadata, but don't update recheck_permissions unless
-      // it's a message received from someone else
+      // Always update the last message, but don't update
+      // last_message_at if it's a blast message sent by current user,
+      // to avoid chat list re-sorting
+      const existingChat = getChat(state, chatId)
+      const changes = {
+        last_message: message.message,
+        ...(message.is_plaintext && isSelfMessage && !existingChat?.is_blast
+          ? {}
+          : { last_message_at: message.created_at })
+      }
+
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
-        changes: {
-          last_message: message.message,
-          last_message_at: message.created_at
-        }
+        changes
       })
 
-      // Return early if we've seen this message
+      // Return early if we've seen this message: don't update
+      // recheck_permissions unless it's a message received from someone else
       const existingMessage = getMessage(
         state.messages[chatId],
         message.message_id
@@ -520,7 +527,6 @@ const slice = createSlice({
       recalculatePreviousMessageHasTail(state.messages[chatId], 0)
 
       // Handle unread counts
-      const existingChat = getChat(state, chatId)
       if (!existingChat || existingChat.is_blast) return
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
