@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { isContentUSDCPurchaseGated, ModalSource } from '@audius/common/models'
 import {
   playerActions,
   PurchaseableContentType,
@@ -18,8 +20,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
-import { isContentUSDCPurchaseGated, ModalSource } from '@audius/common/models'
-import { useGatedContentAccess } from '@audius/common/hooks'
 const { tracksActions } = trackPageLineupActions
 const { getLineup } = trackPageSelectors
 

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGetUserByHandle } from '@audius/common/api'
+import { accountSelectors } from '@audius/common/store'
 import {
   formatCollectionName,
   formatTrackName,
@@ -9,22 +11,20 @@ import {
   restrictedHandles,
   squashNewLines
 } from '@audius/common/utils'
-import { ResolveApi, sdk } from '@audius/sdk'
+import { ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
 import type { LayoutRectangle, Text as TextRef } from 'react-native'
 import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
+import { useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { useAsync } from 'react-use'
-import { useGetUserByHandle } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
 
@@ -221,6 +221,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     ) : (
       renderText(text)
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const renderText = useCallback(
@@ -259,7 +260,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
               // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
               {
                 pattern:
-                  /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/g
+                  /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g
               },
               // custom matchers provided via props
               ...(matchers ?? [])
