@@ -1,10 +1,10 @@
 begin;
 
 alter table comment_threads
-add column if not exists created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+add column if not exists created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
 
 alter table comment_threads
-add column if not exists updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+add column if not exists updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
 
 alter table comment_threads add column if not exists txhash TEXT;
 
