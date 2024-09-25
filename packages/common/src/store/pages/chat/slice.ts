@@ -487,7 +487,8 @@ const slice = createSlice({
 
       // Always update the last message, but don't update
       // last_message_at if it's a blast message sent by current user,
-      // to avoid chat list re-sorting
+      // to avoid chat list re-sorting.
+      // Note: is_plaintext indicates that the message originated from a blast
       const existingChat = getChat(state, chatId)
       const changes = {
         last_message: message.message,
