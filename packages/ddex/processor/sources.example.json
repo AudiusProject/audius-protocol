@@ -2,7 +2,7 @@
   "sources": [
     {
       "env": "staging",
-      "name": "",
+      "name": "sourceA",
       "ddexKey": "",
       "ddexSecret": "",
       "awsKey": "",
