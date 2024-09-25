@@ -101,7 +101,13 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink size='xs' variant='active'>
+                  <TextLink
+                    size='xs'
+                    variant='active'
+                    onPress={() => {
+                      // TODO
+                    }}
+                  >
                     {formatCommentTrackTimestamp(trackTimestampS)}
                   </TextLink>
                 </>
@@ -109,10 +115,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText>
-          {message}
-          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
-        </CommentText>
+        <CommentText isEdited={isEdited}>{message}</CommentText>
         {!hideActions ? (
           <>
             <Flex direction='row' gap='l' alignItems='center'>

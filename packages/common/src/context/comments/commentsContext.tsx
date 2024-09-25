@@ -20,7 +20,7 @@ import {
   useGetCurrentUserId,
   useGetTrackById
 } from '../../api'
-import { ID, PaginatedStatus, Status } from '../../models'
+import { ID, PaginatedStatus, Status, UserTrackMetadata } from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
 import { Nullable } from '../../utils'
@@ -41,6 +41,7 @@ type CommentSectionContextType = {
   currentUserId: Nullable<ID>
   artistId: ID
   isEntityOwner: boolean
+  track: UserTrackMetadata
   playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
@@ -123,6 +124,7 @@ export const CommentSectionProvider = (
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        track,
         reset,
         hasMorePages,
         currentSort,
