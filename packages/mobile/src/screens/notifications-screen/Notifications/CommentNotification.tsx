@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
 import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
-import { notificationsSelectors, Entity } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
@@ -48,11 +48,6 @@ export const CommentNotification = (props: CommentNotificationProps) => {
     [notification]
   )
 
-  const entityTypeText =
-    entity && 'is_album' in entity && entity.is_album
-      ? Entity.Album
-      : entityType
-
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
@@ -67,7 +62,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
       <NotificationText>
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.commented} {entityTypeText.toLowerCase()}{' '}
+        {messages.commented} {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>

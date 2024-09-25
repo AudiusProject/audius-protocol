@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import { UserMetadata } from '@audius/common/models'
+import { ID, UserMetadata } from '@audius/common/models'
 import { splitOnNewline, timestampRegex } from '@audius/common/utils'
 import {
   LoadingSpinner,
@@ -83,6 +83,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])
+  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
 
@@ -166,6 +167,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
+        setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
@@ -200,8 +202,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
-    onSubmit?.(restoreLinks(value), linkEntities)
-  }, [linkEntities, onSubmit, restoreLinks, value])
+    onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+  }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(

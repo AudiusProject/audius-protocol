@@ -7,12 +7,7 @@ import {
   useState
 } from 'react'
 
-import {
-  EntityType,
-  Comment,
-  ReplyComment,
-  TrackCommentsSortMethodEnum
-} from '@audius/sdk'
+import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -20,7 +15,13 @@ import {
   useGetCurrentUserId,
   useGetTrackById
 } from '../../api'
-import { ID, PaginatedStatus, Status } from '../../models'
+import {
+  ID,
+  PaginatedStatus,
+  Comment,
+  ReplyComment,
+  Status
+} from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
 import { Nullable } from '../../utils'

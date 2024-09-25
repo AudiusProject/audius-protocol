@@ -4,7 +4,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { Comment, ReplyComment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/common/models'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -56,7 +56,7 @@ const CommentDrawerContent = () => {
   return (
     <BottomSheetFlatList
       data={comments}
-      keyExtractor={({ id }) => id}
+      keyExtractor={({ id }) => id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
