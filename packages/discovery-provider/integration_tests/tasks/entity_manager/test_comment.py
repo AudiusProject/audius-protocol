@@ -13,6 +13,7 @@ from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
+from src.models.notifications.notification import Notification
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 
@@ -648,6 +649,9 @@ def test_comment_threads(app, mocker):
 
         comment_threads = session.query(CommentThread).all()
         assert len(comment_threads) == 1
-
         assert comment_threads[0].parent_comment_id == 1
         assert comment_threads[0].comment_id == 2
+
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 1
+        assert comment_notifications[0].type == "comment_thread"
