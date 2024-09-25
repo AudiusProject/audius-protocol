@@ -490,12 +490,15 @@ const slice = createSlice({
       // to avoid chat list re-sorting.
       // Note: is_plaintext indicates that the message originated from a blast
       const existingChat = getChat(state, chatId)
-      const changes = {
-        last_message: message.message,
-        ...(message.is_plaintext && isSelfMessage && !existingChat?.is_blast
-          ? {}
-          : { last_message_at: message.created_at })
-      }
+      const changes =
+        message.is_plaintext && isSelfMessage && !existingChat?.is_blast
+          ? {
+              last_message: message.message
+            }
+          : {
+              last_message: message.message,
+              last_message_at: message.created_at
+            }
 
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
