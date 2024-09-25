@@ -2830,10 +2830,6 @@ class FullUserFeed(Resource):
 
 muted_users_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 
-muted_users_response = make_response(
-    "muted_users_response", ns, fields.List(fields.Nested(sales_aggregate))
-)
-
 MUTED_USERS_ROUTE = "/<string:id>/muted"
 
 
@@ -2841,7 +2837,7 @@ MUTED_USERS_ROUTE = "/<string:id>/muted"
 class MutedUsers(Resource):
     @ns.doc(
         id="Get Muted Users",
-        description="Gets users muted by the user",
+        description="Gets users muted by the given user",
         params={"id": "A User ID"},
     )
     @ns.expect(muted_users_route_parser)
@@ -2860,7 +2856,7 @@ class FullMutedUsers(Resource):
     @record_metrics
     @ns.doc(
         id="Get Muted Users",
-        description="Gets a single user by their user ID",
+        description="Gets users muted by the given user",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )

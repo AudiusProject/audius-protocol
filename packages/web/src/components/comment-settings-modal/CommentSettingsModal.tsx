@@ -6,7 +6,6 @@ import {
   Flex,
   Text,
   Modal,
-  ModalContent,
   ModalHeader,
   ModalTitle,
   Button,
@@ -20,8 +19,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import ArtistChip from 'components/artist/ArtistChip'
 import { MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-
-import styles from './CommentSettingsModal.module.css'
 
 const messages = {
   title: 'Comment Settings',
@@ -45,47 +42,43 @@ export const CommentSettingsModal = () => {
   })
 
   return (
-    <Modal
-      bodyClassName={styles.modalBody}
-      onClose={handleClose}
-      isOpen={isVisible}
-    >
+    <Modal onClose={handleClose} isOpen={isVisible}>
       <ModalHeader onClose={handleClose}>
         <ModalTitle title={messages.title} icon={<IconMessageBlock />} />
       </ModalHeader>
-      <ModalContent className={styles.modalContent}>
+      <Flex direction='column'>
         <Flex ph='xl' pt='xl' mb='l'>
           <Text>{messages.description}</Text>
         </Flex>
-        {mutedUsers.length === 0 ? (
+        {mutedUsers && mutedUsers.length === 0 ? (
           <Flex ph='xl' pb='xl'>
             <Text color='subdued'>{messages.noMutedUsers}</Text>
           </Flex>
         ) : null}
 
         <Scrollbar
-          className={styles.scrollable}
           containerRef={(containerRef) => {
             scrollParentRef.current = containerRef
           }}
         >
-          {mutedUsers.map((user) => {
-            return (
-              <>
-                <Flex
-                  key={user.user_id}
-                  alignItems='center'
-                  direction='row'
-                  p='l'
-                >
-                  <MutedUser user={user} />
-                </Flex>
-                <Divider orientation='horizontal'></Divider>
-              </>
-            )
-          })}
+          {mutedUsers &&
+            mutedUsers.map((user) => {
+              return (
+                <>
+                  <Flex
+                    key={user.user_id}
+                    alignItems='center'
+                    direction='row'
+                    p='l'
+                  >
+                    <MutedUser user={user} />
+                  </Flex>
+                  <Divider orientation='horizontal'></Divider>
+                </>
+              )
+            })}
         </Scrollbar>
-      </ModalContent>
+      </Flex>
     </Modal>
   )
 }

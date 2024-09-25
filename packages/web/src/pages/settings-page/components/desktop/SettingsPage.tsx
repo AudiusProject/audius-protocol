@@ -453,6 +453,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button
@@ -493,7 +494,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.showPrivateKey}
           </Link>
         ) : null}
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
       </div>
       <Modal
         isOpen={isSignOutModalVisible}

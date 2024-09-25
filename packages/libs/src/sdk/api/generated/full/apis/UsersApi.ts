@@ -982,7 +982,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a single user by their user ID
+     * Gets users muted by the given user
      */
     async getMutedUsersRaw(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -1012,7 +1012,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a single user by their user ID
+     * Gets users muted by the given user
      */
     async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getMutedUsersRaw(params, initOverrides);
