@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"reflect"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -15,7 +14,6 @@ import (
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cometbfttypes "github.com/cometbft/cometbft/types"
-	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
@@ -229,8 +227,4 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 func (app *CoreApplication) toTxHash(tx []byte) string {
 	hash := sha256.Sum256(tx)
 	return hex.EncodeToString(hash[:])
-}
-
-func (app *CoreApplication) getProtoTypeName(msg proto.Message) string {
-	return strcase.ToSnake(reflect.TypeOf(msg).Elem().Name())
 }

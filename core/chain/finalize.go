@@ -6,6 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -24,7 +25,7 @@ func (core *CoreApplication) finalizeTransaction(ctx context.Context, msg *gen_p
 
 func (core *CoreApplication) persistTxStat(ctx context.Context, tx proto.Message, txhash string, height int64) error {
 	if err := core.getDb().InsertTxStat(ctx, db.InsertTxStatParams{
-		TxType:      core.getProtoTypeName(tx),
+		TxType:      grpc.GetProtoTypeName(tx),
 		TxHash:      txhash,
 		BlockHeight: height,
 	}); err != nil {
