@@ -24,7 +24,7 @@ templ (l *Layout) SiteFrame() {
 							<div>
 								Chain ID:
 								<span>
-									@l.components.Link("%s/genesis", l.config.NodeEndpoint) {
+									@l.components.Link("/genesis") {
 										<span>{ l.config.GenesisFile.ChainID }</span>
 									}
 								</span>

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"reflect"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -14,6 +15,7 @@ import (
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cometbfttypes "github.com/cometbft/cometbft/types"
+	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
@@ -110,11 +112,16 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	for i, tx := range req.Txs {
 		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err == nil {
-			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
+			txhash := app.toTxHash(tx)
+			finalizedTx, err := app.finalizeTransaction(ctx, protoEvent, txhash)
+			if err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height); err != nil {
+				app.logger.Errorf("failed to persist tx stat: %v", err)
+			}
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}
@@ -222,4 +229,8 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 func (app *CoreApplication) toTxHash(tx []byte) string {
 	hash := sha256.Sum256(tx)
 	return hex.EncodeToString(hash[:])
+}
+
+func (app *CoreApplication) getProtoTypeName(msg proto.Message) string {
+	return strcase.ToSnake(reflect.TypeOf(msg).Elem().Name())
 }

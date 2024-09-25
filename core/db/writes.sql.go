@@ -90,6 +90,22 @@ func (q *Queries) InsertRegisteredNode(ctx context.Context, arg InsertRegistered
 	return err
 }
 
+const insertTxStat = `-- name: InsertTxStat :exec
+insert into core_tx_stats (tx_type, tx_hash, block_height)
+values ($1, $2, $3)
+`
+
+type InsertTxStatParams struct {
+	TxType      string
+	TxHash      string
+	BlockHeight int64
+}
+
+func (q *Queries) InsertTxStat(ctx context.Context, arg InsertTxStatParams) error {
+	_, err := q.db.Exec(ctx, insertTxStat, arg.TxType, arg.TxHash, arg.BlockHeight)
+	return err
+}
+
 const upsertAppState = `-- name: UpsertAppState :exec
 insert into core_app_state (block_height, app_hash)
 values ($1, $2)
