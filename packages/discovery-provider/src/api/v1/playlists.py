@@ -688,14 +688,6 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(album_access_info)
 )
 
-access_info_parser = current_user_parser.copy()
-access_info_parser.add_argument(
-    "include_network_cut",
-    required=False,
-    type=bool,
-    description="Whether to include the staking system as a recipient",
-)
-
 
 @ns.route("/<string:playlist_id>/access-info")
 class GetPlaylistAccessInfo(Resource):
@@ -705,11 +697,10 @@ class GetPlaylistAccessInfo(Resource):
         description="Gets the information necessary to access the playlist and what access the given user has.",
         params={"playlist_id": "A Playlist ID"},
     )
-    @ns.expect(access_info_parser)
+    @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):
         args = current_user_parser.parse_args()
-        include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(args)
         playlists = get_playlists(
@@ -722,9 +713,7 @@ class GetPlaylistAccessInfo(Resource):
         if not playlists:
             abort_not_found(playlist_id, ns)
         raw = playlists[0]
-        stream_conditions = get_extended_purchase_gate(
-            gate=raw["stream_conditions"], include_network_cut=include_network_cut
-        )
+        stream_conditions = get_extended_purchase_gate(gate=raw["stream_conditions"])
         playlist = extend_playlist(raw)
         playlist["stream_conditions"] = stream_conditions
         return success_response(playlist)
