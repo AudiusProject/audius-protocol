@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useGatedContentAccess } from '@audius/common/hooks'
@@ -83,13 +83,13 @@ export const CommentText = (props: CommentTextProps) => {
     track: { duration }
   } = useCurrentCommentSection()
 
-  useEffectOnce(() => {
+  useEffect(() => {
     setIsOverflowing(
       (textRef.current &&
         textRef.current.offsetHeight < textRef.current.scrollHeight) ||
         false
     )
-  })
+  }, [children])
 
   return (
     <Flex direction='column' alignItems='flex-start' gap='xs'>
@@ -99,7 +99,16 @@ export const CommentText = (props: CommentTextProps) => {
           variant='body'
           color='default'
           ref={textRef}
-          // maxLines={isExpanded ? undefined : 3}
+          internalLinksOnly
+          maxLines={isExpanded ? undefined : 3}
+          suffix={
+            isEdited ? (
+              <Text color='subdued' size='s'>
+                {' '}
+                ({messages.edited})
+              </Text>
+            ) : null
+          }
           matchers={[
             {
               pattern: timestampRegex,
@@ -127,12 +136,6 @@ export const CommentText = (props: CommentTextProps) => {
         >
           {children}
         </UserGeneratedTextV2>
-        {isEdited ? (
-          <Text color='subdued' size='s'>
-            {' '}
-            ({messages.edited})
-          </Text>
-        ) : null}
       </p>
 
       {isOverflowing ? (

@@ -42,6 +42,9 @@ type UserGeneratedTextV2Props = {
 
   // If true, only linkify Audius URLs
   internalLinksOnly?: boolean
+
+  // Suffix to append after the text. Used for "edited" text in comments
+  suffix?: ReactNode
 } & TextProps
 
 const formatExternalLink = (href: string) => {
@@ -120,6 +123,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
     matchers: matchersProp,
     linkProps,
     internalLinksOnly,
+    suffix,
     ...other
   } = props
 
@@ -231,6 +235,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   return (
     <Text ref={ref as ForwardedRef<'p'>} {...other}>
       {parseText(children)}
+      {suffix}
     </Text>
   )
 })
