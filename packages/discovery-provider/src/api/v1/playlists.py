@@ -709,7 +709,6 @@ class GetPlaylistAccessInfo(Resource):
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):
         args = access_info_parser.parse_args()
-        include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(args)
         playlists = get_playlists(
