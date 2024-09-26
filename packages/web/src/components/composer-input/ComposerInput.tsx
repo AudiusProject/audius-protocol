@@ -138,7 +138,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const getTimestamps = useCallback(
     (value: string) => {
-      if (!track) return []
+      if (!track || !track.access.stream) return []
 
       const { duration } = track
       return Array.from(value.matchAll(timestampRegex))
