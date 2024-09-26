@@ -17,7 +17,6 @@ import {
 } from '@audius/common/utils'
 import { Flex, Text, TextLink } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGeneratedTextV2'
 
