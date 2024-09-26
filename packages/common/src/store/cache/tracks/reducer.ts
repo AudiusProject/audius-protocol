@@ -1,3 +1,5 @@
+import { merge } from 'lodash'
+
 import { Cache } from '~/models/Cache'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
@@ -103,21 +105,17 @@ const actionsMap = {
   ): TracksCacheState {
     const { trackId, commentCountIncrement } = action
 
-    return {
-      ...state,
+    return merge(state, {
       entries: {
-        ...state.entries,
         [trackId]: {
-          ...state.entries[trackId],
           metadata: {
-            ...state.entries[trackId].metadata,
             comment_count:
               (state.entries[trackId].metadata.comment_count || 0) +
               commentCountIncrement
           }
         }
       }
-    }
+    })
   }
 }
 
