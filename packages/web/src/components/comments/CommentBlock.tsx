@@ -62,7 +62,6 @@ const CommentBlockInternal = (
   // This status checks specifically for this comment - no matter where the post request originated
   const commentPostStatus = useCommentPostStatus(comment)
 
-  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
