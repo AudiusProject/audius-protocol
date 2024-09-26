@@ -5,7 +5,8 @@ go 1.22.5
 toolchain go1.23.1
 
 require (
-	github.com/AudiusProject/audius-protocol/core v0.0.0-20240924212116-1f5393cd2e70
+	github.com/AudiusProject/audius-protocol/core v0.0.0-20240926163749-357b03d2b3da
+	github.com/AudiusProject/audius-protocol/uptime v0.0.0-00010101000000-000000000000
 	github.com/docker/cli v25.0.3+incompatible
 	github.com/docker/docker v25.0.3+incompatible
 	github.com/docker/go-connections v0.5.0
@@ -231,3 +232,5 @@ require (
 )
 
 replace github.com/AudiusProject/audius-protocol/core => ./core
+
+replace github.com/AudiusProject/audius-protocol/uptime => ./monitoring/uptime
