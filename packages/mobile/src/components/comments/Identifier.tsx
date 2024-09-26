@@ -1,12 +1,16 @@
-import type {
-  IdentifierType,
-  IdentifierProps
-} from '@audius/harmony/src/components/comments/Identifier/types'
-
 import type { IconComponent } from '@audius/harmony-native'
-import { IconStar, IconTipping, IconTrophy } from '@audius/harmony-native'
+import {
+  IconStar,
+  IconTipping,
+  IconTrophy,
+  IconText
+} from '@audius/harmony-native'
 
-import { IconText } from '../IconText'
+export type IdentifierType = 'artist' | 'topSupporter' | 'supporter'
+
+export type IdentifierProps = {
+  type: IdentifierType
+}
 
 const typeInfoMap: Record<
   IdentifierType,
