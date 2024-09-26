@@ -10,16 +10,18 @@ import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
+import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
+import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 

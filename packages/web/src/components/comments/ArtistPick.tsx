@@ -1,11 +1,12 @@
-import { IconHeart, IconPin } from 'icons'
-
-import { IconText } from '../IconText'
-
-import { ArtistPickProps } from './types'
+import { IconHeart, IconPin, IconText } from '@audius/harmony'
 
 const pinIcon = { icon: IconPin }
 const heartIcon = { icon: IconHeart, color: 'active' }
+
+export type ArtistPickProps = {
+  isPinned?: boolean
+  isLiked?: boolean
+}
 
 export const ArtistPick = ({
   isPinned = false,

@@ -1,16 +1,16 @@
 import { useRef, useState } from 'react'
 
+import { Flex, Text, TextLink } from '@audius/harmony'
 import { useEffectOnce } from 'react-use'
-
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
-import { TextLink } from 'components/text-link'
-
-import { CommentTextProps } from './types'
 
 const messages = {
   seeMore: 'See More',
   seeLess: 'See Less'
+}
+
+export type CommentTextProps = {
+  children: string
+  isEdited?: boolean
 }
 
 export const CommentText = ({ children }: CommentTextProps) => {

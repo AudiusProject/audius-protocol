@@ -1,9 +1,16 @@
-import { IconComponent } from 'components/icon'
-import { IconStar, IconTipping, IconTrophy } from 'icons'
+import {
+  IconStar,
+  IconTipping,
+  IconTrophy,
+  IconText,
+  IconComponent
+} from '@audius/harmony'
 
-import { IconText } from '../IconText'
+export type IdentifierType = 'artist' | 'topSupporter' | 'supporter'
 
-import { IdentifierType, IdentifierProps } from './types'
+export type IdentifierProps = {
+  type: IdentifierType
+}
 
 const typeInfoMap: Record<
   IdentifierType,

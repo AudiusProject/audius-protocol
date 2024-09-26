@@ -15,7 +15,6 @@ import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
-import type { CommentTextProps } from '@audius/harmony/src/components/comments/CommentText/types'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
@@ -70,6 +69,11 @@ const TimestampLink = (props: TimestampLinkProps) => {
       {timestamp}
     </TextLink>
   )
+}
+
+export type CommentTextProps = {
+  children: string
+  isEdited?: boolean
 }
 
 export const CommentText = ({ children, isEdited }: CommentTextProps) => {
