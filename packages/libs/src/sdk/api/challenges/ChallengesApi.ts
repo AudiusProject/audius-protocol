@@ -207,7 +207,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       priorityFee: null
     })
     const signature = await this.rewardManager.sendTransaction(tx, {
-      preflightCommitment: 'confirmed'
+      skipPreflight: true
     })
     return signature
   }
