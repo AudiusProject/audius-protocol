@@ -240,7 +240,7 @@ export const releaseRepo = {
 
       $${ifdef(params.status, sql` and status = ${params.status} `)}
 
-      order by xmlUrl, cast(substr(ref, 1) as integer)
+      order by xmlUrl, ref
     `)
 
     for (const row of rows) {
