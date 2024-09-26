@@ -607,13 +607,24 @@ def test_comment_threads(app, mocker):
         "tracks": [
             {"track_id": 1, "owner_id": 1},
         ],
-        "comments": [
-            {"comment_id": 1, "user_id": 2, "entity_id": 1, "entity_type": "Track"},
-        ],
     }
 
     tx_receipts = {
         "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            }
+        ],
+        "ReplyComment": [
             {
                 "args": AttributeDict(
                     {
@@ -653,5 +664,6 @@ def test_comment_threads(app, mocker):
         assert comment_threads[0].comment_id == 2
 
         comment_notifications = session.query(Notification).all()
-        assert len(comment_notifications) == 1
-        assert comment_notifications[0].type == "comment_thread"
+        assert len(comment_notifications) == 2
+        assert comment_notifications[0].type == "comment"
+        assert comment_notifications[1].type == "comment_thread"
