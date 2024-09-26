@@ -20,6 +20,7 @@ import {
   instanceOfPlaylistResponse,
   instanceOfUserResponse
 } from '@audius/sdk'
+import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -32,7 +33,11 @@ const { getUserId } = accountSelectors
 
 type Matcher = {
   pattern: RegExp
-  renderLink: (text: string, match: RegExpMatchArray) => JSX.Element | null
+  renderLink: (
+    text: string,
+    match: RegExpMatchArray,
+    index: number
+  ) => JSX.Element | null
 }
 
 type UserGeneratedTextV2Props = {
@@ -105,7 +110,10 @@ const HandleLink = ({
       {handle}
     </TextLink>
   ) : (
-    <Text {...(other as any)} variant={other.textVariant}>
+    <Text
+      {...(omit(other, ['textVariant']) as any)}
+      variant={other.textVariant}
+    >
       {handle}
     </Text>
   )
@@ -128,43 +136,38 @@ export const UserGeneratedTextV2 = forwardRef(function (
   } = props
 
   const renderLink = useCallback(
-    (text: string) => {
+    (text: string, _: RegExpMatchArray, index: number) => {
       const shouldLinkify = !internalLinksOnly || isAudiusUrl(text)
 
       return shouldLinkify ? (
         <Link
+          key={index}
           {...(other as any)}
           variant='visible'
           textVariant={other.variant}
           url={text}
           {...linkProps}
         />
-      ) : (
-        renderText(text)
-      )
+      ) : null
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
-  const renderHandleLink = useCallback((text: string) => {
-    const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
-    return isHandleUnrestricted ? (
-      <HandleLink
-        {...(other as any)}
-        variant='visible'
-        textVariant={other.variant}
-        handle={text}
-        {...linkProps}
-      />
-    ) : (
-      renderText(text)
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const renderText = useCallback(
-    (text: string) => <Text {...other}>{text}</Text>,
+  const renderHandleLink = useCallback(
+    (text: string, _: RegExpMatchArray, index: number) => {
+      const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
+      return isHandleUnrestricted ? (
+        <HandleLink
+          key={index}
+          {...(other as any)}
+          variant='visible'
+          textVariant={other.variant}
+          handle={text}
+          {...linkProps}
+        />
+      ) : null
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
@@ -187,6 +190,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   const parseText = (text: string) => {
     // Start with the entire text as a single unprocessed string
     let elements: ReactNode[] = [text]
+    let key = 0
 
     // Process each matcher sequentially
     matchers.forEach(({ pattern, renderLink }) => {
@@ -205,7 +209,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
             newElements.push(element.substring(lastIndex, match.index))
 
             // Push the rendered link component for the matched text
-            const link = renderLink(match[0], match)
+            const link = renderLink(match[0], match, key)
             if (link) {
               newElements.push(link)
             } else {
@@ -214,6 +218,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
 
             // Update the last index to the end of the current match
             lastIndex = match.index + match[0].length
+            key++
           }
 
           // Push remaining text after the last match
@@ -222,16 +227,17 @@ export const UserGeneratedTextV2 = forwardRef(function (
           // If it's already a React element (from a previous matcher), keep it as-is
           newElements.push(element)
         }
+        key++
       })
 
       // Replace elements with the new ones after applying the current matcher
       elements = newElements
+      key++
     })
 
     return elements
   }
 
-  // Render the parsed content
   return (
     <Text ref={ref as ForwardedRef<'p'>} {...other}>
       {parseText(children)}

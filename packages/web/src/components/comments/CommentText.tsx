@@ -112,7 +112,7 @@ export const CommentText = (props: CommentTextProps) => {
           matchers={[
             {
               pattern: timestampRegex,
-              renderLink: (text) => {
+              renderLink: (text, _, index) => {
                 const matches = [...text.matchAll(new RegExp(timestampRegex))]
 
                 if (matches.length === 0) return null
@@ -124,12 +124,11 @@ export const CommentText = (props: CommentTextProps) => {
 
                 return showLink ? (
                   <TimestampLink
+                    key={index}
                     timestamp={text}
                     timestampSeconds={timestampSeconds}
                   />
-                ) : (
-                  <Text size='s'>{text}</Text>
-                )
+                ) : null
               }
             }
           ]}
