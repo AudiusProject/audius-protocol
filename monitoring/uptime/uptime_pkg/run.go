@@ -93,6 +93,7 @@ func run() error {
 		<-c
 	}
 
+	// TODO error and context handling
 	return nil
 }
 
@@ -223,7 +224,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		},
 		Peers:      peers,
 		ListenPort: "1996",
-		Dir:        "/bolt",
+		Dir:        getenvWithDefault("uptimeDataDir", "/bolt"),
 
 		Env:       env,
 		NodeType:  nodeType,
@@ -313,6 +314,14 @@ func mustGetenv(key string) string {
 		// if config is incorrect, sleep a bit to prevent container from restarting constantly
 		time.Sleep(time.Hour)
 		log.Fatal("missing required env variable: ", key)
+	}
+	return val
+}
+
+func getenvWithDefault(key string, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
 	}
 	return val
 }
