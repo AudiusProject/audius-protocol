@@ -194,17 +194,11 @@ def get_valid_instruction(
         if not has_transfer_instruction:
             return None
 
-        if not any(REWARDS_MANAGER_ACCOUNT == str(key) for key in account_keys):
-            logger.error(
-                "index_rewards_manager.py | Rewards manager account missing from account keys"
-            )
-            return None
-
         instructions = tx_message.instructions
         rewards_manager_program_index = account_keys.index(
             Pubkey.from_string(REWARDS_MANAGER_PROGRAM)
         )
-        for instruction in instructions:
+        for instruction in instructions[::-1]:
             if instruction.program_id_index == rewards_manager_program_index:
                 return instruction
 
