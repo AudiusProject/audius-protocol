@@ -1,7 +1,9 @@
-import { Text } from 'components/text'
+import { getLargestTimeUnitText } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 
-import { TimestampProps } from './types'
-import { getLargestTimeUnitText } from './util'
+export type TimestampProps = {
+  time: Date
+}
 
 export const Timestamp = ({ time }: TimestampProps) => {
   const text = getLargestTimeUnitText(time)
