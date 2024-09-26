@@ -24,8 +24,8 @@ docker-tag-images:
           'discovery-provider',
           'creator-node',
           'identity-service',
-          'ddex',
           'core',
+          'ddex',
           'all'
         ]
   steps:
@@ -63,9 +63,6 @@ docker-tag-images:
           identity=(
             identity-service
           )
-          ddex=(
-            ddex-processor
-          )
           core=(
             core
           )
@@ -80,9 +77,6 @@ docker-tag-images:
             identity-service)
               images=( "${identity[@]}" )
               ;;
-            ddex)
-              images=( "${ddex[@]}" )
-              ;;
             core)
               images=( "${core[@]}" )
               ;;
@@ -91,7 +85,6 @@ docker-tag-images:
                 "${discovery[@]}"
                 "${creator[@]}"
                 "${identity[@]}"
-                "${ddex[@]}"
                 "${core[@]}"
               )
               ;;

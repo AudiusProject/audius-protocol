@@ -247,8 +247,7 @@ app.get('/releases', (c) => {
                   </td>
                   <td>${row._parsed?.releaseType}</td>
                   <td>
-                    ${row._parsed?.audiusUser ||
-                    row._parsed?.artists.map((a) => a.name).join(', ')}
+                    ${row._parsed?.audiusUser || row._parsed?.artists[0]?.name}
                   </td>
                   <td>${row._parsed?.title}</td>
                   <td>${row._parsed?.audiusGenre}</td>
@@ -321,7 +320,7 @@ app.get('/releases/:key', (c) => {
       <div style="display: flex; gap: 20px">
         <div style="text-align: center">
           <img
-            src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+            src="/release/${row.key}/images/${parsedRelease.images[0]?.ref}"
             style="width: 200px; height: 200px; display: block; margin-bottom: 10px"
           />
           <mark>${parsedRelease.parentalWarningType}</mark>
