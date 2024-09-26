@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, Response
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, inputs
 
 from src.api.v1.helpers import (
     abort_bad_path_param,
@@ -692,7 +692,7 @@ access_info_parser = current_user_parser.copy()
 access_info_parser.add_argument(
     "include_network_cut",
     required=False,
-    type=bool,
+    type=inputs.boolean,
     description="Whether to include the staking system as a recipient",
 )
 
@@ -708,7 +708,7 @@ class GetPlaylistAccessInfo(Resource):
     @ns.expect(access_info_parser)
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):
-        args = current_user_parser.parse_args()
+        args = access_info_parser.parse_args()
         include_network_cut = args.get("include_network_cut")
         decoded_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(args)

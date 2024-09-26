@@ -31,9 +31,15 @@ models/ClaimableRewardNotificationActionData.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
+models/CommentMentionNotification.ts
+models/CommentMentionNotificationAction.ts
+models/CommentMentionNotificationActionData.ts
 models/CommentNotification.ts
 models/CommentNotificationAction.ts
 models/CommentNotificationActionData.ts
+models/CommentThreadNotification.ts
+models/CommentThreadNotificationAction.ts
+models/CommentThreadNotificationActionData.ts
 models/CosignNotification.ts
 models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts

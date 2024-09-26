@@ -69,8 +69,8 @@ const CommentSectionContent = () => {
 
   const [postComment, { status: postCommentStatus }] = usePostComment()
 
-  const handlePostComment = (message: string) => {
-    postComment(message, undefined)
+  const handlePostComment = (message: string, mentions?: ID[]) => {
+    postComment(message, undefined, undefined, mentions)
   }
 
   // Loading state

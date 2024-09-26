@@ -3,9 +3,8 @@ import {
   useCommentPostStatus,
   useCurrentCommentSection
 } from '@audius/common/context'
-import { commentsMessages as messages } from '@audius/common/messages'
+import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { Status } from '@audius/common/models'
-import type { Comment, ReplyComment } from '@audius/sdk'
 import { css } from '@emotion/native'
 
 import {
@@ -26,8 +25,8 @@ import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 
 export type CommentBlockProps = {
-  commentId: string
-  parentCommentId?: string
+  commentId: ID
+  parentCommentId?: ID
   hideActions?: boolean
 }
 
@@ -42,7 +41,7 @@ export const CommentBlockInternal = (
     message,
     trackTimestampS,
     createdAt,
-    userId: commentUserIdStr,
+    userId,
     isEdited,
     isArtistReacted
   } = comment
@@ -52,10 +51,9 @@ export const CommentBlockInternal = (
   const commentPostStatus = useCommentPostStatus(comment)
   const isLoading = commentPostStatus === Status.LOADING
 
-  const commentUserId = Number(commentUserIdStr)
-  useGetUserById({ id: commentUserId })
+  useGetUserById({ id: userId })
 
-  const isCommentByArtist = commentUserId === artistId
+  const isCommentByArtist = userId === artistId
 
   return (
     <Flex
@@ -66,14 +64,11 @@ export const CommentBlockInternal = (
     >
       <ProfilePicture
         style={{ width: 32, height: 32, flexShrink: 0 }}
-        userId={commentUserId}
+        userId={userId}
       />
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge
-            isArtist={isCommentByArtist}
-            commentUserId={commentUserId}
-          />
+          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex direction='row' justifyContent='space-between' w='100%'>
@@ -82,7 +77,7 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center'>
-            <UserLink size='s' userId={commentUserId} strength='strong' />
+            <UserLink size='s' userId={userId} strength='strong' />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={new Date(createdAt)} />
               {trackTimestampS !== undefined ? (
@@ -91,7 +86,13 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink size='xs' variant='active'>
+                  <TextLink
+                    size='xs'
+                    variant='active'
+                    onPress={() => {
+                      // TODO
+                    }}
+                  >
                     {formatCommentTrackTimestamp(trackTimestampS)}
                   </TextLink>
                 </>
@@ -99,10 +100,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText>
-          {message}
-          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
-        </CommentText>
+        <CommentText isEdited={isEdited}>{message}</CommentText>
         {!hideActions ? (
           <CommentActionBar
             comment={comment}

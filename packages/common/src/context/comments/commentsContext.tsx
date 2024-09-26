@@ -7,12 +7,7 @@ import {
   useState
 } from 'react'
 
-import {
-  EntityType,
-  Comment,
-  ReplyComment,
-  TrackCommentsSortMethodEnum
-} from '@audius/sdk'
+import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -20,7 +15,14 @@ import {
   useGetCurrentUserId,
   useGetTrackById
 } from '../../api'
-import { ID, PaginatedStatus, Status } from '../../models'
+import {
+  ID,
+  PaginatedStatus,
+  Comment,
+  ReplyComment,
+  Status,
+  UserTrackMetadata
+} from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
 import { Nullable } from '../../utils'
@@ -42,6 +44,7 @@ type CommentSectionContextType = {
   artistId: ID
   isEntityOwner: boolean
   commentCount: number
+  track: UserTrackMetadata
   playTrack: () => void
   commentSectionLoading: boolean
   comments: Comment[]
@@ -125,6 +128,7 @@ export const CommentSectionProvider = (
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        track,
         reset,
         hasMorePages,
         currentSort,

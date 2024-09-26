@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import type { ID } from '@audius/common/models'
 import type { FormikHelpers } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import type { TextInput as RNTextInput } from 'react-native'
@@ -15,10 +16,11 @@ import LoadingSpinner from '../loading-spinner'
 
 type CommentFormValues = {
   commentMessage: string
+  mentions?: ID[]
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string) => void
+  onSubmit: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
   TextInputComponent?: typeof RNTextInput
@@ -101,16 +103,13 @@ const CommentFormContent = (props: CommentFormContentProps) => {
   )
 }
 
-export const CommentForm = ({
-  onSubmit,
-  initialValue = '',
-  ...rest
-}: CommentFormProps) => {
+export const CommentForm = (props: CommentFormProps) => {
+  const { onSubmit, initialValue = '', ...rest } = props
   const handleSubmit = (
-    { commentMessage }: CommentFormValues,
+    { commentMessage, mentions }: CommentFormValues,
     { resetForm }: FormikHelpers<CommentFormValues>
   ) => {
-    onSubmit(commentMessage)
+    onSubmit(commentMessage, mentions)
     resetForm()
   }
 

@@ -30,7 +30,7 @@ export const ChatBlastSelectAudienceScreen = () => {
         </Button>
       }
     >
-      <Flex gap='l' h='100%'>
+      <Flex gap='l'>
         <HeaderShadow />
         <ChatBlastSelectAudienceFields />
       </Flex>

@@ -5,6 +5,7 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
+import type { ID } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 
@@ -17,9 +18,9 @@ export const CommentDrawerForm = () => {
   const [postComment, { status: postCommentStatus }] = usePostComment()
   const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string) => {
+  const handlePostComment = (message: string, mentions?: ID[]) => {
     if (editingComment) {
-      editComment(editingComment.id, message)
+      editComment(editingComment.id, message, mentions)
       return
     }
 
