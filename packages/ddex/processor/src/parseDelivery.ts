@@ -407,8 +407,8 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       ref: $el.find('ResourceReference').text(),
       isrc: $el.find('ISRC').text(),
 
-      filePath: $el.find('FilePath').text(),
-      fileName: $el.find('FileName').text(),
+      filePath: $el.find('FilePath:first').text(),
+      fileName: $el.find('FileName:first').text(),
       title: $el.find('TitleText:first').text(),
       artists: parseContributor('DisplayArtist', $el),
       contributors: parseContributor('ResourceContributor', $el),
@@ -453,7 +453,9 @@ function parseReleaseXml(source: string, $: cheerio.CheerioAPI) {
       'FilePath',
       'FileName',
     ].map((k) => $(el).find(k).text())
-    acc[ref] = { ref, filePath, fileName }
+    if (fileName) {
+      acc[ref] = { ref, filePath, fileName }
+    }
     return acc
   }
 

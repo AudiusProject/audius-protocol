@@ -247,8 +247,7 @@ app.get('/releases', (c) => {
                   </td>
                   <td>${row._parsed?.releaseType}</td>
                   <td>
-                    ${row._parsed?.audiusUser ||
-                    row._parsed?.artists.map((a) => a.name).join(', ')}
+                    ${row._parsed?.audiusUser || row._parsed?.artists[0]?.name}
                   </td>
                   <td>${row._parsed?.title}</td>
                   <td>${row._parsed?.audiusGenre}</td>
