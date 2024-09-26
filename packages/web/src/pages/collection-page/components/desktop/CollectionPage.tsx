@@ -37,6 +37,10 @@ import { computeCollectionMetadataProps } from 'pages/collection-page/store/util
 
 import styles from './CollectionPage.module.css'
 
+const messages = {
+  noFilterMatches: 'No tracks match your search...'
+}
+
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
     ownerTitle: 'Nothing here yet',
@@ -71,6 +75,16 @@ const EmptyPage = (props: EmptyPageProps) => {
   )
 }
 
+const NoSearchResultsPage = () => {
+  return (
+    <Flex p='2xl' alignItems='center' direction='column' gap='s'>
+      <Text variant='title' size='l'>
+        {messages.noFilterMatches}
+      </Text>
+    </Flex>
+  )
+}
+
 export type CollectionPageProps = {
   title: string
   description: string
@@ -87,7 +101,7 @@ export type CollectionPageProps = {
     user: User | null
   }
   tracks: {
-    status: string
+    status: Status
     entries: CollectionTrack[]
   }
   userId?: ID | null
@@ -207,7 +221,7 @@ const CollectionPage = ({
     isAlbum,
     playlistSaveCount,
     playlistRepostCount
-  } = computeCollectionMetadataProps(metadata)
+  } = computeCollectionMetadataProps(metadata, tracks)
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
   const areAllTracksPremium = tracks.entries.every(
@@ -339,6 +353,8 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             text={customEmptyText}
           />
+        ) : !collectionLoading && dataSource.length === 0 ? (
+          <NoSearchResultsPage />
         ) : (
           <div className={styles.tableWrapper}>
             <TableComponent
