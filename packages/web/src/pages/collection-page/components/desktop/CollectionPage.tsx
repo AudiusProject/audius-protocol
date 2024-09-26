@@ -54,17 +54,17 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   remove: 'Remove from this'
 })
 
-type EmptyPageProps = {
+type EmptyContentProps = {
   text?: string | null
   isOwner: boolean
   isAlbum: boolean
 }
 
-const EmptyPage = (props: EmptyPageProps) => {
+const EmptyContent = (props: EmptyContentProps) => {
   const { isAlbum, isOwner, text: textProp } = props
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
-    <Flex p='2xl' alignItems='center' direction='column' gap='s'>
+    <Flex column p='2xl' alignItems='center' gap='s'>
       <Text variant='title' size='l'>
         {textProp ?? isOwner
           ? messages.emptyPage.ownerTitle
@@ -75,9 +75,9 @@ const EmptyPage = (props: EmptyPageProps) => {
   )
 }
 
-const NoSearchResultsPage = () => {
+const NoSearchResultsContent = () => {
   return (
-    <Flex p='2xl' alignItems='center' direction='column' gap='s'>
+    <Flex column p='2xl' alignItems='center' gap='s'>
       <Text variant='title' size='l'>
         {messages.noFilterMatches}
       </Text>
@@ -178,7 +178,7 @@ const CollectionPage = ({
       ? metadata._cover_art_sizes
       : null
   const duration =
-    tracks.entries?.reduce(
+    dataSource.reduce(
       (duration: number, entry: CollectionTrack) =>
         duration + entry.duration || 0,
       0
@@ -348,13 +348,13 @@ const CollectionPage = ({
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
-          <EmptyPage
+          <EmptyContent
             isOwner={isOwner}
             isAlbum={isAlbum}
             text={customEmptyText}
           />
         ) : !collectionLoading && dataSource.length === 0 ? (
-          <NoSearchResultsPage />
+          <NoSearchResultsContent />
         ) : (
           <div className={styles.tableWrapper}>
             <TableComponent
