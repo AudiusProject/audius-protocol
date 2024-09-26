@@ -126,7 +126,7 @@ async function getNewBlasts(
     .with('all_new', function () {
       this.select(
         'blast.from_user_id as sender_user_id',
-        'users.id as receiver_user_id',
+        'users.user_id as receiver_user_id',
         'blast.created_at as timestamp'
       )
         .from('chat_blast as blast')
@@ -137,7 +137,7 @@ async function getNewBlasts(
               .from('follows')
               .where('blast.audience', 'follower_audience')
               .andWhereRaw('follows.followee_user_id = blast.from_user_id')
-              .andWhereRaw('follows.follower_user_id = users.id')
+              .andWhereRaw('follows.follower_user_id = users.user_id')
               .andWhere('follows.is_delete', false)
               .andWhereRaw('follows.created_at < blast.created_at')
           })
@@ -147,7 +147,7 @@ async function getNewBlasts(
                 .from('user_tips as tip')
                 .where('blast.audience', 'tipper_audience')
                 .andWhereRaw('receiver_user_id = blast.from_user_id')
-                .andWhereRaw('sender_user_id = users.id')
+                .andWhereRaw('sender_user_id = users.user_id')
                 .andWhereRaw('tip.created_at < blast.created_at')
             })
             // remixer_audience
@@ -158,7 +158,7 @@ async function getNewBlasts(
                 .join('tracks as og', 'remixes.parent_track_id', 'og.track_id')
                 .where('blast.audience', 'remixer_audience')
                 .andWhereRaw('og.owner_id = blast.from_user_id')
-                .andWhereRaw('t.owner_id = users.id')
+                .andWhereRaw('t.owner_id = users.user_id')
                 .andWhere(function () {
                   this.whereNull('blast.audience_content_id').orWhere(
                     function () {
@@ -176,7 +176,7 @@ async function getNewBlasts(
                 .from('usdc_purchases as p')
                 .where('blast.audience', 'customer_audience')
                 .andWhereRaw('p.seller_user_id = blast.from_user_id')
-                .andWhereRaw('p.buyer_user_id = users.id')
+                .andWhereRaw('p.buyer_user_id = users.user_id')
                 .andWhere(function () {
                   this.whereNull('blast.audience_content_id').orWhere(
                     function () {
