@@ -90,11 +90,6 @@ jobs:
       context: [Vercel, dockerhub]
       service: uptime
       notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-ddex-processor
-      context: [GCP, dockerhub, slack-secrets]
-      service: ddex-processor
-      notify_slack_on_failure: true
   - release-governance-trigger:
       type: approval
   - release-governance:
@@ -120,7 +115,6 @@ jobs:
         - push-comms
         - push-trpc
         - push-uptime
-        - push-ddex-processor
 
   - deploy-foundation-nodes-trigger:
       requires:
