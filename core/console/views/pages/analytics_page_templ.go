@@ -48,7 +48,7 @@ func (p *Pages) AnalyticsPageHTML(data *AnalyticsPageView) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"uk-container uk-width-1-1\"><div class=\"uk-grid-large uk-child-width-1-4@m\" uk-grid><div><div class=\"uk-card uk-card-default uk-card-body\"><h3 class=\"uk-card-title\">Total Blocks</h3><p>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"uk-container uk-width-1-1 flex flex-col flex-grow\"><div class=\"uk-grid-large uk-child-width-1-4@m\" uk-grid><div><div class=\"uk-card uk-card-default uk-card-body\"><h3 class=\"uk-card-title\">Total Blocks</h3><p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -100,7 +100,7 @@ func (p *Pages) AnalyticsPageHTML(data *AnalyticsPageView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div></div></div><div class=\"uk-margin-top\"><div class=\"uk-card uk-card-large uk-card-default uk-card-body\">Large Card</div></div></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div></div></div><div class=\"uk-margin-top uk-width-1-1 h-full flex-grow flex flex-col\"><div class=\"uk-card uk-card-large uk-card-default uk-card-body h-full flex-grow flex flex-col\"><h1 class=\"uk-card-title uk-text-lead\">Transactions</h1><svg id=\"chart\" width=\"100%\" height=\"100%\" preserveAspectRatio=\"none\" class=\"flex-grow\"></svg></div></div></div><script type=\"module\">\n    import { chart } from './assets/js/main.js'\n\n    // Call the chart function after the DOM is fully loaded\n    document.addEventListener(\"DOMContentLoaded\", () => {\n      chart()\n    })\n  </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

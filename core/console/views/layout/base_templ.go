@@ -44,7 +44,7 @@ func (l *Layout) Base() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" type=\"image/x-icon\"><script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@1.8.0/dist/htmx.min.js\"></script><link rel=\"stylesheet\" href=\"https://unpkg.com/franken-ui@1.1.0/dist/css/core.min.css\"><script src=\"https://unpkg.com/franken-ui@1.1.0/dist/js/core.iife.js\" type=\"module\"></script><script src=\"https://unpkg.com/franken-ui@1.1.0/dist/js/icon.iife.js\" type=\"module\"></script></head><body class=\"bg-gray-100 text-gray-900 font-sans\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" type=\"image/x-icon\"><script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://d3js.org/d3.v7.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@1.8.0/dist/htmx.min.js\"></script><link rel=\"stylesheet\" href=\"https://unpkg.com/franken-ui@1.1.0/dist/css/core.min.css\"><script src=\"https://unpkg.com/franken-ui@1.1.0/dist/js/core.iife.js\" type=\"module\"></script><script src=\"https://unpkg.com/franken-ui@1.1.0/dist/js/icon.iife.js\" type=\"module\"></script><script src=\"/console/assets/js/main.js\" type=\"module\"></script></head><body class=\"bg-gray-100 text-gray-900 font-sans\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
