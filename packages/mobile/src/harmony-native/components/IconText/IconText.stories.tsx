@@ -5,10 +5,10 @@ import {
   IconPin,
   IconStar,
   IconTipping,
-  IconTrophy
+  IconTrophy,
+  Divider,
+  Flex
 } from '@audius/harmony-native'
-
-import { Divider, Flex } from '../..'
 
 import { IconText } from './IconText'
 
