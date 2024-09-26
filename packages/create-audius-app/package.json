@@ -13,7 +13,7 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\"",
-    "start-example": "echo $EXAMPLE && concurrently \"cd $EXAMPLE && npm run start\""
+    "start-example": "echo $EXAMPLE && concurrently \"cd examples/$EXAMPLE && npm run start\""
   },
   "repository": {
     "type": "git",

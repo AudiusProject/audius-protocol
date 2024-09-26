@@ -45,7 +45,7 @@ export default function App() {
         scope: 'write'
       })
     }
-  }, [])
+  }, [sdk.oauth])
 
   /**
    * Fetch tracks based on the user handle present in handleInputRef

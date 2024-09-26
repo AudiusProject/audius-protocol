@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { logger } from 'hono/logger'
 import { HTTPException } from 'hono/http-exception'
-import { AudiusSdk } from '@audius/sdk'
+import type { AudiusSdk } from '@audius/sdk'
 
 const apiKey = import.meta.env.VITE_AUDIUS_API_SECRET as string
 const apiSecret = import.meta.env.VITE_AUDIUS_API_SECRET as string
