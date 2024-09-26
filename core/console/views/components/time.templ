@@ -1,0 +1,10 @@
+package components
+
+import (
+	"github.com/dustin/go-humanize"
+	"time"
+)
+
+templ (c *Components) TimeSince(t time.Time) {
+	<span>{ humanize.Time(t) }</span>
+}

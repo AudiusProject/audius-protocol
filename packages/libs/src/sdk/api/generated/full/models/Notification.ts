@@ -42,12 +42,26 @@ import {
     ClaimableRewardNotificationToJSON,
 } from './ClaimableRewardNotification';
 import {
+    CommentMentionNotification,
+    instanceOfCommentMentionNotification,
+    CommentMentionNotificationFromJSON,
+    CommentMentionNotificationFromJSONTyped,
+    CommentMentionNotificationToJSON,
+} from './CommentMentionNotification';
+import {
     CommentNotification,
     instanceOfCommentNotification,
     CommentNotificationFromJSON,
     CommentNotificationFromJSONTyped,
     CommentNotificationToJSON,
 } from './CommentNotification';
+import {
+    CommentThreadNotification,
+    instanceOfCommentThreadNotification,
+    CommentThreadNotificationFromJSON,
+    CommentThreadNotificationFromJSONTyped,
+    CommentThreadNotificationToJSON,
+} from './CommentThreadNotification';
 import {
     CosignNotification,
     instanceOfCosignNotification,
@@ -222,7 +236,7 @@ import {
  * 
  * @export
  */
-export type Notification = { type: 'announcement' } & AnnouncementNotification | { type: 'approve_manager_request' } & ApproveManagerRequestNotification | { type: 'challenge_reward' } & ChallengeRewardNotification | { type: 'claimable_reward' } & ClaimableRewardNotification | { type: 'comment' } & CommentNotification | { type: 'cosign' } & CosignNotification | { type: 'create' } & CreateNotification | { type: 'follow' } & FollowNotification | { type: 'milestone' } & MilestoneNotification | { type: 'reaction' } & ReactionNotification | { type: 'remix' } & RemixNotification | { type: 'repost' } & RepostNotification | { type: 'repost_of_repost' } & RepostOfRepostNotification | { type: 'request_manager' } & RequestManagerNotification | { type: 'save' } & SaveNotification | { type: 'save_of_repost' } & SaveOfRepostNotification | { type: 'supporter_dethroned' } & SupporterDethronedNotification | { type: 'supporter_rank_up' } & SupporterRankUpNotification | { type: 'supporting_rank_up' } & SupporterRankUpNotification | { type: 'tastemaker' } & TastemakerNotification | { type: 'tier_change' } & TierChangeNotification | { type: 'tip_receive' } & ReceiveTipNotification | { type: 'tip_send' } & SendTipNotification | { type: 'track_added_to_playlist' } & TrackAddedToPlaylistNotification | { type: 'track_added_to_purchased_album' } & TrackAddedToPurchasedAlbumNotification | { type: 'trending' } & TrendingNotification | { type: 'trending_playlist' } & TrendingPlaylistNotification | { type: 'trending_underground' } & TrendingUndergroundNotification | { type: 'usdc_purchase_buyer' } & UsdcPurchaseBuyerNotification | { type: 'usdc_purchase_seller' } & UsdcPurchaseSellerNotification;
+export type Notification = { type: 'announcement' } & AnnouncementNotification | { type: 'approve_manager_request' } & ApproveManagerRequestNotification | { type: 'challenge_reward' } & ChallengeRewardNotification | { type: 'claimable_reward' } & ClaimableRewardNotification | { type: 'comment' } & CommentNotification | { type: 'comment_mention' } & CommentMentionNotification | { type: 'comment_thread' } & CommentThreadNotification | { type: 'cosign' } & CosignNotification | { type: 'create' } & CreateNotification | { type: 'follow' } & FollowNotification | { type: 'milestone' } & MilestoneNotification | { type: 'reaction' } & ReactionNotification | { type: 'remix' } & RemixNotification | { type: 'repost' } & RepostNotification | { type: 'repost_of_repost' } & RepostOfRepostNotification | { type: 'request_manager' } & RequestManagerNotification | { type: 'save' } & SaveNotification | { type: 'save_of_repost' } & SaveOfRepostNotification | { type: 'supporter_dethroned' } & SupporterDethronedNotification | { type: 'supporter_rank_up' } & SupporterRankUpNotification | { type: 'supporting_rank_up' } & SupporterRankUpNotification | { type: 'tastemaker' } & TastemakerNotification | { type: 'tier_change' } & TierChangeNotification | { type: 'tip_receive' } & ReceiveTipNotification | { type: 'tip_send' } & SendTipNotification | { type: 'track_added_to_playlist' } & TrackAddedToPlaylistNotification | { type: 'track_added_to_purchased_album' } & TrackAddedToPurchasedAlbumNotification | { type: 'trending' } & TrendingNotification | { type: 'trending_playlist' } & TrendingPlaylistNotification | { type: 'trending_underground' } & TrendingUndergroundNotification | { type: 'usdc_purchase_buyer' } & UsdcPurchaseBuyerNotification | { type: 'usdc_purchase_seller' } & UsdcPurchaseSellerNotification;
 
 export function NotificationFromJSON(json: any): Notification {
     return NotificationFromJSONTyped(json, false);
@@ -243,6 +257,10 @@ export function NotificationFromJSONTyped(json: any, ignoreDiscriminator: boolea
             return {...ClaimableRewardNotificationFromJSONTyped(json, true), type: 'claimable_reward'};
         case 'comment':
             return {...CommentNotificationFromJSONTyped(json, true), type: 'comment'};
+        case 'comment_mention':
+            return {...CommentMentionNotificationFromJSONTyped(json, true), type: 'comment_mention'};
+        case 'comment_thread':
+            return {...CommentThreadNotificationFromJSONTyped(json, true), type: 'comment_thread'};
         case 'cosign':
             return {...CosignNotificationFromJSONTyped(json, true), type: 'cosign'};
         case 'create':
@@ -316,6 +334,10 @@ export function NotificationToJSON(value?: Notification | null): any {
             return ClaimableRewardNotificationToJSON(value);
         case 'comment':
             return CommentNotificationToJSON(value);
+        case 'comment_mention':
+            return CommentMentionNotificationToJSON(value);
+        case 'comment_thread':
+            return CommentThreadNotificationToJSON(value);
         case 'cosign':
             return CosignNotificationToJSON(value);
         case 'create':

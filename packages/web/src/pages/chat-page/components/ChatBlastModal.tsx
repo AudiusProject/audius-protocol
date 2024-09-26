@@ -161,12 +161,13 @@ const LabelWithCount = (props: {
   isSelected: boolean
 }) => {
   const { label, count, isSelected } = props
+
   return (
     <Flex gap='xs'>
       <Text variant='title' size='l'>
         {label}
       </Text>
-      {isSelected && count !== undefined ? (
+      {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
           ({count})
         </Text>
