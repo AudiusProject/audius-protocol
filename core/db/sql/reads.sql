@@ -61,3 +61,15 @@ select * from core_blocks order by created_at desc limit 10;
 
 -- name: GetRecentTxs :many
 select * from core_tx_results order by created_at desc limit 10;
+
+-- name: TotalBlocks :one
+select count(*) from core_blocks;
+
+-- name: TotalTransactions :one
+select count(*) from core_tx_results;
+
+-- name: TotalTransactionsByType :one
+select count(*) from core_tx_stats where tx_type = $1;
+
+-- name: TotalValidators :one
+select count(*) from core_validators;

@@ -385,12 +385,56 @@ func (q *Queries) GetTx(ctx context.Context, lower string) (CoreTxResult, error)
 	return i, err
 }
 
+const totalBlocks = `-- name: TotalBlocks :one
+select count(*) from core_blocks
+`
+
+func (q *Queries) TotalBlocks(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalBlocks)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactions = `-- name: TotalTransactions :one
+select count(*) from core_tx_results
+`
+
+func (q *Queries) TotalTransactions(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactionsByType = `-- name: TotalTransactionsByType :one
+select count(*) from core_tx_stats where tx_type = $1
+`
+
+func (q *Queries) TotalTransactionsByType(ctx context.Context, txType string) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactionsByType, txType)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const totalTxResults = `-- name: TotalTxResults :one
 select count(tx_hash) from core_tx_results
 `
 
 func (q *Queries) TotalTxResults(ctx context.Context) (int64, error) {
 	row := q.db.QueryRow(ctx, totalTxResults)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalValidators = `-- name: TotalValidators :one
+select count(*) from core_validators
+`
+
+func (q *Queries) TotalValidators(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalValidators)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
