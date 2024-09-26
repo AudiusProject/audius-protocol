@@ -4,17 +4,16 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState
 } from 'react'
 
 import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
+import { useToggle } from 'react-use'
 
-import {
-  useGetCommentsByTrackId,
-  useGetCurrentUserId,
-  useGetTrackById
-} from '../../api'
+import { useGetCurrentUserId, useGetTrackById } from '../../api'
 import {
   ID,
   PaginatedStatus,
@@ -26,6 +25,8 @@ import {
 import { tracksActions } from '../../store/pages/track/lineup/actions'
 import { playerSelectors } from '../../store/player'
 import { Nullable } from '../../utils'
+
+import { useGetCommentsByTrackId } from './tanQueryClient'
 
 type CommentSectionProviderProps = {
   entityId: ID
@@ -47,7 +48,7 @@ type CommentSectionContextType = {
   track: UserTrackMetadata
   playTrack: () => void
   commentSectionLoading: boolean
-  comments: Comment[]
+  commentIds: Comment[]
   currentSort: TrackCommentsSortMethodEnum
   isLoadingMorePages: boolean
   hasMorePages: boolean
@@ -81,27 +82,35 @@ export const CommentSectionProvider = (
   )
 
   const { data: currentUserId } = useGetCurrentUserId({})
+  // TODO: fix types here
   const {
-    data: comments = [],
+    data: commentIds = [],
     status,
-    loadMore,
-    reset,
-    hasMore: hasMorePages
-  } = useGetCommentsByTrackId(
-    { entityId, sortMethod: currentSort, userId: currentUserId },
-    {
-      pageSize: 5,
-      disabled: entityId === 0
-    }
-  )
+    fetchNextPage,
+    isFetchingNextPage: isLoadingMorePages
+  } = useGetCommentsByTrackId({
+    trackId: entityId,
+    sortMethod: currentSort,
+    userId: currentUserId
+  })
+
+  const loadMore = () => {
+    console.log('LOADING MORE ')
+    // !isLoadingMorePages && fetchNextPage()
+  }
+  const queryClient = useQueryClient()
+  const reset = () => {
+    // toggleRerender()
+    queryClient.resetQueries({ queryKey: ['trackCommentList'] })
+  }
+  const hasMorePages = false
   const dispatch = useDispatch()
   const playerUid = useSelector(playerSelectors.getUid) ?? undefined
   const playTrack = useCallback(() => {
     dispatch(tracksActions.play(playerUid))
   }, [dispatch, playerUid])
 
-  const commentSectionLoading =
-    status === Status.LOADING || status === Status.IDLE
+  const commentSectionLoading = status === 'loading'
 
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
@@ -124,10 +133,10 @@ export const CommentSectionProvider = (
         entityId,
         entityType,
         commentCount,
-        comments,
+        commentIds,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
-        isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        isLoadingMorePages,
         track,
         reset,
         hasMorePages,

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
-import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useGetCommentRepliesById } from '@audius/common/api'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { ID, ReplyComment } from '@audius/common/models'
+import { useGetCommentById } from '@audius/common/src/context/comments/tanQueryClient'
 import {
   Box,
   Flex,
@@ -10,11 +11,15 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony'
+import { Comment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
 
 export const CommentThread = ({ commentId }: { commentId: ID }) => {
-  const { data: rootComment } = useGetCommentById({ id: commentId })
+  const { data: rootComment } = useGetCommentById(
+    commentId
+  ) as unknown as Comment // TODO: fix types
+  // const { data: rootComment } = useGetCommentById({ id: commentId })
   const [hasLoadedMore, setHasLoadedMore] = useState(false)
   const {
     data: moreReplies,

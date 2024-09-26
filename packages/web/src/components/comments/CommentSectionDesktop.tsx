@@ -24,7 +24,7 @@ import { NoComments } from './NoComments'
 export const CommentSectionDesktop = () => {
   const {
     currentUserId,
-    comments,
+    commentIds,
     commentSectionLoading,
     isLoadingMorePages,
     reset,
@@ -59,6 +59,13 @@ export const CommentSectionDesktop = () => {
       >
         Refresh{' '}
       </Button>
+      <Button
+        onClick={() => {
+          loadMorePages()
+        }}
+      >
+        Load More
+      </Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed ? (
           <>
@@ -79,8 +86,8 @@ export const CommentSectionDesktop = () => {
             threshold={-250}
           >
             <Flex direction='column' gap='xl' pt='m'>
-              {comments.length === 0 ? <NoComments /> : null}
-              {comments.map(({ id }) => (
+              {commentIds.length === 0 ? <NoComments /> : null}
+              {commentIds.map((id) => (
                 <CommentThread commentId={id} key={id} />
               ))}
               {isLoadingMorePages ? (

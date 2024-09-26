@@ -10,16 +10,15 @@ import {
   useDeleteCommentById,
   useEditCommentById,
   usePinCommentById,
-  usePostComment as useAQueryPostComment,
-  useReactToCommentById,
   useReportCommentById
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
+import * as tanQuery from './tanQueryClient'
 
 export const usePostComment = () => {
   const { currentUserId, entityId, entityType } = useCurrentCommentSection()
-  const [postComment, postCommentResponse] = useAQueryPostComment()
+  const { mutate: postComment, ...rest } = tanQuery.usePostComment()
 
   const wrappedHandler = async (
     message: string,
@@ -40,7 +39,7 @@ export const usePostComment = () => {
     }
   }
 
-  return [wrappedHandler, postCommentResponse] as const
+  return [wrappedHandler, rest] as const
 }
 
 /**
@@ -70,19 +69,19 @@ export const useCommentPostStatus = (comment: Comment | ReplyComment) => {
 }
 
 export const useReactToComment = () => {
-  const [reactToComment, reactToCommentResponse] = useReactToCommentById()
+  const { mutate: reactToComment, ...response } = tanQuery.useReactToComment()
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
   const wrappedHandler = async (commentId: ID, isLiked: boolean) => {
     if (currentUserId) {
       reactToComment({
-        id: commentId,
+        commentId,
         userId: currentUserId,
         isLiked,
         isEntityOwner
       })
     }
   }
-  return [wrappedHandler, reactToCommentResponse] as const
+  return [wrappedHandler, response] as const
 }
 
 export const useEditComment = () => {
@@ -106,14 +105,19 @@ export const useEditComment = () => {
 }
 
 export const usePinComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
-  const [pinComment, pinCommentResponse] = usePinCommentById()
+  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { mutate: pinComment, ...rest } = tanQuery.usePinComment()
   const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
-      pinComment({ id: commentId, userId: currentUserId, isPinned })
+      pinComment({
+        commentId,
+        userId: currentUserId,
+        trackId: entityId,
+        isPinned
+      })
     }
   }
-  return [wrappedHandler, pinCommentResponse] as const
+  return [wrappedHandler, rest] as const
 }
 
 export const useReportComment = () => {

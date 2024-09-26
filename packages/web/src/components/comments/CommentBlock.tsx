@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { useGetCommentById, useGetUserById } from '@audius/common/api'
+import { useGetUserById } from '@audius/common/api'
 import {
   useCommentPostStatus,
   useCurrentCommentSection,
@@ -9,6 +9,7 @@ import {
 import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
+import { useGetCommentById } from '@audius/common/src/context/comments/tanQueryClient'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -158,7 +159,7 @@ const CommentBlockInternal = (
 // This is an extra component wrapper because the comment data coming back from aquery could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { data: comment } = useGetCommentById({ id: props.commentId })
+  const { data: comment } = useGetCommentById(props.commentId)
   if (!comment) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }
