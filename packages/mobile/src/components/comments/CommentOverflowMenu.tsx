@@ -6,7 +6,8 @@ import {
   useCurrentCommentSection,
   useDeleteComment,
   usePinComment,
-  useReportComment
+  useReportComment,
+  useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { removeNullable } from '@audius/common/utils'
@@ -71,11 +72,13 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const { entityId, isEntityOwner, currentUserId, setEditingComment } =
     useCurrentCommentSection()
+  console.log('asdf isEntityOwner: ', isEntityOwner)
   const isCommentOwner = Number(userId) === currentUserId
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
   const [reportComment] = useReportComment()
+  const [muteUser] = useMuteUser()
 
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
@@ -133,12 +136,13 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    // TODO
+    // TOD
+    muteUser({ mutedUserId: userId, isMuted: false, entityId })
     toast({
       content: messages.toasts.mutedUser,
       type: 'info'
     })
-  }, [toast])
+  }, [entityId, muteUser, toast, userId])
 
   const handleFlagComment = useCallback(() => {
     reportComment(id)
