@@ -48,11 +48,9 @@ def get_user_tracks_remixed(args: GetUserTracksRemixedArgs):
     with db.scoped_session() as session:
         query = _get_user_tracks_remixed(session, args)
         query_results = add_query_pagination(query, limit, offset).all()
-        logger.info(f"ERROR - REMIXED_TRACKS: query results {query_results}")
         remixed_aggregates = [
             {"track_id": encode_int_id(row[0]), "remix_count": row[1]}
             for row in query_results
         ]
-        logger.info(f"ERROR - REMIXED_TRACKS: aggregates {remixed_aggregates}")
 
     return remixed_aggregates
