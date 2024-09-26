@@ -1,9 +1,40 @@
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 
-const SECONDS_PER_MINUTE = 60
-const MINUTES_PER_HOUR = 60
-const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+export const MS_IN_S = 1000
+export const S_IN_MIN = 60
+export const MIN_IN_HR = 60
+export const HR_IN_DAY = 24
+export const DAY_IN_MONTH = 30
+export const MONTH_IN_YEAR = 12
+const SECONDS_PER_HOUR = S_IN_MIN * MIN_IN_HR
+
+export type TimeUnit = 'm' | 'h' | 'd' | 'mo' | 'y'
+
+const timeUnitMsMap: Record<TimeUnit, number> = {
+  m: MS_IN_S * S_IN_MIN,
+  h: MS_IN_S * S_IN_MIN * MIN_IN_HR,
+  d: MS_IN_S * S_IN_MIN * MIN_IN_HR * HR_IN_DAY,
+  mo: MS_IN_S * S_IN_MIN * MIN_IN_HR * HR_IN_DAY * DAY_IN_MONTH,
+  y: MS_IN_S * S_IN_MIN * MIN_IN_HR * HR_IN_DAY * DAY_IN_MONTH * MONTH_IN_YEAR
+} as const
+
+export const getLargestTimeUnitText = (time: Date) => {
+  const then = new Date(time).getTime()
+  const now = Date.now()
+  const diff = now - then
+  let unit: TimeUnit | null = null
+
+  // Iterate through all time units to determine the largest one
+  Object.entries(timeUnitMsMap).forEach(([u, ms]) => {
+    if (diff >= ms) {
+      unit = u as TimeUnit
+    }
+  })
+
+  return unit ? `${Math.floor(diff / timeUnitMsMap[unit])}${unit}` : 'just now'
+}
+
 dayjs.extend(advancedFormat)
 
 export const formatDateWithTimezoneOffset = (date: string): string => {
