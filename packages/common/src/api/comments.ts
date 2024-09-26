@@ -1,7 +1,8 @@
 import {
   EntityType,
   TrackCommentsSortMethodEnum,
-  CommentMetadata
+  CommentMetadata,
+  EntityManagerAction
 } from '@audius/sdk'
 import { ThunkDispatch } from '@reduxjs/toolkit'
 
@@ -331,6 +332,41 @@ const commentsApi = createApi({
           userId
         )
       }
+    },
+    getTrackCommentNotificationSetting: {
+      fetch: async (
+        {
+          trackId,
+          currentUserId
+        }: { trackId: ID; currentUserId: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        if (!currentUserId) return
+        const sdk = await audiusSdk()
+        const response = await sdk.tracks.trackCommentNotificationSetting({
+          trackId: encodeHashId(trackId),
+          userId: encodeHashId(currentUserId)
+        })
+
+        return response.data?.isMuted
+      },
+      options: {}
+    },
+    updateCommentNotificationSettings: {
+      async fetch(
+        config: {
+          userId: ID
+          entityId: ID
+          entityType: EntityType
+          action: EntityManagerAction.MUTE | EntityManagerAction.UNMUTE
+        },
+
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        await sdk.comments.updateCommentNotificationSetting(config)
+      },
+      options: { type: 'mutation' }
     }
   }
 })
@@ -344,7 +380,9 @@ export const {
   usePinCommentById,
   useReactToCommentById,
   useGetCommentRepliesById,
-  useReportCommentById
+  useReportCommentById,
+  useGetTrackCommentNotificationSetting,
+  useUpdateCommentNotificationSettings
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

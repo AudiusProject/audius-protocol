@@ -1,4 +1,8 @@
-import { useCurrentCommentSection } from '@audius/common/context'
+import { useGetTrackCommentNotificationSetting } from '@audius/common/api'
+import {
+  useCurrentCommentSection,
+  useMuteTrackCommentNotifications
+} from '@audius/common/context'
 import {
   Flex,
   IconButton,
@@ -10,7 +14,8 @@ import {
 import { useTheme } from '@emotion/react'
 
 const messages = {
-  turnOffNotifs: 'Turn off notifications'
+  turnOffNotifs: 'Turn off notifications',
+  turnOnNotifs: 'Turn on notifications'
 }
 
 type CommentHeaderProps = {
@@ -19,11 +24,20 @@ type CommentHeaderProps = {
 
 export const CommentHeader = (props: CommentHeaderProps) => {
   const { isLoading } = props
-  const { handleMuteEntityNotifications, isEntityOwner, commentCount } =
+  const { isEntityOwner, commentCount, entityId, currentUserId } =
     useCurrentCommentSection()
+  const { data: isMuted } = useGetTrackCommentNotificationSetting({
+    trackId: entityId,
+    currentUserId
+  })
+  const [muteNotifications] = useMuteTrackCommentNotifications(entityId)
   const { motion } = useTheme()
+
   const popupMenuItems: PopupMenuItem[] = [
-    { onClick: handleMuteEntityNotifications, text: messages.turnOffNotifs }
+    {
+      onClick: () => muteNotifications(isMuted ? 'unmute' : 'mute'),
+      text: isMuted ? messages.turnOnNotifs : messages.turnOffNotifs
+    }
   ]
 
   return (

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
+from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
@@ -128,6 +129,7 @@ def populate_mock_db(db, entities, block_offset=None):
         comment_threads = entities.get("comment_threads", [])
         comment_reactions = entities.get("comment_reactions", [])
         comment_mentions = entities.get("comment_mentions", [])
+        comment_notification_settings = entities.get("comment_notification_settings", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -178,6 +180,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(comments),
             len(comment_threads),
             len(comment_mentions),
+            len(comment_notification_settings),
             len(users),
             len(developer_apps),
             len(grants),
@@ -843,6 +846,16 @@ def populate_mock_db(db, entities, block_offset=None):
                 txhash=comment_mentions_meta.get("txhash", str(i + block_offset)),
                 blockhash=comment_mentions_meta.get("blockhash", str(i + block_offset)),
                 blocknumber=i + block_offset,
+            )
+            session.add(comment_mention_record)
+        for i, comment_notification_setting in enumerate(comment_notification_settings):
+            comment_mention_record = CommentNotificationSetting(
+                id=comment_notification_setting.get("id", i),
+                user_id=comment_notification_setting.get("user_id", i),
+                track_id=comment_notification_setting.get("track_id", i),
+                comment_id=comment_notification_setting.get("comment_id", i),
+                created_at=comment_notification_setting.get("created_at", datetime.now()),
+                updated_at=comment_notification_setting.get("updated_at", datetime.now()),
             )
             session.add(comment_mention_record)
 

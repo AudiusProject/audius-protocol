@@ -55,7 +55,6 @@ type CommentSectionContextType = {
   setCurrentSort: (sort: TrackCommentsSortMethodEnum) => void
   loadMorePages: () => void
   handleLoadMoreReplies: (commentId: string) => void
-  handleMuteEntityNotifications: () => void
 } & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
@@ -106,9 +105,6 @@ export const CommentSectionProvider = (
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
   }
-  const handleMuteEntityNotifications = () => {
-    console.log('Muting all notifs for ', entityId)
-  }
 
   if (!track) {
     return null
@@ -139,8 +135,7 @@ export const CommentSectionProvider = (
         setCurrentSort,
         playTrack,
         handleLoadMoreReplies,
-        loadMorePages: loadMore,
-        handleMuteEntityNotifications
+        loadMorePages: loadMore
       }}
     >
       {children}

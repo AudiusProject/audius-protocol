@@ -40,3 +40,11 @@ base_comment_model = ns.model(
         "replies": fields.List(fields.Nested(reply_comment_model), require=True),
     },
 )
+
+
+comment_notification_setting_model = ns.model(
+    "comment_notification_setting",
+    {
+        "is_muted": fields.Boolean(required=True)
+    },
+)

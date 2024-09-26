@@ -3,6 +3,7 @@ declare
   entity_owner_id int;
   parent_comment_id int;
   parent_comment_owner_id int;
+  notification_muted boolean;
 begin
   if new.entity_type = 'Track' then
     insert into aggregate_track (track_id) 
@@ -39,11 +40,18 @@ begin
       into parent_comment_owner_id 
       from comments 
       where comment_id = parent_comment_id;
+
+      select comment_notification_settings.is_muted
+      into notification_muted
+      from comment_notification_settings
+      where user_id = entity_owner_id
+      and track_id = new.entity_id;
 	  end if;
   end if;
 
   begin
-    if new.user_id != entity_owner_id and 
+    if notification_muted is not true and
+       new.user_id != entity_owner_id and 
       (parent_comment_owner_id is null or 
        parent_comment_owner_id != new.user_id) then
       insert into notification

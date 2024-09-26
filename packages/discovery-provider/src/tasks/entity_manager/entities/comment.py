@@ -319,3 +319,8 @@ def unpin_comment(params: ManageEntityParameters):
     comment.is_pinned = False
 
     params.add_record(comment_id, comment)
+
+# def mute_comment(params: ManageEntityParameters):
+#     entity_id = params.entity_id
+
+#     comment_notification_setting = CommentNotificationSetting()

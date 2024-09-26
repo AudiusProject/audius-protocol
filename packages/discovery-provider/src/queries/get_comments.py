@@ -5,6 +5,7 @@ from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
+from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
@@ -191,3 +192,17 @@ def get_track_comments(args, track_id, current_user_id=None):
             if (reply_count := get_reply_count(session, track_comment.comment_id))
             or track_comment.is_delete is False
         ]
+
+
+def get_track_notification_setting(track_id, current_user_id):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        notification_setting = session.query(
+            CommentNotificationSetting, CommentNotificationSetting.is_muted
+        ).filter(
+            CommentNotificationSetting.user_id == current_user_id,
+            CommentNotificationSetting.entity_id == track_id,
+            CommentNotificationSetting.entity_type == "Track",
+        ).first()
+
+        return {"is_muted": notification_setting.is_muted if notification_setting else False}

@@ -320,3 +320,11 @@ immutable_user_fields = immutable_fields | {
     "is_available",
     "is_verified",
 }
+
+track_comment_notification_setting_format = {
+    "is_muted": None,
+}
+
+comment_notification_setting_format = {
+    "is_muted": None,
+}

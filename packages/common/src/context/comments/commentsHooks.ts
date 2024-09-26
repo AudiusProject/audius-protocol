@@ -1,4 +1,4 @@
-import { CommentMetadata } from '@audius/sdk'
+import { CommentMetadata, EntityManagerAction, EntityType } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { getKeyFromFetchArgs } from '~/audius-query/utils'
@@ -12,7 +12,9 @@ import {
   usePinCommentById,
   usePostComment as useAQueryPostComment,
   useReactToCommentById,
-  useReportCommentById
+  useReportCommentById,
+  useUpdateCommentNotificationSettings,
+  useGetCurrentUserId
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
@@ -136,5 +138,47 @@ export const useDeleteComment = () => {
       deleteComment({ id: commentId, userId: currentUserId, entityId })
     }
   }
+  return [wrappedHandler, response] as const
+}
+
+export const useMuteTrackCommentNotifications = (trackId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const [updateSetting, response] = useUpdateCommentNotificationSettings()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        entityId: trackId,
+        entityType: EntityType.TRACK,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
+  return [wrappedHandler, response] as const
+}
+
+export const useMuteCommentNotifications = (commentId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const [updateSetting, response] = useUpdateCommentNotificationSettings()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        entityId: commentId,
+        entityType: EntityType.COMMENT,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
   return [wrappedHandler, response] as const
 }

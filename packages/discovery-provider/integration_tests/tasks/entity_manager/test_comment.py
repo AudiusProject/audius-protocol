@@ -667,3 +667,74 @@ def test_comment_threads(app, mocker):
         assert len(comment_notifications) == 2
         assert comment_notifications[0].type == "comment"
         assert comment_notifications[1].type == "comment_thread"
+
+
+def test_muted_track_notifications(app, mocker):
+    "Tests threads are saved to db"
+
+    mute_track_comments_metadata = {
+        "user_id": 1,
+        "track_id": 1,
+        "is_muted": True,
+    }
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+    }
+
+    tx_receipts = {
+        "MuteTrackComments": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Mute",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(mute_track_comments_metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        comments = session.query(Comment).all()
+        assert len(comments) == 1
+
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 0
