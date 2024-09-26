@@ -223,6 +223,11 @@ async function getNewBlasts(
         ':' +
         HashId.parse(message.sender_user_id)
     }
+    console.log('REED calculated chatId for users:', {
+      sender: message.sender_user_id,
+      receiver: message.receiver_user_id,
+      chatId
+    })
     return { ...message, chatId }
   })
   console.log('REED after calculating chatId', { messages2 })
