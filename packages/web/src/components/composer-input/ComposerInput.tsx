@@ -1,10 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
-import {
-  useAudiusLinkResolver,
-  useGatedContentAccess
-} from '@audius/common/hooks'
+import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
@@ -76,7 +73,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const { data: track } = useGetTrackById({
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
-  const { hasStreamAccess } = useGatedContentAccess(track ?? null)
 
   const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [value, setValue] = useState(presetMessage ?? '')
@@ -142,7 +138,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const getTimestamps = useCallback(
     (value: string) => {
-      if (!track || !hasStreamAccess) return []
+      if (!track || !track.access.stream) return []
 
       const { duration } = track
       return Array.from(value.matchAll(timestampRegex))
@@ -154,7 +150,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
           link: ''
         }))
     },
-    [hasStreamAccess, track]
+    [track]
   )
 
   const handleAutocomplete = useCallback(
