@@ -1,16 +1,22 @@
 import { useEffect } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 import { ChatPermission } from '@audius/sdk'
 import { TouchableOpacity, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 
 import {
   Button,
+  Divider,
   Flex,
   IconMessage,
-  IconMessageBlock
+  IconMessageBlock,
+  IconUser,
+  IconVerified
 } from '@audius/harmony-native'
+import { IconAudioBadge } from 'app/components/audio-rewards'
 import {
   RadioButton,
   Text,
@@ -21,6 +27,7 @@ import {
 import { ProfileCard, UserList } from 'app/components/user-list'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
+import { useThemePalette } from 'app/utils/theme'
 
 import { UserListScreen } from '../user-list-screen/UserListScreen'
 
@@ -30,6 +37,7 @@ const messages = {
   description: 'Prevent certain users from commenting on your tracks.',
   followeeTitle: 'Only Allow Messages From People You Follow',
   unmute: 'Unmute',
+  followers: 'Followers',
   followeeDescription:
     'Only users that you follow can send you direct messages.',
   tipperTitle: 'Only Allow Messages From Your Supporters',
@@ -112,39 +120,72 @@ export const CommentSettingsScreen = () => {
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
+
   return (
-    <UserListScreen title={messages.title} titleIcon={IconUserGroup}>
-      <UserList
-        userSelector={getUserList}
-        tag={RELATED_ARTISTS_USER_LIST_TAG}
-        setUserList={handleSetRelatedArtists}
-      />
-    </UserListScreen>
+    <Screen
+      title={messages.title}
+      variant='secondary'
+      topbarRight={null}
+      icon={IconMessageBlock}
+    >
+      <ScreenContent>
+        <Flex p='xl' style={styles.description}>
+          <Text>{messages.description}</Text>
+        </Flex>
+
+        <ScrollView style={styles.scrollContainer}>
+          {mutedUsers &&
+            mutedUsers.map((user) => (
+              <UserListItem key={user.user_id} user={user} />
+            ))}
+        </ScrollView>
+      </ScreenContent>
+    </Screen>
   )
+}
 
-  // return (
-  //   <Screen
-  //     title={messages.title}
-  //     variant='secondary'
-  //     topbarRight={null}
-  //     icon={IconMessageBlock}
-  //   >
-  //     <ScreenContent>
-  //       <Text style={styles.description}>{messages.description}</Text>
-
-  //       <ScrollView style={styles.scrollContainer}>
-  //         {mutedUsers.map((user) => (
-  //           <Flex key={user.user_id} direction='row'>
-  //             <ProfilePicture userId={user.user_id} size='large' />
-  //             <Flex direction='column'>
-  //               <Text>{user.name}</Text>
-  //               <Text>@{user.handle}</Text>
-  //             </Flex>
-  //             <Button size='small'>{messages.unmute}</Button>
-  //           </Flex>
-  //         ))}
-  //       </ScrollView>
-  //     </ScreenContent>
-  //   </Screen>
-  // )
+const UserListItem = (props) => {
+  const { user } = props
+  const palette = useThemePalette()
+  const { tier } = useSelectTierInfo(user.user_id)
+  console.log('asdf user: ', user)
+  return (
+    <>
+      <Flex direction='row' alignItems='center' p='l'>
+        <Flex direction='row' gap='s'>
+          <ProfilePicture userId={user.user_id} size='large' />
+          <Flex direction='column' gap='m'>
+            <Flex direction='column' gap='xs'>
+              <Flex direction='row' backgroundColor='white' gap='xs'>
+                <Text>{user.name}</Text>
+                {user.is_verified ? (
+                  <IconVerified
+                    height={14}
+                    width={14}
+                    fill={palette.staticPrimary}
+                    fillSecondary={palette.staticWhite}
+                  />
+                ) : null}
+                <IconAudioBadge tier={tier} height={16} width={16} />
+              </Flex>
+              <Text>@{user.handle}</Text>
+            </Flex>
+            <Flex direction='row' mb='auto' gap='xs'>
+              <IconUser size='s' color='subdued' />
+              <Text fontSize='small' weight='bold' color='neutralLight4'>
+                {formatCount(user.follower_count)}
+              </Text>
+              <Text fontSize='small' color='neutralLight4' weight='medium'>
+                {messages.followers}
+              </Text>
+            </Flex>
+          </Flex>
+        </Flex>
+        <Flex ml='auto'>
+          <Button size='small'>{messages.unmute}</Button>
+        </Flex>
+      </Flex>
+      <Divider />
+    </>
+  )
 }

@@ -74,8 +74,8 @@ export const getTierAndVerifiedForUser = createSelector(
     wei,
     isVerified
   ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
-    const { tier, tierNumber } = getTierAndNumberForBalance(wei)
-    return { tier, isVerified, tierNumber }
+    const { tierNumber } = getTierAndNumberForBalance(wei)
+    return { tier: 'gold', isVerified: true, tierNumber }
   }
 )
 
