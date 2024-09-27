@@ -101,10 +101,10 @@ module.exports = {
           label: 'Deal Types',
           items: [
             'distributors/specification/deal-types/recommended',
-            'distributors/specification/deal-types/supported-deal-types'
+            'distributors/specification/deal-types/supported-deal-types',
           ],
           collapsed: false,
-        }
+        },
       ],
       collapsed: false,
     },
