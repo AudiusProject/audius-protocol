@@ -1,4 +1,5 @@
 GO_SRCS := $(shell find . -type f -name '*.go') go.sum go.mod $(wildcard config/genesis/*.json)
+JS_SRCS := $(shell find . -type f -name '*.js')
 NATIVE_BIN := ./tmp/core
 AMD64_BIN := ./tmp/core-amd64
 
@@ -19,13 +20,13 @@ VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Versio
 .PHONY: build-native
 build-native: $(NATIVE_BIN)
 
-$(NATIVE_BIN): $(GO_SRCS)
+$(NATIVE_BIN): $(GO_SRCS) $(JS_SRCS)
 	@go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core
 
 .PHONY: build-amd64
 build-amd64: $(AMD64_BIN)
 
-$(AMD64_BIN): $(GO_SRCS)
+$(AMD64_BIN): $(GO_SRCS) $(JS_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core-amd64
 
 .PHONY: deps
