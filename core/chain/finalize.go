@@ -3,10 +3,12 @@ package chain
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/core/grpc"
+	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -23,11 +25,15 @@ func (core *CoreApplication) finalizeTransaction(ctx context.Context, msg *gen_p
 	}
 }
 
-func (core *CoreApplication) persistTxStat(ctx context.Context, tx proto.Message, txhash string, height int64) error {
+func (core *CoreApplication) persistTxStat(ctx context.Context, tx proto.Message, txhash string, height int64, blockTime time.Time) error {
 	if err := core.getDb().InsertTxStat(ctx, db.InsertTxStatParams{
 		TxType:      grpc.GetProtoTypeName(tx),
 		TxHash:      txhash,
 		BlockHeight: height,
+		CreatedAt: pgtype.Timestamp{
+			Time:  blockTime,
+			Valid: true,
+		},
 	}); err != nil {
 		core.logger.Error("error inserting tx stat", "error", err)
 	}

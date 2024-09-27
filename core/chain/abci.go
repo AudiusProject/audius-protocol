@@ -117,7 +117,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
-			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height); err != nil {
+			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
 				app.logger.Errorf("failed to persist tx stat: %v", err)
 			}
 		} else {

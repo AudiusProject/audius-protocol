@@ -439,3 +439,37 @@ func (q *Queries) TotalValidators(ctx context.Context) (int64, error) {
 	err := row.Scan(&count)
 	return count, err
 }
+
+const txsPerHour = `-- name: TxsPerHour :many
+select date_trunc('hour', created_at)::timestamp as hour, tx_type, count(*) as tx_count
+from core_tx_stats 
+where created_at >= now() - interval '1 day'
+group by hour, tx_type 
+order by hour asc
+`
+
+type TxsPerHourRow struct {
+	Hour    pgtype.Timestamp
+	TxType  string
+	TxCount int64
+}
+
+func (q *Queries) TxsPerHour(ctx context.Context) ([]TxsPerHourRow, error) {
+	rows, err := q.db.Query(ctx, txsPerHour)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TxsPerHourRow
+	for rows.Next() {
+		var i TxsPerHourRow
+		if err := rows.Scan(&i.Hour, &i.TxType, &i.TxCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

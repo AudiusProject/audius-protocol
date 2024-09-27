@@ -1,10 +1,27 @@
 package pages
 
+type AnalyticsChartData struct {
+	Label string `json:"label"`
+	Value int64  `json:"value"`
+}
+
 type AnalyticsPageView struct {
 	TotalBlocks       string
 	TotalTransactions string
 	TotalPlays        string
 	TotalValidators   string
+
+	ChartData []AnalyticsChartData
+}
+
+templ (p *Pages) loadChart() {
+	<script type="module">
+    import { chart } from './assets/js/main.js'
+    // Call the chart function after the DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", () => {
+      chart()
+    })
+  </script>
 }
 
 templ (p *Pages) AnalyticsPageHTML(data *AnalyticsPageView) {
@@ -38,18 +55,12 @@ templ (p *Pages) AnalyticsPageHTML(data *AnalyticsPageView) {
 			</div>
 			<div class="uk-margin-top uk-width-1-1 h-full flex-grow flex flex-col">
 				<div class="uk-card uk-card-large uk-card-default uk-card-body h-full flex-grow flex flex-col">
-					<h1 class="uk-card-title uk-text-lead">Transactions</h1>
+					<h1 class="uk-card-title uk-text-lead">Plays Per Hour</h1>
 					<svg id="chart" width="100%" height="100%" preserveAspectRatio="none" class="flex-grow"></svg>
 				</div>
 			</div>
 		</div>
-		<script type="module">
-    import { chart } from './assets/js/main.js'
-
-    // Call the chart function after the DOM is fully loaded
-    document.addEventListener("DOMContentLoaded", () => {
-      chart()
-    })
-  </script>
+		@templ.JSONScript("chartData", data.ChartData)
+		@p.loadChart()
 	}
 }

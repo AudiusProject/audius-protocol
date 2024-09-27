@@ -31,5 +31,6 @@ values ($1, $2, $3, $4)
 returning id;
 
 -- name: InsertTxStat :exec
-insert into core_tx_stats (tx_type, tx_hash, block_height)
-values ($1, $2, $3);
+insert into core_tx_stats (tx_type, tx_hash, block_height, created_at)
+values ($1, $2, $3, $4)
+on conflict (tx_hash) do nothing;

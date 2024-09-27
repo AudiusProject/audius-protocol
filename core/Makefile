@@ -62,10 +62,14 @@ dev: gen
 test: gen
 	go test -v ./... -timeout 60s
 
+.PHONY: sandbox-reset
+sandbox-reset:
+	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml up --build -d
+
 .PHONY: sandbox-node
 sandbox-node:
-	@docker compose -f ./infra/docker-compose.yml down
-	@docker compose -f ./infra/docker-compose.yml up --build
+	@docker compose -f ./infra/docker-compose.yml up --build sandbox-core
 
 .PHONY: sandbox
 sandbox:

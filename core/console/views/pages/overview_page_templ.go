@@ -54,7 +54,7 @@ func (p *Pages) OverviewPageHTML(data *OverviewPageView) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"uk-grid-small uk-child-width-1-2@s uk-grid-match\" uk-grid><div><div class=\"uk-card uk-card-default uk-card-body\"><h3 class=\"uk-card-title\">Most Recent Block</h3><div class=\"p-4 h-full text-sm\"><div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"uk-grid-small uk-child-width-1-2@s uk-grid-match\" uk-grid><div><div class=\"uk-card uk-card-default uk-card-body\"><h3 class=\"uk-card-title\">Latest Block</h3><div class=\"p-4 h-full text-sm\"><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

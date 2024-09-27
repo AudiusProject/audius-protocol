@@ -73,3 +73,10 @@ select count(*) from core_tx_stats where tx_type = $1;
 
 -- name: TotalValidators :one
 select count(*) from core_validators;
+
+-- name: TxsPerHour :many
+select date_trunc('hour', created_at)::timestamp as hour, tx_type, count(*) as tx_count
+from core_tx_stats 
+where created_at >= now() - interval '1 day'
+group by hour, tx_type 
+order by hour asc;
