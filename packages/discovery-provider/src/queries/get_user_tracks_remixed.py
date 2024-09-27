@@ -1,7 +1,7 @@
 import logging
 from typing import TypedDict
 
-from sqlalchemy import func  # pylint: disable=C0302
+from sqlalchemy import func
 
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
