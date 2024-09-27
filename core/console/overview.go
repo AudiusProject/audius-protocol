@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,6 +15,11 @@ func (cs *Console) overviewPage(c echo.Context) error {
 	block, err := cs.rpc.Block(ctx, nil)
 	if err != nil {
 		return err
+	}
+
+	if block == nil {
+		// default to null block
+		block = &coretypes.ResultBlock{}
 	}
 
 	recentTxs, err := cs.db.GetRecentTxs(ctx)

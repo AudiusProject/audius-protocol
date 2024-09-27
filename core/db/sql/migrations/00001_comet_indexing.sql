@@ -10,7 +10,7 @@
 
 -- The core_blocks table records metadata about each block.
 -- The block record does not include its events or transactions (see core_tx_results).
-CREATE TABLE core_blocks (
+CREATE TABLE IF NOT EXISTS core_blocks (
   rowid      BIGSERIAL PRIMARY KEY,
 
   height     BIGINT NOT NULL,
@@ -24,11 +24,11 @@ CREATE TABLE core_blocks (
 
 -- Index core_blocks by height and chain, since we need to resolve block IDs when
 -- indexing transaction records and transaction events.
-CREATE INDEX idx_core_blocks_height_chain ON core_blocks(height, chain_id);
+CREATE INDEX IF NOT EXISTS idx_core_blocks_height_chain ON core_blocks(height, chain_id);
 
 -- The core_tx_results table records metadata about transaction results.  Note that
 -- the events from a transaction are stored separately.
-CREATE TABLE core_tx_results (
+CREATE TABLE IF NOT EXISTS core_tx_results (
   rowid BIGSERIAL PRIMARY KEY,
 
   -- The block to which this transaction belongs.
@@ -47,7 +47,7 @@ CREATE TABLE core_tx_results (
 
 -- The core_events table records events. All events (both block and transaction) are
 -- associated with a block ID; transaction events also have a transaction ID.
-CREATE TABLE core_events (
+CREATE TABLE IF NOT EXISTS core_events (
   rowid BIGSERIAL PRIMARY KEY,
 
   -- The block and transaction this event belongs to.
@@ -60,7 +60,7 @@ CREATE TABLE core_events (
 );
 
 -- The core_attributes table records event attributes.
-CREATE TABLE core_attributes (
+CREATE TABLE IF NOT EXISTS core_attributes (
    event_id      BIGINT NOT NULL REFERENCES core_events(rowid),
    key           VARCHAR NOT NULL, -- bare key
    composite_key VARCHAR NOT NULL, -- composed type.key
