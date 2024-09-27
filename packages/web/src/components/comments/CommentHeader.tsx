@@ -1,8 +1,11 @@
+import { useContext } from 'react'
+
 import { useGetTrackCommentNotificationSetting } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useMuteTrackCommentNotifications
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import {
   Flex,
   IconButton,
@@ -13,10 +16,7 @@ import {
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
-const messages = {
-  turnOffNotifs: 'Turn off notifications',
-  turnOnNotifs: 'Turn on notifications'
-}
+import { ToastContext } from 'components/toast/ToastContext'
 
 type CommentHeaderProps = {
   isLoading?: boolean
@@ -24,19 +24,32 @@ type CommentHeaderProps = {
 
 export const CommentHeader = (props: CommentHeaderProps) => {
   const { isLoading } = props
+  const { toast } = useContext(ToastContext)
   const { isEntityOwner, commentCount, entityId, currentUserId } =
     useCurrentCommentSection()
   const { data: isMuted } = useGetTrackCommentNotificationSetting({
     trackId: entityId,
     currentUserId
   })
-  const [muteNotifications] = useMuteTrackCommentNotifications(entityId)
+  const [muteTrackCommentNotifications] =
+    useMuteTrackCommentNotifications(entityId)
   const { motion } = useTheme()
+
+  const handleToggleTrackCommentNotifications = () => {
+    muteTrackCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast(
+      isMuted
+        ? messages.popups.trackNotifications.unmutedToast
+        : messages.popups.trackNotifications.mutedToast
+    )
+  }
 
   const popupMenuItems: PopupMenuItem[] = [
     {
-      onClick: () => muteNotifications(isMuted ? 'unmute' : 'mute'),
-      text: isMuted ? messages.turnOnNotifs : messages.turnOffNotifs
+      onClick: handleToggleTrackCommentNotifications,
+      text: isMuted
+        ? messages.popups.trackNotifications.unmute
+        : messages.popups.trackNotifications.mute
     }
   ]
 

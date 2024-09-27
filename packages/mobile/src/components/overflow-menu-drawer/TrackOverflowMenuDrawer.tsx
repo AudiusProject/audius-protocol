@@ -211,7 +211,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     },
     [OverflowAction.PURCHASE_TRACK]: handlePurchasePress,
     [OverflowAction.SET_ARTIST_PICK]: handleSetAsArtistPick,
-    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick
+    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick,
+    [OverflowAction.MUTE_TRACK_COMMENTS]: () => {},
+    [OverflowAction.UNMUTE_TRACK_COMMENTS]: () => {}
   }
 
   return render(callbacks)

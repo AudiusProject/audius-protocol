@@ -83,6 +83,12 @@ export const commentsMessages = {
       body: 'Flag and hide this comment?',
       confirm: 'Flag',
       cancel: 'Cancel'
+    },
+    trackNotifications: {
+      mute: 'Turn off comment notifications for this track',
+      unmute: 'Turn on comment notifications for this track',
+      mutedToast: 'Comment notifications turned off',
+      unmutedToast: 'Comment notifications turned on'
     }
   }
 }

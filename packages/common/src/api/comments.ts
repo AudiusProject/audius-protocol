@@ -366,7 +366,20 @@ const commentsApi = createApi({
         const sdk = await audiusSdk()
         await sdk.comments.updateCommentNotificationSetting(config)
       },
-      options: { type: 'mutation' }
+      options: { type: 'mutation' },
+      onQueryStarted({ userId, entityId, entityType, action }, { dispatch }) {
+        if (entityType === EntityType.TRACK) {
+          dispatch(
+            commentsApi.util.updateQueryData(
+              'getTrackCommentNotificationSetting',
+              { trackId: entityId, currentUserId: userId },
+              () => {
+                return action === EntityManagerAction.MUTE
+              }
+            )
+          )
+        }
+      }
     }
   }
 })
