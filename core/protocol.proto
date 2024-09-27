@@ -19,6 +19,7 @@ message SignedTransaction {
     TrackPlays plays = 1000;
     ValidatorRegistration validator_registration = 1001;
     SlaRollup sla_rollup = 1002;
+    ManageEntityLegacy manage_entity = 1003;
   }
 }
 
@@ -71,4 +72,13 @@ message SlaRollup {
 message SlaNodeReport {
   string address = 1;
   int32 num_blocks_proposed = 2;
+}
+
+message ManageEntityLegacy {
+  int64 user_id = 1;
+  string entity_type = 2;
+  int64 entity_id = 3;
+  string action = 4;
+  string metadata = 5;
+  string signature = 6;
 }
