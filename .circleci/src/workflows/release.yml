@@ -85,12 +85,6 @@ jobs:
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc
       notify_slack_on_failure: true
-  - release-governance-trigger:
-      type: approval
-  - release-governance:
-      context: [Vercel, governance, slack-secrets]
-      requires:
-        - release-governance-trigger
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
