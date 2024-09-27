@@ -121,7 +121,6 @@ async function getNewBlasts(
   minTimestamp: Date,
   maxTimestamp: Date
 ): Promise<DMNotification[]> {
-  console.log('REED at top of getNewBlasts')
   const messages = await discoveryDB.raw(
     `
     WITH blast AS (
@@ -191,15 +190,14 @@ async function getNewBlasts(
       JOIN aud USING (blast_id)
       LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
       LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
-          WHERE date_trunc('milliseconds', blast.created_at) > greatest(member_b.last_active_at, '2024-08-21 17:13:34.358421+00')
-          AND date_trunc('milliseconds', blast.created_at) <= '2024-08-26 17:13:34.358421+00'
+      WHERE date_trunc('milliseconds', blast.created_at) > greatest(member_b.last_active_at, ?)
+      AND date_trunc('milliseconds', blast.created_at) <= ?
     )
     SELECT from_user_id as sender_user_id, to_user_id as receiver_user_id, created_at FROM targ;
     `,
     [minTimestamp.toISOString(), maxTimestamp.toISOString()]
   )
-  console.log('REED before calculating chatId', { messages })
-  const messages2 = messages.map((message) => {
+  const formattedMessages = messages.rows.map((message) => {
     let chatId: string
     if (message.sender_user_id < message.receiver_user_id) {
       chatId =
@@ -212,16 +210,10 @@ async function getNewBlasts(
         ':' +
         HashId.parse(message.sender_user_id)
     }
-    console.log('REED calculated chatId for users:', {
-      sender: message.sender_user_id,
-      receiver: message.receiver_user_id,
-      chatId
-    })
     return { ...message, chatId }
   })
-  console.log('REED after calculating chatId', { messages2 })
 
-  return messages2
+  return formattedMessages
 }
 
 function setLastIndexedTimestamp(
