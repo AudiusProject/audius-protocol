@@ -1,13 +1,24 @@
-import { Variant, Collection, SmartCollection } from '@audius/common/models'
+import {
+  Variant,
+  Collection,
+  SmartCollection,
+  Status
+} from '@audius/common/models'
+import { CollectionTrack } from '@audius/common/store'
 
 export const computeCollectionMetadataProps = (
-  metadata: Collection | SmartCollection | null
+  metadata: Collection | SmartCollection | null,
+  tracks: { status: Status; entries: CollectionTrack[] }
 ) => {
   const trackCount =
     metadata && metadata.playlist_contents
       ? metadata.playlist_contents.track_ids.length
       : 0
-  const isEmpty = metadata && trackCount === 0
+  const isEmpty =
+    metadata &&
+    (trackCount === 0 ||
+      (tracks.status === Status.SUCCESS &&
+        tracks.entries.every((t) => t.is_delete)))
   const lastModifiedDate =
     metadata && metadata.variant !== Variant.SMART
       ? metadata.updated_at || Date.now()

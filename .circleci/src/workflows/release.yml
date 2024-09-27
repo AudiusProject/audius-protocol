@@ -90,12 +90,6 @@ jobs:
       context: [Vercel, dockerhub]
       service: uptime
       notify_slack_on_failure: true
-  - release-governance-trigger:
-      type: approval
-  - release-governance:
-      context: [Vercel, governance, slack-secrets]
-      requires:
-        - release-governance-trigger
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
@@ -132,10 +126,7 @@ jobs:
       context: github
       requires:
         - release-audius-docker-compose-trigger
-
-  - release-discord-trigger:
-      type: approval
   - release-discord:
       context: discord
       requires:
-        - release-discord-trigger
+        - release-audius-docker-compose-trigger
