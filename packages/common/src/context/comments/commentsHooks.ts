@@ -105,7 +105,7 @@ export const useEditComment = () => {
 }
 
 export const usePinComment = () => {
-  const { currentUserId, entityId } = useCurrentCommentSection()
+  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: pinComment, ...rest } = tanQuery.usePinComment()
   const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
@@ -113,7 +113,8 @@ export const usePinComment = () => {
         commentId,
         userId: currentUserId,
         trackId: entityId,
-        isPinned
+        isPinned,
+        currentSort
       })
     }
   }

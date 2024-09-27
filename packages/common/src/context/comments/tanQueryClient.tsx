@@ -8,6 +8,7 @@ import {
 import {
   QueryClient,
   useInfiniteQuery,
+  useIsMutating,
   useMutation,
   useQuery,
   useQueryClient
@@ -46,9 +47,10 @@ export const useGetCommentsByTrackId = ({
   pageSize?: number
 }) => {
   const { audiusSdk } = useContext(AudiusQueryContext)
+  const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const queryRes = useInfiniteQuery({
-    enabled: !!userId || !!trackId,
+    enabled: !!userId && !!trackId && isMutating === 0,
     getNextPageParam: (lastPage: any[], pages) => {
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
@@ -199,11 +201,13 @@ type ReactToCommentArgs = {
 }
 export const useReactToComment = () => {
   const { audiusSdk } = useContext(AudiusQueryContext)
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ userId, commentId, isLiked }: ReactToCommentArgs) => {
       const sdk = await audiusSdk()
       await sdk.comments.reactComment(userId, commentId, isLiked)
     },
+    mutationKey: ['reactToComment'],
     onMutate: async ({
       commentId,
       isLiked,
@@ -229,61 +233,78 @@ type PinCommentArgs = {
   userId: ID
   isPinned: boolean
   trackId: ID
+  currentSort: CommentSortMethod
 }
 export const usePinComment = () => {
   const { audiusSdk } = useContext(AudiusQueryContext)
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ userId, commentId, isPinned }: PinCommentArgs) => {
       const sdk = await audiusSdk()
-      return await sdk.comments.pinComment(userId, commentId, isPinned)
+      return await new Promise((resolve, reject) =>
+        setTimeout(() => {
+          reject(new Error('FAILED'))
+        }, 15000)
+      )
+      // return await sdk.comments.pinComment(userId, commentId, isPinned)
     },
-    onMutate: ({ commentId, isPinned, trackId }) => {
-      // If we pinned a new comment, we need to optimistically update all of our sort data
+    onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
+      // Find the sorts that we're not using and invalidate them
+      const notCurrentSorts = Object.values(CommentSortMethod).filter(
+        (sort) => sort !== currentSort
+      )
+      console.log({ notCurrentSorts })
+      notCurrentSorts.forEach((sortMethod) => {
+        console.log('Invaliding ', [
+          QUERY_KEYS.trackCommentList,
+          trackId,
+          sortMethod
+        ])
+        queryClient.resetQueries([
+          QUERY_KEYS.trackCommentList,
+          trackId,
+          sortMethod
+        ])
+      })
       if (isPinned) {
-        const updateSortData = (sortMethod: CommentSortMethod) => {
-          // Un-pin the current top comment (if it's already not pinned nothing changes)
-          const commentData = queryClient.getQueryData([
-            QUERY_KEYS.trackCommentList,
-            trackId,
-            sortMethod
-          ])
-          // cant optimistically update data that isnt loaded yet
-          if (commentData === undefined) return
-          // @ts-ignore - TODO: clean up types here
-          const prevTopCommentId = commentData?.pages?.[0]?.[0]
-          // If we're pinning the comment at the top already, no need to do anything
-          if (prevTopCommentId === commentId) return
+        // Un-pin the current top comment (if it's already not pinned nothing changes)
+        const commentData = queryClient.getQueryData([
+          QUERY_KEYS.trackCommentList,
+          trackId,
+          currentSort
+        ])
+        // cant optimistically update data that isnt loaded yet
+        if (commentData === undefined) return
+        // @ts-ignore - TODO: clean up types here
+        const prevTopCommentId = commentData?.pages?.[0]?.[0]
+        // If we're pinning the comment at the top already, no need to do anything
+        if (prevTopCommentId === commentId) return
 
-          queryClient.setQueryData(
-            [QUERY_KEYS.comment, prevTopCommentId],
-            // @ts-ignore - TODO: clean up types here, idk whats going on
-            (prevCommentState: Comment | ReplyComment) => ({
-              ...prevCommentState,
-              isPinned: false
-            })
-          )
+        queryClient.setQueryData(
+          [QUERY_KEYS.comment, prevTopCommentId],
+          // @ts-ignore - TODO: clean up types here, idk whats going on
+          (prevCommentState: Comment | ReplyComment) => ({
+            ...prevCommentState,
+            isPinned: false
+          })
+        )
 
-          queryClient.setQueryData(
-            [QUERY_KEYS.trackCommentList, trackId, sortMethod],
-            // @ts-ignore TODO: clean up types here
-            (prevCommentData: { pages: ID[][] } & any) => {
-              const newCommentData = cloneDeep(prevCommentData)
-              let commentPages = newCommentData.pages
-              // Filter out the comment from its current page
-              commentPages = commentPages.map((page: ID[]) =>
-                page.filter((id: ID) => id !== commentId)
-              )
-              // Insert our pinned comment id at the top of page 0
-              commentPages[0].unshift(commentId)
-              newCommentData.pages = commentPages
-              return newCommentData
-            }
-          )
-        }
-        // NOTE: Top will always be loaded since its the default sort
-        updateSortData(CommentSortMethod.Top)
-        updateSortData(CommentSortMethod.Newest)
-        updateSortData(CommentSortMethod.Timestamp)
+        queryClient.setQueryData(
+          [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          // @ts-ignore TODO: clean up types here
+          (prevCommentData: { pages: ID[][] } & any) => {
+            const newCommentData = cloneDeep(prevCommentData)
+            let commentPages = newCommentData.pages
+            // Filter out the comment from its current page
+            commentPages = commentPages.map((page: ID[]) =>
+              page.filter((id: ID) => id !== commentId)
+            )
+            // Insert our pinned comment id at the top of page 0
+            commentPages[0].unshift(commentId)
+            newCommentData.pages = commentPages
+            return newCommentData
+          }
+        )
       }
       // Finally - update our individual comment
       queryClient.setQueryData(
@@ -302,6 +323,7 @@ type DeleteCommentArgs = { commentId: ID; userId: ID; entityId: ID }
 
 export const useDeleteComment = () => {
   const { audiusSdk } = useContext(AudiusQueryContext)
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ commentId, userId, entityId }: DeleteCommentArgs) => {
       const commentData = { userId, entityId: commentId }
@@ -332,7 +354,6 @@ export const useDeleteComment = () => {
             [QUERY_KEYS.trackCommentList, entityId, sortMethod],
             // @ts-ignore TODO: clean up types here
             (prevCommentData: { pages: ID[][] } & any) => {
-              console.log({ sortMethod })
               const newCommentData = cloneDeep(prevCommentData)
               // Filter out the comment from its current page
               newCommentData.pages = newCommentData.pages.map((page: ID[]) =>

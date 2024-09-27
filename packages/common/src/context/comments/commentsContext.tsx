@@ -86,6 +86,7 @@ export const CommentSectionProvider = (
   const {
     data: commentIds = [],
     status,
+    isFetching,
     fetchNextPage,
     isFetchingNextPage: isLoadingMorePages
   } = useGetCommentsByTrackId({
@@ -110,7 +111,7 @@ export const CommentSectionProvider = (
     dispatch(tracksActions.play(playerUid))
   }, [dispatch, playerUid])
 
-  const commentSectionLoading = status === 'loading'
+  const commentSectionLoading = status === 'loading' || isFetching
 
   const handleLoadMoreReplies = (commentId: string) => {
     console.log('Loading more replies for', commentId)
