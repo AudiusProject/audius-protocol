@@ -70,9 +70,17 @@ export const commentsMessages = {
     muteUser: {
       title: 'Are you sure?',
       body: (userDisplayName: string | undefined) =>
-        `Mute ${userDisplayName} from commenting on your content?`,
+        `Mute ${userDisplayName} from commenting on your tracks?`,
       hint: 'This will not affect their ability to view your profile or interact with your content.',
       confirm: 'Mute User',
+      cancel: 'Cancel'
+    },
+    unmuteUser: {
+      title: 'Are you sure?',
+      body: (userDisplayName: string | undefined) =>
+        `Unmute ${userDisplayName} from commenting on your tracks?`,
+      hint: 'You can mute them again from their profile.',
+      confirm: 'Unmute User',
       cancel: 'Cancel'
     },
     flagAndRemove: {

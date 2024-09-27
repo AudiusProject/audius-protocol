@@ -1,35 +1,29 @@
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useMuteUser } from '@audius/common/context'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { ChatPermission } from '@audius/sdk'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableWithoutFeedback } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import { useToggle } from 'react-use'
 
 import {
+  Flex,
+  Text,
   Button,
   Divider,
-  Flex,
-  IconMessage,
   IconMessageBlock,
   IconUser,
   IconVerified
 } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import {
-  RadioButton,
-  Text,
-  Screen,
-  ScreenContent,
-  ProfilePicture
-} from 'app/components/core'
-import { ProfileCard, UserList } from 'app/components/user-list'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { Screen, ScreenContent, ProfilePicture } from 'app/components/core'
+import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemePalette } from 'app/utils/theme'
-
-import { UserListScreen } from '../user-list-screen/UserListScreen'
 
 const messages = {
   title: 'Comment Settings',
@@ -37,7 +31,10 @@ const messages = {
   description: 'Prevent certain users from commenting on your tracks.',
   followeeTitle: 'Only Allow Messages From People You Follow',
   unmute: 'Unmute',
+  mute: 'Mute',
   followers: 'Followers',
+  noMutedUsers:
+    'You haven’t muted any users. Once you do, they will appear here.',
   followeeDescription:
     'Only users that you follow can send you direct messages.',
   tipperTitle: 'Only Allow Messages From Your Supporters',
@@ -48,78 +45,29 @@ const messages = {
     'No one will be able to send you direct messages. Note that you will still be able to send messages to others.'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    display: 'flex'
-  },
-  settingsRow: {
-    paddingHorizontal: spacing(4),
-    backgroundColor: palette.white
-  },
-  settingsContent: {
-    paddingVertical: spacing(8),
-    borderBottomColor: palette.neutralLight7,
-    borderBottomWidth: 1
-  },
-  radioTitleRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  radio: {
-    marginRight: spacing(2)
-  },
+const useStyles = makeStyles(({ spacing, palette }) => ({
   description: {
     backgroundColor: palette.white,
     width: '100%'
   },
-  text: {
-    marginLeft: spacing(12),
-    marginTop: spacing(2),
-    paddingRight: spacing(6),
-    color: palette.neutral,
-    fontSize: typography.fontSize.large,
-    lineHeight: typography.fontSize.large * 1.4
-  },
-  shadow: {
-    borderBottomColor: palette.neutralLight7,
-    borderBottomWidth: 2,
-    borderBottomLeftRadius: 1
-  },
   scrollContainer: {
     backgroundColor: palette.white
+  },
+  loadingSpinner: {
+    width: spacing(8),
+    height: spacing(8)
   }
 }))
-
-const options = [
-  {
-    title: messages.allTitle,
-    description: messages.allDescription,
-    value: ChatPermission.ALL
-  },
-  {
-    title: messages.followeeTitle,
-    description: messages.followeeDescription,
-    value: ChatPermission.FOLLOWEES
-  },
-  {
-    title: messages.tipperTitle,
-    description: messages.tipperDescription,
-    value: ChatPermission.TIPPERS
-  },
-  {
-    title: messages.noneTitle,
-    description: messages.noneDescription,
-    value: ChatPermission.NONE
-  }
-]
 
 export const CommentSettingsScreen = () => {
   const styles = useStyles()
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: mutedUsers } = useGetMutedUsers({
-    userId: currentUserId!
-  })
+  const { data: mutedUsers, status } = useGetMutedUsers(
+    {
+      userId: currentUserId!
+    },
+    { force: true }
+  )
 
   return (
     <Screen
@@ -129,11 +77,19 @@ export const CommentSettingsScreen = () => {
       icon={IconMessageBlock}
     >
       <ScreenContent>
-        <Flex p='xl' style={styles.description}>
+        <Flex p='xl' style={styles.description} gap='l'>
           <Text>{messages.description}</Text>
+          {mutedUsers && mutedUsers.length === 0 ? (
+            <Text color='subdued'>{messages.noMutedUsers}</Text>
+          ) : null}
         </Flex>
-
         <ScrollView style={styles.scrollContainer}>
+          {status === Status.LOADING ? (
+            <Flex direction='row' justifyContent='center'>
+              <LoadingSpinner style={styles.loadingSpinner} />
+            </Flex>
+          ) : null}
+
           {mutedUsers &&
             mutedUsers.map((user) => (
               <UserListItem key={user.user_id} user={user} />
@@ -148,41 +104,60 @@ const UserListItem = (props) => {
   const { user } = props
   const palette = useThemePalette()
   const { tier } = useSelectTierInfo(user.user_id)
-  console.log('asdf user: ', user)
+  const navigation = useNavigation()
+  const [muteUser] = useMuteUser()
+  const [isMuted, toggleMuted] = useToggle(true)
+
+  const handleRowPress = useCallback(() => {
+    navigation.navigate('Profile', { id: user.user_id })
+  }, [navigation, user.user_id])
+
   return (
     <>
-      <Flex direction='row' alignItems='center' p='l'>
-        <Flex direction='row' gap='s'>
-          <ProfilePicture userId={user.user_id} size='large' />
-          <Flex direction='column' gap='m'>
-            <Flex direction='column' gap='xs'>
-              <Flex direction='row' backgroundColor='white' gap='xs'>
-                <Text>{user.name}</Text>
-                {user.is_verified ? (
-                  <IconVerified
-                    height={14}
-                    width={14}
-                    fill={palette.staticPrimary}
-                    fillSecondary={palette.staticWhite}
-                  />
-                ) : null}
-                <IconAudioBadge tier={tier} height={16} width={16} />
+      <Flex direction='column' p='l' gap='s'>
+        <TouchableWithoutFeedback onPress={handleRowPress}>
+          <Flex direction='row' gap='s'>
+            <ProfilePicture userId={user.user_id} size='large' />
+            <Flex direction='column' gap='m'>
+              <Flex direction='column' gap='xs'>
+                <Flex direction='row' backgroundColor='white' gap='xs'>
+                  <Text>{user.name}</Text>
+                  {user.is_verified ? (
+                    <IconVerified
+                      height={14}
+                      width={14}
+                      fill={palette.staticPrimary}
+                      fillSecondary={palette.staticWhite}
+                    />
+                  ) : null}
+                  <IconAudioBadge tier={tier} height={16} width={16} />
+                </Flex>
+                <Text>@{user.handle}</Text>
               </Flex>
-              <Text>@{user.handle}</Text>
-            </Flex>
-            <Flex direction='row' mb='auto' gap='xs'>
-              <IconUser size='s' color='subdued' />
-              <Text fontSize='small' weight='bold' color='neutralLight4'>
-                {formatCount(user.follower_count)}
-              </Text>
-              <Text fontSize='small' color='neutralLight4' weight='medium'>
-                {messages.followers}
-              </Text>
+              <Flex direction='row' mb='auto' gap='xs' alignItems='center'>
+                <IconUser size='s' color='subdued' />
+                <Text size='s' strength='strong' color='subdued'>
+                  {formatCount(user.follower_count)}
+                </Text>
+                <Text size='s' color='subdued'>
+                  {messages.followers}
+                </Text>
+              </Flex>
             </Flex>
           </Flex>
-        </Flex>
-        <Flex ml='auto'>
-          <Button size='small'>{messages.unmute}</Button>
+        </TouchableWithoutFeedback>
+
+        <Flex alignItems='center'>
+          <Button
+            size='small'
+            fullWidth
+            onPress={() => {
+              muteUser({ mutedUserId: user.user_id, isMuted })
+              toggleMuted()
+            }}
+          >
+            {isMuted ? messages.unmute : messages.mute}
+          </Button>
         </Flex>
       </Flex>
       <Divider />

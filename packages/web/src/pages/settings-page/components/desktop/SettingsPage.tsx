@@ -269,6 +269,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.AI_ATTRIBUTION
   )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
+  const { isEnabled: isCommentsEnabled } = useFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
@@ -316,20 +319,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
-        <SettingsCard
-          icon={<IconMessage />}
-          title={messages.commentSettingsCardTitle}
-          description={messages.commentSettingsCardDescription}
-        >
-          <Button
-            variant='secondary'
-            onClick={openCommentSettingsModal}
-            fullWidth
+        {isCommentsEnabled ? (
+          <SettingsCard
+            icon={<IconMessage />}
+            title={messages.commentSettingsCardTitle}
+            description={messages.commentSettingsCardDescription}
           >
-            {messages.commentSettingsButtonText}
-          </Button>
-        </SettingsCard>
-
+            <Button
+              variant='secondary'
+              onClick={openCommentSettingsModal}
+              fullWidth
+            >
+              {messages.commentSettingsButtonText}
+            </Button>
+          </SettingsCard>
+        ) : null}
         <SettingsCard
           icon={<IconNotification />}
           title={messages.notificationsCardTitle}

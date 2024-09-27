@@ -1,12 +1,13 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { Image, Platform } from 'react-native'
 
 import {
   IconCloudDownload,
   IconInfo,
   IconMessage,
-  IconMessageBlock,
   IconNotificationOn,
   IconSettings,
   IconUserUnfollow
@@ -58,6 +59,9 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 export const SettingsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   useShowManagerModeNotAvailable()
 
@@ -116,9 +120,11 @@ export const SettingsScreen = () => {
               label={messages.comment}
               icon={IconUserUnfollow}
             />
-            <SettingsRowDescription>
-              {messages.commentDescription}
-            </SettingsRowDescription>
+            {isCommentsEnabled ? (
+              <SettingsRowDescription>
+                {messages.commentDescription}
+              </SettingsRowDescription>
+            ) : null}
           </SettingsRow>
           {IS_IOS ? <CastSettingsRow /> : null}
           <SettingsRow onPress={handlePressDownloads}>

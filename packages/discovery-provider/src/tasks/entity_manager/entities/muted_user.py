@@ -36,6 +36,10 @@ def validate_mute_user_tx(params: ManageEntityParameters):
         raise IndexingValidationError(
             f"User {params.entity_id} does not exist and cannot be muted"
         )
+    if not existing_record and params.action == Action.UNMUTE:
+        raise IndexingValidationError(
+            f"Cannot unmute user {params.entity_id} who is not already muted"
+        )
 
 
 def mute_user(params: ManageEntityParameters):
@@ -64,9 +68,10 @@ def mute_user(params: ManageEntityParameters):
 
 def unmute_user(params: ManageEntityParameters):
     validate_signer(params)
+    validate_mute_user_tx(params)
+
     muted_user_id = params.entity_id
     user_id = params.user_id
-
     existing_muted_user_reaction = params.existing_records[EntityType.MUTED_USER.value][
         (user_id, muted_user_id)
     ]

@@ -2,6 +2,8 @@ import { useCallback, useRef } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
+import { Status } from '@audius/common/models'
+import { profilePage } from '@audius/common/src/utils/route'
 import {
   Flex,
   Text,
@@ -13,10 +15,13 @@ import {
   Scrollbar,
   Divider
 } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ArtistChip from 'components/artist/ArtistChip'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -37,10 +42,12 @@ export const CommentSettingsModal = () => {
   const scrollParentRef = useRef<HTMLElement>()
   const { data: currentUserId } = useGetCurrentUserId({})
 
-  const { data: mutedUsers } = useGetMutedUsers({
-    userId: currentUserId!
-  })
-
+  const { data: mutedUsers, status } = useGetMutedUsers(
+    {
+      userId: currentUserId!
+    },
+    { force: true }
+  )
   return (
     <Modal onClose={handleClose} isOpen={isVisible}>
       <ModalHeader onClose={handleClose}>
@@ -50,6 +57,12 @@ export const CommentSettingsModal = () => {
         <Flex ph='xl' pt='xl' mb='l'>
           <Text>{messages.description}</Text>
         </Flex>
+        {status === Status.LOADING ? (
+          <Flex justifyContent='center' p='xl'>
+            <LoadingSpinner />
+          </Flex>
+        ) : null}
+
         {mutedUsers && mutedUsers.length === 0 ? (
           <Flex ph='xl' pb='xl'>
             <Text color='subdued'>{messages.noMutedUsers}</Text>
@@ -85,11 +98,13 @@ export const CommentSettingsModal = () => {
 
 export const MutedUser = (props: { user: any }) => {
   const { user } = props
-  const onClickArtistName = (handle: string) => {}
   const isMobile = useIsMobile()
   const [muteUser] = useMuteUser()
-
+  const dispatch = useDispatch()
   const [isMuted, toggleMuted] = useToggle(true)
+  const onClickArtistName = (handle: string) => {
+    dispatch(pushRoute(profilePage(handle)))
+  }
 
   return (
     <>

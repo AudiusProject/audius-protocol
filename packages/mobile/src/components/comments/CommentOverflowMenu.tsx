@@ -72,7 +72,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const { entityId, isEntityOwner, currentUserId, setEditingComment } =
     useCurrentCommentSection()
-  console.log('asdf isEntityOwner: ', isEntityOwner)
   const isCommentOwner = Number(userId) === currentUserId
 
   const [pinComment] = usePinComment()
@@ -136,7 +135,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    // TOD
     muteUser({ mutedUserId: userId, isMuted: false, entityId })
     toast({
       content: messages.toasts.mutedUser,
