@@ -115,6 +115,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     linkProps,
     suffix,
     matchers,
+    internalLinksOnly,
     ...other
   } = props
 
@@ -191,7 +192,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   const renderLink = useCallback(
     (text: string, match: Match) => {
       const url = match.getAnchorHref()
-      const shouldLinkify = !props.internalLinksOnly || isAudiusUrl(url)
+      const shouldLinkify = !internalLinksOnly || isAudiusUrl(url)
       return shouldLinkify ? (
         <Link
           {...other}

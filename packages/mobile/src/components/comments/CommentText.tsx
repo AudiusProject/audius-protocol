@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { isContentUSDCPurchaseGated, ModalSource } from '@audius/common/models'
+import { ModalSource } from '@audius/common/models'
 import {
   playerActions,
   PurchaseableContentType,
@@ -19,9 +19,9 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
+
 const { tracksActions } = trackPageLineupActions
 const { getLineup } = trackPageSelectors
-
 const { seek } = playerActions
 
 const MAX_LINES = 3
@@ -37,12 +37,9 @@ const TimestampLink = (props: TimestampLinkProps) => {
   const dispatch = useDispatch()
   const { track } = useCurrentCommentSection()
   const lineup = useSelector(getLineup)
-  const { track_id: trackId, stream_conditions: streamConditions } = track
+  const { track_id: trackId } = track
 
-  const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { hasStreamAccess } = useGatedContentAccess(track)
-
-  const isLocked = isUSDCPurchaseGated && !hasStreamAccess
 
   const uid = lineup?.entries?.[0]?.uid
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -51,7 +48,7 @@ const TimestampLink = (props: TimestampLinkProps) => {
   return (
     <TextLink
       onPress={() => {
-        if (isLocked) {
+        if (!hasStreamAccess) {
           openPremiumContentPurchaseModal(
             { contentId: trackId, contentType: PurchaseableContentType.TRACK },
             {
@@ -76,7 +73,8 @@ export type CommentTextProps = {
   isEdited?: boolean
 }
 
-export const CommentText = ({ children, isEdited }: CommentTextProps) => {
+export const CommentText = (props: CommentTextProps) => {
+  const { children, isEdited } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const {
