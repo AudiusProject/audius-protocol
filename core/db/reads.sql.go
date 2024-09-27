@@ -385,6 +385,39 @@ func (q *Queries) GetTx(ctx context.Context, lower string) (CoreTxResult, error)
 	return i, err
 }
 
+const totalBlocks = `-- name: TotalBlocks :one
+select count(*) from core_blocks
+`
+
+func (q *Queries) TotalBlocks(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalBlocks)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactions = `-- name: TotalTransactions :one
+select count(*) from core_tx_results
+`
+
+func (q *Queries) TotalTransactions(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactionsByType = `-- name: TotalTransactionsByType :one
+select count(*) from core_tx_stats where tx_type = $1
+`
+
+func (q *Queries) TotalTransactionsByType(ctx context.Context, txType string) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactionsByType, txType)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const totalTxResults = `-- name: TotalTxResults :one
 select count(tx_hash) from core_tx_results
 `
@@ -394,4 +427,49 @@ func (q *Queries) TotalTxResults(ctx context.Context) (int64, error) {
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const totalValidators = `-- name: TotalValidators :one
+select count(*) from core_validators
+`
+
+func (q *Queries) TotalValidators(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalValidators)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const txsPerHour = `-- name: TxsPerHour :many
+select date_trunc('hour', created_at)::timestamp as hour, tx_type, count(*) as tx_count
+from core_tx_stats 
+where created_at >= now() - interval '1 day'
+group by hour, tx_type 
+order by hour asc
+`
+
+type TxsPerHourRow struct {
+	Hour    pgtype.Timestamp
+	TxType  string
+	TxCount int64
+}
+
+func (q *Queries) TxsPerHour(ctx context.Context) ([]TxsPerHourRow, error) {
+	rows, err := q.db.Query(ctx, txsPerHour)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TxsPerHourRow
+	for rows.Next() {
+		var i TxsPerHourRow
+		if err := rows.Scan(&i.Hour, &i.TxType, &i.TxCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

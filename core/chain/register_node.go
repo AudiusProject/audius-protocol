@@ -76,9 +76,9 @@ func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_
 }
 
 // persists the register node request should it pass validation
-func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.SignedTransaction) error {
+func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.SignedTransaction) (*gen_proto.ValidatorRegistration, error) {
 	if err := core.isValidRegisterNodeEvent(ctx, e); err != nil {
-		return fmt.Errorf("invalid register node event: %v", err)
+		return nil, fmt.Errorf("invalid register node event: %v", err)
 	}
 
 	qtx := core.getDb()
@@ -87,17 +87,17 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 	sig := e.GetSignature()
 	eventBytes, err := proto.Marshal(event)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal event bytes: %v", err)
+		return nil, fmt.Errorf("could not unmarshal event bytes: %v", err)
 	}
 
 	pubKey, address, err := accounts.EthRecover(sig, eventBytes)
 	if err != nil {
-		return fmt.Errorf("could not recover signer: %v", err)
+		return nil, fmt.Errorf("could not recover signer: %v", err)
 	}
 
 	serializedPubKey, err := accounts.SerializePublicKey(pubKey)
 	if err != nil {
-		return fmt.Errorf("could not serialize pubkey: %v", err)
+		return nil, fmt.Errorf("could not serialize pubkey: %v", err)
 	}
 
 	registerNode := e.GetValidatorRegistration()
@@ -113,8 +113,8 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_pr
 	})
 
 	if err != nil {
-		return fmt.Errorf("error inserting registered node: %v", err)
+		return nil, fmt.Errorf("error inserting registered node: %v", err)
 	}
 
-	return nil
+	return event, nil
 }

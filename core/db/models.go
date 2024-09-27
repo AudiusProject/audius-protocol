@@ -54,6 +54,14 @@ type CoreTxResult struct {
 	TxResult  []byte
 }
 
+type CoreTxStat struct {
+	ID          int32
+	TxType      string
+	TxHash      string
+	BlockHeight int64
+	CreatedAt   pgtype.Timestamp
+}
+
 type CoreValidator struct {
 	Rowid        int32
 	PubKey       string
