@@ -24,8 +24,15 @@ export const queryClient = new QueryClient()
 
 const QUERY_KEYS = {
   trackCommentList: 'trackCommentList',
-  comment: 'comment'
+  comment: 'comment',
+  replies: 'replies'
 } as const
+
+/**
+ *
+ * QUERIES
+ *
+ */
 
 export const useGetCommentsByTrackId = ({
   trackId,
@@ -67,11 +74,53 @@ export const useGetCommentsByTrackId = ({
       })
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
-    }
+    },
+    // TODO: whats the right vibe for these
+    staleTime: 120000,
+    cacheTime: 120000
   })
   return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
 }
 
+export const useGetCommentById = (commentId: ID) => {
+  return useQuery([QUERY_KEYS.comment, commentId], {
+    enabled: !!commentId,
+    queryFn: async () => {
+      // TODO: there's no backend implementation of this fetch at the moment;
+      // but we also never expect to call the backend here; we always prepopulate the data from the fetch by tracks method
+      return queryClient.getQueryData([QUERY_KEYS.comment, commentId])
+    },
+    // TODO: whats the right vibe for these
+    staleTime: 120000,
+    cacheTime: 120000
+  })
+}
+
+type GetRepliesArgs = {
+  id: ID
+  limit?: number
+  offset?: number
+}
+// export const useGetCommentRepliesById = (commentId: ID) => {
+//   const { audiusSdk } = useContext(AudiusQueryContext)
+//   return useInfiniteQuery([QUERY_KEYS.comment, commentId, QUERY_KEYS.replies], {
+//     queryFn: async ({ id, limit, offset }: GetRepliesArgs) => {
+//       const sdk = await audiusSdk()
+//       const commentsRes = await sdk.comments.getCommentReplies({
+//         commentId: encodeHashId(id),
+//         limit,
+//         offset
+//       })
+//       return transformAndCleanList(commentsRes?.data, replyCommentFromSDK)
+//     }
+//   })
+// }
+
+/**
+ *
+ * MUTATIONS
+ *
+ */
 type PostCommentArgs = {
   userId: ID
   entityId: ID
@@ -142,17 +191,6 @@ export const usePostComment = () => {
   })
 }
 
-export const useGetCommentById = (commentId: ID) => {
-  return useQuery([QUERY_KEYS.comment, commentId], {
-    enabled: !!commentId,
-    queryFn: async () => {
-      // TODO: there's no backend implementation of this fetch at the moment;
-      // but we also never expect to call the backend here; we always prepopulate the data from the fetch by tracks method
-      return queryClient.getQueryData([QUERY_KEYS.comment, commentId])
-    }
-  })
-}
-
 type ReactToCommentArgs = {
   commentId: ID
   userId: ID
@@ -209,7 +247,6 @@ export const usePinComment = () => {
             trackId,
             sortMethod
           ])
-          console.log({ sortMethod, commentData })
           // cant optimistically update data that isnt loaded yet
           if (commentData === undefined) return
           // @ts-ignore - TODO: clean up types here
@@ -256,6 +293,55 @@ export const usePinComment = () => {
           ...prevCommentState,
           isPinned
         })
+      )
+    }
+  })
+}
+
+type DeleteCommentArgs = { commentId: ID; userId: ID; entityId: ID }
+
+export const useDeleteComment = () => {
+  const { audiusSdk } = useContext(AudiusQueryContext)
+  return useMutation({
+    mutationFn: async ({ commentId, userId, entityId }: DeleteCommentArgs) => {
+      const commentData = { userId, entityId: commentId }
+      const sdk = await audiusSdk()
+      return await sdk.comments.deleteComment(commentData)
+    },
+    onMutate: ({ commentId, entityId }) => {
+      // Remove the individual comment
+      queryClient.removeQueries({
+        queryKey: [QUERY_KEYS.comment, commentId],
+        exact: true
+      })
+      // Remove the comment from the sorted lists
+      Object.values(CommentSortMethod).forEach(
+        (sortMethod: CommentSortMethod) => {
+          // Check for sort method data that hasn't been loaded yet; skip these
+          if (
+            queryClient.getQueryData([
+              QUERY_KEYS.trackCommentList,
+              entityId,
+              sortMethod
+            ]) === undefined
+          ) {
+            return
+          }
+          // If sort data is present, we filter out our comment
+          queryClient.setQueryData(
+            [QUERY_KEYS.trackCommentList, entityId, sortMethod],
+            // @ts-ignore TODO: clean up types here
+            (prevCommentData: { pages: ID[][] } & any) => {
+              console.log({ sortMethod })
+              const newCommentData = cloneDeep(prevCommentData)
+              // Filter out the comment from its current page
+              newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
+                page.filter((id: ID) => id === commentId)
+              )
+              return newCommentData
+            }
+          )
+        }
       )
     }
   })

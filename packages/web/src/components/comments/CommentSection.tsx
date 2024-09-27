@@ -2,7 +2,11 @@ import { useGetCurrentUserId } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
 import { ID } from '@audius/common/models'
 import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
-import { QueryClientProvider } from '@tanstack/react-query'
+import {
+  MutationCache,
+  QueryClientProvider,
+  useQueryClient
+} from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -29,6 +33,11 @@ export const CommentSection = (props: CommentSectionProps) => {
     trackId: entityId,
     sortMethod: TrackCommentsSortMethodEnum.Top,
     userId: Number(currentUserId)
+  })
+
+  const queryClient = useQueryClient()
+  queryClient.getMutationCache().subscribe((data) => {
+    // console.log({ data })
   })
 
   return (
