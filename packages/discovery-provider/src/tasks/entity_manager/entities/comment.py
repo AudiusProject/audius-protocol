@@ -320,6 +320,7 @@ def unpin_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment)
 
+
 # def mute_comment(params: ManageEntityParameters):
 #     entity_id = params.entity_id
 

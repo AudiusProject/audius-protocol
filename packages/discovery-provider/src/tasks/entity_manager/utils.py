@@ -204,6 +204,7 @@ class EntitiesToFetchDict(TypedDict):
     Comment: Set[int]
     CommentReaction: Set[Tuple]
     CommentMention: Set[Tuple]
+    CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
     ReportedComment: Set[Tuple]
 
@@ -342,7 +343,7 @@ def expect_cid_metadata_json(metadata, action, entity_type):
 
 
 # Returns metadata_type, metadata_format
-def get_metadata_type_and_format(entity_type, action):
+def get_metadata_type_and_format(entity_type, action=None):
     if entity_type == EntityType.PLAYLIST:
         metadata_type = "playlist_data"
         metadata_format = playlist_metadata_format
@@ -358,9 +359,6 @@ def get_metadata_type_and_format(entity_type, action):
     elif entity_type == EntityType.COMMENT:
         metadata_type = "comment"
         metadata_format = comment_metadata_format
-
-    else:
-        raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
 
 

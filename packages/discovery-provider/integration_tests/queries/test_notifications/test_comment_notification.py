@@ -117,10 +117,15 @@ def test_get_owner_comment_notifications(app):
 def test_muted_track_notification(app):
     with app.app_context():
         db_mock = get_db()
-        populate_mock_db(db_mock, {
-            **test_entities,
-            "comment_notification_settings": [{"user_id": 1, "track_id": 1, "is_muted": True}]
-        })
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comment_notification_settings": [
+                    {"user_id": 1, "track_id": 1, "is_muted": True}
+                ],
+            },
+        )
 
         test_actions = {
             "comments": [{"user_id": 2, "entity_id": 1, "entity_type": "Track"}]

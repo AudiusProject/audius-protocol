@@ -508,8 +508,11 @@ class TrackComments(Resource):
 
 
 track_comment_notification_setting_response = make_response(
-    "track_comment_notification_response", ns, fields.Nested(comment_notification_setting_model)
+    "track_comment_notification_response",
+    ns,
+    fields.Nested(comment_notification_setting_model),
 )
+
 
 @ns.route("/<string:track_id>/comment_notification_setting")
 class TrackCommentNotificationSetting(Resource):

@@ -13,6 +13,7 @@ from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
+from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
@@ -230,7 +231,13 @@ def entity_manager_update(
                         logger,
                     )
 
-                    print('dylann0', params.action, params.entity_type, params.action == Action.MUTE, params.entity_type == EntityType.TRACK)
+                    print(
+                        "dylann0",
+                        params.action,
+                        params.entity_type,
+                        params.action == Action.MUTE,
+                        params.entity_type == EntityType.TRACK,
+                    )
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
 
@@ -554,7 +561,9 @@ def copy_original_records(existing_records):
     return original_records
 
 
-entity_types_to_fetch = set([EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST])
+entity_types_to_fetch = set(
+    [EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST, EntityType.COMMENT]
+)
 
 
 def collect_entities_to_fetch(update_task, entity_manager_txs):
@@ -581,19 +590,26 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
             if entity_type == EntityType.TRACK:
                 entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
+                if action == Action.MUTE or action == Action.UNMUTE:
+                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                        (user_id, entity_id, entity_type)
+                    )
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
             if entity_type == EntityType.COMMENT:
-                entities_to_fetch[EntityType.COMMENT].add(entity_id)
                 if action == Action.UPDATE:
                     entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
-                if action == Action.REACT or action == Action.UNREACT:
+                elif action == Action.REACT or action == Action.UNREACT:
                     entities_to_fetch[EntityType.COMMENT_REACTION].add(
                         (user_id, entity_id)
                     )
                 elif action == Action.REPORT:
                     entities_to_fetch[EntityType.REPORTED_COMMENT].add(
                         (user_id, entity_id)
+                    )
+                elif action == Action.MUTE or action == Action.UNMUTE:
+                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                        (user_id, entity_id, entity_type)
                     )
 
             if (
@@ -1266,6 +1282,48 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 reported_comment_json["reported_comment_id"],
             ): reported_comment_json
             for _, reported_comment_json in reported_comments
+        }
+
+    if entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING.value]:
+        comment_notification_settings_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.COMMENT_NOTIFICATION_SETTING.value
+        ]
+        or_queries = []
+        for comment_notification_setting in comment_notification_settings_to_fetch:
+            user_id, entity_id, entity_type = comment_notification_setting
+            or_queries.append(
+                or_(
+                    CommentNotificationSetting.user_id == user_id,
+                    CommentNotificationSetting.entity_id == entity_id,
+                    CommentNotificationSetting.entity_type == entity_type,
+                )
+            )
+
+        comment_notification_settings: List[Tuple[CommentNotificationSetting, dict]] = (
+            session.query(
+                CommentNotificationSetting,
+                literal_column(
+                    f"row_to_json({CommentNotificationSetting.__tablename__})"
+                ),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.COMMENT_NOTIFICATION_SETTING] = {
+            (
+                comment_notification_setting.user_id,
+                comment_notification_setting.entity_id,
+                comment_notification_setting.entity_type,
+            ): comment_notification_setting
+            for comment_notification_setting, _ in comment_notification_settings
+        }
+        existing_entities_in_json[EntityType.COMMENT_NOTIFICATION_SETTING] = {
+            (
+                comment_notification_setting["user_id"],
+                comment_notification_setting["entity_id"],
+                comment_notification_setting["entity_type"],
+            ): comment_notification_setting
+            for _, comment_notification_setting in comment_notification_settings
         }
 
     return existing_entities, existing_entities_in_json

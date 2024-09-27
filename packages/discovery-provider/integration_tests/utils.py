@@ -129,7 +129,9 @@ def populate_mock_db(db, entities, block_offset=None):
         comment_threads = entities.get("comment_threads", [])
         comment_reactions = entities.get("comment_reactions", [])
         comment_mentions = entities.get("comment_mentions", [])
-        comment_notification_settings = entities.get("comment_notification_settings", [])
+        comment_notification_settings = entities.get(
+            "comment_notification_settings", []
+        )
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -854,8 +856,12 @@ def populate_mock_db(db, entities, block_offset=None):
                 user_id=comment_notification_setting.get("user_id", i),
                 track_id=comment_notification_setting.get("track_id", i),
                 comment_id=comment_notification_setting.get("comment_id", i),
-                created_at=comment_notification_setting.get("created_at", datetime.now()),
-                updated_at=comment_notification_setting.get("updated_at", datetime.now()),
+                created_at=comment_notification_setting.get(
+                    "created_at", datetime.now()
+                ),
+                updated_at=comment_notification_setting.get(
+                    "updated_at", datetime.now()
+                ),
             )
             session.add(comment_mention_record)
 
