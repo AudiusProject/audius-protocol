@@ -38,6 +38,10 @@ func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Lo
 	return server, nil
 }
 
+func (s *GRPCServer) GetServer() *grpc.Server {
+	return s.server
+}
+
 func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
