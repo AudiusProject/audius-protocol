@@ -122,93 +122,82 @@ async function getNewBlasts(
   maxTimestamp: Date
 ): Promise<DMNotification[]> {
   console.log('REED at top of getNewBlasts')
-  const messages = await discoveryDB
-    .with('all_new', function () {
-      this.select(
-        'blast.from_user_id as sender_user_id',
-        'users.user_id as receiver_user_id',
-        'blast.created_at as timestamp'
-      )
-        .from('chat_blast as blast')
-        .where(function () {
-          // follower_audience
-          this.whereIn('from_user_id', function () {
-            this.select('followee_user_id')
-              .from('follows')
-              .where('blast.audience', 'follower_audience')
-              .andWhereRaw('follows.followee_user_id = blast.from_user_id')
-              .andWhereRaw('follows.follower_user_id = users.user_id')
-              .andWhere('follows.is_delete', false)
-              .andWhereRaw('follows.created_at < blast.created_at')
-          })
-            // tipper_audience
-            .orWhereIn('from_user_id', function () {
-              this.select('receiver_user_id')
-                .from('user_tips as tip')
-                .where('blast.audience', 'tipper_audience')
-                .andWhereRaw('receiver_user_id = blast.from_user_id')
-                .andWhereRaw('sender_user_id = users.user_id')
-                .andWhereRaw('tip.created_at < blast.created_at')
-            })
-            // remixer_audience
-            .orWhereIn('from_user_id', function () {
-              this.select('og.owner_id')
-                .from('tracks as t')
-                .join('remixes', 'remixes.child_track_id', 't.track_id')
-                .join('tracks as og', 'remixes.parent_track_id', 'og.track_id')
-                .where('blast.audience', 'remixer_audience')
-                .andWhereRaw('og.owner_id = blast.from_user_id')
-                .andWhereRaw('t.owner_id = users.user_id')
-                .andWhere(function () {
-                  this.whereNull('blast.audience_content_id').orWhere(
-                    function () {
-                      this.where(
-                        'blast.audience_content_type',
-                        'track'
-                      ).andWhereRaw('blast.audience_content_id = og.track_id')
-                    }
-                  )
-                })
-            })
-            // customer_audience
-            .orWhereIn('from_user_id', function () {
-              this.select('seller_user_id')
-                .from('usdc_purchases as p')
-                .where('blast.audience', 'customer_audience')
-                .andWhereRaw('p.seller_user_id = blast.from_user_id')
-                .andWhereRaw('p.buyer_user_id = users.user_id')
-                .andWhere(function () {
-                  this.whereNull('blast.audience_content_id').orWhere(
-                    function () {
-                      this.whereRaw(
-                        'blast.audience_content_type = p.content_type::text'
-                      ).andWhereRaw('blast.audience_content_id = p.content_id')
-                    }
-                  )
-                })
-            })
-        })
-    })
-    .select(
-      'all_new.sender_user_id',
-      'all_new.receiver_user_id',
-      'all_new.timestamp'
+  const messages = await discoveryDB.raw(
+    `
+    WITH blast AS (
+      SELECT * FROM chat_blast
+    ),
+    aud as (
+      -- follower_audience
+      SELECT blast_id, follower_user_id AS to_user_id
+      FROM follows
+      JOIN blast
+        ON blast.audience = 'follower_audience'
+        AND follows.followee_user_id = blast.from_user_id
+        AND follows.is_delete = false
+        AND follows.created_at < blast.created_at
+
+      UNION
+
+      -- tipper_audience
+      SELECT blast_id, sender_user_id AS to_user_id
+      FROM user_tips tip
+      JOIN blast
+        ON blast.audience = 'tipper_audience'
+        AND receiver_user_id = blast.from_user_id
+        AND tip.created_at < blast.created_at
+
+      UNION
+
+      -- remixer_audience
+      SELECT blast_id, t.owner_id AS to_user_id
+      FROM tracks t
+      JOIN remixes ON remixes.child_track_id = t.track_id
+      JOIN tracks og ON remixes.parent_track_id = og.track_id
+      JOIN blast
+        ON blast.audience = 'remixer_audience'
+        AND og.owner_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = 'track'
+            AND blast.audience_content_id = og.track_id
+          )
+        )
+
+      UNION
+
+      -- customer_audience
+      SELECT blast_id, buyer_user_id AS to_user_id
+      FROM usdc_purchases p
+      JOIN blast
+        ON blast.audience = 'customer_audience'
+        AND p.seller_user_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = p.content_type::text
+            AND blast.audience_content_id = p.content_id
+          )
+        )
+    ),
+      targ AS (
+      SELECT
+        blast_id,
+        from_user_id,
+        to_user_id,
+        blast.created_at
+      FROM blast
+      JOIN aud USING (blast_id)
+      LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
+      LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
+          WHERE date_trunc('milliseconds', blast.created_at) > greatest(member_b.last_active_at, '2024-08-21 17:13:34.358421+00')
+          AND date_trunc('milliseconds', blast.created_at) <= '2024-08-26 17:13:34.358421+00'
     )
-    .from('all_new')
-    .join(
-      'users',
-      'users.user_id',
-      discoveryDB.raw('chat_allowed(from_user_id, users.user_id)')
-    )
-    // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
-    .whereRaw(
-      `date_trunc('milliseconds', chat_message_reactions.updated_at) > greatest(chat_member.last_active_at, ?)`,
-      [minTimestamp.toISOString()]
-    )
-    .andWhereRaw(
-      `date_trunc('milliseconds', chat_message_reactions.updated_at) <= ? `,
-      [maxTimestamp.toISOString()]
-    )
+    SELECT from_user_id as sender_user_id, to_user_id as receiver_user_id, created_at FROM targ;
+    `,
+    [minTimestamp.toISOString(), maxTimestamp.toISOString()]
+  )
   console.log('REED before calculating chatId', { messages })
   const messages2 = messages.map((message) => {
     let chatId: string
