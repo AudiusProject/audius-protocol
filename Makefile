@@ -15,6 +15,11 @@ bin/audiusd: $(SRC)
 	@echo "Building audiusd for local platform and architecture..."
 	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audiusd-native ./cmd/audiusd
 
+bin/audiusd-x86: $(SRC)
+	@echo "Building audiusd for x86 Linux..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audiusd-x86 ./cmd/audiusd
+# END WIP
+
 bin/audius-ctl-native: $(SRC)
 	@echo "Building audius-ctl for local platform and architecture..."
 	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-native ./cmd/audius-ctl
