@@ -49,8 +49,8 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
     muteTrackCommentNotifications(isMuted ? 'unmute' : 'mute')
     toast({
       content: isMuted
-        ? messages.popups.trackNotifications.unmutedToast
-        : messages.popups.trackNotifications.mutedToast
+        ? messages.toasts.unmutedTrackNotifs
+        : messages.toasts.mutedTrackNotifs
     })
   }
 

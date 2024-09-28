@@ -852,10 +852,10 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(comment_mention_record)
         for i, comment_notification_setting in enumerate(comment_notification_settings):
             comment_mention_record = CommentNotificationSetting(
-                id=comment_notification_setting.get("id", i),
                 user_id=comment_notification_setting.get("user_id", i),
-                track_id=comment_notification_setting.get("track_id", i),
-                comment_id=comment_notification_setting.get("comment_id", i),
+                entity_id=comment_notification_setting.get("entity_id", i),
+                entity_type=comment_notification_setting.get("entity_type", "Track"),
+                is_muted=comment_notification_setting.get("is_muted", False),
                 created_at=comment_notification_setting.get(
                     "created_at", datetime.now()
                 ),

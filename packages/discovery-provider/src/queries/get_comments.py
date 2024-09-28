@@ -129,7 +129,9 @@ def get_track_comments(args, track_id, current_user_id=None):
 
         track_comments = (
             session.query(
-                Comment, func.count(CommentReaction.comment_id).label("react_count")
+                Comment,
+                func.count(CommentReaction.comment_id).label("react_count"),
+                CommentNotificationSetting.is_muted,
             )
             .outerjoin(
                 CommentThreadAlias,
@@ -142,7 +144,12 @@ def get_track_comments(args, track_id, current_user_id=None):
             .outerjoin(
                 CommentReaction, Comment.comment_id == CommentReaction.comment_id
             )
-            .group_by(Comment.comment_id)
+            .outerjoin(
+                CommentNotificationSetting,
+                (Comment.comment_id == CommentNotificationSetting.entity_id)
+                & (CommentNotificationSetting.entity_type == "Comment"),
+            )
+            .group_by(Comment.comment_id, CommentNotificationSetting.is_muted)
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
@@ -186,8 +193,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "created_at": str(track_comment.created_at),
                 "updated_at": str(track_comment.updated_at),
                 "is_tombstone": track_comment.is_delete and reply_count != 0,
+                "is_muted": is_muted if is_muted is not None else False,
             }
-            for [track_comment, react_count] in track_comments
+            for [track_comment, react_count, is_muted] in track_comments
             # We show comments that have replies or are not deleted
             if (reply_count := get_reply_count(session, track_comment.comment_id))
             or track_comment.is_delete is False

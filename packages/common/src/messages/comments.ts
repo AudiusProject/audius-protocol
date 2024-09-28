@@ -41,7 +41,9 @@ export const commentsMessages = {
     mutedUser: 'User muted and comment removed',
     flaggedAndRemoved: 'Comment flagged and removed',
     mutedNotifs: 'Notifications turned off',
-    unmutedNotifs: 'Notifications turned on'
+    unmutedNotifs: 'Notifications turned on',
+    mutedTrackNotifs: 'Comment notifications turned off',
+    unmutedTrackNotifs: 'Comment notifications turned on'
   },
   popups: {
     pin: {
@@ -86,9 +88,7 @@ export const commentsMessages = {
     },
     trackNotifications: {
       mute: 'Turn off comment notifications for this track',
-      unmute: 'Turn on comment notifications for this track',
-      mutedToast: 'Comment notifications turned off',
-      unmutedToast: 'Comment notifications turned on'
+      unmute: 'Turn on comment notifications for this track'
     }
   }
 }

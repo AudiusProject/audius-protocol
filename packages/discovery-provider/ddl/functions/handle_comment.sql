@@ -45,7 +45,8 @@ begin
       into notification_muted
       from comment_notification_settings
       where user_id = entity_owner_id
-      and track_id = new.entity_id;
+      and entity_id = new.entity_id
+      and entity_type = new.entity_type;
 	  end if;
   end if;
 

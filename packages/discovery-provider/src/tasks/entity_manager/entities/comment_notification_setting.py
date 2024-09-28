@@ -1,12 +1,12 @@
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
-from src.tasks.entity_manager.utils import EntityType, ManageEntityParameters
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 
 
-def update_track_comment_notification_setting(params: ManageEntityParameters):
+def update_comment_notification_setting(params: ManageEntityParameters):
     entity_id = params.entity_id
     entity_type = params.entity_type
     user_id = params.user_id
-    is_muted = params.metadata["is_muted"]
+    action = params.action
     created_at = params.block_datetime
     updated_at = params.block_datetime
 
@@ -14,7 +14,7 @@ def update_track_comment_notification_setting(params: ManageEntityParameters):
         user_id=user_id,
         entity_id=entity_id,
         entity_type=entity_type,
-        is_muted=is_muted,
+        is_muted=action == Action.MUTE,
         created_at=created_at,
         updated_at=updated_at,
     )

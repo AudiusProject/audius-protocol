@@ -2,6 +2,7 @@ import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
+  useMuteCommentNotifications,
   usePinComment,
   useReactToComment,
   useReportComment
@@ -75,6 +76,7 @@ export const CommentActionBar = ({
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'isPinned' in comment
   const isTombstone = isParentComment ? comment.isTombstone : false
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
@@ -103,7 +105,9 @@ export const CommentActionBar = ({
 
   // Internal state
   const [reactionState, setReactionState] = useState(isCurrentUserReacted)
-  const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
+
+  const [handleMuteCommentNotifications] =
+    useMuteCommentNotifications(commentId)
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
@@ -122,14 +126,9 @@ export const CommentActionBar = ({
   }, [toast])
 
   const handleMuteNotifs = useCallback(() => {
-    // TODO: call backend here
-    setNotificationsMuted((prev) => !prev)
-    toast(
-      notificationsOn
-        ? messages.toasts.unmutedNotifs
-        : messages.toasts.mutedNotifs
-    )
-  }, [notificationsOn, toast])
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast(isMuted ? messages.toasts.unmutedNotifs : messages.toasts.mutedNotifs)
+  }, [handleMuteCommentNotifications, isMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -240,9 +239,9 @@ export const CommentActionBar = ({
     ]
     const muteNotifs: PopupMenuItem = {
       onClick: handleMuteNotifs,
-      text: notificationsOn
-        ? messages.menuActions.turnOffNotifications
-        : messages.menuActions.turnOnNotifications
+      text: isMuted
+        ? messages.menuActions.turnOnNotifications
+        : messages.menuActions.turnOffNotifications
     }
     const deleteComment: PopupMenuItem = {
       onClick: () =>
@@ -272,9 +271,9 @@ export const CommentActionBar = ({
     isPinned,
     onClickEdit,
     handleMuteNotifs,
-    notificationsOn,
-    isCommentOwner,
+    isMuted,
     isEntityOwner,
+    isCommentOwner,
     isUserGettingNotifs
   ])
 

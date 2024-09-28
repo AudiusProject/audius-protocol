@@ -52,7 +52,7 @@ from src.tasks.entity_manager.entities.comment import (
     update_comment,
 )
 from src.tasks.entity_manager.entities.comment_notification_setting import (
-    update_track_comment_notification_setting,
+    update_comment_notification_setting,
 )
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
     create_dashboard_wallet_user,
@@ -231,13 +231,6 @@ def entity_manager_update(
                         logger,
                     )
 
-                    print(
-                        "dylann0",
-                        params.action,
-                        params.entity_type,
-                        params.action == Action.MUTE,
-                        params.entity_type == EntityType.TRACK,
-                    )
                     # update logger context with this tx event
                     reset_entity_manager_event_tx_context(logger, event["args"])
 
@@ -281,10 +274,9 @@ def entity_manager_update(
                     ):
                         download_track(params)
                     elif (
-                        params.action == Action.MUTE
-                        and params.entity_type == EntityType.TRACK
-                    ):
-                        update_track_comment_notification_setting(params)
+                        params.action == Action.MUTE or params.action == Action.UNMUTE
+                    ) and params.entity_type == EntityType.TRACK:
+                        update_comment_notification_setting(params)
                     elif params.action in create_social_action_types:
                         create_social_record(params)
                     elif params.action in delete_social_action_types:
@@ -307,6 +299,16 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         verify_user(params)
+                    elif (
+                        params.action == Action.MUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        mute_user(params)
+                    elif (
+                        params.action == Action.UNMUTE
+                        and params.entity_type == EntityType.USER
+                    ):
+                        unmute_user(params)
                     elif (
                         params.action == Action.VIEW
                         and params.entity_type == EntityType.NOTIFICATION
@@ -411,20 +413,14 @@ def entity_manager_update(
                     ):
                         unpin_comment(params)
                     elif (
-                        params.action == Action.MUTE
-                        and params.entity_type == EntityType.USER
-                    ):
-                        mute_user(params)
-                    elif (
-                        params.action == Action.UNMUTE
-                        and params.entity_type == EntityType.USER
-                    ):
-                        unmute_user(params)
-                    elif (
                         params.action == Action.REPORT
                         and params.entity_type == EntityType.COMMENT
                     ):
                         report_comment(params)
+                    elif (
+                        params.action == Action.MUTE or params.action == Action.UNMUTE
+                    ) and params.entity_type == EntityType.COMMENT:
+                        update_comment_notification_setting(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:

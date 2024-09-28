@@ -364,6 +364,7 @@ const commentsApi = createApi({
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
+        console.log('update!', config)
         await sdk.comments.updateCommentNotificationSetting(config)
       },
       options: { type: 'mutation' },
@@ -377,6 +378,16 @@ const commentsApi = createApi({
                 return action === EntityManagerAction.MUTE
               }
             )
+          )
+        } else if (entityType === EntityType.COMMENT) {
+          optimisticUpdateComment(
+            entityId,
+            (comment) => {
+              if (comment && 'isMuted' in comment) {
+                comment.isMuted = action === EntityManagerAction.MUTE
+              }
+            },
+            dispatch
           )
         }
       }
