@@ -5,6 +5,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection,
   useDeleteComment,
+  useMuteCommentNotifications,
   usePinComment,
   useReportComment
 } from '@audius/common/context'
@@ -29,9 +30,12 @@ type CommentOverflowMenuProps = {
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
+    comment,
     comment: { id, userId },
     disabled
   } = props
+
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
 
   const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
@@ -77,6 +81,17 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [deleteComment] = useDeleteComment()
   const [reportComment] = useReportComment()
 
+  const [handleMuteCommentNotifications] = useMuteCommentNotifications(id)
+
+  const handleMuteNotifs = () => {
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast({
+      content: isMuted
+        ? messages.toasts.unmutedNotifs
+        : messages.toasts.mutedNotifs
+    })
+  }
+
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
       text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
@@ -113,10 +128,11 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsMuteUserConfirmationVisible(true)
         }
       },
-    // TODO: check if receiving notifications
     isCommentOwner && {
-      text: messages.menuActions.turnOffNotifications,
-      callback: () => {} // TODO
+      text: isMuted
+        ? messages.menuActions.turnOnNotifications
+        : messages.menuActions.turnOffNotifications,
+      callback: () => handleMuteNotifs
     },
     isCommentOwner && {
       text: messages.menuActions.edit,

@@ -54,9 +54,7 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.MARK_AS_UNPLAYED]: { text: 'Mark as Unplayed' },
   [OverflowAction.PURCHASE_TRACK]: { text: 'Purchase Track' },
   [OverflowAction.SET_ARTIST_PICK]: { text: 'Set as Artist Pick' },
-  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' },
-  [OverflowAction.MUTE_TRACK_COMMENTS]: { text: 'Mute Track Comments' },
-  [OverflowAction.UNMUTE_TRACK_COMMENTS]: { text: 'Unmute Track Comments' }
+  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' }
 }
 
 export const OverflowMenuDrawer = () => {
