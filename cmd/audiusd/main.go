@@ -14,9 +14,9 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/core_pkg"
-
 	"github.com/AudiusProject/audius-protocol/mediorum/mediorum_pkg"
-	"github.com/AudiusProject/audius-protocol/uptime/uptime_pkg"
+
+	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/crypto/acme/autocert"
@@ -42,7 +42,7 @@ func main() {
 	}()
 
 	go func() {
-		if err := uptime_pkg.Run(ctx, logger); err != nil {
+		if err := uptime.Run(ctx, logger); err != nil {
 			logger.Errorf("fatal uptime error: %v", err)
 			cancel()
 		}

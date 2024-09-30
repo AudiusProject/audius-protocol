@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/uptime/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 )
 
 type NodeResponse struct {

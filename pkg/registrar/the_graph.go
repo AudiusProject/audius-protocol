@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/uptime/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 )
 
 func NewGraphStaging() PeerProvider {
