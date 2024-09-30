@@ -224,6 +224,7 @@ def build(
                 [
                     "docker",
                     "compose",
+                    "--progress=plain",
                     f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                     f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
                     f"--project-name={protocol_dir.name}",
@@ -241,6 +242,7 @@ def build(
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
             f"--project-name={protocol_dir.name}",
@@ -365,6 +367,7 @@ def pull(ctx):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
             f"--project-name={protocol_dir.name}",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
@@ -514,6 +517,7 @@ def up(
             [
                 "docker",
                 "compose",
+                "--progress=plain",
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 f"--project-name={protocol_dir.name}",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
@@ -536,6 +540,7 @@ def down(protocol_dir):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             f"--project-name={protocol_dir.name}",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
@@ -577,6 +582,7 @@ def test_build(protocol_dir):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
@@ -588,6 +594,7 @@ def test_build(protocol_dir):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
@@ -634,6 +641,7 @@ def test_run(protocol_dir, service, args):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
@@ -678,6 +686,7 @@ def test_up(protocol_dir, service):
             [
                 "docker",
                 "compose",
+                "--progress=plain",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
                 f"--project-name={protocol_dir.name}-test",
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
@@ -699,6 +708,7 @@ def test_down(protocol_dir):
         [
             "docker",
             "compose",
+            "--progress=plain",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
