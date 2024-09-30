@@ -7,9 +7,11 @@ import {
   readChat,
   insertMessage,
   insertReaction,
+  insertBlast,
   setupTwoUsersWithDevices,
   setupTest,
-  resetTests
+  resetTests,
+  insertFollows
 } from '../utils/populateDB'
 
 describe('Push Notifications', () => {
@@ -110,6 +112,61 @@ describe('Push Notifications', () => {
         }
       }
     )
+  }, 40000)
+
+  test('Process chat blast notification', async () => {
+    const { user1, user2 } = await setupTwoUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB
+    )
+
+    // Start processor
+    processor.start()
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: user2.userId, followee_user_id: user1.userId }
+    ])
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    // User 1 sent message config.dmNotificationDelay ms ago
+    const message = 'hi from user 1'
+    const blastId = '1'
+    const messageTimestampMs = Date.now() - config.dmNotificationDelay
+    const messageTimestamp = new Date(messageTimestampMs)
+    const audience = 'follower_audience'
+    await insertBlast(
+      processor.discoveryDB,
+      user1.userId,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      messageTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
+    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+      2,
+      {
+        type: user2.deviceType,
+        targetARN: user2.awsARN,
+        badgeCount: 1
+      },
+      {
+        title: 'Message',
+        body: `New message from ${user1.name}`,
+        data: {
+          type: 'Message'
+        }
+      }
+    )
+
+    jest.clearAllMocks()
   }, 40000)
 
   test('Does not send DM notifications when sender is receiver', async () => {

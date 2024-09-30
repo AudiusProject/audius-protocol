@@ -1,5 +1,4 @@
 import { Knex } from 'knex'
-import { HashId } from '@audius/sdk'
 import type { RedisClientType } from 'redis'
 import { config } from './../config'
 import { logger } from './../logger'
@@ -11,6 +10,7 @@ import type {
 } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
+import { encodeHashId } from '../utils/hashId'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -201,14 +201,14 @@ async function getNewBlasts(
     let chatId: string
     if (message.sender_user_id < message.receiver_user_id) {
       chatId =
-        HashId.parse(message.sender_user_id) +
+        encodeHashId(message.sender_user_id) +
         ':' +
-        HashId.parse(message.receiver_user_id)
+        encodeHashId(message.receiver_user_id)
     } else {
       chatId =
-        HashId.parse(message.receiver_user_id) +
+        encodeHashId(message.receiver_user_id) +
         ':' +
-        HashId.parse(message.sender_user_id)
+        encodeHashId(message.sender_user_id)
     }
     return { ...message, chatId }
   })
