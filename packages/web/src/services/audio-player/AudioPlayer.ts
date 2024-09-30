@@ -239,6 +239,9 @@ export class AudioPlayer {
       this.source!.disconnect()
     }
     this.audio.pause()
+    // Prevent position from jumping after pause by rewinding to account for the fade out time.
+    this.audio.currentTime =
+      this.audio.currentTime - FADE_OUT_TIME_MILLISECONDS / 1000.0
   }
 
   stop = () => {

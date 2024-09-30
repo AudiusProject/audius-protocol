@@ -56,6 +56,9 @@ export type ScrubberProps = {
    */
   onScrubRelease?: (seconds: number) => void
 
+  getAudioPosition: () => number
+  getTotalTime: () => number
+
   /**
    * Individually exposed styling options.
    */
