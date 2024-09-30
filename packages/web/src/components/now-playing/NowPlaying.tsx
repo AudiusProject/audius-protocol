@@ -67,7 +67,7 @@ import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
-const { getBuffering, getCounter, getPlaying, getPlaybackRate } =
+const { getBuffering, getCounter, getPlaying, getPlaybackRate, getSeek } =
   playerSelectors
 
 const { seek, reset } = playerActions
@@ -506,6 +506,12 @@ const NowPlaying = g(
             isPlaying={isPlaying && !isBuffering}
             isDisabled={!uid && !collectible}
             isMobile
+            getAudioPosition={
+              audioPlayer ? audioPlayer.getPosition : () => timing.position
+            }
+            getTotalTime={
+              audioPlayer ? audioPlayer.getDuration : () => timing.duration
+            }
             elapsedSeconds={timing.position}
             totalSeconds={timing.duration}
             includeTimestamps
@@ -589,6 +595,7 @@ function makeMapStateToProps() {
     const currentQueueItem = getCurrentQueueItem(state)
     return {
       currentQueueItem,
+      seek: getSeek(state),
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
