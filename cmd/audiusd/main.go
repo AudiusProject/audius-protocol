@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"net/http"
 	"net/http/httputil"
@@ -15,8 +16,9 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/core_pkg"
 	"github.com/AudiusProject/audius-protocol/mediorum/mediorum_pkg"
-
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
+
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/crypto/acme/autocert"
@@ -33,6 +35,15 @@ func main() {
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// make it work out of the box with no config
+	delegatePrivateKey := os.Getenv("delegatePrivateKey")
+	if delegatePrivateKey == "" {
+		delegatePrivateKey, delegateOwnerWallet := keyGen()
+		os.Setenv("delegatePrivateKey", delegatePrivateKey)
+		os.Setenv("delegateOwnerWallet", delegateOwnerWallet)
+		logger.Infof("Generated and set delegate key pair: %s", delegateOwnerWallet)
+	}
 
 	go func() {
 		if err := startEchoProxyWithOptionalTLS(*noTLS); err != nil {
@@ -126,4 +137,15 @@ func startEchoProxyWithOptionalTLS(noTLS bool) error {
 	}()
 
 	return nil
+}
+
+func keyGen() (pKey string, addr string) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %v", err)
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	privateKeyStr := hex.EncodeToString(privateKeyBytes)
+	address := crypto.PubkeyToAddress(privateKey.PublicKey)
+	return privateKeyStr, address.Hex()
 }

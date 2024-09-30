@@ -3,16 +3,82 @@
 Single binary content node, running Audius Core.
 
 > This binary is experimental at this stage and is expected to evolve and change rapidly.
+  These docs exist to describe a basic method to get something running that works. They are not intended to be the end UX.
 
-### Run a prod node
+### Run a local node
 
+Build from source
+```bash
+make bin/audiusd-native
+```
+
+You need a `prod.env` or whatever env you plan to connect to.
+```bash
+curl -s -o bin/prod.env https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/refs/heads/stage/creator-node/prod.env
+```
+
+Create wrapper script to manage DB and env vars
+```bash
+cat << 'EOF' > bin/audiusd
+#!/bin/bash
+
+if [ "$(docker ps -q -f name=postgres)" ]; then
+  echo "Postgres container is already running."
+else
+  echo "Starting the Postgres container..."
+  docker run --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=audiusd -p 5432:5432 -d postgres
+
+  until docker exec postgres pg_isready -U postgres; do
+    echo "Postgres is not ready yet. Retrying in 2 seconds..."
+    sleep 2
+  done
+
+  echo "Postgres is ready. Creating database 'audius_creator_node'..."
+  docker exec -it postgres psql -U postgres -c "CREATE DATABASE audius_creator_node;"
+fi
+
+(
+  set -a
+  source prod.env
+  set +a
+
+  coreServerAddr=0.0.0.0:1776 \
+  dbUrl=postgresql://postgres:postgres@localhost:5432/audiusd \
+  uptimeDataDir=/tmp/bolt \
+  coreGRPCEndpoint=0.0.0.0:50051 \
+  coreJRPCEndpoint=http://0.0.0.0:26657 \
+  postgresDSN=postgres://postgres:postgres@localhost:5432/audius_creator_node \
+  creatorNodeEndpoint=http://localhost.audiusd.dev \
+  ./audiusd-native --no-tls
+)
+EOF
+
+chmod +x bin/audiusd
+```
+
+Execute
+```
+cd audius-protocol/bin
+./audiusd
+```
+
+### Run a remote prod node
+
+This assumes:
+- your remote node is already running in production
+- you have data stored at `/var/k8s`
+- you have stopped all running docker containers
+- your node has `prod.env` and `override.env` files already on it
+
+Build from source
 ```bash
 make bin/audiusd-x86_64-linux
 ```
 
-Customize the below script to your needs and place in the `audius-protocol/bin` directory (as this is gitignored). This script will manage populating environment variables (a [prod.env](https://github.com/AudiusProject/audius-docker-compose/blob/stage/creator-node/prod.env) and override.env required) as well as running a standalone postgres container using existing data from `/var/k8s`.
+Create wrapper script to manage DB and env vars
 
 ```bash
+cat << 'EOF' > bin/audiusd
 #!/bin/bash
 (
   set -a
@@ -63,4 +129,21 @@ Customize the below script to your needs and place in the `audius-protocol/bin` 
     echo "...for logs 'tail -f /home/ubuntu/.audiusd/log/audiusd.log'\n"
   fi
 )
+EOF
+
+chmod +x bin/audiusd
+```
+
+Copy your binary and wrapper script to the host with scp or similar.
+```
+scp ./bin/audiusd-x86_64-linux <remote-host>:~/audiusd-x86_64-linux
+scp ./bin/audiusd <remote-host>:~/audiusd
+```
+
+Execute
+```
+ssh <remote-host>
+
+ubuntu@x-x-x-x:~$ ./audiusd
+ubuntu@x-x-x-x:~$ tail -f /home/ubuntu/.audiusd/log/audiusd.log
 ```
