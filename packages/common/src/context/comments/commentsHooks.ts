@@ -137,13 +137,13 @@ export const useMuteUser = () => {
     isMuted,
     entityId
   }: {
-    mutedUserId: string
+    mutedUserId: number
     isMuted: boolean
     entityId?: number
   }) => {
     if (currentUserId) {
       muteUser({
-        mutedUserId: Number(mutedUserId),
+        mutedUserId,
         userId: currentUserId,
         isMuted,
         entityId
