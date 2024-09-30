@@ -673,11 +673,10 @@ function* doStartPurchaseContentFlow({
         tokenAccount: userBank
       }
     )
-    if (!tokenAccountInfo) {
-      throw new Error('Failed to fetch USDC token account info')
-    }
 
-    const { amount: initialBalance } = tokenAccountInfo
+    // In the case where there is no amount, the token account was probably
+    // just created. Just use 0 for initial balance.
+    const { amount: initialBalance } = tokenAccountInfo ?? { amount: 0 }
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
