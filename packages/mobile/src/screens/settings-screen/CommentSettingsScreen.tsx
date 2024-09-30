@@ -3,9 +3,10 @@ import { useCallback } from 'react'
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { TouchableWithoutFeedback } from 'react-native'
+import { Pressable } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useToggle } from 'react-use'
 
@@ -24,26 +25,6 @@ import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/Loa
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemePalette } from 'app/utils/theme'
-
-const messages = {
-  title: 'Comment Settings',
-  allTitle: 'Allow Messages from Everyone',
-  description: 'Prevent certain users from commenting on your tracks.',
-  followeeTitle: 'Only Allow Messages From People You Follow',
-  unmute: 'Unmute',
-  mute: 'Mute',
-  followers: 'Followers',
-  noMutedUsers:
-    'You haven’t muted any users. Once you do, they will appear here.',
-  followeeDescription:
-    'Only users that you follow can send you direct messages.',
-  tipperTitle: 'Only Allow Messages From Your Supporters',
-  tipperDescription:
-    'Only users who have tipped you can send you direct messages.',
-  noneTitle: 'No One Can Message You',
-  noneDescription:
-    'No one will be able to send you direct messages. Note that you will still be able to send messages to others.'
-}
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   description: {
@@ -71,7 +52,7 @@ export const CommentSettingsScreen = () => {
 
   return (
     <Screen
-      title={messages.title}
+      title={messages.commentSettings}
       variant='secondary'
       topbarRight={null}
       icon={IconMessageBlock}
@@ -79,7 +60,7 @@ export const CommentSettingsScreen = () => {
       <ScreenContent>
         <Flex p='xl' style={styles.description} gap='l'>
           <Text>{messages.description}</Text>
-          {mutedUsers && mutedUsers.length === 0 ? (
+          {mutedUsers?.length === 0 ? (
             <Text color='subdued'>{messages.noMutedUsers}</Text>
           ) : null}
         </Flex>
@@ -90,10 +71,9 @@ export const CommentSettingsScreen = () => {
             </Flex>
           ) : null}
 
-          {mutedUsers &&
-            mutedUsers.map((user) => (
-              <UserListItem key={user.user_id} user={user} />
-            ))}
+          {mutedUsers?.map((user) => (
+            <UserListItem key={user.user_id} user={user} />
+          ))}
         </ScrollView>
       </ScreenContent>
     </Screen>
@@ -104,18 +84,18 @@ const UserListItem = (props) => {
   const { user } = props
   const palette = useThemePalette()
   const { tier } = useSelectTierInfo(user.user_id)
-  const navigation = useNavigation()
+  const { navigate } = useNavigation()
   const [muteUser] = useMuteUser()
   const [isMuted, toggleMuted] = useToggle(true)
 
   const handleRowPress = useCallback(() => {
-    navigation.navigate('Profile', { id: user.user_id })
-  }, [navigation, user.user_id])
+    navigate('Profile', { id: user.user_id })
+  }, [navigate, user.user_id])
 
   return (
     <>
       <Flex direction='column' p='l' gap='s'>
-        <TouchableWithoutFeedback onPress={handleRowPress}>
+        <Pressable onPress={handleRowPress}>
           <Flex direction='row' gap='s'>
             <ProfilePicture userId={user.user_id} size='large' />
             <Flex direction='column' gap='m'>
@@ -145,10 +125,11 @@ const UserListItem = (props) => {
               </Flex>
             </Flex>
           </Flex>
-        </TouchableWithoutFeedback>
+        </Pressable>
 
         <Flex alignItems='center'>
           <Button
+            variant={isMuted ? 'primary' : 'secondary'}
             size='small'
             fullWidth
             onPress={() => {

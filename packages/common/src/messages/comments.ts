@@ -17,6 +17,14 @@ export const commentsMessages = {
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
+  commentSettings: 'Comment Settings',
+  description: 'Prevent certain users from commenting on your tracks.',
+  unmute: 'Unmute',
+  mute: 'Mute',
+  followers: 'Followers',
+  noMutedUsers:
+    'You haven’t muted any users. Once you do, they will appear here.',
+
   // Overflow Menu Actions
   menuActions: {
     pin: 'Pin',

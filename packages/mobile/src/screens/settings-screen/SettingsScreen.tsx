@@ -115,17 +115,17 @@ export const SettingsScreen = () => {
               {messages.notificationsDescription}
             </SettingsRowDescription>
           </SettingsRow>
-          <SettingsRow onPress={handlePressCommentSettings}>
-            <SettingsRowLabel
-              label={messages.comment}
-              icon={IconUserUnfollow}
-            />
-            {isCommentsEnabled ? (
+          {isCommentsEnabled ? (
+            <SettingsRow onPress={handlePressCommentSettings}>
+              <SettingsRowLabel
+                label={messages.comment}
+                icon={IconUserUnfollow}
+              />
               <SettingsRowDescription>
                 {messages.commentDescription}
               </SettingsRowDescription>
-            ) : null}
-          </SettingsRow>
+            </SettingsRow>
+          ) : null}
           {IS_IOS ? <CastSettingsRow /> : null}
           <SettingsRow onPress={handlePressDownloads}>
             <SettingsRowLabel
