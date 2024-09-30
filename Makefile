@@ -6,19 +6,13 @@ UPGRADE_TYPE ?= patch
 ABI_DIR := pkg/register/ABIs
 SRC := $(shell find pkg cmd -type f -name '*.go') go.mod go.sum
 
-VERSION_LDFLAG := -X main.Version=$(shell git rev-parse HEAD)
-# Intentionally kept separate to allow dynamic versioning
-#LDFLAGS := ""
-
-# WIP
-bin/audiusd: $(SRC)
+bin/audiusd-native: $(SRC)
 	@echo "Building audiusd for local platform and architecture..."
-	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audiusd-native ./cmd/audiusd
+	@bash scripts/build-audiusd.sh $@
 
-bin/audiusd-x86: $(SRC)
-	@echo "Building audiusd for x86 Linux..."
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audiusd-x86 ./cmd/audiusd
-# END WIP
+bin/audiusd-x86_64-linux: $(SRC)
+	@echo "Building x86 audiusd for linux..."
+	@bash scripts/build-audiusd.sh $@ amd64 linux
 
 bin/audius-ctl-native: $(SRC)
 	@echo "Building audius-ctl for local platform and architecture..."

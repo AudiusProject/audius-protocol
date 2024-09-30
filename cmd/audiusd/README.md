@@ -1,3 +1,18 @@
+# audiusd
+
+Single binary content node, running Audius Core.
+
+> This binary is experimental at this stage and is expected to evolve and change rapidly.
+
+### Run a prod node
+
+```bash
+make bin/audiusd-x86_64-linux
+```
+
+Customize the below script to your needs and place in the `audius-protocol/bin` directory (as this is gitignored). This script will manage populating environment variables (a [prod.env](https://github.com/AudiusProject/audius-docker-compose/blob/stage/creator-node/prod.env) and override.env required) as well as running a standalone postgres container using existing data from `/var/k8s`.
+
+```bash
 #!/bin/bash
 (
   set -a
@@ -40,11 +55,12 @@
                    -c listen_addresses='*'"
   fi
 
-  if ps aux | grep -v "$0" | grep -E '[a]udiusd-native|[a]udiusd-x86' > /dev/null; then
+  if ps aux | grep -v "$0" | grep -E '[a]udiusd-native|[a]udiusd-x86_64-linux' > /dev/null; then
     echo "An audiusd process is already running."
   else
     echo "Starting audiusd-* binary"
-    sudo -E nohup ./audiusd-x86 > /home/ubuntu/.audiusd/log/audiusd.log 2>&1 &
+    sudo -E nohup ./audiusd-x86_64-linux > /home/ubuntu/.audiusd/log/audiusd.log 2>&1 &
     echo "...for logs 'tail -f /home/ubuntu/.audiusd/log/audiusd.log'\n"
   fi
 )
+```
