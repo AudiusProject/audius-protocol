@@ -206,6 +206,7 @@ remixed_track_aggregate = ns.model(
     "remixed_track_aggregate",
     {
         "track_id": fields.String(required=True),
+        "title": fields.String(required=True),
         "remix_count": fields.Integer(required=True),
     },
 )

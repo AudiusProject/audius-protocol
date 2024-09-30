@@ -313,15 +313,12 @@ const userApi = createApi({
     getRemixedTracks: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
         const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getUserTracksRemixed({
+        const { data = [] } = await sdk.users.getUserTracksRemixed({
           id: Id.parse(userId)
         })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
+        return data
       },
-      options: {
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
+      options: {}
     },
     getSalesAggegrate: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {

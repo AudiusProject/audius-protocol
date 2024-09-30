@@ -26,8 +26,8 @@ export const useRemixersAudience = ({
   const remixedTracksOptions = useMemo(
     () =>
       (remixedTracks ?? []).map((track) => ({
-        value: track.track_id.toString(),
-        label: track.title
+        value: track.trackId.toString(),
+        label: track.title.toString()
       })),
     [remixedTracks]
   )
