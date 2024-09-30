@@ -42,13 +42,13 @@ fi
   source prod.env
   set +a
 
-  coreServerAddr=0.0.0.0:1776 \
+  coreServerAddr=0.0.0.0:26659 \
   dbUrl=postgresql://postgres:postgres@localhost:5432/audiusd \
   uptimeDataDir=/tmp/bolt \
   coreGRPCEndpoint=0.0.0.0:50051 \
   coreJRPCEndpoint=http://0.0.0.0:26657 \
   postgresDSN=postgres://postgres:postgres@localhost:5432/audius_creator_node \
-  creatorNodeEndpoint=http://localhost.audiusd.dev \
+  creatorNodeEndpoint=http://localhost \
   ./audiusd-native --no-tls
 )
 EOF
@@ -57,9 +57,29 @@ chmod +x bin/audiusd
 ```
 
 Execute
-```
+```bash
 cd audius-protocol/bin
 ./audiusd
+```
+
+Visit localhost console
+```bash
+open http://localhost/console/overview
+```
+
+Browse CometBFT RPCs https://docs.cometbft.com/v1.0/rpc/
+```bash
+curl http://localhost/core/comet/v1/status
+curl http://localhost/core/comet/v1/block?height=1
+```
+
+Verify other services
+```bash
+# mediorum
+curl http://localhost/health_check
+
+# uptime
+curl http://localhost/d_api/env
 ```
 
 ### Run a remote prod node
@@ -135,13 +155,13 @@ chmod +x bin/audiusd
 ```
 
 Copy your binary and wrapper script to the host with scp or similar.
-```
+```bash
 scp ./bin/audiusd-x86_64-linux <remote-host>:~/audiusd-x86_64-linux
 scp ./bin/audiusd <remote-host>:~/audiusd
 ```
 
 Execute
-```
+```bash
 ssh <remote-host>
 
 ubuntu@x-x-x-x:~$ ./audiusd
