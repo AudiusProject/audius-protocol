@@ -66,6 +66,7 @@ export type Modals =
   | 'StripeOnRamp'
   | 'CoinflowOnramp'
   | 'InboxSettings'
+  | 'CommentSettings'
   | 'PrivateKeyExporter'
   | 'LockedContent'
   | 'PlaybackRate'
