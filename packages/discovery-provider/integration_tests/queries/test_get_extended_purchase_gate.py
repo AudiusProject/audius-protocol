@@ -177,7 +177,6 @@ def test_get_extended_splits_with_network_cut(app):
                 }
             },
             session,
-            include_network_cut=True,
         )
         assert res is not None
         assert res["usdc_purchase"]["splits"][0]["amount"] == 900000
@@ -193,7 +192,7 @@ def test_get_extended_splits_with_network_cut(app):
             session, [{"user_id": 1, "percentage": 100}], datetime.date(2024, 5, 2)
         )
         assert splits[0]["payout_wallet"] == "first-wallet"
-        splits = calculate_split_amounts(100, splits, include_network_cut=True)
+        splits = calculate_split_amounts(100, splits)
         legacy_splits = to_wallet_amount_map(splits)
         assert "first-wallet" in legacy_splits
         assert legacy_splits["first-wallet"] == 900000
@@ -205,9 +204,7 @@ def test_get_extended_splits_with_network_cut(app):
             session, [{"user_id": 1, "percentage": 100}], datetime.date(2024, 4, 1)
         )
         assert even_older_splits[0]["payout_wallet"] == "user-bank"
-        even_older_splits = calculate_split_amounts(
-            100, even_older_splits, include_network_cut=True
-        )
+        even_older_splits = calculate_split_amounts(100, even_older_splits)
         legacy_splits = to_wallet_amount_map(even_older_splits)
         assert "user-bank" in legacy_splits
         assert legacy_splits["user-bank"] == 900000
@@ -219,9 +216,7 @@ def test_get_extended_splits_with_network_cut(app):
             session, [{"user_id": 2, "percentage": 100}], datetime.date(2024, 4, 1)
         )
         assert other_user_splits[0]["payout_wallet"] is None
-        other_user_splits = calculate_split_amounts(
-            100, other_user_splits, include_network_cut=True
-        )
+        other_user_splits = calculate_split_amounts(100, other_user_splits)
         other_user_splits = to_wallet_amount_map(other_user_splits)
         assert "3XmVeZ6M1FYDdUQaNeQZf8dipvtzNP6NVb5xjDkdeiNb" in other_user_splits
         assert (

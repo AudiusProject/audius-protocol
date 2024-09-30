@@ -13,8 +13,10 @@ from web3.datastructures import AttributeDict
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -113,6 +115,8 @@ class EntityType(str, Enum):
     COMMENT = "Comment"
     COMMENT_REACTION = "CommentReaction"
     COMMENT_REPORT = "CommentReport"
+    COMMENT_THREAD = "CommentThread"
+    COMMENT_MENTION = "CommentMention"
     MUTED_USER = "MutedUser"
     REPORTED_COMMENT = "ReportedComment"
 
@@ -172,6 +176,8 @@ class ExistingRecordDict(TypedDict):
     Comment: Dict[int, Comment]
     CommentReaction: Dict[Tuple, CommentReaction]
     CommentReport: Dict[Tuple, CommentReport]
+    CommentMention: Dict[Tuple, CommentMention]
+    CommentThread: Dict[Tuple, CommentThread]
     MutedUser: Dict[Tuple, MutedUser]
     ReportedComment: Dict[Tuple, ReportedComment]
 
@@ -195,6 +201,7 @@ class EntitiesToFetchDict(TypedDict):
     UserWallet: Set[str]
     Comment: Set[int]
     CommentReaction: Set[Tuple]
+    CommentMention: Set[Tuple]
     MutedUser: Set[Tuple]
     ReportedComment: Set[Tuple]
 
@@ -429,6 +436,7 @@ def copy_record(
         DashboardWalletUser,
         Comment,
         CommentReaction,
+        CommentMention,
         MutedUser,
     ],
     block_number: int,

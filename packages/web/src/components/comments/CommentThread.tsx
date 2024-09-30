@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { ID, ReplyComment } from '@audius/common/models'
 import {
   Box,
   Flex,
@@ -9,14 +10,11 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony'
-import { ReplyComment } from '@audius/sdk'
 
 import { CommentBlock } from './CommentBlock'
 
-export const CommentThread = ({ commentId }: { commentId: string }) => {
-  const { data: rootComment } = useGetCommentById({
-    id: commentId
-  })
+export const CommentThread = ({ commentId }: { commentId: ID }) => {
+  const { data: rootComment } = useGetCommentById({ id: commentId })
   const [hasLoadedMore, setHasLoadedMore] = useState(false)
   const {
     data: moreReplies,
@@ -39,7 +37,7 @@ export const CommentThread = ({ commentId }: { commentId: string }) => {
     [parentCommentId: string]: boolean
   }>({})
 
-  const toggleReplies = (commentId: string) => {
+  const toggleReplies = (commentId: ID) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)

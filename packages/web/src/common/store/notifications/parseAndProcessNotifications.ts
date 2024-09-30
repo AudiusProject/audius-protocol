@@ -165,7 +165,11 @@ export function* parseAndProcessNotifications(
       userIdsToFetch.add(notification.userId)
     }
 
-    if (type === NotificationType.Comment) {
+    if (
+      type === NotificationType.Comment ||
+      type === NotificationType.CommentThread ||
+      type === NotificationType.CommentMention
+    ) {
       if (notification.entityType === Entity.Track) {
         trackIdsToFetch.add(notification.entityId)
       }
