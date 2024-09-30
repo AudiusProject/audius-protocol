@@ -711,6 +711,21 @@ export async function insertBlast(
     .into('chat_blast')
 }
 
+export async function insertChatPermission(
+  db: Knex,
+  userId: number,
+  permits: string
+) {
+  await db
+    .insert({
+      user_id: userId,
+      permits,
+      updated_at: new Date(Date.now()).toISOString(),
+      allowed: true
+    })
+    .into('chat_permissions')
+}
+
 type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(

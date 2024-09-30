@@ -11,7 +11,8 @@ import {
   setupTwoUsersWithDevices,
   setupTest,
   resetTests,
-  insertFollows
+  insertFollows,
+  insertChatPermission
 } from '../utils/populateDB'
 
 describe('Push Notifications', () => {
@@ -165,6 +166,30 @@ describe('Push Notifications', () => {
         }
       }
     )
+
+    // User 2 only allows tippers to message them
+    await insertChatPermission(processor.discoveryDB, user2.userId, 'tippers')
+
+    // User 1 sent message config.dmNotificationDelay ms ago
+    const message2 = 'please let me DM you'
+    const blastId2 = '2'
+    const messageTimestampMs2 = Date.now() - config.dmNotificationDelay
+    const messageTimestamp2 = new Date(messageTimestampMs2)
+    await insertBlast(
+      processor.discoveryDB,
+      user1.userId,
+      blastId2,
+      message2,
+      audience,
+      undefined,
+      undefined,
+      messageTimestamp2
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // No new notifications
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
 
     jest.clearAllMocks()
   }, 40000)

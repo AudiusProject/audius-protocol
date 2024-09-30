@@ -10,7 +10,6 @@ import type {
 } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
-import { encodeHashId } from '../utils/hashId'
 import { makeChatId } from '../utils/chatId'
 
 // Sort notifications in ascending order according to timestamp
