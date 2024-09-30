@@ -474,7 +474,6 @@ function* purchaseAlbumWithCoinflow(args: {
     extraAmount: args.extraAmount,
     albumId: encodeHashId(albumId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey,
     includeNetworkCut
   }
 
