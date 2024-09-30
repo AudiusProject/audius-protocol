@@ -95,7 +95,7 @@ cents_to_usdc_multiplier = 10**4
 
 # Network take rate is a percentage of the total price that goes to the network
 # It is denoted in the config as a whole number, e.g. 10 for 10%
-network_take_rate = int(shared_config["solana"]["network_take_rate"])
+network_take_rate_config = int(shared_config["solana"]["network_take_rate"])
 
 staking_bridge_usdc_payout_wallet = shared_config["solana"][
     "staking_bridge_usdc_payout_wallet"
@@ -103,7 +103,9 @@ staking_bridge_usdc_payout_wallet = shared_config["solana"][
 
 
 def calculate_split_amounts(
-    price: int | None, splits: List[Split]
+    price: int | None,
+    splits: List[Split],
+    network_take_rate=network_take_rate_config,
 ) -> List[ExtendedSplit]:
     """
     Deterministically calculates the USDC amounts to pay to each person,

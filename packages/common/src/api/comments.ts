@@ -193,7 +193,7 @@ const commentsApi = createApi({
             userId
           )
         }
-        return { tempId: newId }
+        return { newId }
       }
     },
     deleteCommentById: {
