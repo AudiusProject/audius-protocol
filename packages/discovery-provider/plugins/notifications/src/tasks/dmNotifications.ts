@@ -11,6 +11,7 @@ import type {
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
 import { encodeHashId } from '../utils/hashId'
+import { makeChatId } from '../utils/chatId'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -193,24 +194,16 @@ async function getNewBlasts(
       WHERE date_trunc('milliseconds', blast.created_at) > greatest(member_b.last_active_at, ?)
       AND date_trunc('milliseconds', blast.created_at) <= ?
     )
-    SELECT from_user_id as sender_user_id, to_user_id as receiver_user_id, created_at FROM targ;
+    SELECT from_user_id as sender_user_id, to_user_id as receiver_user_id, created_at FROM targ where chat_allowed(from_user_id, to_user_id);
     `,
     [minTimestamp.toISOString(), maxTimestamp.toISOString()]
   )
 
-  // Generate the chatId for the chat if it were to be created. Must match ordering
-  // in chat_id.go here:
-  // https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/misc/chat_id.go
   const formattedMessages = messages.rows.map((message) => {
-    const encodedSenderId = encodeHashId(message.sender_user_id)
-    const encodedReceiverId = encodeHashId(message.receiver_user_id)
-    let chatId: string
-    if (encodedSenderId < encodedReceiverId) {
-      chatId = encodedSenderId + ':' + encodedReceiverId
-    } else {
-      chatId = encodedReceiverId + ':' + encodedSenderId
+    return {
+      ...message,
+      chatId: makeChatId([message.sender_user_id, message.receiver_user_id])
     }
-    return { ...message, chatId }
   })
 
   return formattedMessages
