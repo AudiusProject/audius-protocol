@@ -3,27 +3,21 @@ import {
   useCommentPostStatus,
   useCurrentCommentSection
 } from '@audius/common/context'
-import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { css } from '@emotion/native'
 
-import {
-  ArtistPick,
-  Box,
-  CommentText,
-  Flex,
-  Text,
-  TextLink,
-  Timestamp
-} from '@audius/harmony-native'
+import { Box, Flex, Text, TextLink } from '@audius/harmony-native'
 import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
 
+import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
+import { CommentText } from './CommentText'
+import { Timestamp } from './Timestamp'
 
 export type CommentBlockProps = {
   commentId: ID
@@ -87,7 +81,13 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink size='xs' variant='active'>
+                  <TextLink
+                    size='xs'
+                    variant='active'
+                    onPress={() => {
+                      // TODO
+                    }}
+                  >
                     {formatCommentTrackTimestamp(trackTimestampS)}
                   </TextLink>
                 </>
@@ -95,10 +95,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText>
-          {message}
-          {isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null}
-        </CommentText>
+        <CommentText isEdited={isEdited}>{message}</CommentText>
         {!hideActions ? (
           <CommentActionBar
             comment={comment}

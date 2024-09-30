@@ -17,6 +17,9 @@ export const commentsMessages = {
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
+  seeMore: 'See More',
+  seeLess: 'See Less',
+
   // Overflow Menu Actions
   menuActions: {
     pin: 'Pin',

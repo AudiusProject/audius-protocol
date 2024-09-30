@@ -12,7 +12,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { usePrevious } from 'react-use'
 
-import type { TextProps } from '@audius/harmony-native'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -23,6 +22,7 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
+import type { NonLinkProps } from 'app/harmony-native/components/TextLink/types'
 
 import { AudiusValues } from '../components/AudiusValues'
 import { PANEL_EXPAND_DURATION } from '../constants'
@@ -39,7 +39,7 @@ const messages = {
 const AnimatedPaper = Animated.createAnimatedComponent(Paper)
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
-const CreateAccountLink = (props: TextProps) => {
+const CreateAccountLink = (props: NonLinkProps) => {
   const { onPress } = props
   const { spacing } = useTheme()
 
