@@ -119,9 +119,7 @@ const CommentBlockInternal = (
         ) : null}
         {showEditInput ? (
           <CommentForm
-            onSubmit={() => {
-              setShowEditInput(false)
-            }}
+            onSubmit={() => setShowEditInput(false)}
             commentId={commentId}
             initialValue={message}
             isEdit
@@ -145,6 +143,7 @@ const CommentBlockInternal = (
           <CommentForm
             parentCommentId={parentCommentId ?? comment.id}
             initialValue={`@${userHandle}`}
+            onSubmit={() => setShowReplyInput(false)}
           />
         ) : null}
       </Flex>
