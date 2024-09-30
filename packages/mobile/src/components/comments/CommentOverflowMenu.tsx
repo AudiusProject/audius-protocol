@@ -10,8 +10,8 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import type { Comment, ReplyComment } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
-import type { Comment, ReplyComment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'

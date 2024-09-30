@@ -1,7 +1,9 @@
-import { Comment, CommentMetadata, ReplyComment } from '@audius/sdk'
+import { CommentMetadata } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 
 import { getKeyFromFetchArgs } from '~/audius-query/utils'
+import { Comment, ReplyComment } from '~/models/Comment'
+import { ID } from '~/models/Identifiers'
 import { CommonState } from '~/store'
 
 import {
@@ -23,8 +25,9 @@ export const usePostComment = () => {
 
   const wrappedHandler = async (
     message: string,
-    parentCommentId?: string,
-    trackTimestampS?: number
+    parentCommentId?: ID,
+    trackTimestampS?: number,
+    mentions?: ID[]
   ) => {
     if (currentUserId) {
       postComment({
@@ -32,9 +35,9 @@ export const usePostComment = () => {
         entityId,
         entityType,
         body: message,
-        // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
         parentCommentId,
-        trackTimestampS
+        trackTimestampS,
+        mentions
       })
     }
   }
@@ -71,7 +74,7 @@ export const useCommentPostStatus = (comment: Comment | ReplyComment) => {
 export const useReactToComment = () => {
   const [reactToComment, reactToCommentResponse] = useReactToCommentById()
   const { currentUserId, isEntityOwner } = useCurrentCommentSection()
-  const wrappedHandler = async (commentId: string, isLiked: boolean) => {
+  const wrappedHandler = async (commentId: ID, isLiked: boolean) => {
     if (currentUserId) {
       reactToComment({
         id: commentId,
@@ -87,9 +90,18 @@ export const useReactToComment = () => {
 export const useEditComment = () => {
   const { currentUserId } = useCurrentCommentSection()
   const [editComment, editCommentResponse] = useEditCommentById()
-  const wrappedHandler = async (commentId: string, newMessage: string) => {
+  const wrappedHandler = async (
+    commentId: ID,
+    newMessage: string,
+    mentions?: ID[]
+  ) => {
     if (currentUserId) {
-      editComment({ id: commentId, newMessage, userId: currentUserId })
+      editComment({
+        id: commentId,
+        newMessage,
+        userId: currentUserId,
+        mentions
+      })
     }
   }
   return [wrappedHandler, editCommentResponse] as const
@@ -98,7 +110,7 @@ export const useEditComment = () => {
 export const usePinComment = () => {
   const { currentUserId } = useCurrentCommentSection()
   const [pinComment, pinCommentResponse] = usePinCommentById()
-  const wrappedHandler = (commentId: string, isPinned: boolean) => {
+  const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
       pinComment({ id: commentId, userId: currentUserId, isPinned })
     }
@@ -109,7 +121,7 @@ export const usePinComment = () => {
 export const useReportComment = () => {
   const { currentUserId, entityId } = useCurrentCommentSection()
   const [reportComment, response] = useReportCommentById()
-  const wrappedHandler = (commentId: string) => {
+  const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
       reportComment({ id: commentId, userId: currentUserId, entityId })
     }
@@ -145,7 +157,7 @@ export const useDeleteComment = () => {
   const { currentUserId, entityId } = useCurrentCommentSection()
   const [deleteComment, response] = useDeleteCommentById()
 
-  const wrappedHandler = (commentId: string) => {
+  const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
       deleteComment({ id: commentId, userId: currentUserId, entityId })
     }

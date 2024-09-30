@@ -8,6 +8,7 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { Comment, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
   ButtonVariant,
@@ -22,7 +23,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { Comment, ReplyComment } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 

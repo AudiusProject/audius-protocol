@@ -1,0 +1,62 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/dustin/go-humanize"
+)
+
+type OverviewPageView struct {
+	Block BlockView
+	Txs   []db.CoreTxResult
+}
+
+func (p *Pages) OverviewPageJSON() {}
+
+templ (p *Pages) OverviewPageHTML(data *OverviewPageView) {
+	@p.layout.SiteFrame() {
+		<div class="uk-grid-small uk-child-width-1-2@s uk-grid-match" uk-grid>
+			<div>
+				<div class="uk-card uk-card-default uk-card-body">
+					<h3 class="uk-card-title">Latest Block</h3>
+					<div class="p-4 h-full text-sm">
+						<div>
+							@p.components.Link("/block/%s", data.Block.Hash) {
+								<div>Hash: { data.Block.Hash }</div>
+							}
+						</div>
+						<div>
+							@p.components.Link("/nodes/%s", data.Block.Proposer) {
+								<div>Proposer: { data.Block.Proposer }</div>
+							}
+						</div>
+						<div>
+							@p.components.Link("/block/%s", data.Block.Height) {
+								<div>Height: { data.Block.Height }</div>
+							}
+						</div>
+						<div>
+							Age: { humanize.Time(data.Block.Timestamp) }
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="uk-card uk-card-default uk-card-body flex-grow overflow-y-auto">
+					<h3 class="uk-card-title">Recent Transactions</h3>
+					for _, tx := range data.Txs {
+						<div class="text-sm">
+							<div class="p-6">
+								<div>
+									<a href={ templ.URL(fmt.Sprintf("/console/tx/%s", tx.TxHash)) }>Hash: { tx.TxHash }</a>
+								</div>
+								<a href={ templ.URL(fmt.Sprintf("/console/block/%s", fmt.Sprint(tx.BlockID))) }>Block { fmt.Sprint(tx.BlockID) }</a>
+								<div>Time: { humanize.Time(tx.CreatedAt.Time) } </div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}

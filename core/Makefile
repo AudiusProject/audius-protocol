@@ -1,4 +1,5 @@
 GO_SRCS := $(shell find . -type f -name '*.go') go.sum go.mod $(wildcard config/genesis/*.json)
+JS_SRCS := $(shell find . -type f -name '*.js')
 NATIVE_BIN := ./tmp/core
 AMD64_BIN := ./tmp/core-amd64
 
@@ -8,8 +9,8 @@ SQL_ARTIFACTS := $(wildcard db/*.sql.go)
 PROTO_SRCS := protocol.proto
 PROTO_ARTIFACTS := $(wildcard gen/proto/*.pb.go)
 
-TEMPL_SRCS := $(wildcard console/components/*.templ)
-TEMPL_ARTIFACTS := $(wildcard console/components/*_templ.go)
+TEMPL_SRCS := $(shell find console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find console -type f -name "*_templ.go")
 
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
@@ -19,13 +20,13 @@ VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Versio
 .PHONY: build-native
 build-native: $(NATIVE_BIN)
 
-$(NATIVE_BIN): $(GO_SRCS)
+$(NATIVE_BIN): $(GO_SRCS) $(JS_SRCS)
 	@go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core
 
 .PHONY: build-amd64
 build-amd64: $(AMD64_BIN)
 
-$(AMD64_BIN): $(GO_SRCS)
+$(AMD64_BIN): $(GO_SRCS) $(JS_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core-amd64
 
 .PHONY: deps
@@ -62,10 +63,14 @@ dev: gen
 test: gen
 	go test -v ./... -timeout 60s
 
+.PHONY: sandbox-reset
+sandbox-reset:
+	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml up --build -d
+
 .PHONY: sandbox-node
 sandbox-node:
-	@docker compose -f ./infra/docker-compose.yml down
-	@docker compose -f ./infra/docker-compose.yml up --build
+	@docker compose -f ./infra/docker-compose.yml up --build sandbox-core
 
 .PHONY: sandbox
 sandbox:
@@ -84,3 +89,7 @@ push-prerelease:
 push-edge:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
 	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
+
+.PHONY: console
+console: gen
+	@NO_DOCKER=on modd

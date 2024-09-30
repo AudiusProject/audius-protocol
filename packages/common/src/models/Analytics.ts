@@ -1445,6 +1445,7 @@ export enum ModalSource {
   TrackListItem = 'track list item',
   OverflowMenu = 'overflow menu',
   TrackLibrary = 'track library',
+  Comment = 'comment',
   // Should never be used, but helps with type-checking
   Unknown = 'unknown'
 }

@@ -12,6 +12,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
@@ -575,6 +576,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
             if entity_type == EntityType.COMMENT:
                 entities_to_fetch[EntityType.COMMENT].add(entity_id)
+                if action == Action.UPDATE:
+                    entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
                 if action == Action.REACT or action == Action.UNREACT:
                     entities_to_fetch[EntityType.COMMENT_REACTION].add(
                         (user_id, entity_id)
@@ -1172,6 +1175,20 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             (comment_json["user_id"], comment_json["comment_id"]): comment_json
             for _, comment_json in comment_reactions
         }
+    if entities_to_fetch[EntityType.COMMENT_MENTION.value]:
+        comment_ids = entities_to_fetch[EntityType.COMMENT_MENTION.value]
+
+        or_queries = []
+        for comment_id in comment_ids:
+            or_queries.append(or_(CommentMention.comment_id == comment_id))
+
+        comment_mentions = session.query(CommentMention).filter(or_(*or_queries)).all()
+
+        existing_entities[EntityType.COMMENT_MENTION] = {
+            (comment_mention.comment_id, comment_mention.user_id): comment_mention
+            for comment_mention in comment_mentions
+        }
+
     if entities_to_fetch[EntityType.MUTED_USER.value]:
         muted_users_to_fetch: Set[Tuple] = entities_to_fetch[
             EntityType.MUTED_USER.value

@@ -1,5 +1,6 @@
 import sql, { Database } from '@radically-straightforward/sqlite'
 import { Statement } from 'better-sqlite3'
+import { randomBytes } from 'node:crypto'
 import { DDEXRelease, DDEXReleaseIds } from './parseDelivery'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
@@ -55,7 +56,13 @@ create table if not exists s3markers (
   bucket text primary key,
   marker text not null
 );
-`
+`,
+  sql`
+  create table if not exists kv (
+    key text primary key,
+    val text not null
+  );
+  `
 )
 
 export type XmlRow = {
@@ -107,6 +114,11 @@ export type ReleaseRow = {
 export type S3MarkerRow = {
   bucket: string
   marker: string
+}
+
+export type KVRow = {
+  key: string
+  val: string
 }
 
 //
@@ -228,7 +240,7 @@ export const releaseRepo = {
 
       $${ifdef(params.status, sql` and status = ${params.status} `)}
 
-      order by createdAt
+      order by xmlUrl, ref
     `)
 
     for (const row of rows) {
@@ -340,6 +352,24 @@ export const releaseRepo = {
         publishErrorCount=publishErrorCount+1
       where key = ${key}
     `)
+  },
+}
+
+//
+// kv repo
+//
+
+export const kvRepo = {
+  getCookieSecret() {
+    const keyName = 'cookieSecret'
+    const row = db.get<KVRow>(sql`select val from kv where key = ${keyName}`)
+    if (row && row.val) return row.val
+
+    console.log('generating cookieSecret')
+    const buf = randomBytes(32)
+    const val = buf.toString('hex')
+    db.run(sql`insert into kv values (${keyName}, ${val})`)
+    return val
   },
 }
 

@@ -6,7 +6,7 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { SquareSizes } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -21,14 +21,15 @@ import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
+  mentions?: ID[]
 }
 
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
-  commentId?: string
-  parentCommentId?: string
+  commentId?: ID
+  parentCommentId?: ID
   isEdit?: boolean
 }
 
@@ -51,19 +52,19 @@ export const CommentForm = ({
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string) => {
+  const handlePostComment = (message: string, mentions?: ID[]) => {
     const trackPosition = audioPlayer
       ? Math.floor(audioPlayer.getPosition())
       : undefined
     const trackTimestampS =
       currentlyPlayingTrackId === entityId ? trackPosition : undefined
 
-    postComment(message, parentCommentId, trackTimestampS)
+    postComment(message, parentCommentId, trackTimestampS, mentions)
   }
 
-  const handleCommentEdit = (commentMessage: string) => {
+  const handleCommentEdit = (commentMessage: string, mentions?: ID[]) => {
     if (commentId) {
-      editComment(commentId, commentMessage)
+      editComment(commentId, commentMessage, mentions)
     }
   }
 
@@ -78,13 +79,13 @@ export const CommentForm = ({
     SquareSizes.SIZE_150_BY_150
   )
 
-  const handleSubmit = ({ commentMessage }: CommentFormValues) => {
+  const handleSubmit = ({ commentMessage, mentions }: CommentFormValues) => {
     if (!commentMessage) return
 
     if (isEdit) {
-      handleCommentEdit(commentMessage)
+      handleCommentEdit(commentMessage, mentions)
     } else {
-      handlePostComment(commentMessage)
+      handlePostComment(commentMessage, mentions)
     }
 
     onSubmit?.({ commentMessage })
@@ -117,8 +118,8 @@ export const CommentForm = ({
           onClick={handleClickInput}
           messageId={messageId}
           maxLength={400}
-          onSubmit={(value: string) => {
-            handleSubmit({ commentMessage: value })
+          onSubmit={(value: string, _, mentions) => {
+            handleSubmit({ commentMessage: value, mentions })
           }}
         />
       </Flex>

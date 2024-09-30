@@ -8,29 +8,38 @@ Firstly, parse + print a local XML file to confirm all good:
 npx tsx cli.ts parse ../ingester/e2e_test/fixtures/batch/fuga/20240305090206405/8718857546047/8718857546047.xml
 ```
 
-## run server
+## Run server
 
-Create a `.env` file like:
+Create `.env` file like:
 
 ```
-DDEX_KEY = ''
-DDEX_SECRET = ''
-NODE_ENV = 'staging'
-
-AWS_ACCESS_KEY_ID='test'
-AWS_SECRET_ACCESS_KEY='test'
-AWS_REGION='us-west-2'
-AWS_BUCKET_RAW=''
-
-SKIP_SDK_PUBLISH='true'
-
-COOKIE_SECRET='openssl rand -hex 16'
+NODE_ENV = 'staging | production'
+DDEX_URL = 'https://localhost:8989'
+ADMIN_HANDLES = 'user1,user2'
+SKIP_SDK_PUBLISH='true | false'
 ```
 
-Run server:
+Create `data/sources.json` file like:
+
+```
+{
+  "sources": [
+    {
+      "env": "staging",
+      "name": "sourceA",
+      "ddexKey": "",
+      "ddexSecret": "",
+      "awsKey": "",
+      "awsSecret": "",
+      "awsRegion": "",
+      "awsBucket": ""
+    }
+  ]
+}
+```
 
 ```bash
-npx tsx watch cli.ts server
+npm run dev
 ```
 
 * Visit http://localhost:8989/

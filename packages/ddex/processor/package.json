@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "dev": "tsx watch cli.ts server",
     "start:prod": "tsx cli.ts start",
     "start": "tsx watch cli.ts server",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

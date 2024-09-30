@@ -7,26 +7,27 @@ import {
   useDeleteComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
-import { commentsMessages as messages } from '@audius/common/messages'
-import { Status } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
-import { Comment, ReplyComment } from '@audius/sdk'
+import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
+import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
+import { CommentText } from './CommentText'
+import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
 export type CommentBlockProps = {
-  commentId: string
-  parentCommentId?: string
+  commentId: ID
+  parentCommentId?: ID
   hideActions?: boolean
 }
 
@@ -42,19 +43,18 @@ const CommentBlockInternal = (
     message,
     trackTimestampS,
     createdAt,
-    userId: commentUserIdStr,
+    userId,
     isEdited,
     isArtistReacted
   } = comment
+
   const isParentComment = 'isPinned' in comment
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
   const isTombstone = isParentComment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
-  const commentUserId = Number(commentUserIdStr)
-
   const userHandle = useSelector(
-    (state: AppState) => getUser(state, { id: commentUserId })?.handle
+    (state: AppState) => getUser(state, { id: userId })?.handle
   )
 
   const { artistId } = useCurrentCommentSection()
@@ -64,23 +64,22 @@ const CommentBlockInternal = (
   // This status checks specifically for this comment - no matter where the post request originated
   const commentPostStatus = useCommentPostStatus(comment)
 
-  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
 
   // triggers a fetch to get user profile info
-  useGetUserById({ id: commentUserId }) // TODO: display a load state while fetching
+  useGetUserById({ id: userId }) // TODO: display a load state while fetching
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const isCommentByArtist = commentUserId === artistId
+  const isCommentByArtist = userId === artistId
 
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
         <Avatar
-          userId={commentUserId}
+          userId={userId}
           css={{
             width: 44,
             height: 44,
@@ -93,10 +92,7 @@ const CommentBlockInternal = (
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge
-            isArtist={isCommentByArtist}
-            commentUserId={commentUserId}
-          />
+          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex justifyContent='space-between' w='100%'>
@@ -105,7 +101,7 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={commentUserId} popover />
+            <UserLink userId={userId} popover />
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
@@ -131,12 +127,7 @@ const CommentBlockInternal = (
             hideAvatar
           />
         ) : (
-          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
-            {message}
-            {isEdited ? (
-              <Text color='subdued'> ({messages.edited})</Text>
-            ) : null}
-          </Text>
+          <CommentText isEdited={isEdited}>{message}</CommentText>
         )}
         {hideActions ? null : (
           <CommentActionBar
@@ -144,7 +135,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isCommentLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         )}

@@ -24,6 +24,8 @@ export const commentsMessages = {
   followers: 'Followers',
   noMutedUsers:
     'You haven’t muted any users. Once you do, they will appear here.',
+  seeMore: 'See More',
+  seeLess: 'See Less',
 
   // Overflow Menu Actions
   menuActions: {

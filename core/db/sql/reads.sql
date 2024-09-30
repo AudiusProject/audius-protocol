@@ -49,3 +49,34 @@ order by address;
 select * from sla_node_reports
 where sla_rollup_id = $1
 order by address;
+
+-- name: GetRegisteredNodeByEthAddress :one
+select * from core_validators where eth_address = $1;
+
+-- name: GetRegisteredNodeByCometAddress :one
+select * from core_validators where comet_address = $1;
+
+-- name: GetRecentBlocks :many
+select * from core_blocks order by created_at desc limit 10;
+
+-- name: GetRecentTxs :many
+select * from core_tx_results order by created_at desc limit 10;
+
+-- name: TotalBlocks :one
+select count(*) from core_blocks;
+
+-- name: TotalTransactions :one
+select count(*) from core_tx_results;
+
+-- name: TotalTransactionsByType :one
+select count(*) from core_tx_stats where tx_type = $1;
+
+-- name: TotalValidators :one
+select count(*) from core_validators;
+
+-- name: TxsPerHour :many
+select date_trunc('hour', created_at)::timestamp as hour, tx_type, count(*) as tx_count
+from core_tx_stats 
+where created_at >= now() - interval '1 day'
+group by hour, tx_type 
+order by hour asc;

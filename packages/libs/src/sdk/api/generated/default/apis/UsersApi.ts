@@ -36,6 +36,7 @@ import type {
   UserAssociatedWalletResponse,
   UserResponse,
   UserSearch,
+  UserTracksRemixedResponse,
   UsersResponse,
   VerifyToken,
 } from '../models';
@@ -80,6 +81,8 @@ import {
     UserResponseToJSON,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UserTracksRemixedResponseFromJSON,
+    UserTracksRemixedResponseToJSON,
     UsersResponseFromJSON,
     UsersResponseToJSON,
     VerifyTokenFromJSON,
@@ -1371,7 +1374,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets tracks owned by the user which have been remixed by another track
      */
-    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserTracksRemixedResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserTracksRemixed.');
         }
@@ -1399,13 +1402,13 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserTracksRemixedResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets tracks owned by the user which have been remixed by another track
      */
-    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserTracksRemixedResponse> {
         const response = await this.getUserTracksRemixedRaw(params, initOverrides);
         return await response.value();
     }

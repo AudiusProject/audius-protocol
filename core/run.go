@@ -13,6 +13,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"github.com/AudiusProject/audius-protocol/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/core/server"
+	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -32,7 +33,7 @@ func run(logger *common.Logger) error {
 	logger.Info("configuration created")
 
 	// db migrations
-	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigration); err != nil {
+	if err := db.RunMigrations(logger, config.PSQLConn, config.RunDownMigrations()); err != nil {
 		return fmt.Errorf("running migrations: %v", err)
 	}
 
@@ -44,9 +45,26 @@ func run(logger *common.Logger) error {
 	}
 	defer pool.Close()
 
-	// if err := insertInitialAppState(config.GenesisFile.AppState, pool); err != nil {
-	// 	return fmt.Errorf("couldn't set initial app state: %v", err)
-	// }
+	e := echo.New()
+	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(middleware.Recover())
+	e.HideBanner = true
+
+	if config.StandaloneConsole && cometConfig == nil {
+		httprpc, err := rpchttp.New(config.RPCladdr)
+		if err != nil {
+			return fmt.Errorf("could not create rpc client: %v", err)
+		}
+
+		// run console in isolation
+		_, err = console.NewConsole(config, logger, e, httprpc, pool)
+		if err != nil {
+			return fmt.Errorf("console init error: %v", err)
+		}
+
+		defer e.Shutdown(context.Background())
+		return e.Start(config.CoreServerAddr)
+	}
 
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
@@ -74,11 +92,6 @@ func run(logger *common.Logger) error {
 	if err != nil {
 		return fmt.Errorf("registry bridge init error: %v", err)
 	}
-
-	e := echo.New()
-	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(middleware.Recover())
-	e.HideBanner = true
 
 	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
 	if err != nil {

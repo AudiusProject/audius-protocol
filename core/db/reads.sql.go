@@ -154,6 +154,35 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 	return i, err
 }
 
+const getRecentBlocks = `-- name: GetRecentBlocks :many
+select rowid, height, chain_id, created_at from core_blocks order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentBlocks(ctx context.Context) ([]CoreBlock, error) {
+	rows, err := q.db.Query(ctx, getRecentBlocks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreBlock
+	for rows.Next() {
+		var i CoreBlock
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.Height,
+			&i.ChainID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRecentRollups = `-- name: GetRecentRollups :many
 select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
 `
@@ -182,6 +211,77 @@ func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRecentTxs = `-- name: GetRecentTxs :many
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results order by created_at desc limit 10
+`
+
+func (q *Queries) GetRecentTxs(ctx context.Context) ([]CoreTxResult, error) {
+	rows, err := q.db.Query(ctx, getRecentTxs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreTxResult
+	for rows.Next() {
+		var i CoreTxResult
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.BlockID,
+			&i.Index,
+			&i.CreatedAt,
+			&i.TxHash,
+			&i.TxResult,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRegisteredNodeByCometAddress = `-- name: GetRegisteredNodeByCometAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where comet_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByCometAddress(ctx context.Context, cometAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByCometAddress, cometAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
+}
+
+const getRegisteredNodeByEthAddress = `-- name: GetRegisteredNodeByEthAddress :one
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where eth_address = $1
+`
+
+func (q *Queries) GetRegisteredNodeByEthAddress(ctx context.Context, ethAddress string) (CoreValidator, error) {
+	row := q.db.QueryRow(ctx, getRegisteredNodeByEthAddress, ethAddress)
+	var i CoreValidator
+	err := row.Scan(
+		&i.Rowid,
+		&i.PubKey,
+		&i.Endpoint,
+		&i.EthAddress,
+		&i.CometAddress,
+		&i.EthBlock,
+		&i.NodeType,
+		&i.SpID,
+	)
+	return i, err
 }
 
 const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
@@ -285,6 +385,39 @@ func (q *Queries) GetTx(ctx context.Context, lower string) (CoreTxResult, error)
 	return i, err
 }
 
+const totalBlocks = `-- name: TotalBlocks :one
+select count(*) from core_blocks
+`
+
+func (q *Queries) TotalBlocks(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalBlocks)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactions = `-- name: TotalTransactions :one
+select count(*) from core_tx_results
+`
+
+func (q *Queries) TotalTransactions(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const totalTransactionsByType = `-- name: TotalTransactionsByType :one
+select count(*) from core_tx_stats where tx_type = $1
+`
+
+func (q *Queries) TotalTransactionsByType(ctx context.Context, txType string) (int64, error) {
+	row := q.db.QueryRow(ctx, totalTransactionsByType, txType)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const totalTxResults = `-- name: TotalTxResults :one
 select count(tx_hash) from core_tx_results
 `
@@ -294,4 +427,49 @@ func (q *Queries) TotalTxResults(ctx context.Context) (int64, error) {
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const totalValidators = `-- name: TotalValidators :one
+select count(*) from core_validators
+`
+
+func (q *Queries) TotalValidators(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, totalValidators)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const txsPerHour = `-- name: TxsPerHour :many
+select date_trunc('hour', created_at)::timestamp as hour, tx_type, count(*) as tx_count
+from core_tx_stats 
+where created_at >= now() - interval '1 day'
+group by hour, tx_type 
+order by hour asc
+`
+
+type TxsPerHourRow struct {
+	Hour    pgtype.Timestamp
+	TxType  string
+	TxCount int64
+}
+
+func (q *Queries) TxsPerHour(ctx context.Context) ([]TxsPerHourRow, error) {
+	rows, err := q.db.Query(ctx, txsPerHour)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TxsPerHourRow
+	for rows.Next() {
+		var i TxsPerHourRow
+		if err := rows.Scan(&i.Hour, &i.TxType, &i.TxCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
