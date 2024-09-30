@@ -162,7 +162,6 @@ def get_track_comments(args, track_id, current_user_id=None):
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
-                Comment.is_delete == False,
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
                 (CommentReport.comment_id == None)
