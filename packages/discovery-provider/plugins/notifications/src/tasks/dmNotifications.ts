@@ -197,18 +197,18 @@ async function getNewBlasts(
     `,
     [minTimestamp.toISOString(), maxTimestamp.toISOString()]
   )
+
+  // Generate the chatId for the chat if it were to be created. Must match ordering
+  // in chat_id.go here:
+  // https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/misc/chat_id.go
   const formattedMessages = messages.rows.map((message) => {
+    const encodedSenderId = encodeHashId(message.sender_user_id)
+    const encodedReceiverId = encodeHashId(message.receiver_user_id)
     let chatId: string
-    if (message.sender_user_id < message.receiver_user_id) {
-      chatId =
-        encodeHashId(message.sender_user_id) +
-        ':' +
-        encodeHashId(message.receiver_user_id)
+    if (encodedSenderId < encodedReceiverId) {
+      chatId = encodedSenderId + ':' + encodedReceiverId
     } else {
-      chatId =
-        encodeHashId(message.receiver_user_id) +
-        ':' +
-        encodeHashId(message.sender_user_id)
+      chatId = encodedReceiverId + ':' + encodedSenderId
     }
     return { ...message, chatId }
   })
