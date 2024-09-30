@@ -394,7 +394,6 @@ class PlayBar extends Component {
                 playbackRate={
                   isLongFormContent ? playbackRateValueMap[playbackRate] : 1
                 }
-                // TODO: This can/should also be pulled from the audio player
                 elapsedSeconds={audioPlayer?.getPosition()}
                 totalSeconds={duration}
                 style={{
