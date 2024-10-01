@@ -78,17 +78,7 @@ const CommentBlockInternal = (
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
-        <Avatar
-          userId={userId}
-          css={{
-            width: 44,
-            height: 44,
-            cursor: isTombstone ? 'default' : 'pointer'
-          }}
-          // TODO: This is a hack - currently if you provide an undefined userId it will link to signin/feed
-          onClick={isTombstone ? () => {} : undefined}
-          popover
-        />
+        <Avatar userId={userId} size='medium' popover />
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
