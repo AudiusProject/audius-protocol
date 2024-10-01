@@ -49,6 +49,7 @@ const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const {
   getCollectible,
+  getSeek,
   getPlaying,
   getCounter,
   getUid: getPlayingUid,
@@ -388,6 +389,8 @@ class PlayBar extends Component {
                 isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid && !collectible}
                 includeTimestamps
+                getAudioPosition={audioPlayer?.getPosition}
+                getTotalTime={audioPlayer?.getDuration}
                 playbackRate={
                   isLongFormContent ? playbackRateValueMap[playbackRate] : 1
                 }
@@ -489,6 +492,7 @@ const makeMapStateToProps = () => {
     })
 
     return {
+      seek: getSeek(state),
       accountUser: getAccountUser(state),
       currentQueueItem: getCurrentQueueItem(state),
       playCounter: getCounter(state),
