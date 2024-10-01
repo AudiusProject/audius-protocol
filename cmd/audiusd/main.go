@@ -70,7 +70,7 @@ func main() {
 		}
 	}()
 
-	if *noMediorum {
+	if !*noMediorum {
 		go func() {
 			if err := mediorum_pkg.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)

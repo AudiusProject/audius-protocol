@@ -41,14 +41,12 @@ fi
   set -a
   source prod.env
   set +a
-
-  coreServerAddr=0.0.0.0:26659 \
+  # if enabling mediorum, then also set:
+  #   postgresDSN=postgres://postgres:postgres@localhost:5432/audius_creator_node \
+  #   creatorNodeEndpoint=http://localhost \
   dbUrl=postgresql://postgres:postgres@localhost:5432/audiusd \
   uptimeDataDir=/tmp/bolt \
-  coreGRPCEndpoint=0.0.0.0:50051 \
-  coreJRPCEndpoint=http://0.0.0.0:26657 \
-  postgresDSN=postgres://postgres:postgres@localhost:5432/audius_creator_node \
-  creatorNodeEndpoint=http://localhost \
+  audius_core_root_dir="$HOME/.audiusd" \
   ./audiusd-native --no-tls --no-mediorum
 )
 EOF
