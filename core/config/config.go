@@ -2,9 +2,9 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -109,9 +109,14 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		}
 	}
 
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("Failed to get user home directory: %v", err)
+	}
+
 	var cfg Config
 	// comet config
-	cfg.RootDir = os.Getenv("audius_core_root_dir")
+	cfg.RootDir = getEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
 	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
 	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
 
@@ -141,10 +146,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
-	}
-
-	if cfg.Environment == "" {
-		return nil, errors.New("no environment set")
 	}
 
 	ethAddress, err := common.PrivKeyHexToAddress(cfg.DelegatePrivateKey)

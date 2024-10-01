@@ -8,11 +8,17 @@ type SettingsCardProps = {
   title: string
   description: string
   children: React.ReactNode
+  isFull?: boolean
 }
 
 export const SettingsCard = (props: SettingsCardProps) => {
+  const settingsCardStyle = cn(
+    styles.settingsCard,
+    { [styles.settingsCardFull]: props.isFull },
+    props.className
+  )
   return (
-    <div className={cn(styles.settingsCard, props.className)}>
+    <div className={settingsCardStyle}>
       <div>
         <div className={styles.title}>
           {props.icon} {props.title}
