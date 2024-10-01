@@ -51,6 +51,8 @@ func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransacti
 	switch body := req.Transaction.GetTransaction().(type) {
 	case *proto.SignedTransaction_Plays:
 		s.logger.Infof("plays event %v", body.Plays.GetPlays())
+	case *proto.SignedTransaction_ManageEntity:
+		s.logger.Infof("manage entity %v", body.ManageEntity)
 	default:
 		s.logger.Warn("unknown event type")
 	}
