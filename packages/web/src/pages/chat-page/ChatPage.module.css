@@ -12,7 +12,7 @@
   margin-top: -37px;
   width: 100%;
   max-width: 100%;
-  height: calc(100% + 37px);
+  height: calc(100% - 80px);
 }
 
 .layout {
@@ -30,7 +30,7 @@
 }
 
 .chatArea {
-  height: calc(100% - 117px); /* 100% - headerHeight */
+  height: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
