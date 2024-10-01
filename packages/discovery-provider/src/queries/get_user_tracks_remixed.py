@@ -28,11 +28,12 @@ def _get_user_tracks_remixed(session, args: GetUserTracksRemixedArgs):
     query = (
         session.query(
             Remix.parent_track_id.label("track_id"),
+            Track.title,
             remix_count,
         )
         .join(Track, Remix.parent_track_id == Track.track_id)
         .filter(Track.owner_id == user_id)
-        .group_by(Remix.parent_track_id)
+        .group_by(Remix.parent_track_id, Track.title)
         .order_by(remix_count.desc())
     )
 
@@ -49,7 +50,7 @@ def get_user_tracks_remixed(args: GetUserTracksRemixedArgs):
         query = _get_user_tracks_remixed(session, args)
         query_results = add_query_pagination(query, limit, offset).all()
         remixed_aggregates = [
-            {"track_id": encode_int_id(row[0]), "remix_count": row[1]}
+            {"track_id": encode_int_id(row[0]), "title": row[1], "remix_count": row[2]}
             for row in query_results
         ]
 

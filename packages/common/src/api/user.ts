@@ -318,10 +318,7 @@ const userApi = createApi({
         })
         return data
       },
-      options: {
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
+      options: {}
     },
     getSalesAggegrate: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
