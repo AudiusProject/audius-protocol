@@ -1,4 +1,4 @@
-export { FixedDecimal } from './FixedDecimal'
+export { FixedDecimal } from './FixedDecimal.js'
 export {
   SOL,
   wAUDIO,
@@ -8,4 +8,4 @@ export {
   wAudioWei,
   AudioWei,
   UsdcWei
-} from './currencies'
+} from './currencies.js'
