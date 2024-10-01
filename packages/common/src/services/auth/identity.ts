@@ -70,14 +70,6 @@ export class IdentityService {
     })
   }
 
-  async getUserEvents(walletAddress: string) {
-    return await this._makeRequest<{ needsRecoveryEmail: boolean }>({
-      url: '/userEvents',
-      method: 'get',
-      params: { walletAddress }
-    })
-  }
-
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
