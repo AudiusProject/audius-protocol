@@ -5,6 +5,7 @@ import { hedgehogInstance } from './hedgehog'
 
 export const auth = {
   sign: async (data: string | Uint8Array) => {
+    await hedgehogInstance.waitUntilReady()
     return await secp.sign(
       keccak_256(data),
       hedgehogInstance.getWallet()?.getPrivateKey() as any,
@@ -18,6 +19,7 @@ export const auth = {
     const { signTypedData, SignTypedDataVersion } = await import(
       '@metamask/eth-sig-util'
     )
+    await hedgehogInstance.waitUntilReady()
 
     return signTypedData({
       privateKey: hedgehogInstance.getWallet()!.getPrivateKey(),
@@ -26,6 +28,7 @@ export const auth = {
     })
   },
   getSharedSecret: async (publicKey: string | Uint8Array) => {
+    await hedgehogInstance.waitUntilReady()
     return secp.getSharedSecret(
       hedgehogInstance.getWallet()?.getPrivateKey() as any,
       publicKey,
@@ -33,6 +36,7 @@ export const auth = {
     )
   },
   getAddress: async () => {
+    await hedgehogInstance.waitUntilReady()
     return hedgehogInstance.wallet?.getAddressString() ?? ''
   },
   hashAndSign: async (_data: string) => {
