@@ -155,7 +155,8 @@ const actionsMap = {
     const nextProgress = { ...prevProgress }
     nextProgress.status = progress.status
     if (progress.loaded && progress.total) {
-      nextProgress.loaded = progress.loaded
+      // Don't allow progress to jump backwards on retries
+      nextProgress.loaded = Math.max(nextProgress.loaded ?? 0, progress.loaded)
       nextProgress.total = progress.total
     }
     if (progress.transcode) {

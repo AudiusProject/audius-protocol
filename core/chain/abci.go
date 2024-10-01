@@ -110,11 +110,16 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	for i, tx := range req.Txs {
 		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err == nil {
-			if err := app.finalizeEvent(ctx, protoEvent, app.toTxHash(tx)); err != nil {
+			txhash := app.toTxHash(tx)
+			finalizedTx, err := app.finalizeTransaction(ctx, protoEvent, txhash)
+			if err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
+				app.logger.Errorf("failed to persist tx stat: %v", err)
+			}
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}

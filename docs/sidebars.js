@@ -96,7 +96,15 @@ module.exports = {
       items: [
         'distributors/specification/overview',
         'distributors/specification/metadata',
-        'distributors/specification/deal-types',
+        {
+          type: 'category',
+          label: 'Deal Types',
+          items: [
+            'distributors/specification/deal-types/recommended',
+            'distributors/specification/deal-types/supported-deal-types',
+          ],
+          collapsed: false,
+        },
       ],
       collapsed: false,
     },

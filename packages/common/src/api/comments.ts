@@ -12,6 +12,7 @@ import {
 } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Comment, ReplyComment, ID } from '~/models'
+import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
@@ -159,6 +160,7 @@ const commentsApi = createApi({
           createdAt: new Date().toISOString(),
           updatedAt: undefined
         }
+        dispatch(incrementTrackCommentCount(entityId, 1))
         // Add our new comment to the store
         optimisticUpdateComment(newId, () => newComment, dispatch)
         // If the comment is a reply, we need to update the parent comment's replies array
@@ -191,7 +193,7 @@ const commentsApi = createApi({
             userId
           )
         }
-        return { tempId: newId }
+        return { newId }
       }
     },
     deleteCommentById: {
@@ -205,6 +207,7 @@ const commentsApi = createApi({
       },
       options: { type: 'mutation' },
       onQueryStarted({ id, entityId, userId }, { dispatch }) {
+        dispatch(incrementTrackCommentCount(entityId, -1))
         optimisticUpdateCommentList(
           entityId,
           (prevState) => prevState?.filter((comment) => comment.id !== id),
@@ -331,6 +334,36 @@ const commentsApi = createApi({
           userId
         )
       }
+    },
+    muteUserById: {
+      async fetch(
+        {
+          mutedUserId,
+          userId,
+          isMuted
+        }: { mutedUserId: ID; userId: ID; isMuted: boolean; entityId: any },
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        await sdk.comments.muteUser(userId, mutedUserId, isMuted)
+      },
+      options: { type: 'mutation' },
+      async onQueryStarted({ mutedUserId, entityId, userId }, { dispatch }) {
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            if (!entityId) return
+
+            const newState = prevState?.filter(
+              (comment: Comment) => Number(comment.userId) !== mutedUserId
+            )
+
+            return newState
+          },
+          dispatch,
+          userId
+        )
+      }
     }
   }
 })
@@ -344,7 +377,8 @@ export const {
   usePinCommentById,
   useReactToCommentById,
   useGetCommentRepliesById,
-  useReportCommentById
+  useReportCommentById,
+  useMuteUserById
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

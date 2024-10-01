@@ -18,6 +18,7 @@ export const settingsMessages = {
   aiGeneratedCardTitle: 'AI Generated music',
   appearanceTitle: 'Appearance',
   inboxSettingsCardTitle: 'Inbox Settings',
+  commentSettingsCardTitle: 'Comment Settings',
   notificationsCardTitle: 'Configure Notifications',
   accountRecoveryCardTitle: 'Resend Recovery Email',
   changeEmailCardTitle: 'Change Email',
@@ -32,6 +33,8 @@ export const settingsMessages = {
     "Enable dark mode or choose 'Auto' to change with your system settings.",
   inboxSettingsCardDescription:
     'Configure who is able to send messages to your inbox.',
+  commentSettingsCardDescription:
+    'Prevent certain users from commenting on your tracks.',
   notificationsCardDescription: 'Review your notification preferences.',
   accountRecoveryCardDescription:
     'Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.',
@@ -46,6 +49,7 @@ export const settingsMessages = {
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
   inboxSettingsButtonText: 'Inbox Settings',
+  commentSettingsButtonText: 'Comment Settings',
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
   changeEmailButtonText: 'Change Email',

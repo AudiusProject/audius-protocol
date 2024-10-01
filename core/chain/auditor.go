@@ -99,7 +99,7 @@ func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.
 	return height-previousHeight == int64(app.config.SlaRollupInterval)
 }
 
-func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.SignedTransaction, txHash string) error {
+func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.SignedTransaction, txHash string) (*gen_proto.SlaRollup, error) {
 	appDb := app.getDb()
 	rollup := event.GetSlaRollup()
 
@@ -116,11 +116,11 @@ func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_pr
 		},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err = appDb.ClearUncommittedSlaNodeReports(ctx); err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, r := range rollup.Reports {
@@ -132,8 +132,8 @@ func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_pr
 				BlocksProposed: r.NumBlocksProposed,
 			},
 		); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return rollup, nil
 }

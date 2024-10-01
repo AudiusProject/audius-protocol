@@ -7,7 +7,7 @@ import {
   useDeleteComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
-import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -64,7 +64,6 @@ const CommentBlockInternal = (
   // This status checks specifically for this comment - no matter where the post request originated
   const commentPostStatus = useCommentPostStatus(comment)
 
-  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
@@ -79,17 +78,7 @@ const CommentBlockInternal = (
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
-        <Avatar
-          userId={userId}
-          css={{
-            width: 44,
-            height: 44,
-            cursor: isTombstone ? 'default' : 'pointer'
-          }}
-          // TODO: This is a hack - currently if you provide an undefined userId it will link to signin/feed
-          onClick={isTombstone ? () => {} : undefined}
-          popover
-        />
+        <Avatar userId={userId} size='medium' popover />
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
@@ -119,9 +108,7 @@ const CommentBlockInternal = (
         ) : null}
         {showEditInput ? (
           <CommentForm
-            onSubmit={() => {
-              setShowEditInput(false)
-            }}
+            onSubmit={() => setShowEditInput(false)}
             commentId={commentId}
             initialValue={message}
             isEdit
@@ -136,7 +123,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isCommentLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         )}
@@ -145,6 +132,7 @@ const CommentBlockInternal = (
           <CommentForm
             parentCommentId={parentCommentId ?? comment.id}
             initialValue={`@${userHandle}`}
+            onSubmit={() => setShowReplyInput(false)}
           />
         ) : null}
       </Flex>

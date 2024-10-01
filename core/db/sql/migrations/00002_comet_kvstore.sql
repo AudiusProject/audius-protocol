@@ -1,5 +1,5 @@
 -- +migrate Up
-create table core_kvstore(
+create table if not exists core_kvstore(
   id serial primary key,
   key varchar(255) unique not null,
   value text not null,

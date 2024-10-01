@@ -12,7 +12,9 @@ import {
   usePinCommentById,
   usePostComment as useAQueryPostComment,
   useReactToCommentById,
-  useReportCommentById
+  useReportCommentById,
+  useMuteUserById,
+  useGetCurrentUserId
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
@@ -122,6 +124,30 @@ export const useReportComment = () => {
   const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
       reportComment({ id: commentId, userId: currentUserId, entityId })
+    }
+  }
+  return [wrappedHandler, response] as const
+}
+
+export const useMuteUser = () => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const [muteUser, response] = useMuteUserById()
+  const wrappedHandler = ({
+    mutedUserId,
+    isMuted,
+    entityId
+  }: {
+    mutedUserId: number
+    isMuted: boolean
+    entityId?: number
+  }) => {
+    if (currentUserId) {
+      muteUser({
+        mutedUserId,
+        userId: currentUserId,
+        isMuted,
+        entityId
+      })
     }
   }
   return [wrappedHandler, response] as const
