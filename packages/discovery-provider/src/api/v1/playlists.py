@@ -186,6 +186,8 @@ class Playlist(Resource):
             playlist_id=playlist_id,
         )
         if playlist:
+            tracks = get_tracks_for_playlist(playlist_id, current_user_id)
+            playlist["tracks"] = tracks
             filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
