@@ -15,6 +15,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/core_pkg"
+
 	"github.com/AudiusProject/audius-protocol/mediorum/mediorum_pkg"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
@@ -26,6 +27,7 @@ import (
 
 func main() {
 	noTLS := flag.Bool("no-tls", false, "Disable TLS and use only port 80")
+	noMediorum := flag.Bool("no-mediorum", false, "Disable Mediorum i.e. core node only")
 	flag.Parse()
 
 	logger := common.NewLogger(nil)
@@ -37,6 +39,8 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// make it work out of the box with no config
+	// TODO: for now, this requires the use of --no-mediorum
+	// as that code is heavily tied into on chain registration
 	delegatePrivateKey := os.Getenv("delegatePrivateKey")
 	if delegatePrivateKey == "" {
 		delegatePrivateKey, delegateOwnerWallet := keyGen()
@@ -66,12 +70,14 @@ func main() {
 		}
 	}()
 
-	go func() {
-		if err := mediorum_pkg.Run(ctx, logger); err != nil {
-			logger.Errorf("fatal mediorum error: %v", err)
-			cancel()
-		}
-	}()
+	if *noMediorum {
+		go func() {
+			if err := mediorum_pkg.Run(ctx, logger); err != nil {
+				logger.Errorf("fatal mediorum error: %v", err)
+				cancel()
+			}
+		}()
+	}
 
 	<-sigChan
 	logger.Info("Received termination signal, shutting down...")

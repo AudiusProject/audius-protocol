@@ -49,7 +49,7 @@ fi
   coreJRPCEndpoint=http://0.0.0.0:26657 \
   postgresDSN=postgres://postgres:postgres@localhost:5432/audius_creator_node \
   creatorNodeEndpoint=http://localhost \
-  ./audiusd-native --no-tls
+  ./audiusd-native --no-tls --no-mediorum
 )
 EOF
 
@@ -75,8 +75,9 @@ curl http://localhost/core/comet/v1/block?height=1
 
 Verify other services
 ```bash
-# mediorum
-curl http://localhost/health_check
+# mediorum - has been disabled via --no-mediorum for local for now
+# this is to avoid complexities of on chain registration
+# curl http://localhost/health_check
 
 # uptime
 curl http://localhost/d_api/env
