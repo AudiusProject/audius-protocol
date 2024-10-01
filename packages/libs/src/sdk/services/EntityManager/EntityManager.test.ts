@@ -156,37 +156,4 @@ describe('EntityManager', () => {
       }).rejects.toThrow()
     })
   })
-
-  describe('manageEntityConfig', () => {
-    it('relays to the correct service', async () => {
-      const sharedDefaultConfig =
-        getDefaultEntityManagerConfig(developmentConfig)
-      const discoveryEntityManager = new EntityManager({
-        ...sharedDefaultConfig,
-        discoveryNodeSelector,
-        useDiscoveryRelay: true
-      })
-
-      const relayEntityManagerUndefined = new EntityManager({
-        ...sharedDefaultConfig,
-        discoveryNodeSelector
-      })
-
-      const relayEntityManagerFalse = new EntityManager({
-        ...sharedDefaultConfig,
-        discoveryNodeSelector,
-        useDiscoveryRelay: false
-      })
-
-      const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
-      const identityRelayUrlUndefined =
-        await relayEntityManagerUndefined.getRelayEndpoint()
-      const identityRelayUrlFalse =
-        await relayEntityManagerFalse.getRelayEndpoint()
-
-      expect(discoveryRelayUrl).toEqual(discoveryNode)
-      expect(identityRelayUrlUndefined).toEqual(discoveryRelayUrl)
-      expect(discoveryRelayUrl).toEqual(identityRelayUrlFalse)
-    })
-  })
 })

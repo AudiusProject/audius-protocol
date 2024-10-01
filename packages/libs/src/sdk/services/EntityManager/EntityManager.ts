@@ -1,4 +1,3 @@
-import fetch, { Headers } from 'cross-fetch'
 import type Web3Type from 'web3'
 import type { TransactionReceipt } from 'web3-core'
 import type { Contract } from 'web3-eth-contract'
@@ -7,6 +6,7 @@ import type { AbiItem } from 'web3-utils'
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import { productionConfig } from '../../config/production'
+import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import Web3 from '../../utils/web3'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
@@ -30,12 +30,11 @@ export class EntityManager implements EntityManagerService {
    * Configuration passed in by consumer (with defaults)
    */
   private readonly config: EntityManagerConfigInternal
-
   private readonly discoveryNodeSelector: DiscoveryNodeSelectorService
-
-  private readonly contract: Contract
-  private readonly web3: Web3Type
   private readonly logger: LoggerService
+
+  private contract!: Contract
+  private web3!: Web3Type
 
   constructor(config: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(
@@ -43,16 +42,27 @@ export class EntityManager implements EntityManagerService {
       getDefaultEntityManagerConfig(productionConfig)
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
-    this.web3 = new Web3(
-      new Web3.providers.HttpProvider(this.config.web3ProviderUrl, {
-        timeout: 10000
-      })
-    )
-    this.contract = new this.web3.eth.Contract(
-      EntityManagerABI as AbiItem[],
-      this.config.contractAddress
-    )
     this.logger = this.config.logger.createPrefixedLogger('[entity-manager]')
+  }
+
+  /**
+   * Initializes web3 and contract instances
+   */
+  private async init() {
+    if (!this.web3) {
+      const web3Provider = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/chain`
+      this.web3 = new Web3(
+        new Web3.providers.HttpProvider(web3Provider, {
+          timeout: 10000
+        })
+      )
+    }
+    if (!this.contract) {
+      this.contract = new this.web3.eth.Contract(
+        EntityManagerABI as AbiItem[],
+        this.config.contractAddress
+      )
+    }
   }
 
   /**
@@ -70,8 +80,9 @@ export class EntityManager implements EntityManagerService {
   }: ManageEntityOptions): Promise<
     Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
   > {
+    await this.init()
     const nonce = await signatureSchemas.getNonce()
-    const chainId = Number(await this.web3.eth.getChainId())
+    const chainId = Number(this.config.chainId)
     const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       this.config.contractAddress,
@@ -96,7 +107,7 @@ export class EntityManager implements EntityManagerService {
       signature
     )
 
-    const url = `${await this.getRelayEndpoint()}/relay`
+    const url = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/relay`
     this.logger.info(`Making relay request to ${url}`)
     const response = await fetch(url, {
       method: 'POST',
@@ -193,18 +204,10 @@ export class EntityManager implements EntityManagerService {
   }
 
   public async getCurrentBlock() {
+    await this.init()
     const currentBlockNumber = await this.web3.eth.getBlockNumber()
     return (await this.web3.eth.getBlock(currentBlockNumber)) as {
       timestamp: number
     }
-  }
-
-  public async getRelayEndpoint(): Promise<string> {
-    const discoveryEndpoint =
-      await this.discoveryNodeSelector.getSelectedEndpoint()
-    if (discoveryEndpoint === null) {
-      return this.config.identityServiceUrl
-    }
-    return discoveryEndpoint
   }
 }
