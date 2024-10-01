@@ -28,8 +28,8 @@ func (v *Views) RenderNodeView(c echo.Context, view *pages.NodePageView) error {
 	return v.pages.NodePageHTML(view).Render(c.Request().Context(), c.Response().Writer)
 }
 
-func (v *Views) RenderAnalyticsView(c echo.Context) error {
-	return v.pages.AnalyticsPageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderAnalyticsView(c echo.Context, view *pages.AnalyticsPageView) error {
+	return v.pages.AnalyticsPageHTML(view).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderContentView(c echo.Context) error {

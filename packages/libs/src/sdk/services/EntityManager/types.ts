@@ -68,7 +68,9 @@ export enum Action {
   UNREACT = 'Unreact',
   REPORT = 'Report',
   PIN = 'Pin',
-  UNPIN = 'Unpin'
+  UNPIN = 'Unpin',
+  MUTE = 'Mute',
+  UNMUTE = 'Unmute'
 }
 
 export enum EntityType {

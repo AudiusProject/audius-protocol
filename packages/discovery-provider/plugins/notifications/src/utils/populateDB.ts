@@ -688,6 +688,44 @@ export async function insertReaction(
     .into('chat_message_reactions')
 }
 
+export async function insertBlast(
+  db: Knex,
+  senderId: number,
+  blastId: string,
+  plaintext: string,
+  audience: string,
+  audienceContentType: 'track' | 'album',
+  audienceContentId: string,
+  timestamp: Date
+) {
+  await db
+    .insert({
+      blast_id: blastId,
+      from_user_id: senderId,
+      audience,
+      audience_content_type: audienceContentType,
+      audience_content_id: audienceContentId,
+      plaintext,
+      created_at: timestamp.toISOString()
+    })
+    .into('chat_blast')
+}
+
+export async function insertChatPermission(
+  db: Knex,
+  userId: number,
+  permits: string
+) {
+  await db
+    .insert({
+      user_id: userId,
+      permits,
+      updated_at: new Date(Date.now()).toISOString(),
+      allowed: true
+    })
+    .into('chat_permissions')
+}
+
 type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(

@@ -14,7 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/console/assets"
 )
 
-var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))
 
 func (l *Layout) SiteFrame() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -97,7 +97,7 @@ func (l *Layout) SiteFrame() templ.Component {
 				}
 				return templ_7745c5c3_Err
 			})
-			templ_7745c5c3_Err = l.components.Link("%s/genesis", l.config.NodeEndpoint).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = l.components.Link("/genesis").Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -309,7 +309,7 @@ func (l *Layout) SiteFrame() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6\"><div class=\"bg-white shadow-md rounded-lg p-4\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</li></ul></div></div><div id=\"page-content\" class=\"flex-grow space-y-4 p-8 pt-6 flex flex-col\"><div class=\"bg-white shadow-md rounded-lg p-4 flex-grow flex flex-col\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

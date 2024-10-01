@@ -7,8 +7,7 @@ import {
   useDeleteComment
 } from '@audius/common/context'
 import { useStatusChange } from '@audius/common/hooks'
-import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -21,6 +20,7 @@ import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
+import { CommentText } from './CommentText'
 import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
@@ -64,7 +64,6 @@ const CommentBlockInternal = (
   // This status checks specifically for this comment - no matter where the post request originated
   const commentPostStatus = useCommentPostStatus(comment)
 
-  const isCommentLoading = commentPostStatus === Status.LOADING
   useStatusChange(commentPostStatus, {
     onSuccess: () => setShowReplyInput(false)
   })
@@ -128,12 +127,7 @@ const CommentBlockInternal = (
             hideAvatar
           />
         ) : (
-          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
-            {message}
-            {isEdited ? (
-              <Text color='subdued'> ({messages.edited})</Text>
-            ) : null}
-          </Text>
+          <CommentText isEdited={isEdited}>{message}</CommentText>
         )}
         {hideActions ? null : (
           <CommentActionBar
@@ -141,7 +135,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isCommentLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         )}

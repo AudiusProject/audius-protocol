@@ -85,11 +85,6 @@ jobs:
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc
       notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-uptime
-      context: [Vercel, dockerhub]
-      service: uptime
-      notify_slack_on_failure: true
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
@@ -108,7 +103,6 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-uptime
 
   - deploy-foundation-nodes-trigger:
       requires:
