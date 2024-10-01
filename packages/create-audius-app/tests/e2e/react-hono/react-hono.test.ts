@@ -32,9 +32,9 @@ test('auths, fetches tracks, and favorites a track', async ({
 
   // Set up block_confirmation response listener
   const responsePromise = page.waitForResponse(async (response) => {
-    if (response.url().includes('block_confirmation')) {
+    if (response.url().includes('favorite') || response.url().includes('unfavorite')) {
       const json = await response.json()
-      return json.data.block_passed
+      return json.trackId
     }
   })
 

@@ -106,6 +106,7 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
+from src.queries.get_comments import get_muted_users
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -2809,3 +2810,46 @@ class FullUserFeed(Resource):
     @auth_middleware(user_feed_parser, require_auth=True)
     def get(self, id, authed_user_id):
         return self._get(id, authed_user_id)
+
+
+muted_users_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+
+MUTED_USERS_ROUTE = "/<string:id>/muted"
+
+
+@ns.route(MUTED_USERS_ROUTE)
+class MutedUsers(Resource):
+    @ns.doc(
+        id="Get Muted Users",
+        description="Gets users muted by the given user",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(muted_users_route_parser)
+    @auth_middleware(muted_users_route_parser, require_auth=True)
+    @ns.marshal_with(users_response)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        muted_users = get_muted_users(decoded_id)
+        muted_users = list(map(extend_user, muted_users))
+        return success_response(muted_users)
+
+
+@full_ns.route(MUTED_USERS_ROUTE)
+class FullMutedUsers(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Muted Users",
+        description="Gets users muted by the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(muted_users_route_parser)
+    @auth_middleware(muted_users_route_parser, require_auth=True)
+    @full_ns.marshal_with(full_user_response)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        muted_users = get_muted_users(decoded_id)
+        muted_users = list(map(extend_user, muted_users))
+        return success_response(muted_users)

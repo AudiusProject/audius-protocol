@@ -1,7 +1,6 @@
-import fetch from 'cross-fetch'
-
 import { BaseAPI, JSONApiResponse, exists } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
+import fetch from '../../utils/fetch'
 import { parseParams } from '../../utils/parseParams'
 import { AntiAbuseOracleSelectorService } from '../AntiAbuseOracleSelector'
 

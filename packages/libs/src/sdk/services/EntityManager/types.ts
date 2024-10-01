@@ -10,9 +10,9 @@ export type EntityManagerConfigInternal = {
    */
   contractAddress: string
   /**
-   * The URL of the Web3 provider service
+   * ACDC chain id
    */
-  web3ProviderUrl: string
+  chainId: number
   /**
    * The URL of the Audius Identity Service, used for relays
    */
@@ -68,7 +68,9 @@ export enum Action {
   UNREACT = 'Unreact',
   REPORT = 'Report',
   PIN = 'Pin',
-  UNPIN = 'Unpin'
+  UNPIN = 'Unpin',
+  MUTE = 'Mute',
+  UNMUTE = 'Unmute'
 }
 
 export enum EntityType {
