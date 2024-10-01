@@ -5,10 +5,17 @@ import { ManageEntityLegacy, SendTransactionRequest, SignedTransaction } from ".
 import { ValidatedRelayRequest } from "./types/relay";
 import * as grpc from '@grpc/grpc-js';
 import { error } from "console";
+import { readConfig } from "./config/config.js";
+import pino from "pino";
 
-export const coreRelay = async (requestId: string, request: ValidatedRelayRequest) => {
+let client: ProtocolClient | null = null
+
+export const coreRelay = async (logger: pino.Logger, requestId: string, request: ValidatedRelayRequest) => {
   try {
-    const client = new ProtocolClient("core-discovery-1:50051", grpc.credentials.createInsecure())
+    if (client === null) {
+      const config = readConfig()
+      client = new ProtocolClient(config.coreEndpoint, grpc.credentials.createInsecure())
+    }
 
     const { encodedABI } = request
 
@@ -36,12 +43,12 @@ export const coreRelay = async (requestId: string, request: ValidatedRelayReques
 
     client.sendTransaction(sendRequest, (error, res) => {
       if (error) {
-        console.error("core relay error:", error)
+        logger.error("core relay error:", error)
         return
       }
-      console.log("core relay response:", res.toObject())
+      logger.info({ tx: res.getTransaction()?.getManageEntity()?.toObject(), txhash: res.getTxhash() }, "core relay success")
     })
   } catch (e) {
-    console.error("core relay failure:", error)
+    logger.error("core relay failure:", error)
   }
 }
