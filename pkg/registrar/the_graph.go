@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"peer_health/httputil"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 )
 
 func NewGraphStaging() PeerProvider {

@@ -334,6 +334,36 @@ const commentsApi = createApi({
           userId
         )
       }
+    },
+    muteUserById: {
+      async fetch(
+        {
+          mutedUserId,
+          userId,
+          isMuted
+        }: { mutedUserId: ID; userId: ID; isMuted: boolean; entityId: any },
+        { audiusSdk }
+      ) {
+        const sdk = await audiusSdk()
+        await sdk.comments.muteUser(userId, mutedUserId, isMuted)
+      },
+      options: { type: 'mutation' },
+      async onQueryStarted({ mutedUserId, entityId, userId }, { dispatch }) {
+        optimisticUpdateCommentList(
+          entityId,
+          (prevState) => {
+            if (!entityId) return
+
+            const newState = prevState?.filter(
+              (comment: Comment) => Number(comment.userId) !== mutedUserId
+            )
+
+            return newState
+          },
+          dispatch,
+          userId
+        )
+      }
     }
   }
 })
@@ -347,7 +377,8 @@ export const {
   usePinCommentById,
   useReactToCommentById,
   useGetCommentRepliesById,
-  useReportCommentById
+  useReportCommentById,
+  useMuteUserById
 } = commentsApi.hooks
 
 export const commentsApiFetch = commentsApi.fetch

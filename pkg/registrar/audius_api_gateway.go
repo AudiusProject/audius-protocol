@@ -3,8 +3,9 @@ package registrar
 import (
 	"encoding/json"
 	"io/ioutil"
-	"peer_health/httputil"
 	"strings"
+
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 )
 
 type NodeResponse struct {

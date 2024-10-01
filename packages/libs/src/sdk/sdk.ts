@@ -1,5 +1,4 @@
 import { isBrowser } from 'browser-or-node'
-import fetch from 'cross-fetch'
 
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
@@ -68,6 +67,7 @@ import {
   getDefaultStorageNodeSelectorConfig
 } from './services/StorageNodeSelector'
 import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
+import fetch from './utils/fetch'
 
 /**
  * The Audius SDK

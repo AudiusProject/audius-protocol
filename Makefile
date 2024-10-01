@@ -6,6 +6,14 @@ UPGRADE_TYPE ?= patch
 ABI_DIR := pkg/register/ABIs
 SRC := $(shell find pkg cmd -type f -name '*.go') go.mod go.sum
 
+bin/audiusd-native: $(SRC)
+	@echo "Building audiusd for local platform and architecture..."
+	@bash scripts/build-audiusd.sh $@
+
+bin/audiusd-x86_64-linux: $(SRC)
+	@echo "Building x86 audiusd for linux..."
+	@bash scripts/build-audiusd.sh $@ amd64 linux
+
 bin/audius-ctl-native: $(SRC)
 	@echo "Building audius-ctl for local platform and architecture..."
 	@bash scripts/build-audius-ctl.sh $@

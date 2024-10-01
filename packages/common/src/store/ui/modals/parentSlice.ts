@@ -41,6 +41,7 @@ export const initialState: BasicModalsState = {
   VipDiscord: { isOpen: false },
   StripeOnRamp: { isOpen: false },
   InboxSettings: { isOpen: false },
+  CommentSettings: { isOpen: false },
   PrivateKeyExporter: { isOpen: false },
   LockedContent: { isOpen: false },
   PlaybackRate: { isOpen: false },
