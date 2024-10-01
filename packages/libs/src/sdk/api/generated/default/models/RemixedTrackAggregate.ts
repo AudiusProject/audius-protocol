@@ -28,6 +28,12 @@ export interface RemixedTrackAggregate {
     trackId: string;
     /**
      * 
+     * @type {string}
+     * @memberof RemixedTrackAggregate
+     */
+    title: string;
+    /**
+     * 
      * @type {number}
      * @memberof RemixedTrackAggregate
      */
@@ -40,6 +46,7 @@ export interface RemixedTrackAggregate {
 export function instanceOfRemixedTrackAggregate(value: object): value is RemixedTrackAggregate {
     let isInstance = true;
     isInstance = isInstance && "trackId" in value && value["trackId"] !== undefined;
+    isInstance = isInstance && "title" in value && value["title"] !== undefined;
     isInstance = isInstance && "remixCount" in value && value["remixCount"] !== undefined;
 
     return isInstance;
@@ -56,6 +63,7 @@ export function RemixedTrackAggregateFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'trackId': json['track_id'],
+        'title': json['title'],
         'remixCount': json['remix_count'],
     };
 }
@@ -70,6 +78,7 @@ export function RemixedTrackAggregateToJSON(value?: RemixedTrackAggregate | null
     return {
         
         'track_id': value.trackId,
+        'title': value.title,
         'remix_count': value.remixCount,
     };
 }

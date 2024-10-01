@@ -27,8 +27,7 @@ export const useRemixersAudience = ({
     () =>
       (remixedTracks ?? []).map((track) => ({
         value: track.trackId,
-        // TODO: Use track title
-        label: track.trackId
+        label: track.title
       })),
     [remixedTracks]
   )
