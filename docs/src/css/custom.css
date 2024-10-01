@@ -367,7 +367,7 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
 
 /* Announcement banner */
 
-:root {
+/* :root {
   --docusaurus-announcement-bar-height: auto !important;
 }
 
@@ -410,4 +410,4 @@ div[class^="announcementBarContent"] {
     line-height: 22px;
     padding: 6px 30px;
   }
-}
+} */

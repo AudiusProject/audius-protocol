@@ -49,7 +49,8 @@ const formatTrackMetadata = (metadata: Track, i: number): DataSourceTrack => {
     time: metadata.duration,
     saves: metadata.save_count,
     reposts: metadata.repost_count,
-    plays: metadata.play_count
+    plays: metadata.play_count,
+    comments: metadata.comment_count
   }
 }
 

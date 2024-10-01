@@ -19,6 +19,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   const { bottomSheetModalRef } = props
 
   const { commentCount } = useCurrentCommentSection()
+  const showCommentSortBar = commentCount > 1
 
   const handlePressClose = () => {
     bottomSheetModalRef.current?.dismiss()
@@ -43,7 +44,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           size='m'
         />
       </Flex>
-      <CommentSortBar />
+      {showCommentSortBar ? <CommentSortBar /> : null}
     </Flex>
   )
 }

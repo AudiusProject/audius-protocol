@@ -106,4 +106,16 @@ export class CommentsApi extends GeneratedCommentsApi {
     })
     return response
   }
+
+  async muteUser(userId: number, mutedUserId: number, isMuted: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: mutedUserId,
+      action: isMuted ? Action.UNMUTE : Action.MUTE,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
 }

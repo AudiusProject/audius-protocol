@@ -37,7 +37,7 @@ create-audius-app-test:
         command: |
           npx turbo run test --filter=create-audius-app
 
-create-audius-app-test-e2e:
+create-audius-app-test-react-e2e:
   working_directory: ~/audius-protocol
   resource_class: medium
   docker:
@@ -55,7 +55,7 @@ create-audius-app-test-e2e:
           npm i
           npm run build
           cd ../../
-          npm run test:e2e
+          EXAMPLE=react npm run test:e2e
     - store_test_results:
         path: packages/create-audius-app/report.xml
         when: always
@@ -63,3 +63,30 @@ create-audius-app-test-e2e:
         path: packages/create-audius-app/playwright-report
     - store_artifacts:
         path: packages/create-audius-app/blob-report
+
+create-audius-app-test-react-hono-e2e:
+  working_directory: ~/audius-protocol
+  resource_class: medium
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: 'test-e2e'
+        command: |
+          npx playwright install --with-deps
+          npm run setup-test-env -w create-audius-app
+          cd packages/create-audius-app/examples/react-hono
+          npm i
+          npm run build
+          cd ../../
+          EXAMPLE=react-hono npm run test:e2e
+    - store_test_results:
+        path: packages/create-audius-app/report.xml
+        when: always
+    - store_artifacts:
+        path: packages/create-audius-app/playwright-report
+    - store_artifacts:
+        path: packages/cr

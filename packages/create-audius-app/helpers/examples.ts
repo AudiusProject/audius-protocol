@@ -3,7 +3,7 @@ import { copy } from '../helpers/copy'
 
 import path from 'path'
 
-export type ExampleType = 'react'
+export type ExampleType = 'react' | 'react-hono'
 
 export interface GetExampleFileArgs {
   example: ExampleType

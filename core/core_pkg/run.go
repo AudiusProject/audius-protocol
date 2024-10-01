@@ -1,4 +1,4 @@
-package main
+package core_pkg
 
 import (
 	"context"
@@ -23,7 +23,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func run(logger *common.Logger) error {
+func run(ctx context.Context, logger *common.Logger) error {
 	logger.Info("good morning!")
 
 	config, cometConfig, err := setupNode(logger)
@@ -40,7 +40,7 @@ func run(logger *common.Logger) error {
 
 	logger.Info("db migrations successful")
 
-	pool, err := pgxpool.New(context.Background(), config.PSQLConn)
+	pool, err := pgxpool.New(ctx, config.PSQLConn) // Use the passed context for the pool
 	if err != nil {
 		return fmt.Errorf("couldn't create pgx pool: %v", err)
 	}
@@ -63,7 +63,11 @@ func run(logger *common.Logger) error {
 			return fmt.Errorf("console init error: %v", err)
 		}
 
-		defer e.Shutdown(context.Background())
+		go func() {
+			<-ctx.Done()
+			logger.Info("Shutting down HTTP server...")
+			e.Shutdown(ctx)
+		}()
 		return e.Start(config.CoreServerAddr)
 	}
 
@@ -71,6 +75,7 @@ func run(logger *common.Logger) error {
 	if err != nil {
 		return fmt.Errorf("eth client dial err: %v", err)
 	}
+	defer ethrpc.Close()
 
 	c, err := contracts.NewAudiusContracts(ethrpc, config.EthRegistryAddress)
 	if err != nil {
@@ -118,37 +123,42 @@ func run(logger *common.Logger) error {
 		return fmt.Errorf("grpc listener not created: %v", err)
 	}
 
-	eg, ctx := errgroup.WithContext(context.Background())
+	// Create an errgroup to manage concurrent tasks with context
+	eg, ctx := errgroup.WithContext(ctx)
 
-	// close all services if app exits
-	defer e.Shutdown(ctx)
-	defer node.Stop()
-	defer grpcLis.Close()
-	defer ethrpc.Close()
+	// Close all services when the context is canceled
+	defer func() {
+		logger.Info("Shutting down all services...")
+		e.Shutdown(ctx)
+		node.Stop()
+		grpcLis.Close()
+		ethrpc.Close()
+	}()
 
-	// console
+	// Start the HTTP server
 	eg.Go(func() error {
-		logger.Info("core http server starting")
+		logger.Info("core HTTP server starting")
 		return e.Start(config.CoreServerAddr)
 	})
 
-	// cometbft
+	// Start the node (cometbft)
 	eg.Go(func() error {
-		logger.Info("core comet server starting")
+		logger.Info("core CometBFT node starting")
 		return node.Start()
 	})
 
-	// grpc
+	// Start the gRPC server
 	eg.Go(func() error {
-		logger.Info("core grpc server starting")
+		logger.Info("core gRPC server starting")
 		return grpcServer.Serve(grpcLis)
 	})
 
-	// registry bridge
+	// Start the registry bridge
 	eg.Go(func() error {
 		logger.Info("core registry bridge starting")
 		return registryBridge.Start()
 	})
 
+	// Wait for all services to finish or for context cancellation
 	return eg.Wait()
 }
