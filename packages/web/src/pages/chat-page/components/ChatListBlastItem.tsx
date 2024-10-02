@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast } from '@audius/sdk'
 import cn from 'classnames'
@@ -66,7 +67,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
         <Flex gap='xs'>
           <IconUser size='s' color='subdued' />
           <Text variant='label' color='subdued'>
-            {audienceCount}
+            {formatCount(audienceCount ?? 0)}
           </Text>
         </Flex>
       </Flex>

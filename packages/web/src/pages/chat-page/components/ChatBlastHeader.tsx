@@ -1,5 +1,6 @@
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -57,7 +58,7 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
         <Flex gap='s' alignItems='center'>
           <IconUserList size='m' color='default' />
           <Text variant='title' size='xl'>
-            {audienceCount}
+            {formatCount(audienceCount ?? 0)}
           </Text>
         </Flex>
       </Flex>
