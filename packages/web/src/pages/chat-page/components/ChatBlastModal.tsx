@@ -71,7 +71,7 @@ export const ChatBlastModal = () => {
 
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: defaultAudience,
+    target_audience: defaultAudience ?? ChatBlastAudience.FOLLOWERS,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -102,7 +102,7 @@ export const ChatBlastModal = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ submitForm }) => (
+        {({ submitForm, isSubmitting }) => (
           <>
             <ModalHeader>
               <ModalTitle
@@ -128,6 +128,8 @@ export const ChatBlastModal = () => {
                   type='submit'
                   css={{ flexGrow: 1 }}
                   onClick={submitForm}
+                  // Empty default audience means there areno users in any audience
+                  disabled={!!isSubmitting || !defaultAudience}
                 >
                   {messages.continue}
                 </Button>

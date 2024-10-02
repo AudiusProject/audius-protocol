@@ -31,7 +31,7 @@ export const CreateChatBlastNavigator = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: defaultAudience,
+    target_audience: defaultAudience ?? ChatBlastAudience.FOLLOWERS,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
