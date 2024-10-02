@@ -31,7 +31,7 @@ export const commentsMessages = {
   menuActions: {
     pin: 'Pin',
     unpin: 'Unpin',
-    flag: 'Flag', // TODO: do we need this anymore?
+    flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
     turnOnNotifications: 'Turn On Notifications',
@@ -47,18 +47,19 @@ export const commentsMessages = {
     deleted: 'Comment deleted',
     mutedUser: 'User muted and comment removed',
     flaggedAndRemoved: 'Comment flagged and removed',
+    flaggedAndHidden: 'Comment flagged and hidden',
     mutedNotifs: 'Notifications turned off',
     unmutedNotifs: 'Notifications turned on'
   },
   popups: {
     pin: {
-      title: 'Pin this comment?',
+      title: 'Pin comment',
       body: 'If you already pinned a comment, this will replace it',
       confirm: 'Pin',
       cancel: 'Cancel'
     },
     unpin: {
-      title: 'Unpin this comment?',
+      title: 'Unpin comment',
       body: 'Unpin this comment?',
       confirm: 'Unpin',
       cancel: 'Cancel'
@@ -66,7 +67,8 @@ export const commentsMessages = {
     // Specifically for an artist deleting someone else's comment
     artistDelete: {
       title: 'Delete comment',
-      body: (userDisplayName: string) => `Delete ${userDisplayName}'s comment?`,
+      body: (userDisplayName: string | undefined) =>
+        `Delete ${userDisplayName}'s comment permanently?`,
       confirm: 'Delete',
       cancel: 'Cancel'
     },
@@ -78,7 +80,7 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     muteUser: {
-      title: 'Are you sure?',
+      title: 'Mute user',
       body: (userDisplayName: string | undefined) =>
         `Mute ${userDisplayName} from commenting on your tracks?`,
       hint: 'This will not affect their ability to view your profile or interact with your content.',
@@ -86,16 +88,24 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     unmuteUser: {
-      title: 'Are you sure?',
+      title: 'Unmute user',
       body: (userDisplayName: string | undefined) =>
         `Unmute ${userDisplayName} from commenting on your tracks?`,
       hint: 'You can mute them again from their profile.',
       confirm: 'Unmute User',
       cancel: 'Cancel'
     },
+    flagAndHide: {
+      title: 'Flag comment',
+      body: (userDisplayName: string | undefined) =>
+        `Flag and hide ${userDisplayName}'s comment?`,
+      confirm: 'Flag',
+      cancel: 'Cancel'
+    },
     flagAndRemove: {
-      title: 'Flag comment?',
-      body: 'Flag and hide this comment?',
+      title: 'Flag comment',
+      body: (userDisplayName: string | undefined) =>
+        `Flag and remove ${userDisplayName}'s comment?`,
       confirm: 'Flag',
       cancel: 'Cancel'
     }
