@@ -1,46 +1,21 @@
 import React, { useCallback, useEffect } from 'react'
 
-import { HeaderShadow, ScreenContent, Switch } from 'app/components/core'
-import { Text, Button, Flex, IconMessage } from '@audius/harmony-native'
-import { Formik, useField } from 'formik'
 import { useSetInboxPermissions } from '@audius/common/hooks'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { FormScreen } from '../form-screen'
 import { ChatPermission } from '@audius/sdk'
+import { Formik } from 'formik'
+
+import { Button, Flex, IconMessage } from '@audius/harmony-native'
+import { HeaderShadow, ScreenContent } from 'app/components/core'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
+
+import { FormScreen } from '../form-screen'
+
+import { InboxSettingsFields } from './InboxSettingsFields'
 
 const messages = {
   title: 'Inbox Settings',
-  save: 'Save Changes',
-  allowAll: 'Allow Messages from Everyone',
-  followeeTitle: 'People You Follow',
-  tipperTitle: 'Tip Supporters',
-  tippedArtistsTitle: "Artists You've Tipped",
-  followersTitle: 'Your Followers',
-  verifiedTitle: 'Verified Users'
+  save: 'Save Changes'
 }
-
-const options = [
-  {
-    title: messages.followeeTitle,
-    value: ChatPermission.FOLLOWEES
-  },
-  {
-    title: messages.tipperTitle,
-    value: ChatPermission.TIPPERS
-  },
-  {
-    title: messages.tippedArtistsTitle,
-    value: ChatPermission.TIPPEES
-  },
-  {
-    title: messages.followersTitle,
-    value: ChatPermission.FOLLOWERS
-  },
-  {
-    title: messages.verifiedTitle,
-    value: ChatPermission.VERIFIED
-  }
-]
 
 type InboxSettingsFormValues = {
   allowAll: boolean
@@ -58,7 +33,7 @@ export const InboxSettingsScreenNew = () => {
 
   const allowAll = localPermission === ChatPermission.ALL
   const initialValues = {
-    allowAll: allowAll,
+    allowAll,
     [ChatPermission.FOLLOWEES]:
       allowAll || localPermission === ChatPermission.FOLLOWEES,
     [ChatPermission.TIPPERS]:
@@ -116,62 +91,5 @@ export const InboxSettingsScreenNew = () => {
         </FormScreen>
       )}
     </Formik>
-  )
-}
-
-const InboxSettingsFields = () => {
-  const [allowAllField, , allowAllHelpers] = useField({
-    name: 'allowAll',
-    type: 'checkbox'
-  })
-
-  return (
-    <Flex gap='xl'>
-      <Flex gap='l' row alignItems='center'>
-        <Switch
-          value={allowAllField.value}
-          onValueChange={allowAllHelpers.setValue}
-        />
-        <Text variant='title' strength='weak' size='l'>
-          {messages.allowAll}
-        </Text>
-      </Flex>
-      <Flex
-        column
-        p='l'
-        gap='l'
-        border='default'
-        borderRadius='m'
-        style={{ opacity: allowAllField.checked ? 0.5 : 1 }}
-      >
-        {options.map((opt) => (
-          <SwitchField key={opt.title} {...opt} />
-        ))}
-      </Flex>
-    </Flex>
-  )
-}
-
-function SwitchField(props: { title: string; value: ChatPermission }) {
-  const { title, value } = props
-  const [allowAllField] = useField({ name: 'allowAll', type: 'checkbox' })
-
-  const [field, , helpers] = useField({
-    name: value,
-    type: 'checkbox'
-  })
-
-  return (
-    <Flex row gap='l' key={title}>
-      <Switch
-        id={title}
-        value={field.checked}
-        disabled={allowAllField.checked}
-        onValueChange={helpers.setValue}
-      />
-      <Text variant='title' strength='weak'>
-        {title}
-      </Text>
-    </Flex>
   )
 }

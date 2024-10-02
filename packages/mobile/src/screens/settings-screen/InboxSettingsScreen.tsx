@@ -1,9 +1,10 @@
 import React from 'react'
 
-import { InboxSettingsScreenLegacy } from './InboxSettingsScreenLegacy'
-import { InboxSettingsScreenNew } from './InboxSettingsScreenNew'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
+
+import { InboxSettingsScreenLegacy } from './InboxSettingsScreenLegacy'
+import { InboxSettingsScreenNew } from './InboxSettingsScreenNew'
 
 export const InboxSettingsScreen = () => {
   const { isEnabled: isOneToManyDmsEnabled } = useFeatureFlag(
