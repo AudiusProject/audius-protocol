@@ -9,7 +9,7 @@ import type {
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { Flex, IconSend } from '@audius/harmony-native'
+import { IconSend } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
