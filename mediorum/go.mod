@@ -1,4 +1,4 @@
-module github.com/AudiusProject/audius-protocol/mediorum
+module github.com/AudiusProject/audius-protocol/mediorum_build
 
 go 1.22.5
 
