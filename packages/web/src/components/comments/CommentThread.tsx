@@ -18,12 +18,13 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies } = useGetCommentRepliesById({
-    commentId,
-    enabled: hasRequestedMore
-  })
+  const { fetchNextPage: loadMoreReplies, hasNextPage } =
+    useGetCommentRepliesById({
+      commentId,
+      enabled: hasRequestedMore
+    })
 
-  const hasMoreReplies = (rootComment?.replies?.length ?? 0) >= 3
+  const hasMoreReplies = (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean

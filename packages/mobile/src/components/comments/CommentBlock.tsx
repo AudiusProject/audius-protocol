@@ -1,10 +1,6 @@
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
-import {
-  useCommentPostStatus,
-  useCurrentCommentSection
-} from '@audius/common/context'
+import { useCurrentCommentSection } from '@audius/common/context'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import { css } from '@emotion/native'
 
 import {
@@ -48,8 +44,7 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
-  const commentPostStatus = useCommentPostStatus(comment)
-  const isLoading = commentPostStatus === Status.LOADING
+  const isLoading = false // commentPostStatus === Status.LOADING
 
   useGetUserById({ id: userId })
 
@@ -116,7 +111,7 @@ export const CommentBlockInternal = (
 // This is an extra component wrapper because the comment data coming back from aquery could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { data: comment } = useGetCommentById({ id: props.commentId })
-  if (!comment) return null
+  const { data: comment } = useGetCommentById(props.commentId)
+  if (!comment || !('id' in comment)) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }

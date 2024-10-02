@@ -27,7 +27,7 @@ import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
 const CommentDrawerContent = () => {
   const {
-    comments,
+    commentIds,
     commentSectionLoading: isLoading,
     loadMorePages,
     isLoadingMorePages
@@ -45,7 +45,7 @@ const CommentDrawerContent = () => {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex p='l'>
         <NoComments />
@@ -55,8 +55,8 @@ const CommentDrawerContent = () => {
 
   return (
     <BottomSheetFlatList
-      data={comments}
-      keyExtractor={({ id }) => id.toString()}
+      data={commentIds}
+      keyExtractor={(id) => id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
@@ -74,9 +74,9 @@ const CommentDrawerContent = () => {
       keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
-      renderItem={({ item }) => (
+      renderItem={({ item: id }) => (
         <Box ph='l'>
-          <CommentThread commentId={item.id} />
+          <CommentThread commentId={id} />
         </Box>
       )}
     />

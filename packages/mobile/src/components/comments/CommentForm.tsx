@@ -33,7 +33,7 @@ type CommentFormContentProps = Omit<
 
 const CommentFormContent = (props: CommentFormContentProps) => {
   const { isLoading, TextInputComponent } = props
-  const { currentUserId, comments, replyingToComment, editingComment } =
+  const { currentUserId, commentIds, replyingToComment, editingComment } =
     useCurrentCommentSection()
   const ref = useRef<RNTextInput>(null)
 
@@ -68,7 +68,9 @@ const CommentFormContent = (props: CommentFormContentProps) => {
     }
   }, [editingComment, setFieldValue])
 
-  const message = comments?.length ? messages.addComment : messages.firstComment
+  const message = commentIds?.length
+    ? messages.addComment
+    : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
