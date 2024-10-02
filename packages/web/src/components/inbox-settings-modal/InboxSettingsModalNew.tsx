@@ -99,13 +99,19 @@ export const InboxSettingsModalNew = () => {
     doFetchPermissions()
   }, [doFetchPermissions])
 
+  const allowAll = localPermission === ChatPermission.ALL
   const initialValues = {
-    allowAll: localPermission === ChatPermission.ALL,
-    [ChatPermission.FOLLOWEES]: localPermission === ChatPermission.FOLLOWEES,
-    [ChatPermission.TIPPERS]: localPermission === ChatPermission.TIPPERS,
-    [ChatPermission.TIPPEES]: localPermission === ChatPermission.TIPPEES,
-    [ChatPermission.FOLLOWERS]: localPermission === ChatPermission.FOLLOWERS,
-    [ChatPermission.VERIFIED]: localPermission === ChatPermission.VERIFIED
+    allowAll: allowAll,
+    [ChatPermission.FOLLOWEES]:
+      allowAll || localPermission === ChatPermission.FOLLOWEES,
+    [ChatPermission.TIPPERS]:
+      allowAll || localPermission === ChatPermission.TIPPERS,
+    [ChatPermission.TIPPEES]:
+      allowAll || localPermission === ChatPermission.TIPPEES,
+    [ChatPermission.FOLLOWERS]:
+      allowAll || localPermission === ChatPermission.FOLLOWERS,
+    [ChatPermission.VERIFIED]:
+      allowAll || localPermission === ChatPermission.VERIFIED
   }
 
   return (
@@ -183,7 +189,7 @@ function CheckboxField(props: { title: string; value: ChatPermission }) {
       <Checkbox
         {...field}
         id={title}
-        checked={field.checked || allowAllField.checked}
+        checked={field.checked}
         disabled={allowAllField.checked}
       />
       <Text tag='label' htmlFor={title} variant='title' strength='weak'>

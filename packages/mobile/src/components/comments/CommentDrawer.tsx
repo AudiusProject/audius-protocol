@@ -5,6 +5,7 @@ import {
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { Comment, ReplyComment } from '@audius/common/models'
+import type { BottomSheetFooterProps } from '@gorhom/bottom-sheet'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -111,6 +112,23 @@ export const CommentDrawer = () => {
     onClosed()
   }, [onClosed])
 
+  const renderFooterComponent = useCallback(
+    (props: BottomSheetFooterProps) => (
+      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <CommentSectionProvider
+          entityId={entityId}
+          replyingToComment={replyingToComment}
+          setReplyingToComment={setReplyingToComment}
+          editingComment={editingComment}
+          setEditingComment={setEditingComment}
+        >
+          <CommentDrawerForm />
+        </CommentSectionProvider>
+      </BottomSheetFooter>
+    ),
+    [editingComment, entityId, insets.bottom, replyingToComment]
+  )
+
   return (
     <>
       <BottomSheetModal
@@ -133,19 +151,7 @@ export const CommentDrawer = () => {
             pressBehavior='close'
           />
         )}
-        footerComponent={(props) => (
-          <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-            <CommentSectionProvider
-              entityId={entityId}
-              replyingToComment={replyingToComment}
-              setReplyingToComment={setReplyingToComment}
-              editingComment={editingComment}
-              setEditingComment={setEditingComment}
-            >
-              <CommentDrawerForm />
-            </CommentSectionProvider>
-          </BottomSheetFooter>
-        )}
+        footerComponent={renderFooterComponent}
         onDismiss={handleClose}
       >
         <CommentSectionProvider
