@@ -29,7 +29,7 @@ BEGIN
   -- existing chat takes priority over permissions
   SELECT COUNT(*) > 0 INTO can_message
   FROM chat_member member_a
-	JOIN chat_member member_b USING (chat_id)
+  JOIN chat_member member_b USING (chat_id)
   JOIN chat_message USING (chat_id)
   WHERE member_a.user_id = from_user_id
     AND member_b.user_id = to_user_id
