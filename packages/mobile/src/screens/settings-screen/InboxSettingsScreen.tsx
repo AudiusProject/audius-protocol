@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 

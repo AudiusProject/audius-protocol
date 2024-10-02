@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ChatPermission } from '@audius/sdk'
 import { useField } from 'formik'
 

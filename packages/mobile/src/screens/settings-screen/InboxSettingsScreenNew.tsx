@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
 import { ChatPermission } from '@audius/sdk'
