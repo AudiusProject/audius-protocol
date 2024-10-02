@@ -7,8 +7,8 @@ import (
 )
 
 type OverviewPageView struct {
-	Block BlockView
-	Txs   []db.CoreTxResult
+	Blocks []BlockView
+	Txs    []db.CoreTxResult
 }
 
 func (p *Pages) OverviewPageJSON() {}
@@ -18,27 +18,31 @@ templ (p *Pages) OverviewPageHTML(data *OverviewPageView) {
 		<div class="uk-grid-small uk-child-width-1-2@s uk-grid-match" uk-grid>
 			<div>
 				<div class="uk-card uk-card-default uk-card-body">
-					<h3 class="uk-card-title">Most Recent Block</h3>
-					<div class="p-4 h-full text-sm">
-						<div>
-							@p.components.Link("/block/%s", data.Block.Hash) {
-								<div>Hash: { data.Block.Hash }</div>
-							}
+					<h3 class="uk-card-title">Recent Blocks</h3>
+					for _, block := range data.Blocks {
+						<div class="text-sm">
+							<div class="p-6">
+								<div>
+									@p.components.Link("/block/%s", block.Hash) {
+										<div>Hash: { block.Hash }</div>
+									}
+								</div>
+								<div>
+									@p.components.Link("/node/%s", block.Proposer) {
+										<div>Proposer: { block.Proposer }</div>
+									}
+								</div>
+								<div>
+									@p.components.Link("/block/%s", block.Height) {
+										<div>Height: { block.Height }</div>
+									}
+								</div>
+								<div>
+									Age: { humanize.Time(block.Timestamp) }
+								</div>
+							</div>
 						</div>
-						<div>
-							@p.components.Link("/nodes/%s", data.Block.Proposer) {
-								<div>Proposer: { data.Block.Proposer }</div>
-							}
-						</div>
-						<div>
-							@p.components.Link("/block/%s", data.Block.Height) {
-								<div>Height: { data.Block.Height }</div>
-							}
-						</div>
-						<div>
-							Age: { humanize.Time(data.Block.Timestamp) }
-						</div>
-					</div>
+					}
 				</div>
 			</div>
 			<div>

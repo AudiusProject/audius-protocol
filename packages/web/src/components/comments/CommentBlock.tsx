@@ -5,19 +5,21 @@ import {
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
-import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 
+import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 import { CommentForm } from './CommentForm'
+import { CommentText } from './CommentText'
+import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
@@ -67,17 +69,7 @@ const CommentBlockInternal = (
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
-        <Avatar
-          userId={userId}
-          css={{
-            width: 44,
-            height: 44,
-            cursor: isTombstone ? 'default' : 'pointer'
-          }}
-          // TODO: This is a hack - currently if you provide an undefined userId it will link to signin/feed
-          onClick={isTombstone ? () => {} : undefined}
-          popover
-        />
+        <Avatar userId={userId} size='medium' popover />
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
@@ -107,21 +99,14 @@ const CommentBlockInternal = (
         ) : null}
         {showEditInput ? (
           <CommentForm
-            onSubmit={() => {
-              setShowEditInput(false)
-            }}
+            onSubmit={() => setShowEditInput(false)}
             commentId={commentId}
             initialValue={message}
             isEdit
             hideAvatar
           />
         ) : (
-          <Text variant='body' size='s' lineHeight='multi' textAlign='left'>
-            {message}
-            {isEdited ? (
-              <Text color='subdued'> ({messages.edited})</Text>
-            ) : null}
-          </Text>
+          <CommentText isEdited={isEdited}>{message}</CommentText>
         )}
         {hideActions ? null : (
           <CommentActionBar
@@ -138,6 +123,7 @@ const CommentBlockInternal = (
           <CommentForm
             parentCommentId={parentCommentId ?? comment.id}
             initialValue={`@${userHandle}`}
+            onSubmit={() => setShowReplyInput(false)}
           />
         ) : null}
       </Flex>

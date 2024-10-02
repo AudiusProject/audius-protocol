@@ -33,7 +33,7 @@ import styles from './CollectionPage.module.css'
 
 const messages = {
   emptyPlaylist: (collectionType: 'album' | 'playlist') =>
-    `This ${collectionType} is empty.`
+    `This ${collectionType} is empty...`
 }
 
 const EmptyTrackList = ({
@@ -69,7 +69,7 @@ export type CollectionPageProps = {
     user: User | null
   }
   tracks: {
-    status: string
+    status: Status
     entries: CollectionTrack[]
   }
   userId?: ID | null
@@ -191,7 +191,7 @@ const CollectionPage = ({
     playlistSaveCount,
     playlistRepostCount,
     isReposted
-  } = computeCollectionMetadataProps(metadata)
+  } = computeCollectionMetadataProps(metadata, tracks)
 
   const togglePlay = (uid: string, trackId: ID) => {
     if (playlistName === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {

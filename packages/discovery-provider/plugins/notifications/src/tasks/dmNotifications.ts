@@ -10,6 +10,7 @@ import type {
 } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
+import { makeChatId } from '../utils/chatId'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -115,6 +116,99 @@ async function getUnreadReactions(
     .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
+async function getNewBlasts(
+  discoveryDB: Knex,
+  minTimestamp: Date,
+  maxTimestamp: Date
+): Promise<DMNotification[]> {
+  const messages = await discoveryDB.raw(
+    `
+    WITH blast AS (
+      SELECT * FROM chat_blast
+    ),
+    aud AS (
+      -- follower_audience
+      SELECT blast_id, follower_user_id AS to_user_id
+      FROM follows
+      JOIN blast
+        ON blast.audience = 'follower_audience'
+        AND follows.followee_user_id = blast.from_user_id
+        AND follows.is_delete = false
+        AND follows.created_at < blast.created_at
+
+      UNION
+
+      -- tipper_audience
+      SELECT blast_id, sender_user_id AS to_user_id
+      FROM user_tips tip
+      JOIN blast
+        ON blast.audience = 'tipper_audience'
+        AND receiver_user_id = blast.from_user_id
+        AND tip.created_at < blast.created_at
+
+      UNION
+
+      -- remixer_audience
+      SELECT blast_id, t.owner_id AS to_user_id
+      FROM tracks t
+      JOIN remixes ON remixes.child_track_id = t.track_id
+      JOIN tracks og ON remixes.parent_track_id = og.track_id
+      JOIN blast
+        ON blast.audience = 'remixer_audience'
+        AND og.owner_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = 'track'
+            AND blast.audience_content_id = og.track_id
+          )
+        )
+
+      UNION
+
+      -- customer_audience
+      SELECT blast_id, buyer_user_id AS to_user_id
+      FROM usdc_purchases p
+      JOIN blast
+        ON blast.audience = 'customer_audience'
+        AND p.seller_user_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = p.content_type::text
+            AND blast.audience_content_id = p.content_id
+          )
+        )
+    ),
+    targ AS (
+      SELECT
+        blast_id,
+        from_user_id,
+        to_user_id,
+        blast.created_at
+      FROM blast
+      JOIN aud USING (blast_id)
+      LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
+      LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
+      WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
+      AND date_trunc('milliseconds', blast.created_at) > ?
+      AND date_trunc('milliseconds', blast.created_at) <= ?
+    )
+    SELECT from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ WHERE chat_allowed(from_user_id, to_user_id);
+    `,
+    [minTimestamp.toISOString(), maxTimestamp.toISOString()]
+  )
+
+  const formattedMessages = messages.rows.map((message) => {
+    return {
+      ...message,
+      chatId: makeChatId([message.sender_user_id, message.receiver_user_id])
+    }
+  })
+
+  return formattedMessages
+}
+
 function setLastIndexedTimestamp(
   redis: RedisClientType,
   redisKey: string,
@@ -137,6 +231,7 @@ enum DMPhase {
   START = 'START',
   GET_UNREAD_MESSAGES = 'GET_UNREAD_MESSAGES',
   GET_UNREAD_REACTIONS = 'GET_UNREAD_REACTIONS',
+  GET_NEW_BLASTS = 'GET_NEW_BLASTS',
   PUSH_NOTIFICATIONS = 'PUSH_NOTIFICATIONS',
   FINSH = 'FINSH'
 }
@@ -181,6 +276,20 @@ export async function sendDMNotifications(
       )
     }
 
+    timer.logMessage(DMPhase.GET_NEW_BLASTS)
+    const newBlasts = await getNewBlasts(
+      discoveryDB,
+      cursors.minMessageTimestamp,
+      cursors.maxTimestamp
+    )
+    if (newBlasts.length > 0) {
+      console.log(
+        `dmNotifications: new chat blast notifications: ${JSON.stringify(
+          newBlasts
+        )}`
+      )
+    }
+
     // Convert to notifications
     const messageNotifications = unreadMessages.map(
       (message) => new Message(discoveryDB, identityDB, message)
@@ -188,8 +297,12 @@ export async function sendDMNotifications(
     const reactionNotifications = unreadReactions.map(
       (reaction) => new MessageReaction(discoveryDB, identityDB, reaction)
     )
-    const notifications: Array<Message | MessageReaction> =
-      messageNotifications.concat(reactionNotifications)
+    const blastNotifications = newBlasts.map(
+      (blast) => new Message(discoveryDB, identityDB, blast)
+    )
+    const notifications: Array<Message | MessageReaction> = messageNotifications
+      .concat(reactionNotifications)
+      .concat(blastNotifications)
 
     // Sort notifications by timestamp (asc)
     notifications.sort(notificationTimestampComparator)

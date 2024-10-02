@@ -81,6 +81,7 @@ from src.api.v1.models.users import (
     decoded_user_token,
     encoded_user_id,
     purchase,
+    remixed_track_aggregate,
     sales_aggregate,
     user_model,
     user_model_full,
@@ -105,6 +106,7 @@ from src.queries.get_collection_library import (
     GetCollectionLibraryArgs,
     get_collection_library,
 )
+from src.queries.get_comments import get_muted_users
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -2710,6 +2712,12 @@ class FullPurchasersUsersCount(Resource):
 
 USER_TRACKS_REMIXED_ROUTE = USER_TRACKS_ROUTE + "/remixed"
 
+user_tracks_remixed_response = make_response(
+    "user_tracks_remixed_response",
+    ns,
+    fields.List(fields.Nested(remixed_track_aggregate)),
+)
+
 
 @ns.route(USER_TRACKS_REMIXED_ROUTE)
 class UserTracksRemixed(Resource):
@@ -2720,41 +2728,18 @@ class UserTracksRemixed(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(pagination_with_current_user_parser)
-    @ns.marshal_with(tracks_response)
+    @ns.marshal_with(user_tracks_remixed_response)
     def get(self, id):
         decoded_id = decode_with_abort(id, ns)
         args = pagination_with_current_user_parser.parse_args()
         query_args = GetUserTracksRemixedArgs(
             user_id=decoded_id,
             current_user_id=get_current_user_id(args),
-            limit=get_default_max(args.get("limit"), 10, 100),
+            limit=get_default_max(args.get("limit"), 10, 10000),
             offset=get_default_max(args.get("offset"), 0),
         )
-        tracks = get_user_tracks_remixed(query_args)
-        return success_response(list(map(extend_track, tracks)))
-
-
-@full_ns.route(USER_TRACKS_REMIXED_ROUTE)
-class FullUserTracksRemixed(Resource):
-    @full_ns.doc(
-        id="""Get User Tracks Remixed""",
-        description="Gets tracks owned by the user which have been remixed by another track",
-        params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.expect(pagination_with_current_user_parser)
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self, id):
-        decoded_id = decode_with_abort(id, full_ns)
-        args = pagination_with_current_user_parser.parse_args()
-        query_args = GetUserTracksRemixedArgs(
-            user_id=decoded_id,
-            current_user_id=get_current_user_id(args),
-            limit=get_default_max(args.get("limit"), 10, 100),
-            offset=get_default_max(args.get("offset"), 0),
-        )
-        tracks = get_user_tracks_remixed(query_args)
-        return success_response(list(map(extend_track, tracks)))
+        remixed_track_aggregates = get_user_tracks_remixed(query_args)
+        return success_response(remixed_track_aggregates)
 
 
 USER_FEED_ROUTE = "/<string:id>/feed"
@@ -2825,3 +2810,46 @@ class FullUserFeed(Resource):
     @auth_middleware(user_feed_parser, require_auth=True)
     def get(self, id, authed_user_id):
         return self._get(id, authed_user_id)
+
+
+muted_users_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+
+MUTED_USERS_ROUTE = "/<string:id>/muted"
+
+
+@ns.route(MUTED_USERS_ROUTE)
+class MutedUsers(Resource):
+    @ns.doc(
+        id="Get Muted Users",
+        description="Gets users muted by the given user",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(muted_users_route_parser)
+    @auth_middleware(muted_users_route_parser, require_auth=True)
+    @ns.marshal_with(users_response)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        muted_users = get_muted_users(decoded_id)
+        muted_users = list(map(extend_user, muted_users))
+        return success_response(muted_users)
+
+
+@full_ns.route(MUTED_USERS_ROUTE)
+class FullMutedUsers(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Muted Users",
+        description="Gets users muted by the given user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(muted_users_route_parser)
+    @auth_middleware(muted_users_route_parser, require_auth=True)
+    @full_ns.marshal_with(full_user_response)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+        muted_users = get_muted_users(decoded_id)
+        muted_users = list(map(extend_user, muted_users))
+        return success_response(muted_users)

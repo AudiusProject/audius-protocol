@@ -161,7 +161,6 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     const scrollIntoViewOnMount = useCallback((el: HTMLDivElement) => {
       if (el) {
-        el.scrollIntoView()
         // On initial render, can't scroll yet, as the component isn't fully rendered.
         // Instead, queue a scroll by triggering a rerender via a state change.
         setUnreadIndicatorEl(el)
@@ -170,7 +169,15 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     useLayoutEffect(() => {
       if (unreadIndicatorEl) {
-        unreadIndicatorEl.scrollIntoView()
+        const listItemScrollContainer =
+          unreadIndicatorEl.parentElement?.parentElement
+        if (listItemScrollContainer) {
+          listItemScrollContainer.scrollTop = Math.max(
+            unreadIndicatorEl.offsetTop - 150,
+            0
+          )
+        }
+
         // One more state change, this keeps chats unread until the user scrolls to the bottom on their own
         setLastScrolledChatId(chatId)
       }

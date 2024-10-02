@@ -5,7 +5,6 @@ import {
   Ref,
   ForwardedRef,
   ElementType,
-  useEffect,
   useState
 } from 'react'
 
@@ -18,6 +17,7 @@ import { Text, TextLinkProps, TextProps } from '@audius/harmony'
 import { ResolveApi } from '@audius/sdk'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
+import { useAsync } from 'react-use'
 
 import { ExternalTextLink } from 'components/link/ExternalTextLink'
 import { TextLink } from 'components/link/TextLink'
@@ -59,24 +59,19 @@ const RenderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const { href, ...props } = attributes
   const [unfurledContent, setUnfurledContent] = useState<string>()
 
-  useEffect(() => {
+  useAsync(async () => {
     if (isAudiusUrl(href) && !unfurledContent) {
-      const fn = async () => {
-        const sdk = await audiusSdk()
-        const res = await sdk.resolve({ url: href })
-        if (res.data) {
-          if (instanceOfTrackResponse(res)) {
-            setUnfurledContent(formatTrackName({ track: res.data }))
-          } else if (instanceOfPlaylistResponse(res)) {
-            setUnfurledContent(
-              formatCollectionName({ collection: res.data[0] })
-            )
-          } else if (instanceOfUserResponse(res)) {
-            setUnfurledContent(formatUserName({ user: res.data }))
-          }
+      const sdk = await audiusSdk()
+      const res = await sdk.resolve({ url: href })
+      if (res.data) {
+        if (instanceOfTrackResponse(res)) {
+          setUnfurledContent(formatTrackName({ track: res.data }))
+        } else if (instanceOfPlaylistResponse(res)) {
+          setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+        } else if (instanceOfUserResponse(res)) {
+          setUnfurledContent(formatUserName({ user: res.data }))
         }
       }
-      fn()
     }
   }, [href, unfurledContent, setUnfurledContent])
 

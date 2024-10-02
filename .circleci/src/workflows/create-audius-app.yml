@@ -10,7 +10,14 @@ jobs:
       requires:
         - create-audius-app-init
 
-  - create-audius-app-test-e2e:
+  - create-audius-app-test-react-e2e:
+      context:
+        - Vercel
+        - create-audius-app
+      requires:
+        - create-audius-app-init
+
+  - create-audius-app-test-react-hono-e2e:
       context:
         - Vercel
         - create-audius-app

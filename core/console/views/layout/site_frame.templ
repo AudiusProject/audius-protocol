@@ -6,7 +6,12 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/console/assets"
 )
 
-var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commit/%s", config.Version))
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))
+
+templ (l *Layout) NavBlockData(totalBlocks, totalTxs string) {
+	<div>Total Blocks: { totalBlocks }</div>
+	<div>Total Transactions: { totalTxs }</div>
+}
 
 templ (l *Layout) SiteFrame() {
 	@l.Base() {
@@ -24,7 +29,7 @@ templ (l *Layout) SiteFrame() {
 							<div>
 								Chain ID:
 								<span>
-									@l.components.Link("%s/genesis", l.config.NodeEndpoint) {
+									@l.components.Link("/genesis") {
 										<span>{ l.config.GenesisFile.ChainID }</span>
 									}
 								</span>
@@ -44,6 +49,9 @@ templ (l *Layout) SiteFrame() {
 										<span>{ l.config.ProposerAddress }</span>
 									}
 								</span>
+							</div>
+							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s">
+								block data
 							</div>
 						</div>
 					</div>
@@ -78,8 +86,8 @@ templ (l *Layout) SiteFrame() {
 					</ul>
 				</div>
 			</div>
-			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6">
-				<div class="bg-white shadow-md rounded-lg p-4">
+			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6 flex flex-col">
+				<div class="bg-white shadow-md rounded-lg p-4 flex-grow flex flex-col">
 					{ children... }
 				</div>
 			</div>

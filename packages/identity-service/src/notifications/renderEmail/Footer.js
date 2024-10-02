@@ -21,7 +21,7 @@ const InstagramLink = function InstagramLink() {
   return /* #__PURE__ */ _react.default.createElement(
     'a',
     {
-      href: 'https://www.instagram.com/audiusmusic/'
+      href: 'https://www.instagram.com/audius/'
     },
     /* #__PURE__ */ _react.default.createElement('img', {
       src: 'https://download.audius.co/static-resources/email/iconInsta.png',

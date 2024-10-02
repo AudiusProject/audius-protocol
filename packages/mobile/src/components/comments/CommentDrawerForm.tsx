@@ -31,11 +31,7 @@ export const CommentDrawerForm = () => {
 
   return (
     <Box p='l' backgroundColor='white'>
-      <CommentForm
-        onSubmit={handlePostComment}
-        isLoading={isLoading}
-        TextInputComponent={BottomSheetTextInput as any}
-      />
+      <CommentForm onSubmit={handlePostComment} isLoading={isLoading} />
     </Box>
   )
 }

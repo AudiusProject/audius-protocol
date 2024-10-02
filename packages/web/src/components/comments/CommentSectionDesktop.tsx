@@ -75,6 +75,7 @@ export const CommentSectionDesktop = () => {
   )
   const commentPostAllowed = currentUserId !== undefined && commentPostFlag
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
+  const showCommentSortBar = comments.length > 1
 
   if (commentSectionLoading) {
     return <FullCommentSkeletons />
@@ -107,7 +108,7 @@ export const CommentSectionDesktop = () => {
           </>
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
-          <CommentSortBar />
+          {showCommentSortBar ? <CommentSortBar /> : null}
           <InfiniteScroll
             hasMore={hasMorePages}
             loadMore={loadMorePages}

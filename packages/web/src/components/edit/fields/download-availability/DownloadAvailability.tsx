@@ -4,7 +4,6 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
-  Name,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
@@ -23,7 +22,6 @@ import {
   IconError,
   SegmentedControl,
   Option,
-  IconStars,
   Hint
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
@@ -31,13 +29,10 @@ import { useFormikContext } from 'formik'
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
 import { useTrackField } from 'components/edit-track/hooks'
-import { make, track } from 'services/analytics'
 
 import { STREAM_CONDITIONS } from '../types'
 
 import { DownloadPriceField } from './DownloadPriceField'
-
-const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const getMessages = (props: DownloadAvailabilityProps) => ({
   downloadAvailability: 'Download Availability',
@@ -56,10 +51,7 @@ const getMessages = (props: DownloadAvailabilityProps) => ({
       props.isUpload ? 'uploading' : 'editing'
     } a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the`,
     priceAndAudience: 'Price & Audience Settings'
-  },
-  waitlist:
-    'Start selling your music on Audius today! Limited access beta now available.',
-  join: 'Join the Waitlist'
+  }
 })
 
 type DownloadAvailabilityProps = {
@@ -75,9 +67,7 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
-  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
+
   const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
@@ -145,16 +135,11 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
       icon: (
         <IconCart
           size='s'
-          color={
-            isPremiumOptionDisabled || !isUsdcUploadEnabled
-              ? 'subdued'
-              : 'default'
-          }
+          color={isPremiumOptionDisabled ? 'subdued' : 'default'}
         />
       ),
       disabled: isPremiumOptionDisabled,
-      variant:
-        isPremiumOptionDisabled || !isUsdcUploadEnabled ? 'subdued' : 'default'
+      variant: isPremiumOptionDisabled ? 'subdued' : 'default'
     }
   ]
 
@@ -165,39 +150,11 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
     [setValue]
   )
 
-  const handleClickWaitListLink = useCallback(() => {
-    track(
-      make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK })
-    )
-  }, [])
-
   const textCss = shouldRenderCallout
     ? {
         opacity: 0.5
       }
     : {}
-
-  const renderPremiumDownloadsContent = () => {
-    return isUsdcUploadEnabled ? (
-      <DownloadPriceField disabled={false} />
-    ) : (
-      <Hint
-        icon={IconStars}
-        actions={
-          <TextLink
-            onClick={handleClickWaitListLink}
-            href={WAITLIST_TYPEFORM}
-            variant='visible'
-            isExternal
-          >
-            {messages.join}
-          </TextLink>
-        }
-      >
-        {messages.waitlist}
-      </Hint>
-    )
-  }
 
   return (
     <>
@@ -212,15 +169,11 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
         </Box>
       </Flex>
       {shouldRenderCallout ? (
-        <Hint
-          icon={IconError}
-          actions={
-            <TextLink onClick={handleCalloutClick} variant='visible'>
-              {messages.callout.priceAndAudience}
-            </TextLink>
-          }
-        >
-          {getCalloutMessage()}
+        <Hint icon={IconError}>
+          {getCalloutMessage()}{' '}
+          <TextLink onClick={handleCalloutClick} variant='visible'>
+            {messages.callout.priceAndAudience}
+          </TextLink>
         </Hint>
       ) : (
         <>
@@ -231,9 +184,9 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
             // Matches 0.18s entry animation
             forceRefreshAfterMs={180}
           />
-          {value === DownloadTrackAvailabilityType.USDC_PURCHASE
-            ? renderPremiumDownloadsContent()
-            : null}
+          {value === DownloadTrackAvailabilityType.USDC_PURCHASE ? (
+            <DownloadPriceField disabled={false} />
+          ) : null}
         </>
       )}
       <Divider />

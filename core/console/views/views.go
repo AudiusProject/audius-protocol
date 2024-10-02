@@ -2,18 +2,25 @@ package views
 
 import (
 	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/views/layout"
 	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
 	"github.com/labstack/echo/v4"
 )
 
 type Views struct {
-	pages *pages.Pages
+	pages   *pages.Pages
+	layouts *layout.Layout
 }
 
 func NewViews(config *config.Config, baseUrl string) *Views {
 	return &Views{
-		pages: pages.NewPages(config, baseUrl),
+		pages:   pages.NewPages(config, baseUrl),
+		layouts: layout.NewLayout(config, baseUrl),
 	}
+}
+
+func (v *Views) RenderNavChainData(c echo.Context, totalBlocks, totalTxs string) error {
+	return v.layouts.NavBlockData(totalBlocks, totalTxs).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderOverviewView(c echo.Context, data *pages.OverviewPageView) error {
@@ -28,8 +35,12 @@ func (v *Views) RenderNodeView(c echo.Context, view *pages.NodePageView) error {
 	return v.pages.NodePageHTML(view).Render(c.Request().Context(), c.Response().Writer)
 }
 
-func (v *Views) RenderAnalyticsView(c echo.Context) error {
-	return v.pages.AnalyticsPageHTML().Render(c.Request().Context(), c.Response().Writer)
+func (v *Views) RenderAnalyticsView(c echo.Context, view *pages.AnalyticsPageView) error {
+	return v.pages.AnalyticsPageHTML(view).Render(c.Request().Context(), c.Response().Writer)
+}
+
+func (v *Views) RenderAnalyticsHeader(c echo.Context, totalBlocks string, totalTransactions string, totalPlays string, totalManageEntities string, totalValidators string) error {
+	return v.pages.AnalyticsHeaderHTML(totalBlocks, totalTransactions, totalPlays, totalManageEntities, totalValidators).Render(c.Request().Context(), c.Response().Writer)
 }
 
 func (v *Views) RenderContentView(c echo.Context) error {

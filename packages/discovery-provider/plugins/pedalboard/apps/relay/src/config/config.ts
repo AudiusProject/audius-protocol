@@ -8,6 +8,8 @@ import {
   newAntiAbuseConfig
 } from './antiAbuseConfig'
 
+let config: Config | null = null
+
 export type Config = {
   environment: string
   rpcEndpoint: string
@@ -23,7 +25,8 @@ export type Config = {
   rateLimitBlockList: string[]
   finalPoaBlock: number
   redisUrl: string,
-  verifierAddress: string
+  verifierAddress: string,
+  coreEndpoint: string
 }
 
 // reads .env file based on environment
@@ -35,7 +38,16 @@ const readDotEnv = () => {
   dotenvConfig(environment)
 }
 
+const defaultCoreEndpoint = (env: string): string => {
+  if (env === "dev") return "core-discovery-1:50051"
+  return "core:50051"
+}
+
 export const readConfig = (): Config => {
+  if (config !== null) {
+    return config
+  }
+
   readDotEnv()
 
   // validate env
@@ -62,22 +74,29 @@ export const readConfig = (): Config => {
     audius_redis_url: str({
       default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
     }),
-    audius_contracts_verified_address: str({ default: '' })
+    audius_contracts_verified_address: str({ default: '' }),
+    audius_core_endpoint: str({ default: '' })
   })
-  return {
-    environment: env.audius_discprov_env,
-    rpcEndpoint: env.audius_web3_localhost,
-    rpcEndpointFallback: env.audius_web3_host,
-    discoveryDbConnectionString: env.audius_db_url,
-    entityManagerContractAddress: env.audius_contracts_entity_manager_address,
-    entityManagerContractRegistryKey: 'EntityManager',
-    serverHost: env.relay_server_host,
-    serverPort: env.relay_server_port,
-    aao: newAntiAbuseConfig(env.audius_aao_endpoint, env.audius_use_aao),
-    rateLimitAllowList: allowListPublicKeys(),
-    rateLimitBlockList: blockListPublicKeys(),
-    finalPoaBlock: env.audius_final_poa_block,
-    redisUrl: env.audius_redis_url,
-    verifierAddress: env.audius_contracts_verified_address
+
+  if (config === null) {
+    config = {
+      environment: env.audius_discprov_env,
+      rpcEndpoint: env.audius_web3_localhost,
+      rpcEndpointFallback: env.audius_web3_host,
+      discoveryDbConnectionString: env.audius_db_url,
+      entityManagerContractAddress: env.audius_contracts_entity_manager_address,
+      entityManagerContractRegistryKey: 'EntityManager',
+      serverHost: env.relay_server_host,
+      serverPort: env.relay_server_port,
+      aao: newAntiAbuseConfig(env.audius_aao_endpoint, env.audius_use_aao),
+      rateLimitAllowList: allowListPublicKeys(),
+      rateLimitBlockList: blockListPublicKeys(),
+      finalPoaBlock: env.audius_final_poa_block,
+      redisUrl: env.audius_redis_url,
+      verifierAddress: env.audius_contracts_verified_address,
+      coreEndpoint: env.audius_core_endpoint !== '' ? env.audius_core_endpoint : defaultCoreEndpoint(env.audius_discprov_env)
+    }
   }
+
+  return config
 }

@@ -120,6 +120,30 @@ export const useReportComment = () => {
   return [wrappedHandler, rest] as const
 }
 
+export const useMuteUser = () => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const [muteUser, response] = useMuteUserById()
+  const wrappedHandler = ({
+    mutedUserId,
+    isMuted,
+    entityId
+  }: {
+    mutedUserId: number
+    isMuted: boolean
+    entityId?: number
+  }) => {
+    if (currentUserId) {
+      muteUser({
+        mutedUserId,
+        userId: currentUserId,
+        isMuted,
+        entityId
+      })
+    }
+  }
+  return [wrappedHandler, response] as const
+}
+
 export const useDeleteComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: deleteComment, ...rest } = tqUseDeleteComment()

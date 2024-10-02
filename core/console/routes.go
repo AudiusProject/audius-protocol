@@ -1,6 +1,7 @@
 package console
 
 import (
+	"embed"
 	"net/http"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -9,6 +10,10 @@ import (
 )
 
 const baseURL = "/console"
+
+//go:embed assets/js/*
+//go:embed assets/images/*
+var embeddedAssets embed.FS
 
 func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 
@@ -23,7 +28,8 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 		return ctx.Redirect(http.StatusMovedPermanently, basePath+"/overview")
 	})
 
-	// htmx fragments that make up pages derived from routes
+	g.StaticFS("/*", embeddedAssets)
+
 	g.GET("/overview", c.overviewPage)
 	g.GET("/analytics", c.analyticsPage)
 	g.GET("/nodes", c.nodesPage)
@@ -34,6 +40,9 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g.GET("/block/:block", c.blockPage)
 	g.GET("/tx/:tx", c.txPage)
 	g.GET("/genesis", c.genesisPage)
+
+	g.GET("/fragments/nav/chain_data", c.navChainData)
+	g.GET("/fragments/analytics/header", c.analyticsHeader)
 
 	// future pages
 	// g.GET("/blocks", c.blocksPage)

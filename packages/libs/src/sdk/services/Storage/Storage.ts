@@ -1,10 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import fetch from 'cross-fetch'
 import FormData from 'form-data'
 
 import { productionConfig } from '../../config/production'
 import { isNodeFile } from '../../types/File'
 import type { CrossPlatformFile as File } from '../../types/File'
+import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
 import type { AuthService } from '../Auth'

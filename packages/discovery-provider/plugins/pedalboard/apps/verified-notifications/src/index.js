@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import listenOn from "./db.js";
 import tracksHandler from "./handlers/tracks.js";
 import usersHandler from "./handlers/users.js";
+import purchasesHandler from './handlers/purchases.js';
 import { Server } from "./server/index.js";
 
 const main = async () => {
@@ -12,7 +13,8 @@ const main = async () => {
   console.log("verified uploads bot starting");
   const tracks = listenOn("tracks", tracksHandler).catch(console.error);
   const users = listenOn("users", usersHandler).catch(console.error);
-  await Promise.allSettled([tracks, users]);
+  const purchases = listenOn("usdc_purchases", purchasesHandler).catch(console.error)
+  await Promise.allSettled([tracks, users, purchases]);
 };
 
 main();
