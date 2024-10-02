@@ -78,8 +78,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     isLoading,
     messageId,
     placeholder,
-    presetMessage,
-    extraOffset = 0
+    presetMessage
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [selection, setSelection] = useState<{ start: number; end: number }>()
@@ -229,26 +228,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     return parts
   }
 
-  // For iOS: default padding + extra padding
-  // For Android: extra padding is slightly larger than iOS, and only
-  // needed if the screen header size changes
-  const offset =
-    Platform.OS === 'ios'
-      ? spacing(1.5) + extraOffset
-      : Platform.OS === 'android'
-      ? extraOffset
-        ? spacing(1.5) + extraOffset
-        : undefined
-      : undefined
-
   return (
-    <Flex
-      style={{
-        position: 'relative',
-        // maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-        paddingBottom: offset
-      }}
-    >
+    <>
       <View
         style={[
           styles.overlayTextContainer,
@@ -280,6 +261,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
         maxLength={10000}
         autoCorrect
       />
-    </Flex>
+    </>
   )
 }
