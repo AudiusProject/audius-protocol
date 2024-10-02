@@ -16,6 +16,10 @@ func NewViews(config *config.Config, baseUrl string) *Views {
 	}
 }
 
+func (v *Views) RenderNavChainData(c echo.Context, totalBlocks, totalTxs string) error {
+	return v.pages.NavBlockData(totalBlocks, totalTxs).Render(c.Request().Context(), c.Response().Writer)
+}
+
 func (v *Views) RenderOverviewView(c echo.Context, data *pages.OverviewPageView) error {
 	return v.pages.OverviewPageHTML(data).Render(c.Request().Context(), c.Response().Writer)
 }

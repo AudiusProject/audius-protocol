@@ -45,6 +45,9 @@ templ (l *Layout) SiteFrame() {
 									}
 								</span>
 							</div>
+							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s">
+								block data
+							</div>
 						</div>
 					</div>
 				</div>

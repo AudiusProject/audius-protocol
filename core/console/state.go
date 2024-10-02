@@ -89,7 +89,29 @@ func (state *State) Start() error {
 
 		newEvent := newBlock || newTx
 		if newEvent {
+			ctx := context.Background()
 			logger.Infof("total things %v %v", len(state.latestBlocks), len(state.latestTransactions))
+
+			totalTxs, err := state.db.TotalTransactions(ctx)
+			if err != nil {
+				logger.Errorf("could not get total txs: %v", err)
+			} else {
+				state.totalTransactions = totalTxs
+			}
+
+			totalBlocks, err := state.db.TotalBlocks(ctx)
+			if err != nil {
+				logger.Errorf("could not get total blocks: %v", err)
+			} else {
+				state.totalBlocks = totalBlocks
+			}
+
+			status, err := state.rpc.Status(ctx)
+			if err != nil {
+				logger.Errorf("could not get node status: %v", err)
+			} else {
+				state.isCatchingUp = status.SyncInfo.CatchingUp
+			}
 		}
 	}
 }

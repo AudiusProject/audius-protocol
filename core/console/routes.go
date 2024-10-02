@@ -30,7 +30,6 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 
 	g.StaticFS("/*", embeddedAssets)
 
-	// htmx fragments that make up pages derived from routes
 	g.GET("/overview", c.overviewPage)
 	g.GET("/analytics", c.analyticsPage)
 	g.GET("/nodes", c.nodesPage)
@@ -41,6 +40,8 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g.GET("/block/:block", c.blockPage)
 	g.GET("/tx/:tx", c.txPage)
 	g.GET("/genesis", c.genesisPage)
+
+	g.GET("/fragments/nav/chain_data", c.navChainData)
 
 	// future pages
 	// g.GET("/blocks", c.blocksPage)
