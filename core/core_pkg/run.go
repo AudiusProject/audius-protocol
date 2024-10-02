@@ -103,7 +103,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("server init error: %v", err)
 	}
 
-	_, err = console.NewConsole(config, logger, e, rpc, pool)
+	con, err := console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
 		return fmt.Errorf("console init error: %v", err)
 	}
@@ -154,6 +154,11 @@ func run(ctx context.Context, logger *common.Logger) error {
 	eg.Go(func() error {
 		logger.Info("core registry bridge starting")
 		return registryBridge.Start()
+	})
+
+	eg.Go(func() error {
+		logger.Info("core Console starting")
+		return con.Start()
 	})
 
 	// Wait for all services to finish or for context cancellation
