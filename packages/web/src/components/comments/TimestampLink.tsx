@@ -1,24 +1,60 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { seek } from '@audius/common/src/store/player/slice'
-import { TextLink, formatTrackTimestamp } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
+import { useGatedContentAccess } from '@audius/common/hooks'
+import { ModalSource } from '@audius/common/models'
+import {
+  playerActions,
+  PurchaseableContentType,
+  trackPageLineupActions,
+  trackPageSelectors,
+  usePremiumContentPurchaseModal
+} from '@audius/common/store'
+import { formatTrackTimestamp, TextLink, TextLinkProps } from '@audius/harmony'
+import { useDispatch, useSelector } from 'react-redux'
 
-export const TimestampLink = ({
-  trackTimestampS
-}: {
-  trackTimestampS: number
-}) => {
+const { tracksActions } = trackPageLineupActions
+const { getLineup } = trackPageSelectors
+const { seek } = playerActions
+
+type TimestampLinkProps = {
+  timestampSeconds: number
+} & TextLinkProps
+
+export const TimestampLink = (props: TimestampLinkProps) => {
+  const { timestampSeconds, ...other } = props
+
   const dispatch = useDispatch()
-  const { playTrack } = useCurrentCommentSection()
-  const handleClick = () => {
-    // Starts playing the current page's song
-    playTrack()
-    // Seeks to the timestamp
-    dispatch(seek({ seconds: trackTimestampS }))
-  }
+  const { track } = useCurrentCommentSection()
+  const lineup = useSelector(getLineup)
+  const { track_id: trackId } = track
+
+  const { hasStreamAccess } = useGatedContentAccess(track)
+
+  const uid = lineup?.entries?.[0]?.uid
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+
   return (
-    <TextLink size='xs' variant='active' onClick={handleClick}>
-      {formatTrackTimestamp(trackTimestampS)}
+    <TextLink
+      onClick={() => {
+        if (!hasStreamAccess) {
+          openPremiumContentPurchaseModal(
+            { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+            {
+              source: ModalSource.Comment
+            }
+          )
+        } else {
+          dispatch(tracksActions.play(uid))
+          setTimeout(() => {
+            dispatch(seek({ seconds: timestampSeconds }))
+          })
+        }
+      }}
+      variant='visible'
+      size='s'
+      {...other}
+    >
+      {formatTrackTimestamp(timestampSeconds)}
     </TextLink>
   )
 }
