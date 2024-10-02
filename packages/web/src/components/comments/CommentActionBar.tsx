@@ -4,7 +4,8 @@ import {
   useCurrentCommentSection,
   usePinComment,
   useReactToComment,
-  useReportComment
+  useReportComment,
+  useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ReplyComment } from '@audius/common/models'
@@ -83,9 +84,10 @@ export const CommentActionBar = ({
   const [reactToComment] = useReactToComment()
   const [reportComment] = useReportComment()
   const [pinComment] = usePinComment()
+  const [muteUser] = useMuteUser()
 
   // Comment context data
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, entityId } = useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = isCommentOwner && isParentComment
 
@@ -116,11 +118,6 @@ export const CommentActionBar = ({
     onClickDelete()
   }, [onClickDelete])
 
-  const handleMute = useCallback(() => {
-    // TODO: call backend here
-    toast(messages.toasts.mutedUser)
-  }, [toast])
-
   const handleMuteNotifs = useCallback(() => {
     // TODO: call backend here
     setNotificationsMuted((prev) => !prev)
@@ -135,6 +132,15 @@ export const CommentActionBar = ({
     pinComment(commentId, !isPinned)
     toast(isPinned ? messages.toasts.unpinned : messages.toasts.pinned)
   }, [commentId, isPinned, pinComment, toast])
+
+  const handleMute = useCallback(() => {
+    muteUser({
+      mutedUserId: comment.userId,
+      isMuted: false,
+      entityId
+    })
+    toast(messages.toasts.mutedUser)
+  }, [comment.userId, entityId, muteUser, toast])
 
   const handleReport = useCallback(() => {
     reportComment(commentId)

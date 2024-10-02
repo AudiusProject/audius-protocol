@@ -1,6 +1,7 @@
 package uptime
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,6 +17,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/registrar"
 	"github.com/labstack/echo/v4"
@@ -74,6 +76,46 @@ type Uptime struct {
 	logger *slog.Logger
 	Config Config
 	DB     *bbolt.DB
+}
+
+func Run(ctx context.Context, logger *common.Logger) error {
+	discoveryEnv := os.Getenv("audius_discprov_env")
+	contentEnv := os.Getenv("MEDIORUM_ENV")
+	if discoveryEnv == "" && contentEnv == "" {
+		slog.Info("no envs set. sleeping forever...")
+		// block forever so container doesn't restart constantly
+		c := make(chan struct{})
+		<-c
+	}
+	env := ""      // prod || stage
+	nodeType := "" // content || discovery
+	if discoveryEnv != "" {
+		env = discoveryEnv
+		nodeType = "discovery"
+	} else {
+		env = contentEnv
+		nodeType = "content"
+	}
+	slog.Info("starting", "env", env)
+
+	switch env {
+	case "prod":
+		startStagingOrProd(true, nodeType, env)
+	case "stage":
+		startStagingOrProd(false, nodeType, env)
+	case "single":
+		slog.Info("no need to monitor peers when running a single node. sleeping forever...")
+		// block forever so container doesn't restart constantly
+		c := make(chan struct{})
+		<-c
+	default:
+		// TODO
+		// startDevCluster()
+		c := make(chan struct{})
+		<-c
+	}
+
+	return nil
 }
 
 func New(config Config) (*Uptime, error) {
@@ -515,7 +557,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		},
 		Peers:      peers,
 		ListenPort: "1996",
-		Dir:        "/bolt",
+		Dir:        getenvWithDefault("uptimeDataDir", "/bolt"),
 
 		Env:       env,
 		NodeType:  nodeType,
@@ -605,6 +647,14 @@ func mustGetenv(key string) string {
 		// if config is incorrect, sleep a bit to prevent container from restarting constantly
 		time.Sleep(time.Hour)
 		log.Fatal("missing required env variable: ", key)
+	}
+	return val
+}
+
+func getenvWithDefault(key string, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
 	}
 	return val
 }

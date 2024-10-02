@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
+
 	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/core/core_pkg"
 )
 
 func main() {
-	// run forever, no crashloops
 	logger := common.NewLogger(nil)
-	if err := run(logger); err != nil {
+	ctx := context.Background()
+
+	if err := core_pkg.Run(ctx, logger); err != nil {
 		logger.Errorf("fatal core error: %v", err)
 	}
-	select {}
 }

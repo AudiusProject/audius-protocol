@@ -17,6 +17,13 @@ export const commentsMessages = {
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
+  commentSettings: 'Comment Settings',
+  description: 'Prevent certain users from commenting on your tracks.',
+  unmute: 'Unmute',
+  mute: 'Mute',
+  followers: 'Followers',
+  noMutedUsers:
+    'You haven’t muted any users. Once you do, they will appear here.',
   seeMore: 'See More',
   seeLess: 'See Less',
 
@@ -73,9 +80,17 @@ export const commentsMessages = {
     muteUser: {
       title: 'Are you sure?',
       body: (userDisplayName: string | undefined) =>
-        `Mute ${userDisplayName} from commenting on your content?`,
+        `Mute ${userDisplayName} from commenting on your tracks?`,
       hint: 'This will not affect their ability to view your profile or interact with your content.',
       confirm: 'Mute User',
+      cancel: 'Cancel'
+    },
+    unmuteUser: {
+      title: 'Are you sure?',
+      body: (userDisplayName: string | undefined) =>
+        `Unmute ${userDisplayName} from commenting on your tracks?`,
+      hint: 'You can mute them again from their profile.',
+      confirm: 'Unmute User',
       cancel: 'Cancel'
     },
     flagAndRemove: {
