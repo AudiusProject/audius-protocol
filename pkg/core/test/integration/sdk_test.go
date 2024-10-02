@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/AudiusProject/audius-protocol/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 )
 
 var _ = Describe("Sdk", func() {

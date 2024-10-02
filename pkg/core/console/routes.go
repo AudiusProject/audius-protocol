@@ -4,8 +4,8 @@ import (
 	"embed"
 	"net/http"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/console/middleware"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/middleware"
 	"github.com/labstack/echo/v4"
 )
 

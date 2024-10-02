@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/AudiusProject/audius-protocol/core/sdk"
+	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 )
 
 var (

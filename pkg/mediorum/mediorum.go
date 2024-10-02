@@ -13,7 +13,7 @@ import (
 
 	_ "embed"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/registrar"

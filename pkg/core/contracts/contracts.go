@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/contracts/gen"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/contracts/gen"
 	geth "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 )

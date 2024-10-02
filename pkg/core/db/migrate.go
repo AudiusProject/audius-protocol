@@ -8,7 +8,7 @@ import (
 
 	"embed"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	migrate "github.com/rubenv/sql-migrate"
 )
 

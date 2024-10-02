@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/rpc/client/local"

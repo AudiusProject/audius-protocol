@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
 	"github.com/joho/godotenv"

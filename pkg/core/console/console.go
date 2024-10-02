@@ -5,11 +5,11 @@ package console
 import (
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/views"
-	"github.com/AudiusProject/audius-protocol/core/console/views/layout"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/layout"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/cometbft/cometbft/rpc/client"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"

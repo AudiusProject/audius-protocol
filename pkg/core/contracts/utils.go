@@ -3,7 +3,7 @@ package contracts
 import (
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 )
 
 func ServiceType(nt config.NodeType) ([32]byte, error) {

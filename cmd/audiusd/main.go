@@ -13,8 +13,8 @@ import (
 
 	"log"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/core_pkg"
+	"github.com/AudiusProject/audius-protocol/pkg/core"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
@@ -64,7 +64,7 @@ func main() {
 	}()
 
 	go func() {
-		if err := core_pkg.Run(ctx, logger); err != nil {
+		if err := core.Run(ctx, logger); err != nil {
 			logger.Errorf("fatal core error: %v", err)
 			cancel()
 		}

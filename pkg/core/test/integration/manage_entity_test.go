@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/core/grpc"
-	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"

@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/assets"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/assets"
 )
 
 var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))

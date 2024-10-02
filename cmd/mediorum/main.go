@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/labstack/echo/v4"
 )

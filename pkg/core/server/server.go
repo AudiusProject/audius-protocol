@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"

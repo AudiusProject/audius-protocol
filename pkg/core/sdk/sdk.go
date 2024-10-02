@@ -6,7 +6,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/cometbft/cometbft/rpc/client/http"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"

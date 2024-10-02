@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 )
 
 type UptimePageView struct {

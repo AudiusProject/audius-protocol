@@ -1,7 +1,7 @@
 package console
 
 import (
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	"github.com/labstack/echo/v4"
 )
 

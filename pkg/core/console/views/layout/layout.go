@@ -1,8 +1,8 @@
 package layout
 
 import (
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/views/components"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/components"
 )
 
 type Layout struct {

@@ -3,8 +3,8 @@ package console
 import (
 	"strconv"
 
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )

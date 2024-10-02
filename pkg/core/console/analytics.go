@@ -3,8 +3,8 @@ package console
 import (
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
-	"github.com/AudiusProject/audius-protocol/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/dustin/go-humanize"
 	"github.com/labstack/echo/v4"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	abci "github.com/cometbft/cometbft/abci/types"
 	gogo_proto "github.com/cosmos/gogoproto/proto"
 	"github.com/labstack/echo/v4"

@@ -8,7 +8,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	ctypes "github.com/cometbft/cometbft/rpc/core/types"
 )
 

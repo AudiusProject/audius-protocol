@@ -1,9 +1,9 @@
 package views
 
 import (
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/console/views/layout"
-	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/layout"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	"github.com/labstack/echo/v4"
 )
 

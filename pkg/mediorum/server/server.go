@@ -19,7 +19,7 @@ import (
 	_ "embed"
 	_ "net/http/pprof"
 
-	core "github.com/AudiusProject/audius-protocol/core/sdk"
+	core "github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"

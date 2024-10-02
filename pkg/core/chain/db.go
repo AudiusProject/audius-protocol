@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/jackc/pgx/v5"
 )
 

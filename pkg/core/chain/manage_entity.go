@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"google.golang.org/protobuf/proto"
 )
 

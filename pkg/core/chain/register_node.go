@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/accounts"
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"google.golang.org/protobuf/proto"
 )
 

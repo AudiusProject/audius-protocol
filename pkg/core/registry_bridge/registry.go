@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
-	"github.com/AudiusProject/audius-protocol/core/config"
-	"github.com/AudiusProject/audius-protocol/core/contracts"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
+	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

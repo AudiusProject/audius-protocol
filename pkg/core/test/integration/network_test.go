@@ -3,7 +3,7 @@ package integration_test
 import (
 	"context"
 
-	"github.com/AudiusProject/audius-protocol/core/test/integration/utils"
+	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
