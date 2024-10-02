@@ -52,7 +52,6 @@ require (
 )
 
 require (
-	github.com/AudiusProject/audius-protocol/core v0.0.0-20241002203638-65762e81e6ab
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/rubenv/sql-migrate v1.7.0
