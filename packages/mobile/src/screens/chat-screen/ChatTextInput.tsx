@@ -4,10 +4,12 @@ import type { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { decodeHashId } from '@audius/common/utils'
+import { Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { ComposerInput } from 'app/components/composer-input'
+import { spacing } from 'app/styles/spacing'
 
 import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
@@ -59,6 +61,18 @@ export const ChatTextInput = ({
     }
   }, [chatId, dispatch, onMessageSent, value])
 
+  // For iOS: default padding + extra padding
+  // For Android: extra padding is slightly larger than iOS, and only
+  // needed if the screen header size changes
+  const offset =
+    Platform.OS === 'ios'
+      ? spacing(1.5) + extraOffset
+      : Platform.OS === 'android'
+      ? extraOffset
+        ? spacing(1.5) + extraOffset
+        : undefined
+      : undefined
+
   return (
     <Flex>
       {trackId ? (
@@ -66,14 +80,21 @@ export const ChatTextInput = ({
       ) : collectionId ? (
         <ComposerCollectionInfo collectionId={collectionId} />
       ) : null}
-      <ComposerInput
-        extraOffset={extraOffset}
-        messageId={messageId}
-        presetMessage={presetMessage}
-        placeholder={messages.startNewMessage}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-      />
+
+      <Flex
+        style={{
+          position: 'relative',
+          paddingBottom: offset
+        }}
+      >
+        <ComposerInput
+          messageId={messageId}
+          presetMessage={presetMessage}
+          placeholder={messages.startNewMessage}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
+      </Flex>
     </Flex>
   )
 }

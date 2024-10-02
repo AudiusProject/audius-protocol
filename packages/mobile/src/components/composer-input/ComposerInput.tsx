@@ -14,7 +14,7 @@ import type {
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { Flex, IconSend } from '@audius/harmony-native'
+import { IconSend } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -93,8 +93,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     messageId,
     placeholder,
     presetMessage,
-    entityId,
-    extraOffset = 0
+    entityId
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [selection, setSelection] = useState<{ start: number; end: number }>()
@@ -262,26 +261,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [getMatches, getTimestamps]
   )
 
-  // For iOS: default padding + extra padding
-  // For Android: extra padding is slightly larger than iOS, and only
-  // needed if the screen header size changes
-  const offset =
-    Platform.OS === 'ios'
-      ? spacing(1.5) + extraOffset
-      : Platform.OS === 'android'
-      ? extraOffset
-        ? spacing(1.5) + extraOffset
-        : undefined
-      : undefined
-
   return (
-    <Flex
-      style={{
-        position: 'relative',
-        // maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-        paddingBottom: offset
-      }}
-    >
+    <>
       <TextInput
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
@@ -313,6 +294,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
       >
         <Text style={styles.overlayText}>{renderTextDisplay(value)}</Text>
       </View>
-    </Flex>
+    </>
   )
 }
