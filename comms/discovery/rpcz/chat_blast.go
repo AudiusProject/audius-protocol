@@ -111,12 +111,13 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			blast_id,
 			from_user_id,
 			to_user_id,
-		member_b.chat_id
+			member_b.chat_id
 		FROM blast
 		JOIN aud USING (blast_id)
 		LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
 		LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
 		WHERE member_b.chat_id IS NOT NULL
+		AND chat_allowed(from_user_id, to_user_id)
 	),
 	insert_message AS (
 		INSERT INTO chat_message
@@ -128,7 +129,6 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			$2,
 			blast_id
 		FROM targ
-		WHERE chat_allowed(from_user_id, to_user_id)
 		ON conflict do nothing
 	),
 	update_unread_count AS (
