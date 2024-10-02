@@ -1,6 +1,6 @@
 import type BN from 'bn.js'
 
-import { NoBrand } from './utilityTypes'
+import { NoBrand } from './utilityTypes.js'
 
 /**
  * Parses a string into the constructor args for a {@link FixedDecimal}.
