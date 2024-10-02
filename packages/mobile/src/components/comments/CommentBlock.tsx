@@ -7,8 +7,7 @@ import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { css } from '@emotion/native'
 
-import { Box, Flex, Text, TextLink } from '@audius/harmony-native'
-import { formatCommentTrackTimestamp } from 'app/utils/comments'
+import { Box, Flex, Text } from '@audius/harmony-native'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
@@ -18,6 +17,7 @@ import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
 import { CommentText } from './CommentText'
 import { Timestamp } from './Timestamp'
+import { TimestampLink } from './TimestampLink'
 
 export type CommentBlockProps = {
   commentId: ID
@@ -81,15 +81,10 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink
+                  <TimestampLink
+                    timestampSeconds={trackTimestampS}
                     size='xs'
-                    variant='active'
-                    onPress={() => {
-                      // TODO
-                    }}
-                  >
-                    {formatCommentTrackTimestamp(trackTimestampS)}
-                  </TextLink>
+                  ></TimestampLink>
                 </>
               ) : null}
             </Flex>
