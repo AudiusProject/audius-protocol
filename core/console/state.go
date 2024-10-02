@@ -2,12 +2,14 @@ package console
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/views/pages"
 	"github.com/AudiusProject/audius-protocol/core/db"
-	v1 "github.com/cometbft/cometbft/api/cometbft/abci/v1"
+	"github.com/AudiusProject/audius-protocol/core/grpc"
 	"github.com/cometbft/cometbft/rpc/client"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/cometbft/cometbft/types"
@@ -20,12 +22,14 @@ type State struct {
 
 	newBlockChan       <-chan coretypes.ResultEvent
 	newTxChan          <-chan coretypes.ResultEvent
-	latestBlocks       []*types.Block
-	latestTransactions []*v1.ExecTxResult
+	latestBlocks       []pages.BlockView
+	latestTransactions []db.CoreTxResult
 
-	totalBlocks       int64
-	totalTransactions int64
-	isCatchingUp      bool
+	totalBlocks         int64
+	totalTransactions   int64
+	totalPlays          int64
+	totalValidators     int64
+	totalManageEntities int64
 
 	chainId      string
 	ethAddress   string
@@ -48,70 +52,113 @@ func NewState(config *config.Config, rpc client.Client, logger *common.Logger, d
 		logger: logger,
 		db:     db,
 
-		newBlockChan:       newBlocksChan,
-		newTxChan:          newTxsChan,
-		latestBlocks:       []*types.Block{},
-		latestTransactions: []*v1.ExecTxResult{},
-		chainId:            config.GenesisFile.ChainID,
-		ethAddress:         config.WalletAddress,
-		cometAddress:       config.ProposerAddress,
+		newBlockChan: newBlocksChan,
+		newTxChan:    newTxsChan,
+		chainId:      config.GenesisFile.ChainID,
+		ethAddress:   config.WalletAddress,
+		cometAddress: config.ProposerAddress,
 	}, nil
 }
 
-func (state *State) Start() error {
+func (state *State) recalculateState() {
+	ctx := context.Background()
 	logger := state.logger
+
+	state.latestTenBlocks()
+
+	recentTransactions, err := state.db.GetRecentTxs(ctx)
+	if err != nil {
+		logger.Errorf("could not get recent txs: %v", err)
+	} else {
+		state.latestTransactions = recentTransactions
+	}
+
+	// on initial load
+	totalTxs, err := state.db.TotalTransactions(ctx)
+	if err != nil {
+		logger.Errorf("could not get total txs: %v", err)
+	} else {
+		state.totalTransactions = totalTxs
+	}
+
+	totalBlocks, err := state.db.TotalBlocks(ctx)
+	if err != nil {
+		logger.Errorf("could not get total blocks: %v", err)
+	} else {
+		state.totalBlocks = totalBlocks
+	}
+
+	totalPlays, err := state.db.TotalTransactionsByType(ctx, grpc.TrackPlaysProtoName)
+	if err != nil {
+		logger.Errorf("could not get total plays: %v", err)
+	} else {
+		state.totalPlays = totalPlays
+	}
+
+	totalManageEntities, err := state.db.TotalTransactionsByType(ctx, grpc.ManageEntitiesProtoName)
+	if err != nil {
+		logger.Errorf("could not get total manage entities: %v", err)
+	} else {
+		state.totalManageEntities = totalManageEntities
+	}
+
+	totalValidators, err := state.db.TotalValidators(ctx)
+	if err != nil {
+		logger.Errorf("could not get total validators: %v", err)
+	} else {
+		state.totalValidators = totalValidators
+	}
+}
+
+func (state *State) latestTenBlocks() {
+	client := state.rpc
+	status, err := client.Status(context.Background())
+	if err != nil {
+		state.logger.Errorf("failed to get status: %v", err)
+	}
+
+	latestHeight := status.SyncInfo.LatestBlockHeight
+	fmt.Printf("Latest Block Height: %d\n", latestHeight)
+
+	latestBlocks := []pages.BlockView{}
+
+	// Fetch the last 10 blocks
+	for height := latestHeight; height > latestHeight-10 && height > 0; height-- {
+		blockResult, err := client.Block(context.Background(), &height)
+		if err != nil {
+			state.logger.Errorf("failed to get block at height %d: %v", height, err)
+		}
+
+		block := blockResult.Block
+		latestBlocks = append(latestBlocks, pages.BlockView{
+			Height:    fmt.Sprint(block.Height),
+			Hash:      hex.EncodeToString(block.Hash()),
+			Proposer:  block.Header.ProposerAddress.String(),
+			Timestamp: block.Time,
+			Txs:       block.Txs.ToSliceOfBytes(),
+		})
+	}
+
+	state.latestBlocks = latestBlocks
+}
+
+func (state *State) Start() error {
+	state.recalculateState()
+
 	for {
 		newBlock := false
 		newTx := false
 
 		select {
-		case newBlockEvent := <-state.newBlockChan:
-			blockEvent, ok := newBlockEvent.Data.(types.EventDataNewBlock)
-			if ok {
-				newBlock = true
-				block := blockEvent.Block
-				state.latestBlocks = append(state.latestBlocks, block)
-				if len(state.latestBlocks) > 10 {
-					state.latestBlocks = state.latestBlocks[len(state.latestBlocks)-10:]
-				}
-			}
-		case newTxEvent := <-state.newTxChan:
-			txEvent, ok := newTxEvent.Data.(types.EventDataTx)
-			if ok {
-				newTx = true
-				txResult := txEvent.GetResult()
-				state.latestTransactions = append(state.latestTransactions, &txResult)
-				if len(state.latestTransactions) > 10 {
-					state.latestTransactions = state.latestTransactions[len(state.latestTransactions)-10:]
-				}
-			}
+		case <-state.newBlockChan:
+			newBlock = true
+		case <-state.newTxChan:
+			newTx = true
 		}
 
 		newEvent := newBlock || newTx
 		if newEvent {
-			ctx := context.Background()
-			logger.Infof("total things %v %v", len(state.latestBlocks), len(state.latestTransactions))
-
-			totalTxs, err := state.db.TotalTransactions(ctx)
-			if err != nil {
-				logger.Errorf("could not get total txs: %v", err)
-			} else {
-				state.totalTransactions = totalTxs
-			}
-
-			totalBlocks, err := state.db.TotalBlocks(ctx)
-			if err != nil {
-				logger.Errorf("could not get total blocks: %v", err)
-			} else {
-				state.totalBlocks = totalBlocks
-			}
-
-			status, err := state.rpc.Status(ctx)
-			if err != nil {
-				logger.Errorf("could not get node status: %v", err)
-			} else {
-				state.isCatchingUp = status.SyncInfo.CatchingUp
-			}
+			state.recalculateState()
 		}
 	}
 }

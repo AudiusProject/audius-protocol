@@ -4,7 +4,6 @@ go 1.22.5
 
 require (
 	github.com/a-h/templ v0.2.778
-	github.com/cometbft/cometbft/api v1.0.0-rc.1
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/improbable-eng/grpc-web v0.15.0
@@ -33,6 +32,7 @@ require (
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/cometbft/cometbft-db v0.14.0 // indirect
+	github.com/cometbft/cometbft/api v1.0.0-rc.1 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect
