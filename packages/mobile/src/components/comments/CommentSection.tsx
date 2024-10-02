@@ -63,8 +63,11 @@ const CommentSectionHeader = () => {
 }
 
 const CommentSectionContent = () => {
-  const { commentSectionLoading: isLoading, commentIds, isEntityOwner } =
-    useCurrentCommentSection()
+  const {
+    commentSectionLoading: isLoading,
+    commentIds,
+    isEntityOwner
+  } = useCurrentCommentSection()
 
   const [postComment] = usePostComment()
 

@@ -139,7 +139,8 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    muteUser({ mutedUserId: userId, isMuted: false, entityId })
+    // NOTE: 
+    muteUser({ mutedUserId: userId, isMuted: false, trackId: entityId, currentSort })
     toast({
       content: messages.toasts.mutedUser,
       type: 'info'

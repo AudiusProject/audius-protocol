@@ -4,7 +4,6 @@ import {
 } from '@audius/sdk'
 import {
   InfiniteData,
-  QueryClient,
   useInfiniteQuery,
   useIsMutating,
   useMutation,
@@ -44,7 +43,8 @@ const messages = {
       | 'editing'
       | 'reacting to'
       | 'reporting'
-  ) => `There was an error ${actionType} that comment. Please try again`
+  ) => `There was an error ${actionType} that comment. Please try again`,
+  muteUserError: 'There was an error muting that user. Please try again.'
 }
 
 /**
@@ -93,7 +93,7 @@ export const useGetCommentsByTrackId = ({
       // Populate individual comment cache
       commentList.forEach((comment) => {
         queryClient.setQueryData([QUERY_KEYS.comment, comment.id], comment)
-        comment?.replies?.forEach?.((reply) =>
+        comment?.replies?.forEach?.((reply: ReplyComment) =>
           queryClient.setQueryData([QUERY_KEYS.comment, reply.id], reply)
         )
       })
@@ -642,6 +642,71 @@ export const useReportComment = () => {
       })
       // Generic toast error
       dispatch(toast({ content: messages.mutationError('reporting') }))
+
+      // Reload data
+      queryClient.resetQueries([
+        QUERY_KEYS.trackCommentList,
+        trackId,
+        currentSort
+      ])
+    }
+  })
+}
+
+type MuteUserArgs = {
+  mutedUserId: ID
+  userId: ID
+  isMuted: boolean
+  trackId?: ID
+  currentSort?: CommentSortMethod
+}
+
+export const useMuteUser = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+
+  return useMutation({
+    mutationFn: async ({ userId, mutedUserId, isMuted }: MuteUserArgs) => {
+      const sdk = await audiusSdk()
+      await sdk.comments.muteUser(userId, mutedUserId, isMuted)
+    },
+    onMutate: ({ trackId, mutedUserId, currentSort }) => {
+      // Optimistic update - filter out the comment
+      if (trackId !== undefined && currentSort !== undefined) {
+        queryClient.setQueryData<InfiniteData<ID[]>>(
+          [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          (prevData) => {
+            if (!prevData) return
+            const newState = cloneDeep(prevData)
+            // Filter out any comments by the muted user
+            newState.pages = newState.pages.map((page) =>
+              page.filter((id) => {
+                const comment = queryClient.getQueryData<
+                  CommentOrReply | undefined
+                >([QUERY_KEYS.comment, id])
+                // If the comment is by the muted user, remove it
+                if (comment?.userId === mutedUserId) {
+                  queryClient.resetQueries([QUERY_KEYS.comment, comment.id])
+                  return false
+                }
+                return true
+              })
+            )
+            return newState
+          }
+        )
+      }
+    },
+    onError: (error: Error, args) => {
+      const { trackId, currentSort } = args
+      reportToSentry({
+        error,
+        additionalInfo: args,
+        name: 'Comments'
+      })
+      // Generic toast error
+      dispatch(toast({ content: messages.muteUserError }))
 
       // Reload data
       queryClient.resetQueries([

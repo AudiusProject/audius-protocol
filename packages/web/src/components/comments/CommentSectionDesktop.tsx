@@ -75,7 +75,7 @@ export const CommentSectionDesktop = () => {
   )
   const commentPostAllowed = currentUserId !== undefined && commentPostFlag
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
-  const showCommentSortBar = comments.length > 1
+  const showCommentSortBar = commentIds.length > 1
 
   if (commentSectionLoading) {
     return <FullCommentSkeletons />

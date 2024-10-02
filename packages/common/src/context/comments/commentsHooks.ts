@@ -1,10 +1,6 @@
-import { CommentMetadata } from '@audius/sdk'
-import { useSelector } from 'react-redux'
+import { TrackCommentsSortMethodEnum as CommentSortMethod } from '@audius/sdk'
 
-import { getKeyFromFetchArgs } from '~/audius-query/utils'
-import { Comment, ReplyComment } from '~/models/Comment'
 import { ID } from '~/models/Identifiers'
-import { CommonState } from '~/store'
 
 import {
   usePostComment as tqUsePostComment,
@@ -12,7 +8,9 @@ import {
   useEditComment as tqUseEditComment,
   useDeleteComment as tqUseDeleteComment,
   usePinComment as tqUsePinComment,
-  useReportComment as tqUseReportComment
+  useReportComment as tqUseReportComment,
+  useMuteUser as tqUseMuteUser,
+  useGetCurrentUserId
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
@@ -121,27 +119,31 @@ export const useReportComment = () => {
 }
 
 export const useMuteUser = () => {
+  // NOTE: not pulling from comment context because we reuse this method in the settings page
   const { data: currentUserId } = useGetCurrentUserId({})
-  const [muteUser, response] = useMuteUserById()
+  const { mutate: muteUser, ...rest } = tqUseMuteUser()
   const wrappedHandler = ({
     mutedUserId,
     isMuted,
-    entityId
+    trackId,
+    currentSort
   }: {
     mutedUserId: number
     isMuted: boolean
-    entityId?: number
+    trackId?: ID
+    currentSort?: CommentSortMethod
   }) => {
     if (currentUserId) {
       muteUser({
         mutedUserId,
         userId: currentUserId,
         isMuted,
-        entityId
+        trackId,
+        currentSort
       })
     }
   }
-  return [wrappedHandler, response] as const
+  return [wrappedHandler, rest] as const
 }
 
 export const useDeleteComment = () => {
