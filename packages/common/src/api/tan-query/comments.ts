@@ -493,11 +493,11 @@ export const useDeleteComment = () => {
         exact: true
       })
       // Remove the comment from the current sort
-      queryClient.setQueryData(
+      queryClient.setQueryData<InfiniteData<ID[]>>(
         [QUERY_KEYS.trackCommentList, trackId, currentSort],
-        // @ts-ignore TODO: clean up types here
-        (prevCommentData: { pages: ID[][] } & any) => {
+        (prevCommentData) => {
           const newCommentData = cloneDeep(prevCommentData)
+          if (!newCommentData) return
           // Filter out the comment from its current page
           newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
             page.filter((id: ID) => id !== commentId)

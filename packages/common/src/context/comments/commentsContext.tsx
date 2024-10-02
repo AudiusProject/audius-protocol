@@ -73,7 +73,6 @@ export const CommentSectionProvider = (
   )
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  // TODO: fix types here
   const {
     data: commentIds = [],
     status,
@@ -87,7 +86,7 @@ export const CommentSectionProvider = (
     userId: currentUserId
   })
   const queryClient = useQueryClient()
-  // hard refresh all data
+  // hard refreshes all data
   const reset = () => {
     queryClient.resetQueries({ queryKey: ['trackCommentList'] })
     queryClient.resetQueries({ queryKey: ['comment'] })
