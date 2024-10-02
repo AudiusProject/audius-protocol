@@ -5,7 +5,7 @@ go 1.22.5
 toolchain go1.23.1
 
 require (
-	github.com/AudiusProject/audius-protocol/core v0.0.0-20240926163749-357b03d2b3da
+	github.com/AudiusProject/audius-protocol/core v0.0.0-20241002193855-40be608d4898
 	github.com/cometbft/cometbft v1.0.0-rc1.0.20240821165313-db37bd322ea5
 	github.com/disintegration/imaging v1.6.2
 	github.com/docker/cli v25.0.3+incompatible
@@ -304,5 +304,3 @@ require (
 	golang.org/x/text v0.17.0 // indirect
 	lukechampine.com/blake3 v1.1.6 // indirect
 )
-
-replace github.com/AudiusProject/audius-protocol/core => ./core

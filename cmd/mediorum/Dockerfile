@@ -13,10 +13,11 @@ ENV CGO_ENABLED=0
 COPY go.mod go.sum ./
 RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
 
-COPY . .
+COPY ./pkg ./pkg
+COPY ./cmd/mediorum ./
 
-RUN go build
-RUN go build -o mediorum-cmd cmd/main.go
+RUN go build -o mediorum
+RUN go build -o mediorum-cmd pkg/mediorum/cmd/main.go
 
 FROM debian:bullseye AS final
 
