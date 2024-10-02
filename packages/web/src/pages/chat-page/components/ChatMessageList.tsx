@@ -34,6 +34,7 @@ import useMeasure from 'react-use-measure'
 import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { InboxUnavailableMessage } from './InboxUnavailableMessage'
@@ -160,7 +161,6 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     const scrollIntoViewOnMount = useCallback((el: HTMLDivElement) => {
       if (el) {
-        el.scrollIntoView()
         // On initial render, can't scroll yet, as the component isn't fully rendered.
         // Instead, queue a scroll by triggering a rerender via a state change.
         setUnreadIndicatorEl(el)
@@ -169,7 +169,15 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
 
     useLayoutEffect(() => {
       if (unreadIndicatorEl) {
-        unreadIndicatorEl.scrollIntoView()
+        const listItemScrollContainer =
+          unreadIndicatorEl.parentElement?.parentElement
+        if (listItemScrollContainer) {
+          listItemScrollContainer.scrollTop = Math.max(
+            unreadIndicatorEl.offsetTop - 150,
+            0
+          )
+        }
+
         // One more state change, this keeps chats unread until the user scrolls to the bottom on their own
         setLastScrolledChatId(chatId)
       }
@@ -220,7 +228,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
             />
           ) : null}
           {chat?.messagesStatus === Status.SUCCESS &&
-          chatMessages?.length === 0 ? (
+          chatMessages?.length === 0 &&
+          !chat?.is_blast ? (
             <SendMessagePrompt />
           ) : null}
           {chatId &&
@@ -257,6 +266,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
               <span className={styles.tag}>{messages.endOfMessages}</span>
             </div>
           ) : null}
+          {chat?.is_blast ? <ChatBlastAudienceDisplay chat={chat} /> : null}
         </div>
       </StickyScrollList>
     )

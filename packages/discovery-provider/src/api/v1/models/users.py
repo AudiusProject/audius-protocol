@@ -54,6 +54,7 @@ user_model = ns.model(
         "is_available": fields.Boolean(required=True),
         "erc_wallet": fields.String(required=True),
         "spl_wallet": fields.String(required=True),
+        "spl_usdc_payout_wallet": fields.String,
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
         "total_audio_balance": fields.Integer(required=True),
@@ -92,6 +93,16 @@ user_model_full = ns.clone(
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
         "allow_ai_attribution": fields.Boolean(required=True),
+    },
+)
+
+account_full = ns.model(
+    "account_full",
+    {
+        "user": fields.Nested(user_model_full, required=True),
+        "playlists": fields.List(fields.Raw, required=True),
+        "playlist_library": fields.Nested(playlist_library, allow_null=True),
+        "track_save_count": fields.Integer(required=True),
     },
 )
 
@@ -188,5 +199,14 @@ sales_aggregate = ns.model(
         "content_type": StringEnumToLower(required=True),
         "content_id": fields.String(required=True),
         "purchase_count": fields.Integer(required=True),
+    },
+)
+
+remixed_track_aggregate = ns.model(
+    "remixed_track_aggregate",
+    {
+        "track_id": fields.String(required=True),
+        "title": fields.String(required=True),
+        "remix_count": fields.Integer(required=True),
     },
 )

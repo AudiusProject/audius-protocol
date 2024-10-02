@@ -22,8 +22,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginTop: spacing(3)
+    justifyContent: 'flex-start'
   },
   divider: {
     marginLeft: spacing(3),
@@ -42,9 +41,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flexDirection: 'row',
     marginVertical: spacing(2),
     gap: spacing(2)
-  },
-  audioTier: {
-    margin: spacing(2)
   }
 }))
 
@@ -61,13 +57,12 @@ const SupportingSectionTitle = () => {
 }
 
 export const ExpandedSection = () => {
-  const styles = useStyles()
   const { supporting_count } = useSelectProfile(['supporting_count'])
 
   return (
-    <View pointerEvents='box-none'>
+    <>
       <Bio />
-      <ProfileTierTile interactive={false} style={styles.audioTier} />
+      <ProfileTierTile interactive={false} />
       <SocialsAndSites />
       <ProfileInfoTiles />
       {supporting_count > 0 ? (
@@ -76,6 +71,6 @@ export const ExpandedSection = () => {
           <SupportingList />
         </>
       ) : null}
-    </View>
+    </>
   )
 }

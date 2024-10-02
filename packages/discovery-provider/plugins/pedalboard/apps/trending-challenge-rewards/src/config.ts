@@ -1,9 +1,5 @@
-import { AudiusLibs } from '@audius/sdk'
-import { App } from '@pedalboard/basekit'
-import moment from 'moment'
-import dotenv from 'dotenv'
+import { AudiusLibs } from '@audius/sdk/dist/libs'
 import { initAudiusLibs } from './libs'
-import { Err, Ok, Result } from 'ts-results'
 
 export type SharedData = {
   oracleEthAddress: string
@@ -27,9 +23,12 @@ export const initSharedData = async (): Promise<SharedData> => {
   )
 
   const feePayerOverride = process.env.audius_fee_payer_override
-  const AAOEndpoint = process.env.audius_aao_endpoint || "https://antiabuseoracle.audius.co"
-  const oracleEthAddress = process.env.audius_aao_address || "0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6"
-  const localEndpoint = process.env.audius_discprov_url || "http://server:5000"
+  const AAOEndpoint =
+    process.env.audius_aao_endpoint || 'https://antiabuseoracle.audius.co'
+  const oracleEthAddress =
+    process.env.audius_aao_address ||
+    '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
+  const localEndpoint = process.env.audius_discprov_url || 'http://server:5000'
 
   if (feePayerOverride === undefined)
     throw new Error('feePayerOverride undefined')

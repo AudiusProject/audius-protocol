@@ -6,10 +6,12 @@ import {
   useCurrentCommentSection,
   useDeleteComment,
   usePinComment,
-  useReportComment
+  useReportComment,
+  useMuteUser
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
+import type { Comment, ReplyComment } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
-import type { Comment } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
@@ -21,42 +23,18 @@ import {
 } from '../action-drawer'
 import { ConfirmationDrawerWithoutRedux } from '../drawers'
 
-const messages = {
-  pin: 'Pin',
-  pinned: 'Comment pinned',
-  pinComment: 'Pin Comment',
-  pinCommentDescription:
-    'If you already pinned a comment, this will replace it',
-  unpin: 'Unpin',
-  unpinned: 'Comment unpinned',
-  muted: 'User muted',
-  flag: 'Flag',
-  flagAndRemove: 'Flag & Remove',
-  flagComment: 'Flag Comment',
-  flagged: 'Flagged comment',
-  removed: 'Comment removed',
-  muteUser: 'Mute User',
-  muteUserHint:
-    'This will not affect their ability to view your profile or interact with your content. ',
-  turnOnNotifications: 'Turn On Notifications',
-  turnOffNotifications: 'Turn Off Notifications',
-  edit: 'Edit',
-  delete: 'Delete',
-  deleted: 'Comment deleted',
-  deleteComment: 'Delete Comment',
-  deleteCommentDescription: 'Delete your comment permanently?',
-  moreActions: 'more actions'
-}
-
 type CommentOverflowMenuProps = {
-  comment: Comment
+  comment: Comment | ReplyComment
+  disabled?: boolean
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
-    comment: { id, userId, isPinned }
+    comment: { id, userId },
+    disabled
   } = props
 
+  const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })
@@ -67,9 +45,12 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
-  const [isFlagConfirmationOpen, setIsFlagConfirmationOpen] = useState(false)
-  const [isFlagConfirmationVisible, setIsFlagConfirmationVisible] =
+  const [isFlagAndHideConfirmationOpen, setIsFlagAndHideConfirmationOpen] =
     useState(false)
+  const [
+    isFlagAndHideConfirmationVisible,
+    setIsFlagAndHideConfirmationVisible
+  ] = useState(false)
 
   const [isFlagAndRemoveConfirmationOpen, setIsFlagAndRemoveConfirmationOpen] =
     useState(false)
@@ -99,10 +80,11 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
   const [reportComment] = useReportComment()
+  const [muteUser] = useMuteUser()
 
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
-      text: isPinned ? messages.unpin : messages.pin,
+      text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
       callback: () => {
         if (isPinned) {
           // Unpin the comment
@@ -113,16 +95,17 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         }
       }
     },
-    !isCommentOwner && {
-      text: messages.flag,
-      callback: () => {
-        setIsFlagConfirmationOpen(true)
-        setIsFlagConfirmationVisible(true)
-      }
-    },
+    !isEntityOwner &&
+      !isCommentOwner && {
+        text: messages.menuActions.flagAndHide,
+        callback: () => {
+          setIsFlagAndHideConfirmationOpen(true)
+          setIsFlagAndHideConfirmationVisible(true)
+        }
+      },
     isEntityOwner &&
       !isCommentOwner && {
-        text: messages.flagAndRemove,
+        text: messages.menuActions.flagAndRemove,
         callback: () => {
           setIsFlagAndRemoveConfirmationOpen(true)
           setIsFlagAndRemoveConfirmationVisible(true)
@@ -130,43 +113,43 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
       },
     isEntityOwner &&
       !isCommentOwner && {
-        text: messages.muteUser,
+        text: messages.menuActions.muteUser,
         callback: () => {
           setIsMuteUserConfirmationOpen(true)
           setIsMuteUserConfirmationVisible(true)
         }
       },
-    // TODO: check if receiving notifications
     isCommentOwner && {
-      text: messages.turnOffNotifications,
-      callback: () => {} // TODO
-    },
-    isCommentOwner && {
-      text: messages.edit,
+      text: messages.menuActions.edit,
       callback: () => setEditingComment?.(props.comment)
     },
-    isCommentOwner && {
-      text: messages.delete,
+    (isCommentOwner || isEntityOwner) && {
+      text: messages.menuActions.delete,
       callback: () => {
         setIsDeleteConfirmationOpen(true)
         setIsDeleteConfirmationVisible(true)
       },
       isDestructive: true
+    },
+    // TODO: check if receiving notifications
+    isCommentOwner && {
+      text: messages.menuActions.turnOffNotifications,
+      callback: () => {} // TODO
     }
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    // TODO
+    muteUser({ mutedUserId: userId, isMuted: false, entityId })
     toast({
-      content: messages.muted,
+      content: messages.toasts.mutedUser,
       type: 'info'
     })
-  }, [toast])
+  }, [entityId, muteUser, toast, userId])
 
   const handleFlagComment = useCallback(() => {
     reportComment(id)
     toast({
-      content: messages.flagged,
+      content: messages.toasts.flaggedAndHidden,
       type: 'info'
     })
   }, [reportComment, id, toast])
@@ -175,7 +158,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     reportComment(id)
     // TODO: remove comment
     toast({
-      content: messages.removed,
+      content: messages.toasts.flaggedAndRemoved,
       type: 'info'
     })
   }, [reportComment, id, toast])
@@ -183,7 +166,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const handlePinComment = useCallback(() => {
     pinComment(id, !isPinned)
     toast({
-      content: isPinned ? messages.unpinned : messages.pinned,
+      content: isPinned ? messages.toasts.unpinned : messages.toasts.pinned,
       type: 'info'
     })
   }, [id, isPinned, pinComment, toast])
@@ -191,7 +174,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const handleDeleteComment = useCallback(() => {
     deleteComment(id)
     toast({
-      content: messages.deleted,
+      content: messages.toasts.deleted,
       type: 'info'
     })
   }, [deleteComment, id, toast])
@@ -199,7 +182,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   return (
     <>
       <IconButton
-        aria-label={messages.moreActions}
+        aria-label={messages.menuActions.moreActions}
         icon={IconKebabHorizontal}
         size='s'
         color='subdued'
@@ -207,6 +190,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsOpen(!isOpen)
           setIsVisible(!isVisible)
         }}
+        disabled={disabled}
       />
 
       <Portal hostName='DrawerPortal'>
@@ -221,15 +205,15 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           </CommentSectionProvider>
         ) : null}
 
-        {isFlagConfirmationVisible ? (
+        {isFlagAndHideConfirmationVisible ? (
           <ConfirmationDrawerWithoutRedux
-            isOpen={isFlagConfirmationOpen}
-            onClose={() => setIsFlagConfirmationOpen(false)}
-            onClosed={() => setIsFlagConfirmationVisible(false)}
+            isOpen={isFlagAndHideConfirmationOpen}
+            onClose={() => setIsFlagAndHideConfirmationOpen(false)}
+            onClosed={() => setIsFlagAndHideConfirmationVisible(false)}
             messages={{
-              header: messages.flagComment,
-              description: `Flag ${commentUser?.handle}'s comment?`,
-              confirm: messages.flagComment
+              header: messages.popups.flagAndHide.title,
+              description: messages.popups.flagAndHide.body(commentUser?.name),
+              confirm: messages.popups.flagAndHide.confirm
             }}
             onConfirm={handleFlagComment}
           />
@@ -241,9 +225,11 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClose={() => setIsFlagAndRemoveConfirmationOpen(false)}
             onClosed={() => setIsFlagAndRemoveConfirmationVisible(false)}
             messages={{
-              header: messages.flagComment,
-              description: `Remove ${commentUser?.handle}'s comment?`,
-              confirm: messages.flagAndRemove
+              header: messages.popups.flagAndRemove.title,
+              description: messages.popups.flagAndRemove.body(
+                commentUser?.name
+              ),
+              confirm: messages.popups.flagAndRemove.confirm
             }}
             onConfirm={handleFlagAndRemoveComment}
           />
@@ -256,9 +242,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClosed={() => setIsPinConfirmationVisible(false)}
             variant='affirmative'
             messages={{
-              header: messages.pinComment,
-              description: messages.pinCommentDescription,
-              confirm: messages.pin
+              header: messages.popups.pin.title,
+              description: messages.popups.pin.body,
+              confirm: messages.popups.pin.confirm
             }}
             onConfirm={handlePinComment}
           />
@@ -270,9 +256,11 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClose={() => setIsDeleteConfirmationOpen(false)}
             onClosed={() => setIsDeleteConfirmationVisible(false)}
             messages={{
-              header: messages.deleteComment,
-              description: messages.deleteCommentDescription,
-              confirm: messages.delete
+              header: messages.popups.delete.title,
+              description: isCommentOwner
+                ? messages.popups.delete.body
+                : messages.popups.artistDelete.body(commentUser?.name),
+              confirm: messages.popups.delete.confirm
             }}
             onConfirm={handleDeleteComment}
           />
@@ -284,13 +272,13 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
             onClose={() => setIsMuteUserConfirmationOpen(false)}
             onClosed={() => setIsMuteUserConfirmationVisible(false)}
             messages={{
-              header: messages.muteUser,
-              description: `Mute ${commentUser?.handle} from commenting on your tracks?`,
-              confirm: messages.muteUser
+              header: messages.popups.muteUser.title,
+              description: messages.popups.muteUser.body(commentUser?.handle),
+              confirm: messages.popups.muteUser.confirm
             }}
             onConfirm={handleMuteUser}
           >
-            <Hint>{messages.muteUserHint}</Hint>
+            <Hint>{messages.popups.muteUser.hint}</Hint>
           </ConfirmationDrawerWithoutRedux>
         ) : null}
       </Portal>

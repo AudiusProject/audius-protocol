@@ -10,6 +10,9 @@ import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
+import { CommentMentionNotification } from './CommentMentionNotification'
+import { CommentNotification } from './CommentNotification'
+import { CommentThreadNotification } from './CommentThreadNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -53,7 +56,6 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ClaimableReward: {
         return <ClaimableRewardNotification notification={notification} />
       }
-
       case NotificationType.Favorite: {
         return <FavoriteNotification notification={notification} />
       }
@@ -131,9 +133,17 @@ export const Notification = (props: NotificationProps) => {
           <TrackAddedToPurchasedAlbumNotification notification={notification} />
         )
       }
-
       case NotificationType.SupporterDethroned: {
         return <SupporterDethronedNotification notification={notification} />
+      }
+      case NotificationType.Comment: {
+        return <CommentNotification notification={notification} />
+      }
+      case NotificationType.CommentThread: {
+        return <CommentThreadNotification notification={notification} />
+      }
+      case NotificationType.CommentMention: {
+        return <CommentMentionNotification notification={notification} />
       }
       default: {
         return null

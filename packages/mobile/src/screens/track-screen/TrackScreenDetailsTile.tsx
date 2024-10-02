@@ -192,6 +192,8 @@ export const TrackScreenDetailsTile = ({
     remix_of: remixOf,
     repost_count: repostCount,
     save_count: saveCount,
+    comment_count: commentCount,
+    comments_disabled: commentsDisabled,
     title,
     track_id: trackId,
     stream_conditions: streamConditions,
@@ -224,6 +226,9 @@ export const TrackScreenDetailsTile = ({
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isPlayingPreview = isPreviewing && isPlaying
   const isPlayingFullAccess = isPlaying && !isPreviewing
@@ -238,6 +243,11 @@ export const TrackScreenDetailsTile = ({
     isUnlisted || (!isOwner && (saveCount ?? 0) <= 0)
   const shouldHideRepostCount =
     isUnlisted || (!isOwner && (repostCount ?? 0) <= 0)
+  const shouldHideCommentCount =
+    !isCommentsEnabled ||
+    isUnlisted ||
+    commentsDisabled ||
+    (!isOwner && (commentCount ?? 0) <= 0)
   const shouldHidePlayCount =
     (!isOwner && isUnlisted) ||
     isStreamGated ||
@@ -622,6 +632,8 @@ export const TrackScreenDetailsTile = ({
           hideFavoriteCount={shouldHideFavoriteCount}
           repostCount={repostCount}
           hideRepostCount={shouldHideRepostCount}
+          commentCount={commentCount}
+          hideCommentCount={shouldHideCommentCount}
           onPressFavorites={handlePressFavorites}
           onPressReposts={handlePressReposts}
         />

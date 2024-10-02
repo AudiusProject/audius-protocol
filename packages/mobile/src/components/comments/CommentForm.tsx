@@ -1,36 +1,26 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { FormikHelpers } from 'formik'
-import { Formik, useFormikContext } from 'formik'
+import type { ID } from '@audius/common/models'
 import type { TextInput as RNTextInput } from 'react-native'
 
-import { Flex, IconButton, IconSend } from '@audius/harmony-native'
+import { Box, Flex } from '@audius/harmony-native'
 
+import { ComposerInput } from '../composer-input'
 import { ProfilePicture } from '../core'
-import { HarmonyTextField } from '../fields'
-import LoadingSpinner from '../loading-spinner'
-
-type CommentFormValues = {
-  commentMessage: string
-}
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string) => void
+  onSubmit: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
-  TextInputComponent?: typeof RNTextInput
 }
 
-type CommentFormContentProps = Omit<
-  CommentFormProps,
-  'onSubmit' | 'initialValue'
->
-
-const CommentFormContent = (props: CommentFormContentProps) => {
-  const { isLoading, TextInputComponent } = props
+export const CommentForm = (props: CommentFormProps) => {
+  const { isLoading, onSubmit, initialValue } = props
+  const [messageId, setMessageId] = useState(0)
+  const [initialMessage, setInitialMessage] = useState(initialValue)
   const { currentUserId, comments, replyingToComment, editingComment } =
     useCurrentCommentSection()
   const ref = useRef<RNTextInput>(null)
@@ -43,30 +33,35 @@ const CommentFormContent = (props: CommentFormContentProps) => {
     { disabled: !replyingToComment }
   )
 
-  const { setFieldValue } = useFormikContext()
-  const { submitForm } = useFormikContext()
+  // TODO: Add mentions back here
+  const handleSubmit = (message: string) => {
+    onSubmit(message)
+    setMessageId((id) => ++id)
+  }
 
   /**
    * Populate and focus input when replying to a comment
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
-      setFieldValue('commentMessage', `@${replyingToUser.handle} `)
+      setInitialMessage(`@${replyingToUser.handle} `)
       ref.current?.focus()
     }
-  }, [replyingToComment, replyingToUser, setFieldValue])
+  }, [replyingToComment, replyingToUser])
 
   /**
    * Populate and focus input when editing a comment
    */
   useEffect(() => {
     if (editingComment) {
-      setFieldValue('commentMessage', editingComment.message)
+      setInitialMessage(editingComment.message)
       ref.current?.focus()
     }
-  }, [editingComment, setFieldValue])
+  }, [editingComment])
 
-  const message = comments?.length ? messages.addComment : messages.firstComment
+  const placeholder = comments?.length
+    ? messages.addComment
+    : messages.firstComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
@@ -76,49 +71,15 @@ const CommentFormContent = (props: CommentFormContentProps) => {
           style={{ width: 40, height: 40, flexShrink: 0 }}
         />
       ) : null}
-      <HarmonyTextField
-        style={{ flex: 1 }}
-        name='commentMessage'
-        label={messages.addComment}
-        ref={ref}
-        hideLabel
-        placeholder={message}
-        endAdornment={
-          isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <IconButton
-              aria-label='Post comment'
-              icon={IconSend}
-              color='accent'
-              onPress={submitForm}
-            />
-          )
-        }
-        TextInputComponent={TextInputComponent}
-      />
+      <Box flex={1}>
+        <ComposerInput
+          isLoading={isLoading}
+          messageId={messageId}
+          presetMessage={initialMessage}
+          placeholder={placeholder}
+          onSubmit={handleSubmit}
+        />
+      </Box>
     </Flex>
-  )
-}
-
-export const CommentForm = ({
-  onSubmit,
-  initialValue = '',
-  ...rest
-}: CommentFormProps) => {
-  const handleSubmit = (
-    { commentMessage }: CommentFormValues,
-    { resetForm }: FormikHelpers<CommentFormValues>
-  ) => {
-    onSubmit(commentMessage)
-    resetForm()
-  }
-
-  const formInitialValues: CommentFormValues = { commentMessage: initialValue }
-
-  return (
-    <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
-      <CommentFormContent {...rest} />
-    </Formik>
   )
 }

@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useState } from 'react'
+import { ComponentProps, useEffect, useRef, useState } from 'react'
 
 import { useTheme } from '@emotion/react'
 
@@ -32,12 +32,19 @@ export const Artwork = (props: ArtworkProps) => {
     'data-testid': testId,
     ...other
   } = props
+  const imgRef = useRef<HTMLImageElement | null>(null)
   const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
 
   useEffect(() => {
     setIsLoadingState(true)
+  }, [src])
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setIsLoadingState(false)
+    }
   }, [src])
 
   return (
@@ -53,7 +60,7 @@ export const Artwork = (props: ArtworkProps) => {
             borderRadius={borderRadius}
             h='100%'
             w='100%'
-            css={{ zIndex: 1, position: 'absolute' }}
+            css={{ zIndex: 2, position: 'absolute' }}
           />
         ) : null}
         <Box
@@ -68,6 +75,7 @@ export const Artwork = (props: ArtworkProps) => {
         {src ? (
           <Box
             as='img'
+            ref={imgRef}
             borderRadius={borderRadius}
             h='100%'
             w='100%'
@@ -99,7 +107,8 @@ export const Artwork = (props: ArtworkProps) => {
               top: 0,
               left: 0,
               backgroundColor: src ? color.static.black : undefined,
-              opacity: src ? 0.4 : undefined
+              opacity: src ? 0.4 : undefined,
+              zIndex: 1
             }}
           >
             {children}

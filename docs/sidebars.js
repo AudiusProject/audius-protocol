@@ -96,7 +96,15 @@ module.exports = {
       items: [
         'distributors/specification/overview',
         'distributors/specification/metadata',
-        'distributors/specification/deal-types',
+        {
+          type: 'category',
+          label: 'Deal Types',
+          items: [
+            'distributors/specification/deal-types/recommended',
+            'distributors/specification/deal-types/supported-deal-types',
+          ],
+          collapsed: false,
+        },
       ],
       collapsed: false,
     },
@@ -217,7 +225,7 @@ module.exports = {
         'developers/api/search-tracks',
         'developers/api/get-trending-tracks',
         'developers/api/get-underground-trending-tracks',
-        // 'developers/api/get-track-access-info',
+        'developers/api/get-track-access-info',
         'developers/api/stream-track',
         'developers/api/download-track',
         'developers/api/inspect-track',

@@ -52,8 +52,8 @@ export const CommentBadge = ({
   const { artistId } = useCurrentCommentSection()
   const supporters = useSelector(getSupporters)
   const tipSupporterData = supporters?.[artistId]?.[commentUserId]
-  const isTipSupporter = tipSupporterData !== undefined // TODO: how to wire this up?
-  const isTopSupporter = tipSupporterData?.rank === 1 // TODO: how to wire this up?
+  const isTipSupporter = tipSupporterData !== undefined
+  const isTopSupporter = tipSupporterData?.rank === 1
   const badgeType = isArtist
     ? 'artist'
     : isTopSupporter

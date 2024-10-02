@@ -6,7 +6,7 @@ import { createApi } from '~/audius-query'
 import { Name, SearchSource, UserTrackMetadata } from '~/models'
 import { ID, OptionalId } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
-import { SearchKind } from '~/store'
+import { SearchKind, SearchSortMethod } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
@@ -23,13 +23,14 @@ export type SearchFilters = {
 
 export type SearchFilter = keyof SearchFilters
 
-type getSearchArgs = {
+type GetSearchArgs = {
   currentUserId: ID | null
   query: string
   category?: SearchCategory
   limit?: number
   offset?: number
   source?: SearchSource
+  sortMethod?: SearchSortMethod
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -49,7 +50,7 @@ const searchApi = createApi({
   endpoints: {
     getSearchResults: {
       fetch: async (
-        args: getSearchArgs,
+        args: GetSearchArgs,
         { audiusBackend, audiusSdk, getFeatureEnabled, analytics }
       ) => {
         const {
@@ -121,6 +122,7 @@ const searchApi = createApi({
             key: key ? [key] : undefined,
             genre: filters.genre ? [filters.genre] : undefined,
             mood: filters.mood ? [filters.mood] : undefined,
+            sortMethod: filters.sortMethod,
             isVerified: filters.isVerified,
             hasDownloads: filters.hasDownloads,
             isPurchaseable: filters.isPremium

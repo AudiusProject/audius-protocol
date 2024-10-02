@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/AudiusProject/audius-protocol/core/common"
@@ -27,7 +26,7 @@ type GRPCServer struct {
 
 func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool) (*GRPCServer, error) {
 	server := &GRPCServer{
-		logger: logger,
+		logger: logger.Child("grpc"),
 		chain:  chain,
 		db:     db.New(pool),
 	}
@@ -39,32 +38,39 @@ func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Lo
 	return server, nil
 }
 
+func (s *GRPCServer) GetServer() *grpc.Server {
+	return s.server
+}
+
 func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
 
-func (s *GRPCServer) SubmitEvent(_ context.Context, req *proto.SubmitEventRequest) (*proto.SubmitEventResponse, error) {
+func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
 	// example of message type switching
-	switch body := req.Event.GetBody().(type) {
-	case *proto.Event_Plays:
-		s.logger.Infof("plays event %v", body.Plays.GetListens())
+	switch body := req.Transaction.GetTransaction().(type) {
+	case *proto.SignedTransaction_Plays:
+		s.logger.Infof("plays event %v", body.Plays.GetPlays())
+	case *proto.SignedTransaction_ManageEntity:
+		s.logger.Infof("manage entity %v", body.ManageEntity)
 	default:
 		s.logger.Warn("unknown event type")
 	}
 
-	txhash, err := SendTx(s.logger, s.chain, req.GetEvent())
+	txhash, err := SendTx(s.logger, s.chain, req.GetTransaction())
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.SubmitEventResponse{
-		Txhash: txhash,
+	res := &proto.TransactionResponse{
+		Txhash:      txhash,
+		Transaction: req.GetTransaction(),
 	}
 
 	return res, nil
 }
 
-func (s *GRPCServer) GetEvent(ctx context.Context, req *proto.GetEventRequest) (*proto.GetEventResponse, error) {
+func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
 	txhash := req.GetTxhash()
 
 	s.logger.Info("query", "txhash", txhash)
@@ -80,14 +86,15 @@ func (s *GRPCServer) GetEvent(ctx context.Context, req *proto.GetEventRequest) (
 		return nil, err
 	}
 
-	var event proto.Event
-	err = protob.Unmarshal(txResult.GetTx(), &event)
+	var transaction proto.SignedTransaction
+	err = protob.Unmarshal(txResult.GetTx(), &transaction)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.GetEventResponse{
-		Event: &event,
+	res := &proto.TransactionResponse{
+		Txhash:      txhash,
+		Transaction: &transaction,
 	}
 
 	return res, nil
@@ -95,42 +102,4 @@ func (s *GRPCServer) GetEvent(ctx context.Context, req *proto.GetEventRequest) (
 
 func (s *GRPCServer) Ping(ctx context.Context, req *proto.PingRequest) (*proto.PingResponse, error) {
 	return &proto.PingResponse{Message: "pong"}, nil
-}
-
-func (s *GRPCServer) SetKeyValue(ctx context.Context, req *proto.SetKeyValueRequest) (*proto.KeyValueResponse, error) {
-	logger := s.logger
-	rpc := s.chain
-	db := s.db
-
-	tx := []byte(fmt.Sprintf("%s=%s", req.Key, req.Value))
-	_, err := SendRawTx(ctx, logger, rpc, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	record, err := db.GetKey(ctx, req.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &proto.KeyValueResponse{
-		Key:   record.Key,
-		Value: record.Value,
-	}
-
-	return res, nil
-}
-func (s *GRPCServer) GetKeyValue(ctx context.Context, req *proto.GetKeyValueRequest) (*proto.KeyValueResponse, error) {
-	db := s.db
-	record, err := db.GetKey(ctx, req.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &proto.KeyValueResponse{
-		Key:   record.Key,
-		Value: record.Value,
-	}
-
-	return res, nil
 }

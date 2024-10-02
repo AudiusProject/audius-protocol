@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { useGetCommentById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
+import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { ReplyComment } from '@audius/sdk'
+import type { ID, ReplyComment } from '@audius/common/models'
 
 import {
   Box,
@@ -16,7 +15,7 @@ import {
 import { CommentBlock } from './CommentBlock'
 
 type CommentThreadProps = {
-  commentId: string
+  commentId: ID
 }
 
 export const CommentThread = (props: CommentThreadProps) => {
@@ -25,25 +24,55 @@ export const CommentThread = (props: CommentThreadProps) => {
     id: commentId
   })
 
-  const { handleLoadMoreReplies } = useCurrentCommentSection()
-
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
   }>({})
 
-  const toggleReplies = (commentId: string) => {
+  const toggleReplies = (commentId: ID) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
+  const [hasLoadedMore, setHasLoadedMore] = useState(false)
+  const {
+    data: moreReplies,
+    loadMore,
+    hasMore
+  } = useGetCommentRepliesById(
+    { id: commentId },
+    {
+      // Root comments already have the first 3 replies so we only need to load more when the user requests them
+      disabled: (rootComment?.replies?.length ?? 0) < 3 || !hasLoadedMore,
+      pageSize: 3,
+      // Start at the 4th reply
+      startOffset: 3
+    }
+  )
+
+  const hasMoreReplies = hasMore && (rootComment?.replies?.length ?? 0) >= 3
+
+  const handleLoadMoreReplies = () => {
+    if (hasLoadedMore) {
+      loadMore()
+    } else {
+      // If hasLoadedMore is false, this is the first time the user is requesting more replies
+      // In this case audius-query will automatically fetch the first page of replies, no need to trigger via loadMore()
+      setHasLoadedMore(true)
+    }
+  }
+
+  // Combine the replies from the root comment and the additional loaded replies
+  const allReplies = [...(rootComment?.replies ?? []), ...(moreReplies ?? [])]
 
   if (!rootComment) return null
 
+  const { replyCount } = rootComment
+
   return (
     <>
-      <CommentBlock comment={rootComment} />
+      <CommentBlock commentId={rootComment.id} />
       <Flex pl={40} direction='column' mv='s' gap='s' alignItems='flex-start'>
-        {(rootComment?.replies?.length ?? 0) > 0 ? (
+        {(allReplies.length ?? 0) > 0 ? (
           <Box mv='xs'>
             <PlainButton
               onPress={() => toggleReplies(rootComment.id)}
@@ -52,32 +81,29 @@ export const CommentThread = (props: CommentThreadProps) => {
                 hiddenReplies[rootComment.id] ? IconCaretDown : IconCaretUp
               }
             >
-              {hiddenReplies[rootComment.id] ? 'Show Replies' : 'Hide Replies'}
+              {hiddenReplies[rootComment.id]
+                ? messages.showReplies(replyCount)
+                : messages.hideReplies}
             </PlainButton>
           </Box>
         ) : null}
         {hiddenReplies[rootComment.id] ? null : (
           <>
             <Flex direction='column' gap='l'>
-              {rootComment?.replies?.map((reply: ReplyComment) => (
+              {allReplies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
-                    comment={reply}
+                    commentId={reply.id}
                     parentCommentId={rootComment.id}
                   />
                 </Flex>
               ))}
             </Flex>
 
-            {(rootComment?.replies?.length ?? 0) > 0 ? (
-              <Box mv='xs'>
-                <PlainButton
-                  variant='subdued'
-                  onPress={() => handleLoadMoreReplies(rootComment.id)}
-                >
-                  {messages.showMoreReplies}
-                </PlainButton>
-              </Box>
+            {hasMoreReplies ? (
+              <PlainButton onPress={handleLoadMoreReplies} variant='subdued'>
+                {messages.showMoreReplies}
+              </PlainButton>
             ) : null}
           </>
         )}

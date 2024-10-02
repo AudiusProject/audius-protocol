@@ -17,6 +17,7 @@
 import * as runtime from '../runtime';
 import type {
   AccessInfoResponse,
+  StemsResponse,
   StreamUrlResponse,
   TopListener,
   TrackCommentsResponse,
@@ -28,6 +29,8 @@ import type {
 import {
     AccessInfoResponseFromJSON,
     AccessInfoResponseToJSON,
+    StemsResponseFromJSON,
+    StemsResponseToJSON,
     StreamUrlResponseFromJSON,
     StreamUrlResponseToJSON,
     TopListenerFromJSON,
@@ -66,7 +69,10 @@ export interface GetTrackRequest {
 export interface GetTrackAccessInfoRequest {
     trackId: string;
     userId?: string;
-    includeNetworkCut?: boolean;
+}
+
+export interface GetTrackStemsRequest {
+    trackId: string;
 }
 
 export interface GetTrackTopListenersRequest {
@@ -122,6 +128,8 @@ export interface TrackCommentsRequest {
     trackId: string;
     offset?: number;
     limit?: number;
+    userId?: string;
+    sortMethod?: TrackCommentsSortMethodEnum;
 }
 
 /**
@@ -266,10 +274,6 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
-        if (params.includeNetworkCut !== undefined) {
-            queryParameters['include_network_cut'] = params.includeNetworkCut;
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -287,6 +291,37 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackAccessInfo(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
         const response = await this.getTrackAccessInfoRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the remixable stems of a track
+     */
+    async getTrackStemsRaw(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StemsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackStems.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/stems`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StemsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the remixable stems of a track
+     */
+    async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
+        const response = await this.getTrackStemsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -599,6 +634,14 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['limit'] = params.limit;
         }
 
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -640,3 +683,12 @@ export const SearchTracksSortMethodEnum = {
     Recent: 'recent'
 } as const;
 export type SearchTracksSortMethodEnum = typeof SearchTracksSortMethodEnum[keyof typeof SearchTracksSortMethodEnum];
+/**
+ * @export
+ */
+export const TrackCommentsSortMethodEnum = {
+    Top: 'top',
+    Newest: 'newest',
+    Timestamp: 'timestamp'
+} as const;
+export type TrackCommentsSortMethodEnum = typeof TrackCommentsSortMethodEnum[keyof typeof TrackCommentsSortMethodEnum];

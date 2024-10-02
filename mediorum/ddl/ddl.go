@@ -56,6 +56,8 @@ func Migrate(db *sql.DB, myHost string) {
 	delete from ops where
 	data->0->>'error' like 'blob (key%NotFound%'
 	`)
+
+	runMigration(db, `vacuum full`)
 }
 
 func runMigration(db *sql.DB, ddl string) {

@@ -75,6 +75,10 @@ const InboxSettingsModal = lazy(
   () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
 
+const CommentSettingsModal = lazy(
+  () => import('components/comment-settings-modal/CommentSettingsModal')
+)
+
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
@@ -94,6 +98,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
+  CommentSettings: CommentSettingsModal,
   LockedContent: LockedContentModal,
   HCaptcha: HCaptchaModal,
   APIRewardsExplainer: TopAPIModal,

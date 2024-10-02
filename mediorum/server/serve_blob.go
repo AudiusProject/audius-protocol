@@ -13,7 +13,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
@@ -25,7 +24,6 @@ import (
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
-	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
@@ -35,64 +33,11 @@ func (ss *MediorumServer) serveBlobLocation(c echo.Context) error {
 	preferred, _ := ss.rendezvousAllHosts(cid)
 
 	// if ?sniff=1 to actually find the hosts that have it
-
-	type HostAttr struct {
-		Host           string
-		Attr           *blob.Attributes
-		RendezvousRank int
-	}
-	var attrs []HostAttr
-
-	if sniff, _ := strconv.ParseBool(c.QueryParam("sniff")); sniff {
-		mu := sync.Mutex{}
-		wg := sync.WaitGroup{}
-		wg.Add(len(preferred))
-
-		for idx, host := range preferred {
-			idx := idx
-			host := host
-			go func() {
-				if attr, err := ss.hostGetBlobInfo(host, cid); err == nil {
-					mu.Lock()
-					attrs = append(attrs, HostAttr{
-						Host:           host,
-						Attr:           attr,
-						RendezvousRank: idx + 1,
-					})
-					mu.Unlock()
-				}
-				wg.Done()
-			}()
-		}
-		wg.Wait()
-
-		slices.SortFunc(attrs, func(a, b HostAttr) int {
-			// prefer larger size
-			if a.Attr.Size > b.Attr.Size {
-				return -1
-			} else if a.Attr.Size < b.Attr.Size {
-				return 1
-			}
-
-			// equal size? prefer lower RendezvousRank
-			if a.RendezvousRank < b.RendezvousRank {
-				return -1
-			}
-			return 1
-		})
-
-		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix && len(attrs) > 0 {
-			best := attrs[0]
-			for _, a := range attrs {
-				if a.Attr.Size < best.Attr.Size {
-					break
-				}
-				if err := ss.pullFileFromHost(a.Host, cid); err == nil {
-					break
-				}
-			}
-
-		}
+	sniff, _ := strconv.ParseBool(c.QueryParam("sniff"))
+	var attrs []HostAttrSniff
+	if sniff {
+		fix, _ := strconv.ParseBool(c.QueryParam("fix"))
+		attrs = ss.sniffAndFix(cid, fix)
 	}
 
 	return c.JSON(200, map[string]any{
@@ -384,7 +329,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}()
 
 		sdk, err := ss.getCoreSdk()
-		if err != nil {
+		if err != nil || sdk == nil {
 			return
 		}
 
@@ -395,8 +340,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
-		// construct listen data into event
-		listen := &proto.Listen{
+		// construct play data into event
+		play := &proto.TrackPlay{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
 			Timestamp: timestamppb.New(parsedTime),
@@ -404,28 +349,28 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// form actual proto event for signing
-		playsEvent := &proto.PlaysEvent{
-			Listens: []*proto.Listen{listen},
+		playsTx := &proto.TrackPlays{
+			Plays: []*proto.TrackPlay{play},
 		}
 
 		// sign plays event payload with mediorum priv key
-		signedPlaysEvent, err := signature.SignCoreBytes(playsEvent, ss.Config.privateKey)
+		signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
 		if err != nil {
 			ss.logger.Error("core error signing listen proto event", "err", err)
 			return
 		}
 
-		// construct proto listen event alongside signature of plays event
-		event := &proto.Event{
+		// construct proto listen signedTx alongside signature of plays signedTx
+		signedTx := &proto.SignedTransaction{
 			Signature: signedPlaysEvent,
-			Body: &proto.Event_Plays{
-				Plays: playsEvent,
+			Transaction: &proto.SignedTransaction_Plays{
+				Plays: playsTx,
 			},
 		}
 
 		// submit to configured core node
-		res, err := sdk.SubmitEvent(ctx, &proto.SubmitEventRequest{
-			Event: event,
+		res, err := sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
+			Transaction: signedTx,
 		})
 
 		if err != nil {

@@ -36,9 +36,7 @@ const accountApi = createApi({
         const account = await audiusBackend.getAccount()
         return account?.user_id || null
       },
-      options: {
-        type: 'query'
-      }
+      options: {}
     },
     getCurrentWeb3User: {
       async fetch(_, { audiusBackend }) {
@@ -46,7 +44,6 @@ const accountApi = createApi({
         return libs.Account?.getWeb3User() as UserMetadata | null
       },
       options: {
-        type: 'query',
         // Note that this schema key is used to prevent caching of the
         // web3 user as it does not match the standard user schema.
         schemaKey: 'currentWeb3User'
@@ -75,8 +72,6 @@ const accountApi = createApi({
         return managedUserListFromSDK(data)
       },
       options: {
-        type: 'query',
-        idArgKey: 'manager.user_id',
         schemaKey: 'managedUsers'
       }
     },
@@ -92,8 +87,6 @@ const accountApi = createApi({
         return userManagerListFromSDK(data)
       },
       options: {
-        type: 'query',
-        idArgKey: 'user.user_id',
         schemaKey: 'userManagers'
       }
     },
@@ -113,7 +106,6 @@ const accountApi = createApi({
         return payload
       },
       options: {
-        idArgKey: 'managerUser.user_id',
         type: 'mutation',
         schemaKey: 'userManagers'
       },
@@ -162,7 +154,6 @@ const accountApi = createApi({
         return payload
       },
       options: {
-        idArgKey: 'managerUserId',
         type: 'mutation',
         schemaKey: 'userManagers'
       },

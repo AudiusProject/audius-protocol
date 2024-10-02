@@ -431,6 +431,7 @@ export const AudioPlayer = () => {
   useEffect(() => {
     return () => {
       reset()
+      TrackPlayer.stop()
     }
   }, [reset])
 

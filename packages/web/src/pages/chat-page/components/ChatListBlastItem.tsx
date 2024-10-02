@@ -1,32 +1,14 @@
 import { useCallback } from 'react'
 
-import {
-  useGetCurrentUser,
-  useGetPlaylistById,
-  useGetTrackById
-} from '@audius/common/api'
+import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast } from '@audius/sdk'
 import cn from 'classnames'
-
-import { decodeHashId } from 'utils/hashIds'
 
 import styles from './ChatListItem.module.css'
 
 const messages = {
-  audience: 'AUDIENCE',
-  [ChatBlastAudience.FOLLOWERS]: {
-    title: 'All Followers'
-  },
-  [ChatBlastAudience.TIPPERS]: {
-    title: 'Tip Supporters'
-  },
-  [ChatBlastAudience.CUSTOMERS]: {
-    title: 'Purchasers'
-  },
-  [ChatBlastAudience.REMIXERS]: {
-    title: 'Remix Creators'
-  }
+  audience: 'AUDIENCE'
 }
 
 type ChatListBlastItemProps = {
@@ -37,32 +19,12 @@ type ChatListBlastItemProps = {
 
 export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
   const { chat, onChatClicked, currentChatId } = props
-  const {
-    chat_id: chatId,
-    audience,
-    audience_content_id: audienceContentId,
-    audience_content_type: audienceContentType
-  } = chat
+  const { chat_id: chatId } = chat
   const isCurrentChat = currentChatId && currentChatId === chatId
-  const decodedContentId = audienceContentId
-    ? decodeHashId(audienceContentId)
-    : undefined
-
-  const { data: user } = useGetCurrentUser()
-  const { data: track } = useGetTrackById(
-    {
-      id: decodedContentId!
-    },
-    { disabled: !audienceContentId || audienceContentType !== 'track' }
-  )
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: decodedContentId!
-    },
-    { disabled: !audienceContentId || audienceContentType !== 'album' }
-  )
-
-  const audienceCount = user?.follower_count ?? 0
+  const { chatBlastTitle, contentTitle, audienceCount } =
+    useChatBlastAudienceContent({
+      chat
+    })
 
   const handleClick = useCallback(() => {
     onChatClicked(chatId)
@@ -78,16 +40,22 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       onClick={handleClick}
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
-      <Flex gap='s'>
+      <Flex gap='s' css={{ overflow: 'hidden' }}>
         <IconTowerBroadcast size='l' color='default' />
-        <Text size='l' strength='strong'>
-          {messages[audience].title}
+        <Text size='l' strength='strong' css={{ whiteSpace: 'nowrap' }}>
+          {chatBlastTitle}
         </Text>
-        {audienceContentId ? (
-          <Text size='l' color='subdued'>
-            {audienceContentType === 'track'
-              ? track?.title
-              : album?.playlist_name}
+        {contentTitle ? (
+          <Text
+            size='l'
+            color='subdued'
+            css={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
+            {contentTitle}
           </Text>
         ) : null}
       </Flex>

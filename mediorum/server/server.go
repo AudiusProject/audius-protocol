@@ -87,6 +87,7 @@ type MediorumServer struct {
 	reqClient        *req.Client
 	rendezvousHasher *RendezvousHasher
 	coreSdk          *core.Sdk
+	transcodeWork    chan *Upload
 
 	// simplify
 	mediorumPathUsed uint64
@@ -112,6 +113,8 @@ type MediorumServer struct {
 	imageCache            *imcache.Cache[string, []byte]
 	failsPeerReachability bool
 
+	coreHealth *coreHealthResponseData
+
 	StartedAt time.Time
 	Config    MediorumConfig
 
@@ -119,6 +122,7 @@ type MediorumServer struct {
 }
 
 type PeerHealth struct {
+	Version        string               `json:"version"`
 	LastReachable  time.Time            `json:"lastReachable"`
 	LastHealthy    time.Time            `json:"lastHealthy"`
 	ReachablePeers map[string]time.Time `json:"reachablePeers"`
@@ -280,6 +284,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isSeeding:        config.Env == "stage" || config.Env == "prod",
 		isAudiusdManaged: isAudiusdManaged,
 		rendezvousHasher: rendezvousHasher,
+		transcodeWork:    make(chan *Upload),
 
 		peerHealths:        map[string]*PeerHealth{},
 		redirectCache:      imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
@@ -451,6 +456,10 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 	go ss.startAudioAnalyzer()
+
+	if ss.Config.StoreAll {
+		go ss.startFixTruncatedQmWorker()
+	}
 
 	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker

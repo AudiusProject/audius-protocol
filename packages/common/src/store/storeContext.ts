@@ -1,7 +1,11 @@
 import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
+import { VersionedTransaction } from '@solana/web3.js'
 import { Location } from 'history'
 import { Dispatch } from 'redux'
+import nacl from 'tweetnacl'
+
+import { HedgehogInstance } from '~/services'
 
 import {
   AllTrackingEvents,
@@ -74,6 +78,7 @@ export type CommonStoreContext = {
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
+  hedgehogInstance: HedgehogInstance
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]
@@ -81,4 +86,13 @@ export type CommonStoreContext = {
   }
   isMobile: boolean
   dispatch: Dispatch<any>
+  mobileWalletActions?: {
+    connect: (dappKeyPair: nacl.BoxKeyPair) => void
+    signAndSendTransaction: (params: {
+      transaction: VersionedTransaction
+      session: string
+      sharedSecret: Uint8Array
+      dappKeyPair: nacl.BoxKeyPair
+    }) => void
+  }
 }

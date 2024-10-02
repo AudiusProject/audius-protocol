@@ -12,7 +12,7 @@ import {
 import { mergeRefs } from 'react-merge-refs'
 
 import { TextInput } from 'components/input'
-import { Menu, MenuProps } from 'components/internal/Menu'
+import { Menu, MenuContent, MenuProps } from 'components/internal/Menu'
 import { MenuItem } from 'components/internal/MenuItem'
 import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
 import { Flex } from 'components/layout'
@@ -195,16 +195,22 @@ export const Select = forwardRef(function Select<Value extends string>(
       <Menu
         anchorRef={anchorRef}
         isVisible={isOpen}
-        scrollRef={scrollRef}
-        aria-label={selectedLabel ?? label ?? props['aria-label']}
-        aria-activedescendant={selectedLabel}
         onClose={() => setIsOpen(false)}
         {...defaultMenuProps}
-        {...menuProps}
+        PaperProps={menuProps?.PaperProps}
       >
-        {children
-          ? children({ onChange: handleChange, options: optionElements })
-          : optionElements}
+        <MenuContent
+          maxHeight={menuProps?.maxHeight}
+          width={menuProps?.width}
+          scrollRef={scrollRef}
+          MenuListProps={menuProps?.MenuListProps}
+          aria-label={selectedLabel ?? label ?? props['aria-label']}
+          aria-activedescendant={selectedLabel}
+        >
+          {children
+            ? children({ onChange: handleChange, options: optionElements })
+            : optionElements}
+        </MenuContent>
       </Menu>
     </Flex>
   )

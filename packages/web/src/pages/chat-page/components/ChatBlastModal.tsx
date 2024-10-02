@@ -1,17 +1,10 @@
-import { useMemo } from 'react'
-
+import { useGetCurrentUser } from '@audius/common/api'
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetPlaylistsByIds,
-  useGetPurchasersCount,
-  useGetRemixedTracks,
-  useGetRemixersCount,
-  useGetSalesAggegrate,
-  useGetTracksByIds
-} from '@audius/common/api'
+  useFirstAvailableBlastAudience,
+  usePurchasersAudience,
+  useRemixersAudience
+} from '@audius/common/hooks'
 import { useChatBlastModal, chatActions } from '@audius/common/src/store'
-import { removeNullable } from '@audius/common/utils'
 import {
   Flex,
   IconTowerBroadcast,
@@ -29,7 +22,6 @@ import {
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, useField } from 'formik'
-import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 const { createChatBlast } = chatActions
@@ -63,22 +55,23 @@ const messages = {
 const TARGET_AUDIENCE_FIELD = 'target_audience'
 
 type PurchasableContentOption = {
-  contentId: string
+  contentId: number
   contentType: 'track' | 'album'
 }
 
 type ChatBlastFormValues = {
   target_audience: ChatBlastAudience
   purchased_content_metadata?: PurchasableContentOption
-  remixed_track_id?: string
+  remixed_track_id?: number
 }
 
 export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
 
+  const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -89,11 +82,15 @@ export const ChatBlastModal = () => {
       values.target_audience === ChatBlastAudience.CUSTOMERS
         ? values.purchased_content_metadata?.contentId
         : values.remixed_track_id
+    const audienceContentType =
+      values.target_audience === ChatBlastAudience.REMIXERS
+        ? 'track'
+        : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
         audience: values.target_audience,
         audienceContentId,
-        audienceContentType: values.purchased_content_metadata?.contentType
+        audienceContentType
       })
     )
   }
@@ -103,6 +100,7 @@ export const ChatBlastModal = () => {
       <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize
       >
         {({ submitForm }) => (
           <>
@@ -163,12 +161,13 @@ const LabelWithCount = (props: {
   isSelected: boolean
 }) => {
   const { label, count, isSelected } = props
+
   return (
     <Flex gap='xs'>
       <Text variant='title' size='l'>
         {label}
       </Text>
-      {isSelected && count !== undefined ? (
+      {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
           ({count})
         </Text>
@@ -181,7 +180,7 @@ const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.FOLLOWERS
-  const isDisabled = user.follower_count === 0
+  const isDisabled = user?.follower_count === 0
   return (
     <Flex
       as='label'
@@ -191,10 +190,10 @@ const FollowersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.FOLLOWERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.followers.label}
-          count={user.follower_count}
+          count={user?.follower_count}
           isSelected={selected}
         />
         {selected ? (
@@ -209,7 +208,7 @@ const TipSupportersMessageField = () => {
   const { data: user } = useGetCurrentUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.TIPPERS
-  const isDisabled = user.supporter_count === 0
+  const isDisabled = user?.supporter_count === 0
   return (
     <Flex
       as='label'
@@ -219,10 +218,10 @@ const TipSupportersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.TIPPERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.supporters.label}
-          count={user.supporter_count ?? 0}
+          count={user?.supporter_count ?? 0}
           isSelected={selected}
         />
         {selected ? (
@@ -234,7 +233,6 @@ const TipSupportersMessageField = () => {
 }
 
 const PastPurchasersMessageField = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const [
     purchasedContentMetadataField,
@@ -245,52 +243,11 @@ const PastPurchasersMessageField = () => {
     type: 'select'
   })
   const isSelected = value === ChatBlastAudience.CUSTOMERS
-  const { data: salesAggregate } = useGetSalesAggegrate({
-    userId: currentUserId!
-  })
-  const isDisabled = salesAggregate?.length === 0
-
-  const trackAggregates = salesAggregate?.filter(
-    (sale) => sale.contentType === 'track'
-  )
-  const albumAggregates = salesAggregate?.filter(
-    (sale) => sale.contentType === 'album'
-  )
-
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
-  const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
-  const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
-  const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
-
-  const premiumContentOptions = useMemo(
-    () =>
-      (salesAggregate ?? [])
-        .map((sale) => {
-          const content =
-            sale.contentType === 'track'
-              ? tracksById[sale.contentId]
-              : albumsById[sale.contentId]
-          if (!content) return null
-          return {
-            value: { contentId: sale.contentId, contentType: sale.contentType },
-            label: 'title' in content ? content?.title : content?.playlist_name
-          }
-        })
-        .filter(removeNullable),
-    [salesAggregate, tracksById, albumsById]
-  )
-
-  const { data: purchasersCount } = useGetPurchasersCount({
-    userId: currentUserId!,
-    contentId: purchasedContentMetadataField.value?.contentId,
-    contentType: purchasedContentMetadataField.value?.contentType
-  })
+  const { isDisabled, purchasersCount, premiumContentOptions } =
+    usePurchasersAudience({
+      contentId: purchasedContentMetadataField.value?.contentId,
+      contentType: purchasedContentMetadataField.value?.contentType
+    })
 
   return (
     <Flex
@@ -301,7 +258,7 @@ const PastPurchasersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.CUSTOMERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.purchasers.label}
           count={purchasersCount}
@@ -325,34 +282,16 @@ const PastPurchasersMessageField = () => {
 }
 
 const RemixCreatorsMessageField = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
+  const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const [remixedTrackField, , { setValue: setRemixedTrackId }] = useField({
     name: 'remixed_track_id',
     type: 'select'
   })
-  const { data: remixersCount } = useGetRemixersCount({
-    userId: currentUserId!,
-    trackId: remixedTrackField.value
-      ? parseInt(remixedTrackField.value)
-      : undefined
-  })
-
-  const { data: remixedTracks } = useGetRemixedTracks({
-    userId: currentUserId!
-  })
-  const isDisabled = remixedTracks?.length === 0
-
-  const isSelected = value === ChatBlastAudience.REMIXERS
-
-  const premiumTrackOptions = useMemo(
-    () =>
-      (remixedTracks ?? []).map((track) => ({
-        value: track.track_id.toString(),
-        label: track.title
-      })),
-    [remixedTracks]
-  )
+  const { isDisabled, remixersCount, remixedTracksOptions } =
+    useRemixersAudience({
+      remixedTrackId: remixedTrackField.value?.contentId
+    })
+  const isSelected = targetAudience === ChatBlastAudience.REMIXERS
 
   return (
     <Flex
@@ -363,7 +302,7 @@ const RemixCreatorsMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.REMIXERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.remixCreators.label}
           count={remixersCount ?? 0}
@@ -374,7 +313,7 @@ const RemixCreatorsMessageField = () => {
             <Text size='s'>{messages.remixCreators.description}</Text>
             <Select
               {...remixedTrackField}
-              options={premiumTrackOptions}
+              options={remixedTracksOptions}
               label={messages.remixCreators.placeholder}
               onChange={setRemixedTrackId}
               clearable

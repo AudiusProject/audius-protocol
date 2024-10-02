@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { ChallengeName } from '@audius/common/models'
 import { IntKeys, StringKeys } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -141,11 +142,14 @@ export const ChallengeRewardsDrawerProvider = () => {
     switch (modalType) {
       case 'referrals':
       case 'ref-v':
+      case ChallengeName.Referrals:
+      case ChallengeName.ReferralsVerified:
         contents = (
           <ReferralRewardContents isVerified={!!config.isVerifiedChallenge} />
         )
         break
       case 'track-upload':
+      case ChallengeName.TrackUpload:
         contents = config?.buttonInfo && (
           <Button
             iconRight={config.buttonInfo.iconRight}
@@ -154,11 +158,12 @@ export const ChallengeRewardsDrawerProvider = () => {
             onPress={openUploadModal}
             fullWidth
           >
-            {config.panelButtonText}
+            {config.completedLabel}
           </Button>
         )
         break
       case 'profile-completion':
+      case ChallengeName.ProfileCompletion:
         contents = (
           <ProfileCompletionChecks
             isComplete={hasChallengeCompleted}
@@ -167,7 +172,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         )
         break
       default:
-        contents = config?.buttonInfo && (
+        contents = config?.buttonInfo ? (
           <Button
             iconRight={config.buttonInfo.iconRight}
             iconLeft={config.buttonInfo.iconLeft}
@@ -175,9 +180,11 @@ export const ChallengeRewardsDrawerProvider = () => {
             onPress={handleNavigation}
             fullWidth
           >
-            {config.panelButtonText}
+            {challenge?.state === 'disbursed'
+              ? config.completedLabel
+              : config.panelButtonText}
           </Button>
-        )
+        ) : undefined
     }
   }
 
@@ -210,6 +217,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         <ChallengeRewardsDrawerContent
           description={config.description(challenge)}
           progressLabel={config.progressLabel ?? 'Completed'}
+          completedLabel={config.completedLabel}
           amount={challenge.totalAmount}
           challengeId={challenge.challenge_id}
           isCooldownChallenge={challenge && challenge.cooldown_days > 0}

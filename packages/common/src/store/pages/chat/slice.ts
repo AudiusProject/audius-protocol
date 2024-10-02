@@ -162,7 +162,7 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<{
         audience: ChatBlastAudience
-        audienceContentId?: string
+        audienceContentId?: number
         audienceContentType?: 'track' | 'album'
         skipNavigation?: boolean
         presetMessage?: string
@@ -361,7 +361,10 @@ const slice = createSlice({
       const { chatId, messageId, reaction } = action.payload
       delete state.optimisticReactions[messageId]
 
-      // Ensure the message exists
+      // Ensure the chat and message exists. If not, saga will fetch.
+      if (!(chatId in state.messages)) {
+        return
+      }
       const existingMessage = getMessage(state.messages[chatId], messageId)
       if (!existingMessage) {
         return
@@ -482,17 +485,28 @@ const slice = createSlice({
         return
       }
 
-      // Update the chat metadata, but don't update recheck_permissions unless
-      // it's a message received from someone else
+      // Always update the last message, but don't update
+      // last_message_at if it's a blast message sent by current user,
+      // to avoid chat list re-sorting.
+      // Note: is_plaintext indicates that the message originated from a blast
+      const existingChat = getChat(state, chatId)
+      const changes =
+        message.is_plaintext && isSelfMessage && !existingChat?.is_blast
+          ? {
+              last_message: message.message
+            }
+          : {
+              last_message: message.message,
+              last_message_at: message.created_at
+            }
+
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
-        changes: {
-          last_message: message.message,
-          last_message_at: message.created_at
-        }
+        changes
       })
 
-      // Return early if we've seen this message
+      // Return early if we've seen this message: don't update
+      // recheck_permissions unless it's a message received from someone else
       const existingMessage = getMessage(
         state.messages[chatId],
         message.message_id
@@ -517,7 +531,6 @@ const slice = createSlice({
       recalculatePreviousMessageHasTail(state.messages[chatId], 0)
 
       // Handle unread counts
-      const existingChat = getChat(state, chatId)
       if (!existingChat || existingChat.is_blast) return
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead

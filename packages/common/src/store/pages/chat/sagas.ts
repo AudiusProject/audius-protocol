@@ -470,9 +470,12 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
+    const encodedContentId = audienceContentId
+      ? encodeHashId(audienceContentId)
+      : undefined
     const chatId = makeBlastChatId({
       audience,
-      audienceContentId,
+      audienceContentId: encodedContentId,
       audienceContentType
     })
 
@@ -485,7 +488,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
     if (!existingChat) {
       const newBlast: ChatBlast = {
         chat_id: chatId,
-        audience_content_id: audienceContentId,
+        audience_content_id: encodedContentId,
         audience_content_type: audienceContentType,
         is_blast: true,
         last_message_at: dayjs().toISOString(),
@@ -864,6 +867,12 @@ function* watchAddMessage() {
   yield takeEvery(addMessage, ({ payload }) => doFetchChatIfNecessary(payload))
 }
 
+function* watchSetMessageReactionSucceeded() {
+  yield takeEvery(setMessageReactionSucceeded, ({ payload }) =>
+    doFetchChatIfNecessary(payload)
+  )
+}
+
 function* watchFetchChatIfNecessary() {
   yield takeEvery(fetchChatIfNecessary, ({ payload }) =>
     doFetchChatIfNecessary(payload)
@@ -952,6 +961,7 @@ export const sagas = () => {
     watchMarkChatAsRead,
     watchSendMessage,
     watchAddMessage,
+    watchSetMessageReactionSucceeded,
     watchFetchBlockees,
     watchFetchBlockers,
     watchBlockUser,

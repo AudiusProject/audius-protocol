@@ -2,6 +2,7 @@ import qs from 'query-string'
 import { matchPath, generatePath } from 'react-router'
 
 import { SearchCategory, SearchFilters } from '~/api/search'
+import { ID } from '~/models'
 
 import { encodeUrlName } from './formatUtil'
 import { convertGenreLabelToValue, Genre } from './genres'
@@ -163,7 +164,7 @@ export const EMPTY_PAGE = '/empty_page'
 
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
-export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audiusmusic'
+export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audius'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
 export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
@@ -214,6 +215,7 @@ export const authenticatedRoutes = [
   CHAT_PAGE,
   PURCHASES_PAGE,
   SALES_PAGE,
+  PAYMENTS_PAGE,
   WITHDRAWALS_PAGE
 ]
 
@@ -340,11 +342,34 @@ export const staticRoutes = new Set([
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  CHAT_PAGE,
+  CHATS_PAGE
 ])
 
 export const profilePage = (handle: string) => {
   return `/${encodeUrlName(handle)}`
+}
+
+export const collectionPage = (
+  handle?: string | null,
+  playlistName?: string | null,
+  playlistId?: ID | null,
+  permalink?: string | null,
+  isAlbum?: boolean
+) => {
+  // Prioritize permalink if available. If not, default to legacy routing
+  if (permalink) {
+    return permalink
+  } else if (playlistName && playlistId && handle) {
+    const collectionType = isAlbum ? 'album' : 'playlist'
+    return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
+      playlistName
+    )}-${playlistId}`
+  } else {
+    console.error('Missing required arguments to get PlaylistPage route.')
+    return ''
+  }
 }
 
 /**

@@ -96,6 +96,7 @@ track = ns.model(
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
+        "comment_count": fields.Integer(required=True),
         "tags": fields.String,
         "title": fields.String(required=True),
         "user": fields.Nested(user_model, required=True),
@@ -222,6 +223,19 @@ search_track_full = ns.clone(
 
 stem_full = ns.model(
     "stem_full",
+    {
+        "id": fields.String(required=True),
+        "parent_id": fields.String(required=True),
+        "category": fields.String(required=True),
+        "cid": fields.String(required=True),
+        "user_id": fields.String(required=True),
+        "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
+    },
+)
+
+stem = ns.model(
+    "stem",
     {
         "id": fields.String(required=True),
         "parent_id": fields.String(required=True),

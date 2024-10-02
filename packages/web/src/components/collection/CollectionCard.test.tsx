@@ -79,7 +79,7 @@ describe('CollectionCard', () => {
     renderCollectionCard()
     expect(screen.getByTestId('cover-art-1')).toHaveAttribute(
       'src',
-      'image-small.jpg'
+      'image-medium.jpg'
     )
   })
 

@@ -26,7 +26,12 @@ export enum Action {
   REJECT = 'Reject',
   DOWNLOAD = 'Download',
   REACT = 'React',
-  UNREACT = 'Unreact'
+  UNREACT = 'Unreact',
+  REPORT = 'Report',
+  PIN = 'Pin',
+  UNPIN = 'Unpin',
+  MUTE = 'Mute',
+  UNMUTE = 'Unmute'
 }
 
 export enum EntityType {
@@ -34,7 +39,8 @@ export enum EntityType {
   TRACK = 'Track',
   USER = 'User',
   USER_REPLICA_SET = 'UserReplicaSet',
-  NOTIFICATION = 'Notification'
+  NOTIFICATION = 'Notification',
+  COMMENT = 'Comment'
 }
 
 export type ManageEntityCIDMetadata = {

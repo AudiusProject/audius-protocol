@@ -16,7 +16,7 @@ func (sdk *Sdk) Tx(ctx context.Context, hash []byte, _ bool) (*ctypes.ResultTx, 
 	result := new(ctypes.ResultTx)
 
 	// TODO return full ResultTx here
-	_, err := sdk.GetEvent(ctx, &proto.GetEventRequest{Txhash: string(hash)})
+	_, err := sdk.GetTransaction(ctx, &proto.GetTransactionRequest{Txhash: string(hash)})
 	if err != nil {
 		return nil, err
 	}

@@ -1,11 +1,13 @@
 import logging
-from typing import TypedDict  # pylint: disable=C0302
+from typing import TypedDict
+
+from sqlalchemy import func
 
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
-from src.queries.query_helpers import add_query_pagination, populate_track_metadata
-from src.utils import helpers
+from src.queries.query_helpers import add_query_pagination
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import encode_int_id
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +24,24 @@ def _get_user_tracks_remixed(session, args: GetUserTracksRemixedArgs):
 
     user_id = args.get("user_id")
 
+    remix_count = func.count(Remix.child_track_id).label("remix_count")
     query = (
-        session.query(Track)
-        .distinct(Track.track_id)
-        .join(Remix, Remix.parent_track_id == Track.track_id)
+        session.query(
+            Remix.parent_track_id.label("track_id"),
+            Track.title,
+            remix_count,
+        )
+        .join(Track, Remix.parent_track_id == Track.track_id)
         .filter(Track.owner_id == user_id)
+        .group_by(Remix.parent_track_id, Track.title)
+        .order_by(remix_count.desc())
     )
 
     return query
 
 
 def get_user_tracks_remixed(args: GetUserTracksRemixedArgs):
-    user_tracks_remixed = []
-    current_user_id = args.get("current_user_id")
+    remixed_aggregates = []
     limit = args.get("limit")
     offset = args.get("offset")
     db = get_db_read_replica()
@@ -42,11 +49,9 @@ def get_user_tracks_remixed(args: GetUserTracksRemixedArgs):
     with db.scoped_session() as session:
         query = _get_user_tracks_remixed(session, args)
         query_results = add_query_pagination(query, limit, offset).all()
-        tracks = helpers.query_result_to_list(query_results)
-        track_ids = list(map(lambda track: track["track_id"], tracks))
+        remixed_aggregates = [
+            {"track_id": encode_int_id(row[0]), "title": row[1], "remix_count": row[2]}
+            for row in query_results
+        ]
 
-        user_tracks_remixed = populate_track_metadata(
-            session, track_ids, tracks, current_user_id
-        )
-
-    return user_tracks_remixed
+    return remixed_aggregates

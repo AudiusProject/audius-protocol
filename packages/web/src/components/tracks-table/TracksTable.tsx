@@ -22,7 +22,8 @@ import {
   Flex,
   IconSpecialAccess,
   IconCollectible,
-  IconCart
+  IconCart,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
@@ -82,6 +83,7 @@ export type TracksTableColumn =
   | 'savedDate'
   | 'spacer'
   | 'trackName'
+  | 'comments'
 
 type TracksTableProps = {
   columns?: TracksTableColumn[]
@@ -216,18 +218,27 @@ export const TracksTable = ({
 
       return (
         <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
-          <TextLink
-            to={deleted ? '' : track.permalink}
-            isActive={active}
-            textVariant='title'
-            size='s'
-            strength='weak'
-            css={{ display: 'block', 'line-height': '125%' }}
-            ellipses
-          >
-            {track.name}
-            {deleted ? ` [Deleted By Artist]` : ''}
-          </TextLink>
+          {deleted ? (
+            <Text
+              variant='title'
+              size='s'
+              strength='weak'
+              css={{ display: 'block', 'line-height': '125%' }}
+              ellipses
+            >{`${track.name} [Deleted By Artist]`}</Text>
+          ) : (
+            <TextLink
+              to={deleted ? '' : track.permalink}
+              isActive={active}
+              textVariant='title'
+              size='s'
+              strength='weak'
+              css={{ display: 'block', 'line-height': '125%' }}
+              ellipses
+            >
+              {track.name}
+            </TextLink>
+          )}
         </div>
       )
     },
@@ -321,6 +332,24 @@ export const TracksTable = ({
       const isOwner = ownerId === userId
       if ((isDelete || isUnlisted) && !isOwner) return null
       return formatCount(track.save_count)
+    },
+    [userId]
+  )
+
+  const renderCommentsCell = useCallback(
+    (cellInfo: TrackCell) => {
+      const track = cellInfo.row.original
+      const {
+        is_unlisted: isUnlisted,
+        is_delete: isDelete,
+        owner_id: ownerId,
+        comments_disabled: commentsDisabled
+      } = track
+      const isOwner = ownerId === userId
+      if (commentsDisabled || ((isDelete || isUnlisted) && !isOwner)) {
+        return null
+      }
+      return formatCount(track.comment_count)
     },
     [userId]
   )
@@ -698,6 +727,16 @@ export const TracksTable = ({
         sorter: numericSorter('save_count'),
         align: 'right'
       },
+      comments: {
+        id: 'comments',
+        Header: 'Comments',
+        accessor: 'comment_count',
+        Cell: renderCommentsCell,
+        maxWidth: 160,
+        sortTitle: 'Comments',
+        sorter: numericSorter('comment_count'),
+        align: 'right'
+      },
       overflowActions: {
         id: 'trackActions',
         Cell: renderTrackActions,
@@ -757,21 +796,22 @@ export const TracksTable = ({
       }
     }),
     [
-      isVirtualized,
       renderAddedDateCell,
       renderArtistNameCell,
       renderDateCell,
-      renderLengthCell,
       renderListenDateCell,
-      renderOverflowMenuCell,
-      renderPlayButtonCell,
-      renderPlaysCell,
-      renderSavedDateCell,
       renderReleaseDateCell,
       renderRepostsCell,
+      renderPlaysCell,
+      renderPlayButtonCell,
+      renderSavesCell,
+      renderCommentsCell,
       renderTrackActions,
+      renderOverflowMenuCell,
+      renderLengthCell,
+      isVirtualized,
       renderTrackNameCell,
-      renderSavesCell
+      renderSavedDateCell
     ]
   )
 

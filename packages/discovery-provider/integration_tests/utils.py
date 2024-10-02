@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
@@ -126,6 +127,7 @@ def populate_mock_db(db, entities, block_offset=None):
         comments = entities.get("comments", [])
         comment_threads = entities.get("comment_threads", [])
         comment_reactions = entities.get("comment_reactions", [])
+        comment_mentions = entities.get("comment_mentions", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -175,6 +177,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(playlists),
             len(comments),
             len(comment_threads),
+            len(comment_mentions),
             len(users),
             len(developer_apps),
             len(grants),
@@ -255,6 +258,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 playlists_previously_containing_track=track_meta.get(
                     "playlists_previously_containing_track", {}
                 ),
+                comments_disabled=track_meta.get("comments_disabled", False),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
@@ -488,6 +492,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 track_id=aggregate_track_meta.get("track_id", i),
                 repost_count=aggregate_track_meta.get("repost_count", 0),
                 save_count=aggregate_track_meta.get("save_count", 0),
+                comment_count=aggregate_track_meta.get("comment_count", 0),
             )
             session.add(aggregate_track)
 
@@ -799,12 +804,16 @@ def populate_mock_db(db, entities, block_offset=None):
                 user_id=comment_meta.get("user_id", i),
                 comment_id=comment_meta.get("comment_id", i),
                 entity_id=comment_meta.get("entity_id", i),
-                entity_type=comment_meta.get("entity_type", i),
+                entity_type=comment_meta.get("entity_type", "Track"),
                 text=comment_meta.get("text", ""),
+                is_pinned=comment_meta.get("is_pinned", False),
+                is_edited=comment_meta.get("is_edited", False),
+                is_delete=comment_meta.get("is_delete", False),
                 created_at=comment_meta.get("created_at", datetime.now()),
                 updated_at=comment_meta.get("updated_at", datetime.now()),
-                txhash=track_meta.get("txhash", str(i + block_offset)),
-                blockhash=track_meta.get("blockhash", str(i + block_offset)),
+                track_timestamp_s=comment_meta.get("track_timestamp_s", None),
+                txhash=comment_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_meta.get("blockhash", str(i + block_offset)),
             )
             session.add(comment_record)
         for i, comment_threads_meta in enumerate(comment_threads):
@@ -826,5 +835,16 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(comment_reactions_record)
+        for i, comment_mentions_meta in enumerate(comment_mentions):
+            comment_mention_record = CommentMention(
+                comment_id=comment_mentions_meta.get("comment_id", i),
+                user_id=comment_mentions_meta.get("user_id", i),
+                created_at=comment_mentions_meta.get("created_at", datetime.now()),
+                updated_at=comment_mentions_meta.get("updated_at", datetime.now()),
+                txhash=comment_mentions_meta.get("txhash", str(i + block_offset)),
+                blockhash=comment_mentions_meta.get("blockhash", str(i + block_offset)),
+                blocknumber=i + block_offset,
+            )
+            session.add(comment_mention_record)
 
         session.commit()

@@ -8,7 +8,7 @@ import { themes as prismThemes } from 'prism-react-renderer'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Audius Docs',
+  title: 'Audius Developer Documentation',
   tagline:
     'Audius is a fully decentralized music platform. ARTISTS (AND DEVELOPERS) DESERVE MORE 💜',
   favicon: 'img/favicon.ico',
@@ -68,9 +68,17 @@ const config = {
           hideable: true,
         },
       },
+      // announcementBar: {
+      //   id: 'amplify_hackathon',
+      //   content:
+      //     '👩‍💻 <a target="_blank" rel="noopener noreferrer" href="https://www.audius.events/e/hackathon">Join the Amplify Hackathon!</a> 🚀  Submissions due September 30, 2024 at 11:55pm PST',
+      //   backgroundColor: '#7e1bcc',
+      //   textColor: '#fff',
+      //   isCloseable: false,
+      // },
       navbar: {
-        title: 'Audius',
-        hideOnScroll: true,
+        title: '| Developer Documentation',
+        hideOnScroll: false,
         logo: {
           alt: 'Audius Logo',
           src: 'img/logo.png',

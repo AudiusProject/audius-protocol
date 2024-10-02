@@ -1,4 +1,33 @@
-SQL_SRCS := $(shell find db/sql/ -type f -name '*.sql') db/sqlc.yaml
+GO_SRCS := $(shell find . -type f -name '*.go') go.sum go.mod $(wildcard config/genesis/*.json)
+JS_SRCS := $(shell find . -type f -name '*.js')
+NATIVE_BIN := ./tmp/core
+AMD64_BIN := ./tmp/core-amd64
+
+SQL_SRCS := $(shell find db/sql -type f -name '*.sql') db/sqlc.yaml
+SQL_ARTIFACTS := $(wildcard db/*.sql.go)
+
+PROTO_SRCS := protocol.proto
+PROTO_ARTIFACTS := $(wildcard gen/proto/*.pb.go)
+
+TEMPL_SRCS := $(shell find console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find console -type f -name "*_templ.go")
+
+GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
+GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
+
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
+
+.PHONY: build-native
+build-native: $(NATIVE_BIN)
+
+$(NATIVE_BIN): $(GO_SRCS) $(JS_SRCS)
+	@go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core
+
+.PHONY: build-amd64
+build-amd64: $(AMD64_BIN)
+
+$(AMD64_BIN): $(GO_SRCS) $(JS_SRCS)
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ./tmp/core-amd64
 
 .PHONY: deps
 deps:
@@ -12,37 +41,55 @@ deps:
 	@go mod tidy
 
 .PHONY: gen
-gen: $(SQL_SRCS)
-	@which sqlc || ( \
-		echo "ERROR: sqlc command not found." \
-		"Run 'make deps' to install necessary tooling." \
+gen: $(GEN_ARTIFACTS)
+
+$(GEN_ARTIFACTS): $(GEN_SRCS)
+	@which -s sqlc templ modd || ( \
+		echo "ERROR: audius core dev tooling not found." \
+		"Run 'make deps' to install necessary golang packages." \
 		&& false \
 	)
 	go generate ./...
 	cd db && sqlc generate
+	protoc --go_out=./gen --go-grpc_out=./gen ./protocol.proto
 	go mod tidy
 
-build-native:
-	@go build -o ./tmp/core
-
-build-amd64:
-	@GOOS=linux GOARCH=amd64 go build -o ./tmp/core-amd64
-
 .PHONY: dev
-dev:
-	make gen
-	audius-compose up db core core-content-1 core-content-2 core-content-3
+dev: gen
+	audius-compose down
+	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
+
+.PHONY: test
+test: gen
+	go test -v ./... -timeout 60s
+
+.PHONY: sandbox-reset
+sandbox-reset:
+	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml up --build -d
 
 .PHONY: sandbox-node
 sandbox-node:
-	@docker compose -f ./infra/docker-compose.yml down
-	@docker compose -f ./infra/docker-compose.yml up --build
+	@docker compose -f ./infra/docker-compose.yml up --build sandbox-core
 
 .PHONY: sandbox
 sandbox:
 	@go run ./scripts/sandbox.go
 
-
 .PHONY: livereload
 livereload:
 	modd
+
+.PHONY: push-prerelease
+push-prerelease:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
+
+.PHONY: push-edge
+push-edge:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
+	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
+
+.PHONY: console
+console: gen
+	@NO_DOCKER=on modd

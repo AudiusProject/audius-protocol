@@ -1,5 +1,5 @@
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
-import { AudiusABIDecoder } from '@audius/sdk'
+import { AudiusABIDecoder } from '@audius/sdk/dist/libs'
 import { RateLimiterRes } from 'rate-limiter-flexible'
 import { DeveloperApps, Users } from '@pedalboard/storage'
 import { config } from '..'
@@ -13,7 +13,14 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, isAnonymousAllowed, isSenderVerifier, logger } = res.locals.ctx
+  const {
+    validatedRelayRequest,
+    recoveredSigner,
+    signerIsUser,
+    isAnonymousAllowed,
+    isSenderVerifier,
+    logger
+  } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   // don't rate limit on local dev, this can block audius-cmd
@@ -29,7 +36,11 @@ export const rateLimiterMiddleware = async (
     signer = (recoveredSigner as DeveloperApps).address
   }
 
-  if ((signer === undefined || signer === null) && !isAnonymousAllowed && !isSenderVerifier) {
+  if (
+    (signer === undefined || signer === null) &&
+    !isAnonymousAllowed &&
+    !isSenderVerifier
+  ) {
     rateLimitError(next, 'user record does not have wallet')
     return
   }
@@ -52,7 +63,6 @@ export const rateLimiterMiddleware = async (
 
   const limit = await determineLimit(
     signerIsUser,
-    isAnonymousAllowed,
     config.rateLimitAllowList,
     signer
   )
@@ -63,12 +73,12 @@ export const rateLimiterMiddleware = async (
       signer,
       limit
     })
-    logger.info({ limit }, "calculated rate limit")
+    logger.info({ limit }, 'calculated rate limit')
     insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
-      logger.info({ limit }, "rate limit hit")
+      logger.info({ limit }, 'rate limit hit')
       rateLimitError(next, 'rate limit hit')
       return
     }
@@ -99,11 +109,9 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 
 const determineLimit = async (
   isUser: boolean,
-  isAnonymousAllowed: boolean,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
-  if (isAnonymousAllowed) return "app"
   const isAllowed = allowList.includes(signer)
   if (isAllowed) return 'allowlist'
   if (isUser) return 'owner'

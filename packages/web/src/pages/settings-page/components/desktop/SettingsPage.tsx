@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { ID, Name, OS, ProfilePictureSizes, Theme } from '@audius/common/models'
+import { settingsMessages as messages } from '@audius/common/messages'
+import { ID, Name, ProfilePictureSizes, Theme } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   BrowserNotificationSetting,
@@ -16,12 +17,12 @@ import { route } from '@audius/common/utils'
 import {
   Button,
   IconAppearance,
-  IconDesktop,
   IconEmailAddress,
   IconKey,
   IconRecoveryEmail as IconMail,
   IconMessage,
   IconNotificationOn as IconNotification,
+  IconReceive,
   IconRobot,
   IconSignOut,
   IconVerified,
@@ -47,9 +48,8 @@ import { ComponentPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import DownloadApp from 'services/download-app/DownloadApp'
-import { getOS, isElectron } from 'utils/clientUtil'
-import { COPYRIGHT_TEXT } from 'utils/copyright'
+import { env } from 'services/env'
+import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import packageInfo from '../../../../../package.json'
@@ -64,69 +64,18 @@ import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
 
-const { PRIVACY_POLICY, PRIVATE_KEY_EXPORTER_SETTINGS_PAGE, TERMS_OF_SERVICE } =
-  route
+const {
+  DOWNLOAD_LINK,
+  PRIVACY_POLICY,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  TERMS_OF_SERVICE
+} = route
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
 const EMAIL_TOAST_TIMEOUT = 2000
 
-const messages = {
-  pageTitle: 'Settings',
-  version: 'Audius Version',
-  copyright: COPYRIGHT_TEXT,
-  terms: 'Terms of Service',
-  privacy: 'Privacy Policy',
-  emailSent: 'Email Sent!',
-  emailNotSent: 'Something broke! Please try again!',
-  darkModeOn: 'Dark',
-  darkModeOff: 'Light',
-  darkModeAuto: 'Auto',
-  matrixMode: '🕳 🐇 Matrix',
-  signOut: 'Sign Out',
-
-  aiGeneratedCardTitle: 'AI Generated music',
-  appearanceCardTitle: 'Appearance',
-  inboxSettingsCardTitle: 'Inbox Settings',
-  notificationsCardTitle: 'Configure Notifications',
-  accountRecoveryCardTitle: 'Resend Recovery Email',
-  changeEmailCardTitle: 'Change Email',
-  changePasswordCardTitle: 'Change Password',
-  accountsYouManageTitle: 'Accounts You Manage',
-  verificationCardTitle: 'Verification',
-  desktopAppCardTitle: 'Download the Desktop App',
-
-  aiGeneratedCardDescription:
-    'Opt in to allow AI models to be trained on your likeness, and to let users credit you in their AI generated works.',
-  appearanceCardDescription:
-    'Enable dark mode or choose ‘Auto’ to change with your system settings.',
-  inboxSettingsCardDescription:
-    'Configure who is able to send messages to your inbox.',
-  notificationsCardDescription: 'Review your notification preferences.',
-  accountRecoveryCardDescription:
-    'Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.',
-  changeEmailCardDescription:
-    'Change the email you use to sign in and receive emails.',
-  changePasswordCardDescription: 'Change the password to your Audius account.',
-  verificationCardDescription:
-    'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
-  desktopAppCardDescription:
-    'For the best experience, we reccomend downloading the Audius Desktop App.',
-
-  aiGeneratedEnabled: 'Enabled',
-  aiGeneratedButtonText: 'AI Generated Music Settings',
-  inboxSettingsButtonText: 'Inbox Settings',
-  notificationsButtonText: 'Configure Notifications',
-  accountRecoveryButtonText: 'Resend Email',
-  changeEmailButtonText: 'Change Email',
-  changePasswordButtonText: 'Change Password',
-  desktopAppButtonText: 'Get The App',
-  showPrivateKey: 'Show Private Key (Advanced)',
-  signOutModalText: `
-  Are you sure you want to sign out?
-  Double check that you have an account recovery email just in case (resend from your settings).
-`
-}
+const isStaging = env.ENVIRONMENT === 'staging'
 
 export type SettingsPageProps = {
   title: string
@@ -202,6 +151,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
     useState(false)
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
+  const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
     'AiAttributionSettings'
   )
@@ -250,8 +200,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
   }, [setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
 
   const handleDownloadDesktopAppClicked = useCallback(() => {
-    DownloadApp.start(getOS() || OS.WIN)
     recordDownloadDesktopApp()
+    window.location.href = `https://audius.co${DOWNLOAD_LINK}`
   }, [recordDownloadDesktopApp])
 
   const openChangePasswordModal = useCallback(() => {
@@ -274,6 +224,10 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsInboxSettingsModalVisible(true)
   }, [setIsInboxSettingsModalVisible])
 
+  const openCommentSettingsModal = useCallback(() => {
+    setIsCommentSettingsModalVisible(true)
+  }, [setIsCommentSettingsModalVisible])
+
   const openAiAttributionSettingsModal = useCallback(() => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
@@ -287,19 +241,22 @@ export const SettingsPage = (props: SettingsPageProps) => {
     const options = [
       {
         key: Theme.AUTO,
-        text: messages.darkModeAuto
+        text: messages.autoMode
       },
       {
         key: Theme.DEFAULT,
-        text: messages.darkModeOff
+        text: messages.lightMode
       },
       {
         key: Theme.DARK,
-        text: messages.darkModeOn
+        text: messages.darkMode
       }
     ]
     if (showMatrix) {
       options.push({ key: Theme.MATRIX, text: messages.matrixMode })
+    }
+    if (isStaging) {
+      options.push({ key: Theme.DEBUG, text: messages.debugMode })
     }
     return options
   }, [showMatrix])
@@ -312,6 +269,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.AI_ATTRIBUTION
   )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
+  const { isEnabled: isCommentsEnabled } = useFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
@@ -330,12 +290,13 @@ export const SettingsPage = (props: SettingsPageProps) => {
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconAppearance />}
-            title={messages.appearanceCardTitle}
-            description={messages.appearanceCardDescription}
+            title={messages.appearanceTitle}
+            description={messages.appearanceDescription}
+            isFull={true}
           >
             <SegmentedControl
               fullWidth
-              label={messages.appearanceCardTitle}
+              label={messages.appearanceTitle}
               options={appearanceOptions}
               selected={theme || Theme.DEFAULT}
               onSelectOption={(option) => toggleTheme(option)}
@@ -343,7 +304,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
             />
           </SettingsCard>
         ) : null}
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconMessage />}
@@ -356,6 +316,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
               fullWidth
             >
               {messages.inboxSettingsButtonText}
+            </Button>
+          </SettingsCard>
+        ) : null}
+        {isCommentsEnabled ? (
+          <SettingsCard
+            icon={<IconMessage />}
+            title={messages.commentSettingsCardTitle}
+            description={messages.commentSettingsCardDescription}
+          >
+            <Button
+              variant='secondary'
+              onClick={openCommentSettingsModal}
+              fullWidth
+            >
+              {messages.commentSettingsButtonText}
             </Button>
           </SettingsCard>
         ) : null}
@@ -391,6 +366,23 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Toast>
           </SettingsCard>
         ) : null}
+        <SettingsCard
+          icon={<IconVerified className={styles.iconVerified} size='l' />}
+          title={messages.verificationCardTitle}
+          description={messages.verificationCardDescription}
+        >
+          <VerificationModal
+            userId={userId}
+            handle={handle}
+            name={name}
+            profilePictureSizes={profilePictureSizes}
+            goToRoute={goToRoute}
+            isVerified={isVerified}
+            onInstagramLogin={onInstagramLogin}
+            onTwitterLogin={onTwitterLogin}
+            onTikTokLogin={onTikTokLogin}
+          />
+        </SettingsCard>
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconEmailAddress />}
@@ -447,26 +439,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
-        <SettingsCard
-          icon={<IconVerified className={styles.iconVerified} size='l' />}
-          title={messages.verificationCardTitle}
-          description={messages.verificationCardDescription}
-        >
-          <VerificationModal
-            userId={userId}
-            handle={handle}
-            name={name}
-            profilePictureSizes={profilePictureSizes}
-            goToRoute={goToRoute}
-            isVerified={isVerified}
-            onInstagramLogin={onInstagramLogin}
-            onTwitterLogin={onTwitterLogin}
-            onTikTokLogin={onTikTokLogin}
-          />
-        </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
-            icon={<IconDesktop />}
+            icon={<IconReceive />}
             title={messages.desktopAppCardTitle}
             description={messages.desktopAppCardDescription}
           >
@@ -482,6 +457,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button

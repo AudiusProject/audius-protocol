@@ -3,6 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
 import type {
+  ConnectAction,
   ConnectionType,
   ConnectNewWalletAction,
   SignMessageAction
@@ -32,6 +33,7 @@ const walletConnectSlice = createSlice({
   name: 'walletConnect',
   initialState,
   reducers: {
+    connect: (_state, _action: ConnectAction) => {},
     connectNewWallet: (_state, _action: ConnectNewWalletAction) => {},
     signMessage: (_state, _action: SignMessageAction) => {},
     setDappKeyPair: (state, action: PayloadAction<{ dappKeyPair: string }>) => {
@@ -62,6 +64,7 @@ const walletConnectSlice = createSlice({
 })
 
 export const {
+  connect,
   connectNewWallet,
   signMessage,
   setDappKeyPair,

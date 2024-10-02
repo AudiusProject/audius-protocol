@@ -24,8 +24,8 @@ docker-tag-images:
           'discovery-provider',
           'creator-node',
           'identity-service',
-          'ddex',
           'core',
+          'ddex',
           'all'
         ]
   steps:
@@ -43,19 +43,16 @@ docker-tag-images:
         command: |
           discovery=(
             comms
-            dashboard
             discovery-provider
             discovery-provider-notifications
             discovery-provider-openresty
             es-indexer
-            healthz
             relay
             sla-auditor
             solana-relay
             trending-challenge-rewards
             crm
             trpc
-            uptime
             backfill-audio-analyses
             verified-notifications
           )
@@ -64,9 +61,6 @@ docker-tag-images:
           )
           identity=(
             identity-service
-          )
-          ddex=(
-            ddex-processor
           )
           core=(
             core
@@ -82,9 +76,6 @@ docker-tag-images:
             identity-service)
               images=( "${identity[@]}" )
               ;;
-            ddex)
-              images=( "${ddex[@]}" )
-              ;;
             core)
               images=( "${core[@]}" )
               ;;
@@ -93,12 +84,12 @@ docker-tag-images:
                 "${discovery[@]}"
                 "${creator[@]}"
                 "${identity[@]}"
-                "${ddex[@]}"
                 "${core[@]}"
               )
               ;;
             *)
-              false
+              echo "Unhandled service, updating no images."
+              images=()
               ;;
           esac
 
@@ -108,19 +99,9 @@ docker-tag-images:
             [ -n "$tag" ]
           fi
 
-          function handle_dashboard() {
-            if [[ "$1" = "dashboard" ]]; then
-              echo "Adding supplemental tags to ${1}:${2}"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-dev"   "audius/${1}:${2}-dev"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-stage" "audius/${1}:${2}-stage"
-              crane copy "audius/${1}:${CIRCLE_SHA1}-prod"  "audius/${1}:${2}-prod"
-            fi
-          }
-
           for image in "${images[@]}"; do
             echo "adding tag '$tag' to image 'audius/${image}:${CIRCLE_SHA1}'"
             crane copy "audius/${image}:${CIRCLE_SHA1}" "audius/${image}:${tag}"
-            handle_dashboard "$image" "$tag"
           done
     - docker-logout
 

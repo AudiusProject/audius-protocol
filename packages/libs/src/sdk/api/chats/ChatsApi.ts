@@ -57,15 +57,16 @@ import {
   TypedCommsResponse,
   UnfurlResponse
 } from './clientTypes'
-import type {
-  ChatInvite,
-  UserChat,
-  ChatMessage,
-  ChatWebsocketEventData,
-  RPCPayloadRequest,
-  ValidatedChatPermissions,
-  ChatCreateRPC,
-  UpgradableChatBlast
+import {
+  type ChatInvite,
+  type UserChat,
+  type ChatMessage,
+  type ChatWebsocketEventData,
+  type RPCPayloadRequest,
+  type ValidatedChatPermissions,
+  type ChatCreateRPC,
+  type UpgradableChatBlast,
+  ChatBlastAudience
 } from './serverTypes'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
@@ -526,8 +527,13 @@ export class ChatsApi
       message,
       audience,
       audienceContentId,
-      audienceContentType
+      audienceContentType: audienceContentTypeParam
     } = await parseParams('messageBlast', ChatBlastMessageRequestSchema)(params)
+
+    let audienceContentType = audienceContentTypeParam
+    if (audience === ChatBlastAudience.REMIXERS && !!audienceContentId) {
+      audienceContentType = 'track'
+    }
 
     return await this.sendRpc({
       current_user_id: currentUserId,

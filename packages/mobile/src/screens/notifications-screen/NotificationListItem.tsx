@@ -14,6 +14,7 @@ import {
   MilestoneNotification,
   AnnouncementNotification,
   TierChangeNotification,
+  TrackAddedToPurchasedAlbumNotification,
   TrendingPlaylistNotification,
   TrendingTrackNotification,
   TrendingUndergroundNotification,
@@ -30,9 +31,11 @@ import {
   USDCPurchaseSellerNotification,
   USDCPurchaseBuyerNotification,
   ApproveManagerRequestNotification,
-  RequestManagerNotification
+  RequestManagerNotification,
+  CommentNotification,
+  CommentThreadNotification,
+  CommentMentionNotification
 } from './Notifications'
-import { TrackAddedToPurchasedAlbumNotification } from './Notifications/TrackAddedToPurchasedAlbumNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -113,6 +116,12 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RequestManagerNotification notification={notification} />
       case NotificationType.ApproveManagerRequest:
         return <ApproveManagerRequestNotification notification={notification} />
+      case NotificationType.Comment:
+        return <CommentNotification notification={notification} />
+      case NotificationType.CommentThread:
+        return <CommentThreadNotification notification={notification} />
+      case NotificationType.CommentMention:
+        return <CommentMentionNotification notification={notification} />
       default:
         return null
     }

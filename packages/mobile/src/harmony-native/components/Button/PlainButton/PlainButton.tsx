@@ -19,8 +19,10 @@ import type { PlainButtonProps } from './types'
  * include and position icons.
  */
 export const PlainButton = (props: PlainButtonProps) => {
-  const { variant = 'default', size = 'default', ...baseProps } = props
-  const isDisabled = baseProps.disabled || baseProps.isLoading
+  const { variant = 'default', size = 'default', styles, ...baseProps } = props
+  const { disabled, isLoading, onPress } = baseProps
+  const isDisabled = disabled || isLoading
+  const isPressable = !isDisabled && onPress
   const { color, spacing, typography } = useTheme()
   const pressed = useSharedValue(0)
   const [isPressing, setIsPressing] = useState(false)
@@ -97,28 +99,31 @@ export const PlainButton = (props: PlainButtonProps) => {
 
   const animatedButtonStyles = useAnimatedStyle(
     () => ({
-      ...(!isDisabled &&
+      ...(isPressable &&
         variant === 'inverted' && {
           opacity: interpolate(pressed.value, [0, 1], [1, 0.5])
         })
     }),
-    [variant, isDisabled]
+    [variant, isPressable]
   )
 
-  const textCss: TextStyle = useAnimatedStyle(() => ({
-    ...(!isDisabled && {
-      color: interpolateColor(
-        pressed.value,
-        [0, 1],
-        [dynamicStyles.default.text, dynamicStyles.press.text]
-      )
-    }),
+  const textCss: TextStyle = useAnimatedStyle(
+    () => ({
+      ...(isPressable && {
+        color: interpolateColor(
+          pressed.value,
+          [0, 1],
+          [dynamicStyles.default.text, dynamicStyles.press.text]
+        )
+      }),
 
-    ...(size === 'large' ? largeTextStyles : defaultTextStyles)
-  }))
+      ...(size === 'large' ? largeTextStyles : defaultTextStyles)
+    }),
+    [size, isPressable]
+  )
 
   const iconColor =
-    isPressing && !isDisabled
+    isPressing && isPressable
       ? dynamicStyles.press.text
       : dynamicStyles.default.text
 
@@ -126,7 +131,7 @@ export const PlainButton = (props: PlainButtonProps) => {
     <BaseButton
       sharedValue={pressed}
       style={[animatedButtonStyles, buttonStyles]}
-      styles={{ text: textCss }}
+      styles={{ text: textCss, ...styles }}
       innerProps={{
         icon: {
           fill: iconColor,

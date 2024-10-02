@@ -43,6 +43,8 @@ const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { getAccountStatus, getAccountUser } = accountSelectors
 
+export const LEFT_NAV_WIDTH = 240
+
 const messages = {
   discover: 'Discover',
   library: 'Your Music'

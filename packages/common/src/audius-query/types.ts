@@ -91,8 +91,12 @@ type EndpointOptions = {
   type?: 'query' | 'mutation' | 'paginatedQuery'
 }
 
-export type EndpointConfig<Args, Data> = {
-  fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
+export type EndpointConfig<Args, Data, OnQueryStartedData = any> = {
+  fetch: (
+    fetchArgs: Args,
+    context: AudiusQueryContextType,
+    onQueryStartedData: OnQueryStartedData
+  ) => Promise<Data>
   options: EndpointOptions
   fetchBatch?: (
     fetchArgs: any,
@@ -101,11 +105,12 @@ export type EndpointConfig<Args, Data> = {
   onQueryStarted?: (
     fetchArgs: Args,
     context: { dispatch: ThunkDispatch<any, any, any> }
-  ) => void
+  ) => OnQueryStartedData // Anything returned here gets passed along to the fetch and onQuerySuccess. Can define stuff like ids to be used later
   onQuerySuccess?: (
     data: Data,
     fetchArgs: Args,
-    context: { dispatch: ThunkDispatch<any, any, any> }
+    context: { dispatch: ThunkDispatch<any, any, any> },
+    onQueryStartedData?: OnQueryStartedData
   ) => void
 }
 
@@ -166,6 +171,10 @@ export type PaginatedQueryHookOptions = QueryHookOptions & {
    * Toggles single page data mode. If true the hook will only return the current page's data. Equivalent to usePaginatedQuery in the past
    */
   singlePageData?: boolean
+  /**
+   * Optional option to start with a custom offset (e.g. starting on a later page)
+   */
+  startOffset?: number
 }
 
 export type QueryHookResults<Data> = {

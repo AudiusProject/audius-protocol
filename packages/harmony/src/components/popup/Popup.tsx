@@ -279,9 +279,16 @@ export const PopupInternal = forwardRef<
   const [computedTransformOrigin, setComputedTransformOrigin] =
     useState(anchorOrigin)
 
+  const wrapperHeight = wrapperRef?.current?.offsetHeight ?? null
+  const wrapperWidth = wrapperRef?.current?.offsetWidth ?? null
+  const previousHeight = usePrevious(wrapperHeight)
+  const previousWidth = usePrevious(wrapperWidth)
+  const wrapperSizeChange =
+    wrapperHeight !== previousHeight || wrapperWidth !== previousWidth
+
   // On visible, set the position
   useEffect(() => {
-    if (isVisible && !previousIsVisible) {
+    if ((isVisible && !previousIsVisible) || wrapperSizeChange) {
       const [anchorRect, wrapperRect] = [anchorRef, wrapperRef].map((r) =>
         r?.current?.getBoundingClientRect()
       )
@@ -326,7 +333,7 @@ export const PopupInternal = forwardRef<
 
       originalTopPosition.current = top
     }
-  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef, previousIsVisible])
+  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef, previousIsVisible, previousHeight, wrapperSizeChange])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position

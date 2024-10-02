@@ -1,6 +1,6 @@
 {
   "name": "create-audius-app",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Create an Audius app with one command",
   "scripts": {
     "build": "tsup ./index.ts",
@@ -13,7 +13,7 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\"",
-    "start-examples": "concurrently \"cd examples/react && npm run start\""
+    "start-example": "echo $EXAMPLE && concurrently \"cd examples/$EXAMPLE && npm run start\""
   },
   "repository": {
     "type": "git",

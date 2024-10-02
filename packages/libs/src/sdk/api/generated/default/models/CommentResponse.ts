@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { Comment } from './Comment';
+import type { ReplyComment } from './ReplyComment';
 import {
-    CommentFromJSON,
-    CommentFromJSONTyped,
-    CommentToJSON,
-} from './Comment';
+    ReplyCommentFromJSON,
+    ReplyCommentFromJSONTyped,
+    ReplyCommentToJSON,
+} from './ReplyComment';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface CommentResponse {
     /**
      * 
-     * @type {Comment}
+     * @type {Array<ReplyComment>}
      * @memberof CommentResponse
      */
-    data?: Comment;
+    data?: Array<ReplyComment>;
 }
 
 /**
@@ -54,7 +54,7 @@ export function CommentResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : CommentFromJSON(json['data']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ReplyCommentFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function CommentResponseToJSON(value?: CommentResponse | null): any {
     }
     return {
         
-        'data': CommentToJSON(value.data),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ReplyCommentToJSON)),
     };
 }
 

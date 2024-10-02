@@ -108,9 +108,9 @@ jobs:
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
             # Bump version for content node
-            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
-            mv /tmp/.version.json mediorum/.version.json
-            git add mediorum/.version.json
+            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/mediorum_pkg/.version.json > /tmp/.version.json
+            mv /tmp/.version.json mediorum/mediorum_pkg/.version.json
+            git add mediorum/mediorum_pkg/.version.json
 
             # Bump version for discovery node
             jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
@@ -312,7 +312,6 @@ workflows:
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -321,13 +320,13 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-workflow true
-            .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
+            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -354,6 +353,8 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
+            pkg/.* run-audiusd-workflow true
+            cmd/.* run-audiusd-workflow true
           requires:
             - generate-config
             - init
@@ -374,7 +375,6 @@ workflows:
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -383,13 +383,13 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-workflow true
-            .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
+            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -415,6 +415,8 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
+            pkg/.* run-audiusd-workflow true
+            cmd/.* run-audiusd-workflow true
           requires:
             - generate-config
             - init

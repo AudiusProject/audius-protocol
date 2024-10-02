@@ -131,6 +131,8 @@ type TrackHeaderProps = {
   duration: number
   saveCount: number
   repostCount: number
+  commentCount: number
+  commentsDisabled: boolean
   isUnlisted: boolean
   isStreamGated: boolean
   streamConditions: Nullable<AccessConditions>
@@ -174,9 +176,11 @@ const TrackHeader = ({
   isRemix,
   fieldVisibility,
   coSign,
+  listenCount,
   saveCount,
   repostCount,
-  listenCount,
+  commentCount,
+  commentsDisabled,
   tags,
   aiAttributedUserId,
   onPlay,
@@ -421,9 +425,11 @@ const TrackHeader = ({
         showListenCount={showListenCount}
         showFavoriteCount={!isUnlisted}
         showRepostCount={!isUnlisted}
+        showCommentCount={!isUnlisted && !commentsDisabled}
         listenCount={listenCount}
         favoriteCount={saveCount}
         repostCount={repostCount}
+        commentCount={commentCount}
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
       />

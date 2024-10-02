@@ -133,8 +133,8 @@ export const SummaryTable = ({
           disabled={disableExtraItemsToggle}
         >
           {showExtraItems
-            ? hideExtraItemsCopy || messages.hideAdvanced
-            : showExtraItemsCopy || messages.showAdvanced}
+            ? hideExtraItemsCopy ?? messages.hideAdvanced
+            : showExtraItemsCopy ?? messages.showAdvanced}
         </PlainButton>
       </Flex>
     )
@@ -189,7 +189,7 @@ export const SummaryTable = ({
   }
 
   return (
-    <Flex direction='column' gap='l'>
+    <Flex direction='column' gap='l' w='100%'>
       <Flex
         alignItems='center'
         alignSelf='stretch'

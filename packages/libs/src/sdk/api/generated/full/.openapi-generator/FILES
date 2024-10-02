@@ -12,6 +12,7 @@ apis/index.ts
 index.ts
 models/Access.ts
 models/AccessGate.ts
+models/AccountFull.ts
 models/ActivityFull.ts
 models/AnnouncementNotification.ts
 models/AnnouncementNotificationAction.ts
@@ -30,6 +31,15 @@ models/ClaimableRewardNotificationActionData.ts
 models/CollectionActivityFull.ts
 models/CollectionActivityFullWithoutTracks.ts
 models/CollectionLibraryResponseFull.ts
+models/CommentMentionNotification.ts
+models/CommentMentionNotificationAction.ts
+models/CommentMentionNotificationActionData.ts
+models/CommentNotification.ts
+models/CommentNotificationAction.ts
+models/CommentNotificationActionData.ts
+models/CommentThreadNotification.ts
+models/CommentThreadNotificationAction.ts
+models/CommentThreadNotificationActionData.ts
 models/CosignNotification.ts
 models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts
@@ -202,6 +212,7 @@ models/UsdcPurchaseBuyerNotificationActionData.ts
 models/UsdcPurchaseSellerNotification.ts
 models/UsdcPurchaseSellerNotificationAction.ts
 models/UsdcPurchaseSellerNotificationActionData.ts
+models/UserAccountResponseFull.ts
 models/UserFeedItem.ts
 models/UserFeedResponse.ts
 models/UserFull.ts

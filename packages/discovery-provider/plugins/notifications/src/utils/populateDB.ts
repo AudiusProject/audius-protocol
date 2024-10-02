@@ -19,7 +19,8 @@ import {
   UsdcPurchaseRow,
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
-  GrantRow
+  GrantRow,
+  CommentRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -687,6 +688,44 @@ export async function insertReaction(
     .into('chat_message_reactions')
 }
 
+export async function insertBlast(
+  db: Knex,
+  senderId: number,
+  blastId: string,
+  plaintext: string,
+  audience: string,
+  audienceContentType: 'track' | 'album',
+  audienceContentId: string,
+  timestamp: Date
+) {
+  await db
+    .insert({
+      blast_id: blastId,
+      from_user_id: senderId,
+      audience,
+      audience_content_type: audienceContentType,
+      audience_content_id: audienceContentId,
+      plaintext,
+      created_at: timestamp.toISOString()
+    })
+    .into('chat_blast')
+}
+
+export async function insertChatPermission(
+  db: Knex,
+  userId: number,
+  permits: string
+) {
+  await db
+    .insert({
+      user_id: userId,
+      permits,
+      updated_at: new Date(Date.now()).toISOString(),
+      allowed: true
+    })
+    .into('chat_permissions')
+}
+
 type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(
@@ -766,6 +805,25 @@ export async function insertAbusiveSettings(
       }))
     )
     .into('Users')
+}
+
+type CreateComment = Pick<CommentRow, 'user_id' | 'entity_id' | 'entity_type'> &
+  Partial<CommentRow>
+export const createComments = async (db: Knex, comments: CreateComment[]) => {
+  await db
+    .insert(
+      comments.map((comment, index) => ({
+        comment_id: index,
+        is_delete: false,
+        created_at: new Date(Date.now()),
+        text: '',
+        txhash: `0x${comment.entity_id}`,
+        blockhash: `0x${comment.entity_id}`,
+        // blocknumber: 0,
+        ...comment
+      }))
+    )
+    .into('comments')
 }
 
 export type UserWithDevice = {

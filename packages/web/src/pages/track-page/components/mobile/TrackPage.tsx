@@ -124,9 +124,11 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const isCommentingEnabled =
+    commentsFlagEnabled && !heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 
@@ -183,6 +185,8 @@ const TrackPage = ({
           description={defaults.description}
           listenCount={defaults.playCount}
           repostCount={defaults.repostCount}
+          commentCount={defaults.commentCount}
+          commentsDisabled={defaults.commentsDisabled}
           duration={defaults.duration}
           releaseDate={defaults.releaseDate}
           credits={defaults.credits}

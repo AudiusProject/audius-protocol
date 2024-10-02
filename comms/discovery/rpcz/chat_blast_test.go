@@ -24,6 +24,8 @@ func TestChatBlast(t *testing.T) {
 	t6 := time.Now().Add(time.Second * -40).UTC()
 	t7 := time.Now().Add(time.Second * -30).UTC()
 
+	trackContentType := schema.AudienceContentType("track")
+
 	ctx := context.Background()
 	tx := db.Conn.MustBegin()
 	defer tx.Rollback()
@@ -55,7 +57,8 @@ func TestChatBlast(t *testing.T) {
 		(100, 69, true, false, $1, ''),
 		(101, 69, true, false, $1, ''),
 		(102, 69, true, false, $1, ''),
-		(103, 69, true, false, $1, '')
+		(103, 69, true, false, $1, ''),
+		(104, 69, true, false, $1, '')
 	`, t0)
 	assert.NoError(t, err)
 
@@ -165,7 +168,7 @@ func TestChatBlast(t *testing.T) {
 				blastCount++
 			}
 		}
-		assert.Equal(t, "follower_audience", chats[1].ChatID)
+		assert.Equal(t, "D79jn:eYZmn", chats[1].ChatID)
 		assert.Equal(t, 1, blastCount)
 	}
 
@@ -332,7 +335,7 @@ func TestChatBlast(t *testing.T) {
 		// user 101 reacts
 		{
 			heart := "heart"
-			chatReactMessage(tx, 101, messages[0].MessageID, &heart, t5)
+			chatReactMessage(tx, 101, chatId, messages[0].MessageID, &heart, t5)
 
 			// reaction shows up
 			messages = mustGetMessagesAndReactions(69, chatId)
@@ -514,7 +517,7 @@ func TestChatBlast(t *testing.T) {
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:             "blast_remixers_1",
 		Audience:            schema.RemixerAudience,
-		AudienceContentType: stringPointer("track"),
+		AudienceContentType: &trackContentType,
 		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
 		Message:             "thanks for your remix",
 	})
@@ -568,7 +571,7 @@ func TestChatBlast(t *testing.T) {
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:             "blast_remixers_3",
 		Audience:            schema.RemixerAudience,
-		AudienceContentType: stringPointer("track"),
+		AudienceContentType: &trackContentType,
 		AudienceContentID:   stringPointer(misc.MustEncodeHashID(1)),
 		Message:             "yall are the best",
 	})
@@ -585,12 +588,13 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	{
+		blastChatId := "remixer_audience:track:" + misc.MustEncodeHashID(1)
 		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
 			UserID: 69,
-			ChatID: "remixer_audience:track:1",
+			ChatID: blastChatId,
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, "remixer_audience:track:1", chat.ChatID)
+		assert.Equal(t, blastChatId, chat.ChatID)
 	}
 
 	{
@@ -605,9 +609,9 @@ func TestChatBlast(t *testing.T) {
 	// ------------- PURCHASE
 	tx.MustExec(`
 	insert into usdc_purchases
-	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id)
+	(slot, signature, buyer_user_id, seller_user_id, amount, content_type, content_id, splits)
 	values
-	(0, '', 203, 69, 5.99, 'track', 1);
+	(0, '', 203, 69, 5.99, 'track', 1, 'null');
 	`)
 
 	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{

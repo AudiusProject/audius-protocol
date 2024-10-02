@@ -3,8 +3,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule,
-  useFormattedProgressLabel,
-  useFeatureFlag
+  useFormattedProgressLabel
 } from '@audius/common/hooks'
 import {
   Name,
@@ -12,7 +11,7 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { FeatureFlags, StringKeys } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -385,7 +384,16 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'send-first-tip',
   'first-playlist',
   ChallengeName.AudioMatchingSell, // $AUDIO matching seller
-  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
+  ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
+  ChallengeName.ConnectVerified,
+  ChallengeName.FirstPlaylist,
+  ChallengeName.FirstTip,
+  ChallengeName.MobileInstall,
+  ChallengeName.ProfileCompletion,
+  ChallengeName.Referrals,
+  ChallengeName.ReferralsVerified,
+  ChallengeName.Referred,
+  ChallengeName.TrackUpload
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -408,9 +416,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
-  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
-    FeatureFlags.REWARDS_COOLDOWN
-  )
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
@@ -461,13 +466,15 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     <Tile className={wm(styles.rewardsTile, className)}>
       <span className={wm(styles.title)}>{messages.title}</span>
       <div className={wm(styles.subtitle)}>
-        <span>{messages.description1}</span>
+        <Text variant='body' strength='strong'>
+          {messages.description1}
+        </Text>
       </div>
       {userChallengesLoading && !haveChallengesLoaded ? (
         <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
       ) : (
         <>
-          {isRewardsCooldownEnabled && !shouldHideCumulativeRewards ? (
+          {!shouldHideCumulativeRewards ? (
             <>
               <ClaimAllPanel />
               <Divider className={wm(styles.divider)} />

@@ -6,7 +6,7 @@ import {
   accountSelectors,
   gatedContentActions
 } from '@audius/common/store'
-import { Genre, getDogEarType } from '@audius/common/utils'
+import { getDogEarType, isLongFormContent } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -15,7 +15,6 @@ import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
-import { LineupTileCoSign } from './LineupTileCoSign'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
@@ -32,6 +31,7 @@ export const LineupTile = ({
   hasPreview,
   hidePlays,
   hideShare,
+  hideComments,
   id,
   index,
   isTrending,
@@ -46,6 +46,7 @@ export const LineupTile = ({
   onPressPublish,
   onPressEdit,
   playCount,
+  commentCount,
   renderImage,
   repostType,
   showArtistPick,
@@ -92,10 +93,6 @@ export const LineupTile = ({
     }
   }, [contentId, hasStreamAccess, hasPreview, dispatch, onPress])
 
-  const isLongFormContent =
-    isTrack &&
-    (item.genre === Genre.PODCASTS || item.genre === Genre.AUDIOBOOKS)
-
   const isReadonly = variant === 'readonly'
   const scale = isReadonly ? 1 : undefined
 
@@ -111,7 +108,7 @@ export const LineupTile = ({
         <LineupTileTopRight
           duration={duration}
           trackId={id}
-          isLongFormContent={isLongFormContent}
+          isLongFormContent={isTrack && isLongFormContent(item)}
           isCollection={isCollection}
         />
         <LineupTileMetadata
@@ -123,11 +120,13 @@ export const LineupTile = ({
           isPlayingUid={isPlayingUid}
           type={contentType}
         />
-        {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
+        {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
+        {/* {coSign ? <LineupTileCoSign coSign={coSign} /> : null} */}
         <LineupTileStats
           favoriteType={favoriteType}
           repostType={repostType}
           hidePlays={hidePlays}
+          hideComments={hideComments}
           id={id}
           index={index}
           isCollection={isCollection}
@@ -137,6 +136,7 @@ export const LineupTile = ({
           playCount={playCount}
           repostCount={repost_count}
           saveCount={save_count}
+          commentCount={commentCount}
           showRankIcon={showRankIcon}
           hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}

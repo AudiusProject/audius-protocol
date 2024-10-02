@@ -14,7 +14,6 @@ from integration_tests.tasks.payment_router_mock_transactions import (
     mock_valid_track_purchase_multi_recipient_tx,
     mock_valid_track_purchase_single_recipient_pay_extra_tx,
     mock_valid_track_purchase_single_recipient_tx,
-    mock_valid_track_purchase_single_recipient_tx_with_location,
     mock_valid_track_purchase_stream_access,
     mock_valid_transfer_from_user_bank_without_purchase_single_recipient_tx,
     mock_valid_transfer_single_recipient_recovery_tx,
@@ -45,7 +44,7 @@ thirdPartyId = 3
 thirdPartyUserBank = "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556"
 
 # Used as the source wallet for all the mock transactions
-transactionSenderOwnerAccount = "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W"
+transactionSenderOwnerAccount = "HKeSPzkRKok3G7Et6yzF6myDjz7ximk4iyPdqtFE15Pm"
 
 test_entries = {
     "users": [
@@ -97,17 +96,17 @@ test_entries = {
             "total_price_cents": 100,
             "access": PurchaseAccessType.stream,
         },
-        {  # pay $1 each to track owner and third party
+        {  # pay half to each the track owner and third party
             "track_id": 2,
             "splits": [
-                {"user_id": 1, "amount": 1000000, "percentage": 50},
-                {"user_id": 3, "amount": 1000000, "percentage": 50},
+                {"user_id": 1, "percentage": 50},
+                {"user_id": 3, "percentage": 50},
             ],
-            "total_price_cents": 200,
+            "total_price_cents": 100,
         },
         {  # download access type
             "track_id": 3,
-            "splits": [{"user_id": 1, "amount": 1000000, "percentage": 100}],
+            "splits": [{"user_id": 1, "percentage": 100}],
             "total_price_cents": 100,
             "access": PurchaseAccessType.download,
         },
@@ -115,7 +114,7 @@ test_entries = {
     "album_price_history": [
         {  # pay full price to albumOwner
             "playlist_id": 1,
-            "splits": [{"user_id": 1, "amount": 1000000, "percentage": 100}],
+            "splits": [{"user_id": 1, "percentage": 100}],
             "total_price_cents": 100,
         },
     ],
@@ -168,12 +167,13 @@ def test_process_payment_router_tx_details_valid_purchase(app):
             transaction_record.transaction_type == USDCTransactionType.purchase_content
         )
         assert transaction_record.method == USDCTransactionMethod.receive
-        assert transaction_record.change == 1000000
+        # 10% went to staking bridge
+        assert transaction_record.change == 900000
         assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
 def test_process_payment_router_tx_details_valid_purchase_with_location_data(app):
-    tx_response = mock_valid_track_purchase_single_recipient_tx_with_location
+    tx_response = mock_valid_track_purchase_single_recipient_tx
     with app.app_context():
         db = get_db()
 
@@ -255,7 +255,8 @@ def test_process_payment_router_tx_details_valid_purchase_album(app):
             transaction_record.transaction_type == USDCTransactionType.purchase_content
         )
         assert transaction_record.method == USDCTransactionMethod.receive
-        assert transaction_record.change == 1000000
+        # 10% went to staking bridge
+        assert transaction_record.change == 900000
         assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
@@ -306,7 +307,8 @@ def test_process_payment_router_tx_details_valid_purchase_from_user_bank(app):
             == USDCTransactionType.purchase_content
         )
         assert seller_transaction_record.method == USDCTransactionMethod.receive
-        assert seller_transaction_record.change == 1000000
+        # 10% went to staking bridge
+        assert seller_transaction_record.change == 900000
         assert seller_transaction_record.tx_metadata == str(trackBuyerId)
 
         buyer_transaction_record = (
@@ -369,7 +371,8 @@ def test_process_payment_router_tx_details_transfer_without_purchase(
         # Regular transfer, not a purchase
         assert transaction_record.transaction_type == USDCTransactionType.transfer
         assert transaction_record.method == USDCTransactionMethod.receive
-        assert transaction_record.change == 1000000
+        # The test tx sends 10% to the staking bridge, so only $0.90 is "transferred"
+        assert transaction_record.change == 900000
         # For transfers, source is the owning wallet unless it's a transfer from a user bank
         assert transaction_record.tx_metadata == transactionSenderOwnerAccount
 
@@ -540,7 +543,8 @@ def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
             transaction_record.transaction_type == USDCTransactionType.purchase_content
         )
         assert transaction_record.method == USDCTransactionMethod.receive
-        assert transaction_record.change == 2500000
+        # 10% went to staking bridge
+        assert transaction_record.change == 2400000
         assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
@@ -574,7 +578,7 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(ap
         assert purchase is not None
         assert purchase.seller_user_id == trackOwnerId
         assert purchase.buyer_user_id == trackBuyerId
-        assert purchase.amount == 2000000
+        assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
         assert purchase.content_id == 2
@@ -592,7 +596,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(ap
             == USDCTransactionType.purchase_content
         )
         assert owner_transaction_record.method == USDCTransactionMethod.receive
-        assert owner_transaction_record.change == 1000000
+        # 10% went to the staking bridge, 90c left to split
+        assert owner_transaction_record.change == 450000
         assert owner_transaction_record.tx_metadata == str(trackBuyerId)
 
         third_party_transaction_record = (
@@ -607,7 +612,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(ap
             == USDCTransactionType.purchase_content
         )
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
-        assert third_party_transaction_record.change == 1000000
+        # 10% went to the staking bridge, 90c left to split
+        assert third_party_transaction_record.change == 450000
         assert third_party_transaction_record.tx_metadata == str(trackBuyerId)
 
 
@@ -643,8 +649,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pa
         assert purchase is not None
         assert purchase.seller_user_id == trackOwnerId
         assert purchase.buyer_user_id == trackBuyerId
-        assert purchase.amount == 2000000
-        assert purchase.extra_amount == 1500000
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 2000000
         assert purchase.content_type == PurchaseType.track
         assert purchase.content_id == 2
 
@@ -661,7 +667,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pa
             == USDCTransactionType.purchase_content
         )
         assert owner_transaction_record.method == USDCTransactionMethod.receive
-        assert owner_transaction_record.change == 1500000
+        # 10% of the price went to staking bridge, $1.90 to split
+        assert owner_transaction_record.change == 1450000
         assert owner_transaction_record.tx_metadata == str(trackBuyerId)
 
         third_party_transaction_record = (
@@ -676,7 +683,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pa
             == USDCTransactionType.purchase_content
         )
         assert third_party_transaction_record.method == USDCTransactionMethod.receive
-        assert third_party_transaction_record.change == 2000000
+        # 10% of the price went to staking bridge, $1.90 to split
+        assert third_party_transaction_record.change == 1450000
         assert third_party_transaction_record.tx_metadata == str(trackBuyerId)
 
 

@@ -1,4 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
+import { TransactionInstruction } from '@solana/web3.js'
 import snakecaseKeys from 'snakecase-keys'
 
 import type {
@@ -48,8 +49,8 @@ import {
   UploadTrackRequest,
   PurchaseTrackRequest,
   PurchaseTrackSchema,
-  GetPurchaseTrackTransactionRequest,
-  GetPurchaseTrackTransactionSchema,
+  GetPurchaseTrackInstructionsRequest,
+  GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema
 } from './types'
@@ -415,23 +416,21 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /**
-   * Gets the Solana transaction that purchases the track
+   * Gets the Solana instructions that purchase the track
    *
    * @hidden
    */
-  public async getPurchaseTrackTransaction(
-    params: GetPurchaseTrackTransactionRequest
+  public async getPurchaseTrackInstructions(
+    params: GetPurchaseTrackInstructionsRequest
   ) {
     const {
       userId,
       trackId,
       price: priceNumber,
-      extraAmount: extraAmountNumber = 0,
-      wallet,
-      includeNetworkCut
+      extraAmount: extraAmountNumber = 0
     } = await parseParams(
-      'getPurchaseTrackTransaction',
-      GetPurchaseTrackTransactionSchema
+      'getPurchaseTrackInstructions',
+      GetPurchaseTrackInstructionsSchema
     )(params)
 
     const contentType = 'track'
@@ -441,8 +440,7 @@ export class TracksApi extends GeneratedTracksApi {
     this.logger.debug('Fetching track purchase info...', { trackId })
     const { data: track } = await this.getTrackAccessInfo({
       trackId: params.trackId, // use hashed trackId
-      userId: params.userId, // use hashed userId
-      includeNetworkCut
+      userId: params.userId // use hashed userId
     })
 
     // Validate purchase attempt
@@ -519,8 +517,46 @@ export class TracksApi extends GeneratedTracksApi {
         buyerUserId: userId,
         accessType
       })
-    const locationMemoInstruction =
-      await this.solanaRelay.getLocationInstruction()
+
+    let locationMemoInstruction
+    try {
+      locationMemoInstruction = await this.solanaRelay.getLocationInstruction()
+    } catch (e) {
+      this.logger.warn('Unable to compute location memo instruction')
+    }
+
+    return {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    }
+  }
+
+  /**
+   * Purchases stream or download access to a track
+   *
+   * @hidden
+   */
+  public async purchaseTrack(params: PurchaseTrackRequest) {
+    const { wallet } = await parseParams(
+      'purchaseTrack',
+      PurchaseTrackSchema
+    )(params)
+
+    const {
+      instructions: {
+        routeInstruction,
+        memoInstruction,
+        locationMemoInstruction
+      },
+      total
+    } = await this.getPurchaseTrackInstructions(params)
+
+    let transaction
+    const mint = 'USDC'
 
     if (wallet) {
       this.logger.debug('Using provided wallet to purchase...', {
@@ -533,16 +569,15 @@ export class TracksApi extends GeneratedTracksApi {
           total,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+      transaction = await this.solanaClient.buildTransaction({
         feePayer: wallet,
         instructions: [
           transferInstruction,
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
-      return transaction
     } else {
       // Use the authed wallet's userbank and relay
       const ethWallet = await this.auth.getAddress()
@@ -571,27 +606,19 @@ export class TracksApi extends GeneratedTracksApi {
           destination: paymentRouterTokenAccount.address,
           mint
         })
-      const transaction = await this.solanaClient.buildTransaction({
+
+      transaction = await this.solanaClient.buildTransaction({
+        feePayer: wallet,
         instructions: [
           transferSecpInstruction,
           transferInstruction,
           routeInstruction,
           memoInstruction,
           locationMemoInstruction
-        ]
+        ].filter(Boolean) as TransactionInstruction[]
       })
-      return transaction
     }
-  }
 
-  /**
-   * Purchases stream or download access to a track
-   *
-   * @hidden
-   */
-  public async purchaseTrack(params: PurchaseTrackRequest) {
-    await parseParams('purchaseTrack', PurchaseTrackSchema)(params)
-    const transaction = await this.getPurchaseTrackTransaction(params)
     if (params.walletAdapter) {
       if (!params.walletAdapter.publicKey) {
         throw new Error(

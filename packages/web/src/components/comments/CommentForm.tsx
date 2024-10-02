@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -6,21 +6,14 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { SquareSizes, Status } from '@audius/common/models'
+import { ID, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
-import {
-  Avatar,
-  Flex,
-  IconButton,
-  IconSend,
-  LoadingSpinner
-} from '@audius/harmony'
-import { Form, Formik, useFormikContext } from 'formik'
+import { Avatar, Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
-import { usePrevious, useToggle } from 'react-use'
+import { useToggle } from 'react-use'
 
+import { ComposerInput } from 'components/composer-input/ComposerInput'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
-import { TextField } from 'components/form-fields'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
@@ -28,31 +21,16 @@ import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
+  mentions?: ID[]
 }
 
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
   hideAvatar?: boolean
-  commentId?: string
-  parentCommentId?: string
+  commentId?: ID
+  parentCommentId?: ID
   isEdit?: boolean
-}
-
-// This is annoying af to have to make a component for; but necessary so that can use the resetForm method from context
-const FormResetHandler = ({
-  isLoading
-}: {
-  isLoading: boolean | undefined
-}) => {
-  const prevIsLoading = usePrevious(isLoading)
-  const { resetForm } = useFormikContext()
-  useEffect(() => {
-    if (!isLoading && prevIsLoading) {
-      resetForm()
-    }
-  }, [prevIsLoading, isLoading, resetForm])
-  return null
 }
 
 export const CommentForm = ({
@@ -63,28 +41,30 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, comments } = useCurrentCommentSection()
+  const { currentUserId, entityId, entityType, comments } =
+    useCurrentCommentSection()
   const isMobile = useIsMobile()
   const isFirstComment = comments.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
-  const [editComment] = useEditComment()
+  const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
   const currentlyPlayingTrackId = useSelector(getTrackId)
-  const [postComment, { status: postCommentStatus }] = usePostComment()
+  const [postComment] = usePostComment()
+  const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string) => {
+  const handlePostComment = (message: string, mentions?: ID[]) => {
     const trackPosition = audioPlayer
       ? Math.floor(audioPlayer.getPosition())
       : undefined
     const trackTimestampS =
       currentlyPlayingTrackId === entityId ? trackPosition : undefined
 
-    postComment(message, parentCommentId, trackTimestampS)
+    postComment(message, parentCommentId, trackTimestampS, mentions)
   }
 
-  const handleCommentEdit = (commentMessage: string) => {
+  const handleCommentEdit = (commentMessage: string, mentions?: ID[]) => {
     if (commentId) {
-      editComment(commentId, commentMessage)
+      editComment(commentId, commentMessage, mentions)
     }
   }
 
@@ -99,57 +79,54 @@ export const CommentForm = ({
     SquareSizes.SIZE_150_BY_150
   )
 
-  const handleSubmit = ({ commentMessage }: CommentFormValues) => {
-    if (isEdit) {
-      handleCommentEdit(commentMessage)
-    } else {
-      handlePostComment(commentMessage)
-    }
-    onSubmit?.({ commentMessage })
-  }
-  const isLoading = postCommentStatus === Status.LOADING
+  const handleSubmit = ({ commentMessage, mentions }: CommentFormValues) => {
+    if (!commentMessage) return
 
-  const formInitialValues: CommentFormValues = { commentMessage: initialValue }
+    if (isEdit) {
+      handleCommentEdit(commentMessage, mentions)
+    } else {
+      handlePostComment(commentMessage, mentions)
+    }
+
+    onSubmit?.({ commentMessage })
+    // Each instance of form state is tracked with a message id
+    // Incrementing the message id "clears" the input value
+    setMessageId((prev) => prev + 1)
+  }
+
   return (
-    <Formik initialValues={formInitialValues} onSubmit={handleSubmit}>
-      <Form style={{ width: '100%' }}>
-        <FormResetHandler isLoading={isLoading} />
-        <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>
-          {!hideAvatar ? (
-            <Avatar
-              size='auto'
-              isLoading={false} // loading is not working correctly?
-              src={profileImage}
-              css={{ width: 44, height: 44, flexShrink: 0 }}
-            />
-          ) : null}
-          <TextField
-            name='commentMessage'
-            label={
-              isFirstComment && isMobile
-                ? messages.firstComment
-                : messages.addComment
-            }
-            readOnly={isMobile}
-            onClick={handleClickInput}
-            disabled={isLoading}
+    <>
+      <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>
+        {!hideAvatar ? (
+          <Avatar
+            size='auto'
+            isLoading={false} // loading is not working correctly?
+            src={profileImage}
+            css={{ width: 44, height: 44, flexShrink: 0 }}
           />
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <IconButton
-              aria-label={messages.postComment}
-              icon={IconSend}
-              color='accent'
-              type='submit'
-            />
-          )}
-        </Flex>
-        <DownloadMobileAppDrawer
-          isOpen={isMobileAppDrawerOpen}
-          onClose={toggleIsMobileAppDrawer}
+        ) : null}
+        <ComposerInput
+          placeholder={
+            isFirstComment && isMobile
+              ? messages.firstComment
+              : messages.addComment
+          }
+          entityId={entityId}
+          entityType={entityType}
+          presetMessage={initialValue}
+          readOnly={isMobile}
+          onClick={handleClickInput}
+          messageId={messageId}
+          maxLength={400}
+          onSubmit={(value: string, _, mentions) => {
+            handleSubmit({ commentMessage: value, mentions })
+          }}
         />
-      </Form>
-    </Formik>
+      </Flex>
+      <DownloadMobileAppDrawer
+        isOpen={isMobileAppDrawerOpen}
+        onClose={toggleIsMobileAppDrawer}
+      />
+    </>
   )
 }

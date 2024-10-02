@@ -62,6 +62,7 @@ const TrackPlayerCard = ({
     }
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
+  const isGated = !!streamConditions
   const isPurchaseable =
     streamConditions && instanceOfPurchaseGate(streamConditions)
 
@@ -71,7 +72,9 @@ const TrackPlayerCard = ({
       backgroundColor={backgroundColor}
       twitterURL={trackURL}
     >
-      {isPurchaseable ? <DogEar /> : null}
+      {isGated ? (
+        <DogEar variant={isPurchaseable ? 'purchase' : 'special'} />
+      ) : null}
       <div className={styles.paddingContainer}>
         <div className={styles.artworkWrapper} style={artworkWrapperStyle}>
           <Artwork
@@ -79,7 +82,7 @@ const TrackPlayerCard = ({
             artworkURL={albumArtURL}
             className={styles.artworkStyle}
             containerClassName={styles.artworkContainer}
-            displayHoverPlayButton={true}
+            displayHoverPlayButton={!isGated || isPurchaseable}
             onTogglePlay={onTogglePlay}
             playingState={playingState}
             iconColor={backgroundColor}
@@ -89,13 +92,15 @@ const TrackPlayerCard = ({
         </div>
         <div className={styles.bottomWrapper} style={getBottomWrapperStyle()}>
           <div className={styles.scrubber}>
-            <BedtimeScrubber
-              duration={duration}
-              elapsedSeconds={position}
-              mediaKey={`${mediaKey}`}
-              playingState={playingState}
-              seekTo={seekTo}
-            />
+            {!isGated || isPurchaseable ? (
+              <BedtimeScrubber
+                duration={duration}
+                elapsedSeconds={position}
+                mediaKey={`${mediaKey}`}
+                playingState={playingState}
+                seekTo={seekTo}
+              />
+            ) : null}
             {isPurchaseable ? <Preview /> : null}
           </div>
           <div className={styles.bottomSection}>
@@ -104,6 +109,8 @@ const TrackPlayerCard = ({
               playingState={playingState}
               iconColor={backgroundColor}
               className={styles.playButton}
+              isPlayable={!isGated || isPurchaseable}
+              url={trackURL}
             />
             <div className={styles.titlesWrapper}>
               <Titles

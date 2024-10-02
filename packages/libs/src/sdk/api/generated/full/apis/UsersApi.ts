@@ -43,6 +43,7 @@ import type {
   TrackLibraryResponseFull,
   TransactionHistoryCountResponse,
   TransactionHistoryResponse,
+  UserAccountResponseFull,
   UserFeedResponse,
 } from '../models';
 import {
@@ -100,6 +101,8 @@ import {
     TransactionHistoryCountResponseToJSON,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
+    UserAccountResponseFullFromJSON,
+    UserAccountResponseFullToJSON,
     UserFeedResponseFromJSON,
     UserFeedResponseToJSON,
 } from '../models';
@@ -183,6 +186,12 @@ export interface GetManagersRequest {
     id: string;
     isApproved?: boolean;
     isRevoked?: boolean;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
+export interface GetMutedUsersRequest {
+    id: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -380,6 +389,12 @@ export interface GetUserRequest {
     userId?: string;
 }
 
+export interface GetUserAccountRequest {
+    wallet: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
@@ -435,13 +450,6 @@ export interface GetUserLibraryTracksRequest {
     type?: GetUserLibraryTracksTypeEnum;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
-}
-
-export interface GetUserTracksRemixedRequest {
-    id: string;
-    offset?: number;
-    limit?: number;
-    userId?: string;
 }
 
 export interface GetUsersTrackHistoryRequest {
@@ -962,6 +970,45 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getManagers(params: GetManagersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagersResponse> {
         const response = await this.getManagersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets users muted by the given user
+     */
+    async getMutedUsersRaw(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getMutedUsers.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/muted`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullUserResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets users muted by the given user
+     */
+    async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getMutedUsersRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -2084,6 +2131,45 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the account for a given user
+     */
+    async getUserAccountRaw(params: GetUserAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserAccountResponseFull>> {
+        if (params.wallet === null || params.wallet === undefined) {
+            throw new runtime.RequiredError('wallet','Required parameter params.wallet was null or undefined when calling getUserAccount.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/account/{wallet}`.replace(`{${"wallet"}}`, encodeURIComponent(String(params.wallet))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserAccountResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the account for a given user
+     */
+    async getUserAccount(params: GetUserAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAccountResponseFull> {
+        const response = await this.getUserAccountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets a single user by their handle
      */
     async getUserByHandleRaw(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
@@ -2388,49 +2474,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets tracks owned by the user which have been remixed by another track
-     */
-    async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserTracksRemixed.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}/tracks/remixed`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets tracks owned by the user which have been remixed by another track
-     */
-    async getUserTracksRemixed(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
-        const response = await this.getUserTracksRemixedRaw(params, initOverrides);
         return await response.value();
     }
 

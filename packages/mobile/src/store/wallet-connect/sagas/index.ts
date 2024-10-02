@@ -1,6 +1,6 @@
-import { watchConnectNewWallet } from './connectNewWalletSaga'
+import { watchConnect, watchConnectNewWallet } from './connectNewWalletSaga'
 import { watchSignMessage } from './signMessageSaga'
 
 export default function sagas() {
-  return [watchConnectNewWallet, watchSignMessage]
+  return [watchConnect, watchConnectNewWallet, watchSignMessage]
 }

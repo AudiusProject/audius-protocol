@@ -90,7 +90,7 @@ from src.utils.rendezvous import RendezvousHash
 
 from .models.tracks import blob_info, nft_gated_track_signature_mapping
 from .models.tracks import remixes_response as remixes_response_model
-from .models.tracks import stem_full, track, track_access_info, track_full
+from .models.tracks import stem, stem_full, track, track_access_info, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -464,12 +464,22 @@ class TrackInspect(Resource):
         abort_not_found(track_id, ns)
 
 
+# Comments
 track_comments_response = make_response(
     "track_comments_response", ns, fields.List(fields.Nested(base_comment_model))
 )
 
+track_comments_parser = pagination_with_current_user_parser.copy()
+track_comments_parser.add_argument(
+    "sort_method",
+    required=False,
+    default="top",
+    choices=("top", "newest", "timestamp"),
+    type=str,
+    description="The sort method",
+)
 
-# Comment
+
 @ns.route("/<string:track_id>/comments")
 class TrackComments(Resource):
     @record_metrics
@@ -483,13 +493,14 @@ class TrackComments(Resource):
             500: "Server error",
         },
     )
-    @ns.expect(pagination_parser)
+    @ns.expect(track_comments_parser)
     @ns.marshal_with(track_comments_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        args = pagination_parser.parse_args()
+        args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        track_comments = get_track_comments(args, decoded_id)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comments(args, decoded_id, current_user_id)
         return success_response(track_comments)
 
 
@@ -1368,7 +1379,7 @@ class TrackTopListeners(Resource):
         return success_response(top_listeners)
 
 
-track_stems_response = make_full_response(
+full_track_stems_response = make_full_response(
     "stems_response", full_ns, fields.List(fields.Nested(stem_full))
 )
 
@@ -1380,10 +1391,31 @@ class FullTrackStems(Resource):
         description="""Get the remixable stems of a track""",
         params={"track_id": "A Track ID"},
     )
-    @full_ns.marshal_with(track_stems_response)
+    @full_ns.marshal_with(full_track_stems_response)
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
+        stems = get_stems_of(decoded_id)
+        stems = list(map(stem_from_track, stems))
+        return success_response(stems)
+
+
+track_stems_response = make_response(
+    "stems_response", ns, fields.List(fields.Nested(stem))
+)
+
+
+@ns.route("/<string:track_id>/stems")
+class TrackStems(Resource):
+    @ns.doc(
+        id="""Get Track Stems""",
+        description="""Get the remixable stems of a track""",
+        params={"track_id": "A Track ID"},
+    )
+    @ns.marshal_with(track_stems_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, ns)
         stems = get_stems_of(decoded_id)
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
@@ -1844,14 +1876,6 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
 )
 
-access_info_parser = current_user_parser.copy()
-access_info_parser.add_argument(
-    "include_network_cut",
-    required=False,
-    type=inputs.boolean,
-    description="Whether to include the staking system as a recipient",
-)
-
 
 @ns.route("/<string:track_id>/access-info")
 class GetTrackAccessInfo(Resource):
@@ -1861,11 +1885,10 @@ class GetTrackAccessInfo(Resource):
         description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
-    @ns.expect(access_info_parser)
+    @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
-        args = access_info_parser.parse_args()
-        include_network_cut = args.get("include_network_cut")
+        args = current_user_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
         get_track_args: GetTrackArgs = {
@@ -1879,11 +1902,9 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(
-            gate=raw["stream_conditions"], include_network_cut=include_network_cut
-        )
+        stream_conditions = get_extended_purchase_gate(gate=raw["stream_conditions"])
         download_conditions = get_extended_purchase_gate(
-            gate=raw["download_conditions"], include_network_cut=include_network_cut
+            gate=raw["download_conditions"]
         )
         track = extend_track(raw)
         track["stream_conditions"] = stream_conditions

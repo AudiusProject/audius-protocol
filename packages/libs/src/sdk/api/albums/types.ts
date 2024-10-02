@@ -177,16 +177,12 @@ const PurchaseAlbumSchemaBase = z.object({
   includeNetworkCut: z.boolean().optional()
 })
 
-export const GetPurchaseAlbumTransactionSchema = z
-  .object({
-    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
-    wallet: PublicKeySchema.optional()
-  })
+export const GetPurchaseAlbumInstructionsSchema = z
+  .object({})
   .merge(PurchaseAlbumSchemaBase)
-  .strict()
 
-export type GetPurchaseAlbumTransactionRequest = z.input<
-  typeof GetPurchaseAlbumTransactionSchema
+export type GetPurchaseAlbumInstructionsRequest = z.input<
+  typeof GetPurchaseAlbumInstructionsSchema
 >
 
 export const PurchaseAlbumSchema = z
@@ -194,7 +190,9 @@ export const PurchaseAlbumSchema = z
     /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
     walletAdapter: z
       .custom<Pick<WalletAdapter, 'publicKey' | 'sendTransaction'>>()
-      .optional()
+      .optional(),
+    /** A wallet to use to purchase (defaults to the authed user's user bank if not specified) */
+    wallet: PublicKeySchema.optional()
   })
   .merge(PurchaseAlbumSchemaBase)
   .strict()

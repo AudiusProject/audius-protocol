@@ -4,7 +4,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { Comment } from '@audius/sdk'
+import type { Comment, ReplyComment } from '@audius/common/models'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
+import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
@@ -25,8 +26,12 @@ import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
 const CommentDrawerContent = () => {
-  const { comments, commentSectionLoading: isLoading } =
-    useCurrentCommentSection()
+  const {
+    comments,
+    commentSectionLoading: isLoading,
+    loadMorePages,
+    isLoadingMorePages
+  } = useCurrentCommentSection()
 
   // Loading state
   if (isLoading) {
@@ -51,12 +56,24 @@ const CommentDrawerContent = () => {
   return (
     <BottomSheetFlatList
       data={comments}
-      keyExtractor={({ id }) => id}
+      keyExtractor={({ id }) => id.toString()}
       ListHeaderComponent={<Box h='l' />}
-      ListFooterComponent={<Box h='l' />}
+      ListFooterComponent={
+        <>
+          {isLoadingMorePages ? (
+            <Flex row justifyContent='center' mb='xl' w='100%'>
+              <LoadingSpinner style={{ width: 20, height: 20 }} />
+            </Flex>
+          ) : null}
+
+          <Box h='l' />
+        </>
+      }
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
       keyboardShouldPersistTaps='handled'
+      onEndReached={loadMorePages}
+      onEndReachedThreshold={0.3}
       renderItem={({ item }) => (
         <Box ph='l'>
           <CommentThread commentId={item.id} />
@@ -72,8 +89,10 @@ export const CommentDrawer = () => {
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
 
-  const [replyingToComment, setReplyingToComment] = useState<Comment>()
-  const [editingComment, setEditingComment] = useState<Comment>()
+  const [replyingToComment, setReplyingToComment] = useState<
+    Comment | ReplyComment
+  >()
+  const [editingComment, setEditingComment] = useState<Comment | ReplyComment>()
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const {

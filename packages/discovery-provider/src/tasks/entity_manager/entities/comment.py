@@ -1,6 +1,8 @@
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.tasks.entity_manager.utils import (
     Action,
@@ -22,6 +24,24 @@ def validate_comment_tx(params: ManageEntityParameters):
         and comment_id in params.existing_records[EntityType.COMMENT.value]
     ):
         raise IndexingValidationError(f"Comment {comment_id} already exists")
+    # Entity type only supports track at the moment
+    if params.metadata["entity_type"] != "Track":
+        raise IndexingValidationError(
+            f"Entity type {params.metadata['entity_type']} does not exist"
+        )
+    if params.metadata["entity_id"] is None:
+        raise IndexingValidationError(
+            "Entitiy id for a track is required to create comment"
+        )
+    if params.metadata["body"] is None or params.metadata["body"] == "":
+        raise IndexingValidationError("Comment body is empty")
+
+    # Validate parent_comment_id if it exists
+    parent_comment_id = params.metadata.get("parent_comment_id")
+    if parent_comment_id is not None and not isinstance(parent_comment_id, int):
+        raise IndexingValidationError(
+            f"parent_comment_id {parent_comment_id} must be a number"
+        )
 
 
 def create_comment(params: ManageEntityParameters):
@@ -32,7 +52,7 @@ def create_comment(params: ManageEntityParameters):
         comment_id=comment_id,
         user_id=params.user_id,
         text=params.metadata["body"],
-        entity_type=params.metadata["entity_type"] or EntityType.TRACK.value,
+        entity_type=params.metadata.get("entity_type", EntityType.TRACK.value),
         entity_id=params.metadata["entity_id"],
         track_timestamp_s=params.metadata["track_timestamp_s"],
         txhash=params.txhash,
@@ -45,12 +65,46 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record)
 
-    if params.metadata["parent_comment_id"]:
-        remix = CommentThread(
-            parent_comment_id=params.metadata["parent_comment_id"],
+    if params.metadata.get("mentions"):
+        new_mention_user_ids = set(params.metadata["mentions"])
+        for mention_user_id in new_mention_user_ids:
+            comment_mention = CommentMention(
+                comment_id=comment_id,
+                user_id=mention_user_id,
+                txhash=params.txhash,
+                blockhash=params.event_blockhash,
+                blocknumber=params.block_number,
+                created_at=params.block_datetime,
+                updated_at=params.block_datetime,
+                is_delete=False,
+            )
+            params.add_record(
+                (comment_id, mention_user_id),
+                comment_mention,
+                EntityType.COMMENT_MENTION,
+            )
+
+    if params.metadata.get("parent_comment_id"):
+        parent_comment_id = params.metadata.get("parent_comment_id")
+        existing_comment_thread = (
+            params.session.query(CommentThread)
+            .filter_by(
+                parent_comment_id=parent_comment_id,
+                comment_id=comment_id,
+            )
+            .first()
+        )
+
+        if existing_comment_thread:
+            return
+
+        comment_thread = CommentThread(
+            parent_comment_id=parent_comment_id,
             comment_id=comment_id,
         )
-        params.session.add(remix)
+        params.add_record(
+            (parent_comment_id, comment_id), comment_thread, EntityType.COMMENT_THREAD
+        )
 
 
 def update_comment(params: ManageEntityParameters):
@@ -72,6 +126,44 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.text = params.metadata["body"]
 
     params.add_record(comment_id, edited_comment)
+
+    if "mentions" in params.metadata:
+        new_mentions = set(params.metadata["mentions"])
+
+        existing_mentions = {
+            k[1]: v
+            for k, v in params.existing_records[
+                EntityType.COMMENT_MENTION.value
+            ].items()
+            if k[0] == comment_id
+        }
+        existing_mention_ids = set(existing_mentions.keys())
+
+        # Delete mentions that are not in the new mentions list
+        for mention_user_id in existing_mention_ids - new_mentions:
+            existing_mention = existing_mentions[mention_user_id]
+
+            if existing_mention:
+                existing_mention.is_delete = True
+
+                params.add_record((comment_id, mention_user_id), existing_mention)
+
+        # Add new mentions
+        for mention_user_id in new_mentions - existing_mention_ids:
+            new_mention = CommentMention(
+                comment_id=comment_id,
+                user_id=mention_user_id,
+                txhash=params.txhash,
+                blockhash=params.event_blockhash,
+                blocknumber=params.block_number,
+                created_at=params.block_datetime,
+                updated_at=params.block_datetime,
+                is_delete=False,
+            )
+
+            params.add_record(
+                (comment_id, mention_user_id), new_mention, EntityType.COMMENT_MENTION
+            )
 
 
 def delete_comment(params: ManageEntityParameters):
@@ -98,7 +190,6 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
-    logger.info(f"asdf params.existing_records {params.existing_records}")
     if (
         params.action == Action.REACT
         and (user_id, comment_id)
@@ -149,3 +240,82 @@ def unreact_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), deleted_comment_reaction, EntityType.COMMENT_REACTION
     )
+
+
+def validate_report_comment_tx(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+    comment_reports = params.existing_records[EntityType.COMMENT_REPORT.value]
+
+    if (user_id, comment_id) in comment_reports:
+        raise IndexingValidationError(
+            f"User {user_id} already reported comment {comment_id}"
+        )
+
+
+def report_comment(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+
+    comment_report = CommentReport(
+        comment_id=comment_id,
+        user_id=user_id,
+        txhash=params.txhash,
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+        created_at=params.block_datetime,
+        updated_at=params.block_datetime,
+        is_delete=False,
+    )
+    params.add_record((user_id, comment_id), comment_report, EntityType.COMMENT_REPORT)
+
+
+def validate_pin_tx(params: ManageEntityParameters, is_pin):
+    validate_signer(params)
+    comment_id = params.entity_id
+    comment_records = params.existing_records[EntityType.COMMENT.value]
+
+    if comment_id not in comment_records:
+        raise IndexingValidationError(f"Comment {comment_id} doesn't exist")
+
+    comment = comment_records[comment_id]
+    if is_pin and comment.is_pinned:
+        raise IndexingValidationError(f"Comment {comment_id} already pinned")
+    elif not is_pin and not comment.is_pinned:
+        raise IndexingValidationError(f"Comment {comment_id} already unpinned")
+
+
+def pin_comment(params: ManageEntityParameters):
+    validate_pin_tx(params, True)
+    comment_id = params.entity_id
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+
+    comment = copy_record(
+        existing_comment,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+    comment.is_pinned = True
+
+    params.add_record(comment_id, comment)
+
+
+def unpin_comment(params: ManageEntityParameters):
+    validate_pin_tx(params, False)
+    comment_id = params.entity_id
+    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+
+    comment = copy_record(
+        existing_comment,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+    comment.is_pinned = False
+
+    params.add_record(comment_id, comment)

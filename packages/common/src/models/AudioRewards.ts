@@ -42,7 +42,17 @@ export enum ChallengeName {
   AudioMatchingSell = 's',
   TrendingTrack = 'tt',
   TrendingPlaylist = 'tp',
-  TrendingUndergroundTrack = 'tut'
+  TrendingUndergroundTrack = 'tut',
+  TrackUpload = 'u',
+  Referrals = 'r',
+  ReferralsVerified = 'rv',
+  MobileInstall = 'm',
+  ConnectVerified = 'v',
+  ProfileCompletion = 'p',
+  Referred = 'rd',
+  FirstTip = 'ft',
+  FirstPlaylist = 'fp',
+  ListenStreak = 'l'
 }
 
 export type ChallengeRewardID =
@@ -66,6 +76,16 @@ export type ChallengeRewardID =
   | ChallengeName.TrendingTrack
   | ChallengeName.TrendingPlaylist
   | ChallengeName.TrendingUndergroundTrack
+  | ChallengeName.TrackUpload
+  | ChallengeName.Referrals
+  | ChallengeName.ReferralsVerified
+  | ChallengeName.MobileInstall
+  | ChallengeName.ConnectVerified
+  | ChallengeName.ProfileCompletion
+  | ChallengeName.Referred
+  | ChallengeName.FirstTip
+  | ChallengeName.FirstPlaylist
+  | ChallengeName.ListenStreak
 
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha

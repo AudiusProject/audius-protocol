@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { Status } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { Chain } from '../../../models/Chain'
@@ -33,6 +34,7 @@ const initialState: TokenDashboardState = {
   modalVisible: false,
   discordCode: null,
   associatedWallets: {
+    loadingStatus: Status.IDLE,
     status: null,
     connectedEthWallets: null,
     confirmingWallet: initialConfirmingWallet,
@@ -135,7 +137,16 @@ const slice = createSlice({
     // Saga Actions
 
     pressSend: () => {},
-    fetchAssociatedWallets: () => {},
+    fetchAssociatedWallets: (state) => {
+      state.associatedWallets.loadingStatus = Status.LOADING
+    },
+    fetchAssociatedWalletsFailed: (
+      state,
+      { payload: { errorMessage } }: PayloadAction<{ errorMessage: string }>
+    ) => {
+      state.associatedWallets.loadingStatus = Status.ERROR
+      state.associatedWallets.errorMessage = errorMessage
+    },
     setAssociatedWallets: (
       state,
       {
@@ -149,6 +160,7 @@ const slice = createSlice({
       }
       state.associatedWallets.confirmingWallet = initialConfirmingWallet
       state.associatedWallets.status = null
+      state.associatedWallets.loadingStatus = Status.SUCCESS
     },
     pressConnectWallets: (state) => {
       state.modalState = {

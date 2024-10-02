@@ -110,6 +110,7 @@ export { default as IconPodcastForward } from '@audius/harmony/src/assets/icons/
 export { default as IconUserList } from '@audius/harmony/src/assets/icons/UserList.svg'
 export { default as IconDashboard } from '@audius/harmony/src/assets/icons/Dashboard.svg'
 export { default as IconQuestionCircle } from '@audius/harmony/src/assets/icons/QuestionCircle.svg'
+export { default as IconQrCode } from '@audius/harmony/src/assets/icons/QrCode.svg'
 export { default as IconUserUnfollow } from '@audius/harmony/src/assets/icons/UserUnfollow.svg'
 export { default as IconDesktop } from '@audius/harmony/src/assets/icons/Desktop.svg'
 export { default as IconRadar } from '@audius/harmony/src/assets/icons/Radar.svg'
@@ -245,6 +246,7 @@ export { default as IconLogoCircleUSD } from '@audius/harmony/src/assets/icons/L
 export { default as IconLogoCircleUSDC } from '@audius/harmony/src/assets/icons/LogoCircleUSDC.svg'
 export { default as IconSolana } from '@audius/harmony/src/assets/icons/LogoSolana.svg'
 export { default as IconPhantom } from '@audius/harmony/src/assets/icons/LogoPhantom.svg'
+export { default as IconPhantomPlain } from '@audius/harmony/src/assets/icons/LogoPhantomPlain.svg'
 
 export { default as Soundwave } from '@audius/harmony/src/assets/animations/Soundwave.json'
 export { default as SoundwaveCircle } from '@audius/harmony/src/assets/animations/SoundwaveCircle.json'

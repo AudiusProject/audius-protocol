@@ -8,6 +8,7 @@ export type DataSourceTrack = Track & {
   saves: number
   reposts: number
   plays: number
+  comments: number
 }
 
 export enum TrackFilters {
