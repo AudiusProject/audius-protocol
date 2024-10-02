@@ -16,7 +16,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/core_pkg"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/mediorum_pkg"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -72,7 +72,7 @@ func main() {
 
 	if !*noMediorum {
 		go func() {
-			if err := mediorum_pkg.Run(ctx, logger); err != nil {
+			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
 				cancel()
 			}
