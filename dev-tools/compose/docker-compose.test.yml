@@ -93,7 +93,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -107,7 +107,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -121,7 +121,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -135,7 +135,7 @@ services:
       dockerfile: ./infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
     profiles:
       - core-tests

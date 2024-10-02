@@ -7,11 +7,18 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
   --mount=type=bind,source=go.mod,target=go.mod \
   go mod download -x
 
-COPY . .
+
+ENV CGO_ENABLED=0
+
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+
+COPY ./pkg ./pkg
+COPY ./cmd/core ./
 
 ARG git_sha
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-  CGO_ENABLED=0 go build -ldflags "-X github.com/AudiusProject/audius-protocol/core/config.Version=${git_sha}" -o /bin/server .
+  go build -ldflags "-X github.com/AudiusProject/audius-protocol/pkg/core/config.Version=${git_sha}" -o /bin/server .
 
 FROM alpine:latest AS final
 
