@@ -248,7 +248,7 @@ func startDevInstance() {
 		log.Fatalf("failed to parse spID: %v", err)
 	}
 
-	postgresDSN := fmt.Sprintf("postgres://postgres:example@localhost:5454/m%s", idx)
+	postgresDSN := fmt.Sprintf("postgres://postgres:example@localhost:5454/m%s?sslmode=disable", idx)
 	if v := os.Getenv("dbUrl"); v != "" {
 		postgresDSN = v
 	}
