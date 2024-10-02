@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
@@ -28,6 +29,22 @@ func main() {
 
 	for {
 		time.Sleep(1 * time.Second)
+		_, err = sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
+			Transaction: &proto.SignedTransaction{
+				Transaction: &proto.SignedTransaction_ManageEntity{
+					ManageEntity: &proto.ManageEntityLegacy{
+						UserId:     rand.Int63(),
+						EntityId:   rand.Int63(),
+						EntityType: uuid.NewString(),
+						Action:     uuid.NewString(),
+						Metadata:   "some json",
+						Signature:  uuid.NewString(),
+					},
+				},
+			},
+		})
+		checkErr(err)
+
 		_, err = sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
 			Transaction: &proto.SignedTransaction{
 				Transaction: &proto.SignedTransaction_Plays{

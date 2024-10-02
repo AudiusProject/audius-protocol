@@ -16,6 +16,7 @@ import (
 	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -98,11 +99,6 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("registry bridge init error: %v", err)
 	}
 
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
-	if err != nil {
-		return fmt.Errorf("server init error: %v", err)
-	}
-
 	con, err := console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
 		return fmt.Errorf("console init error: %v", err)
@@ -113,7 +109,14 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("grpc init error: %v", err)
 	}
 
+	grpcWeb := grpcweb.WrapServer(grpcServer.GetServer())
+
 	logger.Info("grpc server created")
+
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, grpcWeb)
+	if err != nil {
+		return fmt.Errorf("server init error: %v", err)
+	}
 
 	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
 	if err != nil {
