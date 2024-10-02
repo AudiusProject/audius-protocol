@@ -21,8 +21,13 @@ export const CommentForm = (props: CommentFormProps) => {
   const { isLoading, onSubmit, initialValue } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const { currentUserId, comments, replyingToComment, editingComment } =
-    useCurrentCommentSection()
+  const {
+    currentUserId,
+    comments,
+    entityId,
+    replyingToComment,
+    editingComment
+  } = useCurrentCommentSection()
   const ref = useRef<RNTextInput>(null)
 
   const replyingToUserId = Number(replyingToComment?.userId)
@@ -75,6 +80,7 @@ export const CommentForm = (props: CommentFormProps) => {
         <ComposerInput
           isLoading={isLoading}
           messageId={messageId}
+          entityId={entityId}
           presetMessage={initialMessage}
           placeholder={placeholder}
           onSubmit={handleSubmit}
