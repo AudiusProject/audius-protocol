@@ -169,15 +169,11 @@ export const DownloadAvailability = (props: DownloadAvailabilityProps) => {
         </Box>
       </Flex>
       {shouldRenderCallout ? (
-        <Hint
-          icon={IconError}
-          actions={
-            <TextLink onClick={handleCalloutClick} variant='visible'>
-              {messages.callout.priceAndAudience}
-            </TextLink>
-          }
-        >
-          {getCalloutMessage()}
+        <Hint icon={IconError}>
+          {getCalloutMessage()}{' '}
+          <TextLink onClick={handleCalloutClick} variant='visible'>
+            {messages.callout.priceAndAudience}
+          </TextLink>
         </Hint>
       ) : (
         <>
