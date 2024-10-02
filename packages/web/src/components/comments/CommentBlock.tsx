@@ -1,15 +1,12 @@
 import { useMemo, useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
-  useCommentPostStatus,
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
-import { useStatusChange } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
-import { useGetCommentById } from '@audius/common/src/context/comments/tanQueryClient'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { ArtistPick, Box, Flex, Text, Timestamp } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -59,14 +56,6 @@ const CommentBlockInternal = (
   const { artistId } = useCurrentCommentSection()
 
   const [deleteComment] = useDeleteComment()
-
-  // This status checks specifically for this comment - no matter where the post request originated
-  const commentPostStatus = useCommentPostStatus(comment)
-
-  const isCommentLoading = commentPostStatus === Status.LOADING
-  useStatusChange(commentPostStatus, {
-    onSuccess: () => setShowReplyInput(false)
-  })
 
   // triggers a fetch to get user profile info
   useGetUserById({ id: userId }) // TODO: display a load state while fetching
@@ -140,7 +129,7 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId)}
-            isDisabled={isCommentLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         )}
@@ -160,6 +149,6 @@ const CommentBlockInternal = (
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
   const { data: comment } = useGetCommentById(props.commentId)
-  if (!comment) return null
+  if (!comment || !('id' in comment)) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }
