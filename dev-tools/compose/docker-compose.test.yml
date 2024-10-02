@@ -397,14 +397,14 @@ services:
       timeout: 3s
     logging: *default-logging
     volumes:
-      - ${PROJECT_ROOT}/mediorum/.initdb:/docker-entrypoint-initdb.d
+      - ${PROJECT_ROOT}/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d
     profiles:
       - mediorum
       - mediorum-unittests
 
   mediorum:
     build:
-      context: ${PROJECT_ROOT}/mediorum
+      context: ${PROJECT_ROOT}/cmd/mediorum
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
@@ -424,7 +424,7 @@ services:
 
   test-mediorum:
     build:
-      context: ${PROJECT_ROOT}/mediorum
+      context: ${PROJECT_ROOT}/cmd/mediorum
       dockerfile: Dockerfile
     entrypoint:
       - '/bin/mediorum-cmd'
@@ -440,7 +440,7 @@ services:
 
   test-mediorum-unittests:
     build:
-      context: ${PROJECT_ROOT}/mediorum
+      context: ${PROJECT_ROOT}/cmd/mediorum
       dockerfile: Dockerfile.unittests
     logging: *default-logging
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -

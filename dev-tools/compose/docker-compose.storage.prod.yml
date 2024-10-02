@@ -7,8 +7,8 @@ version: '3.9'
 services:
   storage:
     build:
-      context: ${PROJECT_ROOT}/mediorum
-      dockerfile: Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
@@ -31,7 +31,7 @@ services:
     volumes:
       - mediorum:/data
       - legacy_creator_file_storage:/file_storage
-      - ${PROJECT_ROOT}/mediorum:/app
+      - ${PROJECT_ROOT}/cmd/mediorum:/app
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
       - ${PROJECT_ROOT}/packages/libs/src/eth-contracts:/tmp/eth-contracts # Used only in register script
     profiles:
