@@ -7,6 +7,8 @@ export const commentsMessages = {
   addComment: 'Add a comment',
   firstComment: 'Be the first to comment!',
   noComments: 'Nothing here yet',
+  noCommentsOwner:
+    'Get the conversation started! Leave a comment to encourage others to join in.',
   noCommentsDescription: 'Be the first to comment on this track',
   viewAll: 'View All',
   showMoreReplies: 'Show More Replies',
