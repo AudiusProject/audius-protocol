@@ -16,6 +16,8 @@ func (core *CoreApplication) finalizeTransaction(ctx context.Context, msg *gen_p
 	switch t := msg.Transaction.(type) {
 	case *gen_proto.SignedTransaction_Plays:
 		return core.finalizePlayTransaction(ctx, msg)
+	case *gen_proto.SignedTransaction_ManageEntity:
+		return core.finalizeManageEntity(ctx, msg)
 	case *gen_proto.SignedTransaction_ValidatorRegistration:
 		return core.finalizeRegisterNode(ctx, msg)
 	case *gen_proto.SignedTransaction_SlaRollup:

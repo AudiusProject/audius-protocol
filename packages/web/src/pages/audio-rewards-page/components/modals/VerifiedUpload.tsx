@@ -37,7 +37,7 @@ const messages = {
 }
 
 const TWITTER_LINK = 'https://twitter.com/audius'
-const IG_LINK = 'https://www.instagram.com/audiusmusic/?hl=en'
+const IG_LINK = 'https://www.instagram.com/audius/?hl=en'
 
 const onClickTwitter = () => {
   window.open(TWITTER_LINK, '_blank')

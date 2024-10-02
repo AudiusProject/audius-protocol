@@ -108,9 +108,9 @@ jobs:
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
             # Bump version for content node
-            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
-            mv /tmp/.version.json mediorum/.version.json
-            git add mediorum/.version.json
+            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/mediorum_pkg/.version.json > /tmp/.version.json
+            mv /tmp/.version.json mediorum/mediorum_pkg/.version.json
+            git add mediorum/mediorum_pkg/.version.json
 
             # Bump version for discovery node
             jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
