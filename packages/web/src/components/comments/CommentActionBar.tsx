@@ -19,7 +19,6 @@ import {
   IconKebabHorizontal,
   IconQuestionCircle,
   PopupMenu,
-  PopupMenuItem,
   Text,
   TextLink
 } from '@audius/harmony'
