@@ -872,3 +872,39 @@ export async function setupTwoUsersWithDevices(
     }
   }
 }
+
+export async function setupNUsersWithDevices(
+  discoveryDB: Knex,
+  identityDB: Knex,
+  numUsers: number
+): Promise<UserWithDevice[]> {
+  await createUsers(
+    discoveryDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { user_id: i, name: `user${i}`, is_current: true }
+    })
+  )
+
+  await insertMobileSettings(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, messages: true }
+    })
+  )
+  const deviceType = enum_NotificationDeviceTokens_deviceType.ios
+  await insertMobileDevices(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, deviceType: deviceType, awsARN: `arn:${i}` }
+    })
+  )
+
+  return Array.from({ length: numUsers }, (_, i) => {
+    return {
+      userId: i,
+      name: `user${i}`,
+      deviceType: deviceType,
+      awsARN: `arn:${i}`
+    }
+  })
+}

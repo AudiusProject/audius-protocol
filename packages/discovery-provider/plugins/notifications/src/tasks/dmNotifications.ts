@@ -30,6 +30,7 @@ async function getCursors(redis: RedisClientType): Promise<{
   maxTimestamp: Date
   minMessageTimestamp: Date
   minReactionTimestamp: Date
+  lastIndexedBlastId: string
 }> {
   const maxCursor = new Date(Date.now() - config.dmNotificationDelay)
 
@@ -48,11 +49,13 @@ async function getCursors(redis: RedisClientType): Promise<{
   if (cachedReactionTimestamp) {
     minReactionCursor = new Date(Date.parse(cachedReactionTimestamp))
   }
+  const lastIndexedBlastId = await redis.get(config.lastIndexedBlastRedisKey)
 
   return {
     maxTimestamp: maxCursor,
     minMessageTimestamp: minMessageCursor,
-    minReactionTimestamp: minReactionCursor
+    minReactionTimestamp: minReactionCursor,
+    lastIndexedBlastId
   }
 }
 
@@ -118,13 +121,29 @@ async function getUnreadReactions(
 
 async function getNewBlasts(
   discoveryDB: Knex,
-  minTimestamp: Date,
-  maxTimestamp: Date
-): Promise<DMNotification[]> {
+  lastIndexedBlastId?: string
+): Promise<{ blastId: string; messages: DMNotification[] }> {
+  let lastIndexedBlastTimestamp
+  if (lastIndexedBlastId) {
+    lastIndexedBlastTimestamp = (
+      await discoveryDB
+        .select('chat_blast.created_at as timestamp')
+        .from('chat_blast')
+        .where('chat_blast.blast_id', lastIndexedBlastId)
+    )[0]?.timestamp
+  }
+  if (!lastIndexedBlastTimestamp) {
+    lastIndexedBlastTimestamp = new Date(0).toISOString()
+  }
+  console.log('REED calling getNewBlasts with', {
+    lastIndexedBlastId,
+    lastIndexedBlastTimestamp
+  })
+
   const messages = await discoveryDB.raw(
     `
     WITH blast AS (
-      SELECT * FROM chat_blast
+      SELECT * FROM chat_blast where chat_blast.created_at > ? order by chat_blast.created_at asc limit 1
     ),
     aud AS (
       -- follower_audience
@@ -191,12 +210,10 @@ async function getNewBlasts(
       LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
       LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
       WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
-      AND date_trunc('milliseconds', blast.created_at) > ?
-      AND date_trunc('milliseconds', blast.created_at) <= ?
     )
-    SELECT from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ WHERE chat_allowed(from_user_id, to_user_id);
+    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ WHERE chat_allowed(from_user_id, to_user_id);
     `,
-    [minTimestamp.toISOString(), maxTimestamp.toISOString()]
+    [lastIndexedBlastTimestamp]
   )
 
   const formattedMessages = messages.rows.map((message) => {
@@ -206,7 +223,11 @@ async function getNewBlasts(
     }
   })
 
-  return formattedMessages
+  console.log('REED', { formattedMessages })
+  return {
+    blastId: formattedMessages[0]?.blast_id,
+    messages: formattedMessages
+  }
 }
 
 function setLastIndexedTimestamp(
@@ -224,6 +245,17 @@ function setLastIndexedTimestamp(
     redis.set(redisKey, lastIndexedTimestamp)
   } else {
     redis.set(redisKey, maxTimestamp.toISOString())
+  }
+}
+
+function setLastIndexedBlastId(
+  redis: RedisClientType,
+  redisKey: string,
+  blastId?: string
+) {
+  if (blastId) {
+    console.log('REED setting last Indexed', { blastId })
+    redis.set(redisKey, blastId)
   }
 }
 
@@ -246,6 +278,7 @@ export async function sendDMNotifications(
     // Query DN for unread messages and reactions between min and max cursors
     const redis = await getRedisConnection()
     const cursors = await getCursors(redis)
+    console.log('REED', { cursors })
 
     timer.logMessage(DMPhase.GET_UNREAD_MESSAGES)
     const unreadMessages = await getUnreadMessages(
@@ -277,14 +310,13 @@ export async function sendDMNotifications(
     }
 
     timer.logMessage(DMPhase.GET_NEW_BLASTS)
-    const newBlasts = await getNewBlasts(
+    const { blastId, messages: newBlasts } = await getNewBlasts(
       discoveryDB,
-      cursors.minMessageTimestamp,
-      cursors.maxTimestamp
+      cursors.lastIndexedBlastId
     )
     if (newBlasts.length > 0) {
       console.log(
-        `dmNotifications: new chat blast notifications: ${JSON.stringify(
+        `dmNotifications: last Indexed blastId: ${blastId} new chat blast notifications: ${JSON.stringify(
           newBlasts
         )}`
       )
@@ -329,6 +361,7 @@ export async function sendDMNotifications(
       cursors.maxTimestamp,
       reactionNotifications
     )
+    setLastIndexedBlastId(redis, config.lastIndexedBlastRedisKey, blastId)
 
     if (notifications.length > 0) {
       timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)

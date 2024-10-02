@@ -4,5 +4,6 @@ export const config = {
   // ms between jobs
   pollInterval: 500,
   lastIndexedMessageRedisKey: 'latestDMNotificationTimestamp',
-  lastIndexedReactionRedisKey: 'latestDMReactionNotificationTimestamp'
+  lastIndexedReactionRedisKey: 'latestDMReactionNotificationTimestamp',
+  lastIndexedBlastRedisKey: 'latestBlastNotificationID'
 }
