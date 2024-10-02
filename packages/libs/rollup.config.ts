@@ -18,7 +18,8 @@ const external = [
   'ethers/lib/utils',
   'ethers/lib/index',
   'hashids/cjs',
-  'readable-stream'
+  'readable-stream',
+  'debug'
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })

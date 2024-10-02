@@ -1,4 +1,5 @@
 import { config, wallets, web3 } from ".";
+import { coreRelay } from "./coreRelay";
 import { internalError } from "./error";
 import { retryPromise } from "./utils";
 import { confirm } from "./web3";
@@ -19,7 +20,7 @@ export const relayTransaction = async (
   next: NextFunction
 ) => {
   // pull info from validated request
-  const { validatedRelayRequest, logger } = res.locals.ctx;
+  const { validatedRelayRequest, logger, requestId } = res.locals.ctx;
   const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest;
 
   const senderWallet = wallets.selectNextWallet();
@@ -27,6 +28,8 @@ export const relayTransaction = async (
   let nonce = undefined
   let submit = undefined
   try {
+    coreRelay(logger, requestId, validatedRelayRequest)
+
     // gather some transaction params
     nonce = await retryPromise(() => web3.getTransactionCount(address));
 

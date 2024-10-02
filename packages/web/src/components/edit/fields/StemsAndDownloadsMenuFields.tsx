@@ -52,13 +52,10 @@ const messages = {
     'You don’t have access to sell your downloads. Please change your availability settings.'
 }
 
-type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
-  isUsdcUploadEnabled: boolean
-}
+type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
-  maxContentPriceCents,
-  isUsdcUploadEnabled
+  maxContentPriceCents
 }: StemsAndDownloadsSchemaProps) =>
   z
     .object({
@@ -134,7 +131,7 @@ export const stemsAndDownloadsSchema = ({
         const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
         const isUsdcGated =
           availabilityType === DownloadTrackAvailabilityType.USDC_PURCHASE
-        return !isUsdcGated || isUsdcUploadEnabled
+        return !isUsdcGated
       },
       {
         message: messages.noUsdcUploadAccess,

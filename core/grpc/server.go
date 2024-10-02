@@ -38,6 +38,10 @@ func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Lo
 	return server, nil
 }
 
+func (s *GRPCServer) GetServer() *grpc.Server {
+	return s.server
+}
+
 func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
@@ -47,6 +51,8 @@ func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransacti
 	switch body := req.Transaction.GetTransaction().(type) {
 	case *proto.SignedTransaction_Plays:
 		s.logger.Infof("plays event %v", body.Plays.GetPlays())
+	case *proto.SignedTransaction_ManageEntity:
+		s.logger.Infof("manage entity %v", body.ManageEntity)
 	default:
 		s.logger.Warn("unknown event type")
 	}
