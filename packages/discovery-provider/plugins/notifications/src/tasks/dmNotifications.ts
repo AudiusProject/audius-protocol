@@ -126,7 +126,7 @@ async function getNewBlasts(
     WITH blast AS (
       SELECT * FROM chat_blast
     ),
-    aud as (
+    aud AS (
       -- follower_audience
       SELECT blast_id, follower_user_id AS to_user_id
       FROM follows
@@ -180,7 +180,7 @@ async function getNewBlasts(
           )
         )
     ),
-      targ AS (
+    targ AS (
       SELECT
         blast_id,
         from_user_id,
@@ -190,10 +190,11 @@ async function getNewBlasts(
       JOIN aud USING (blast_id)
       LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
       LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
-      WHERE date_trunc('milliseconds', blast.created_at) > greatest(member_b.last_active_at, ?)
+      WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
+      AND date_trunc('milliseconds', blast.created_at) > ?
       AND date_trunc('milliseconds', blast.created_at) <= ?
     )
-    SELECT from_user_id as sender_user_id, to_user_id as receiver_user_id, created_at FROM targ where chat_allowed(from_user_id, to_user_id);
+    SELECT from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ WHERE chat_allowed(from_user_id, to_user_id);
     `,
     [minTimestamp.toISOString(), maxTimestamp.toISOString()]
   )
