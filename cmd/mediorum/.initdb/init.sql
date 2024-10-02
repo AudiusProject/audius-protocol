@@ -1,0 +1,10 @@
+create database m1 WITH TEMPLATE postgres;
+create database m2 WITH TEMPLATE postgres;
+create database m3 WITH TEMPLATE postgres;
+create database m4 WITH TEMPLATE postgres;
+create database m5 WITH TEMPLATE postgres;
+create database m6 WITH TEMPLATE postgres;
+create database m7 WITH TEMPLATE postgres;
+create database m8 WITH TEMPLATE postgres;
+create database m9 WITH TEMPLATE postgres;
+create database mediorum_test WITH TEMPLATE postgres;
