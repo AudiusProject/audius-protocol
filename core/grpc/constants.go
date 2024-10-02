@@ -9,13 +9,15 @@ import (
 )
 
 var (
-	TrackPlaysProtoName    string
-	SlaRollupProtoName     string
-	SlaNodeReportProtoName string
+	TrackPlaysProtoName     string
+	ManageEntitiesProtoName string
+	SlaRollupProtoName      string
+	SlaNodeReportProtoName  string
 )
 
 func init() {
 	TrackPlaysProtoName = GetProtoTypeName(&gen_proto.TrackPlays{})
+	ManageEntitiesProtoName = GetProtoTypeName(&gen_proto.ManageEntityLegacy{})
 	SlaRollupProtoName = GetProtoTypeName(&gen_proto.SlaRollup{})
 	SlaNodeReportProtoName = GetProtoTypeName(&gen_proto.SlaNodeReport{})
 }

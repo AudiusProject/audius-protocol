@@ -56,3 +56,12 @@ func (con *Console) analyticsPage(c echo.Context) error {
 	}
 	return con.views.RenderAnalyticsView(c, data)
 }
+
+func (con *Console) analyticsHeader(c echo.Context) error {
+	totalBlocks := fmt.Sprint(con.state.totalBlocks)
+	totalTransactions := fmt.Sprint(con.state.totalTransactions)
+	totalPlays := fmt.Sprint(con.state.totalPlays)
+	totalManageEntities := fmt.Sprint(con.state.totalManageEntities)
+	totalValidators := fmt.Sprint(con.state.totalValidators)
+	return con.views.RenderAnalyticsHeader(c, totalBlocks, totalTransactions, totalPlays, totalManageEntities, totalValidators)
+}

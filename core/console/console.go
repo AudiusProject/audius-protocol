@@ -22,17 +22,24 @@ type Console struct {
 	e      *echo.Echo
 	logger *common.Logger
 
+	state   *State
 	layouts *layout.Layout
 	views   *views.Views
 }
 
 func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Console, error) {
+	db := db.New(pool)
+	state, err := NewState(config, rpc, logger, db)
+	if err != nil {
+		return nil, err
+	}
 	c := &Console{
 		config:  config,
 		rpc:     rpc,
 		e:       e,
 		logger:  logger.Child(strings.TrimPrefix(baseURL, "/")),
-		db:      db.New(pool),
+		db:      db,
+		state:   state,
 		views:   views.NewViews(config, baseURL),
 		layouts: layout.NewLayout(config, baseURL),
 	}
@@ -40,4 +47,8 @@ func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc 
 	c.registerRoutes(logger, e)
 
 	return c, nil
+}
+
+func (c *Console) Start() error {
+	return c.state.Start()
 }
