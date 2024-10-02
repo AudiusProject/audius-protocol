@@ -1,6 +1,6 @@
 package registrar
 
-import "github.com/AudiusProject/audius-protocol/mediorum/server"
+import "github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 
 type staticProvider struct {
 	peers   []server.Peer

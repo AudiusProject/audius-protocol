@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 	"github.com/erni27/imcache"
 
 	"github.com/labstack/echo/v4"

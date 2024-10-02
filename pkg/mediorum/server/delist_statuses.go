@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"

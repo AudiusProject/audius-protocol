@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 // !! metrics.go is WIP - will revisit !!

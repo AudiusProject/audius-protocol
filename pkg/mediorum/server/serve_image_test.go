@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"

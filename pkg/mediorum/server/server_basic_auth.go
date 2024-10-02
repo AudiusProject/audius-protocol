@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
