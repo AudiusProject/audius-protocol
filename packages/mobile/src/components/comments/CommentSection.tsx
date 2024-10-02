@@ -64,8 +64,11 @@ const CommentSectionHeader = () => {
 }
 
 const CommentSectionContent = () => {
-  const { commentSectionLoading: isLoading, comments } =
-    useCurrentCommentSection()
+  const {
+    commentSectionLoading: isLoading,
+    comments,
+    isEntityOwner
+  } = useCurrentCommentSection()
 
   const [postComment, { status: postCommentStatus }] = usePostComment()
 
@@ -90,7 +93,9 @@ const CommentSectionContent = () => {
   if (!comments || !comments.length) {
     return (
       <Flex gap='m'>
-        <Text variant='body'>{messages.noComments}</Text>
+        <Text variant='body'>
+          {isEntityOwner ? messages.noCommentsOwner : messages.noComments}
+        </Text>
         <CommentForm
           onSubmit={handlePostComment}
           isLoading={postCommentStatus === Status.LOADING}
