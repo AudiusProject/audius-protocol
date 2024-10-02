@@ -27,7 +27,7 @@ import (
 
 func main() {
 	noTLS := flag.Bool("no-tls", false, "Disable TLS and use only port 80")
-	noMediorum := flag.Bool("no-mediorum", false, "Disable Mediorum i.e. core node only")
+	noMediorum := flag.Bool("mediorum", false, "Enable Mediorum")
 	flag.Parse()
 
 	logger := common.NewLogger(nil)
