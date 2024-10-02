@@ -1,4 +1,4 @@
-package mediorum_pkg
+package mediorum
 
 import (
 	"context"
