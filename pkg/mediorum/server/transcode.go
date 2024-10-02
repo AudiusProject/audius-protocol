@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"

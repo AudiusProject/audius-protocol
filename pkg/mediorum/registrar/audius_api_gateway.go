@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 type NodeResponse struct {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"

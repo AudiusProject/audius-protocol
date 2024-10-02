@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
-	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"

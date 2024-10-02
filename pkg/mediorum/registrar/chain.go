@@ -3,10 +3,10 @@ package registrar
 import (
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
-	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 func NewEthChainProvider() PeerProvider {

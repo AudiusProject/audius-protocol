@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"github.com/stretchr/testify/assert"
 )

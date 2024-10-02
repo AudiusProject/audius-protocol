@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"gocloud.dev/blob"
 )

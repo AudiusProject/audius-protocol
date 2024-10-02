@@ -16,11 +16,11 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"

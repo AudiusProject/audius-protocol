@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"

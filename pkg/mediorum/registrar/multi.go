@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 func NewMultiStaging() PeerProvider {

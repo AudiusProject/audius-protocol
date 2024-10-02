@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 type TestClient struct {

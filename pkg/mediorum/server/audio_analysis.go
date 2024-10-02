@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/sync/errgroup"
 )

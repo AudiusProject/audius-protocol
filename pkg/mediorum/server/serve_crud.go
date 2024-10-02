@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
 
 	"github.com/labstack/echo/v4"
 )

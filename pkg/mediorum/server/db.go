@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
-	"github.com/AudiusProject/audius-protocol/mediorum/ddl"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ddl"
 	slogGorm "github.com/orandin/slog-gorm"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"

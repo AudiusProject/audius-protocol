@@ -9,9 +9,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/cmd/loadtest"
-	"github.com/AudiusProject/audius-protocol/mediorum/registrar"
-	"github.com/AudiusProject/audius-protocol/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cmd/loadtest"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/registrar"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 func getenvWithDefault(key string, fallback string) string {
