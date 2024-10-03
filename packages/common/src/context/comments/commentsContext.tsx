@@ -17,9 +17,14 @@ import {
   useGetCommentsByTrackId,
   QUERY_KEYS
 } from '~/api'
-import {useGatedContentAccess } from '~/hooks'
+import { useGatedContentAccess } from '~/hooks'
 import {
-  ModalSource, ID, Comment, ReplyComment, UserTrackMetadata } from '~/models'
+  ModalSource,
+  ID,
+  Comment,
+  ReplyComment,
+  UserTrackMetadata
+} from '~/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
