@@ -9,5 +9,5 @@ import (
 func (con *Console) navChainData(c echo.Context) error {
 	totalBlocks := fmt.Sprint(con.state.totalBlocks)
 	totalTxs := fmt.Sprint(con.state.totalTransactions)
-	return con.views.RenderNavChainData(c, totalBlocks, totalTxs)
+	return con.views.RenderNavChainData(c, totalBlocks, totalTxs, con.state.isSyncing)
 }
