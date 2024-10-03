@@ -83,7 +83,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
+  // Ref to keep track of the submit state of the input
   const submittedRef = useRef(false)
+  // Ref to keep track of a unique id for each change
+  const changeOpIdRef = useRef(0)
 
   const {
     linkEntities,
@@ -188,8 +191,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
       setValue(e.target.value)
+      const currentOpId = ++changeOpIdRef.current
       const editedValue = await resolveLinks(e.target.value)
-      if (submittedRef.current) {
+      if (submittedRef.current || currentOpId !== changeOpIdRef.current) {
         return
       }
       setValue(editedValue)
@@ -204,11 +208,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const handleSubmit = useCallback(() => {
     submittedRef.current = true
+    changeOpIdRef.current++
     onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
-    // Debounce the submission
-    setTimeout(() => {
-      submittedRef.current = false
-    }, 1000)
+    submittedRef.current = false
   }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
 
   // Submit when pressing enter while not holding shift
