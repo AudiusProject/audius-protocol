@@ -18,12 +18,12 @@ const CommentSectionHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
-    comments
+    commentIds
   } = useCurrentCommentSection()
 
   const { data: track } = useGetTrackById({ id: entityId })
 
-  const isShowingComments = !isLoading && comments?.length
+  const isShowingComments = !isLoading && commentIds?.length
 
   return (
     <Flex
@@ -35,7 +35,7 @@ const CommentSectionHeader = () => {
       <Text variant='title' size='m'>
         Comments
         {isShowingComments ? (
-          <Text color='subdued'>&nbsp;({comments.length})</Text>
+          <Text color='subdued'>&nbsp;({commentIds.length})</Text>
         ) : null}
       </Text>
       {isShowingComments ? (
@@ -51,7 +51,7 @@ const CommentSectionContent = () => {
   const {
     currentUserId,
     commentSectionLoading: isLoading,
-    comments
+    commentIds
   } = useCurrentCommentSection()
 
   // Loading state
@@ -68,7 +68,7 @@ const CommentSectionContent = () => {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex gap='m' column alignItems='flex-start'>
         <Text variant='body'>{messages.noComments}</Text>
@@ -77,7 +77,7 @@ const CommentSectionContent = () => {
     )
   }
 
-  return <CommentBlock commentId={comments[0].id} hideActions />
+  return <CommentBlock commentId={commentIds[0]} hideActions />
 }
 
 export const CommentSectionMobile = () => {
