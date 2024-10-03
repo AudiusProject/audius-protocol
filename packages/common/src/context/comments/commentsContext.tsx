@@ -34,9 +34,9 @@ type CommentSectionProviderProps = {
   // These are optional because they are only used on mobile
   // and provided for the components in CommentDrawer
   replyingToComment?: Comment | ReplyComment
-  setReplyingToComment?: (comment: Comment | ReplyComment) => void
+  setReplyingToComment?: (comment: Comment | ReplyComment | undefined) => void
   editingComment?: Comment | ReplyComment
-  setEditingComment?: (comment: Comment | ReplyComment) => void
+  setEditingComment?: (comment: Comment | ReplyComment | undefined) => void
 }
 
 type CommentSectionContextType = {

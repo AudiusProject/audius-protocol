@@ -13,7 +13,12 @@ import { Box } from '@audius/harmony-native'
 import { CommentForm } from './CommentForm'
 
 export const CommentDrawerForm = () => {
-  const { editingComment, replyingToComment } = useCurrentCommentSection()
+  const {
+    editingComment,
+    replyingToComment,
+    setReplyingToComment,
+    setEditingComment
+  } = useCurrentCommentSection()
   const [postComment, { status: postCommentStatus }] = usePostComment()
   const [editComment] = useEditComment()
 
@@ -24,6 +29,8 @@ export const CommentDrawerForm = () => {
     }
 
     postComment(message, replyingToComment?.id)
+    setReplyingToComment(undefined)
+    setEditingComment(undefined)
   }
 
   const isLoading = postCommentStatus === Status.LOADING
