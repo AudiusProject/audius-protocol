@@ -23,9 +23,9 @@ const initSdk = async () => {
   // will let AudiusAPIClient know that libs has loaded, and without it AudiusAPIClient
   // retries failed requests ad nauseum with no delays or backoffs and won't ever get
   // the signal that libs is loaded. It sucks. But the easiest thing to do right now...
-  console.debug('[audiusSdk] Waiting for libs init...')
-  await waitForLibsInit()
-  console.debug('[audiusSdk] Libs initted, initializing SDK...')
+  // console.debug('[audiusSdk] Waiting for libs init...')
+  // await waitForLibsInit()
+  // console.debug('[audiusSdk] Libs initted, initializing SDK...')
 
   // For now, the only solana relay we want to use is on DN 1, so hardcode
   // the selection there.
