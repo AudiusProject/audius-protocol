@@ -34,9 +34,14 @@ export const CommentDrawerForm = (props: {
     }
 
     postComment(message, replyingToComment?.id)
+
+    // Scroll to top of comments when posting a new comment
+    if (!editingComment && !replyingToComment) {
+      commentListRef.current?.scrollToOffset({ offset: 0 })
+    }
+
     setReplyingToComment?.(undefined)
     setEditingComment?.(undefined)
-    commentListRef.current?.scrollToOffset({ offset: 0 })
   }
 
   const isLoading = postCommentStatus === Status.LOADING
