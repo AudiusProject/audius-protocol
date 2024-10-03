@@ -23,7 +23,7 @@ export const CommentForm = (props: CommentFormProps) => {
   const [initialMessage, setInitialMessage] = useState(initialValue)
   const {
     currentUserId,
-    comments,
+    commentIds,
     entityId,
     replyingToComment,
     editingComment
@@ -64,7 +64,7 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment])
 
-  const placeholder = comments?.length
+  const placeholder = commentIds?.length
     ? messages.addComment
     : messages.firstComment
 

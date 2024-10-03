@@ -7,7 +7,6 @@ import {
   usePostComment
 } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import type { BottomSheetFlatListMethods } from '@gorhom/bottom-sheet'
 
 import { Box } from '@audius/harmony-native'
@@ -24,7 +23,7 @@ export const CommentDrawerForm = (props: {
     setReplyingToComment,
     setEditingComment
   } = useCurrentCommentSection()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
+  const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
   const handlePostComment = (message: string, mentions?: ID[]) => {
@@ -44,7 +43,8 @@ export const CommentDrawerForm = (props: {
     setEditingComment?.(undefined)
   }
 
-  const isLoading = postCommentStatus === Status.LOADING
+  // TODO:
+  const isLoading = false
 
   return (
     <Box p='l' backgroundColor='white'>

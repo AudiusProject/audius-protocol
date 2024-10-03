@@ -35,7 +35,7 @@ const CommentDrawerContent = (props: {
 }) => {
   const { commentListRef } = props
   const {
-    comments,
+    commentIds,
     commentSectionLoading: isLoading,
     loadMorePages,
     isLoadingMorePages
@@ -53,7 +53,7 @@ const CommentDrawerContent = (props: {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex p='l'>
         <NoComments />
@@ -64,8 +64,8 @@ const CommentDrawerContent = (props: {
   return (
     <BottomSheetFlatList
       ref={commentListRef}
-      data={comments}
-      keyExtractor={({ id }) => id.toString()}
+      data={commentIds}
+      keyExtractor={(id) => id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
@@ -83,9 +83,9 @@ const CommentDrawerContent = (props: {
       keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
-      renderItem={({ item }) => (
+      renderItem={({ item: id }) => (
         <Box ph='l'>
-          <CommentThread commentId={item.id} />
+          <CommentThread commentId={id} />
         </Box>
       )}
     />

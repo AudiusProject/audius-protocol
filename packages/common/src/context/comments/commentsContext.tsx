@@ -8,21 +8,21 @@ import {
 } from 'react'
 
 import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  useGetCommentsByTrackId,
   useGetCurrentUserId,
-  useGetTrackById
+  useGetTrackById,
+  useGetCommentsByTrackId,
+  QUERY_KEYS
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
   ModalSource,
   ID,
-  PaginatedStatus,
   Comment,
   ReplyComment,
-  Status,
   UserTrackMetadata
 } from '~/models'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
@@ -52,15 +52,13 @@ type CommentSectionContextType = {
   track: UserTrackMetadata
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
-  comments: Comment[]
+  commentIds: ID[]
   currentSort: TrackCommentsSortMethodEnum
   isLoadingMorePages: boolean
   hasMorePages: boolean
   reset: (hard?: boolean) => void
   setCurrentSort: (sort: TrackCommentsSortMethodEnum) => void
   loadMorePages: () => void
-  handleLoadMoreReplies: (commentId: string) => void
-  handleMuteEntityNotifications: () => void
 } & CommentSectionProviderProps
 
 export const CommentSectionContext = createContext<
@@ -87,18 +85,23 @@ export const CommentSectionProvider = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const {
-    data: comments = [],
+    data: commentIds = [],
     status,
-    loadMore,
-    reset,
-    hasMore: hasMorePages
-  } = useGetCommentsByTrackId(
-    { entityId, sortMethod: currentSort, userId: currentUserId },
-    {
-      pageSize: 5,
-      disabled: entityId === 0
-    }
-  )
+    isFetching,
+    hasNextPage,
+    fetchNextPage: loadMorePages,
+    isFetchingNextPage: isLoadingMorePages
+  } = useGetCommentsByTrackId({
+    trackId: entityId,
+    sortMethod: currentSort,
+    userId: currentUserId
+  })
+  const queryClient = useQueryClient()
+  // hard refreshes all data
+  const reset = () => {
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
+  }
   const dispatch = useDispatch()
 
   const lineup = useSelector(getLineup)
@@ -141,14 +144,7 @@ export const CommentSectionProvider = (
   )
 
   const commentSectionLoading =
-    status === Status.LOADING || status === Status.IDLE
-
-  const handleLoadMoreReplies = (commentId: string) => {
-    console.log('Loading more replies for', commentId)
-  }
-  const handleMuteEntityNotifications = () => {
-    console.log('Muting all notifs for ', entityId)
-  }
+    (status === 'loading' || isFetching) && !isLoadingMorePages
 
   if (!track) {
     return null
@@ -164,13 +160,13 @@ export const CommentSectionProvider = (
         entityId,
         entityType,
         commentCount,
-        comments,
+        commentIds,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
-        isLoadingMorePages: status === PaginatedStatus.LOADING_MORE,
+        isLoadingMorePages,
         track,
         reset,
-        hasMorePages,
+        hasMorePages: !!hasNextPage,
         currentSort,
         replyingToComment,
         setReplyingToComment,
@@ -178,9 +174,7 @@ export const CommentSectionProvider = (
         setEditingComment,
         setCurrentSort,
         playTrack,
-        handleLoadMoreReplies,
-        loadMorePages: loadMore,
-        handleMuteEntityNotifications
+        loadMorePages
       }}
     >
       {children}

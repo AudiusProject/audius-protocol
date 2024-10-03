@@ -88,7 +88,8 @@ export const CommentActionBar = ({
   const [muteUser] = useMuteUser()
 
   // Comment context data
-  const { currentUserId, isEntityOwner, entityId } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, entityId, currentSort } =
+    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const isUserGettingNotifs = isCommentOwner && isParentComment
 
@@ -105,14 +106,12 @@ export const CommentActionBar = ({
   const { toast } = useContext(ToastContext)
 
   // Internal state
-  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
   const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
-    setReactionState(!reactionState)
-    reactToComment(commentId, !reactionState)
-  }, [commentId, reactToComment, reactionState])
+    reactToComment(commentId, !isCurrentUserReacted)
+  }, [commentId, isCurrentUserReacted, reactToComment])
 
   const handleDelete = useCallback(() => {
     // note: we do some UI logic in the CommentBlock above this so we can't trigger directly from here
@@ -138,10 +137,11 @@ export const CommentActionBar = ({
     muteUser({
       mutedUserId: comment.userId,
       isMuted: false,
-      entityId
+      trackId: entityId,
+      currentSort
     })
     toast(messages.toasts.mutedUser)
-  }, [comment.userId, entityId, muteUser, toast])
+  }, [comment.userId, currentSort, entityId, muteUser, toast])
 
   const handleFlagComment = useCallback(() => {
     reportComment(commentId)
@@ -304,7 +304,7 @@ export const CommentActionBar = ({
         {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
-          color={reactionState ? 'active' : 'subdued'}
+          color={isCurrentUserReacted ? 'active' : 'subdued'}
           aria-label='Heart comment'
           onClick={handleReact}
           disabled={isDisabled}
