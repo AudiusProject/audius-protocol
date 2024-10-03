@@ -101,7 +101,7 @@ export const InboxSettingsModalNew = () => {
 
   const allowAll = localPermission === ChatPermission.ALL
   const initialValues = {
-    allowAll: allowAll,
+    allowAll,
     [ChatPermission.FOLLOWEES]:
       allowAll || localPermission === ChatPermission.FOLLOWEES,
     [ChatPermission.TIPPERS]:
