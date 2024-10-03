@@ -113,8 +113,6 @@ describe('Push Notifications', () => {
         }
       }
     )
-
-    jest.clearAllMocks()
   }, 40000)
 
   test('Process chat blast notification', async () => {
@@ -175,7 +173,6 @@ describe('Push Notifications', () => {
         })
       ],
       [
-        // Another expected call structure, modify as necessary
         expect.objectContaining({
           type: user2.deviceType,
           targetARN: user2.awsARN,
@@ -195,7 +192,7 @@ describe('Push Notifications', () => {
     // User 2 only allows tippers to message them
     await insertChatPermission(processor.discoveryDB, user2.userId, 'tippers')
 
-    // User 1 sent message config.dmNotificationDelay ms ago
+    // New blast from user 1 now should not be sent to user 2 as user 1 has not tipped user 2
     const message2 = 'please let me DM you'
     const blastId2 = '2'
     const messageTimestampMs2 = Date.now() - config.dmNotificationDelay
@@ -215,7 +212,6 @@ describe('Push Notifications', () => {
 
     // No new notifications
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
-    jest.clearAllMocks()
   }, 40000)
 
   test('Test blast with existing chat', async () => {
@@ -224,9 +220,7 @@ describe('Push Notifications', () => {
       processor.identityDB
     )
 
-    // Start processor
     processor.start()
-    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // user2 follows user1
@@ -274,8 +268,6 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-
-    jest.clearAllMocks()
   }, 40000)
 
   test('Test many blasts ', async () => {
@@ -296,9 +288,7 @@ describe('Push Notifications', () => {
       { follower_user_id: 4, followee_user_id: 0 }
     ])
 
-    // Start processor
     processor.start()
-    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // Follow notifs
@@ -320,7 +310,6 @@ describe('Push Notifications', () => {
       blastTimestamp
     )
 
-    // Give task enough time to process all notifs
     await new Promise((r) =>
       setTimeout(r, config.pollInterval * (numUsers - 1))
     )
@@ -361,18 +350,16 @@ describe('Push Notifications', () => {
     )
     await new Promise((r) => setTimeout(r, config.pollInterval))
 
-    // We expect this user to be skipped
     await insertFollows(processor.discoveryDB, [
       { follower_user_id: 2, followee_user_id: 0 }
     ])
 
-    // Give task enough time to process all notifs
     await new Promise((r) =>
       setTimeout(r, config.pollInterval * (numUsers - 1))
     )
 
-    notifsSoFar = numInitialFollowers * 3 + 1
     // Expect 3 more blast notifs + 1 follow notif
+    notifsSoFar = numInitialFollowers * 3 + 1
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
     expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
       notifsSoFar,
@@ -408,8 +395,8 @@ describe('Push Notifications', () => {
       setTimeout(r, config.pollInterval * (numUsers - 1))
     )
 
-    notifsSoFar = notifsSoFar + numFinalFollowers
     // Expect all users to receive a blast notif now
+    notifsSoFar = notifsSoFar + numFinalFollowers
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
     for (let i = 0; i < numFinalFollowers; i++) {
       expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
@@ -426,8 +413,6 @@ describe('Push Notifications', () => {
         })
       )
     }
-
-    jest.clearAllMocks()
   }, 40000)
 
   test('Does not send DM notifications when sender is receiver', async () => {
