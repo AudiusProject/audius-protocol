@@ -101,6 +101,7 @@ export const CommentSectionProvider = (
   const reset = () => {
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.commentReplies] })
   }
   const dispatch = useDispatch()
 
