@@ -73,8 +73,13 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] =
     useState(false)
 
-  const { entityId, isEntityOwner, currentUserId, setEditingComment } =
-    useCurrentCommentSection()
+  const {
+    entityId,
+    isEntityOwner,
+    currentUserId,
+    setEditingComment,
+    currentSort
+  } = useCurrentCommentSection()
   const isCommentOwner = Number(userId) === currentUserId
 
   const [pinComment] = usePinComment()
@@ -139,12 +144,18 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    muteUser({ mutedUserId: userId, isMuted: false, entityId })
+    // NOTE:
+    muteUser({
+      mutedUserId: userId,
+      isMuted: false,
+      trackId: entityId,
+      currentSort
+    })
     toast({
       content: messages.toasts.mutedUser,
       type: 'info'
     })
-  }, [entityId, muteUser, toast, userId])
+  }, [currentSort, entityId, muteUser, toast, userId])
 
   const handleFlagComment = useCallback(() => {
     reportComment(id)

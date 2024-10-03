@@ -68,7 +68,7 @@ export const CommentForm = (props: CommentFormProps) => {
   const [initialMessage, setInitialMessage] = useState(initialValue)
   const {
     currentUserId,
-    comments,
+    commentIds,
     entityId,
     replyingToComment,
     editingComment
@@ -109,7 +109,7 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment])
 
-  const placeholder = comments?.length
+  const placeholder = commentIds?.length
     ? messages.addComment
     : messages.firstComment
 
@@ -131,6 +131,7 @@ export const CommentForm = (props: CommentFormProps) => {
         ) : null}
         <Box flex={1}>
           <ComposerInput
+            ref={ref}
             isLoading={isLoading}
             messageId={messageId}
             entityId={entityId}
