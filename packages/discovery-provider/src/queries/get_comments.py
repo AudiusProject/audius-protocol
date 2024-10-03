@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import Integer, and_, asc, desc, func, or_
+from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
