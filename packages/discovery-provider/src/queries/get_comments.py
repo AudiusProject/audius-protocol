@@ -23,6 +23,7 @@ redis = redis_connection.get_redis()
 
 COMMENT_THREADS_LIMIT = 5
 COMMENT_REPLIES_LIMIT = 3
+COMMENT_REPORT_KARMA_THRESHOLD = 1_720_000
 
 
 # Returns whether a comment has been reacted to by a particular user

@@ -2,7 +2,11 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_comments import get_comment_replies, get_track_comments
+from src.queries.get_comments import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    get_comment_replies,
+    get_track_comments,
+)
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -278,7 +282,7 @@ def test_get_reported_comments(app):
             {"comment_id": 2, "user_id": 3},
         ],
         "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
-        "aggregate_user": [{"user_id": 3, "follower_count": 1001}],
+        "aggregate_user": [{"user_id": 3, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD + 1}],
         "tracks": [{"track_id": 1, "owner_id": 1}],
     }
 
