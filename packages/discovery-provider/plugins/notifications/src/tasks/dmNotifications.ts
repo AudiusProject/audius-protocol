@@ -31,6 +31,7 @@ async function getCursors(redis: RedisClientType): Promise<{
   minMessageTimestamp: Date
   minReactionTimestamp: Date
   lastIndexedBlastId: string
+  lastIndexedBlastUserId: number
 }> {
   const maxCursor = new Date(Date.now() - config.dmNotificationDelay)
 
@@ -49,13 +50,21 @@ async function getCursors(redis: RedisClientType): Promise<{
   if (cachedReactionTimestamp) {
     minReactionCursor = new Date(Date.parse(cachedReactionTimestamp))
   }
-  const lastIndexedBlastId = await redis.get(config.lastIndexedBlastRedisKey)
+  const lastIndexedBlastId = await redis.get(config.lastIndexedBlastIdRedisKey)
+  let lastIndexedBlastUserId = null
+  const cachedLastIndexedBlastUserId = await redis.get(
+    config.lastIndexedBlastUserIdRedisKey
+  )
+  if (cachedLastIndexedBlastUserId) {
+    lastIndexedBlastUserId = parseInt(cachedLastIndexedBlastUserId)
+  }
 
   return {
     maxTimestamp: maxCursor,
     minMessageTimestamp: minMessageCursor,
     minReactionTimestamp: minReactionCursor,
-    lastIndexedBlastId
+    lastIndexedBlastId,
+    lastIndexedBlastUserId
   }
 }
 
@@ -119,10 +128,17 @@ async function getUnreadReactions(
     .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
+// We use the last indexed blast_id and user_id to get the next batch of blasts.
+// Cursor on user_id because we prefer skipping a user to duplicate notifs.
 async function getNewBlasts(
   discoveryDB: Knex,
-  lastIndexedBlastId?: string
-): Promise<{ blastId: string; messages: DMNotification[] }> {
+  lastIndexedBlastId?: string,
+  lastIndexedBlastUserId?: number
+): Promise<{
+  lastIndexedBlastId: string
+  lastIndexedBlastUserId: number
+  messages: DMNotification[]
+}> {
   let lastIndexedBlastTimestamp
   if (lastIndexedBlastId) {
     lastIndexedBlastTimestamp = (
@@ -132,16 +148,97 @@ async function getNewBlasts(
         .where('chat_blast.blast_id', lastIndexedBlastId)
     )[0]?.timestamp
   }
+  // First time running this task
   if (!lastIndexedBlastTimestamp) {
     lastIndexedBlastTimestamp = new Date(0).toISOString()
   }
-  console.log('REED calling getNewBlasts with', {
-    lastIndexedBlastId,
-    lastIndexedBlastTimestamp
-  })
+  let userId: number | null = lastIndexedBlastUserId ?? null
 
-  const messages = await discoveryDB.raw(
+  let messages = await discoveryDB.raw(
     `
+    WITH blast AS (
+      SELECT * FROM chat_blast where chat_blast.blast_id = ?
+    ),
+    aud AS (
+      -- follower_audience
+      SELECT blast_id, follower_user_id AS to_user_id
+      FROM follows
+      JOIN blast
+        ON blast.audience = 'follower_audience'
+        AND follows.followee_user_id = blast.from_user_id
+        AND follows.is_delete = false
+        AND follows.created_at < blast.created_at
+
+      UNION
+
+      -- tipper_audience
+      SELECT blast_id, sender_user_id AS to_user_id
+      FROM user_tips tip
+      JOIN blast
+        ON blast.audience = 'tipper_audience'
+        AND receiver_user_id = blast.from_user_id
+        AND tip.created_at < blast.created_at
+
+      UNION
+
+      -- remixer_audience
+      SELECT blast_id, t.owner_id AS to_user_id
+      FROM tracks t
+      JOIN remixes ON remixes.child_track_id = t.track_id
+      JOIN tracks og ON remixes.parent_track_id = og.track_id
+      JOIN blast
+        ON blast.audience = 'remixer_audience'
+        AND og.owner_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = 'track'
+            AND blast.audience_content_id = og.track_id
+          )
+        )
+
+      UNION
+
+      -- customer_audience
+      SELECT blast_id, buyer_user_id AS to_user_id
+      FROM usdc_purchases p
+      JOIN blast
+        ON blast.audience = 'customer_audience'
+        AND p.seller_user_id = blast.from_user_id
+        AND (
+          blast.audience_content_id IS NULL
+          OR (
+            blast.audience_content_type = p.content_type::text
+            AND blast.audience_content_id = p.content_id
+          )
+        )
+    ),
+    targ AS (
+      SELECT
+        blast_id,
+        from_user_id,
+        to_user_id,
+        blast.created_at
+      FROM blast
+      JOIN aud USING (blast_id)
+      LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
+      LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
+      WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
+      AND chat_allowed(from_user_id, to_user_id)
+      AND (?::INTEGER IS NULL OR to_user_id > ?)
+      ORDER BY to_user_id ASC
+      LIMIT ?
+    )
+    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
+    `,
+    [lastIndexedBlastId, userId, userId, config.blastUserBatchSize]
+  )
+
+  if (!messages.rows.length) {
+    userId = null
+    // TODO: what if blasts have the same timestamp?
+    messages = await discoveryDB.raw(
+      `
     WITH blast AS (
       SELECT * FROM chat_blast where chat_blast.created_at > ? order by chat_blast.created_at asc limit 1
     ),
@@ -210,11 +307,15 @@ async function getNewBlasts(
       LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
       LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
       WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
+      AND chat_allowed(from_user_id, to_user_id)
+      ORDER BY to_user_id ASC
+      LIMIT ?
     )
-    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ WHERE chat_allowed(from_user_id, to_user_id);
+    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
     `,
-    [lastIndexedBlastTimestamp]
-  )
+      [lastIndexedBlastTimestamp, config.blastUserBatchSize]
+    )
+  }
 
   const formattedMessages = messages.rows.map((message) => {
     return {
@@ -223,9 +324,10 @@ async function getNewBlasts(
     }
   })
 
-  console.log('REED', { formattedMessages })
   return {
-    blastId: formattedMessages[0]?.blast_id,
+    lastIndexedBlastId: formattedMessages[0]?.blast_id,
+    lastIndexedBlastUserId:
+      formattedMessages[formattedMessages.length - 1]?.receiver_user_id,
     messages: formattedMessages
   }
 }
@@ -248,14 +350,16 @@ function setLastIndexedTimestamp(
   }
 }
 
-function setLastIndexedBlastId(
+function setLastIndexedBlastIds(
   redis: RedisClientType,
-  redisKey: string,
-  blastId?: string
+  blastId?: string,
+  userId?: number
 ) {
   if (blastId) {
-    console.log('REED setting last Indexed', { blastId })
-    redis.set(redisKey, blastId)
+    redis.set(config.lastIndexedBlastIdRedisKey, blastId)
+  }
+  if (userId) {
+    redis.set(config.lastIndexedBlastUserIdRedisKey, userId)
   }
 }
 
@@ -278,7 +382,6 @@ export async function sendDMNotifications(
     // Query DN for unread messages and reactions between min and max cursors
     const redis = await getRedisConnection()
     const cursors = await getCursors(redis)
-    console.log('REED', { cursors })
 
     timer.logMessage(DMPhase.GET_UNREAD_MESSAGES)
     const unreadMessages = await getUnreadMessages(
@@ -310,13 +413,18 @@ export async function sendDMNotifications(
     }
 
     timer.logMessage(DMPhase.GET_NEW_BLASTS)
-    const { blastId, messages: newBlasts } = await getNewBlasts(
+    const {
+      lastIndexedBlastId,
+      lastIndexedBlastUserId,
+      messages: newBlasts
+    } = await getNewBlasts(
       discoveryDB,
-      cursors.lastIndexedBlastId
+      cursors.lastIndexedBlastId,
+      cursors.lastIndexedBlastUserId
     )
     if (newBlasts.length > 0) {
       console.log(
-        `dmNotifications: last Indexed blastId: ${blastId} new chat blast notifications: ${JSON.stringify(
+        `dmNotifications: last indexed blastId: ${lastIndexedBlastId}, last indexed userId: ${lastIndexedBlastUserId} new chat blast notifications: ${JSON.stringify(
           newBlasts
         )}`
       )
@@ -361,7 +469,7 @@ export async function sendDMNotifications(
       cursors.maxTimestamp,
       reactionNotifications
     )
-    setLastIndexedBlastId(redis, config.lastIndexedBlastRedisKey, blastId)
+    setLastIndexedBlastIds(redis, lastIndexedBlastId, lastIndexedBlastUserId)
 
     if (notifications.length > 0) {
       timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)

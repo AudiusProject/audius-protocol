@@ -259,19 +259,22 @@ describe('Push Notifications', () => {
 
   test('Test many blasts ', async () => {
     jest.clearAllMocks()
-    const numUsers = 10
+    config.blastUserBatchSize = 2
+    const numUsers = 5
+    const numInitialFollowers = numUsers - 2
     setupNUsersWithDevices(
       processor.discoveryDB,
       processor.identityDB,
       numUsers
     )
 
-    // All users follow user 0
-    for (let i = 1; i < numUsers; i++) {
-      await insertFollows(processor.discoveryDB, [
-        { follower_user_id: i, followee_user_id: 0 }
-      ])
-    }
+    // User 0 is the blast sender. All other users follow user 0
+    // except user 2 (leave a gap)
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 1, followee_user_id: 0 },
+      { follower_user_id: 3, followee_user_id: 0 },
+      { follower_user_id: 4, followee_user_id: 0 }
+    ])
 
     // Start processor
     processor.start()
@@ -279,17 +282,13 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // Follow notifs
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(numUsers - 1)
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(numInitialFollowers)
 
-    // If the users have an existing chat thread and user1 sends a blast,
-    // in the real world user2 should receive a normal message notification
-    // from the blast fan-out, but that doesn't work in jest, so just confirm no
-    // new message notifications are sent
-    const blastId = '0'
-    const blastTimestampMs = Date.now() - config.dmNotificationDelay
-    const blastTimestamp = new Date(blastTimestampMs)
+    let blastId = '0'
+    let blastTimestampMs = Date.now() - config.dmNotificationDelay
+    let blastTimestamp = new Date(blastTimestampMs)
     const audience = 'follower_audience'
-    const message = 'hi from user 0'
+    let message = 'hi from user 0'
     await insertBlast(
       processor.discoveryDB,
       0,
@@ -301,9 +300,47 @@ describe('Push Notifications', () => {
       blastTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    // Give task enough time to process all notifs
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
 
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes((numUsers - 1) * 2)
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(
+      numInitialFollowers * 2
+    )
+
+    // Test race condition when new follower whose userId is in the middle of a batch
+    //  is added in between processing a blast
+    blastId = '1'
+    blastTimestampMs = Date.now() - config.dmNotificationDelay
+    blastTimestamp = new Date(blastTimestampMs)
+    message = 'second blast from user 0'
+    await insertBlast(
+      processor.discoveryDB,
+      0,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+    await new Promise((r) => setTimeout(r, config.pollInterval))
+
+    // We expect this user to be skipped
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 2, followee_user_id: 0 }
+    ])
+
+    // Give task enough time to process all notifs
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
+
+    // Expect 3 more blast notifs + 1 follow notif
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(
+      numInitialFollowers * 3 + 1
+    )
 
     jest.clearAllMocks()
   }, 40000)
