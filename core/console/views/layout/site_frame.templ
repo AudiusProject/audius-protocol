@@ -18,11 +18,40 @@ templ (l *Layout) SiteFrame() {
 		<div class="min-h-screen flex flex-col">
 			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
 				<div class="flex items-center justify-between space-y-2">
-					<div class="uk-navbar-item">
+					<div class="uk-navbar-item flex flex-col items-start space-y-4">
 						<a href="/console" class="flex items-center">
 							<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-12 w-12 object-contain"/>
 							<h1 class="text-2xl font-bold tracking-tight">Console</h1>
 						</a>
+						<div class="space-y-4">
+							<ul class="uk-tab-alt max-w-96">
+								<li>
+									@l.components.Link("/overview") {
+										<div>Overview</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/analytics") {
+										<div>Analytics</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/nodes") {
+										<div>Nodes</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/content") {
+										<div>Content</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/uptime") {
+										<div>Uptime</div>
+									}
+								</li>
+							</ul>
+						</div>
 					</div>
 					<div class="flex items-center space-x-2">
 						<div class="text-left text-sm font-bold tracking-tight">
@@ -50,40 +79,9 @@ templ (l *Layout) SiteFrame() {
 									}
 								</span>
 							</div>
-							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s">
-								block data
-							</div>
+							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s"></div>
 						</div>
 					</div>
-				</div>
-				<div class="space-y-4">
-					<ul class="uk-tab-alt max-w-96">
-						<li>
-							@l.components.Link("/overview") {
-								<div>Overview</div>
-							}
-						</li>
-						<li>
-							@l.components.Link("/analytics") {
-								<div>Analytics</div>
-							}
-						</li>
-						<li>
-							@l.components.Link("/nodes") {
-								<div>Nodes</div>
-							}
-						</li>
-						<li>
-							@l.components.Link("/content") {
-								<div>Content</div>
-							}
-						</li>
-						<li>
-							@l.components.Link("/uptime") {
-								<div>Uptime</div>
-							}
-						</li>
-					</ul>
 				</div>
 			</div>
 			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6 flex flex-col">
