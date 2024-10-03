@@ -100,7 +100,7 @@ const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TimestampLink trackTimestampS={trackTimestampS} />
+                  <TimestampLink size='xs' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>

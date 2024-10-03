@@ -1,5 +1,8 @@
 import { useCurrentCommentSection } from '@audius/common/context'
-import { formatTrackTimestamp, TextLink, TextLinkProps } from '@audius/harmony'
+
+import type { TextLinkProps } from '@audius/harmony-native'
+import { TextLink } from '@audius/harmony-native'
+import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 type TimestampLinkProps = {
   timestampSeconds: number
@@ -11,12 +14,12 @@ export const TimestampLink = (props: TimestampLinkProps) => {
 
   return (
     <TextLink
-      onClick={() => playTrack(timestampSeconds)}
+      onPress={() => playTrack(timestampSeconds)}
       variant='visible'
       size='s'
       {...other}
     >
-      {formatTrackTimestamp(timestampSeconds)}
+      {formatCommentTrackTimestamp(timestampSeconds)}
     </TextLink>
   )
 }
