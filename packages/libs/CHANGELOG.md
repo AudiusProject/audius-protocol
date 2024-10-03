@@ -1,5 +1,13 @@
 # @audius/sdk
 
+## 6.0.1
+
+### Patch Changes
+
+- 969fd1f: add title to remixed tracks return
+- Updated dependencies [0a2fe3d]
+  - @audius/fixed-decimal@0.1.1
+
 ## 6.0.0
 
 ### Major Changes
