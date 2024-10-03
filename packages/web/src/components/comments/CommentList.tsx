@@ -6,7 +6,7 @@ import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
 export const CommentList = () => {
-  const { comments, commentSectionLoading } = useCurrentCommentSection()
+  const { commentIds, commentSectionLoading } = useCurrentCommentSection()
 
   // TODO: break out list skeleton from reply skeleton
   if (commentSectionLoading) {
@@ -15,8 +15,8 @@ export const CommentList = () => {
 
   return (
     <Flex p='l' as='ul' column gap='xl' w='100%' backgroundColor='white'>
-      {comments.length === 0 ? <NoComments /> : null}
-      {comments.map(({ id }) => (
+      {commentIds.length === 0 ? <NoComments /> : null}
+      {commentIds.map((id) => (
         <CommentThread commentId={id} key={id} />
       ))}
     </Flex>

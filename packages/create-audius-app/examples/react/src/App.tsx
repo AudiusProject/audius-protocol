@@ -72,7 +72,8 @@ export default function App() {
     if (trackId === playingTrackId) {
       setIsPlaying((prev) => !prev)
     } else {
-      setPlayingTrackSrc(await sdk.tracks.streamTrack({ trackId }))
+      const streamUrl = await sdk.tracks.getTrackStreamUrl({ trackId })
+      setPlayingTrackSrc(streamUrl)
       setPlayingTrackId(trackId)
       setIsPlaying(true)
     }
