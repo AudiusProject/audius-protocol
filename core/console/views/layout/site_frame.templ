@@ -8,6 +8,11 @@ import (
 
 var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))
 
+templ (l *Layout) NavBlockData(totalBlocks, totalTxs string) {
+	<div>Total Blocks: { totalBlocks }</div>
+	<div>Total Transactions: { totalTxs }</div>
+}
+
 templ (l *Layout) SiteFrame() {
 	@l.Base() {
 		<div class="min-h-screen flex flex-col">
@@ -44,6 +49,9 @@ templ (l *Layout) SiteFrame() {
 										<span>{ l.config.ProposerAddress }</span>
 									}
 								</span>
+							</div>
+							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s">
+								block data
 							</div>
 						</div>
 					</div>

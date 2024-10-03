@@ -83,6 +83,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
+  // Ref to keep track of the submit state of the input
+  const submittedRef = useRef(false)
+  // Ref to keep track of a unique id for each change
+  const changeOpIdRef = useRef(0)
 
   const {
     linkEntities,
@@ -187,7 +191,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLTextAreaElement>) => {
       setValue(e.target.value)
+      const currentOpId = ++changeOpIdRef.current
       const editedValue = await resolveLinks(e.target.value)
+      if (submittedRef.current || currentOpId !== changeOpIdRef.current) {
+        return
+      }
       setValue(editedValue)
       // TODO: Need to update this to move to the proper position affect link change to human text
       // setTimeout(() => {
@@ -195,11 +203,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
       //   textarea.selectionEnd = cursorPosition
       // }, 0)
     },
-    [resolveLinks, setValue]
+    [resolveLinks, setValue, submittedRef]
   )
 
   const handleSubmit = useCallback(() => {
+    submittedRef.current = true
+    changeOpIdRef.current++
     onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+    submittedRef.current = false
   }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
 
   // Submit when pressing enter while not holding shift

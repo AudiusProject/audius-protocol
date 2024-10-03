@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import { splitOnNewline } from '@audius/common/utils'
+import {
+  getDurationFromTimestampMatch,
+  splitOnNewline,
+  timestampRegex
+} from '@audius/common/utils'
 import { Platform, TouchableOpacity, View } from 'react-native'
 import type {
   NativeSyntheticEvent,
@@ -9,7 +14,7 @@ import type {
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { Flex, IconSend } from '@audius/harmony-native'
+import { IconSend } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -26,6 +31,14 @@ const BACKSPACE_KEY = 'Backspace'
 const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
+}
+
+const createTextSections = (text: string) => {
+  const splitText = splitOnNewline(text)
+  return splitText.map((t) => (
+    // eslint-disable-next-line react/jsx-key
+    <Text>{`${t === '\n' ? '\n\n' : t}`}</Text>
+  ))
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -47,6 +60,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   overlayTextContainer: {
     position: 'absolute',
+    pointerEvents: 'none',
     right: spacing(10),
     left: 0,
     zIndex: 0,
@@ -79,13 +93,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
     messageId,
     placeholder,
     presetMessage,
-    extraOffset = 0
+    entityId
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [selection, setSelection] = useState<{ start: number; end: number }>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const messageIdRef = useRef(messageId)
+  const { data: track } = useGetTrackById({ id: entityId ?? -1 })
 
   const {
     linkEntities,
@@ -98,6 +113,23 @@ export const ComposerInput = (props: ComposerInputProps) => {
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+
+  const getTimestamps = useCallback(
+    (value: string) => {
+      if (!track || !track.access.stream) return []
+
+      const { duration } = track
+      return Array.from(value.matchAll(timestampRegex))
+        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+        .map((match) => ({
+          type: 'timestamp',
+          text: match[0],
+          index: match.index,
+          link: ''
+        }))
+    },
+    [track]
+  )
 
   useEffect(() => {
     const fn = async () => {
@@ -142,7 +174,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (e.nativeEvent.key === BACKSPACE_KEY && selection) {
+      const { key } = e.nativeEvent
+
+      if (key === BACKSPACE_KEY && selection) {
         const textBeforeCursor = value.slice(0, selection.start)
         const cursorPosition = selection.start
         const { editValue } = handleBackspace({
@@ -182,82 +216,53 @@ export const ComposerInput = (props: ComposerInputProps) => {
     </TouchableOpacity>
   )
 
-  const renderTextDisplay = (value: string) => {
-    const matches = getMatches(value)
-    if (!matches) {
-      const text = splitOnNewline(value)
-      return text.map((t, i) => (
-        <Text key={i}>{`${t === '\n' ? '\n\n' : t}`}</Text>
-      ))
-    }
-    const parts: JSX.Element[] = []
-    let lastIndex = 0
-    for (const match of matches) {
-      const { index, text } = match
-      if (index === undefined) {
-        continue
+  const renderTextDisplay = useCallback(
+    (value: string) => {
+      const matches = getMatches(value) ?? []
+      const timestamps = getTimestamps(value)
+      const fullMatches = [...matches, ...timestamps]
+
+      if (!fullMatches.length) {
+        return createTextSections(value)
       }
 
-      if (index > lastIndex) {
-        // Add text before the match
-        const text = splitOnNewline(value.slice(lastIndex, index))
-        parts.push(
-          ...text.map((t, i) => (
-            <Text key={`${lastIndex}${i}`}>{`${t === '\n' ? '\n\n' : t}`}</Text>
-          ))
-        )
+      const parts: JSX.Element[] = []
+
+      // Sort match sections by index
+      const sortedMatches = fullMatches.sort(
+        (a, b) => (a.index ?? 0) - (b.index ?? 0)
+      )
+
+      let lastIndex = 0
+      for (const match of sortedMatches) {
+        const { index, text } = match
+        if (index === undefined) {
+          continue
+        }
+
+        if (index > lastIndex) {
+          // Add text before the match
+          parts.push(...createTextSections(value.slice(lastIndex, index)))
+        }
+        // Add the matched word with accent color
+        parts.push(<Text color='secondary'>{text}</Text>)
+
+        // Update lastIndex to the end of the current match
+        lastIndex = index + text.length
       }
-      // Add the matched word with accent color
-      parts.push(
-        <Text color='secondary' key={index}>
-          {text}
-        </Text>
-      )
 
-      // Update lastIndex to the end of the current match
-      lastIndex = index + text.length
-    }
+      // Add remaining text after the last match
+      if (lastIndex < value.length) {
+        parts.push(...createTextSections(value.slice(lastIndex)))
+      }
 
-    // Add remaining text after the last match
-    if (lastIndex < value.length) {
-      const text = splitOnNewline(value.slice(lastIndex))
-      parts.push(
-        ...text.map((t, i) => <Text key={`${lastIndex}${i}`}>{`${t}\n`}</Text>)
-      )
-    }
-
-    return parts
-  }
-
-  // For iOS: default padding + extra padding
-  // For Android: extra padding is slightly larger than iOS, and only
-  // needed if the screen header size changes
-  const offset =
-    Platform.OS === 'ios'
-      ? spacing(1.5) + extraOffset
-      : Platform.OS === 'android'
-      ? extraOffset
-        ? spacing(1.5) + extraOffset
-        : undefined
-      : undefined
+      return parts
+    },
+    [getMatches, getTimestamps]
+  )
 
   return (
-    <Flex
-      style={{
-        position: 'relative',
-        // maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-        paddingBottom: offset
-      }}
-    >
-      <View
-        style={[
-          styles.overlayTextContainer,
-          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
-        ]}
-      >
-        <Text style={styles.overlayText}>{renderTextDisplay(value)}</Text>
-      </View>
+    <>
       <TextInput
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
@@ -280,6 +285,15 @@ export const ComposerInput = (props: ComposerInputProps) => {
         maxLength={10000}
         autoCorrect
       />
-    </Flex>
+      <View
+        style={[
+          styles.overlayTextContainer,
+          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
+          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
+        ]}
+      >
+        <Text style={styles.overlayText}>{renderTextDisplay(value)}</Text>
+      </View>
+    </>
   )
 }

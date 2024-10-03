@@ -796,7 +796,12 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               // to calculate scroll position.
               useWindow={isMobile}
               initialLoad={false}
-              getScrollParent={() => scrollParent}
+              getScrollParent={() => {
+                if (scrollParent?.id === 'mainContent') {
+                  return document.getElementById('mainContent')
+                }
+                return scrollParent
+              }}
               threshold={loadMoreThreshold}
               element='ol'
             >

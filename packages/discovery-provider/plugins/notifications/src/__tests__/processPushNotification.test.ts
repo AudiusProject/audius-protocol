@@ -113,6 +113,8 @@ describe('Push Notifications', () => {
         }
       }
     )
+
+    jest.clearAllMocks()
   }, 40000)
 
   test('Process chat blast notification', async () => {
@@ -190,6 +192,65 @@ describe('Push Notifications', () => {
 
     // No new notifications
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
+    jest.clearAllMocks()
+  }, 40000)
+
+  test('Test blast with existing chat', async () => {
+    const { user1, user2 } = await setupTwoUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB
+    )
+
+    // Start processor
+    processor.start()
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // user2 follows user1
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: user2.userId, followee_user_id: user1.userId }
+    ])
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    // Follow generates a notification
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+
+    // Create a chat thread
+    const message = 'hi from user 1'
+    const messageTimestampMs = Date.now()
+    const messageTimestamp = new Date(messageTimestampMs)
+    const chatId = '1'
+    await createChat(
+      processor.discoveryDB,
+      user1.userId,
+      user2.userId,
+      chatId,
+      messageTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // If the users have an existing chat thread and user1 sends a blast,
+    // in the real world user2 should receive a normal message notification
+    // from the blast fan-out, but that doesn't work in jest, so just confirm no
+    // new message notifications are sent
+    const blastId = '1'
+    const blastTimestampMs = Date.now() - config.dmNotificationDelay
+    const blastTimestamp = new Date(blastTimestampMs)
+    const audience = 'follower_audience'
+    await insertBlast(
+      processor.discoveryDB,
+      user1.userId,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
 
     jest.clearAllMocks()
   }, 40000)
