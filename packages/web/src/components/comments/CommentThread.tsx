@@ -97,7 +97,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
           </Flex>
         )}
 
-        {hasMoreReplies ? (
+        {hasMoreReplies && !hiddenReplies[rootComment.id] ? (
           <PlainButton
             onClick={handleLoadMoreReplies}
             variant='subdued'
