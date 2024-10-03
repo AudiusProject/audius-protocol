@@ -255,3 +255,36 @@ def test_get_tombstone_comments(app):
             decode_string_id(comments[-1]["id"])
         ) == 0  # deleted comment should be last
         assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+
+def test_get_reported_comments(app):
+    "Test that we do not receive comments that have been reported by artist or high-karma user"
+
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+        ],
+        "comment_reports": [
+            {"comment_id": 1, "user_id": 1},
+            {"comment_id": 2, "user_id": 3},
+        ],
+        "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
+        "aggregate_user": [{"user_id": 3, "follower_count": 1001}],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({}, 1, 4)
+        assert len(comments) == 0

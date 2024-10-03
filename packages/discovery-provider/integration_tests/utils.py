@@ -3,6 +3,7 @@ from datetime import datetime
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
@@ -128,6 +129,7 @@ def populate_mock_db(db, entities, block_offset=None):
         comment_threads = entities.get("comment_threads", [])
         comment_reactions = entities.get("comment_reactions", [])
         comment_mentions = entities.get("comment_mentions", [])
+        comment_reports = entities.get("comment_reports", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -846,5 +848,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=i + block_offset,
             )
             session.add(comment_mention_record)
+        for i, comment_report in enumerate(comment_reports):
+            comment_report_record = CommentReport(
+                comment_id=comment_report.get("comment_id", i),
+                user_id=comment_report.get("user_id", i),
+                is_delete=comment_report.get("is_delete", False),
+                created_at=comment_report.get("created_at", datetime.now()),
+                updated_at=comment_report.get("updated_at", datetime.now()),
+                txhash=comment_report.get("txhash", str(i + block_offset)),
+                blockhash=comment_report.get("blockhash", str(i + block_offset)),
+                blocknumber=i + block_offset,
+            )
+            session.add(comment_report_record)
 
         session.commit()

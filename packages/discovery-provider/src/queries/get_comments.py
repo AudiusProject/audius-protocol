@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy import Integer, and_, asc, desc, func, or_
 from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
@@ -10,6 +10,7 @@ from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.queries.query_helpers import helpers, populate_user_metadata
 from src.utils import redis_connection
@@ -145,6 +146,10 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment.comment_id == CommentReport.comment_id,
             )
             .outerjoin(
+                AggregateUser,
+                AggregateUser.user_id == CommentReport.user_id,
+            )
+            .outerjoin(
                 CommentReaction, Comment.comment_id == CommentReaction.comment_id
             )
             .outerjoin(
@@ -164,16 +169,26 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment.entity_type == "Track",
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
-                (CommentReport.comment_id == None)
-                | (current_user_id == None)
-                | (CommentReport.user_id != current_user_id),
                 or_(
-                    MutedUser.muted_user_id == None, MutedUser.is_delete == True
+                    CommentReport.comment_id == None,
+                    current_user_id == None,
+                    CommentReport.user_id != current_user_id,
+                ),
+                or_(
+                    CommentReport.comment_id == None,
+                    CommentReport.comment_id != artist_id),
+                or_(
+                    MutedUser.muted_user_id == None,
+                    MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
-                | (Comment.is_delete == False)
+                | (Comment.is_delete == False),
+            )
+            # Ensure that the combined follower count of all users who reported the comment is below the threshold.
+            .having(
+                func.coalesce(func.sum(AggregateUser.follower_count), 0) <= 1000,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
