@@ -411,7 +411,7 @@ export const usePinComment = () => {
             } as CommentOrReply)
         )
 
-        // Loop through the sort list and move hte newly pinned comment
+        // Loop through the sort list and move the newly pinned comment
         queryClient.setQueryData<InfiniteData<ID[]>>(
           [QUERY_KEYS.trackCommentList, trackId, currentSort],
           (prevCommentData) => {
