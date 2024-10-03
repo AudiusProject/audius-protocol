@@ -106,7 +106,7 @@ export const CommentActionBar = ({
   const { toast } = useContext(ToastContext)
 
   // Internal state
-  const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
+  const [notificationsOn, setNotificationsMuted] = useState(true) // TODO: This needs some API support
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
@@ -291,13 +291,14 @@ export const CommentActionBar = ({
           }
       ].filter(removeNullable),
     [
-      isPinned,
-      onClickEdit,
-      handleMuteNotifs,
-      notificationsOn,
-      isCommentOwner,
       isEntityOwner,
-      isUserGettingNotifs
+      isParentComment,
+      isPinned,
+      isCommentOwner,
+      onClickEdit,
+      isUserGettingNotifs,
+      handleMuteNotifs,
+      notificationsOn
     ]
   )
 

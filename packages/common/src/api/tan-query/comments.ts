@@ -386,6 +386,15 @@ export const usePinComment = () => {
       return await sdk.comments.pinComment(userId, commentId, isPinned)
     },
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
+      // Finally - update our individual comment
+      queryClient.setQueryData(
+        [QUERY_KEYS.comment, commentId],
+        (prevCommentState: CommentOrReply | undefined) =>
+          ({
+            ...prevCommentState,
+            isPinned
+          } as CommentOrReply)
+      )
       if (isPinned) {
         // Un-pin the current top comment (if it's already not pinned nothing changes)
         const commentData = queryClient.getQueryData<InfiniteData<ID[]>>([
@@ -396,9 +405,11 @@ export const usePinComment = () => {
         // if we somehow hit an empty cache this will be undefined
         if (commentData === undefined) return
         const prevTopCommentId = commentData.pages[0][0]
-        // If we're pinning the comment at the top already, no need to do anything
+        // If we're pinning the comment at the top already,
+        // there's no need to do any unpinning of other comments or rearrange sort
         if (prevTopCommentId === commentId) return
 
+        // Un-pin the current top comment (not the comment we're pinning at the moment)
         queryClient.setQueryData<CommentOrReply | undefined>(
           [QUERY_KEYS.comment, prevTopCommentId],
           (prevCommentState) =>
@@ -408,7 +419,7 @@ export const usePinComment = () => {
             } as CommentOrReply)
         )
 
-        // Loop through the sort list and move the newly pinned comment
+        // Move our newly pinned comment from its old spot to the top of the sort data
         queryClient.setQueryData<InfiniteData<ID[]>>(
           [QUERY_KEYS.trackCommentList, trackId, currentSort],
           (prevCommentData) => {
@@ -428,15 +439,6 @@ export const usePinComment = () => {
           }
         )
       }
-      // Finally - update our individual comment
-      queryClient.setQueryData(
-        [QUERY_KEYS.comment, commentId],
-        (prevCommentState: CommentOrReply | undefined) =>
-          ({
-            ...prevCommentState,
-            isPinned
-          } as CommentOrReply)
-      )
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort, commentId, isPinned } = args
