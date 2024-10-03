@@ -35,10 +35,13 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
   const handlePressClear = useCallback(() => {
     setReplyingToComment?.(undefined)
     setEditingComment?.(undefined)
-  }, [])
+  }, [setEditingComment, setReplyingToComment])
 
   return (
     <Flex
+      direction='row'
+      alignItems='center'
+      justifyContent='space-between'
       style={{
         borderColor: color.neutral.n150,
         backgroundColor: color.background.surface1,
@@ -47,11 +50,16 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
         borderTopLeftRadius: spacing.unit1,
         borderTopRightRadius: spacing.unit1,
         padding: spacing.xs,
-        paddingHorizontal: spacing.m
+        paddingLeft: spacing.m
       }}
     >
       <Text size='s'>{text}</Text>
-      <IconButton icon={IconClose} onPress={handlePressClear} />
+      <IconButton
+        size='2xs'
+        icon={IconClose}
+        onPress={handlePressClear}
+        color='default'
+      />
     </Flex>
   )
 }
