@@ -24,8 +24,12 @@ import {
   FOLLOWERS_USER_LIST_TAG as FOLLOWER_TAG,
   FAVORITES_USER_LIST_TAG as FAVORITES_TAG,
   RELATED_ARTISTS_USER_LIST_TAG as RELATED_ARTISTS_TAG,
+  PURCHASERS_USER_LIST_TAG as PURCHASERS_TAG,
+  REMIXERS_USER_LIST_TAG as REMIXERS_TAG,
   UserListStoreState,
-  CommonState
+  CommonState,
+  purchasersUserListSelectors,
+  remixersUserListSelectors
 } from '@audius/common/store'
 import {
   Modal,
@@ -34,7 +38,9 @@ import {
   IconUser,
   IconUserGroup,
   IconTrophy,
-  IconUserFollowing as IconFollowing
+  IconUserFollowing as IconFollowing,
+  IconCart,
+  IconRemix
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 
@@ -60,6 +66,10 @@ const { getUserList: supportingSelector, getId: getSupportingId } =
   supportingUserListSelectors
 const { getUserList: topSupportersSelector, getId: getSupportersId } =
   topSupportersUserListSelectors
+const { getUserList: purchasersSelector, getId: getPurchasersId } =
+  purchasersUserListSelectors
+const { getUserList: remixersSelector, getId: getRemixersId } =
+  remixersUserListSelectors
 const { getUser } = cacheUsersSelectors
 const { getProfileUser } = profilePageSelectors
 
@@ -77,7 +87,9 @@ const messages = {
   topSupporters: 'Top Supporters',
   supporting: 'Supporting',
   relatedArtists: 'Related Artists',
-  mutuals: 'Mutuals'
+  mutuals: 'Mutuals',
+  purchasers: 'Purchasers',
+  remixers: 'Remixers'
 }
 
 const UserListModal = ({
@@ -190,6 +202,28 @@ const UserListModal = ({
         <div className={styles.titleContainer}>
           <IconUserGroup className={styles.icon} />
           <span>{messages.relatedArtists}</span>
+        </div>
+      )
+      break
+    case UserListType.PURCHASER:
+      tag = PURCHASERS_TAG
+      selector = purchasersSelector
+      userIdSelector = getPurchasersId
+      title = (
+        <div className={styles.titleContainer}>
+          <IconCart className={styles.icon} />
+          <span>{messages.purchasers}</span>
+        </div>
+      )
+      break
+    case UserListType.REMIXER:
+      tag = REMIXERS_TAG
+      selector = remixersSelector
+      userIdSelector = getRemixersId
+      title = (
+        <div className={styles.titleContainer}>
+          <IconRemix className={styles.icon} />
+          <span>{messages.remixers}</span>
         </div>
       )
       break
