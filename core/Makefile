@@ -65,18 +65,25 @@ dev: gen
 test: gen
 	go test -v ./... -timeout 60s
 
-.PHONY: sandbox-reset
-sandbox-reset:
-	@docker compose -f ./infra/docker-compose.yml down
-	@docker compose -f ./infra/docker-compose.yml up --build -d
-
-.PHONY: sandbox-node
-sandbox-node:
-	@docker compose -f ./infra/docker-compose.yml up --build sandbox-core
-
 .PHONY: sandbox
 sandbox:
-	@go run ./scripts/sandbox.go
+	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
+
+.PHONY: down-sandbox
+down-sandbox:
+	@docker compose -f ./infra/docker-compose.yml down
+
+.PHONY: prod-sandbox
+prod-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile prod up --build -d
+
+.PHONY: stage-sandbox
+stage-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile stage up --build -d
+
+.PHONY: dev-sandbox
+dev-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile dev up --build -d
 
 .PHONY: livereload
 livereload:

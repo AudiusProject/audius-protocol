@@ -19,6 +19,8 @@ services:
     container_name: prod-sandbox
     env_file:
       - ./dev_config/prod-sandbox.env
+    profiles:
+      - prod
 
   stage-sandbox:
     extends:
@@ -26,6 +28,8 @@ services:
     container_name: stage-sandbox
     env_file:
       - ./dev_config/stage-sandbox.env
+    profiles:
+      - stage
 
   dev-sandbox:
     extends:
@@ -33,17 +37,21 @@ services:
     container_name: dev-sandbox
     env_file:
       - ./dev_config/dev-sandbox.env
+    profiles:
+      - dev
 
   base-sandbox:
     build:
       context: ../
       dockerfile: ./infra/Dockerfile.dev
     volumes:
-      - ./tmp:/bin/tmp
+      - ../tmp:/bin/tmp
     restart: unless-stopped
     networks:
       - sandbox-core-net
     environment: []
+    profiles:
+      - base
 
   postgres:
     image: postgres:latest
@@ -52,6 +60,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: core_db
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d/
     ports:
       - "5437:5432"
     networks:
