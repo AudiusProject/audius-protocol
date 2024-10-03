@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('auths, fetches tracks, and favorites a track', async ({
+test('auth and fetches tracks', async ({
   page,
   context
 }) => {
