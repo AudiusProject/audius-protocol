@@ -131,7 +131,7 @@ const CommentBlockInternal = (
   )
 }
 
-// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// This is an extra component wrapper because the comment data coming back from tan-query could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
   const { data: comment } = useGetCommentById(props.commentId)
