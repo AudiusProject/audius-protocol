@@ -3,7 +3,7 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { REGISTRY_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class Registry {
   client: PublicClient
   address: `0x${string}`
 
@@ -12,7 +12,7 @@ export class ServiceProviderFactory {
     this.address = address ?? REGISTRY_CONTRACT_ADDRESS
   }
 
-  getContract = ({ registryKey }: { registryKey: string }) =>
+  getContract = ({ registryKey }: { registryKey: `0x${string}` }) =>
     this.client.readContract({
       address: this.address,
       abi,

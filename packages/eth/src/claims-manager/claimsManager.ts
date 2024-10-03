@@ -3,7 +3,7 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { CLAIMS_MANAGER_CONTRACT_ADDRESS } from './constants'
 
-export class AudiusToken {
+export class ClaimsManager {
   client: PublicClient
   address: `0x${string}`
 

@@ -1,9 +1,10 @@
 import type { PublicClient } from 'viem'
+import type { GetContractEventsParameters } from 'viem/_types/actions/public/getContractEvents'
 
 import { abi } from './abi'
 import { DELEGATE_MANAGER_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class DelegateManager {
   client: PublicClient
   address: `0x${string}`
 
@@ -12,41 +13,233 @@ export class ServiceProviderFactory {
     this.address = address ?? DELEGATE_MANAGER_CONTRACT_ADDRESS
   }
 
-  getIncreaseDelegatedStakeEvents = ({ address }: { address: `0x${string}` }) =>
-    // IncreaseDelegatedStake
-    this.client.getPastEvents({})
+  getIncreaseDelegatedStakeEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider,
+    increaseAmount
+  }: {
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+    increaseAmount?: bigint
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'IncreaseDelegatedStake'
+    >['args'] = {}
+
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
+    if (increaseAmount) args._increaseAmount = increaseAmount
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'IncreaseDelegatedStake',
+      fromBlock,
+      args
+    })
+  }
+
+  getUndelegateStakeRequestedEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider
+  }: {
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'UndelegateStakeRequested'
+    >['args'] = {}
+
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'UndelegateStakeRequested',
+      fromBlock,
+      args
+    })
+  }
 
   getUndelegateStakeRequestEvaluatedEvents = ({
-    address
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider
   }: {
-    address: `0x${string}`
-  }) =>
-    // UndelegateStakeRequestEvaluated
-    this.client.getPastEvents({})
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'UndelegateStakeRequestEvaluated'
+    >['args'] = {}
 
-  getUndelegateStakeEvents = ({ address }: { address: `0x${string}` }) =>
-    // UndelegateStakeRequested
-    this.client.getPastEvents({})
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
 
-  getUndelegateStakeCancelledEvents = ({
-    address
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'UndelegateStakeRequestEvaluated',
+      fromBlock,
+      args
+    })
+  }
+
+  getUndelegateStakeRequestCancelledEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider
   }: {
-    address: `0x${string}`
-  }) =>
-    // UndelegateStakeRequestCancelled
-    this.client.getPastEvents({})
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'UndelegateStakeRequestCancelled'
+    >['args'] = {}
 
-  getDelegatorRemovedEvents = ({ address }: { address: `0x${string}` }) =>
-    // DelegatorRemoved
-    this.client.getPastEvents({})
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
 
-  getClaimEvents = ({ address }: { address: `0x${string}` }) =>
-    // Claim
-    this.client.getPastEvents({})
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'UndelegateStakeRequestCancelled',
+      fromBlock,
+      args
+    })
+  }
 
-  getSlashEvents = ({ address }: { address: `0x${string}` }) =>
-    // Slash
-    this.client.getPastEvents({})
+  getRemoveDelegatorRequestedEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider
+  }: {
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'RemoveDelegatorRequested'
+    >['args'] = {}
+
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'RemoveDelegatorRequested',
+      fromBlock,
+      args
+    })
+  }
+
+  getRemoveDelegatorEvaluatedEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider,
+    unstakedAmount
+  }: {
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+    unstakedAmount?: bigint
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'RemoveDelegatorRequestEvaluated'
+    >['args'] = {}
+
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
+    if (unstakedAmount) args._unstakedAmount = unstakedAmount
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'RemoveDelegatorRequestEvaluated',
+      fromBlock,
+      args
+    })
+  }
+
+  getRemoveDelegatorCancelledEvents = ({
+    fromBlock = BigInt(0),
+    delegator,
+    serviceProvider
+  }: {
+    fromBlock: bigint
+    delegator?: `0x${string}`
+    serviceProvider?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'RemoveDelegatorRequestCancelled'
+    >['args'] = {}
+
+    if (delegator) args._delegator = delegator
+    if (serviceProvider) args._serviceProvider = serviceProvider
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'RemoveDelegatorRequestCancelled',
+      fromBlock,
+      args
+    })
+  }
+
+  getClaimEvents = ({
+    fromBlock = BigInt(0),
+    claimer
+  }: {
+    fromBlock: bigint
+    claimer?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<typeof abi, 'Claim'>['args'] = {}
+
+    if (claimer) args._claimer = claimer
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'Claim',
+      fromBlock,
+      args
+    })
+  }
+
+  getSlashEvents = ({
+    fromBlock = BigInt(0),
+    target
+  }: {
+    fromBlock: bigint
+    target?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<typeof abi, 'Slash'>['args'] = {}
+
+    if (target) args._target = target
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'Slash',
+      fromBlock,
+      args
+    })
+  }
 
   getDelegatorsList = ({
     serviceProviderAddress

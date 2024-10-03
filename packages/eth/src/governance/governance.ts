@@ -1,9 +1,10 @@
 import type { PublicClient } from 'viem'
+import type { GetContractEventsParameters } from 'viem/_types/actions/public/getContractEvents'
 
 import { abi } from './abi'
 import { GOVERNANCE_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class Governance {
   client: PublicClient
   address: `0x${string}`
 
@@ -33,7 +34,7 @@ export class ServiceProviderFactory {
       functionName: 'getExecutionDelay'
     })
 
-  getProposalById = ({ id }: { id: number }) =>
+  getProposalById = ({ id }: { id: bigint }) =>
     this.client.readContract({
       address: this.address,
       abi,
@@ -41,7 +42,7 @@ export class ServiceProviderFactory {
       args: [id]
     })
 
-  getProposalTargetContractHash = ({ id }: { id: number }) =>
+  getProposalTargetContractHash = ({ id }: { id: bigint }) =>
     this.client.readContract({
       address: this.address,
       abi,
@@ -60,7 +61,7 @@ export class ServiceProviderFactory {
     id,
     voterAddress
   }: {
-    id: number
+    id: bigint
     voterAddress: `0x${string}`
   }) =>
     this.client.readContract({
@@ -70,23 +71,104 @@ export class ServiceProviderFactory {
       args: [id, voterAddress]
     })
 
-  getProposalSubmittedEvents = ({ address }: { address: `0x${string}` }) =>
-    // ProposalSubmitted
-    this.client.getPastEvents({})
+  getProposalSubmittedEvents = ({
+    fromBlock = BigInt(0),
+    proposalId,
+    proposer
+  }: {
+    fromBlock: bigint
+    proposalId?: bigint
+    proposer?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'ProposalSubmitted'
+    >['args'] = {}
+
+    if (proposalId) args._proposalId = proposalId
+    if (proposer) args._proposer = proposer
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'ProposalSubmitted',
+      fromBlock,
+      args
+    })
+  }
 
   getProposalOutcomeEvaluatedEvents = ({
-    address
+    fromBlock = BigInt(0),
+    proposalId
   }: {
-    address: `0x${string}`
-  }) =>
-    // ProposalOutcomeEvaluated
-    this.client.getPastEvents({})
+    fromBlock: bigint
+    proposalId?: bigint
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'ProposalOutcomeEvaluated'
+    >['args'] = {}
 
-  getProposalVoteSubmittedEvents = ({ address }: { address: `0x${string}` }) =>
-    // ProposalVoteSubmitted
-    this.client.getPastEvents({})
+    if (proposalId) args._proposalId = proposalId
 
-  getProposalVoteUpdatedEvents = ({ address }: { address: `0x${string}` }) =>
-    // ProposalVoteUpdated
-    this.client.getPastEvents({})
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'ProposalOutcomeEvaluated',
+      fromBlock,
+      args
+    })
+  }
+
+  getProposalVoteSubmittedEvents = ({
+    fromBlock = BigInt(0),
+    proposalId,
+    voter
+  }: {
+    fromBlock: bigint
+    proposalId?: bigint
+    voter?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'ProposalVoteSubmitted'
+    >['args'] = {}
+
+    if (proposalId) args._proposalId = proposalId
+    if (voter) args._voter = voter
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'ProposalVoteSubmitted',
+      fromBlock,
+      args
+    })
+  }
+
+  getProposalVoteUpdatedEvents = ({
+    fromBlock = BigInt(0),
+    proposalId,
+    voter
+  }: {
+    fromBlock: bigint
+    proposalId?: bigint
+    voter?: `0x${string}`
+  }) => {
+    const args: GetContractEventsParameters<
+      typeof abi,
+      'ProposalVoteUpdated'
+    >['args'] = {}
+
+    if (proposalId) args._proposalId = proposalId
+    if (voter) args._voter = voter
+
+    return this.client.getContractEvents({
+      address: this.address,
+      abi,
+      eventName: 'ProposalVoteUpdated',
+      fromBlock,
+      args
+    })
+  }
 }

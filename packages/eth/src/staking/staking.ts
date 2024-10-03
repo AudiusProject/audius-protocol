@@ -3,7 +3,7 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { STAKING_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class Staking {
   client: PublicClient
   address: `0x${string}`
 
@@ -41,7 +41,7 @@ export class ServiceProviderFactory {
       args: [account]
     })
 
-  totalStakedAt = ({ blockNumber }: { blockNumber: number }) =>
+  totalStakedAt = ({ blockNumber }: { blockNumber: bigint }) =>
     this.client.readContract({
       address: this.address,
       abi,
@@ -54,7 +54,7 @@ export class ServiceProviderFactory {
     blockNumber
   }: {
     account: `0x${string}`
-    blockNumber: number
+    blockNumber: bigint
   }) =>
     this.client.readContract({
       address: this.address,

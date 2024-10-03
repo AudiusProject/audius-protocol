@@ -45,9 +45,9 @@ const productionConfig: SdkServicesConfig = {
   },
   ethereum: {
     rpcEndpoint: 'https://eth.audius.co',
-    ethRewardsManagerAddress: '',
-    serviceProviderFactoryAddress: '',
-    serviceTypeManagerAddress: ''
+    ethRewardsManagerAddress: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
+    serviceProviderFactoryAddress: '0xD17A9bc90c582249e211a4f4b16721e7f65156c8',
+    serviceTypeManagerAddress: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5'
   }
 }
 
@@ -79,9 +79,9 @@ const stagingConfig: SdkServicesConfig = {
   },
   ethereum: {
     rpcEndpoint: 'https://eth.staging.audius.co',
-    ethRewardsManagerAddress: '',
-    serviceProviderFactoryAddress: '',
-    serviceTypeManagerAddress: ''
+    ethRewardsManagerAddress: '0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1',
+    serviceProviderFactoryAddress: '0x377BE01aD31360d0DFB16035A4515954395A8185',
+    serviceTypeManagerAddress: '0x9fd76d2cD48022526F3a164541E6552291F4a862'
   }
 }
 

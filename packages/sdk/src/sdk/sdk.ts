@@ -66,7 +66,7 @@ import {
   getDefaultStakingConfig,
   TrustedNotifierManagerClient,
   getDefaultTrustedNotifierManagerConfig,
-  WormholeClient,
+  Wormhole,
   getDefaultWormholeConfig,
   RegistryClient,
   getDefaultRegistryConfig,
@@ -280,7 +280,7 @@ const initializeServices = (config: SdkConfig) => {
 
   const wormholeClient =
     config.services?.wormholeClient ??
-    new WormholeClient({
+    new Wormhole({
       ...getDefaultWormholeConfig(servicesConfig)
     })
 

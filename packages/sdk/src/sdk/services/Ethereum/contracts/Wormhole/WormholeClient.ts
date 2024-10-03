@@ -1,15 +1,15 @@
-import { Wormhole } from '@audius/eth'
+import { WormholeClient } from '@audius/eth'
 
 import { EthereumContract } from '../EthereumContract'
 
 import type { WormholeConfig } from './types'
 
-export class WormholeClient extends EthereumContract {
-  contract: typeof Wormhole
+export class Wormhole extends EthereumContract {
+  contract: typeof WormholeClient
 
   constructor(config: WormholeConfig) {
     super(config)
 
-    this.contract = new Wormhole()
+    this.contract = new WormholeClient()
   }
 }

@@ -14,7 +14,7 @@ import {
   RegistryClient,
   ServiceProviderFactoryClient,
   TrustedNotifierManagerClient,
-  WormholeClient
+  Wormhole
 } from './services/Ethereum'
 import { ServiceTypeManagerClient } from './services/Ethereum/contracts/ServiceTypeManager'
 import { StakingClient } from './services/Ethereum/contracts/Staking/StakingClient'
@@ -84,7 +84,7 @@ export type ServicesContainer = {
   /**
    * Contract client to interact with wormhole
    */
-  wormholeClient: WormholeClient
+  wormholeClient: Wormhole
 
   /**
    * Contract client to interact with the eth contract registry

@@ -16,7 +16,7 @@ export class AudiusToken {
     this.client.readContract({
       address: this.address,
       abi,
-      functionName: 'blanaceOf',
+      functionName: 'balanceOf',
       args: [account]
     })
 }

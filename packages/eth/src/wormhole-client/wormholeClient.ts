@@ -1,9 +1,9 @@
 import type { PublicClient } from 'viem'
 
-import { abi } from './abi'
+// import { abi } from './abi'
 import { WORMHOLE_CLIENT_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class Wormhole {
   client: PublicClient
   address: `0x${string}`
 

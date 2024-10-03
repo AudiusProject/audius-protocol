@@ -3,7 +3,7 @@ import type { PublicClient } from 'viem'
 import { abi } from './abi'
 import { TRUSTED_NOTIFIER_MANAGER_CONTRACT_ADDRESS } from './constants'
 
-export class ServiceProviderFactory {
+export class TrustedNotifierManager {
   client: PublicClient
   address: `0x${string}`
 

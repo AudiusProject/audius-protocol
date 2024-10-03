@@ -59,6 +59,7 @@
     "@audius/fixed-decimal": "0.0.25",
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/spl": "1.0.0",
+    "@audius/eth": "0.0.1",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",
