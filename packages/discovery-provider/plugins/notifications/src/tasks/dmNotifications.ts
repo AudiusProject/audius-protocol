@@ -11,6 +11,7 @@ import type {
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
 import { makeChatId } from '../utils/chatId'
+import { last } from 'lodash'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -141,183 +142,119 @@ async function getNewBlasts(
 }> {
   let lastIndexedBlastTimestamp
   if (lastIndexedBlastId) {
-    lastIndexedBlastTimestamp = (
-      await discoveryDB
-        .select('chat_blast.created_at as timestamp')
-        .from('chat_blast')
-        .where('chat_blast.blast_id', lastIndexedBlastId)
-    )[0]?.timestamp
+    const result = await discoveryDB
+      .select('chat_blast.created_at as timestamp')
+      .from('chat_blast')
+      .where('chat_blast.blast_id', lastIndexedBlastId)
+      .first()
+    lastIndexedBlastTimestamp = result?.timestamp ?? new Date(0).toISOString()
   }
-  // First time running this task
-  if (!lastIndexedBlastTimestamp) {
-    lastIndexedBlastTimestamp = new Date(0).toISOString()
-  }
-  let userId: number | null = lastIndexedBlastUserId ?? null
+  const userId = lastIndexedBlastUserId
 
-  let messages = await discoveryDB.raw(
-    `
-    WITH blast AS (
-      SELECT * FROM chat_blast where chat_blast.blast_id = ?
-    ),
-    aud AS (
-      -- follower_audience
-      SELECT blast_id, follower_user_id AS to_user_id
-      FROM follows
-      JOIN blast
-        ON blast.audience = 'follower_audience'
-        AND follows.followee_user_id = blast.from_user_id
-        AND follows.is_delete = false
-        AND follows.created_at < blast.created_at
+  const fetchMessages = async (
+    blastCondition: string,
+    userCondition: string,
+    params
+  ) => {
+    const messages = await discoveryDB.raw(
+      `
+          WITH blast AS (
+            SELECT * FROM chat_blast WHERE ${blastCondition}
+          ),
+          aud AS (
+            -- follower_audience
+            SELECT blast_id, follower_user_id AS to_user_id
+            FROM follows
+            JOIN blast
+              ON blast.audience = 'follower_audience'
+              AND follows.followee_user_id = blast.from_user_id
+              AND follows.is_delete = false
+              AND follows.created_at < blast.created_at
 
-      UNION
+            UNION
 
-      -- tipper_audience
-      SELECT blast_id, sender_user_id AS to_user_id
-      FROM user_tips tip
-      JOIN blast
-        ON blast.audience = 'tipper_audience'
-        AND receiver_user_id = blast.from_user_id
-        AND tip.created_at < blast.created_at
+            -- tipper_audience
+            SELECT blast_id, sender_user_id AS to_user_id
+            FROM user_tips tip
+            JOIN blast
+              ON blast.audience = 'tipper_audience'
+              AND receiver_user_id = blast.from_user_id
+              AND tip.created_at < blast.created_at
 
-      UNION
+            UNION
 
-      -- remixer_audience
-      SELECT blast_id, t.owner_id AS to_user_id
-      FROM tracks t
-      JOIN remixes ON remixes.child_track_id = t.track_id
-      JOIN tracks og ON remixes.parent_track_id = og.track_id
-      JOIN blast
-        ON blast.audience = 'remixer_audience'
-        AND og.owner_id = blast.from_user_id
-        AND (
-          blast.audience_content_id IS NULL
-          OR (
-            blast.audience_content_type = 'track'
-            AND blast.audience_content_id = og.track_id
+            -- remixer_audience
+            SELECT blast_id, t.owner_id AS to_user_id
+            FROM tracks t
+            JOIN remixes ON remixes.child_track_id = t.track_id
+            JOIN tracks og ON remixes.parent_track_id = og.track_id
+            JOIN blast
+              ON blast.audience = 'remixer_audience'
+              AND og.owner_id = blast.from_user_id
+              AND (
+                blast.audience_content_id IS NULL
+                OR (
+                  blast.audience_content_type = 'track'
+                  AND blast.audience_content_id = og.track_id
+                )
+              )
+
+            UNION
+
+            -- customer_audience
+            SELECT blast_id, buyer_user_id AS to_user_id
+            FROM usdc_purchases p
+            JOIN blast
+              ON blast.audience = 'customer_audience'
+              AND p.seller_user_id = blast.from_user_id
+              AND (
+                blast.audience_content_id IS NULL
+                OR (
+                  blast.audience_content_type = p.content_type::text
+                  AND blast.audience_content_id = p.content_id
+                )
+              )
+          ),
+          targ AS (
+            SELECT
+              blast_id,
+              from_user_id,
+              to_user_id,
+              blast.created_at
+            FROM blast
+            JOIN aud USING (blast_id)
+            LEFT JOIN chat_member member_a ON from_user_id = member_a.user_id
+            LEFT JOIN chat_member member_b ON to_user_id = member_b.user_id AND member_b.chat_id = member_a.chat_id
+            WHERE member_b.chat_id IS NULL
+            AND chat_allowed(from_user_id, to_user_id)
+            AND (${userCondition})
+            ORDER BY to_user_id ASC
+            LIMIT ?
           )
-        )
-
-      UNION
-
-      -- customer_audience
-      SELECT blast_id, buyer_user_id AS to_user_id
-      FROM usdc_purchases p
-      JOIN blast
-        ON blast.audience = 'customer_audience'
-        AND p.seller_user_id = blast.from_user_id
-        AND (
-          blast.audience_content_id IS NULL
-          OR (
-            blast.audience_content_type = p.content_type::text
-            AND blast.audience_content_id = p.content_id
-          )
-        )
-    ),
-    targ AS (
-      SELECT
-        blast_id,
-        from_user_id,
-        to_user_id,
-        blast.created_at
-      FROM blast
-      JOIN aud USING (blast_id)
-      LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
-      LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
-      WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
-      AND chat_allowed(from_user_id, to_user_id)
-      AND (?::INTEGER IS NULL OR to_user_id > ?)
-      ORDER BY to_user_id ASC
-      LIMIT ?
+          SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
+        `,
+      params
     )
-    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
-    `,
+    return messages.rows
+  }
+
+  // First attempt with last indexed blast and user ID
+  let messages = await fetchMessages(
+    'chat_blast.blast_id = ?',
+    '?::INTEGER IS NULL OR to_user_id > ?',
     [lastIndexedBlastId, userId, userId, config.blastUserBatchSize]
   )
 
-  if (!messages.rows.length) {
-    userId = null
-    // TODO: what if blasts have the same timestamp?
-    messages = await discoveryDB.raw(
-      `
-    WITH blast AS (
-      SELECT * FROM chat_blast where chat_blast.created_at > ? order by chat_blast.created_at asc limit 1
-    ),
-    aud AS (
-      -- follower_audience
-      SELECT blast_id, follower_user_id AS to_user_id
-      FROM follows
-      JOIN blast
-        ON blast.audience = 'follower_audience'
-        AND follows.followee_user_id = blast.from_user_id
-        AND follows.is_delete = false
-        AND follows.created_at < blast.created_at
-
-      UNION
-
-      -- tipper_audience
-      SELECT blast_id, sender_user_id AS to_user_id
-      FROM user_tips tip
-      JOIN blast
-        ON blast.audience = 'tipper_audience'
-        AND receiver_user_id = blast.from_user_id
-        AND tip.created_at < blast.created_at
-
-      UNION
-
-      -- remixer_audience
-      SELECT blast_id, t.owner_id AS to_user_id
-      FROM tracks t
-      JOIN remixes ON remixes.child_track_id = t.track_id
-      JOIN tracks og ON remixes.parent_track_id = og.track_id
-      JOIN blast
-        ON blast.audience = 'remixer_audience'
-        AND og.owner_id = blast.from_user_id
-        AND (
-          blast.audience_content_id IS NULL
-          OR (
-            blast.audience_content_type = 'track'
-            AND blast.audience_content_id = og.track_id
-          )
-        )
-
-      UNION
-
-      -- customer_audience
-      SELECT blast_id, buyer_user_id AS to_user_id
-      FROM usdc_purchases p
-      JOIN blast
-        ON blast.audience = 'customer_audience'
-        AND p.seller_user_id = blast.from_user_id
-        AND (
-          blast.audience_content_id IS NULL
-          OR (
-            blast.audience_content_type = p.content_type::text
-            AND blast.audience_content_id = p.content_id
-          )
-        )
-    ),
-    targ AS (
-      SELECT
-        blast_id,
-        from_user_id,
-        to_user_id,
-        blast.created_at
-      FROM blast
-      JOIN aud USING (blast_id)
-      LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
-      LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
-      WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
-      AND chat_allowed(from_user_id, to_user_id)
-      ORDER BY to_user_id ASC
-      LIMIT ?
-    )
-    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
-    `,
+  // If no messages found, move to next timestamp batch
+  if (!messages?.length) {
+    messages = await fetchMessages(
+      'chat_blast.created_at > ? ORDER BY chat_blast.created_at ASC LIMIT 1',
+      '1=1',
       [lastIndexedBlastTimestamp, config.blastUserBatchSize]
     )
   }
 
-  const formattedMessages = messages.rows.map((message) => {
+  const formattedMessages = messages?.map((message) => {
     return {
       ...message,
       chatId: makeChatId([message.sender_user_id, message.receiver_user_id])
@@ -325,9 +262,8 @@ async function getNewBlasts(
   })
 
   return {
-    lastIndexedBlastId: formattedMessages[0]?.blast_id,
-    lastIndexedBlastUserId:
-      formattedMessages[formattedMessages.length - 1]?.receiver_user_id,
+    lastIndexedBlastId: formattedMessages[0]?.blast_id ?? lastIndexedBlastId,
+    lastIndexedBlastUserId: formattedMessages.at(-1)?.receiver_user_id ?? null,
     messages: formattedMessages
   }
 }
