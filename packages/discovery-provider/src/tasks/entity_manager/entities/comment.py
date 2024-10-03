@@ -1,5 +1,3 @@
-import json
-
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
@@ -287,10 +285,14 @@ def validate_pin_tx(params: ManageEntityParameters, is_pin):
     track_records = params.existing_records[EntityType.TRACK.value]
     track_id = metadata["entity_id"]
     if track_id not in track_records:
-        raise IndexingValidationError(f"Comment {comment_id}'s Track {track_id} does not exist")
+        raise IndexingValidationError(
+            f"Comment {comment_id}'s Track {track_id} does not exist"
+        )
     track = track_records[track_id]
     if track.owner_id != user_id:
-        raise IndexingValidationError(f"Comment {comment_id} cannot be pinned by user {user_id}")
+        raise IndexingValidationError(
+            f"Comment {comment_id} cannot be pinned by user {user_id}"
+        )
     elif track.pinned_comment_id == comment_id and is_pin:
         raise IndexingValidationError(f"Comment {comment_id} already pinned")
     elif track.pinned_comment_id != comment_id and not is_pin:

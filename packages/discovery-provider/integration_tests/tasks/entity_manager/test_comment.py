@@ -332,9 +332,6 @@ def test_dupe_pin(app, mocker):
         assert tracks[0].pinned_comment_id == 1
 
 
-
-
-
 def test_pin_missing_comment(app, mocker):
     entities = {
         "users": [
