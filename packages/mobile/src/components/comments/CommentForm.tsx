@@ -69,10 +69,18 @@ type CommentFormProps = {
   onSubmit: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
+  onAutocompleteChange: (isActive: boolean, value: string) => void
+  setAutocompleteHandler: any
 }
 
 export const CommentForm = (props: CommentFormProps) => {
-  const { isLoading, onSubmit, initialValue } = props
+  const {
+    isLoading,
+    setAutocompleteHandler,
+    onAutocompleteChange,
+    onSubmit,
+    initialValue
+  } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
   const {
@@ -141,6 +149,8 @@ export const CommentForm = (props: CommentFormProps) => {
         <Box flex={1}>
           <ComposerInput
             ref={ref}
+            onAutocompleteChange={onAutocompleteChange}
+            setAutocompleteHandler={setAutocompleteHandler}
             isLoading={isLoading}
             messageId={messageId}
             entityId={entityId}

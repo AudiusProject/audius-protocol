@@ -13,6 +13,8 @@ export type ComposerInputProps = {
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
   onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
+  onAutocompleteChange?: (isActive: boolean, value: string) => void
+  setAutocompleteHandler: any
   presetMessage?: string
   isLoading?: boolean
   styles?: StylesProp<{
