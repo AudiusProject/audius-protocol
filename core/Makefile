@@ -40,7 +40,6 @@ deps:
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
 	@go mod tidy
-	chmod +x ./infra/add-sandbox-hosts.sh && ./infra/add-sandbox-hosts.sh
 
 .PHONY: gen
 gen: $(GEN_ARTIFACTS)
@@ -65,13 +64,17 @@ dev: gen
 test: gen
 	go test -v ./... -timeout 60s
 
+.PHONY: sandbox-hosts
+sandbox-hosts:
+	chmod +x ./infra/add-sandbox-hosts.sh && ./infra/add-sandbox-hosts.sh
+
 .PHONY: sandbox
-sandbox:
+sandbox: build-amd64
 	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
 
 .PHONY: down-sandbox
 down-sandbox:
-	@docker compose -f ./infra/docker-compose.yml down
+	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev down
 
 .PHONY: prod-sandbox
 prod-sandbox:
@@ -84,6 +87,10 @@ stage-sandbox:
 .PHONY: dev-sandbox
 dev-sandbox:
 	@docker compose -f ./infra/docker-compose.yml --profile dev up --build -d
+
+.PHONY: clean-sandbox
+clean-sandbox: down-sandbox
+	rm -rf ./tmp
 
 .PHONY: livereload
 livereload:
