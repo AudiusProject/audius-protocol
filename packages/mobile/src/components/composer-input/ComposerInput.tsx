@@ -93,7 +93,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     messageId,
     placeholder,
     presetMessage,
-    entityId
+    entityId,
+    styles: propStyles
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [selection, setSelection] = useState<{ start: number; end: number }>()
@@ -267,7 +268,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
         styles={{
-          root: styles.composeTextContainer,
+          root: [styles.composeTextContainer, propStyles?.container],
           input: [
             styles.composeTextInput,
             Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
