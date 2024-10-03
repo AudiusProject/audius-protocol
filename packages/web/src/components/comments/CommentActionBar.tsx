@@ -249,10 +249,13 @@ export const CommentActionBar = ({
   const popupMenuItems = useMemo(
     () =>
       [
-        isEntityOwner && {
-          onClick: () => setCurrentConfirmationModalType('pin'),
-          text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin
-        },
+        isEntityOwner &&
+          isParentComment && {
+            onClick: () => setCurrentConfirmationModalType('pin'),
+            text: isPinned
+              ? messages.menuActions.unpin
+              : messages.menuActions.pin
+          },
         !isEntityOwner &&
           !isCommentOwner && {
             onClick: () => setCurrentConfirmationModalType('flagAndHide'),
