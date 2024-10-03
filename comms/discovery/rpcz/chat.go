@@ -136,29 +136,24 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 	_, err = tx.Exec(`
 	UPDATE chat_member member
 	SET is_hidden = NOT EXISTS(
-	    SELECT * FROM (
-        -- Check for chat messages
-        SELECT msg.message_id
-        FROM chat_message msg
-        LEFT JOIN chat_blast b USING (blast_id)
-        WHERE msg.chat_id = member.chat_id
-				AND msg.created_at > member.cleared_history_at
-        AND (
-            msg.blast_id IS NULL OR
-            b.from_user_id != member.user_id
-        )
 
-        UNION
+		-- Check for chat messages
+		SELECT msg.message_id
+		FROM chat_message msg
+		LEFT JOIN chat_blast b USING (blast_id)
+		WHERE msg.chat_id = member.chat_id
+		AND (cleared_history_at IS NULL OR msg.created_at > cleared_history_at)
+		AND (msg.blast_id IS NULL OR b.from_user_id != member.user_id)
 
-        -- Check for chat message reactions
-        SELECT r.message_id
-        FROM chat_message_reactions r
-        LEFT JOIN chat_message msg ON r.message_id = msg.message_id
-        WHERE msg.chat_id = member.chat_id
-        AND r.user_id != member.user_id
-				AND r.created_at > member.cleared_history_at
-				AND msg.created_at > member.cleared_history_at
-    ) combined
+		UNION
+
+		-- Check for chat message reactions
+		SELECT r.message_id
+		FROM chat_message_reactions r
+		LEFT JOIN chat_message msg ON r.message_id = msg.message_id
+		WHERE msg.chat_id = member.chat_id
+		AND r.user_id != member.user_id
+		AND (cleared_history_at IS NULL OR (r.created_at > cleared_history_at AND msg.created_at > cleared_history_at))
 	)
 	WHERE member.chat_id = $1
 	`, chatId)
