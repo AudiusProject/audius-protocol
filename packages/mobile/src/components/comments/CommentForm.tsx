@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { ID } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import type { TextInput as RNTextInput } from 'react-native'
 
 import {
@@ -69,8 +69,8 @@ type CommentFormProps = {
   onSubmit: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
-  onAutocompleteChange: (isActive: boolean, value: string) => void
-  setAutocompleteHandler: any
+  onAutocompleteChange?: (isActive: boolean, value: string) => void
+  setAutocompleteHandler?: (user: UserMetadata) => void
 }
 
 export const CommentForm = (props: CommentFormProps) => {

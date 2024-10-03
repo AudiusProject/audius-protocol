@@ -241,7 +241,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   }, [onAutocompleteChange, isAutocompleteActive, autocompleteText])
 
   useEffect(() => {
-    if (isAutocompleteActive) {
+    if (isAutocompleteActive && setAutocompleteHandler) {
       setAutocompleteHandler(handleAutocomplete)
     }
   }, [handleAutocomplete, isAutocompleteActive, setAutocompleteHandler])
