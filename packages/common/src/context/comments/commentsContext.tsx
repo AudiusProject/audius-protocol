@@ -16,11 +16,16 @@ import {
   useGetTrackById,
   useGetCommentsByTrackId,
   QUERY_KEYS
-} from '../../api'
-import { ID, Comment, ReplyComment, UserTrackMetadata } from '../../models'
-import { tracksActions } from '../../store/pages/track/lineup/actions'
-import { playerSelectors } from '../../store/player'
-import { Nullable } from '../../utils'
+} from '~/api'
+import {useGatedContentAccess } from '~/hooks'
+import {
+  ModalSource, ID, Comment, ReplyComment, UserTrackMetadata } from '~/models'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
+import { getLineup } from '~/store/pages/track/selectors'
+import { seek } from '~/store/player/slice'
+import { PurchaseableContentType } from '~/store/purchase-content/types'
+import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
+import { Nullable } from '~/utils'
 
 type CommentSectionProviderProps = {
   entityId: ID
@@ -29,9 +34,9 @@ type CommentSectionProviderProps = {
   // These are optional because they are only used on mobile
   // and provided for the components in CommentDrawer
   replyingToComment?: Comment | ReplyComment
-  setReplyingToComment?: (comment: Comment | ReplyComment) => void
+  setReplyingToComment?: (comment: Comment | ReplyComment | undefined) => void
   editingComment?: Comment | ReplyComment
-  setEditingComment?: (comment: Comment | ReplyComment) => void
+  setEditingComment?: (comment: Comment | ReplyComment | undefined) => void
 }
 
 type CommentSectionContextType = {
@@ -40,7 +45,7 @@ type CommentSectionContextType = {
   isEntityOwner: boolean
   commentCount: number
   track: UserTrackMetadata
-  playTrack: () => void
+  playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
   commentIds: ID[]
   currentSort: TrackCommentsSortMethodEnum
@@ -93,10 +98,45 @@ export const CommentSectionProvider = (
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
   }
   const dispatch = useDispatch()
-  const playerUid = useSelector(playerSelectors.getUid) ?? undefined
-  const playTrack = useCallback(() => {
-    dispatch(tracksActions.play(playerUid))
-  }, [dispatch, playerUid])
+
+  const lineup = useSelector(getLineup)
+
+  const { hasStreamAccess } = useGatedContentAccess(track!)
+
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+
+  const playTrack = useCallback(
+    (timestampSeconds?: number) => {
+      const uid = lineup?.entries?.[0]?.uid
+
+      // If a timestamp is provided, we should seek to that timestamp
+      if (timestampSeconds !== undefined) {
+        // But only if the user has access to the stream
+        if (!hasStreamAccess) {
+          const { track_id: trackId } = track!
+          openPremiumContentPurchaseModal(
+            { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+            {
+              source: ModalSource.Comment
+            }
+          )
+        } else {
+          dispatch(tracksActions.play(uid))
+          setTimeout(() => dispatch(seek({ seconds: timestampSeconds })), 100)
+        }
+      } else {
+        dispatch(tracksActions.play(uid))
+      }
+    },
+    [
+      dispatch,
+      hasStreamAccess,
+      lineup?.entries,
+      openPremiumContentPurchaseModal,
+      track
+    ]
+  )
 
   const commentSectionLoading =
     (status === 'loading' || isFetching) && !isLoadingMorePages

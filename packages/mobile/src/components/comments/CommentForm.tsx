@@ -78,6 +78,7 @@ export const CommentForm = (props: CommentFormProps) => {
       ) : null}
       <Box flex={1}>
         <ComposerInput
+          ref={ref}
           isLoading={isLoading}
           messageId={messageId}
           entityId={entityId}
