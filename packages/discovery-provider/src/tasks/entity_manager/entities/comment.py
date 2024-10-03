@@ -1,3 +1,5 @@
+import json
+
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
@@ -280,42 +282,53 @@ def validate_pin_tx(params: ManageEntityParameters, is_pin):
     if comment_id not in comment_records:
         raise IndexingValidationError(f"Comment {comment_id} doesn't exist")
 
-    comment = comment_records[comment_id]
-    if is_pin and comment.is_pinned:
+    user_id = params.user_id
+    metadata = params.metadata
+    track_records = params.existing_records[EntityType.TRACK.value]
+    track_id = metadata["entity_id"]
+    if track_id not in track_records:
+        raise IndexingValidationError(f"Comment {comment_id}'s Track {track_id} does not exist")
+    track = track_records[track_id]
+    if track.owner_id != user_id:
+        raise IndexingValidationError(f"Comment {comment_id} cannot be pinned by user {user_id}")
+    elif track.pinned_comment_id == comment_id and is_pin:
         raise IndexingValidationError(f"Comment {comment_id} already pinned")
-    elif not is_pin and not comment.is_pinned:
+    elif track.pinned_comment_id != comment_id and not is_pin:
         raise IndexingValidationError(f"Comment {comment_id} already unpinned")
 
 
 def pin_comment(params: ManageEntityParameters):
     validate_pin_tx(params, True)
     comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    track_id = params.metadata["entity_id"]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
 
-    comment = copy_record(
-        existing_comment,
+    track = copy_record(
+        existing_track,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    comment.is_pinned = True
 
-    params.add_record(comment_id, comment)
+    track.pinned_comment_id = comment_id
+
+    params.add_record(track_id, track)
 
 
 def unpin_comment(params: ManageEntityParameters):
-    validate_pin_tx(params, False)
-    comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    validate_pin_tx(params, True)
+    track_id = params.metadata["entity_id"]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
 
-    comment = copy_record(
-        existing_comment,
+    track = copy_record(
+        existing_track,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    comment.is_pinned = False
 
-    params.add_record(comment_id, comment)
+    track.pinned_comment_id = None
+
+    params.add_record(track_id, track)

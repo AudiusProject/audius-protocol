@@ -126,10 +126,9 @@ def test_get_comments_pinned(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": True,
             },
         ],
-        "tracks": [{"track_id": 1, "owner_id": 10}],
+        "tracks": [{"track_id": 1, "owner_id": 10, "pinned_comment_id": 2}],
     }
 
     with app.app_context():
@@ -199,7 +198,6 @@ def test_get_tombstone_comments(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": True,
             }
             for i in range(1, 5)
         ]
@@ -220,7 +218,6 @@ def test_get_tombstone_comments(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": False,
             },
         ],
         "tracks": [{"track_id": 1, "owner_id": 10}],

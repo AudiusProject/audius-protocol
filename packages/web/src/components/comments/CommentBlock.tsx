@@ -37,6 +37,7 @@ const CommentBlockInternal = (
   }
 ) => {
   const { comment, parentCommentId, hideActions } = props
+  const { track, artistId } = useCurrentCommentSection()
 
   const {
     id: commentId,
@@ -48,16 +49,13 @@ const CommentBlockInternal = (
     isArtistReacted
   } = comment
 
-  const isParentComment = 'isPinned' in comment
-  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
-  const isTombstone = isParentComment ? !!comment.isTombstone : false
+  const isPinned = track.pinned_comment_id === commentId
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
 
   const userHandle = useSelector(
     (state: AppState) => getUser(state, { id: userId })?.handle
   )
-
-  const { artistId } = useCurrentCommentSection()
 
   const [deleteComment] = useDeleteComment()
 

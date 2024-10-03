@@ -14,6 +14,13 @@ import {
 
 import { CommentMetadata } from './types'
 
+type PinCommentMetadata = {
+  userId: number
+  entityId: number
+  trackId: number
+  isPin: boolean
+}
+
 export class CommentsApi extends GeneratedCommentsApi {
   constructor(
     configuration: Configuration,
@@ -83,13 +90,17 @@ export class CommentsApi extends GeneratedCommentsApi {
     return response
   }
 
-  async pinComment(userId: number, entityId: number, isPin: boolean) {
+  async pinComment(metadata: PinCommentMetadata) {
+    const { userId, entityId, trackId, isPin } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
       entityId,
       action: isPin ? Action.PIN : Action.UNPIN,
-      metadata: '',
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys({ entityId: trackId })
+      }),
       auth: this.auth
     })
     return response

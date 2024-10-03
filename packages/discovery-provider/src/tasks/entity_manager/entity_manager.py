@@ -578,7 +578,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.COMMENT].add(entity_id)
                 if action == Action.UPDATE:
                     entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
-                if action == Action.REACT or action == Action.UNREACT:
+                elif action == Action.REACT or action == Action.UNREACT:
                     entities_to_fetch[EntityType.COMMENT_REACTION].add(
                         (user_id, entity_id)
                     )
@@ -586,6 +586,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.REPORTED_COMMENT].add(
                         (user_id, entity_id)
                     )
+                elif action == Action.PIN or action == Action.UNPIN:
+                    try:
+                        json_metadata = json.loads(metadata)
+                    except Exception as e:
+                        logger.error(
+                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                        )
+                        # skip invalid metadata
+                        continue
+                    track_id = json_metadata.get("data", {}).get("entity_id")
+                    entities_to_fetch[EntityType.TRACK].add(track_id)
 
             if (
                 entity_type == EntityType.NOTIFICATION

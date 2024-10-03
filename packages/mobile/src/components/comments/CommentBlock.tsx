@@ -31,8 +31,9 @@ export const CommentBlockInternal = (
   }
 ) => {
   const { comment, hideActions } = props
-  const { artistId } = useCurrentCommentSection()
+  const { artistId, track } = useCurrentCommentSection()
   const {
+    id: commentId,
     message,
     trackTimestampS,
     createdAt,
@@ -41,7 +42,7 @@ export const CommentBlockInternal = (
     isArtistReacted
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
+  const isPinned = track.pinned_comment_id === commentId
 
   const commentPostStatus = useCommentPostStatus(comment)
   const isLoading = commentPostStatus === Status.LOADING

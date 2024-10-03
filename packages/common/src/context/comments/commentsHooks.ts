@@ -108,11 +108,16 @@ export const useEditComment = () => {
 }
 
 export const usePinComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
+  const { currentUserId, entityId } = useCurrentCommentSection()
   const [pinComment, pinCommentResponse] = usePinCommentById()
-  const wrappedHandler = (commentId: ID, isPinned: boolean) => {
+  const wrappedHandler = (commentId: ID, isPin: boolean) => {
     if (currentUserId) {
-      pinComment({ id: commentId, userId: currentUserId, isPinned })
+      pinComment({
+        id: commentId,
+        userId: currentUserId,
+        trackId: entityId,
+        isPin
+      })
     }
   }
   return [wrappedHandler, pinCommentResponse] as const

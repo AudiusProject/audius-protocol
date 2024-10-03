@@ -78,7 +78,6 @@ def get_replies(
             "message": reply.text,
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
-            "is_pinned": reply.is_pinned,
             "is_current_user_reacted": get_is_reacted(
                 session, current_user_id, reply.comment_id
             ),
@@ -126,9 +125,9 @@ def get_track_comments(args, track_id, current_user_id=None):
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        artist_id = (
-            session.query(Track).filter(Track.track_id == track_id).first().owner_id
-        )
+        track = session.query(Track).filter(Track.track_id == track_id).first()
+        artist_id = track.owner_id
+        pinned_comment_id = track.pinned_comment_id
 
         track_comments = (
             session.query(
@@ -177,7 +176,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
-                desc(Comment.is_pinned),
+                desc(Comment.comment_id == pinned_comment_id),
                 asc(Comment.is_delete),
                 sort_method_order_by,
             )
@@ -196,7 +195,6 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "message": (
                     track_comment.text if not track_comment.is_delete else "[Removed]"
                 ),
-                "is_pinned": track_comment.is_pinned,
                 "is_edited": track_comment.is_edited,
                 "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": react_count,

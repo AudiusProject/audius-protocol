@@ -12,7 +12,10 @@ import {
 } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Comment, ReplyComment, ID } from '~/models'
-import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
+import {
+  incrementTrackCommentCount,
+  setPinnedCommentId
+} from '~/store/cache/tracks/actions'
 import { Nullable, encodeHashId } from '~/utils'
 
 // Helper method to save on some copy-pasta
@@ -151,7 +154,6 @@ const commentsApi = createApi({
           id: newId,
           userId,
           message: body,
-          isPinned: false,
           isEdited: false,
           trackTimestampS,
           reactCount: 0,
@@ -259,23 +261,16 @@ const commentsApi = createApi({
     },
     pinCommentById: {
       async fetch(
-        { id, userId, isPinned }: { id: ID; userId: ID; isPinned: boolean },
+        config: { id: ID; userId: ID; trackId: ID; isPin: boolean },
         { audiusSdk }
       ) {
         const sdk = await audiusSdk()
-        await sdk.comments.pinComment(userId, id, isPinned)
+        const { id, userId, trackId, isPin } = config
+        await sdk.comments.pinComment({ userId, entityId: id, trackId, isPin })
       },
       options: { type: 'mutation' },
-      onQueryStarted({ id, isPinned }, { dispatch }) {
-        optimisticUpdateComment(
-          id,
-          (comment) => {
-            if (comment && 'isPinned' in comment) {
-              comment.isPinned = isPinned
-            }
-          },
-          dispatch
-        )
+      onQueryStarted({ id, trackId, isPinned }, { dispatch }) {
+        dispatch(setPinnedCommentId(trackId, isPinned ? id : null))
       }
     },
     reactToCommentById: {
