@@ -14,7 +14,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   useGetCurrentUserId,
   useGetTrackById,
-  useGetCommentsByTrackId
+  useGetCommentsByTrackId,
+  QUERY_KEYS
 } from '../../api'
 import { ID, Comment, ReplyComment, UserTrackMetadata } from '../../models'
 import { tracksActions } from '../../store/pages/track/lineup/actions'
@@ -88,8 +89,8 @@ export const CommentSectionProvider = (
   const queryClient = useQueryClient()
   // hard refreshes all data
   const reset = () => {
-    queryClient.resetQueries({ queryKey: ['trackCommentList'] })
-    queryClient.resetQueries({ queryKey: ['comment'] })
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
   }
   const dispatch = useDispatch()
   const playerUid = useSelector(playerSelectors.getUid) ?? undefined

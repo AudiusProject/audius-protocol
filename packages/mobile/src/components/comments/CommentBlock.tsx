@@ -39,8 +39,6 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
 
-  const isLoading = false // commentPostStatus === Status.LOADING
-
   useGetUserById({ id: userId })
 
   const isCommentByArtist = userId === artistId
@@ -94,7 +92,7 @@ export const CommentBlockInternal = (
         {!hideActions ? (
           <CommentActionBar
             comment={comment}
-            isDisabled={isLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         ) : null}

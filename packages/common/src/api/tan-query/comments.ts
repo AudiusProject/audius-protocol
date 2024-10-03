@@ -23,13 +23,9 @@ import { Comment, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 import { encodeHashId } from '~/utils'
 
-type CommentOrReply = Comment | ReplyComment
+import { QUERY_KEYS } from './queryKeys'
 
-const QUERY_KEYS = {
-  trackCommentList: 'trackCommentList',
-  comment: 'comment',
-  replies: 'replies'
-} as const
+type CommentOrReply = Comment | ReplyComment
 
 const messages = {
   loadError: (type: 'comments' | 'replies') =>
@@ -83,6 +79,7 @@ export const useGetCommentsByTrackId = ({
         offset: currentPage,
         limit: pageSize,
         sortMethod,
+        // TODO: why is this toString instead of encode
         userId: userId?.toString() ?? undefined
       })
       const commentList = transformAndCleanList(
@@ -148,7 +145,7 @@ export const useGetCommentRepliesById = ({
   const queryClient = useQueryClient()
 
   const queryRes = useInfiniteQuery(
-    [QUERY_KEYS.comment, commentId, QUERY_KEYS.replies],
+    [QUERY_KEYS.comment, commentId, QUERY_KEYS.commentReplies],
     {
       enabled: !!enabled,
       getNextPageParam: (lastPage: ReplyComment[], pages) => {
@@ -165,7 +162,7 @@ export const useGetCommentRepliesById = ({
           offset: currentPage
         })
         const replyList = transformAndCleanList(
-          commentsRes?.data,
+          commentsRes.data,
           replyCommentFromSDK
         )
         // Add the replies to our parent comment replies list
@@ -174,7 +171,6 @@ export const useGetCommentRepliesById = ({
           (comment: Comment | undefined) =>
             ({
               ...comment,
-              replyCount: (comment?.replyCount ?? 0) + 1,
               replies: [...(comment?.replies ?? []), ...replyList]
             } as Comment)
         )
@@ -263,6 +259,7 @@ export const usePostComment = () => {
           (comment) =>
             ({
               ...comment,
+              replyCount: (comment?.replyCount ?? 0) + 1,
               replies: [...(comment?.replies ?? []), newComment]
             } as Comment)
         )
@@ -487,12 +484,7 @@ export const useDeleteComment = () => {
       return await sdk.comments.deleteComment(commentData)
     },
     onMutate: ({ commentId, trackId, currentSort }) => {
-      // Remove the individual comment from the cache
-      queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.comment, commentId],
-        exact: true
-      })
-      // Remove the comment from the current sort
+      // Remove the comment from the current sort - this will cause it to no longer display
       queryClient.setQueryData<InfiniteData<ID[]>>(
         [QUERY_KEYS.trackCommentList, trackId, currentSort],
         (prevCommentData) => {
@@ -505,6 +497,13 @@ export const useDeleteComment = () => {
           return newCommentData
         }
       )
+    },
+    onSuccess: (_res, { commentId }) => {
+      // Wait till success to remove the individual comment from the cache
+      queryClient.removeQueries({
+        queryKey: [QUERY_KEYS.comment, commentId],
+        exact: true
+      })
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
