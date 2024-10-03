@@ -71,7 +71,8 @@ uninstall:
 clean:
 	rm -f bin/*
 
-dev/mediorum:
+.PHONY: mediorum-dev
+mediorum-dev:
 	@if [ "$$(docker ps -q -f name=postgres)" ]; then \
 		echo "container 'postgres' is already running"; \
 	else \

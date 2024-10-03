@@ -47,7 +47,7 @@ fi
   dbUrl=postgresql://postgres:postgres@localhost:5432/audiusd \
   uptimeDataDir=/tmp/bolt \
   audius_core_root_dir="$HOME/.audiusd" \
-  ./audiusd-native --no-tls --no-mediorum
+  ./audiusd-native
 )
 EOF
 
@@ -73,8 +73,7 @@ curl http://localhost/core/comet/v1/block?height=1
 
 Verify other services
 ```bash
-# mediorum - has been disabled via --no-mediorum for local for now
-# this is to avoid complexities of on chain registration
+# mediorum - enable with --storage
 # curl http://localhost/health_check
 
 # uptime
@@ -144,7 +143,7 @@ cat << 'EOF' > bin/audiusd
     echo "An audiusd process is already running."
   else
     echo "Starting audiusd-* binary"
-    sudo -E nohup ./audiusd-x86_64-linux > /home/ubuntu/.audiusd/log/audiusd.log 2>&1 &
+    sudo -E nohup ./audiusd-x86_64-linux --tls > /home/ubuntu/.audiusd/log/audiusd.log 2>&1 &
     echo "...for logs 'tail -f /home/ubuntu/.audiusd/log/audiusd.log'\n"
   fi
 )
