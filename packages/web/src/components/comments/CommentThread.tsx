@@ -27,8 +27,6 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const hasReplies = (rootComment?.replies?.length ?? 0) > 0
   const hasMoreReplies = hasNextPage && (rootComment?.replies?.length ?? 0) >= 3
 
-
-
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
   }>({})
