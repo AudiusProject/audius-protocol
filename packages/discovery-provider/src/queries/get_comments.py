@@ -56,7 +56,10 @@ def get_replies(
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
         .group_by(Comment.comment_id)
-        .filter(CommentThread.parent_comment_id == parent_comment_id)
+        .filter(
+            CommentThread.parent_comment_id == parent_comment_id,
+            Comment.is_delete == False,
+        )
         .order_by(asc(Comment.created_at))
         .offset(offset)
         .limit(limit)
