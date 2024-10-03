@@ -11,6 +11,7 @@ import {
   Flex,
   IconButton,
   IconClose,
+  spacing,
   Text,
   useTheme
 } from '@audius/harmony-native'
@@ -148,8 +149,8 @@ export const CommentForm = (props: CommentFormProps) => {
             onSubmit={handleSubmit}
             styles={{
               container: {
-                borderTopLeftRadius: showHelperText ? 0 : 8,
-                borderTopRightRadius: showHelperText ? 0 : 8
+                borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,
+                borderTopRightRadius: showHelperText ? 0 : spacing.unit1
               }
             }}
           />
