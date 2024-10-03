@@ -24,7 +24,8 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
       enabled: hasRequestedMore
     })
 
-  const hasMoreReplies = (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage
+  const hasReplies = (rootComment?.replies?.length ?? 0) > 0
+  const hasMoreReplies = hasNextPage && (rootComment?.replies?.length ?? 0) >= 3
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
@@ -54,8 +55,8 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   return (
     <Flex direction='column' as='li'>
       <CommentBlock commentId={rootComment.id} />
-      <Flex ml='56px' direction='column' mt='l' gap='l'>
-        {(rootComment?.replies?.length ?? 0) > 0 ? (
+      {hasReplies ? (
+        <Flex ml='56px' direction='column' mt='l' gap='l'>
           <Box alignSelf='flex-start'>
             <PlainButton
               onClick={() => toggleReplies(rootComment.id)}
@@ -69,35 +70,35 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
                 : messages.hideReplies}
             </PlainButton>
           </Box>
-        ) : null}
-        {hiddenReplies[rootComment.id] ? null : (
-          <Flex
-            direction='column'
-            gap='l'
-            as='ul'
-            aria-label={messages.replies}
-          >
-            {(rootComment?.replies ?? []).map((reply: ReplyComment) => (
-              <Flex w='100%' key={reply.id} as='li'>
-                <CommentBlock
-                  commentId={reply.id}
-                  parentCommentId={rootComment.id}
-                />
-              </Flex>
-            ))}
-          </Flex>
-        )}
+          {hiddenReplies[rootComment.id] ? null : (
+            <Flex
+              direction='column'
+              gap='l'
+              as='ul'
+              aria-label={messages.replies}
+            >
+              {(rootComment?.replies ?? []).map((reply: ReplyComment) => (
+                <Flex w='100%' key={reply.id} as='li'>
+                  <CommentBlock
+                    commentId={reply.id}
+                    parentCommentId={rootComment.id}
+                  />
+                </Flex>
+              ))}
+            </Flex>
+          )}
 
-        {hasMoreReplies ? (
-          <PlainButton
-            onClick={handleLoadMoreReplies}
-            variant='subdued'
-            css={{ width: 'max-content' }}
-          >
-            {messages.showMoreReplies}
-          </PlainButton>
-        ) : null}
-      </Flex>
+          {hasMoreReplies && !hiddenReplies[rootComment.id] ? (
+            <PlainButton
+              onClick={handleLoadMoreReplies}
+              variant='subdued'
+              css={{ width: 'max-content' }}
+            >
+              {messages.showMoreReplies}
+            </PlainButton>
+          ) : null}
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
