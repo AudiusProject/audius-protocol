@@ -27,14 +27,6 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const hasMoreReplies =
     (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage !== false
 
-  if (hasMoreReplies) {
-    console.log({
-      hasNextPage,
-      hasMoreReplies,
-      lengthIsEnough: (rootComment?.replies?.length ?? 0) >= 3
-    })
-  }
-
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
   }>({})

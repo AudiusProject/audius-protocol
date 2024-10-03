@@ -150,13 +150,14 @@ export const useDeleteComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: deleteComment, ...rest } = tqUseDeleteComment()
 
-  const wrappedHandler = (commentId: ID) => {
+  const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
       deleteComment({
         commentId,
         userId: currentUserId,
         trackId: entityId,
-        currentSort
+        currentSort,
+        parentCommentId
       })
     }
   }

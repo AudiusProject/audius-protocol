@@ -10,7 +10,7 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/common/models'
+import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 
@@ -26,12 +26,14 @@ import { ConfirmationDrawerWithoutRedux } from '../drawers'
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
   disabled?: boolean
+  parentCommentId?: ID
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
     comment: { id, userId },
-    disabled
+    disabled,
+    parentCommentId
   } = props
 
   const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
@@ -183,7 +185,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   }, [id, isPinned, pinComment, toast])
 
   const handleDeleteComment = useCallback(() => {
-    deleteComment(id)
+    deleteComment(id, parentCommentId)
     toast({
       content: messages.toasts.deleted,
       type: 'info'

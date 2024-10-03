@@ -113,7 +113,7 @@ const CommentBlockInternal = (
             comment={comment}
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
-            onClickDelete={() => deleteComment(commentId)}
+            onClickDelete={() => deleteComment(commentId, parentCommentId)}
             isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
