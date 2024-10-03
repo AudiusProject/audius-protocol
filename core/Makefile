@@ -38,7 +38,9 @@ deps:
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
+	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
 	@go mod tidy
+	chmod +x ./infra/add-sandbox-hosts.sh && ./infra/add-sandbox-hosts.sh
 
 .PHONY: gen
 gen: $(GEN_ARTIFACTS)

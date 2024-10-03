@@ -17,3 +17,12 @@ sql:
         package: "db"
         out: "./"
         sql_package: "pgx/v5"
+
+  - engine: "postgresql"
+    queries: "sql/setup.sql"
+    schema: "sql/migrations"
+    gen:
+      go:
+        package: "db"
+        out: "./"
+        sql_package: "pgx/v5"
