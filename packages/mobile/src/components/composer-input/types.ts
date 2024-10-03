@@ -1,6 +1,9 @@
 import type { LinkEntity } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import type { EntityType } from '@audius/sdk'
+import type { TextStyle, ViewStyle } from 'react-native'
+
+import type { StylesProp } from 'app/styles'
 
 import type { TextInputProps } from '../core'
 
@@ -12,6 +15,10 @@ export type ComposerInputProps = {
   onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
   presetMessage?: string
   isLoading?: boolean
+  styles?: StylesProp<{
+    container: ViewStyle
+    input: TextStyle
+  }>
 } & Pick<
   TextInputProps,
   'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id'
