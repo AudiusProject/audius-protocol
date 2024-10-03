@@ -6,7 +6,6 @@ import {
   usePostComment
 } from '@audius/common/context'
 import type { ID } from '@audius/common/models'
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 
 import { Box } from '@audius/harmony-native'
 
