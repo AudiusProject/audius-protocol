@@ -253,7 +253,6 @@ export const CommentDrawer = () => {
           <CommentDrawerForm
             commentListRef={commentListRef}
             onAutocompleteChange={onAutoCompleteChange}
-            // @ts-ignore - Setting a function with a setter is causing a type error
             setAutocompleteHandler={setAutocompleteHandler}
           />
         </CommentSectionProvider>

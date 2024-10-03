@@ -70,7 +70,7 @@ type CommentFormProps = {
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
-  setAutocompleteHandler?: (user: UserMetadata) => void
+  setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
 }
 
 export const CommentForm = (props: CommentFormProps) => {

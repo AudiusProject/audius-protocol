@@ -16,7 +16,7 @@ import { CommentForm } from './CommentForm'
 type CommentDrawerFormProps = {
   commentListRef: RefObject<BottomSheetFlatListMethods>
   onAutocompleteChange?: (isActive: boolean, value: string) => void
-  setAutocompleteHandler?: (user: UserMetadata) => void
+  setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
 }
 
 export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
