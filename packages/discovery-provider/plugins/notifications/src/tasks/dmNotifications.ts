@@ -220,7 +220,7 @@ async function getNewBlasts(
           )
       ),
       targ AS (
-        SELECT
+        SELECT DISTINCT ON (to_user_id)
           blast_id,
           from_user_id,
           to_user_id,
@@ -252,7 +252,7 @@ async function getNewBlasts(
   // If no messages found, move to next blast id, with no user id conditions
   if (!messages?.length) {
     messages = await fetchMessages(
-      'chat_blast.created_at > ? ORDER BY chat_blast.created_at ASC LIMIT 1',
+      "date_trunc('milliseconds', chat_blast.created_at) > ? ORDER BY chat_blast.created_at ASC LIMIT 1",
       '1=1',
       [lastIndexedBlastTimestamp, config.blastUserBatchSize]
     )
@@ -266,9 +266,25 @@ async function getNewBlasts(
     }
   })
 
-  // If there are no new messages, the cursors will remain the same. Otherwise,
-  // update them to the blast id of the current batch and the last user id in the batch.
-  const newBlastIdCursor = formattedMessages[0]?.blast_id ?? lastIndexedBlastId
+  // If still no messages after 2nd fetch, attempt to skip to the next blast.
+  // If there isn't one, then we've reached the end of the blast table. Cursor
+  // should stay the same until new blasts come in.
+  let newBlastIdCursor
+  if (!messages?.length) {
+    const blastIdResult = await discoveryDB
+      .select('blast_id')
+      .from('chat_blast')
+      .whereRaw(
+        "date_trunc('milliseconds', chat_blast.created_at) > ?",
+        lastIndexedBlastTimestamp
+      )
+      .orderBy('chat_blast.created_at', 'asc')
+      .first()
+    newBlastIdCursor = blastIdResult?.blast_id ?? lastIndexedBlastId
+  } else {
+    newBlastIdCursor = formattedMessages[0].blast_id
+  }
+
   const newUserIdCursor = formattedMessages.at(-1)?.receiver_user_id ?? null
 
   return {
@@ -373,6 +389,9 @@ export async function sendDMNotifications(
         `dmNotifications: last indexed blastId: ${lastIndexedBlastId}, last indexed userId: ${lastIndexedBlastUserId} new chat blast notifications: ${JSON.stringify(
           newBlasts
         )}`
+      )
+      logger.info(
+        `dmNotifications: last indexed blastId: ${lastIndexedBlastId}, last indexed userId: ${lastIndexedBlastUserId} total new chat blast notifications: ${newBlasts.length}`
       )
     }
 
