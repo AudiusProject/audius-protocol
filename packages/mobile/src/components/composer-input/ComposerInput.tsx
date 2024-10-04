@@ -36,7 +36,7 @@ import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 import type { ComposerInputProps } from './types'
 
-// const BACKSPACE_KEY = 'Backspace'
+const BACKSPACE_KEY = 'Backspace'
 const AT_KEY = '@'
 const SPACE_KEY = ' '
 
@@ -122,6 +122,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const messageIdRef = useRef(messageId)
+  const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
 
   const getAutocompleteRange = useCallback(() => {
@@ -150,8 +151,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     linkEntities,
     resolveLinks,
     restoreLinks,
-    getMatches
-    // handleBackspace
+    getMatches,
+    handleBackspace
   } = useAudiusLinkResolver({
     value,
     hostname: env.PUBLIC_HOSTNAME,
@@ -269,20 +270,28 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
       const { key } = e.nativeEvent
+      const isBackspaceAvailable =
+        lastKeyPressMsRef.current === null ||
+        Date.now() - lastKeyPressMsRef.current > 300
+
+      if (key === BACKSPACE_KEY) {
+        if (!isBackspaceAvailable) return
+      } else {
+        lastKeyPressMsRef.current = Date.now()
+      }
 
       if (isAutocompleteActive && selection) {
         if (key === SPACE_KEY) {
           setIsAutocompleteActive(false)
         }
 
-        // if (key === BACKSPACE_KEY && selection) {
-        //   const cursorPosition = selection.start
-        //   const deletedChar = value[cursorPosition - 1]
-        //   if (deletedChar === AT_KEY) {
-        //     console.log('deleted @ symbol')
-        //     setIsUserAutocompleteActive(false)
-        //   }
-        // }
+        if (key === BACKSPACE_KEY && selection) {
+          const cursorPosition = selection.start
+          const deletedChar = value[cursorPosition - 1]
+          if (deletedChar === AT_KEY) {
+            setIsAutocompleteActive(false)
+          }
+        }
 
         const autocompleteRange = getAutocompleteRange()
         const cursorPosition = selection.start
@@ -305,30 +314,32 @@ export const ComposerInput = forwardRef(function ComposerInput(
         setIsAutocompleteActive(true)
       }
 
-      // if (key === BACKSPACE_KEY && selection) {
-      //   const textBeforeCursor = value.slice(0, selection.start)
-      //   const cursorPosition = selection.start
-      //   const { editValue } = handleBackspace({
-      //     cursorPosition,
-      //     textBeforeCursor
-      //   })
-      //
-      //   if (editValue) {
-      //     // Delay the deleting of the matched word because
-      //     // in react native text change will fire on backspace anyway
-      //     // and we want the handleChange callback to run first.
-      //     // This is a bit of a hack. In search of a better way!
-      //     setTimeout(() => {
-      //       setValue(editValue)
-      //     }, 100)
-      //   }
-      // }
+      if (key === BACKSPACE_KEY && selection) {
+        const textBeforeCursor = value.slice(0, selection.start)
+        const cursorPosition = selection.start
+        const { editValue } = handleBackspace({
+          cursorPosition,
+          textBeforeCursor
+        })
+
+        if (editValue) {
+          // Delay the deleting of the matched word because
+          // in react native text change will fire on backspace anyway
+          // and we want the handleChange callback to run first.
+          // This is a bit of a hack. In search of a better way!
+          setTimeout(() => {
+            setValue(editValue)
+          }, 100)
+        }
+      }
     },
     [
       getAutocompleteRange,
+      handleBackspace,
       isAutocompleteActive,
       onAutocompleteChange,
-      selection
+      selection,
+      value
     ]
   )
 
