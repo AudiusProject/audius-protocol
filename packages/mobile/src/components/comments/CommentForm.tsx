@@ -71,6 +71,7 @@ type CommentFormProps = {
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+  TextInputComponent?: typeof RNTextInput
 }
 
 export const CommentForm = (props: CommentFormProps) => {
@@ -79,7 +80,8 @@ export const CommentForm = (props: CommentFormProps) => {
     setAutocompleteHandler,
     onAutocompleteChange,
     onSubmit,
-    initialValue
+    initialValue,
+    TextInputComponent
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
@@ -157,6 +159,7 @@ export const CommentForm = (props: CommentFormProps) => {
             presetMessage={initialMessage}
             placeholder={placeholder}
             onSubmit={handleSubmit}
+            TextInputComponent={TextInputComponent}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

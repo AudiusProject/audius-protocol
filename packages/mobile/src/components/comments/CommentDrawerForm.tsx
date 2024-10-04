@@ -7,7 +7,11 @@ import {
   usePostComment
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
-import type { BottomSheetFlatListMethods } from '@gorhom/bottom-sheet'
+import {
+  BottomSheetTextInput,
+  type BottomSheetFlatListMethods
+} from '@gorhom/bottom-sheet'
+import type { TextInput } from 'react-native'
 
 import { Box } from '@audius/harmony-native'
 
@@ -57,6 +61,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
         onAutocompleteChange={onAutocompleteChange}
         setAutocompleteHandler={setAutocompleteHandler}
         isLoading={isLoading}
+        TextInputComponent={BottomSheetTextInput as any}
       />
     </Box>
   )

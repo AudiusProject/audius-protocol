@@ -111,7 +111,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     placeholder,
     presetMessage,
     entityId,
-    styles: propStyles
+    styles: propStyles,
+    TextInputComponent
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [autocompletePosition, setAutocompletePosition] = useState(0)
@@ -466,6 +467,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         value={value}
         maxLength={10000}
         autoCorrect
+        TextInputComponent={TextInputComponent}
       />
       <View
         style={[

@@ -1,7 +1,7 @@
 import type { LinkEntity } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import type { EntityType } from '@audius/sdk'
-import type { TextStyle, ViewStyle } from 'react-native'
+import type { TextInput, TextStyle, ViewStyle } from 'react-native'
 
 import type { StylesProp } from 'app/styles'
 
@@ -21,6 +21,7 @@ export type ComposerInputProps = {
     container: ViewStyle
     input: TextStyle
   }>
+  TextInputComponent?: typeof TextInput
 } & Pick<
   TextInputProps,
   'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id'
