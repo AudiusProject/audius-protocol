@@ -212,7 +212,9 @@ export const reducers = (storage: Storage, history?: History) => ({
       supporting: supportingUserListReducer,
       mutuals: mutualsUserListReducer,
       notifications: notificationsUserListReducer,
-      relatedArtists: relatedArtistsListReducer
+      relatedArtists: relatedArtistsListReducer,
+      purchasers: purchasersUserListReducer,
+      remixers: remixersUserListReducer
     }),
     theme,
     vipDiscordModal: vipDiscordModalReducer,
