@@ -73,7 +73,7 @@ func TestServeImage(t *testing.T) {
 
 	// test with some Qm URLs
 	{
-		qmKey := "QmQSGUjVkSfGBJCU4dcPn3LC17ikQXbfikGbFUAzL5rcXt/150x150.jpg"
+		qmKey := "QmQSGUjVkSfGBJCU4dcPn3LC17ikQXbfikGbFUAzL5rcXt/original.jpg"
 		s2.replicateToMyBucket(qmKey, f)
 
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + qmKey)

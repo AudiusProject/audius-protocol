@@ -24,11 +24,13 @@ build::
 	docker push audius/mediorum:latest
 	docker push audius/mediorum:${GIT_HASH}
 
+# NOTE: build.fast result won't have audio analysis programs built in
+# only use `fast` tag on staging
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-cmd-linux-amd64 cmd/main.go
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
-	docker push audius/mediorum:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:fast
+	docker push audius/mediorum:fast
 
 psql::
 	docker compose up -d --wait
