@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -5,7 +6,10 @@ import {
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { Comment, ReplyComment } from '@audius/common/models'
-import type { BottomSheetFooterProps } from '@gorhom/bottom-sheet'
+import type {
+  BottomSheetFlatListMethods,
+  BottomSheetFooterProps
+} from '@gorhom/bottom-sheet'
 import {
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -26,9 +30,12 @@ import { NoComments } from './NoComments'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
 
-const CommentDrawerContent = () => {
+const CommentDrawerContent = (props: {
+  commentListRef: RefObject<BottomSheetFlatListMethods>
+}) => {
+  const { commentListRef } = props
   const {
-    comments,
+    commentIds,
     commentSectionLoading: isLoading,
     loadMorePages,
     isLoadingMorePages
@@ -46,7 +53,7 @@ const CommentDrawerContent = () => {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex p='l'>
         <NoComments />
@@ -56,8 +63,9 @@ const CommentDrawerContent = () => {
 
   return (
     <BottomSheetFlatList
-      data={comments}
-      keyExtractor={({ id }) => id.toString()}
+      ref={commentListRef}
+      data={commentIds}
+      keyExtractor={(id) => id.toString()}
       ListHeaderComponent={<Box h='l' />}
       ListFooterComponent={
         <>
@@ -75,9 +83,9 @@ const CommentDrawerContent = () => {
       keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
-      renderItem={({ item }) => (
+      renderItem={({ item: id }) => (
         <Box ph='l'>
-          <CommentThread commentId={item.id} />
+          <CommentThread commentId={id} />
         </Box>
       )}
     />
@@ -89,6 +97,7 @@ const BORDER_RADIUS = 40
 export const CommentDrawer = () => {
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
+  const commentListRef = useRef<BottomSheetFlatListMethods>(null)
 
   const [replyingToComment, setReplyingToComment] = useState<
     Comment | ReplyComment
@@ -115,6 +124,7 @@ export const CommentDrawer = () => {
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
       <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <Divider orientation='horizontal' />
         <CommentSectionProvider
           entityId={entityId}
           replyingToComment={replyingToComment}
@@ -122,7 +132,7 @@ export const CommentDrawer = () => {
           editingComment={editingComment}
           setEditingComment={setEditingComment}
         >
-          <CommentDrawerForm />
+          <CommentDrawerForm commentListRef={commentListRef} />
         </CommentSectionProvider>
       </BottomSheetFooter>
     ),
@@ -163,7 +173,7 @@ export const CommentDrawer = () => {
         >
           <CommentDrawerHeader bottomSheetModalRef={bottomSheetModalRef} />
           <Divider orientation='horizontal' />
-          <CommentDrawerContent />
+          <CommentDrawerContent commentListRef={commentListRef} />
         </CommentSectionProvider>
       </BottomSheetModal>
       <Box

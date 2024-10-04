@@ -41,10 +41,10 @@ export const CommentForm = ({
   isEdit,
   hideAvatar = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, entityType, comments } =
+  const { currentUserId, entityId, entityType, commentIds } =
     useCurrentCommentSection()
   const isMobile = useIsMobile()
-  const isFirstComment = comments.length === 0
+  const isFirstComment = commentIds.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input

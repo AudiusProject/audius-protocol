@@ -1,72 +1,18 @@
 import { useCallback, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
-import { useGatedContentAccess } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { ModalSource } from '@audius/common/models'
-import {
-  playerActions,
-  PurchaseableContentType,
-  trackPageLineupActions,
-  trackPageSelectors,
-  usePremiumContentPurchaseModal
-} from '@audius/common/store'
 import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
 
-const { tracksActions } = trackPageLineupActions
-const { getLineup } = trackPageSelectors
-const { seek } = playerActions
+import { TimestampLink } from './TimestampLink'
 
 const MAX_LINES = 3
-
-type TimestampLinkProps = {
-  timestamp: string
-  timestampSeconds: number
-}
-
-const TimestampLink = (props: TimestampLinkProps) => {
-  const { timestamp, timestampSeconds } = props
-
-  const dispatch = useDispatch()
-  const { track } = useCurrentCommentSection()
-  const lineup = useSelector(getLineup)
-  const { track_id: trackId } = track
-
-  const { hasStreamAccess } = useGatedContentAccess(track)
-
-  const uid = lineup?.entries?.[0]?.uid
-  const { onOpen: openPremiumContentPurchaseModal } =
-    usePremiumContentPurchaseModal()
-
-  return (
-    <TextLink
-      onPress={() => {
-        if (!hasStreamAccess) {
-          openPremiumContentPurchaseModal(
-            { contentId: trackId, contentType: PurchaseableContentType.TRACK },
-            {
-              source: ModalSource.Comment
-            }
-          )
-        } else {
-          dispatch(tracksActions.play(uid))
-          dispatch(seek({ seconds: timestampSeconds }))
-        }
-      }}
-      variant='visible'
-      size='s'
-    >
-      {timestamp}
-    </TextLink>
-  )
-}
 
 export type CommentTextProps = {
   children: string
@@ -120,10 +66,7 @@ export const CommentText = (props: CommentTextProps) => {
               const showLink = timestampSeconds <= duration
 
               return showLink ? (
-                <TimestampLink
-                  timestamp={text}
-                  timestampSeconds={timestampSeconds}
-                />
+                <TimestampLink timestampSeconds={timestampSeconds} />
               ) : (
                 <Text size='s'>{text}</Text>
               )

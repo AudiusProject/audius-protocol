@@ -449,9 +449,8 @@ class CollectionPage extends Component<
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
       (item) =>
-        !item.is_delete &&
-        (item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-          item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
+        item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+        item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
       playingIndex > -1
