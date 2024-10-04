@@ -38,6 +38,7 @@ deps:
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
+	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
 	@go mod tidy
 
 .PHONY: gen
@@ -63,18 +64,33 @@ dev: gen
 test: gen
 	go test -v ./... -timeout 60s
 
-.PHONY: sandbox-reset
-sandbox-reset:
-	@docker compose -f ./infra/docker-compose.yml down
-	@docker compose -f ./infra/docker-compose.yml up --build -d
-
-.PHONY: sandbox-node
-sandbox-node:
-	@docker compose -f ./infra/docker-compose.yml up --build sandbox-core
+.PHONY: sandbox-hosts
+sandbox-hosts:
+	chmod +x ./infra/add-sandbox-hosts.sh && ./infra/add-sandbox-hosts.sh
 
 .PHONY: sandbox
-sandbox:
-	@go run ./scripts/sandbox.go
+sandbox: build-amd64
+	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
+
+.PHONY: down-sandbox
+down-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev down
+
+.PHONY: prod-sandbox
+prod-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile prod up --build -d
+
+.PHONY: stage-sandbox
+stage-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile stage up --build -d
+
+.PHONY: dev-sandbox
+dev-sandbox:
+	@docker compose -f ./infra/docker-compose.yml --profile dev up --build -d
+
+.PHONY: clean-sandbox
+clean-sandbox: down-sandbox
+	rm -rf ./tmp
 
 .PHONY: livereload
 livereload:
