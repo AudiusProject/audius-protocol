@@ -5,7 +5,6 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
 
 import {
@@ -26,7 +25,7 @@ const CommentSectionHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
-    comments,
+    commentIds,
     commentCount
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
@@ -35,7 +34,7 @@ const CommentSectionHeader = () => {
     openDrawer({ entityId })
   }
 
-  const isShowingComments = !isLoading && comments?.length
+  const isShowingComments = !isLoading && commentIds?.length
 
   return (
     <Flex
@@ -66,11 +65,11 @@ const CommentSectionHeader = () => {
 const CommentSectionContent = () => {
   const {
     commentSectionLoading: isLoading,
-    comments,
+    commentIds,
     isEntityOwner
   } = useCurrentCommentSection()
 
-  const [postComment, { status: postCommentStatus }] = usePostComment()
+  const [postComment] = usePostComment()
 
   const handlePostComment = (message: string, mentions?: ID[]) => {
     postComment(message, undefined, undefined, mentions)
@@ -90,21 +89,18 @@ const CommentSectionContent = () => {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex gap='m'>
         <Text variant='body'>
           {isEntityOwner ? messages.noCommentsOwner : messages.noComments}
         </Text>
-        <CommentForm
-          onSubmit={handlePostComment}
-          isLoading={postCommentStatus === Status.LOADING}
-        />
+        <CommentForm onSubmit={handlePostComment} />
       </Flex>
     )
   }
 
-  return <CommentBlock commentId={comments[0].id} hideActions />
+  return <CommentBlock commentId={commentIds[0]} hideActions />
 }
 
 type CommentSectionProps = {

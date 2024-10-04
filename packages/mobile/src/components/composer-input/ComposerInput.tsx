@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import type { Ref } from 'react'
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
@@ -8,6 +9,7 @@ import {
   timestampRegex
 } from '@audius/common/utils'
 import { Platform, TouchableOpacity, View } from 'react-native'
+import type { TextInput as RnTextInput } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
@@ -84,7 +86,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-export const ComposerInput = (props: ComposerInputProps) => {
+export const ComposerInput = forwardRef(function ComposerInput(
+  props: ComposerInputProps,
+  ref: Ref<RnTextInput>
+) {
   const styles = useStyles()
   const {
     onSubmit,
@@ -93,7 +98,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     messageId,
     placeholder,
     presetMessage,
-    entityId
+    entityId,
+    styles: propStyles
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
   const [selection, setSelection] = useState<{ start: number; end: number }>()
@@ -264,10 +270,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
   return (
     <>
       <TextInput
+        ref={ref}
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
         styles={{
-          root: styles.composeTextContainer,
+          root: [styles.composeTextContainer, propStyles?.container],
           input: [
             styles.composeTextInput,
             Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
@@ -296,4 +303,4 @@ export const ComposerInput = (props: ComposerInputProps) => {
       </View>
     </>
   )
-}
+})

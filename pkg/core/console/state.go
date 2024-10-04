@@ -31,6 +31,8 @@ type State struct {
 	totalValidators     int64
 	totalManageEntities int64
 
+	isSyncing bool
+
 	chainId      string
 	ethAddress   string
 	cometAddress string
@@ -107,6 +109,11 @@ func (state *State) recalculateState() {
 		logger.Errorf("could not get total validators: %v", err)
 	} else {
 		state.totalValidators = totalValidators
+	}
+
+	status, err := state.rpc.Status(ctx)
+	if err == nil {
+		state.isSyncing = status.SyncInfo.CatchingUp
 	}
 }
 

@@ -33,7 +33,6 @@ services:
       - legacy_creator_file_storage:/file_storage
       - ${PROJECT_ROOT}/cmd/mediorum:/app
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
-      - ${PROJECT_ROOT}/packages/libs/src/eth-contracts:/tmp/eth-contracts # Used only in register script
     profiles:
       - storage
     depends_on:

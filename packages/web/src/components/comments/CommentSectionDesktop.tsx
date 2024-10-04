@@ -3,17 +3,54 @@ import { useRef } from 'react'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { Button, Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
+import {
+  Button,
+  Divider,
+  Flex,
+  LoadingSpinner,
+  Paper,
+  Skeleton
+} from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
-import { CommentSkeletons } from './CommentSkeletons'
 import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
+
+const CommentSkeletons = () => {
+  return (
+    <>
+      <Skeleton w='100%' h='120px' />
+      <Skeleton w='100%' h='120px' />
+      <Skeleton w='100%' h='120px' />
+      <Skeleton w='100%' h='120px' />
+    </>
+  )
+}
+
+const FullCommentSkeletons = () => (
+  <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
+    <CommentHeader isLoading />
+    <Paper p='xl' w='100%' direction='column' gap='xl'>
+      <Flex
+        gap='s'
+        w='100%'
+        h='60px'
+        alignItems='center'
+        justifyContent='center'
+      >
+        <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
+        <Skeleton w='100%' h='60px' />
+      </Flex>
+      <Divider color='default' orientation='horizontal' />
+      <CommentSkeletons />
+    </Paper>
+  </Flex>
+)
 
 /**
  * This component is responsible for
@@ -24,7 +61,7 @@ import { NoComments } from './NoComments'
 export const CommentSectionDesktop = () => {
   const {
     currentUserId,
-    comments,
+    commentIds,
     commentSectionLoading,
     isLoadingMorePages,
     reset,
@@ -38,10 +75,10 @@ export const CommentSectionDesktop = () => {
   )
   const commentPostAllowed = currentUserId !== undefined && commentPostFlag
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
-  const showCommentSortBar = comments.length > 1
+  const showCommentSortBar = commentIds.length > 1
 
   if (commentSectionLoading) {
-    return <CommentSkeletons />
+    return <FullCommentSkeletons />
   }
 
   return (
@@ -80,8 +117,8 @@ export const CommentSectionDesktop = () => {
             threshold={-250}
           >
             <Flex direction='column' gap='xl' pt='m'>
-              {comments.length === 0 ? <NoComments /> : null}
-              {comments.map(({ id }) => (
+              {commentIds.length === 0 ? <NoComments /> : null}
+              {commentIds.map((id) => (
                 <CommentThread commentId={id} key={id} />
               ))}
               {isLoadingMorePages ? (
