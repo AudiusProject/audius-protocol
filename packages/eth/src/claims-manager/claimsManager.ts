@@ -7,7 +7,10 @@ export class ClaimsManager {
   client: PublicClient
   address: `0x${string}`
 
-  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+  constructor(
+    client: PublicClient,
+    { address }: { address?: `0x${string}` } = {}
+  ) {
     this.client = client
     this.address = address ?? CLAIMS_MANAGER_CONTRACT_ADDRESS
   }

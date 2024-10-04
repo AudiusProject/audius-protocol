@@ -3,20 +3,22 @@ import { range } from 'lodash'
 
 import { EthereumContract } from '../EthereumContract'
 
-import type { ServiceTypeManagerConfig } from './types'
+import type { ServiceProviderFactoryConfig } from './types'
 
 export class ServiceProviderFactoryClient extends EthereumContract {
   discoveryNodeServiceType: `0x${string}`
   contentNodeServiceType: `0x${string}`
-  contract: typeof ServiceProviderFactory
+  contract: ServiceProviderFactory
 
-  constructor(config: ServiceTypeManagerConfig) {
+  constructor(config: ServiceProviderFactoryConfig) {
     super(config)
 
     this.discoveryNodeServiceType = config.discoveryNodeServiceType
     this.contentNodeServiceType = config.contentNodeServiceType
 
-    this.contract = new ServiceProviderFactory()
+    this.contract = new ServiceProviderFactory(this.client, {
+      address: config.addresses.serviceProviderFactoryAddress
+    })
   }
 
   getDiscoveryNodes = async () => {
@@ -25,11 +27,11 @@ export class ServiceProviderFactoryClient extends EthereumContract {
     })
 
     const list = await Promise.all(
-      range(1, count + 1).map(
+      range(1, Number(count) + 1).map(
         async (i) =>
           await this.contract.getServiceEndpointInfo({
             serviceType: this.discoveryNodeServiceType,
-            index: i
+            index: BigInt(i)
           })
       )
     )
@@ -42,11 +44,11 @@ export class ServiceProviderFactoryClient extends EthereumContract {
     })
 
     const list = await Promise.all(
-      range(1, count + 1).map(
+      range(1, Number(count) + 1).map(
         async (i) =>
           await this.contract.getServiceEndpointInfo({
             serviceType: this.contentNodeServiceType,
-            index: i
+            index: BigInt(i)
           })
       )
     )

@@ -7,16 +7,15 @@ export class EthRewardsManager {
   client: PublicClient
   address: `0x${string}`
 
-  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+  constructor(
+    client: PublicClient,
+    { address }: { address?: `0x${string}` } = {}
+  ) {
     this.client = client
     this.address = address ?? ETH_REWARDS_MANAGER_CONTRACT_ADDRESS
   }
 
-  getAntiAbuseOracleAddresses = ({
-    serviceType
-  }: {
-    serviceType: `0x${string}`
-  }) =>
+  getAntiAbuseOracleAddresses = () =>
     this.client.readContract({
       address: this.address,
       abi,

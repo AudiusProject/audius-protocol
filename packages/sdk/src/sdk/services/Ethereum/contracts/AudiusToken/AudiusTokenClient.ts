@@ -5,11 +5,11 @@ import { EthereumContract } from '../EthereumContract'
 import type { AudiusTokenConfig } from './types'
 
 export class AudiusTokenClient extends EthereumContract {
-  contract: typeof AudiusToken
+  contract: AudiusToken
 
   constructor(config: AudiusTokenConfig) {
     super(config)
 
-    this.contract = new AudiusToken()
+    this.contract = new AudiusToken(config.client)
   }
 }

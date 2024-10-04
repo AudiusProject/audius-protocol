@@ -43,5 +43,13 @@ export const developmentConfig: SdkServicesConfig = {
     "rpcEndpoint": "http://audius-protocol-solana-test-validator-1",
     "usdcTokenMint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
     "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3"
+  },
+  "ethereum": {
+    "rpcEndpoint": "https://audius-protocol-eth-ganache-1",
+    "addresses": {
+      "ethRewardsManagerAddress": "0x",
+      "serviceProviderFactoryAddress": "0x",
+      "serviceTypeManagerAddress": "0x"
+    }
   }
 }

@@ -7,7 +7,10 @@ export class ServiceProviderFactory {
   client: PublicClient
   address: `0x${string}`
 
-  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+  constructor(
+    client: PublicClient,
+    { address }: { address?: `0x${string}` } = {}
+  ) {
     this.client = client
     this.address = address ?? SERVICE_PROVIDER_FACTORY_CONTRACT_ADDRESS
   }

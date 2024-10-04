@@ -5,11 +5,11 @@ import { EthereumContract } from '../EthereumContract'
 import type { ClaimsManagerConfig } from './types'
 
 export class ClaimsManagerClient extends EthereumContract {
-  contract: typeof ClaimsManager
+  contract: ClaimsManager
 
   constructor(config: ClaimsManagerConfig) {
     super(config)
 
-    this.contract = new ClaimsManager()
+    this.contract = new ClaimsManager(this.client)
   }
 }

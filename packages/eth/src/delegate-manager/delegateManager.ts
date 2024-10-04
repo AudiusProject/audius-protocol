@@ -8,7 +8,10 @@ export class DelegateManager {
   client: PublicClient
   address: `0x${string}`
 
-  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+  constructor(
+    client: PublicClient,
+    { address }: { address?: `0x${string}` } = {}
+  ) {
     this.client = client
     this.address = address ?? DELEGATE_MANAGER_CONTRACT_ADDRESS
   }

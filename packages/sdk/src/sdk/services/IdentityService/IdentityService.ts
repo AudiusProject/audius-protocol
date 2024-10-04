@@ -5,7 +5,7 @@ import type Wallet from 'ethereumjs-wallet'
 import type { TransactionReceipt } from 'web3-core'
 
 import { uuid } from '../../utils/uuid'
-import type { Web3Manager } from '../web3Manager'
+// import type { Web3Manager } from '../web3Manager'
 
 enum AuthHeaders {
   MESSAGE = 'Encoded-Data-Message',
@@ -102,14 +102,14 @@ export type IdentityServiceConfig = {
 
 export class IdentityService {
   identityServiceEndpoint: string
-  web3Manager: Web3Manager | null
+  web3Manager: any | null
 
   constructor({ identityServiceEndpoint }: IdentityServiceConfig) {
     this.identityServiceEndpoint = identityServiceEndpoint
     this.web3Manager = null
   }
 
-  setWeb3Manager(web3Manager: Web3Manager) {
+  setWeb3Manager(web3Manager: any) {
     this.web3Manager = web3Manager
   }
 

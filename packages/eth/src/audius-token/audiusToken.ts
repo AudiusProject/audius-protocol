@@ -7,7 +7,10 @@ export class AudiusToken {
   client: PublicClient
   address: `0x${string}`
 
-  constructor(client: PublicClient, { address }: { address?: `0x${string}` }) {
+  constructor(
+    client: PublicClient,
+    { address }: { address?: `0x${string}` } = {}
+  ) {
     this.client = client
     this.address = address ?? AUDIUS_TOKEN_CONTRACT_ADDRESS
   }
