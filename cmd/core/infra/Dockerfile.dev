@@ -6,7 +6,7 @@ FROM scratch
 
 WORKDIR /bin
 
-COPY ./tmp/core-amd64 ./core
+COPY ./bin/core-amd64 ./core
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 

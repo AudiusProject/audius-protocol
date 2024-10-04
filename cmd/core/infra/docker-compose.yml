@@ -45,7 +45,7 @@ services:
       context: ../
       dockerfile: ./infra/Dockerfile.dev
     volumes:
-      - ../tmp:/bin/tmp
+      - /tmp:/bin/tmp
     restart: unless-stopped
     networks:
       - sandbox-core-net
