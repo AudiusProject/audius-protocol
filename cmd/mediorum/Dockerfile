@@ -64,19 +64,20 @@ RUN git clone https://github.com/acoustid/chromaprint.git /chromaprint && \
 WORKDIR /app
 COPY ./cmd/mediorum/cpp ./cpp
 
-# build analyze-key (static linking)
-RUN g++ -static -o /bin/analyze-key /app/cpp/keyfinder.cpp -I/usr/local/include -L/usr/local/lib \
-    -lkeyfinder -lsndfile -lfftw3 -lopus -lFLAC -lvorbis -lvorbisenc -logg -lpthread && \
+# build analyze-key cpp (static and dynamic linking)
+RUN g++ -o /bin/analyze-key /app/cpp/keyfinder.cpp \
+    -I/usr/local/include -L/usr/local/lib \
+    -Wl,-Bstatic -lkeyfinder -lsndfile -lfftw3 -lfftw3f \
+    -Wl,-Bdynamic -lopus -lFLAC -lvorbis -lvorbisenc -logg -lpthread -lz && \
     chmod +x /bin/analyze-key
 
-# build analyze-bpm (static and dynamic linking)
+# build analyze-bpm cpp (static and dynamic linking)
 RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include \
     -L/usr/local/lib \
     -Wl,-Bstatic -lessentia -ltag -lyaml -lfftw3 -lfftw3f \
     -Wl,-Bdynamic -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lavresample -lpthread -lz -lchromaprint && \
     chmod +x /bin/analyze-bpm
-
 
 FROM golang:1.22-bullseye AS go-builder
 
@@ -102,13 +103,11 @@ RUN go build -o mediorum-cmd pkg/mediorum/cmd/main.go
 
 FROM debian:bullseye-slim as final
 
-# as above, some dynamic libs are required for analyze-bpm
+# some libs still required for dynamic links
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ffmpeg \
     libsamplerate0 \
-    libstdc++6 \
-    libgcc-s1 \
     zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
