@@ -21,7 +21,7 @@ type PurchasableContentOption = {
   contentType: 'track' | 'album'
 }
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -31,7 +31,7 @@ export const CreateChatBlastNavigator = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: defaultAudience ?? ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -47,7 +47,7 @@ export const CreateChatBlastNavigator = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })

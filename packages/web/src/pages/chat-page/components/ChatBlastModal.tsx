@@ -60,7 +60,7 @@ type PurchasableContentOption = {
 }
 
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -71,7 +71,7 @@ export const ChatBlastModal = () => {
 
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: defaultAudience ?? ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -88,7 +88,7 @@ export const ChatBlastModal = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })
@@ -128,7 +128,7 @@ export const ChatBlastModal = () => {
                   type='submit'
                   css={{ flexGrow: 1 }}
                   onClick={submitForm}
-                  // Empty default audience means there areno users in any audience
+                  // Empty default audience means there are no users in any audience
                   disabled={!!isSubmitting || !defaultAudience}
                 >
                   {messages.continue}

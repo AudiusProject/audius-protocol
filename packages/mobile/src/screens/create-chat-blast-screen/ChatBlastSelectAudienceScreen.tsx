@@ -27,7 +27,7 @@ export const ChatBlastSelectAudienceScreen = () => {
           variant='primary'
           fullWidth
           onPress={submitForm}
-          // Empty default audience means there areno users in any audience
+          // Empty default audience means there are no users in any audience
           disabled={!!isSubmitting || !defaultAudience}
         >
           {messages.continue}
