@@ -89,5 +89,16 @@ export const createHedgehog = ({
     )
   }
 
+  // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
+  // Listen for changes to libs instance and update our local wallet
+  window.addEventListener('hedgehogWalletUpdate', () => {
+    // Important, set ready to false to block any new requests while we async update
+    // the wallet from entropy
+    hedgehog.ready = false
+    hedgehog.restoreLocalWallet().finally(() => {
+      hedgehog.ready = true
+    })
+  })
+
   return hedgehog as HedgehogInstance
 }

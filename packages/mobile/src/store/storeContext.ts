@@ -16,7 +16,6 @@ import {
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { hedgehogInstance } from 'app/services/sdk/hedgehog'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import {
@@ -64,7 +63,6 @@ export const storeContext: CommonStoreContext = {
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
-  hedgehogInstance,
   imageUtils: {
     generatePlaylistArtwork
   },
