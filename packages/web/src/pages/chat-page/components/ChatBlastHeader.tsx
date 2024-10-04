@@ -55,12 +55,14 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
         </Flex>
       </Flex>
       <Flex alignItems='flex-end'>
-        <Flex gap='s' alignItems='center'>
-          <IconUserList size='m' color='default' />
-          <Text variant='title' size='xl'>
-            {formatCount(audienceCount ?? 0)}
-          </Text>
-        </Flex>
+        {audienceCount ? (
+          <Flex gap='s' alignItems='center'>
+            <IconUserList size='m' color='default' />
+            <Text variant='title' size='xl'>
+              {formatCount(audienceCount)}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
     </Flex>
   )

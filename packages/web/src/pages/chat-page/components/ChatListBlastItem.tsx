@@ -64,12 +64,14 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
         </Text>
-        <Flex gap='xs'>
-          <IconUser size='s' color='subdued' />
-          <Text variant='label' color='subdued'>
-            {formatCount(audienceCount ?? 0)}
-          </Text>
-        </Flex>
+        {audienceCount ? (
+          <Flex gap='xs'>
+            <IconUser size='s' color='subdued' />
+            <Text variant='label' color='subdued'>
+              {formatCount(audienceCount)}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
     </Flex>
   )
