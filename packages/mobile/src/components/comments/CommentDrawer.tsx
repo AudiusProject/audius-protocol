@@ -124,6 +124,7 @@ export const CommentDrawer = () => {
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
       <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+        <Divider orientation='horizontal' />
         <CommentSectionProvider
           entityId={entityId}
           replyingToComment={replyingToComment}
