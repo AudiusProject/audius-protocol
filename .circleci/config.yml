@@ -307,7 +307,6 @@ workflows:
           mapping: |
             core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
-            mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
@@ -355,6 +354,8 @@ workflows:
             packages/spl/.* run-identity-workflow true
             pkg/.* run-audiusd-workflow true
             cmd/.* run-audiusd-workflow true
+            pkg/.* run-creator-workflow true
+            cmd/.* run-creator-workflow true
           requires:
             - generate-config
             - init
@@ -370,7 +371,6 @@ workflows:
           mapping: |
             core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
-            mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
