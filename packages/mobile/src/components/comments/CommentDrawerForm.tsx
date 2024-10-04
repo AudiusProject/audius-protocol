@@ -11,7 +11,7 @@ import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
-import BottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet'
+import type { TextInput } from 'react-native'
 
 import { Box } from '@audius/harmony-native'
 
@@ -61,7 +61,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
         onAutocompleteChange={onAutocompleteChange}
         setAutocompleteHandler={setAutocompleteHandler}
         isLoading={isLoading}
-        TextInputComponent={BottomSheetTextInput}
+        TextInputComponent={BottomSheetTextInput as any}
       />
     </Box>
   )
