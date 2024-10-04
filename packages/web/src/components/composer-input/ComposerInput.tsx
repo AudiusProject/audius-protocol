@@ -74,10 +74,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
-  const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
+  const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])

@@ -1,5 +1,5 @@
 import type { LinkEntity } from '@audius/common/hooks'
-import type { ID } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import type { EntityType } from '@audius/sdk'
 import type { TextStyle, ViewStyle } from 'react-native'
 
@@ -13,6 +13,8 @@ export type ComposerInputProps = {
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
   onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
+  onAutocompleteChange?: (isActive: boolean, value: string) => void
+  setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   presetMessage?: string
   isLoading?: boolean
   styles?: StylesProp<{

@@ -6,17 +6,21 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import type { BottomSheetFlatListMethods } from '@gorhom/bottom-sheet'
 
 import { Box } from '@audius/harmony-native'
 
 import { CommentForm } from './CommentForm'
 
-export const CommentDrawerForm = (props: {
+type CommentDrawerFormProps = {
   commentListRef: RefObject<BottomSheetFlatListMethods>
-}) => {
-  const { commentListRef } = props
+  onAutocompleteChange?: (isActive: boolean, value: string) => void
+  setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+}
+
+export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
+  const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
   const {
     editingComment,
     replyingToComment,
@@ -48,7 +52,12 @@ export const CommentDrawerForm = (props: {
 
   return (
     <Box p='l' backgroundColor='white'>
-      <CommentForm onSubmit={handlePostComment} isLoading={isLoading} />
+      <CommentForm
+        onSubmit={handlePostComment}
+        onAutocompleteChange={onAutocompleteChange}
+        setAutocompleteHandler={setAutocompleteHandler}
+        isLoading={isLoading}
+      />
     </Box>
   )
 }

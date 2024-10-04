@@ -13,10 +13,11 @@ const messages = {
 
 type CommentDrawerHeaderProps = {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>
+  minimal?: boolean
 }
 
 export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
-  const { bottomSheetModalRef } = props
+  const { bottomSheetModalRef, minimal = false } = props
 
   const { commentCount } = useCurrentCommentSection()
   const showCommentSortBar = commentCount > 1
@@ -33,7 +34,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
         justifyContent='space-between'
         alignItems='center'
       >
-        <Text variant='body' size='m'>
+        <Text variant='body' size={minimal ? 'l' : 'm'}>
           {messages.comments}
           <Text color='subdued'>&nbsp;({commentCount})</Text>
         </Text>
@@ -44,7 +45,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           size='m'
         />
       </Flex>
-      {showCommentSortBar ? <CommentSortBar /> : null}
+      {showCommentSortBar && !minimal ? <CommentSortBar /> : null}
     </Flex>
   )
 }
