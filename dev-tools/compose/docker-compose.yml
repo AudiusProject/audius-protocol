@@ -352,7 +352,7 @@ services:
 
   mediorum:
     extends:
-      file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
+      file: docker-compose.storage.yml
       service: storage
     container_name: audius-protocol-mediorum
     <<: *common

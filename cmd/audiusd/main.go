@@ -16,7 +16,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/core/common"
 	"github.com/AudiusProject/audius-protocol/core/core_pkg"
 
-	"github.com/AudiusProject/audius-protocol/mediorum/mediorum_pkg"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -26,8 +26,8 @@ import (
 )
 
 func main() {
-	noTLS := flag.Bool("no-tls", false, "Disable TLS and use only port 80")
-	noMediorum := flag.Bool("no-mediorum", false, "Disable Mediorum i.e. core node only")
+	enableTLS := flag.Bool("tls", false, "Enable TLS and serve on port 443")
+	enableStorage := flag.Bool("storage", false, "Enable content server")
 	flag.Parse()
 
 	logger := common.NewLogger(nil)
@@ -39,8 +39,6 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// make it work out of the box with no config
-	// TODO: for now, this requires the use of --no-mediorum
-	// as that code is heavily tied into on chain registration
 	delegatePrivateKey := os.Getenv("delegatePrivateKey")
 	if delegatePrivateKey == "" {
 		delegatePrivateKey, delegateOwnerWallet := keyGen()
@@ -50,7 +48,7 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(*noTLS); err != nil {
+		if err := startEchoProxyWithOptionalTLS(*enableTLS); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
 			cancel()
 		}
@@ -70,9 +68,9 @@ func main() {
 		}
 	}()
 
-	if !*noMediorum {
+	if *enableStorage {
 		go func() {
-			if err := mediorum_pkg.Run(ctx, logger); err != nil {
+			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
 				cancel()
 			}
@@ -88,7 +86,7 @@ func main() {
 	logger.Info("Shutdown complete")
 }
 
-func startEchoProxyWithOptionalTLS(noTLS bool) error {
+func startEchoProxyWithOptionalTLS(enableTLS bool) error {
 	e := echo.New()
 
 	e.Use(middleware.Logger())
@@ -123,26 +121,26 @@ func startEchoProxyWithOptionalTLS(noTLS bool) error {
 
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
-	if noTLS {
-		return e.Start(":80")
+	if enableTLS {
+		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+		e.Pre(middleware.HTTPSRedirect())
+
+		go func() {
+			if err := e.StartAutoTLS(":443"); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal("shutting down the server")
+			}
+		}()
+
+		go func() {
+			if err := e.Start(":80"); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal("HTTP server failed")
+			}
+		}()
+
+		return nil
 	}
 
-	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	e.Pre(middleware.HTTPSRedirect())
-
-	go func() {
-		if err := e.StartAutoTLS(":443"); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
-		}
-	}()
-
-	go func() {
-		if err := e.Start(":80"); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("HTTP server failed")
-		}
-	}()
-
-	return nil
+	return e.Start(":80")
 }
 
 func keyGen() (pKey string, addr string) {
