@@ -104,7 +104,7 @@ RUN go build -o mediorum-cmd pkg/mediorum/cmd/main.go
 FROM debian:bullseye-slim as final
 
 # some libs still required for dynamic links
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     ffmpeg \
