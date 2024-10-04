@@ -105,6 +105,7 @@ FROM debian:bullseye-slim as final
 
 # some libs still required for dynamic links
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     ffmpeg \
     libsamplerate0 \
