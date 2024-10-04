@@ -148,7 +148,7 @@ services:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile.tests
     logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test -v ./... -timeout 60s "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test -v ./pkg/core/... -timeout 60s "$$@")' -
     profiles:
       - core-tests
     depends_on:
