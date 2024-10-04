@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "outDir": "dist/cjs",
+    "target": "ES2016",
+    "lib": ["ES2020", "DOM"],
+    "module": "CommonJS",
+    "sourceMap": true,
+    "types": []
+  }
+}
