@@ -91,5 +91,5 @@ func shardCIDV1(cid string) string {
 
 // /img/shard/orig_cid/150x150.jpg
 func ImageVariantPath(id, variant string) string {
-	return filepath.Join("img", shardCIDV1(id), variant)
+	return filepath.Join("img", ShardCID(id), variant)
 }
