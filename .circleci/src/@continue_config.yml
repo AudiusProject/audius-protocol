@@ -64,21 +64,6 @@ parameters:
   run-protocol-dashboard-workflow:
     type: boolean
     default: false
-  run-ddex-e2e-workflow:
-    type: boolean
-    default: false
-  run-ddex-webapp-workflow:
-    type: boolean
-    default: false
-  run-ddex-workflow:
-    type: boolean
-    default: false
-  run-ddex-publisher-workflow:
-    type: boolean
-    default: false
-  run-ddex-stage-workflow:
-    type: boolean
-    default: false
   run-create-audius-app-workflow:
     type: boolean
     default: false

@@ -310,7 +310,6 @@ workflows:
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -319,7 +318,6 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
@@ -373,7 +371,6 @@ workflows:
             mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -382,7 +379,6 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
