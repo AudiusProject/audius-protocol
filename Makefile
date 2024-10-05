@@ -83,19 +83,19 @@ mediorum-dev:
 
 ####  CORE - to be refactored after code re-org merge
 
-GO_SRCS := $(shell find pkg/core -type f -name '*.go') go.sum go.mod $(wildcard pkg/core/config/genesis/*.json)
-JS_SRCS := $(shell find pkg/core -type f -name '*.js')
+GO_SRCS := $(shell find ./pkg/core -type f -name '*.go') go.sum go.mod $(wildcard ./pkg/core/config/genesis/*.json)
+JS_SRCS := $(shell find ./pkg/core -type f -name '*.js')
 NATIVE_BIN := ./bin/core
 AMD64_BIN := ./bin/core-amd64
 
-SQL_SRCS := $(shell find pkg/core/db/sql -type f -name '*.sql') ./pkg/core/db/sqlc.yaml
-SQL_ARTIFACTS := $(wildcard pkg/core/db/*.sql.go)
+SQL_SRCS := $(shell find ./pkg/core/db/sql -type f -name '*.sql') ./pkg/core/db/sqlc.yaml
+SQL_ARTIFACTS := $(wildcard ./pkg/core/db/*.sql.go)
 
-PROTO_SRCS := pkg/core/protocol.proto
-PROTO_ARTIFACTS := $(wildcard pkg/core/gen/proto/*.pb.go)
+PROTO_SRCS := ./pkg/core/protocol.proto
+PROTO_ARTIFACTS := $(wildcard ./pkg/core/gen/proto/*.pb.go)
 
-TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
-TEMPL_ARTIFACTS := $(shell find pkg/core/console -type f -name "*_templ.go")
+TEMPL_SRCS := $(shell find ./pkg/core/console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find ./pkg/core/console -type f -name "*_templ.go")
 
 GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
 GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
@@ -130,9 +130,9 @@ core-deps:
 core-gen: $(GEN_ARTIFACTS)
 
 $(GEN_ARTIFACTS): $(GEN_SRCS)
-	@which -s sqlc templ modd || ( \
+	@which sqlc templ modd > /dev/null || ( \
 		echo "ERROR: audius core dev tooling not found." \
-		"Run 'make deps' to install necessary golang packages." \
+		"Run 'make core-deps' to install necessary golang packages." \
 		&& false \
 	)
 	cd ./pkg/core && go generate ./...
@@ -148,49 +148,3 @@ core-dev: core-gen
 .PHONY: core-test
 core-test: core-gen
 	go test -v ./pkg/core/... -timeout 60s
-
-.PHONY: core-sandbox-hosts
-core-sandbox-hosts:
-	chmod +x ./cmd/core/infra/add-sandbox-hosts.sh && ./cmd/core/infra/add-sandbox-hosts.sh
-
-.PHONY: core-sandbox
-core-sandbox: build-amd64
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
-
-.PHONY: core-down-sandbox
-core-down-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev down
-
-.PHONY: core-prod-sandbox
-core-prod-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod up --build -d
-
-.PHONY: core-stage-sandbox
-core-stage-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile stage up --build -d
-
-.PHONY: core-dev-sandbox
-core-dev-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile dev up --build -d
-
-.PHONY: core-clean-sandbox
-core-clean-sandbox: down-sandbox
-	rm -rf ./bin/core*
-
-.PHONY: core-livereload
-core-livereload:
-	modd
-
-.PHONY: core-push-prerelease
-core-push-prerelease:
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:prerelease"
-
-.PHONY: core-push-edge
-core-push-edge:
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push core --prod
-	crane copy "audius/core:$(shell git rev-parse HEAD)" "audius/core:edge"
-
-.PHONY: core-console
-core-console: core-gen
-	@NO_DOCKER=on modd
