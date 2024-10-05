@@ -17,8 +17,6 @@ dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 h1:bvDV9vkmnHYOMsOr4WLk+Vo07yKIzd94sVoIqshQ4bU=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
-github.com/AudiusProject/audius-protocol/core v0.0.0-20241002193855-40be608d4898 h1:YtayzwjhVwC4qQbYKTpVncrMMtTNdC29bEguKRNMFwg=
-github.com/AudiusProject/audius-protocol/core v0.0.0-20241002193855-40be608d4898/go.mod h1:dO4Gn7bKPV9jxkigxYZ9CSzwQ2S8v5RmsF2FVIdmf+w=
 github.com/Azure/azure-sdk-for-go v66.0.0+incompatible h1:bmmC38SlE8/E81nNADlgmVGurPWMHDX2YNXVQMrBpEE=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1 h1:E+OJmp2tPvt1W+amx48v1eqbjDYsgN+RzP4q16yV5eM=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1/go.mod h1:a6xsAQUZg+VsS3TJ05SRp524Hs4pZ/AeFSr5ENf0Yjo=
@@ -225,6 +223,8 @@ github.com/cometbft/cometbft v1.0.0-rc1.0.20240821165313-db37bd322ea5 h1:alezboY
 github.com/cometbft/cometbft v1.0.0-rc1.0.20240821165313-db37bd322ea5/go.mod h1:43G6D3P5dMt5OVAXl05VfgjRFO8W3sDEKivWzuCW5Y0=
 github.com/cometbft/cometbft-db v0.14.0 h1:dKnK/tQL8BwciH6SgFEuZxwKupMokR4NlwYfJWy7C48=
 github.com/cometbft/cometbft-db v0.14.0/go.mod h1:JOXKwjrxS/MW5qJ1xuVpELa8HGBVgHpgI+t8j0L0JEo=
+github.com/cometbft/cometbft-load-test v0.3.0 h1:z6iZZvFwhci29ca/EZQaWh/d92NLe8bK4eBvFyv2EKY=
+github.com/cometbft/cometbft-load-test v0.3.0/go.mod h1:zKrQpRm3Ay5+RfeRTNWoLniFJNIPnw9JPEM1wuWS3TA=
 github.com/cometbft/cometbft/api v1.0.0-rc.1 h1:GtdXwDGlqwHYs16A4egjwylfYOMYyEacLBrs3Zvpt7g=
 github.com/cometbft/cometbft/api v1.0.0-rc.1/go.mod h1:NDFKiBBD8HJC6QQLAoUI99YhsiRZtg2+FJWfk6A6m6o=
 github.com/consensys/bavard v0.1.13 h1:oLhMLOFGTLdlda/kma4VOJazblc7IM5y5QPd2A/YjhQ=

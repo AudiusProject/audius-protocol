@@ -5,4 +5,4 @@ RUN apk add ffmpeg
 WORKDIR /app
 
 COPY . .
-CMD go test ./... -count 1 -timeout 60s
+CMD go test ./pkg/mediorum/... -count 1 -timeout 60s
