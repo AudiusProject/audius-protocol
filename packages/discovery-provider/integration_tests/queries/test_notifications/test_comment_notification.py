@@ -122,7 +122,12 @@ def test_muted_track_notification(app):
             {
                 **test_entities,
                 "comment_notification_settings": [
-                    {"user_id": 1, "track_id": 1, "is_muted": True}
+                    {
+                        "user_id": 1,
+                        "entity_id": 1,
+                        "entity_type": "Track",
+                        "is_muted": True,
+                    }
                 ],
             },
         )
