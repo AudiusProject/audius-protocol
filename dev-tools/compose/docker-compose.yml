@@ -79,7 +79,7 @@ services:
       - '6612:26657' # CometBFT RPC Server
       - '6613:50051' # Core GRPC Server
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     <<: *common
 
   core-content-1:
@@ -92,7 +92,7 @@ services:
       - '6712:26657'
       - '6713:50051'
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     <<: *common
 
   core-content-2:
@@ -105,7 +105,7 @@ services:
       - '6722:26657'
       - '6723:50051'
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     <<: *common
 
   core-content-3:
@@ -118,7 +118,7 @@ services:
       - '6732:26657'
       - '6733:50051'
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     <<: *common
 
   # Identity
@@ -150,14 +150,6 @@ services:
     extends:
       file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
       service: dashboard
-    <<: *common
-
-  # Uptime (standalone container used by Discovery and Content)
-
-  uptime:
-    extends:
-      file: docker-compose.uptime.yml
-      service: uptime
     <<: *common
 
   # Discovery
@@ -360,7 +352,7 @@ services:
 
   mediorum:
     extends:
-      file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
+      file: docker-compose.storage.yml
       service: storage
     container_name: audius-protocol-mediorum
     <<: *common

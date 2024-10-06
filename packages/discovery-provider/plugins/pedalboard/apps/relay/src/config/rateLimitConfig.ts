@@ -221,13 +221,13 @@ const RELAY_RATE_LIMITS = {
     allowlist: 1000,
   },
   ViewNotification: {
-    owner: 100,
-    app: 0,
+    owner: 1000,
+    app: 1000,
     allowlist: 1000,
   },
   ViewPlaylistNotification: {
-    owner: 100,
-    app: 100,
+    owner: 1000,
+    app: 1000,
     allowlist: 1000,
   },
   CreateDeveloperApp: {

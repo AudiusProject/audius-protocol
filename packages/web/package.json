@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.100",
+  "version": "1.5.102",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -105,6 +105,7 @@
     "@stripe/crypto": "0.0.4",
     "@stripe/stripe-js": "1.54.1",
     "@tanstack/react-query": "4.35.7",
+    "@tanstack/react-query-devtools": "4.35.0",
     "@trpc/client": "10.38.4",
     "@trpc/react-query": "10.38.4",
     "@types/react-dates": "21.8.3",

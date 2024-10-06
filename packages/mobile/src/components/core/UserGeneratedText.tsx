@@ -76,7 +76,7 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
 
   return (
     <TextLink {...other} url={url}>
-      {unfurledContent ?? children}
+      {unfurledContent ?? url}
     </TextLink>
   )
 }
@@ -115,6 +115,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     linkProps,
     suffix,
     matchers,
+    internalLinksOnly,
     ...other
   } = props
 
@@ -191,7 +192,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   const renderLink = useCallback(
     (text: string, match: Match) => {
       const url = match.getAnchorHref()
-      const shouldLinkify = !props.internalLinksOnly || isAudiusUrl(url)
+      const shouldLinkify = !internalLinksOnly || isAudiusUrl(url)
       return shouldLinkify ? (
         <Link
           {...other}
@@ -260,7 +261,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
               // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
               {
                 pattern:
-                  /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g
+                  /(https?:\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g
               },
               // custom matchers provided via props
               ...(matchers ?? [])

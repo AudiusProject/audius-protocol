@@ -321,7 +321,6 @@ const PurchaseTrackSchemaBase = z.object({
 export const GetPurchaseTrackInstructionsSchema = z
   .object({})
   .merge(PurchaseTrackSchemaBase)
-  .strict()
 
 export type GetPurchaseTrackInstructionsRequest = z.input<
   typeof GetPurchaseTrackInstructionsSchema

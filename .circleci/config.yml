@@ -108,9 +108,9 @@ jobs:
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
             # Bump version for content node
-            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
-            mv /tmp/.version.json mediorum/.version.json
-            git add mediorum/.version.json
+            jq --arg version "$NEW_VERSION" '.version=$version' pkg/mediorum/.version.json > /tmp/.version.json
+            mv /tmp/.version.json pkg/mediorum/.version.json
+            git add pkg/mediorum/.version.json
 
             # Bump version for discovery node
             jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
@@ -307,7 +307,6 @@ workflows:
           mapping: |
             core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
-            mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
@@ -355,6 +354,10 @@ workflows:
             packages/spl/.* run-identity-workflow true
             pkg/.* run-audiusd-workflow true
             cmd/.* run-audiusd-workflow true
+            pkg/.* run-creator-workflow true
+            cmd/.* run-creator-workflow true
+            pkg/.* run-core-workflow true
+            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init
@@ -368,9 +371,7 @@ workflows:
           base-revision: main~1
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
-            mediorum/.* run-creator-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/processor/.* run-ddex-workflow true
@@ -417,6 +418,10 @@ workflows:
             packages/spl/.* run-identity-workflow true
             pkg/.* run-audiusd-workflow true
             cmd/.* run-audiusd-workflow true
+            pkg/.* run-creator-workflow true
+            cmd/.* run-creator-workflow true
+            pkg/.* run-core-workflow true
+            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init

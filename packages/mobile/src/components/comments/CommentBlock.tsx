@@ -1,28 +1,19 @@
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
-import {
-  useCommentPostStatus,
-  useCurrentCommentSection
-} from '@audius/common/context'
+import { useCurrentCommentSection } from '@audius/common/context'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import { css } from '@emotion/native'
 
-import {
-  ArtistPick,
-  Box,
-  CommentText,
-  Flex,
-  Text,
-  TextLink,
-  Timestamp
-} from '@audius/harmony-native'
-import { formatCommentTrackTimestamp } from 'app/utils/comments'
+import { Box, Flex, Text } from '@audius/harmony-native'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
 
+import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
 import { CommentBadge } from './CommentBadge'
+import { CommentText } from './CommentText'
+import { Timestamp } from './Timestamp'
+import { TimestampLink } from './TimestampLink'
 
 export type CommentBlockProps = {
   commentId: ID
@@ -47,9 +38,6 @@ export const CommentBlockInternal = (
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
-
-  const commentPostStatus = useCommentPostStatus(comment)
-  const isLoading = commentPostStatus === Status.LOADING
 
   useGetUserById({ id: userId })
 
@@ -86,15 +74,10 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TextLink
+                  <TimestampLink
+                    timestampSeconds={trackTimestampS}
                     size='xs'
-                    variant='active'
-                    onPress={() => {
-                      // TODO
-                    }}
-                  >
-                    {formatCommentTrackTimestamp(trackTimestampS)}
-                  </TextLink>
+                  ></TimestampLink>
                 </>
               ) : null}
             </Flex>
@@ -104,7 +87,7 @@ export const CommentBlockInternal = (
         {!hideActions ? (
           <CommentActionBar
             comment={comment}
-            isDisabled={isLoading || isTombstone}
+            isDisabled={isTombstone}
             hideReactCount={isTombstone}
           />
         ) : null}
@@ -116,7 +99,7 @@ export const CommentBlockInternal = (
 // This is an extra component wrapper because the comment data coming back from aquery could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { data: comment } = useGetCommentById({ id: props.commentId })
-  if (!comment) return null
+  const { data: comment } = useGetCommentById(props.commentId)
+  if (!comment || !('id' in comment)) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }

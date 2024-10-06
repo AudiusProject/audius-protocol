@@ -85,8 +85,8 @@ export const Text = forwardRef(
         overflow: 'hidden',
         display: '-webkit-box',
         lineClamp: `${maxLines}`,
-        '-webkit-line-clamp': `${maxLines}`,
-        '-webkit-box-orient': 'vertical'
+        WebkitLineClamp: `${maxLines}`,
+        WebkitBoxOrient: 'vertical'
       })
     }
 

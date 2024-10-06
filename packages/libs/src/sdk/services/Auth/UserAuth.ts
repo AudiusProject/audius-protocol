@@ -1,12 +1,12 @@
 import { GetFn, Hedgehog, SetAuthFn, SetUserFn } from '@audius/hedgehog'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
-import fetch from 'cross-fetch'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 import type Wallet from 'ethereumjs-wallet'
 
 import { productionConfig } from '../../config/production'
 import { MissingOtpUserAuthError } from '../../utils/errors'
+import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
 import { getDefaultUserAuthConfig } from './getDefaultConfig'

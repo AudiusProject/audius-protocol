@@ -603,7 +603,7 @@ export const productionConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-    "web3ProviderUrl": "https://poa-gateway.audius.co"
+    "chainId": 31524
   },
   "solana": {
     "claimableTokensProgramAddress": "Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ",

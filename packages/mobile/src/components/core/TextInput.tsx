@@ -122,6 +122,7 @@ export type TextInputProps = RNTextInputProps & {
   hideInputAccessory?: boolean
   hideKeyboard?: boolean
   error?: boolean
+  TextInputComponent?: typeof RNTextInput
 }
 
 export type TextInputRef = RNTextInput
@@ -153,6 +154,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       hideInputAccessory: hideInputAccessoryProp,
       autoCorrect = false,
       error,
+      TextInputComponent = RNTextInput,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
@@ -343,7 +345,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
           {startAdornment ? (
             <View style={styles.startAdornment}>{startAdornment}</View>
           ) : null}
-          <RNTextInput
+          <TextInputComponent
             ref={mergeRefs([innerInputRef, ref])}
             style={[styles.input, stylesProp?.input]}
             accessibilityLabel={Platform.OS === 'ios' ? label : undefined}

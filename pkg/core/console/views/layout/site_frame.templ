@@ -1,0 +1,105 @@
+package layout
+
+import (
+	"fmt"
+	"github.com/AudiusProject/audius-protocol/core/config"
+	"github.com/AudiusProject/audius-protocol/core/console/assets"
+)
+
+var gitCommit = templ.URL(fmt.Sprintf("https://github.com/AudiusProject/audius-protocol/commits/%s", config.Version))
+
+templ (l *Layout) NavBlockData(totalBlocks, totalTxs string, syncing bool) {
+	<div>Blocks: { totalBlocks }</div>
+	<div>Transactions: { totalTxs }</div>
+	if syncing {
+		<div>🟡 syncing</div>
+	} else {
+		<div>🟢 synced</div>
+	}
+}
+
+templ (l *Layout) SiteFrame() {
+	@l.Base() {
+		<div class="min-h-screen flex flex-col">
+			<div class="flex-none space-y-4 p-8 pt-6 bg-white shadow-md rounded-lg">
+				<div class="flex items-center justify-between space-y-2">
+					<div class="uk-navbar-item flex flex-col items-start space-y-4">
+						<a href="/console" class="flex items-center">
+							<img src={ assets.AudiusLogoBlackGlyph } alt="audius logo" class="h-12 w-12 object-contain"/>
+							<h1 class="text-2xl font-bold tracking-tight">Console</h1>
+						</a>
+						<div class="space-y-4">
+							<ul class="uk-tab-alt max-w-96">
+								<li>
+									@l.components.Link("/overview") {
+										<div>Overview</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/analytics") {
+										<div>Analytics</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/nodes") {
+										<div>Nodes</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/content") {
+										<div>Content</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/uptime") {
+										<div>Uptime</div>
+									}
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2">
+						<div class="text-left text-sm font-bold tracking-tight">
+							<div>
+								Chain ID:
+								<span>
+									@l.components.Link("/genesis") {
+										<span>{ l.config.GenesisFile.ChainID }</span>
+									}
+								</span>
+							</div>
+							<div>
+								Eth Address: 
+								<span>
+									@l.components.Link("/node/%s", l.config.WalletAddress) {
+										<span>{ l.config.WalletAddress }</span>
+									}
+								</span>
+							</div>
+							<div>
+								Comet Address: 
+								<span>
+									@l.components.Link("/node/%s", l.config.ProposerAddress) {
+										<span>{ l.config.ProposerAddress }</span>
+									}
+								</span>
+							</div>
+							<div hx-get="/console/fragments/nav/chain_data" hx-swap="innerHTML" hx-trigger="load, every 2s"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="page-content" class="flex-grow space-y-4 p-8 pt-6 flex flex-col">
+				<div class="bg-white shadow-md rounded-lg p-4 flex-grow flex flex-col">
+					{ children... }
+				</div>
+			</div>
+			<footer class="h-[3vh] w-full bg-gray-200 flex items-center justify-center p-3">
+				<div class="text-sm text-gray-600 flex justify-between w-full px-5">
+					<span>made with ⚡️ by the protocol team</span>
+					<span>version: <a href={ gitCommit } target="_blank">{ config.Version }</a></span>
+				</div>
+			</footer>
+		</div>
+	}
+}

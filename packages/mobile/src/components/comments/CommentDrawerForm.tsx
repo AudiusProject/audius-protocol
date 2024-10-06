@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import React from 'react'
 
 import {
@@ -5,17 +6,32 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID } from '@audius/common/models'
-import { Status } from '@audius/common/models'
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
+import type { ID, UserMetadata } from '@audius/common/models'
+import {
+  BottomSheetTextInput,
+  type BottomSheetFlatListMethods
+} from '@gorhom/bottom-sheet'
+import type { TextInput } from 'react-native'
 
 import { Box } from '@audius/harmony-native'
 
 import { CommentForm } from './CommentForm'
 
-export const CommentDrawerForm = () => {
-  const { editingComment, replyingToComment } = useCurrentCommentSection()
-  const [postComment, { status: postCommentStatus }] = usePostComment()
+type CommentDrawerFormProps = {
+  commentListRef: RefObject<BottomSheetFlatListMethods>
+  onAutocompleteChange?: (isActive: boolean, value: string) => void
+  setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+}
+
+export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
+  const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
+  const {
+    editingComment,
+    replyingToComment,
+    setReplyingToComment,
+    setEditingComment
+  } = useCurrentCommentSection()
+  const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
   const handlePostComment = (message: string, mentions?: ID[]) => {
@@ -25,14 +41,25 @@ export const CommentDrawerForm = () => {
     }
 
     postComment(message, replyingToComment?.id)
+
+    // Scroll to top of comments when posting a new comment
+    if (!editingComment && !replyingToComment) {
+      commentListRef.current?.scrollToOffset({ offset: 0 })
+    }
+
+    setReplyingToComment?.(undefined)
+    setEditingComment?.(undefined)
   }
 
-  const isLoading = postCommentStatus === Status.LOADING
+  // TODO:
+  const isLoading = false
 
   return (
     <Box p='l' backgroundColor='white'>
       <CommentForm
         onSubmit={handlePostComment}
+        onAutocompleteChange={onAutocompleteChange}
+        setAutocompleteHandler={setAutocompleteHandler}
         isLoading={isLoading}
         TextInputComponent={BottomSheetTextInput as any}
       />

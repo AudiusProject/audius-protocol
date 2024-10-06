@@ -25,10 +25,11 @@ import { CommentSortBar } from './CommentSortBar'
 
 type CommentDrawerHeaderProps = {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>
+  minimal?: boolean
 }
 
 export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
-  const { bottomSheetModalRef } = props
+  const { bottomSheetModalRef, minimal = false } = props
   const { toast } = useToast()
 
   const { commentCount, currentUserId, artistId, entityId } =
@@ -54,6 +55,8 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
     })
   }
 
+  const showCommentSortBar = commentCount > 1
+
   const handlePressClose = () => {
     bottomSheetModalRef.current?.dismiss()
   }
@@ -67,7 +70,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           justifyContent='space-between'
           alignItems='center'
         >
-          <Text variant='body' size='m'>
+          <Text variant='body' size={minimal ? 'l' : 'm'}>
             {messages.title}
             <Text color='subdued'>&nbsp;({commentCount})</Text>
           </Text>
@@ -80,7 +83,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
             size='m'
           />
         </Flex>
-        <CommentSortBar />
+        {showCommentSortBar && !minimal ? <CommentSortBar /> : null}
       </Flex>
       {isOwner ? (
         <Portal hostName='DrawerPortal'>

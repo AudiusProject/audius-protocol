@@ -1,6 +1,6 @@
 {
   "name": "@audius/fixed-decimal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A data structure to represent fixed precision decimals",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -11,8 +11,8 @@
     "types": "./dist/types/index.d.ts"
   },
   "scripts": {
-    "start": "tsc --build --verbose --watch tsconfig.build.json",
-    "build": "tsc --build --verbose tsconfig.build.json",
+    "start": "./scripts/makePackageTypes.sh && tsc --build --verbose --watch tsconfig.build.json",
+    "build": "./scripts/makePackageTypes.sh && tsc --build --verbose tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

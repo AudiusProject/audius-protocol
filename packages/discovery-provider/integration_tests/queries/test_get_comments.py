@@ -186,3 +186,103 @@ def test_get_muted_comments(app):
 
         comments = get_track_comments({}, 1)
         assert comments[0]["is_muted"] == True
+
+
+def test_get_deleted_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 0,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            },
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 3,
+                "is_delete": True,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({"sort_method": "top"}, 1)
+        assert len(comments) == 1
+
+
+def test_get_tombstone_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": i,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+                "is_pinned": True,
+            }
+            for i in range(1, 5)
+        ]
+        + [
+            {  # deleted comment
+                "comment_id": 0,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+                "is_delete": True,
+            },
+            {  # this comment is a reply to the deleted comment
+                "comment_id": 6,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+                "is_pinned": False,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+        "comment_threads": [{"parent_comment_id": 0, "comment_id": 6}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # sort by top
+        comments = get_track_comments({"sort_method": "top"}, 1)
+
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"]) == 0
+        )  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+        # sort by newest
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"]) == 0
+        )  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+        # sort by timestamp
+        comments = get_track_comments({"sort_method": "timestamp"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"])
+        ) == 0  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
