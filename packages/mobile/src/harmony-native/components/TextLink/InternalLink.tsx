@@ -70,10 +70,10 @@ export const useInternalLinkHandlePress = ({
 }
 
 export const InternalLink = (props: InternalLinkProps) => {
-  const { url, onPress, children } = props
+  const { url, onPress, children, ...other } = props
   const handlePress = useInternalLinkHandlePress({ url, onPress })
   return (
-    <TextPressable onPress={handlePress} accessibilityRole='link'>
+    <TextPressable onPress={handlePress} accessibilityRole='link' {...other}>
       {children}
     </TextPressable>
   )
