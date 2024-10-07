@@ -72,6 +72,7 @@ export type AppTabScreenParamList = {
     canBeUnlisted?: boolean
     handle?: string
     slug?: string
+    showComments?: boolean
   }
   TrackRemixes: { id: ID } | { handle: string; slug: string }
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }

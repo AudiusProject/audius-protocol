@@ -21,6 +21,7 @@ import {
 import { Genre } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
+import { push } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -109,7 +110,8 @@ const ConnectedTrackTile = ({
   isFeed = false,
   showRankIcon,
   onClick,
-  statSize = 'large'
+  statSize = 'large',
+  goToRoute
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -174,6 +176,10 @@ const ConnectedTrackTile = ({
   const onClickStatFavorite = () => {
     setFavoriteUsers(trackId)
     setModalVisibility()
+  }
+
+  const onClickStatComment = () => {
+    goToRoute(permalink + '?showComments=true')
   }
 
   useEffect(() => {
@@ -281,6 +287,7 @@ const ConnectedTrackTile = ({
             count={comment_count}
             contentTitle={contentTitle}
             size={statSize}
+            onClick={onClickStatComment}
             flavor={Flavor.COMMENT}
             isOwner={isOwner}
           />
@@ -477,7 +484,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           id: trackID
         })
       ),
-    setModalVisibility: () => dispatch(setVisibility(true))
+    setModalVisibility: () => dispatch(setVisibility(true)),
+    goToRoute: (route: string) => dispatch(push(route))
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
@@ -20,6 +21,7 @@ import {
   VirtualizedScrollView
 } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -45,7 +47,22 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
+  const {
+    searchTrack,
+    id,
+    canBeUnlisted = true,
+    handle,
+    slug,
+    showComments
+  } = params ?? {}
+
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  useEffectOnce(() => {
+    if (showComments) {
+      openDrawer({ entityId: id })
+    }
+  })
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
