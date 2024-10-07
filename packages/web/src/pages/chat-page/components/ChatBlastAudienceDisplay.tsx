@@ -86,8 +86,7 @@ export const ChatBlastAudienceDisplay = (
           <UserProfilePictureList
             users={users as User[]}
             totalUserCount={audienceCount ?? 0}
-            // limit={USER_LIST_LIMIT}
-            limit={1}
+            limit={USER_LIST_LIMIT}
             userListType={userListType}
             userListEntityType={UserListEntityType.USER}
           />

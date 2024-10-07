@@ -2,7 +2,7 @@ import {
   userMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { ID, OptionalId } from '@audius/common/models'
+import { Id, ID, OptionalId } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/user-list/remixers/selectors'
 import {
   accountSelectors,
@@ -39,11 +39,11 @@ function* fetchRemixers({
   const currentUserId = yield* select(accountSelectors.getUserId)
 
   const { data } = yield* call([sdk.full.users, sdk.full.users.getRemixers], {
-    id: id.toString(),
+    id: Id.parse(id),
     limit: MAX_REMIXERS,
     offset,
     userId: OptionalId.parse(currentUserId),
-    trackId: trackId?.toString()
+    trackId: OptionalId.parse(trackId?.toString())
   })
 
   const users = transformAndCleanList(data, userMetadataFromSDK)

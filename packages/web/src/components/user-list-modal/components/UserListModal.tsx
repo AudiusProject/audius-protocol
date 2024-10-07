@@ -43,6 +43,7 @@ import {
   IconRemix
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
+import { useRouteMatch } from 'react-router-dom'
 
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'
@@ -113,6 +114,15 @@ const UserListModal = ({
   const { isEnabled: isOneToManyDmsEnabled } = useFlag(
     FeatureFlags.ONE_TO_MANY_DMS
   )
+
+  const match = useRouteMatch<{ audience_type: string }>(
+    '/messages/:audience_type'
+  )
+  const isChatBlastPath =
+    match?.params.audience_type &&
+    Object.values(ChatBlastAudience).includes(
+      match.params.audience_type as ChatBlastAudience
+    )
 
   switch (userListType) {
     case UserListType.FAVORITE:
@@ -267,6 +277,7 @@ const UserListModal = ({
         />
       </Scrollbar>
       {isOneToManyDmsEnabled &&
+      !isChatBlastPath &&
       (userListType === UserListType.FOLLOWER ||
         userListType === UserListType.SUPPORTER) &&
       userId === currentUserId ? (

@@ -2,7 +2,7 @@ import {
   userMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { ID, OptionalId } from '@audius/common/models'
+import { Id, ID, OptionalId } from '@audius/common/models'
 import {
   getContentId,
   getContentType
@@ -45,12 +45,12 @@ function* fetchPurchasers({
   const currentUserId = yield* select(accountSelectors.getUserId)
 
   const { data } = yield* call([sdk.full.users, sdk.full.users.getPurchasers], {
-    id: id.toString(),
+    id: Id.parse(id),
     limit: MAX_PURCHASERS,
     offset,
     userId: OptionalId.parse(currentUserId),
     contentType,
-    contentId: contentId?.toString()
+    contentId: OptionalId.parse(contentId?.toString())
   })
 
   const users = transformAndCleanList(data, userMetadataFromSDK)

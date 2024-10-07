@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { useGetCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { Button } from 'antd'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -146,8 +145,6 @@ export const UserProfilePictureList = ({
           </div>
         </Tooltip>
       ) : null}
-      {/* debug */}
-      <Button onClick={handleClick}>Click me</Button>
     </div>
   )
 }
