@@ -1,10 +1,11 @@
 {
   "name": "@audius/eth",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "The core Typescript mappings to the Audius Ethereum Contracts",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
+  "private": true,
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.all.json",
     "build": "tsc --build --verbose tsconfig.all.json",
