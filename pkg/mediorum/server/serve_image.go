@@ -7,7 +7,6 @@ import (
 	"mime"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
@@ -22,11 +21,11 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	c.Request().Header.Del("Range")
 
 	ctx := c.Request().Context()
-	jobID := c.Param("jobID")
+	containerCID := c.Param("jobID")
 	variant := c.Param("variant")
 	skipCache, _ := strconv.ParseBool(c.QueryParam("skipCache"))
 	isOriginalJpg := variant == "original.jpg"
-	cacheKey := jobID + variant
+	cacheKey := containerCID + variant
 
 	serveSuccessWithBytes := func(blobData []byte, modTime time.Time) error {
 		setTimingHeader(c)
@@ -70,100 +69,73 @@ func (ss *MediorumServer) serveImage(c echo.Context) error {
 	}
 
 	// 1. resolve ulid to upload cid
-	if cid, err := ss.getUploadOrigCID(jobID); err == nil {
+	if cid, err := ss.getUploadOrigCID(containerCID); err == nil {
 		c.Response().Header().Set("x-orig-cid", cid)
-		jobID = cid
+		containerCID = cid
 	}
 
-	// 2. if is ba ... serve variant
-	if strings.HasPrefix(jobID, "ba") {
-		baCid := jobID
+	// 2. serve variant
+	// parse 150x150 dimensions
+	// while still allowing original.jpg
 
-		var variantStoragePath string
-
-		// parse 150x150 dimensions
-		// while still allowing original.jpg
-		w, h, err := parseVariantSize(variant)
-		if err == nil {
-			variantStoragePath = cidutil.ImageVariantPath(baCid, variant)
-		} else if isOriginalJpg {
-			variantStoragePath = cidutil.ShardCID(baCid)
+	var variantStoragePath string
+	w, h, err := parseVariantSize(variant)
+	if err == nil {
+		variantStoragePath = cidutil.ImageVariantPath(containerCID, variant)
+	} else if isOriginalJpg {
+		if cidutil.IsLegacyCID(containerCID) {
+			variantStoragePath = containerCID + "/original.jpg"
 		} else {
-			return c.String(400, err.Error())
+			variantStoragePath = cidutil.ShardCID(containerCID)
 		}
-
-		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
-
-		// we already have the resized version
-		if !skipCache {
-			if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-				return serveSuccessWithReader(blob)
-			}
-		}
-
-		// open the orig for resizing
-		origReader, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
-
-		// if we don't have orig, fetch from network
-		if err != nil {
-			startFetch := time.Now()
-			host, err := ss.findAndPullBlob(ctx, baCid)
-			if err != nil {
-				return c.String(404, err.Error())
-			}
-
-			c.Response().Header().Set("x-fetch-host", host)
-			c.Response().Header().Set("x-fetch-ok", fmt.Sprintf("%.2fs", time.Since(startFetch).Seconds()))
-
-			origReader, err = ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
-			if err != nil {
-				return err
-			}
-		}
-
-		// do resize if not original.jpg
-		if !isOriginalJpg {
-			resizeStart := time.Now()
-			resized, _, _ := Resized(".jpg", origReader, w, h, "fill")
-			w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
-			io.Copy(w, resized)
-			w.Close()
-			c.Response().Header().Set("x-resize-ok", fmt.Sprintf("%.2fs", time.Since(resizeStart).Seconds()))
-		}
-		origReader.Close()
-
-		// ... serve it
-		return serveSuccess(variantStoragePath)
+	} else {
+		return c.String(400, err.Error())
 	}
 
-	// 3. if Qm ... serve legacy
-	if cidutil.IsLegacyCID(jobID) {
+	c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
 
-		// storage path for Qm images is like:
-		// QmDirMultihash/150x150.jpg
-		// (no sharding)
-		key := jobID + "/" + variant
-
-		c.Response().Header().Set("x-variant-storage-path", key)
-
-		// have it
-		if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+	// we already have the resized version
+	if !skipCache {
+		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
 			return serveSuccessWithReader(blob)
 		}
+	}
 
-		// pull blob from another host and store it at key
-		// keys like QmDirMultiHash/150x150.jpg works fine with findNodeToServeBlob
+	// open the orig for resizing
+	origImageCID := containerCID
+	if cidutil.IsLegacyCID(origImageCID) {
+		origImageCID += "/original.jpg"
+	}
+	origReader, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(origImageCID), nil)
+
+	// if we don't have orig, fetch from network
+	if err != nil {
 		startFetch := time.Now()
-		host, err := ss.findAndPullBlob(ctx, key)
+		host, err := ss.findAndPullBlob(ctx, origImageCID)
 		if err != nil {
 			return c.String(404, err.Error())
 		}
 
 		c.Response().Header().Set("x-fetch-host", host)
 		c.Response().Header().Set("x-fetch-ok", fmt.Sprintf("%.2fs", time.Since(startFetch).Seconds()))
-		return serveSuccess(key)
+
+		origReader, err = ss.bucket.NewReader(ctx, cidutil.ShardCID(origImageCID), nil)
+		if err != nil {
+			return err
+		}
 	}
 
-	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-	return c.String(400, msg)
+	// do resize if not original.jpg
+	if !isOriginalJpg {
+		resizeStart := time.Now()
+		resized, _, _ := Resized(".jpg", origReader, w, h, "fill")
+		w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
+		io.Copy(w, resized)
+		w.Close()
+		c.Response().Header().Set("x-resize-ok", fmt.Sprintf("%.2fs", time.Since(resizeStart).Seconds()))
+	}
+	origReader.Close()
+
+	// ... serve it
+	return serveSuccess(variantStoragePath)
 }

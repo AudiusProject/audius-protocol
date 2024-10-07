@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
@@ -191,6 +192,10 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, cid := range cidBatch {
 			tracker.CursorQmCID = cid
+			// skip image variants since they'll be dynamically resized
+			if strings.HasSuffix(cid, ".jpg") && !strings.HasSuffix(cid, "original.jpg") {
+				continue
+			}
 			ss.repairCid(cid, nil, tracker)
 		}
 
@@ -249,11 +254,7 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 
 	// in cleanup mode do some extra checks:
 	// - validate CID, delete if invalid (doesn't apply to Qm keys because their hash is not the CID)
-
-	// HashMigration: skipping re-hash of blob content during content migration.
-	// todo: remove when done.
-	validateBlobContents := false
-	if validateBlobContents && tracker.CleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
+	if tracker.CleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
 		if r, errRead := ss.bucket.NewReader(ctx, key, nil); errRead == nil {
 			errVal := cidutil.ValidateCID(cid, r)
 			errClose := r.Close()
