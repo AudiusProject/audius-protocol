@@ -1,5 +1,6 @@
 import {
   TrackCommentsSortMethodEnum as CommentSortMethod,
+  EntityManagerAction,
   EntityType
 } from '@audius/sdk'
 import {
@@ -21,7 +22,7 @@ import {
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
-import { encodeHashId } from '~/utils'
+import { encodeHashId, Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -40,7 +41,11 @@ const messages = {
       | 'reacting to'
       | 'reporting'
   ) => `There was an error ${actionType} that comment. Please try again`,
-  muteUserError: 'There was an error muting that user. Please try again.'
+  muteUserError: 'There was an error muting that user. Please try again.',
+  updateTrackCommentNotificationSettingError:
+    'There was an error updating the track comment notification setting. Please try again.',
+  updateCommentNotificationSettingError:
+    'There was an error updating the comment notification setting. Please try again.'
 }
 
 /**
@@ -729,6 +734,125 @@ export const useMuteUser = () => {
         trackId,
         currentSort
       ])
+    }
+  })
+}
+
+export const useGetTrackCommentNotificationSetting = (
+  trackId: ID,
+  currentUserId: Nullable<ID>
+) => {
+  const { audiusSdk } = useAudiusQueryContext()
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.trackCommentNotificationSetting, trackId],
+    queryFn: async () => {
+      if (!currentUserId) return
+      const sdk = await audiusSdk()
+      return await sdk.tracks.trackCommentNotificationSetting({
+        trackId: encodeHashId(trackId),
+        userId: encodeHashId(currentUserId)
+      })
+    }
+  })
+}
+
+type UpdateTrackCommentNotificationSettingArgs = {
+  userId: ID
+  trackId: ID
+  action: EntityManagerAction.MUTE | EntityManagerAction.UNMUTE
+}
+
+export const useUpdateTrackCommentNotificationSetting = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+
+  return useMutation({
+    mutationFn: async (args: UpdateTrackCommentNotificationSettingArgs) => {
+      const { userId, trackId, action } = args
+      const sdk = await audiusSdk()
+      await sdk.comments.updateCommentNotificationSetting({
+        userId,
+        entityId: trackId,
+        entityType: EntityType.TRACK,
+        action
+      })
+    },
+    onMutate: ({ trackId, action }) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.trackCommentNotificationSetting, trackId],
+        (prevData) => {
+          if (prevData) {
+            return {
+              ...prevData,
+              isMuted: action === EntityManagerAction.MUTE
+            }
+          }
+          return { isMuted: action === EntityManagerAction.MUTE }
+        }
+      )
+    },
+    onError: (error: Error, args) => {
+      const { trackId } = args
+      reportToSentry({
+        error,
+        additionalInfo: args,
+        name: 'Comments'
+      })
+      dispatch(toast({ content: messages.muteUserError }))
+
+      queryClient.resetQueries([
+        QUERY_KEYS.trackCommentNotificationSetting,
+        trackId
+      ])
+    }
+  })
+}
+
+type UpdateCommentNotificationSettingArgs = {
+  userId: ID
+  commentId: ID
+  action: EntityManagerAction.MUTE | EntityManagerAction.UNMUTE
+}
+
+export const useUpdateCommentNotificationSetting = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+  return useMutation({
+    mutationFn: async (args: UpdateCommentNotificationSettingArgs) => {
+      const { userId, commentId, action } = args
+      const sdk = await audiusSdk()
+      await sdk.comments.updateCommentNotificationSetting({
+        userId,
+        entityId: commentId,
+        entityType: EntityType.COMMENT,
+        action
+      })
+    },
+    onMutate: ({ commentId, action }) => {
+      queryClient.setQueryData([QUERY_KEYS.comment, commentId], (prevData) => {
+        if (prevData) {
+          return {
+            ...prevData,
+            isMuted: action === EntityManagerAction.MUTE
+          }
+        }
+        return { isMuted: action === EntityManagerAction.MUTE }
+      })
+    },
+    onError: (error: Error, args) => {
+      const { commentId } = args
+      reportToSentry({
+        error,
+        additionalInfo: args,
+        name: 'Comments'
+      })
+      dispatch(
+        toast({ content: messages.updateCommentNotificationSettingError })
+      )
+      queryClient.resetQueries([QUERY_KEYS.comment, commentId])
     }
   })
 }

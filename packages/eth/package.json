@@ -1,0 +1,27 @@
+{
+  "name": "@audius/eth",
+  "version": "0.0.0",
+  "description": "The core Typescript mappings to the Audius Ethereum Contracts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "private": true,
+  "scripts": {
+    "start": "tsc --build --verbose --watch tsconfig.all.json",
+    "build": "tsc --build --verbose tsconfig.all.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/main/packages/eth"
+  },
+  "author": "Audius",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+  },
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/eth",
+  "dependencies": {
+    "viem": "1.21.1"
+  }
+}

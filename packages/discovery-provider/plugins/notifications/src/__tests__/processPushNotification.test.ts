@@ -12,7 +12,8 @@ import {
   setupTest,
   resetTests,
   insertFollows,
-  insertChatPermission
+  insertChatPermission,
+  setupNUsersWithDevices
 } from '../utils/populateDB'
 
 describe('Push Notifications', () => {
@@ -82,8 +83,6 @@ describe('Push Notifications', () => {
       }
     )
 
-    jest.clearAllMocks()
-
     // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
     const reaction = '🔥'
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
@@ -96,8 +95,9 @@ describe('Push Notifications', () => {
     )
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
+    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+      2,
       {
         type: user1.deviceType,
         targetARN: user1.awsARN,
@@ -113,8 +113,6 @@ describe('Push Notifications', () => {
         }
       }
     )
-
-    jest.clearAllMocks()
   }, 40000)
 
   test('Process chat blast notification', async () => {
@@ -133,6 +131,10 @@ describe('Push Notifications', () => {
     ])
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // follow notification
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
     const blastId = '1'
@@ -152,27 +154,45 @@ describe('Push Notifications', () => {
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
-    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
-      2,
-      {
-        type: user2.deviceType,
-        targetARN: user2.awsARN,
-        badgeCount: 1
-      },
-      {
-        title: 'Message',
-        body: `New message from ${user1.name}`,
-        data: {
-          type: 'Message'
-        }
-      }
-    )
+    // Expect 1 follow notif and 1 blast message notif
+    // expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
+    const calls = sendPushNotificationSpy.mock.calls
+    const expectedCalls = [
+      [
+        expect.objectContaining({
+          type: user1.deviceType,
+          targetARN: user1.awsARN,
+          badgeCount: 1
+        }),
+        expect.objectContaining({
+          title: 'New Follow',
+          body: `${user2.name} followed you`,
+          data: expect.objectContaining({
+            type: 'Follow'
+          })
+        })
+      ],
+      [
+        expect.objectContaining({
+          type: user2.deviceType,
+          targetARN: user2.awsARN,
+          badgeCount: 1
+        }),
+        expect.objectContaining({
+          title: 'Message',
+          body: `New message from ${user1.name}`,
+          data: expect.objectContaining({
+            type: 'Message'
+          })
+        })
+      ]
+    ]
+    expect(calls).toEqual(expect.arrayContaining(expectedCalls))
 
     // User 2 only allows tippers to message them
     await insertChatPermission(processor.discoveryDB, user2.userId, 'tippers')
 
-    // User 1 sent message config.dmNotificationDelay ms ago
+    // New blast from user 1 now should not be sent to user 2 as user 1 has not tipped user 2
     const message2 = 'please let me DM you'
     const blastId2 = '2'
     const messageTimestampMs2 = Date.now() - config.dmNotificationDelay
@@ -192,7 +212,6 @@ describe('Push Notifications', () => {
 
     // No new notifications
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
-    jest.clearAllMocks()
   }, 40000)
 
   test('Test blast with existing chat', async () => {
@@ -201,9 +220,7 @@ describe('Push Notifications', () => {
       processor.identityDB
     )
 
-    // Start processor
     processor.start()
-    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // user2 follows user1
@@ -251,8 +268,151 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+  }, 40000)
 
-    jest.clearAllMocks()
+  test('Test many blasts ', async () => {
+    config.blastUserBatchSize = 2
+    const numUsers = 5
+    const numInitialFollowers = numUsers - 2
+    const users = await setupNUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB,
+      numUsers
+    )
+
+    // User 0 is the blast sender. All other users follow user 0
+    // except user 2 (leave a gap)
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 1, followee_user_id: 0 },
+      { follower_user_id: 3, followee_user_id: 0 },
+      { follower_user_id: 4, followee_user_id: 0 }
+    ])
+
+    processor.start()
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // Follow notifs
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(numInitialFollowers)
+
+    let blastId = '0'
+    let blastTimestampMs = Date.now() - config.dmNotificationDelay
+    let blastTimestamp = new Date(blastTimestampMs)
+    const audience = 'follower_audience'
+    let message = 'hi from user 0'
+    await insertBlast(
+      processor.discoveryDB,
+      0,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
+
+    let notifsSoFar = numInitialFollowers * 2
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
+    for (let i = 0; i < numInitialFollowers; i++) {
+      expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+        notifsSoFar - i,
+        expect.objectContaining({
+          type: users[0].deviceType
+        }),
+        expect.objectContaining({
+          title: 'Message',
+          body: `New message from ${users[0].name}`,
+          data: expect.objectContaining({
+            type: 'Message'
+          })
+        })
+      )
+    }
+
+    // Test race condition when new follower whose userId is in the middle of a batch
+    // is added in between processing a blast
+    blastId = '1'
+    blastTimestampMs = Date.now() - config.dmNotificationDelay
+    blastTimestamp = new Date(blastTimestampMs)
+    message = 'second blast from user 0'
+    await insertBlast(
+      processor.discoveryDB,
+      0,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+    await new Promise((r) => setTimeout(r, config.pollInterval))
+
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 2, followee_user_id: 0 }
+    ])
+
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
+
+    // Expect 3 more blast notifs + 1 follow notif
+    notifsSoFar = numInitialFollowers * 3 + 1
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
+    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+      notifsSoFar,
+      expect.objectContaining({
+        type: users[0].deviceType
+      }),
+      expect.objectContaining({
+        title: 'Message',
+        body: `New message from ${users[0].name}`,
+        data: expect.objectContaining({
+          type: 'Message'
+        })
+      })
+    )
+
+    const numFinalFollowers = numUsers - 1
+    blastId = '2'
+    blastTimestampMs = Date.now() - config.dmNotificationDelay
+    blastTimestamp = new Date(blastTimestampMs)
+    message = 'third blast from user 0'
+    await insertBlast(
+      processor.discoveryDB,
+      0,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
+
+    // Expect all users to receive a blast notif now
+    notifsSoFar = notifsSoFar + numFinalFollowers
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
+    for (let i = 0; i < numFinalFollowers; i++) {
+      expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+        notifsSoFar - i,
+        expect.objectContaining({
+          type: users[0].deviceType
+        }),
+        expect.objectContaining({
+          title: 'Message',
+          body: `New message from ${users[0].name}`,
+          data: expect.objectContaining({
+            type: 'Message'
+          })
+        })
+      )
+    }
   }, 40000)
 
   test('Does not send DM notifications when sender is receiver', async () => {

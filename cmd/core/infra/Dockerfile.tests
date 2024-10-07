@@ -1,0 +1,19 @@
+FROM golang:alpine
+
+WORKDIR /app
+
+ENV discoveryOneGRPC=core-discovery-1:50051
+ENV discoveryOneJRPC=http://core-discovery-1:26657
+
+ENV contentOneGRPC=core-content-1:50051
+ENV contentOneJRPC=http://core-content-1:26657
+
+ENV contentTwoGRPC=core-content-2:50051
+ENV contentTwoJRPC=http://core-content-2:26657
+
+ENV contentThreeGRPC=core-content-3:50051
+ENV contentThreeJRPC=http://core-content-3:26657
+
+COPY . .
+
+CMD go test ./pkg/core/... -count 1 -timeout 60s

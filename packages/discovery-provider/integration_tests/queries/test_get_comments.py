@@ -157,6 +157,37 @@ def test_get_comments_replies(app):
             assert 103 <= decode_string_id(comment["id"]) <= 105
 
 
+def test_get_muted_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+        ],
+        "comment_notification_settings": [
+            {
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Comment",
+                "is_muted": True,
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({}, 1)
+        assert comments[0]["is_muted"] == True
+
+
 def test_get_deleted_comments(app):
     entities = {
         "comments": [

@@ -95,6 +95,12 @@ export interface Comment {
     isTombstone?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof Comment
+     */
+    isMuted?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof Comment
      */
@@ -151,6 +157,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'isCurrentUserReacted': !exists(json, 'is_current_user_reacted') ? undefined : json['is_current_user_reacted'],
         'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
         'isTombstone': !exists(json, 'is_tombstone') ? undefined : json['is_tombstone'],
+        'isMuted': !exists(json, 'is_muted') ? undefined : json['is_muted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
@@ -177,6 +184,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'is_current_user_reacted': value.isCurrentUserReacted,
         'is_artist_reacted': value.isArtistReacted,
         'is_tombstone': value.isTombstone,
+        'is_muted': value.isMuted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),

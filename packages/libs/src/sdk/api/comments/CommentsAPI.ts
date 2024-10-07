@@ -1,10 +1,12 @@
 import snakecaseKeys from 'snakecase-keys'
+import { OverrideProperties } from 'type-fest'
 
 import { AuthService, LoggerService } from '../../services'
 import {
   Action,
   EntityManagerService,
-  EntityType
+  EntityType,
+  ManageEntityOptions
 } from '../../services/EntityManager/types'
 import { encodeHashId } from '../../utils/hashId'
 import {
@@ -13,6 +15,11 @@ import {
 } from '../generated/default'
 
 import { CommentMetadata } from './types'
+
+type CommentNotificationOptions = OverrideProperties<
+  Omit<ManageEntityOptions, 'metadata' | 'auth'>,
+  { action: Action.MUTE | Action.UNMUTE }
+>
 
 export class CommentsApi extends GeneratedCommentsApi {
   constructor(
@@ -113,6 +120,15 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.USER,
       entityId: mutedUserId,
       action: isMuted ? Action.UNMUTE : Action.MUTE,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async updateCommentNotificationSetting(config: CommentNotificationOptions) {
+    const response = await this.entityManager.manageEntity({
+      ...config,
       metadata: '',
       auth: this.auth
     })
