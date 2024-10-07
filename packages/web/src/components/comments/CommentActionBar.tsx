@@ -296,11 +296,8 @@ export const CommentActionBar = ({
       isPinned,
       isCommentOwner,
       onClickEdit,
-      isUserGettingNotifs,
       handleMuteNotifs,
       areNotifsMuted,
-      isCommentOwner,
-      isEntityOwner,
       canMuteNotifs
     ]
   )
