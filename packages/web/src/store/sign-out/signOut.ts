@@ -19,8 +19,7 @@ const removeLocalStorageItems = async (localStorage: LocalStorage) => {
 
 export const signOut = async (
   audiusBackendInstance: AudiusBackend,
-  localStorage: LocalStorage,
-  hedgehogInstance: HedgehogInstance
+  localStorage: LocalStorage
 ) => {
   await removeLocalStorageItems(localStorage)
   await localStorage.clearAudiusUserWalletOverride()
@@ -29,7 +28,6 @@ export const signOut = async (
   await localStorage.clearPlaybackRate()
   removeHasRequestedBrowserPermission()
   await audiusBackendInstance.signOut()
-  await hedgehogInstance.logout()
   clearTheme()
 
   window.location.reload()

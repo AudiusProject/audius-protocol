@@ -16,15 +16,13 @@ const { signOut: signOutAction } = signOutActions
 function* watchSignOut() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
-  const hedgehogInstance = yield* getContext('hedgehogInstance')
   yield takeLatest(signOutAction.type, function* () {
     yield put(resetAccount())
     yield put(unsubscribeBrowserPushNotifications())
     yield put(resetWalletState())
     yield put(
       make(Name.SETTINGS_LOG_OUT, {
-        callback: () =>
-          signOut(audiusBackendInstance, localStorage, hedgehogInstance)
+        callback: () => signOut(audiusBackendInstance, localStorage)
       })
     )
   })
