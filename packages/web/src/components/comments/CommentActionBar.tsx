@@ -2,6 +2,7 @@ import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReactToComment,
   useReportComment,
@@ -77,6 +78,7 @@ export const CommentActionBar = ({
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
+  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'isPinned' in comment
   const isTombstone = isParentComment ? comment.isTombstone : false
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
@@ -88,9 +90,10 @@ export const CommentActionBar = ({
   const [muteUser] = useMuteUser()
 
   // Comment context data
-  const { currentUserId, isEntityOwner, entityId } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, entityId, currentSort } =
+    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const isUserGettingNotifs = isCommentOwner && isParentComment
+  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -104,15 +107,13 @@ export const CommentActionBar = ({
   const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
-  // Internal state
-  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
-  const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
+  const [handleMuteCommentNotifications] =
+    useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
-    setReactionState(!reactionState)
-    reactToComment(commentId, !reactionState)
-  }, [commentId, reactToComment, reactionState])
+    reactToComment(commentId, !isCurrentUserReacted)
+  }, [commentId, isCurrentUserReacted, reactToComment])
 
   const handleDelete = useCallback(() => {
     // note: we do some UI logic in the CommentBlock above this so we can't trigger directly from here
@@ -120,14 +121,13 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    // TODO: call backend here
-    setNotificationsMuted((prev) => !prev)
+    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
     toast(
-      notificationsOn
+      areNotifsMuted
         ? messages.toasts.unmutedNotifs
         : messages.toasts.mutedNotifs
     )
-  }, [notificationsOn, toast])
+  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -138,10 +138,11 @@ export const CommentActionBar = ({
     muteUser({
       mutedUserId: comment.userId,
       isMuted: false,
-      entityId
+      trackId: entityId,
+      currentSort
     })
     toast(messages.toasts.mutedUser)
-  }, [comment.userId, entityId, muteUser, toast])
+  }, [comment.userId, currentSort, entityId, muteUser, toast])
 
   const handleFlagComment = useCallback(() => {
     reportComment(commentId)
@@ -279,22 +280,21 @@ export const CommentActionBar = ({
             ),
           text: messages.menuActions.delete
         },
-        isCommentOwner &&
-          isUserGettingNotifs && {
-            onClick: handleMuteNotifs,
-            text: notificationsOn
-              ? messages.menuActions.turnOffNotifications
-              : messages.menuActions.turnOnNotifications
-          }
+        canMuteNotifs && {
+          onClick: handleMuteNotifs,
+          text: areNotifsMuted
+            ? messages.menuActions.turnOnNotifications
+            : messages.menuActions.turnOffNotifications
+        }
       ].filter(removeNullable),
     [
       isPinned,
       onClickEdit,
       handleMuteNotifs,
-      notificationsOn,
+      areNotifsMuted,
       isCommentOwner,
       isEntityOwner,
-      isUserGettingNotifs
+      canMuteNotifs
     ]
   )
 
@@ -304,7 +304,7 @@ export const CommentActionBar = ({
         {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
-          color={reactionState ? 'active' : 'subdued'}
+          color={isCurrentUserReacted ? 'active' : 'subdued'}
           aria-label='Heart comment'
           onClick={handleReact}
           disabled={isDisabled}

@@ -14,11 +14,13 @@ export const commentsMessages = {
   showMoreReplies: 'Show More Replies',
   reply: 'Reply',
   replies: 'Replies',
+  replyingTo: (handle: string) => `Replying to @${handle}`,
   showReplies: (replyCount: number) =>
     `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
+  editing: 'Editing comment',
   commentSettings: 'Comment Settings',
   description: 'Prevent certain users from commenting on your tracks.',
   unmute: 'Unmute',
@@ -51,7 +53,9 @@ export const commentsMessages = {
     flaggedAndRemoved: 'Comment flagged and removed',
     flaggedAndHidden: 'Comment flagged and hidden',
     mutedNotifs: 'Notifications turned off',
-    unmutedNotifs: 'Notifications turned on'
+    unmutedNotifs: 'Notifications turned on',
+    mutedTrackNotifs: 'Comment notifications turned off',
+    unmutedTrackNotifs: 'Comment notifications turned on'
   },
   popups: {
     pin: {
@@ -110,6 +114,10 @@ export const commentsMessages = {
         `Flag and remove ${userDisplayName}'s comment?`,
       confirm: 'Flag',
       cancel: 'Cancel'
+    },
+    trackNotifications: {
+      mute: 'Turn off comment notifications for this track',
+      unmute: 'Turn on comment notifications for this track'
     }
   }
 }
