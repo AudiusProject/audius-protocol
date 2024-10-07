@@ -16,6 +16,8 @@ import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
+import { TrackRemixes } from '../TrackRemixes'
+
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
 
@@ -190,7 +192,7 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <Text color='default' variant='title' size='l'>
+    <Text color='default' variant='title' size='l' textAlign='left'>
       {messages.originalTrack}
     </Text>
   )
@@ -202,8 +204,14 @@ const TrackPage = ({
         color='default'
         variant='title'
         size='l'
+        textAlign='left'
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
+
+  const { fieldVisibility, remixTrackIds } = defaults
+
+  const hasRemixes =
+    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   return (
     <Page
@@ -224,24 +232,18 @@ const TrackPage = ({
       </Box>
       <Flex
         direction='column'
-        css={{
-          display: 'flex',
-          position: 'relative',
-          padding: '200px 16px 60px'
-        }}
+        css={{ position: 'relative', padding: '200px 16px 60px' }}
       >
         {renderGiantTrackTile()}
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
-            <Flex justifyContent='center' mt='3xl' ph='l'>
-              <Remixes
-                trackIds={defaults.remixTrackIds}
-                goToAllRemixes={goToAllRemixesPage}
-                count={defaults.remixesCount}
-              />
-            </Flex>
-          )}
+        {hasRemixes && !isCommentingEnabled ? (
+          <Flex justifyContent='center' mt='3xl' ph='l'>
+            <Remixes
+              trackIds={defaults.remixTrackIds!}
+              goToAllRemixes={goToAllRemixesPage}
+              count={defaults.remixesCount}
+            />
+          </Flex>
+        ) : null}
         <Flex
           gap='2xl'
           w='100%'
@@ -256,7 +258,7 @@ const TrackPage = ({
               <CommentSection entityId={defaults.trackId} />
             </Flex>
           ) : null}
-          {hasMoreByTracks ? (
+          {hasRemixes || hasMoreByTracks ? (
             <Flex
               direction='column'
               alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
@@ -267,6 +269,7 @@ const TrackPage = ({
                 maxWidth: isCommentingEnabled ? '100%' : '774px'
               }}
             >
+              {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
               {hasValidRemixParent
                 ? renderOriginalTrackTitle()
                 : renderMoreByTitle()}
