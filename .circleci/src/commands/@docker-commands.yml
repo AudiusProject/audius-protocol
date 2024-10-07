@@ -25,7 +25,6 @@ docker-tag-images:
           'creator-node',
           'identity-service',
           'core',
-          'ddex',
           'all'
         ]
   steps:
