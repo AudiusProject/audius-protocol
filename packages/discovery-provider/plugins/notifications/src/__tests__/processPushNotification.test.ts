@@ -113,6 +113,46 @@ describe('Push Notifications', () => {
         }
       }
     )
+
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: user2.userId, followee_user_id: user1.userId }
+    ])
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // Follow notif
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(3)
+    const blast = 'hi from user 1'
+    const blastId = '1'
+    const blastTimestampMs = Date.now() - config.dmNotificationDelay
+    const blastTimestamp = new Date(blastTimestampMs)
+    const audience = 'follower_audience'
+    await insertBlast(
+      processor.discoveryDB,
+      user1.userId,
+      blastId,
+      blast,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    // Ensure this only produces one notif from the blast, no dup notifs from the blast fan-out
+    // as 1-1 message notifs should ignore blasts
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(4)
+    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+      4,
+      { badgeCount: 2, targetARN: user2.awsARN, type: user2.deviceType },
+      {
+        title: 'Message',
+        body: `New message from ${user1.name}`,
+        data: expect.objectContaining({
+          chatId: '7eP5n:ML51L',
+          type: 'Message'
+        })
+      }
+    )
   }, 40000)
 
   test('Process chat blast notification', async () => {
@@ -212,62 +252,6 @@ describe('Push Notifications', () => {
 
     // No new notifications
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
-  }, 40000)
-
-  test('Test blast with existing chat', async () => {
-    const { user1, user2 } = await setupTwoUsersWithDevices(
-      processor.discoveryDB,
-      processor.identityDB
-    )
-
-    processor.start()
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-
-    // user2 follows user1
-    await insertFollows(processor.discoveryDB, [
-      { follower_user_id: user2.userId, followee_user_id: user1.userId }
-    ])
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-    // Follow generates a notification
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-
-    // Create a chat thread
-    const message = 'hi from user 1'
-    const messageTimestampMs = Date.now()
-    const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = '1'
-    await createChat(
-      processor.discoveryDB,
-      user1.userId,
-      user2.userId,
-      chatId,
-      messageTimestamp
-    )
-
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-
-    // If the users have an existing chat thread and user1 sends a blast,
-    // in the real world user2 should receive a normal message notification
-    // from the blast fan-out, but that doesn't work in jest, so just confirm no
-    // new message notifications are sent
-    const blastId = '1'
-    const blastTimestampMs = Date.now() - config.dmNotificationDelay
-    const blastTimestamp = new Date(blastTimestampMs)
-    const audience = 'follower_audience'
-    await insertBlast(
-      processor.discoveryDB,
-      user1.userId,
-      blastId,
-      message,
-      audience,
-      undefined,
-      undefined,
-      blastTimestamp
-    )
-
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
   }, 40000)
 
   test('Test many blasts ', async () => {
@@ -414,6 +398,82 @@ describe('Push Notifications', () => {
       )
     }
   }, 40000)
+
+  // Clients may not allow blasts to be sent with audience size 0, but technically
+  // this is not restricted at the protocol layer. This test is to ensure that the processor
+  // correctly skips over such blasts and doesn't stall.
+  test('Test blast with audience size 0', async () => {
+    config.blastUserBatchSize = 2
+    const { user1, user2 } = await setupTwoUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB
+    )
+
+    // User 0 is the blast sender. All other users follow user 0 except user 3
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: user2.userId, followee_user_id: user1.userId }
+    ])
+
+    processor.start()
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // Follow notif
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+
+    // First blast sent by user2 who has no followers, so audience size 0
+    let blastId = '0'
+    let blastTimestampMs = Date.now() - config.dmNotificationDelay
+    let blastTimestamp = new Date(blastTimestampMs)
+    const audience = 'follower_audience'
+    let message = 'this blast should not reach anyone'
+    await insertBlast(
+      processor.discoveryDB,
+      user2.userId,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // No new notifs
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+
+    blastId = '1'
+    blastTimestampMs = Date.now() - config.dmNotificationDelay
+    blastTimestamp = new Date(blastTimestampMs)
+    message = 'this blast should reach 1 follower'
+    await insertBlast(
+      processor.discoveryDB,
+      user1.userId,
+      blastId,
+      message,
+      audience,
+      undefined,
+      undefined,
+      blastTimestamp
+    )
+
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
+    // Now expect to see follow notif + 1 blast notif
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
+    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
+      2,
+      { badgeCount: 1, targetARN: user2.awsARN, type: user2.deviceType },
+      {
+        title: 'Message',
+        body: `New message from ${user1.name}`,
+        data: expect.objectContaining({
+          chatId: '7eP5n:ML51L',
+          type: 'Message'
+        })
+      }
+    )
+  })
 
   test('Does not send DM notifications when sender is receiver', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
