@@ -1,6 +1,5 @@
 import {
   EntityManagerAction,
-  EntityType,
   TrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
 
