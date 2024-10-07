@@ -399,7 +399,7 @@ describe('Push Notifications', () => {
     }
   }, 40000)
 
-  // Our client should not allow blasts to be sent with audience size 0, but technically
+  // Clients may not allow blasts to be sent with audience size 0, but technically
   // this is not restricted at the protocol layer. This test is to ensure that the processor
   // correctly skips over such blasts and doesn't stall.
   test('Test blast with audience size 0', async () => {
@@ -473,7 +473,7 @@ describe('Push Notifications', () => {
         })
       }
     )
-  }, 40000)
+  })
 
   test('Does not send DM notifications when sender is receiver', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
