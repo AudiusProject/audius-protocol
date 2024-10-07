@@ -5,6 +5,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection,
   useDeleteComment,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReportComment,
   useMuteUser
@@ -30,9 +31,12 @@ type CommentOverflowMenuProps = {
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
+    comment,
     comment: { id, userId },
     disabled
   } = props
+
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
 
   const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
@@ -87,6 +91,18 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [reportComment] = useReportComment()
   const [muteUser] = useMuteUser()
 
+  const [handleMuteCommentNotifications] =
+    useUpdateCommentNotificationSetting(id)
+
+  const handleMuteNotifs = () => {
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast({
+      content: isMuted
+        ? messages.toasts.unmutedNotifs
+        : messages.toasts.mutedNotifs
+    })
+  }
+
   const rows: ActionDrawerRow[] = [
     isEntityOwner && {
       text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
@@ -124,6 +140,12 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsMuteUserConfirmationVisible(true)
         }
       },
+    isCommentOwner && {
+      text: isMuted
+        ? messages.menuActions.turnOnNotifications
+        : messages.menuActions.turnOffNotifications,
+      callback: () => handleMuteNotifs
+    },
     isCommentOwner && {
       text: messages.menuActions.edit,
       callback: () => setEditingComment?.(props.comment)

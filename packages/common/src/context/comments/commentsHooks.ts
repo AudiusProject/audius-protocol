@@ -1,15 +1,22 @@
-import { TrackCommentsSortMethodEnum as CommentSortMethod } from '@audius/sdk'
+import {
+  EntityManagerAction,
+  EntityType,
+  TrackCommentsSortMethodEnum as CommentSortMethod
+} from '@audius/sdk'
 
 import { ID } from '~/models/Identifiers'
 
 import {
-  usePostComment as tqUsePostComment,
-  useReactToComment as tqUseReactToComment,
-  useEditComment as tqUseEditComment,
-  useDeleteComment as tqUseDeleteComment,
-  usePinComment as tqUsePinComment,
-  useReportComment as tqUseReportComment,
-  useMuteUser as tqUseMuteUser,
+  usePostComment as useTqPostComment,
+  useReactToComment as useTqReactToComment,
+  useEditComment as useTqEditComment,
+  useDeleteComment as useTqDeleteComment,
+  usePinComment as useTqPinComment,
+  useReportComment as useTqReportComment,
+  useMuteUser as useTqMuteUser,
+  useUpdateTrackCommentNotificationSetting as useTqUpdateTrackCommentNotificationSetting,
+  useUpdateCommentNotificationSetting as useTqUpdateCommentNotificationSetting,
+  useGetTrackCommentNotificationSetting as useTqGetTrackCommentNotificationSetting,
   useGetCurrentUserId
 } from '../../api'
 
@@ -18,7 +25,7 @@ import { useCurrentCommentSection } from './commentsContext'
 export const usePostComment = () => {
   const { currentUserId, entityId, entityType, currentSort } =
     useCurrentCommentSection()
-  const { mutate: postComment, ...rest } = tqUsePostComment()
+  const { mutate: postComment, ...rest } = useTqPostComment()
 
   const wrappedHandler = async (
     message: string,
@@ -46,7 +53,7 @@ export const usePostComment = () => {
 export const useReactToComment = () => {
   const { currentUserId, isEntityOwner, currentSort, entityId } =
     useCurrentCommentSection()
-  const { mutate: reactToComment, ...response } = tqUseReactToComment()
+  const { mutate: reactToComment, ...response } = useTqReactToComment()
 
   const wrappedHandler = async (commentId: ID, isLiked: boolean) => {
     if (currentUserId) {
@@ -65,7 +72,7 @@ export const useReactToComment = () => {
 
 export const useEditComment = () => {
   const { currentUserId, currentSort, entityId } = useCurrentCommentSection()
-  const { mutate: editComment, ...rest } = tqUseEditComment()
+  const { mutate: editComment, ...rest } = useTqEditComment()
   const wrappedHandler = async (
     commentId: ID,
     newMessage: string,
@@ -87,7 +94,7 @@ export const useEditComment = () => {
 
 export const usePinComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
-  const { mutate: pinComment, ...rest } = tqUsePinComment()
+  const { mutate: pinComment, ...rest } = useTqPinComment()
   const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
       pinComment({
@@ -104,7 +111,7 @@ export const usePinComment = () => {
 
 export const useReportComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
-  const { mutate: reportComment, ...rest } = tqUseReportComment()
+  const { mutate: reportComment, ...rest } = useTqReportComment()
   const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
       reportComment({
@@ -121,7 +128,7 @@ export const useReportComment = () => {
 export const useMuteUser = () => {
   // NOTE: not pulling from comment context because we reuse this method in the settings page
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { mutate: muteUser, ...rest } = tqUseMuteUser()
+  const { mutate: muteUser, ...rest } = useTqMuteUser()
   const wrappedHandler = ({
     mutedUserId,
     isMuted,
@@ -148,7 +155,7 @@ export const useMuteUser = () => {
 
 export const useDeleteComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
-  const { mutate: deleteComment, ...rest } = tqUseDeleteComment()
+  const { mutate: deleteComment, ...rest } = useTqDeleteComment()
 
   const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
@@ -160,5 +167,56 @@ export const useDeleteComment = () => {
       })
     }
   }
+  return [wrappedHandler, rest] as const
+}
+
+export const useGetTrackCommentNotificationSetting = (trackId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: isMutedData } = useTqGetTrackCommentNotificationSetting(
+    trackId,
+    currentUserId
+  )
+  return isMutedData?.data?.isMuted
+}
+
+export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { mutate: updateSetting, ...rest } =
+    useTqUpdateTrackCommentNotificationSetting()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        trackId,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
+  return [wrappedHandler, rest] as const
+}
+
+export const useUpdateCommentNotificationSetting = (commentId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { mutate: updateSetting, ...rest } =
+    useTqUpdateCommentNotificationSetting()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        commentId,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
   return [wrappedHandler, rest] as const
 }

@@ -2,6 +2,7 @@ import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReactToComment,
   useReportComment,
@@ -77,6 +78,7 @@ export const CommentActionBar = ({
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
+  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'isPinned' in comment
   const isTombstone = isParentComment ? comment.isTombstone : false
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
@@ -91,7 +93,7 @@ export const CommentActionBar = ({
   const { currentUserId, isEntityOwner, entityId, currentSort } =
     useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const isUserGettingNotifs = isCommentOwner && isParentComment
+  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -105,8 +107,8 @@ export const CommentActionBar = ({
   const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
-  // Internal state
-  const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
+  const [handleMuteCommentNotifications] =
+    useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
@@ -119,14 +121,13 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    // TODO: call backend here
-    setNotificationsMuted((prev) => !prev)
+    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
     toast(
-      notificationsOn
+      areNotifsMuted
         ? messages.toasts.unmutedNotifs
         : messages.toasts.mutedNotifs
     )
-  }, [notificationsOn, toast])
+  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -279,22 +280,21 @@ export const CommentActionBar = ({
             ),
           text: messages.menuActions.delete
         },
-        isCommentOwner &&
-          isUserGettingNotifs && {
-            onClick: handleMuteNotifs,
-            text: notificationsOn
-              ? messages.menuActions.turnOffNotifications
-              : messages.menuActions.turnOnNotifications
-          }
+        canMuteNotifs && {
+          onClick: handleMuteNotifs,
+          text: areNotifsMuted
+            ? messages.menuActions.turnOnNotifications
+            : messages.menuActions.turnOffNotifications
+        }
       ].filter(removeNullable),
     [
       isPinned,
       onClickEdit,
       handleMuteNotifs,
-      notificationsOn,
+      areNotifsMuted,
       isCommentOwner,
       isEntityOwner,
-      isUserGettingNotifs
+      canMuteNotifs
     ]
   )
 
