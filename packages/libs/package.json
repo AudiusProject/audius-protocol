@@ -1,10 +1,10 @@
 {
-  "name": "@audius/sdk-old",
+  "name": "@audius/sdk-legacy",
   "version": "6.0.1",
   "audius": {
     "releaseSHA": "f1d70a2a0643c5c84d8ab053f70c1e0a2ec3ad49"
   },
-  "description": "Audius SDK",
+  "description": "Audius Legacy SDK",
   "keywords": [
     "audius",
     "sdk",

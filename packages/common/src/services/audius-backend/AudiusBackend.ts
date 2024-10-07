@@ -5,7 +5,7 @@ import {
   type StorageNodeSelectorService
 } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk/dist/core'
-import { type AudiusLibs as AudiusLibsType } from '@audius/sdk/dist/libs'
+import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
