@@ -13,7 +13,10 @@ from web3.datastructures import AttributeDict
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -38,6 +41,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
     comment_metadata_format,
     playlist_metadata_format,
+    track_comment_notification_setting_format,
     track_metadata_format,
     user_metadata_format,
 )
@@ -77,6 +81,8 @@ class Action(str, Enum):
     DOWNLOAD = "Download"
     REACT = "React"
     UNREACT = "Unreact"
+    PIN = "Pin"
+    UNPIN = "Unpin"
     MUTE = "Mute"
     UNMUTE = "Unmute"
     REPORT = "Report"
@@ -109,8 +115,12 @@ class EntityType(str, Enum):
     TIP = "Tip"
     COMMENT = "Comment"
     COMMENT_REACTION = "CommentReaction"
+    COMMENT_REPORT = "CommentReport"
+    COMMENT_THREAD = "CommentThread"
+    COMMENT_MENTION = "CommentMention"
     MUTED_USER = "MutedUser"
     REPORTED_COMMENT = "ReportedComment"
+    COMMENT_NOTIFICATION_SETTING = "CommentNotificationSetting"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -167,6 +177,9 @@ class ExistingRecordDict(TypedDict):
     PlaylistRoute: Dict[int, PlaylistRoute]
     Comment: Dict[int, Comment]
     CommentReaction: Dict[Tuple, CommentReaction]
+    CommentReport: Dict[Tuple, CommentReport]
+    CommentMention: Dict[Tuple, CommentMention]
+    CommentThread: Dict[Tuple, CommentThread]
     MutedUser: Dict[Tuple, MutedUser]
     ReportedComment: Dict[Tuple, ReportedComment]
 
@@ -190,6 +203,8 @@ class EntitiesToFetchDict(TypedDict):
     UserWallet: Set[str]
     Comment: Set[int]
     CommentReaction: Set[Tuple]
+    CommentMention: Set[Tuple]
+    CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
     ReportedComment: Set[Tuple]
 
@@ -328,21 +343,23 @@ def expect_cid_metadata_json(metadata, action, entity_type):
 
 
 # Returns metadata_type, metadata_format
-def get_metadata_type_and_format(entity_type):
+def get_metadata_type_and_format(entity_type, action=None):
     if entity_type == EntityType.PLAYLIST:
         metadata_type = "playlist_data"
         metadata_format = playlist_metadata_format
     elif entity_type == EntityType.TRACK:
         metadata_type = "track"
-        metadata_format = track_metadata_format
+        if action == Action.MUTE or action == Action.UNMUTE:
+            metadata_format = track_comment_notification_setting_format
+        else:
+            metadata_format = track_metadata_format
     elif entity_type == EntityType.USER:
         metadata_type = "user"
         metadata_format = user_metadata_format
     elif entity_type == EntityType.COMMENT:
         metadata_type = "comment"
         metadata_format = comment_metadata_format
-
-    else:
+    else:         
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
 
@@ -382,7 +399,7 @@ def parse_metadata(metadata: str, action: str, entity_type: str):
         # This is to support partial updates
         # Individual entities are responsible for updating existing records with metadata
         if action != Action.UPDATE:
-            _, metadata_format = get_metadata_type_and_format(entity_type)
+            _, metadata_format = get_metadata_type_and_format(entity_type, action)
             formatted_json = get_metadata_from_json(metadata_format, metadata_json)
 
             # Only index valid changes
@@ -424,6 +441,7 @@ def copy_record(
         DashboardWalletUser,
         Comment,
         CommentReaction,
+        CommentMention,
         MutedUser,
     ],
     block_number: int,

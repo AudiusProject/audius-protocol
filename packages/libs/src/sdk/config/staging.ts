@@ -77,7 +77,7 @@ export const stagingConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-    "web3ProviderUrl": "https://poa-gateway.staging.audius.co"
+    "chainId": 1056801
   },
   "solana": {
     "claimableTokensProgramAddress": "2sjQNmUfkV6yKKi4dPR8gWRgtyma5aiymE3aXL2RAZww",
@@ -87,6 +87,7 @@ export const stagingConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo"
+    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   }
 }

@@ -176,15 +176,66 @@ const userApi = createApi({
       },
       options: { retry: true }
     },
+    getFollowers: {
+      fetch: async (
+        {
+          userId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; offset?: number; limit?: number },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getFollowers({
+          id: Id.parse(userId),
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data)
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
+    getSupporters: {
+      fetch: async (
+        {
+          userId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; offset?: number; limit?: number },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getSupporters({
+          id: Id.parse(userId),
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data.map((user) => user.sender))
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
     getRemixers: {
       fetch: async (
-        { userId, trackId }: { userId: ID; trackId?: string },
+        {
+          userId,
+          trackId,
+          limit = 10,
+          offset = 0
+        }: { userId: ID; trackId?: string; offset?: number; limit?: number },
         { audiusSdk }
       ) => {
         const sdk = await audiusSdk()
         const { data: users = [] } = await sdk.full.users.getRemixers({
           id: Id.parse(userId),
-          trackId
+          trackId,
+          limit,
+          offset
         })
         return userMetadataListFromSDK(users)
       },
@@ -208,6 +259,38 @@ const userApi = createApi({
       },
       options: {}
     },
+    getPurchasers: {
+      fetch: async (
+        {
+          userId,
+          contentId,
+          contentType,
+          limit = 10,
+          offset = 0
+        }: {
+          userId: ID
+          contentId?: number
+          contentType?: string
+          offset?: number
+          limit?: number
+        },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data = [] } = await sdk.full.users.getPurchasers({
+          id: Id.parse(userId),
+          contentId: contentId ? encodeHashId(contentId) : undefined,
+          contentType,
+          limit,
+          offset
+        })
+        return userMetadataListFromSDK(data)
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'users'
+      }
+    },
     getPurchasersCount: {
       fetch: async (
         {
@@ -230,15 +313,12 @@ const userApi = createApi({
     getRemixedTracks: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
         const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getUserTracksRemixed({
+        const { data = [] } = await sdk.users.getUserTracksRemixed({
           id: Id.parse(userId)
         })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
+        return data
       },
-      options: {
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
+      options: {}
     },
     getSalesAggegrate: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
@@ -249,6 +329,18 @@ const userApi = createApi({
         return data
       },
       options: {}
+    },
+    getMutedUsers: {
+      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
+        const encodedUserId = encodeHashId(userId) as string
+        const sdk = await audiusSdk()
+        const { data: users } = await sdk.full.users.getMutedUsers({
+          id: encodedUserId
+        })
+        return userMetadataListFromSDK(users)
+      },
+
+      options: { kind: Kind.USERS, schemaKey: 'users' }
     }
   }
 })
@@ -260,11 +352,15 @@ export const {
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
+  useGetFollowers,
+  useGetSupporters,
   useGetRemixers,
   useGetRemixersCount,
+  useGetPurchasers,
   useGetPurchasersCount,
   useGetRemixedTracks,
-  useGetSalesAggegrate
+  useGetSalesAggegrate,
+  useGetMutedUsers
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

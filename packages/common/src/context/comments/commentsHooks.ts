@@ -1,88 +1,221 @@
 import {
-  useDeleteCommentById,
-  useEditCommentById,
-  usePinCommentById,
-  usePostComment as useAQueryPostComment,
-  useReactToCommentById
+  EntityManagerAction,
+  TrackCommentsSortMethodEnum as CommentSortMethod
+} from '@audius/sdk'
+
+import { ID } from '~/models/Identifiers'
+
+import {
+  usePostComment as useTqPostComment,
+  useReactToComment as useTqReactToComment,
+  useEditComment as useTqEditComment,
+  useDeleteComment as useTqDeleteComment,
+  usePinComment as useTqPinComment,
+  useReportComment as useTqReportComment,
+  useMuteUser as useTqMuteUser,
+  useUpdateTrackCommentNotificationSetting as useTqUpdateTrackCommentNotificationSetting,
+  useUpdateCommentNotificationSetting as useTqUpdateCommentNotificationSetting,
+  useGetTrackCommentNotificationSetting as useTqGetTrackCommentNotificationSetting,
+  useGetCurrentUserId
 } from '../../api'
 
 import { useCurrentCommentSection } from './commentsContext'
 
 export const usePostComment = () => {
-  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
-  const [postComment, postCommentResponse] = useAQueryPostComment()
+  const { currentUserId, entityId, entityType, currentSort } =
+    useCurrentCommentSection()
+  const { mutate: postComment, ...rest } = useTqPostComment()
 
   const wrappedHandler = async (
     message: string,
-    parentCommentId?: string,
-    trackTimestampS?: number
+    parentCommentId?: ID,
+    trackTimestampS?: number,
+    mentions?: ID[]
   ) => {
     if (currentUserId) {
       postComment({
         userId: currentUserId,
-        entityId,
+        trackId: entityId,
         entityType,
         body: message,
-        // @ts-ignore - TODO: the python API spec is incorrect here - this should be a string, not a number
         parentCommentId,
-        trackTimestampS
+        trackTimestampS,
+        mentions,
+        currentSort
       })
     }
   }
-  return [wrappedHandler, postCommentResponse] as const
+
+  return [wrappedHandler, rest] as const
 }
 
-export const useReactToComment = (authFlowCallback?: () => void) => {
-  const [reactToComment, reactToCommentResponse] = useReactToCommentById()
-  const { currentUserId, isEntityOwner } = useCurrentCommentSection()
-  const wrappedHandler = async (commentId: string, isLiked: boolean) => {
+export const useReactToComment = () => {
+  const { currentUserId, isEntityOwner, currentSort, entityId } =
+    useCurrentCommentSection()
+  const { mutate: reactToComment, ...response } = useTqReactToComment()
+
+  const wrappedHandler = async (commentId: ID, isLiked: boolean) => {
     if (currentUserId) {
       reactToComment({
-        id: commentId,
+        commentId,
         userId: currentUserId,
         isLiked,
-        isEntityOwner
+        isEntityOwner,
+        currentSort,
+        trackId: entityId
       })
     }
   }
-  return [wrappedHandler, reactToCommentResponse] as const
+  return [wrappedHandler, response] as const
 }
 
 export const useEditComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
-  const [editComment, editCommentResponse] = useEditCommentById()
-  const wrappedHandler = async (commentId: string, newMessage: string) => {
+  const { currentUserId, currentSort, entityId } = useCurrentCommentSection()
+  const { mutate: editComment, ...rest } = useTqEditComment()
+  const wrappedHandler = async (
+    commentId: ID,
+    newMessage: string,
+    mentions?: ID[]
+  ) => {
     if (currentUserId) {
-      editComment({ id: commentId, newMessage, userId: currentUserId })
+      editComment({
+        commentId,
+        newMessage,
+        userId: currentUserId,
+        mentions,
+        trackId: entityId,
+        currentSort
+      })
     }
   }
-  return [wrappedHandler, editCommentResponse] as const
+  return [wrappedHandler, rest] as const
 }
 
 export const usePinComment = () => {
-  const { currentUserId } = useCurrentCommentSection()
-  const [pinComment, pinCommentResponse] = usePinCommentById()
-  const wrappedHandler = (commentId: string, isPinned: boolean) => {
+  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
+  const { mutate: pinComment, ...rest } = useTqPinComment()
+  const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
-      pinComment({ id: commentId, userId: currentUserId, isPinned })
+      pinComment({
+        commentId,
+        userId: currentUserId,
+        trackId: entityId,
+        isPinned,
+        currentSort
+      })
     }
   }
-  return [wrappedHandler, pinCommentResponse] as const
+  return [wrappedHandler, rest] as const
 }
 
 export const useReportComment = () => {
-  const wrappedHandler = (commentId: string) => {}
-  return [wrappedHandler] as const
+  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
+  const { mutate: reportComment, ...rest } = useTqReportComment()
+  const wrappedHandler = (commentId: ID) => {
+    if (currentUserId) {
+      reportComment({
+        commentId,
+        userId: currentUserId,
+        trackId: entityId,
+        currentSort
+      })
+    }
+  }
+  return [wrappedHandler, rest] as const
+}
+
+export const useMuteUser = () => {
+  // NOTE: not pulling from comment context because we reuse this method in the settings page
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { mutate: muteUser, ...rest } = useTqMuteUser()
+  const wrappedHandler = ({
+    mutedUserId,
+    isMuted,
+    trackId,
+    currentSort
+  }: {
+    mutedUserId: number
+    isMuted: boolean
+    trackId?: ID
+    currentSort?: CommentSortMethod
+  }) => {
+    if (currentUserId) {
+      muteUser({
+        mutedUserId,
+        userId: currentUserId,
+        isMuted,
+        trackId,
+        currentSort
+      })
+    }
+  }
+  return [wrappedHandler, rest] as const
 }
 
 export const useDeleteComment = () => {
-  const { currentUserId, entityId } = useCurrentCommentSection()
-  const [deleteComment, response] = useDeleteCommentById()
+  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
+  const { mutate: deleteComment, ...rest } = useTqDeleteComment()
 
-  const wrappedHandler = (commentId: string) => {
+  const wrappedHandler = (commentId: ID) => {
     if (currentUserId) {
-      deleteComment({ id: commentId, userId: currentUserId, entityId })
+      deleteComment({
+        commentId,
+        userId: currentUserId,
+        trackId: entityId,
+        currentSort
+      })
     }
   }
-  return [wrappedHandler, response] as const // as const is needed to return a tuple
+  return [wrappedHandler, rest] as const
+}
+
+export const useGetTrackCommentNotificationSetting = (trackId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: isMutedData } = useTqGetTrackCommentNotificationSetting(
+    trackId,
+    currentUserId
+  )
+  return isMutedData?.data?.isMuted
+}
+
+export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { mutate: updateSetting, ...rest } =
+    useTqUpdateTrackCommentNotificationSetting()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        trackId,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
+  return [wrappedHandler, rest] as const
+}
+
+export const useUpdateCommentNotificationSetting = (commentId: ID) => {
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { mutate: updateSetting, ...rest } =
+    useTqUpdateCommentNotificationSetting()
+
+  const wrappedHandler = (action: 'mute' | 'unmute') => {
+    if (currentUserId) {
+      updateSetting({
+        userId: currentUserId,
+        commentId,
+        action:
+          action === 'mute'
+            ? EntityManagerAction.MUTE
+            : EntityManagerAction.UNMUTE
+      })
+    }
+  }
+
+  return [wrappedHandler, rest] as const
 }

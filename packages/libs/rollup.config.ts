@@ -1,12 +1,12 @@
-import commonjs from '@rollup/plugin-commonjs'
+import alias from '@rollup/plugin-alias'
 import babel from '@rollup/plugin-babel'
+import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import { terser } from 'rollup-plugin-terser'
-import nodePolyfills from 'rollup-plugin-polyfill-node'
-import alias from '@rollup/plugin-alias'
 import ignore from 'rollup-plugin-ignore'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
+import { terser } from 'rollup-plugin-terser'
 
 import pkg from './package.json'
 
@@ -18,7 +18,8 @@ const external = [
   'ethers/lib/utils',
   'ethers/lib/index',
   'hashids/cjs',
-  'readable-stream'
+  'readable-stream',
+  'debug'
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
@@ -29,6 +30,8 @@ const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
  * - are ignored via `ignore`
  */
 const browserInternal = [
+  '@metamask/eth-sig-util',
+  '@scure/base',
   'eth-sig-util',
   'ethereumjs-tx',
   'ethereumjs-util',
@@ -58,9 +61,8 @@ const commonJsInternal = ['micro-aes-gcm']
 
 export const outputConfigs = {
   /**
-   * SDK (and Libs) Node Package (Common JS)
-   * Used by the Audius Content Node Service and Identity Service
-   * - Includes libs
+   * SDK Node Package (Common JS)
+   * Can be used in node environments
    * - Makes external ES modules internal to prevent issues w/ using require()
    */
   sdkConfigCjs: {
@@ -84,10 +86,8 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK (and Libs) Node Package (ES Module)
+   * SDK Node Package (ES Module)
    * Used by third parties using ES Modules
-   * Could be used by Audius Content Node and Identity Service after moving those services to ES module
-   * - Includes libs
    */
   sdkConfigEs: {
     input: 'src/index.ts',
@@ -107,6 +107,31 @@ export const outputConfigs = {
       pluginTypescript
     ],
     external
+  },
+
+  /**
+   * Libs Node Package (Common JS)
+   * Used by the Identity Service
+   * - Makes external ES modules internal to prevent issues w/ using require()
+   */
+  libsConfigCjs: {
+    input: 'src/libs.ts',
+    output: [
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
+        entryFileNames: '[name].js'
+      }
+    ],
+    plugins: [
+      resolve({ extensions, preferBuiltins: true }),
+      commonjs({ extensions }),
+      babel({ babelHelpers: 'bundled', extensions }),
+      json(),
+      pluginTypescript
+    ],
+    external: external.filter((id) => !commonJsInternal.includes(id))
   },
 
   /**

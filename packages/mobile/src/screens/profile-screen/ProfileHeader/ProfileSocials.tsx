@@ -25,9 +25,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  audioTier: {
-    paddingLeft: spacing(3)
-  },
   socials: {
     flexDirection: 'row',
     flex: 4
@@ -120,9 +117,7 @@ export const ProfileSocials = () => {
   }
   return (
     <View pointerEvents='box-none' style={styles.root}>
-      {tier !== 'none' ? (
-        <ProfileTierTile interactive={false} style={styles.audioTier} />
-      ) : null}
+      {tier !== 'none' ? <ProfileTierTile interactive={false} /> : null}
       <Animated.View
         pointerEvents='box-none'
         style={[

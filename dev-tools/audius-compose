@@ -87,7 +87,7 @@ def generate_env(
     env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
-        (protocol_dir / "mediorum/.version.json").read_text(),
+        (protocol_dir / "pkg/mediorum/.version.json").read_text(),
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
@@ -259,7 +259,6 @@ def build(
             "--profile=libs",
             "--profile=solana",
             "--profile=block-explorer",
-            "--profile=uptime",
             "--profile=ddex",
             "--profile=ddex-build-only",
             "build",

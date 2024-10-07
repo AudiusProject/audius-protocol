@@ -56,7 +56,7 @@
     "prepack": "turbo run build"
   },
   "dependencies": {
-    "@audius/eth": "0.0.1",
+    "@audius/eth": "0.0.0",
     "@audius/fixed-decimal": "0.0.25",
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/spl": "1.0.0",

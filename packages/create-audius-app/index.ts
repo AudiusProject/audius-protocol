@@ -29,9 +29,9 @@ const program = new Commander.Command(packageJson.name)
 
   An example to bootstrap the app with. You can use an example name
   from the Audius repo. They are found in AudiusProject/audius-protocol/packages/create-audius-app/examples
-  For example: --example react
+  For example: --example react-hono
 `,
-    'react'
+    'react-hono'
   )
   .allowUnknownOption()
   .parse(process.argv)
@@ -46,7 +46,7 @@ async function run() {
       type: 'text',
       name: 'path',
       message: 'What is your project named?',
-      initial: 'my-app',
+      initial: 'my-audius-app',
       validate: (name: string) => {
         const validation = validateNpmName(path.basename(path.resolve(name)))
         if (validation.valid) {

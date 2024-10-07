@@ -4,7 +4,7 @@ import { CSSObject } from '@emotion/react'
 
 import { IconComponent } from 'components/icon'
 import { TextInputProps } from 'components/input'
-import { MenuProps } from 'components/internal/Menu'
+import { MenuContentProps, MenuProps } from 'components/internal/Menu'
 
 export type FilterButtonSize = 'default' | 'small'
 
@@ -131,7 +131,8 @@ export type FilterButtonProps<Value extends string = string> = {
    */
   optionsLabel?: string
 
-  menuProps?: Partial<MenuProps> & { css?: CSSObject }
+  menuProps?: Partial<MenuProps> &
+    Partial<MenuContentProps> & { css?: CSSObject }
 
   renderLabel?: (label: string) => ReactNode
   /**

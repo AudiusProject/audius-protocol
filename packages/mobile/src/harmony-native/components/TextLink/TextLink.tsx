@@ -1,12 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useMemo } from 'react'
 
-import { isInteralAudiusUrl } from '@audius/common/utils'
-import { css } from '@emotion/native'
-import {
-  type GestureResponderEvent,
-  TouchableWithoutFeedback
-} from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { isInternalAudiusUrl } from '@audius/common/utils'
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -17,36 +11,37 @@ import Animated, {
 import { useTheme } from '../../foundations/theme/useTheme'
 import { Text } from '../Text/Text'
 
-import { ExternalLink } from './ExternalLink'
-import { InternalLink, InternalLinkTo } from './InternalLink'
-import type { TextLinkProps } from './types'
+import {
+  useHandlePressExternalUrl,
+  useHandlePressInternalUrl,
+  useHandlePressTo
+} from './hooks'
+import {
+  isExternalLinkProps,
+  isInternalLinkToProps,
+  type TextLinkProps
+} from './types'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
-export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
-  props: TextLinkProps<ParamList>
-) => {
+/**
+ * Simple component that styles a Text component as a link
+ */
+const TextPressable = (props: TextLinkProps) => {
   const {
     children,
     variant = 'default',
-    onPress,
     textVariant,
     showUnderline,
-    source,
     style,
+    animatedPressed: animatedPressedProp,
     ...other
   } = props
-  const { color, motion } = useTheme()
-  const [isPressing, setIsPressing] = useState(showUnderline)
-  const pressed = useSharedValue(0)
 
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      onPress?.(e)
-      pressed.value = withTiming(0, motion.press)
-    },
-    [motion.press, onPress, pressed]
-  )
+  const { color, motion } = useTheme()
+
+  const animatedPressedInternal = useSharedValue(0)
+  const animatedPressed = animatedPressedProp ?? animatedPressedInternal
 
   const variantColors = {
     default: color.link.default,
@@ -59,74 +54,103 @@ export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
   const variantPressingColors = {
     default: color.primary.p300,
     subdued: color.primary.p300,
-    visible: color.link.visible,
-    inverted: color.static.white,
+    visible: color.static.white,
+    inverted: color.link.visible,
     active: color.primary.primary
   }
 
-  const tap = Gesture.Tap()
-    .onBegin(() => {
-      pressed.value = withTiming(1, motion.press)
-    })
-    .onFinalize(() => {
-      pressed.value = withTiming(0, motion.press)
-    })
-
-  const animatedLinkStyles = useAnimatedStyle(() => ({
+  const animatedStyles = useAnimatedStyle(() => ({
     color: interpolateColor(
-      pressed.value,
+      animatedPressed.value,
       [0, 1],
       [variantColors[variant], variantPressingColors[variant]]
     )
   }))
 
-  let element = (
-    <AnimatedText
-      style={[
-        style,
-        animatedLinkStyles,
-        css({
-          textDecorationLine: isPressing || showUnderline ? 'underline' : 'none'
-        })
-      ]}
+  // Need to nest the AnimatedText inside a Text so the handlers & animation work
+  // while still supporting proper Text layout. All this nesting is necessary
+  return (
+    <Text
+      suppressHighlighting
       variant={textVariant}
+      onPressIn={(e) => {
+        animatedPressed.value = withTiming(1, motion.press)
+      }}
+      onPressOut={() => {
+        animatedPressed.value = withTiming(0, motion.press)
+      }}
       {...other}
     >
-      {children}
-    </AnimatedText>
+      <Text>
+        <AnimatedText
+          style={[
+            style,
+            animatedStyles,
+            {
+              textDecorationLine: showUnderline ? 'underline' : 'none'
+            }
+          ]}
+        >
+          {children}
+        </AnimatedText>
+      </Text>
+    </Text>
   )
+}
 
-  const rootProps = {
-    onPress: handlePress,
-    onPressIn: () => setIsPressing(true),
-    onPressOut: () => setIsPressing(false)
-  }
+/**
+ * TextLink that supports 'url' | 'to' | 'onPress'
+ *
+ * Notably this component is Text all the way down so that it flows properly inline
+ * with other Text components.
+ */
+export const TextLink = <ParamList extends ReactNavigation.RootParamList>(
+  props: TextLinkProps<ParamList>
+) => {
+  const { onPress: onPressProp = () => {} } = props
+  const isTo = isInternalLinkToProps(props)
+  const isUrl = isExternalLinkProps(props)
 
-  if ('to' in other) {
-    element = (
-      <InternalLinkTo to={other.to} action={other.action} {...rootProps}>
-        {element}
-      </InternalLinkTo>
-    )
-  } else if ('url' in other && isInteralAudiusUrl(other.url)) {
-    element = (
-      <InternalLink url={other.url} {...rootProps}>
-        {element}
-      </InternalLink>
-    )
-  } else if ('url' in other) {
-    element = (
-      <ExternalLink url={other.url} source={source} {...rootProps}>
-        {element}
-      </ExternalLink>
-    )
-  } else {
-    element = (
-      <TouchableWithoutFeedback {...rootProps}>
-        {element}
-      </TouchableWithoutFeedback>
-    )
-  }
+  const url = isUrl ? props.url : ''
 
-  return <GestureDetector gesture={tap}>{element}</GestureDetector>
+  const handlePressExternalUrl = useHandlePressExternalUrl({
+    url: isUrl ? props.url : '',
+    onPress: onPressProp
+  })
+
+  const handlePressInternalUrl = useHandlePressInternalUrl({
+    url: isUrl ? props.url : '',
+    onPress: onPressProp
+  })
+
+  const { onPress: handlePressTo, ...linkProps } = useHandlePressTo({
+    to: isTo ? props.to ?? '' : '',
+    action: isTo ? props.action : undefined
+  })
+
+  const onPress = useMemo(() => {
+    if (isUrl) {
+      if (isInternalAudiusUrl(url)) {
+        return handlePressInternalUrl
+      } else {
+        return handlePressExternalUrl
+      }
+    } else if (isTo) {
+      return handlePressTo
+    } else {
+      return onPressProp
+    }
+  }, [
+    url,
+    isUrl,
+    isTo,
+    handlePressInternalUrl,
+    handlePressExternalUrl,
+    handlePressTo,
+    onPressProp
+  ])
+
+  return (
+    <TextPressable {...props} onPress={onPress} {...(isTo ? linkProps : {})} />
+  )
 }

@@ -164,7 +164,7 @@ export const EMPTY_PAGE = '/empty_page'
 
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
-export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audiusmusic'
+export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audius'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
 export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
@@ -342,7 +342,9 @@ export const staticRoutes = new Set([
   TRENDING_GENRES,
   PURCHASES_PAGE,
   SALES_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  CHAT_PAGE,
+  CHATS_PAGE
 ])
 
 export const profilePage = (handle: string) => {

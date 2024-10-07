@@ -178,6 +178,14 @@ const snippetMap = {
     return `${notification.sendingUser.name} reacted to your message${
       notification.multiple ? 's' : ''
     }`
+  },
+  ['comment'](notification) {
+    const [user] = notification.users
+    return `${
+      user.name
+    } commented on your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   }
 }
 

@@ -8,6 +8,7 @@ import type { SolanaClient } from '../SolanaClient'
 export type RewardManagerClientConfigInternal = {
   programId: PublicKey
   rewardManagerState: PublicKey
+  rewardManagerLookupTable: PublicKey
   logger: LoggerService
 }
 

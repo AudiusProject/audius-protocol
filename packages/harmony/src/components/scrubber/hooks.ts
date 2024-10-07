@@ -1,100 +1,74 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback } from 'react'
 import * as React from 'react'
 
-import { TimeData } from './types'
-
-/** Sets animation properties on the handle and track. */
-const animate = (
-  trackRef: React.MutableRefObject<HTMLDivElement | null>,
-  handleRef: React.MutableRefObject<HTMLDivElement | null>,
-  transition: string,
-  transform: string
-) => {
-  if (handleRef.current && trackRef.current) {
-    handleRef.current.style.transition = transition
-    handleRef.current.style.transform = transform
-
-    trackRef.current.style.transition = transition
-    trackRef.current.style.transform = transform
-  }
-}
-
 /**
- * Hook for initializing animations for a scrubber.
- * const animations = useAnimations()
+ * Hook for initializing playback update mechanism. Uses rAF to sync element
+ * positions to the current playback position.
  */
-export const useAnimations = (
+export const usePlaybackPositionTracking = (
   trackRef: React.MutableRefObject<HTMLDivElement | null>,
   handleRef: React.MutableRefObject<HTMLDivElement | null>,
-  elapsedSeconds: number,
-  totalSeconds: number,
-  playbackRate = 1
+  getAudioPosition: () => number,
+  getTotalTime: () => number
 ) => {
-  /** Animates from the current position to the end over the remaining seconds. */
-  const play = useCallback(() => {
-    const timeRemaining = (totalSeconds - elapsedSeconds) / playbackRate
-    animate(
-      trackRef,
-      handleRef,
-      `transform ${timeRemaining}s linear`,
-      'translate(100%)'
-    )
-  }, [totalSeconds, elapsedSeconds, playbackRate, trackRef, handleRef])
+  const isPlayingRef = useRef(false)
+  const getAudioPositionRef = useRef(getAudioPosition)
+  const overridePositionRef = useRef(0)
+  const overridePositionEnabledRef = useRef(false)
+  const getTotalTimeRef = useRef(getTotalTime)
 
-  /**
-   * Pauses the animation at the current position.
-   * NOTE: We derive the current position from the actual animation position
-   * rather than the remaining time so that pausing the scrubber does not
-   * cause jumping if elapsed seconds doesn't precisely reflect the animation.
-   */
-  const pause = useCallback(() => {
-    if (trackRef.current) {
-      const trackWidth = trackRef.current.offsetWidth
-      const trackTransform = window
-        .getComputedStyle(trackRef.current)
-        .getPropertyValue('transform')
-
-      const trackPosition = parseFloat(trackTransform.split(',')[4])
-      const percentComplete = trackPosition / trackWidth
-      animate(
-        trackRef,
-        handleRef,
-        'none',
-        `translate(${percentComplete * 100}%)`
-      )
+  const updatePositionRef = useRef(() => {
+    if (trackRef.current && handleRef.current) {
+      const audioPosition = getAudioPositionRef.current()
+      const totalTime = getTotalTimeRef.current()
+      const percentComplete = overridePositionEnabledRef.current
+        ? overridePositionRef.current
+        : audioPosition / totalTime
+      const translation = `translate(${percentComplete * 100}%)`
+      handleRef.current.style.transform = translation
+      trackRef.current.style.transform = translation
     }
-  }, [trackRef, handleRef])
 
-  /** Sets the animation to a given percentage: [0, 1]. */
-  const setPercent = useCallback(
-    (percentComplete: number) => {
-      animate(
-        trackRef,
-        handleRef,
-        'none',
-        `translate(${percentComplete * 100}%)`
-      )
+    if (isPlayingRef.current) {
+      window.requestAnimationFrame(updatePositionRef.current)
+    }
+  })
+
+  /** Starts a rAF loop to grab the current player position and update continuously */
+  const play = useCallback(() => {
+    isPlayingRef.current = true
+    window.requestAnimationFrame(updatePositionRef.current)
+  }, [updatePositionRef, isPlayingRef])
+
+  const pause = useCallback(() => {
+    isPlayingRef.current = false
+  }, [isPlayingRef])
+
+  const refreshPosition = useCallback(() => {
+    // Allow queueing a refresh of position if the animation isn't running
+    if (!isPlayingRef.current) {
+      window.requestAnimationFrame(updatePositionRef.current)
+    }
+  }, [updatePositionRef, isPlayingRef])
+
+  /** Allows temporary override for things like scrubbing */
+  const setPosition = useCallback(
+    (position = 0) => {
+      overridePositionRef.current = position
+      refreshPosition()
     },
-    [trackRef, handleRef]
+    [overridePositionRef, refreshPosition]
   )
 
-  /**
-   * Handle window focus events so that the scrubber can repair itself
-   * if/when the browser loses focus and kills animations.
-   */
-  const timeData = useRef<TimeData>()
-  timeData.current = { elapsedSeconds, totalSeconds }
-  useEffect(() => {
-    const onWindowFocus = () => {
-      if (timeData.current) {
-        setPercent(
-          timeData.current.elapsedSeconds / timeData.current.totalSeconds
-        )
-      }
-    }
-    window.addEventListener('focus', onWindowFocus)
-    return () => window.removeEventListener('focus', onWindowFocus)
-  }, [timeData, setPercent])
+  const setPositionOverrideEnabled = useCallback((enabled: boolean) => {
+    overridePositionEnabledRef.current = enabled
+  }, [])
 
-  return { play, pause, setPercent }
+  return {
+    play,
+    pause,
+    refreshPosition,
+    setPositionOverrideEnabled,
+    setPosition
+  }
 }

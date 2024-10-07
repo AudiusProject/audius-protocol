@@ -111,24 +111,31 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 			blast_id,
 			from_user_id,
 			to_user_id,
-		member_b.chat_id
+			member_b.chat_id
 		FROM blast
 		JOIN aud USING (blast_id)
 		LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
 		LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
 		WHERE member_b.chat_id IS NOT NULL
+		AND chat_allowed(from_user_id, to_user_id)
 	),
 	insert_message AS (
 		INSERT INTO chat_message
 			(message_id, chat_id, user_id, created_at, blast_id)
 		SELECT
-			blast_id || targ.chat_id,
+			blast_id || targ.chat_id, -- this ordering needs to match Misc.BlastMessageID
 			targ.chat_id,
 			targ.from_user_id,
 			$2,
 			blast_id
 		FROM targ
 		ON conflict do nothing
+	),
+	update_unread_count AS (
+    UPDATE chat_member
+    SET unread_count = unread_count + 1
+    WHERE chat_id IN (SELECT chat_id FROM targ)
+		AND user_id IN (SELECT to_user_id FROM targ)
 	)
 	SELECT chat_id FROM targ;
 	`
@@ -141,8 +148,9 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	// Formulate chat rpc messages for recipients who have an existing chat with sender
 	var outgoingMessages []OutgoingChatMessage
 	for _, result := range results {
-		messageID := params.BlastID + result.ChatID
+		messageID := misc.BlastMessageID(params.BlastID, result.ChatID)
 
+		isPlaintext := true
 		outgoingMessages = append(outgoingMessages, OutgoingChatMessage{
 			ChatMessageRPC: schema.ChatMessageRPC{
 				Method: schema.MethodChatMessage,
@@ -150,7 +158,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 					ChatID:      result.ChatID,
 					Message:     params.Message,
 					MessageID:   messageID,
-					IsPlaintext: true,
+					IsPlaintext: &isPlaintext,
 				}}})
 
 		if err := chatUpdateLatestFields(tx, result.ChatID); err != nil {

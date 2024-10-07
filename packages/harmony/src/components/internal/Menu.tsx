@@ -11,41 +11,58 @@ import { WithCSS } from 'foundations'
 // TODO menu label
 
 export type MenuProps = Omit<PopupProps, 'children'> & {
-  maxHeight?: CSSObject['maxHeight']
-  width?: CSSObject['width']
   children: ReactNode
   PaperProps?: WithCSS<Partial<PaperProps>>
+}
+
+export type MenuContentProps = {
+  children: ReactNode
+  maxHeight?: CSSObject['maxHeight']
+  width?: CSSObject['width']
   MenuListProps?: WithCSS<Partial<FlexProps>>
   scrollRef: Ref<HTMLDivElement>
+  'aria-label'?: string
+  'aria-activedescendent'?: string
 }
 
 export const Menu = (props: MenuProps) => {
-  const {
-    children,
-    maxHeight,
-    width,
-    PaperProps,
-    MenuListProps,
-    scrollRef,
-    ...other
-  } = props
+  const { children, PaperProps, ...other } = props
 
   return (
     <Popup {...other}>
       <Paper mt='s' border='strong' shadow='far' {...PaperProps}>
-        <Flex
-          direction='column'
-          p='s'
-          gap='s'
-          alignItems='flex-start'
-          role='listbox'
-          css={{ maxHeight, width, overflowY: 'auto' }}
-          ref={scrollRef}
-          {...MenuListProps}
-        >
-          {children}
-        </Flex>
+        {children}
       </Paper>
     </Popup>
+  )
+}
+
+export const MenuContent = (props: MenuContentProps) => {
+  const {
+    children,
+    maxHeight,
+    width,
+    MenuListProps,
+    scrollRef,
+    'aria-label': ariaLabel,
+    'aria-activedescendent': ariaActiveDescendant
+  } = props
+
+  return (
+    <Flex
+      direction='column'
+      p='s'
+      gap='s'
+      alignItems='flex-start'
+      role='listbox'
+      css={{ maxHeight, width, overflowY: 'auto' }}
+      ref={scrollRef}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={ariaLabel}
+      aria-activedescendant={ariaActiveDescendant}
+      {...MenuListProps}
+    >
+      {children}
+    </Flex>
   )
 }

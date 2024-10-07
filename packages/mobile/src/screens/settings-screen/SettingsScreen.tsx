@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { Image, Platform } from 'react-native'
 
 import {
@@ -7,7 +9,8 @@ import {
   IconInfo,
   IconMessage,
   IconNotificationOn,
-  IconSettings
+  IconSettings,
+  IconUserUnfollow
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
@@ -33,6 +36,8 @@ const messages = {
   inbox: 'Inbox Settings',
   inboxDescription: 'Configure who is able to send messages to your inbox.',
   notifications: 'Configure Notifications',
+  comment: 'Comment Settings',
+  commentDescription: 'Prevent certain users from commenting on your tracks.',
   notificationsDescription: 'Review your notification preferences.',
   downloads: 'Download Settings',
   about: 'About'
@@ -54,6 +59,9 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 export const SettingsScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   useShowManagerModeNotAvailable()
 
@@ -67,6 +75,10 @@ export const SettingsScreen = () => {
 
   const handlePressNotifications = useCallback(() => {
     navigation.push('NotificationSettingsScreen')
+  }, [navigation])
+
+  const handlePressCommentSettings = useCallback(() => {
+    navigation.push('CommentSettingsScreen')
   }, [navigation])
 
   const handlePressAbout = useCallback(() => {
@@ -103,6 +115,17 @@ export const SettingsScreen = () => {
               {messages.notificationsDescription}
             </SettingsRowDescription>
           </SettingsRow>
+          {isCommentsEnabled ? (
+            <SettingsRow onPress={handlePressCommentSettings}>
+              <SettingsRowLabel
+                label={messages.comment}
+                icon={IconUserUnfollow}
+              />
+              <SettingsRowDescription>
+                {messages.commentDescription}
+              </SettingsRowDescription>
+            </SettingsRow>
+          ) : null}
           {IS_IOS ? <CastSettingsRow /> : null}
           <SettingsRow onPress={handlePressDownloads}>
             <SettingsRowLabel

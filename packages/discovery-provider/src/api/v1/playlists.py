@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, Response
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, inputs
 
 from src.api.v1.helpers import (
     abort_bad_path_param,
@@ -186,6 +186,8 @@ class Playlist(Resource):
             playlist_id=playlist_id,
         )
         if playlist:
+            tracks = get_tracks_for_playlist(playlist_id, current_user_id)
+            playlist["tracks"] = tracks
             filter_hidden_tracks(playlist, current_user_id)
         response = success_response([playlist] if playlist else [])
         return response
@@ -692,7 +694,7 @@ access_info_parser = current_user_parser.copy()
 access_info_parser.add_argument(
     "include_network_cut",
     required=False,
-    type=bool,
+    type=inputs.boolean,
     description="Whether to include the staking system as a recipient",
 )
 
@@ -705,11 +707,10 @@ class GetPlaylistAccessInfo(Resource):
         description="Gets the information necessary to access the playlist and what access the given user has.",
         params={"playlist_id": "A Playlist ID"},
     )
-    @ns.expect(access_info_parser)
+    @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, playlist_id: str):
-        args = current_user_parser.parse_args()
-        include_network_cut = args.get("include_network_cut")
+        args = access_info_parser.parse_args()
         decoded_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(args)
         playlists = get_playlists(
@@ -722,9 +723,7 @@ class GetPlaylistAccessInfo(Resource):
         if not playlists:
             abort_not_found(playlist_id, ns)
         raw = playlists[0]
-        stream_conditions = get_extended_purchase_gate(
-            gate=raw["stream_conditions"], include_network_cut=include_network_cut
-        )
+        stream_conditions = get_extended_purchase_gate(gate=raw["stream_conditions"])
         playlist = extend_playlist(raw)
         playlist["stream_conditions"] = stream_conditions
         return success_response(playlist)

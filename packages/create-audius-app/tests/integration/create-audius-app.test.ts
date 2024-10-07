@@ -42,7 +42,7 @@ describe('create audius app', () => {
       projectFilesShouldExist({
         cwd,
         projectName,
-        files: ['package.json', 'src/App.tsx', '.gitignore']
+        files: ['package.json', 'src/client/App.tsx', '.gitignore']
       })
     })
   })
@@ -92,7 +92,7 @@ describe('create audius app', () => {
       projectFilesShouldExist({
         cwd,
         projectName,
-        files: ['package.json', 'src/App.tsx', '.gitignore']
+        files: ['package.json', 'src/client/App.tsx', '.gitignore']
       })
     })
   })
@@ -140,7 +140,7 @@ describe('create audius app', () => {
       expect(res.exitCode).toBe(0)
       projectFilesShouldExist({
         cwd,
-        files: ['package.json', 'src/App.tsx', '.gitignore']
+        files: ['package.json', 'src/client/App.tsx', '.gitignore']
       })
     })
   })
@@ -157,7 +157,7 @@ describe('create audius app', () => {
       projectFilesShouldExist({
         cwd,
         projectName: 'my-app',
-        files: ['package.json', 'src/App.tsx', '.gitignore']
+        files: ['package.json', 'src/client/App.tsx', '.gitignore']
       })
     })
   })

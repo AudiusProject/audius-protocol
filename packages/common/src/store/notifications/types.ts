@@ -39,7 +39,10 @@ export enum NotificationType {
   USDCPurchaseSeller = 'USDCPurchaseSeller',
   USDCPurchaseBuyer = 'USDCPurchaseBuyer',
   RequestManager = 'RequestManager',
-  ApproveManagerRequest = 'ApproveManagerRequest'
+  ApproveManagerRequest = 'ApproveManagerRequest',
+  Comment = 'Comment',
+  CommentThread = 'CommentThread',
+  CommentMention = 'CommentMention'
 }
 
 export enum PushNotificationType {
@@ -83,7 +86,10 @@ export enum PushNotificationType {
   Message = 'Message',
   MessageReaction = 'MessageReaction',
   RequestManager = 'RequestManager',
-  ApproveManagerRequest = 'ApproveManagerRequest'
+  ApproveManagerRequest = 'ApproveManagerRequest',
+  Comment = 'Comment',
+  CommentThread = 'CommentThread',
+  CommentMention = 'CommentMention'
 }
 
 export enum Entity {
@@ -99,6 +105,8 @@ export type CollectionEntity = Collection & { user: Nullable<User> }
 
 export type EntityType = TrackEntity | CollectionEntity
 
+export type TrendingRange = 'week' | 'month' | 'year'
+
 export type BaseNotification = {
   id: string
   isViewed: boolean
@@ -107,357 +115,6 @@ export type BaseNotification = {
   // group id is a part of the notifications v2 spec
   groupId?: string
 }
-
-export type DiscoveryBaseNotification<T, P> = {
-  type: T
-  group_id: string
-  seen_at: number | null
-  actions: DiscoveryAction<P>[]
-}
-
-export type DiscoveryAction<T> = {
-  specifier: string
-  type: string
-  timestamp: number
-  data: T
-}
-
-export type DiscoveryAnnouncementNotificationAction = {
-  title: string
-  short_description: string
-  long_description?: string
-}
-export type DiscoveryFollowNotificationAction = {
-  follower_user_id: string
-  followee_user_id: string
-}
-export type DiscoverySaveNotificationAction = {
-  type: string
-  user_id: string
-  save_item_id: string
-}
-export type DiscoverySaveOfRepostNotificationAction = {
-  type: string
-  user_id: string
-  save_of_repost_item_id: string
-}
-export type DiscoveryRepostNotificationAction = {
-  type: string
-  user_id: string
-  repost_item_id: string
-}
-export type DiscoveryRepostOfRepostNotificationAction = {
-  type: string
-  user_id: string
-  repost_of_repost_item_id: string
-}
-export type DiscoveryTastemakerNotificationAction = {
-  type: 'tastemaker'
-  tastemaker_user_id: string
-  tastemaker_item_id: string
-  action: string
-  tastemaker_item_owner_id: string
-}
-export type DiscoveryTipSendNotificationAction = {
-  amount: string
-  sender_user_id: string
-  receiver_user_id: string
-  tip_tx_signature: string
-}
-export type DiscoveryTipReceiveNotificationAction = {
-  amount: string
-  sender_user_id: string
-  receiver_user_id: string
-  tip_tx_signature: string
-  reaction_value: number
-}
-export type DiscoveryAddTrackToPlaylistNotificationAction = {
-  playlist_id: string
-  track_id: string
-  playlist_owner_id: string
-  type: 'track_added_to_playlist'
-}
-export type DiscoveryTrackAddedToPurchasedAlbumNotificationAction = {
-  playlist_id: string
-  track_id: string
-  playlist_owner_id: string
-  type: 'track_added_to_purchased_album'
-}
-
-export type DiscoveryMilestoneFollowNotificationAction = {
-  type: 'follow_count'
-  threshold: number
-  user_id: string
-}
-export type DiscoveryMilestoneTrackNotificationAction = {
-  type: 'track_repost_count' | 'track_save_count' | 'track_listen_count'
-  threshold: number
-  track_id: string
-}
-export type DiscoveryMilestonePlaylistNotificationAction = {
-  type: 'playlist_repost_count' | 'playlist_save_count'
-  threshold: number
-  playlist_id: string
-  is_album: boolean
-}
-export type DiscoveryRemixNotificationAction = {
-  parent_track_id: string
-  track_id: string
-  track_owner_id: string
-}
-export type DiscoveryCosignNotificationAction = {
-  parent_track_id: string
-  parent_track_owner_id: string
-  track_id: string
-  track_owner_id: string
-}
-export type DiscoverySupporterRankUpNotificationAction = {
-  rank: number
-  sender_user_id: string
-  receiver_user_id: string
-}
-export type DiscoverySupportingRankUpNotificationAction = {
-  rank: number
-  sender_user_id: string
-  receiver_user_id: string
-}
-
-export type DiscoverySupporterDethronedNotificationAction = {
-  sender_user_id: string
-  receiver_user_id: string
-  dethroned_user_id: string
-}
-
-export type DiscoveryReactionNotificationAction = {
-  reacted_to: string
-  reaction_type: 'tip'
-  sender_wallet: string
-  reaction_value: number
-  receiver_user_id: string
-  sender_user_id: string
-  tip_amount: string
-}
-
-export type DiscoveryChallengeRewardNotificationAction = {
-  amount: string
-  specifier: string
-  challenge_id: string
-}
-
-export type DiscoveryClaimableRewardNotificationAction = {
-  amount: string
-  specifier: string
-  challenge_id: string
-}
-
-export type DiscoveryTierChangeNotificationAction = {
-  new_tier: string
-  new_tier_value: number
-  current_value: string
-}
-
-export type DiscoveryCreateTrackNotificationAction = {
-  track_id: string
-}
-export type DiscoveryCreatePlaylistNotificationAction = {
-  is_album: boolean
-  playlist_id: string[]
-}
-export type DiscoveryUSDCPurchaseNotificationAction = {
-  content_type: string
-  content_id: string
-  seller_user_id: string
-  buyer_user_id: string
-  amount: StringUSDC
-  extra_amount: StringUSDC
-}
-
-export type DiscoveryRequestManagerNotificationAction = {
-  user_id: string
-  grantee_user_id: string
-  grantee_address: string
-}
-
-export type DiscoveryApproveManagerRequestNotificationAction = {
-  user_id: string
-  grantee_user_id: string
-  grantee_address: string
-}
-
-export type TrendingRange = 'week' | 'month' | 'year'
-
-export type DiscoveryTrendingNotificationAction = {
-  rank: number
-  genre: string
-  track_id: string
-  time_range: TrendingRange
-}
-
-export type DiscoveryAnnouncementNotification = DiscoveryBaseNotification<
-  'announcement',
-  DiscoveryAnnouncementNotificationAction
->
-export type DiscoveryFollowNotification = DiscoveryBaseNotification<
-  'follow',
-  DiscoveryFollowNotificationAction
->
-export type DiscoverySaveNotification = DiscoveryBaseNotification<
-  'save',
-  DiscoverySaveNotificationAction
->
-export type DiscoveryRepostNotification = DiscoveryBaseNotification<
-  'repost',
-  DiscoveryRepostNotificationAction
->
-export type DiscoveryTastemakerNotification = DiscoveryBaseNotification<
-  'tastemaker',
-  DiscoveryTastemakerNotificationAction
->
-export type DiscoveryAddTrackToPlaylistNotification = DiscoveryBaseNotification<
-  'track_added_to_playlist',
-  DiscoveryAddTrackToPlaylistNotificationAction
->
-export type DiscoveryTrackAddedToPurchasedAlbumNotification =
-  DiscoveryBaseNotification<
-    'track_added_to_purchased_album',
-    DiscoveryTrackAddedToPurchasedAlbumNotificationAction
-  >
-export type DiscoveryTipSendNotification = DiscoveryBaseNotification<
-  'tip_send',
-  DiscoveryTipSendNotificationAction
->
-export type DiscoveryTipReceiveNotification = DiscoveryBaseNotification<
-  'tip_receive',
-  DiscoveryTipReceiveNotificationAction
->
-
-export type DiscoveryRemixNotification = DiscoveryBaseNotification<
-  'remix',
-  DiscoveryRemixNotificationAction
->
-export type DiscoveryCosignNotification = DiscoveryBaseNotification<
-  'cosign',
-  DiscoveryCosignNotificationAction
->
-export type DiscoverySupporterRankUpNotification = DiscoveryBaseNotification<
-  'supporter_rank_up',
-  DiscoverySupporterRankUpNotificationAction
->
-export type DiscoverySupportingRankUpNotification = DiscoveryBaseNotification<
-  'supporting_rank_up',
-  DiscoverySupportingRankUpNotificationAction
->
-export type DiscoverySupporterDethronedNotification = DiscoveryBaseNotification<
-  'supporter_dethroned',
-  DiscoverySupporterDethronedNotificationAction
->
-export type DiscoveryReactionNotification = DiscoveryBaseNotification<
-  'reaction',
-  DiscoveryReactionNotificationAction
->
-export type DiscoveryChallengeRewardNotification = DiscoveryBaseNotification<
-  'challenge_reward',
-  DiscoveryChallengeRewardNotificationAction
->
-export type DiscoveryClaimableRewardNotification = DiscoveryBaseNotification<
-  'claimable_reward',
-  DiscoveryClaimableRewardNotificationAction
->
-
-export type DiscoveryTierChangeNotification = DiscoveryBaseNotification<
-  'tier_change',
-  DiscoveryTierChangeNotificationAction
->
-export type DiscoveryCreateNotification = DiscoveryBaseNotification<
-  'create',
-  | DiscoveryCreateTrackNotificationAction
-  | DiscoveryCreatePlaylistNotificationAction
->
-export type DiscoveryUSDCPurchaseBuyerNotification = DiscoveryBaseNotification<
-  'usdc_purchase_buyer',
-  DiscoveryUSDCPurchaseNotificationAction
->
-export type DiscoveryUSDCPurchaseSellerNotification = DiscoveryBaseNotification<
-  'usdc_purchase_seller',
-  DiscoveryUSDCPurchaseNotificationAction
->
-
-export type DiscoveryRequestManagerNotification = DiscoveryBaseNotification<
-  'request_manager',
-  DiscoveryRequestManagerNotificationAction
->
-
-export type DiscoveryApproveManagerRequestNotification =
-  DiscoveryBaseNotification<
-    'approve_manager_request',
-    DiscoveryApproveManagerRequestNotificationAction
-  >
-
-export type DiscoveryTrendingPlaylistNotification = DiscoveryBaseNotification<
-  'trending_playlist',
-  {
-    rank: number
-    genre: string
-    playlist_id: string
-    time_range: TrendingRange
-  }
->
-export type DiscoveryTrendingNotification = DiscoveryBaseNotification<
-  'trending',
-  DiscoveryTrendingNotificationAction
->
-export type DiscoveryTrendingUndergroundNotification =
-  DiscoveryBaseNotification<
-    'trending_underground',
-    DiscoveryTrendingNotificationAction
-  >
-export type DiscoveryMilestoneNotification = DiscoveryBaseNotification<
-  'milestone',
-  | DiscoveryMilestoneFollowNotificationAction
-  | DiscoveryMilestoneTrackNotificationAction
-  | DiscoveryMilestonePlaylistNotificationAction
->
-
-export type DiscoveryRepostOfRepostNotification = DiscoveryBaseNotification<
-  'repost_of_repost',
-  DiscoveryRepostOfRepostNotificationAction
->
-
-export type DiscoverySaveOfRepostNotification = DiscoveryBaseNotification<
-  'save_of_repost',
-  DiscoverySaveOfRepostNotificationAction
->
-
-export type DiscoveryNotification =
-  | DiscoveryAnnouncementNotification
-  | DiscoveryFollowNotification
-  | DiscoverySaveNotification
-  | DiscoveryRepostNotification
-  | DiscoveryTipSendNotification
-  | DiscoveryTipReceiveNotification
-  | DiscoveryRemixNotification
-  | DiscoveryCosignNotification
-  | DiscoveryMilestoneNotification
-  | DiscoverySupporterRankUpNotification
-  | DiscoverySupportingRankUpNotification
-  | DiscoverySupporterDethronedNotification
-  | DiscoveryReactionNotification
-  | DiscoveryChallengeRewardNotification
-  | DiscoveryClaimableRewardNotification
-  | DiscoveryTierChangeNotification
-  | DiscoveryCreateNotification
-  | DiscoveryTrendingPlaylistNotification
-  | DiscoveryTrendingNotification
-  | DiscoveryTrendingUndergroundNotification
-  | DiscoveryRepostOfRepostNotification
-  | DiscoverySaveOfRepostNotification
-  | DiscoveryAddTrackToPlaylistNotification
-  | DiscoveryTrackAddedToPurchasedAlbumNotification
-  | DiscoveryTastemakerNotification
-  | DiscoveryUSDCPurchaseBuyerNotification
-  | DiscoveryUSDCPurchaseSellerNotification
-  | DiscoveryRequestManagerNotification
-  | DiscoveryApproveManagerRequestNotification
 
 export type AnnouncementNotification = BaseNotification & {
   type: NotificationType.Announcement
@@ -997,6 +654,29 @@ export type ApproveManagerRequestNotification = BaseNotification & {
   userId: ID
 }
 
+export type CommentNotification = BaseNotification & {
+  type: NotificationType.Comment
+  entityId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type CommentThreadNotification = BaseNotification & {
+  type: NotificationType.CommentThread
+  entityId: ID
+  entityUserId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type CommentMentionNotification = BaseNotification & {
+  type: NotificationType.CommentMention
+  entityId: ID
+  entityUserId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -1027,6 +707,9 @@ export type Notification =
   | USDCPurchaseBuyerNotification
   | RequestManagerNotification
   | ApproveManagerRequestNotification
+  | CommentNotification
+  | CommentThreadNotification
+  | CommentMentionNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

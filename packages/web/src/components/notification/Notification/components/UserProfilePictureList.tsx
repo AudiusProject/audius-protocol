@@ -10,7 +10,9 @@ import { ProfilePicture } from './ProfilePicture'
 import styles from './UserProfilePictureList.module.css'
 
 const messages = {
-  viewAllTooltip: 'View All'
+  viewAllTooltip: 'View All',
+  count: (remainingUsersCount: number) =>
+    `${remainingUsersCount < 100 ? '+' : ''}${formatCount(remainingUsersCount)}`
 }
 
 export type UserProfileListProps = {
@@ -89,7 +91,7 @@ export const UserProfilePictureList = ({
               user={lastUser}
             />
             <span className={styles.profilePictureCount}>
-              {`+${formatCount(remainingUsersCount)}`}
+              {messages.count(remainingUsersCount)}
             </span>
           </div>
         </Tooltip>

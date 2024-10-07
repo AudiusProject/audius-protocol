@@ -44,7 +44,8 @@ export const messages = {
   sendFirstTipShortDescriptionAlt:
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
   sendFirstTipButton: 'Send a Tip',
-  sendFirstTipButtonAlt: 'Find Artists to Support' // iOS only
+  sendFirstTipButtonAlt: 'Find Artists to Support', // iOS only
+  sendFirstTipCompletedLabelAlt: 'Support Another Artist' // iOS only
 }
 
 export type ChallengesParamList = {
@@ -62,6 +63,7 @@ export type MobileChallengeConfig = {
   description?: (amount?: OptimisticUserChallenge) => string
   shortDescription?: string
   panelButtonText?: string
+  completedLabel?: string
   buttonInfo?: {
     navigation?: {
       screen: keyof ChallengesParamList
@@ -83,7 +85,25 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconRight: IconCheck
       }
     },
+    [ChallengeName.ConnectVerified]: {
+      icon: IconLink,
+      buttonInfo: {
+        navigation: {
+          screen: 'AccountVerificationScreen'
+        },
+        iconRight: IconCheck
+      }
+    },
     'listen-streak': {
+      icon: Headphone,
+      buttonInfo: {
+        navigation: {
+          screen: 'trending'
+        },
+        iconRight: IconArrowRight
+      }
+    },
+    [ChallengeName.ListenStreak]: {
       icon: Headphone,
       buttonInfo: {
         navigation: {
@@ -95,16 +115,31 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     'mobile-install': {
       icon: MobilePhoneWithArrow
     },
+    [ChallengeName.MobileInstall]: {
+      icon: MobilePhoneWithArrow
+    },
     'profile-completion': {
+      icon: BallotBoxTick
+    },
+    [ChallengeName.ProfileCompletion]: {
       icon: BallotBoxTick
     },
     referrals: {
       icon: IncomingEnvelope
     },
+    [ChallengeName.Referrals]: {
+      icon: IncomingEnvelope
+    },
     'ref-v': {
       icon: IncomingEnvelope
     },
+    [ChallengeName.ReferralsVerified]: {
+      icon: IncomingEnvelope
+    },
     referred: {
+      icon: LoveLetter
+    },
+    [ChallengeName.Referred]: {
       icon: LoveLetter
     },
     'track-upload': {
@@ -113,7 +148,42 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconRight: IconCloudUpload
       }
     },
+    [ChallengeName.TrackUpload]: {
+      icon: MultipleMusicalNotes,
+      buttonInfo: {
+        iconRight: IconCloudUpload
+      }
+    },
     'send-first-tip': {
+      icon: MoneyWings,
+      title:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipTitleAlt
+          : messages.sendFirstTipTitle,
+      description: () =>
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipDescriptionAlt
+          : messages.sendFirstTipDescription,
+      shortDescription:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipShortDescriptionAlt
+          : messages.sendFirstTipShortDescription,
+      panelButtonText:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipButtonAlt
+          : messages.sendFirstTipButton,
+      completedLabel:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipCompletedLabelAlt
+          : undefined,
+      buttonInfo: {
+        navigation: {
+          screen: 'library'
+        },
+        iconRight: IconArrowRight
+      }
+    },
+    [ChallengeName.FirstTip]: {
       icon: MoneyWings,
       title:
         Platform.OS === 'ios'
@@ -138,6 +208,16 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       }
     },
     'first-playlist': {
+      icon: TrebleClef,
+      buttonInfo: {
+        navigation: {
+          screen: 'explore',
+          params: { screen: 'Explore' }
+        },
+        iconRight: IconArrowRight
+      }
+    },
+    [ChallengeName.FirstPlaylist]: {
       icon: TrebleClef,
       buttonInfo: {
         navigation: {

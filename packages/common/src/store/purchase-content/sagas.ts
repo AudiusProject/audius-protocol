@@ -1,6 +1,6 @@
 import { USDC } from '@audius/fixed-decimal'
 import { type AudiusSdk } from '@audius/sdk'
-import type { createJupiterApiClient } from '@jup-ag/api'
+import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
   PublicKey,
@@ -474,7 +474,6 @@ function* purchaseAlbumWithCoinflow(args: {
     extraAmount: args.extraAmount,
     albumId: encodeHashId(albumId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey,
     includeNetworkCut
   }
 
@@ -673,11 +672,10 @@ function* doStartPurchaseContentFlow({
         tokenAccount: userBank
       }
     )
-    if (!tokenAccountInfo) {
-      throw new Error('Failed to fetch USDC token account info')
-    }
 
-    const { amount: initialBalance } = tokenAccountInfo
+    // In the case where there is no amount, the token account was probably
+    // just created. Just use 0 for initial balance.
+    const { amount: initialBalance } = tokenAccountInfo ?? { amount: 0 }
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
@@ -917,6 +915,11 @@ function* purchaseWithAnything({
     const sdk = yield* call(audiusSdk)
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const isNetworkCutEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.NETWORK_CUT_ENABLED
+    )
 
     // Get the USDC user bank
     const usdcUserBank = yield* call(getUSDCUserBank)
@@ -955,10 +958,14 @@ function* purchaseWithAnything({
       if (!provider) {
         throw new Error('No solana provider / wallet found')
       }
-      sourceWallet = (yield* call(provider.connect)).publicKey
+      sourceWallet = new PublicKey(
+        (yield* call(provider.connect)).publicKey.toString()
+      )
     }
 
     let transaction: VersionedTransaction
+    let message: TransactionMessage
+    let addressLookupTableAccounts: AddressLookupTableAccount[] | undefined
     if (inputMint === TOKEN_LISTING_MAP.USDC.address) {
       const instruction = yield* call(
         [
@@ -979,6 +986,7 @@ function* purchaseWithAnything({
           instructions: [instruction]
         }
       )
+      message = TransactionMessage.decompile(transaction.message)
     } else {
       const paymentRouterTokenAccount = yield* call(
         [
@@ -995,15 +1003,22 @@ function* purchaseWithAnything({
       )
 
       const jup = yield* call(getJupiterInstance)
-      const quote = yield* call([jup, jup.quoteGet], {
-        inputMint,
-        outputMint: TOKEN_LISTING_MAP.USDC.address,
-        amount: totalAmountWithDecimals,
-        onlyDirectRoutes: true,
-        swapMode: 'ExactOut'
-      })
-      if (!quote) {
-        throw new Error(`Failed to get Jupiter quote for ${inputMint} => USDC`)
+      let quote: QuoteResponse
+      try {
+        quote = yield* call([jup, jup.quoteGet], {
+          inputMint,
+          outputMint: TOKEN_LISTING_MAP.USDC.address,
+          amount: totalAmountWithDecimals,
+          swapMode: 'ExactOut'
+        })
+        if (!quote) {
+          throw new Error()
+        }
+      } catch (e) {
+        throw new PurchaseContentError(
+          PurchaseErrorCode.NoQuote,
+          `Failed to get Jupiter quote for ${inputMint} => USDC`
+        )
       }
 
       // Make sure user has enough funds to purchase content
@@ -1046,28 +1061,28 @@ function* purchaseWithAnything({
       })
       const decoded = Buffer.from(swapTransaction, 'base64')
       transaction = VersionedTransaction.deserialize(decoded)
-    }
 
-    // Get address lookup table accounts
-    const getLUTs = async () => {
-      return await Promise.all(
-        transaction.message.addressTableLookups.map(async (lookup) => {
-          return new AddressLookupTableAccount({
-            key: lookup.accountKey,
-            state: AddressLookupTableAccount.deserialize(
-              await connection
-                .getAccountInfo(lookup.accountKey)
-                .then((res: any) => res.data)
-            )
+      // Get address lookup table accounts
+      const getLUTs = async () => {
+        return await Promise.all(
+          transaction.message.addressTableLookups.map(async (lookup) => {
+            return new AddressLookupTableAccount({
+              key: lookup.accountKey,
+              state: AddressLookupTableAccount.deserialize(
+                await connection
+                  .getAccountInfo(lookup.accountKey)
+                  .then((res: any) => res.data)
+              )
+            })
           })
-        })
-      )
+        )
+      }
+      addressLookupTableAccounts = yield* call(getLUTs)
+      // Decompile transaction message and add transfer instruction
+      message = TransactionMessage.decompile(transaction.message, {
+        addressLookupTableAccounts
+      })
     }
-    const addressLookupTableAccounts = yield* call(getLUTs)
-    // Decompile transaction message and add transfer instruction
-    const message = TransactionMessage.decompile(transaction.message, {
-      addressLookupTableAccounts
-    })
 
     if (contentType === PurchaseableContentType.TRACK) {
       const {
@@ -1080,7 +1095,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         trackId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {
@@ -1097,7 +1113,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         albumId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {

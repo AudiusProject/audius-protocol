@@ -1102,7 +1102,6 @@ def base_playlist_dsl(
     }
 
     if tag_search:
-        print("sebastian tag search appending", tag_search)
         dsl["must"].append(
             {
                 "bool": {

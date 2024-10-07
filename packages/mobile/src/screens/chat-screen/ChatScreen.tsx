@@ -16,6 +16,7 @@ import {
   isEarliestUnread,
   chatCanFetchMoreMessages
 } from '@audius/common/utils'
+import type { ChatBlast } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
@@ -38,14 +39,11 @@ import {
   HeaderShadow,
   KeyboardAvoidingView,
   Screen,
-  ScreenContent,
-  ProfilePicture
+  ScreenContent
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
-import { UserBadges } from 'app/components/user-badges'
 import { light } from 'app/haptics'
-import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { useToast } from 'app/hooks/useToast'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -53,14 +51,16 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
 
-import type { AppTabScreenParamList } from '../app-screen'
-
+import { ChatBlastAudienceDisplay } from './ChatBlastAudienceDisplay'
+import { ChatBlastHeader } from './ChatBlastHeader'
+import { ChatBlastSubHeader } from './ChatBlastSubHeader'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { ChatMessageSeparator } from './ChatMessageSeparator'
 import { ChatTextInput } from './ChatTextInput'
 import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
 import { ReactionPopup } from './ReactionPopup'
+import { UserChatHeader } from './UserChatHeader'
 import {
   END_REACHED_MIN_MESSAGES,
   NEW_MESSAGE_TOAST_SCROLL_THRESHOLD,
@@ -114,11 +114,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexGrow: 1,
     paddingHorizontal: spacing(6)
   },
-  profileTitle: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
   composeView: {
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(4),
@@ -152,11 +147,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(7),
     fill: palette.primary
   },
-  userBadgeTitle: {
-    fontSize: typography.fontSize.medium,
-    fontFamily: typography.fontByWeight.bold,
-    color: palette.neutral
-  },
   loadingSpinnerContainer: {
     display: 'flex',
     flexGrow: 1,
@@ -170,6 +160,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   emptyContainer: {
     display: 'flex',
     flexGrow: 1
+  },
+  userBadgeTitle: {
+    fontSize: typography.fontSize.medium,
+    fontFamily: typography.fontByWeight.bold,
+    color: palette.neutral
   }
 }))
 
@@ -237,7 +232,6 @@ export const ChatScreen = () => {
   const palette = useThemePalette()
   const dispatch = useDispatch()
   const { toast } = useToast()
-  const navigation = useNavigation<AppTabScreenParamList>()
 
   const { params } = useRoute<'Chat'>()
   const { chatId, presetMessage } = params
@@ -262,6 +256,10 @@ export const ChatScreen = () => {
   const userId = useSelector(getUserId)
   const userIdEncoded = encodeHashId(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
+  const { is_blast: isBlast } = chat ?? {}
+  // Need additional bottom padding for composer for chat blasts
+  // because there is an extra screen header.
+  const chatBlastWithContentOffset = isBlast ? spacing(6) : 0
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
@@ -473,11 +471,11 @@ export const ChatScreen = () => {
     [canSendMessage, chat?.is_blast, dispatch]
   )
 
-  const topBarRight = (
+  const topBarRight = !isBlast ? (
     <TouchableOpacity onPress={handleTopRightPress} hitSlop={spacing(2)}>
       <IconKebabHorizontal fill={palette.neutralLight4} />
     </TouchableOpacity>
-  )
+  ) : null
 
   // When reaction popup opens, hide reaction here so it doesn't
   // appear underneath the reaction of the message clone inside the
@@ -566,32 +564,17 @@ export const ChatScreen = () => {
     <Screen
       url={url}
       headerTitle={
-        otherUser
-          ? () => (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.push('Profile', { id: otherUser.user_id })
-                }
-                style={styles.profileTitle}
-              >
-                <ProfilePicture
-                  userId={otherUser.user_id}
-                  size='small'
-                  mr='s'
-                  strokeWidth='thin'
-                />
-                <UserBadges
-                  user={otherUser}
-                  nameStyle={styles.userBadgeTitle}
-                />
-              </TouchableOpacity>
-            )
+        isBlast
+          ? () => <ChatBlastHeader chat={chat as ChatBlast} />
+          : otherUser
+          ? () => <UserChatHeader user={otherUser} />
           : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
       }
       icon={otherUser ? undefined : IconMessage}
       topbarRight={topBarRight}
     >
       <ScreenContent>
+        {isBlast ? <ChatBlastSubHeader chat={chat as ChatBlast} /> : null}
         <HeaderShadow />
         {/* Everything inside the portal displays on top of all other screen contents. */}
         <Portal hostName='ChatReactionsPortal'>
@@ -652,15 +635,19 @@ export const ChatScreen = () => {
                     // https://github.com/facebook/react-native/issues/21196
                     // This is better than doing a rotation transform because when the react bug is fixed,
                     // our workaround won't re-introduce the bug!
-                    <View style={styles.emptyContainer}>
-                      <EmptyChatMessages />
-                    </View>
+                    !chat?.is_blast ? (
+                      <View style={styles.emptyContainer}>
+                        <EmptyChatMessages />
+                      </View>
+                    ) : null
                   }
                   ListHeaderComponent={
-                    canSendMessage ? null : <ChatUnavailable chatId={chatId} />
+                    !canSendMessage ? <ChatUnavailable chatId={chatId} /> : null
                   }
                   ListFooterComponent={
-                    shouldShowEndReachedIndicator ? (
+                    chat?.is_blast ? (
+                      <ChatBlastAudienceDisplay chat={chat as ChatBlast} />
+                    ) : shouldShowEndReachedIndicator ? (
                       <ChatMessageSeparator
                         content={messages.beginningReached}
                       />
@@ -682,6 +669,7 @@ export const ChatScreen = () => {
               >
                 <View style={styles.whiteBackground} />
                 <ChatTextInput
+                  extraOffset={chatBlastWithContentOffset}
                   chatId={chatId}
                   presetMessage={presetMessage}
                   onMessageSent={handleMessageSent}

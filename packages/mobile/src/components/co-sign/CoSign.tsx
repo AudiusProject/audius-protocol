@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { css } from '@emotion/native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 
@@ -80,7 +79,7 @@ const CoSign = ({ size, children, style }: CoSignProps) => {
   const { size: iconSize, position } = layoutBySize[size]
 
   return (
-    <View style={[css({ flex: 1, alignSelf: 'center' }), style]}>
+    <View style={style}>
       <View>{children}</View>
       <View style={[styles.check, position]}>
         <IconCosign fill={primary} fillSecondary={staticWhite} {...iconSize} />

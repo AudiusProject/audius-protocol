@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
   trackPageActions,
@@ -8,17 +10,23 @@ import {
   reachabilitySelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
-import { IconArrowRight, Button, Text } from '@audius/harmony-native'
-import { Screen, ScreenContent } from 'app/components/core'
+import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
+import { CommentSection } from 'app/components/comments/CommentSection'
+import {
+  Screen,
+  ScreenContent,
+  VirtualizedScrollView
+} from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 
-import { TrackScreenMainContent } from './TrackScreenMainContent'
+import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
+import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
@@ -31,23 +39,30 @@ const messages = {
   viewOtherRemixes: 'View Other Remixes'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  buttonContainer: {
-    padding: spacing(6)
-  }
-}))
+const MAX_RELATED_TRACKS_TO_DISPLAY = 6
 
-/**
- * `TrackScreen` displays a single track and a Lineup of more tracks by the artist
- */
 export const TrackScreen = () => {
-  const styles = useStyles()
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
+  const {
+    searchTrack,
+    id,
+    canBeUnlisted = true,
+    handle,
+    slug,
+    showComments
+  } = params ?? {}
+
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  useEffectOnce(() => {
+    if (showComments) {
+      openDrawer({ entityId: id })
+    }
+  })
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -62,6 +77,10 @@ export const TrackScreen = () => {
   const lineup = useSelector(getLineup)
 
   const remixParentTrack = useProxySelector(getRemixParentTrack, [])
+
+  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const handleFetchTrack = useCallback(() => {
     dispatch(tracksActions.reset())
@@ -81,7 +100,7 @@ export const TrackScreen = () => {
     return <TrackScreenSkeleton />
   }
 
-  const handlePressGoToRemixes = () => {
+  const handlePressGoToOtherRemixes = () => {
     if (!remixParentTrack) {
       return
     }
@@ -89,6 +108,7 @@ export const TrackScreen = () => {
   }
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
+
   const showMoreByArtistTitle =
     isReachable &&
     ((remixParentTrackId && lineup.entries.length > 2) ||
@@ -107,54 +127,77 @@ export const TrackScreen = () => {
   ) : null
 
   const originalTrackTitle = (
-    <Text variant='title' size='l'>
+    <Text variant='title' size='m'>
       {messages.originalTrack}
     </Text>
   )
 
+  const { track_id, field_visibility, _remixes, comments_disabled } = track
+
   return (
     <Screen url={track?.permalink}>
       <ScreenContent isOfflineCapable>
-        <Lineup
-          actions={tracksActions}
-          keyboardShouldPersistTaps='handled'
-          // When offline, we don't want to render any tiles here and the
-          // current solution is to hard-code a count to show skeletons
-          count={isReachable ? 6 : 0}
-          header={
-            <TrackScreenMainContent
-              // @ts-ignore not sure why but it's registering
-              //  as LineupState<{ id: number }> instead of Track
-              lineup={lineup}
-              remixParentTrack={remixParentTrack}
+        <VirtualizedScrollView>
+          <Flex p='m' gap='2xl'>
+            {/* Track Details */}
+            <TrackScreenDetailsTile
               track={track}
               user={user}
-              lineupHeader={
-                hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
-              }
+              uid={lineup?.entries?.[0]?.uid}
+              isLineupLoading={!lineup?.entries?.[0]}
             />
-          }
-          leadingElementId={remixParentTrack?.track_id}
-          leadingElementDelineator={
-            <>
-              <View style={styles.buttonContainer}>
-                <Button
-                  iconRight={IconArrowRight}
-                  variant='primary'
-                  size='small'
-                  onPress={handlePressGoToRemixes}
-                  fullWidth
-                >
-                  {messages.viewOtherRemixes}
-                </Button>
-              </View>
-              {moreByArtistTitle}
-            </>
-          }
-          lineup={lineup}
-          start={1}
-          includeLineupStatus
-        />
+
+            {isReachable ? (
+              <>
+                {/* Comments */}
+                {isCommentingEnabled && !comments_disabled ? (
+                  <Flex flex={3}>
+                    <CommentSection entityId={track_id} />
+                  </Flex>
+                ) : null}
+
+                {/* Remixes */}
+                {field_visibility?.remixes &&
+                  _remixes &&
+                  _remixes.length > 0 && <TrackScreenRemixes track={track} />}
+
+                {/* More by Artist / Remix Parent */}
+                <Flex>
+                  {hasValidRemixParent ? originalTrackTitle : moreByArtistTitle}
+                  <Lineup
+                    actions={tracksActions}
+                    keyboardShouldPersistTaps='handled'
+                    count={MAX_RELATED_TRACKS_TO_DISPLAY}
+                    lineup={lineup}
+                    start={1}
+                    includeLineupStatus
+                    itemStyles={{
+                      padding: 0,
+                      paddingVertical: 12
+                    }}
+                    leadingElementId={remixParentTrack?.track_id}
+                    leadingElementDelineator={
+                      <Flex>
+                        {lineup.status === Status.SUCCESS ? (
+                          <Flex pt='m' alignItems='flex-start'>
+                            <Button
+                              iconRight={IconArrowRight}
+                              size='xs'
+                              onPress={handlePressGoToOtherRemixes}
+                            >
+                              {messages.viewOtherRemixes}
+                            </Button>
+                          </Flex>
+                        ) : null}
+                        <Flex mt='2xl'>{moreByArtistTitle}</Flex>
+                      </Flex>
+                    }
+                  />
+                </Flex>
+              </>
+            ) : null}
+          </Flex>
+        </VirtualizedScrollView>
       </ScreenContent>
     </Screen>
   )

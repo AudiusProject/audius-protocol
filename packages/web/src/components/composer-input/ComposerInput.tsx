@@ -1,8 +1,13 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import { UserMetadata } from '@audius/common/models'
-import { splitOnNewline } from '@audius/common/utils'
+import { ID, UserMetadata } from '@audius/common/models'
+import {
+  getDurationFromTimestampMatch,
+  splitOnNewline,
+  timestampRegex
+} from '@audius/common/utils'
 import {
   LoadingSpinner,
   SendIcon,
@@ -10,6 +15,7 @@ import {
   TextProps,
   useTheme
 } from '@audius/harmony'
+import { EntityType } from '@audius/sdk'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
@@ -59,16 +65,29 @@ export const ComposerInput = (props: ComposerInputProps) => {
     maxLength = 400,
     placeholder,
     isLoading,
+    entityId,
+    entityType,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
+  const { data: track } = useGetTrackById({
+    id: entityType === EntityType.TRACK && entityId ? entityId : -1
+  })
+
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
+  const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
+  const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])
+  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
+  // Ref to keep track of the submit state of the input
+  const submittedRef = useRef(false)
+  // Ref to keep track of a unique id for each change
+  const changeOpIdRef = useRef(0)
 
   const {
     linkEntities,
@@ -122,95 +141,48 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [userMentions]
   )
 
-  const handleChange = useCallback(
-    async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value)
-      const editedValue = await resolveLinks(e.target.value)
-      setValue(editedValue)
-      // TODO: Need to update this to move to the proper position affect link change to human text
-      // setTimeout(() => {
-      //   textarea.selectionStart = cursorPosition
-      //   textarea.selectionEnd = cursorPosition
-      // }, 0)
+  const getTimestamps = useCallback(
+    (value: string) => {
+      if (!track || !track.access.stream) return []
+
+      const { duration } = track
+      return Array.from(value.matchAll(timestampRegex))
+        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+        .map((match) => ({
+          type: 'timestamp',
+          text: match[0],
+          index: match.index,
+          link: ''
+        }))
     },
-    [resolveLinks, setValue]
+    [track]
   )
 
-  const handleSubmit = useCallback(() => {
-    onSubmit?.(restoreLinks(value), linkEntities)
-  }, [linkEntities, onSubmit, restoreLinks, value])
+  const getAutocompleteRange = useCallback(() => {
+    if (!isUserAutocompleteActive) return null
 
-  // Submit when pressing enter while not holding shift
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (isUserAutocompleteActive) {
-        if (e.key === ENTER_KEY || e.key === TAB_KEY) {
-          e.preventDefault()
-          // TODO: Fill in the top result
-        }
+    const startPosition = Math.min(autocompleteAtIndex, value.length)
+    const endPosition = value
+      .slice(startPosition + 1)
+      .split('')
+      .findIndex((c) => {
+        return c === ' ' || c === AT_KEY
+      })
 
-        if (e.key === ESCAPE_KEY || e.key === SPACE_KEY) {
-          setIsUserAutocompleteActive(false)
-        }
-
-        if (e.key === BACKSPACE_KEY) {
-          const textarea = e.target as HTMLTextAreaElement
-          const cursorPosition = textarea.selectionStart
-          const deletedChar = textarea.value[cursorPosition - 1]
-          if (deletedChar === AT_KEY) {
-            setIsUserAutocompleteActive(false)
-          }
-        }
-
-        return
-      }
-
-      // Submit on enter
-      if (e.key === ENTER_KEY && !e.shiftKey) {
-        if (onSubmit) {
-          e.preventDefault()
-          handleSubmit()
-        }
-      }
-
-      // Start user autocomplete
-      if (e.key === AT_KEY) {
-        setIsUserAutocompleteActive(true)
-      }
-
-      // Delete any matched values with a single backspace
-      if (e.key === BACKSPACE_KEY) {
-        const textarea = e.target as HTMLTextAreaElement
-        const cursorPosition = textarea.selectionStart
-        const textBeforeCursor = textarea.value.slice(0, cursorPosition)
-        const { editValue, newCursorPosition } = handleBackspace({
-          cursorPosition,
-          textBeforeCursor
-        })
-        if (editValue) {
-          e.preventDefault()
-          setValue(editValue)
-          setTimeout(() => {
-            textarea.selectionStart = newCursorPosition
-            textarea.selectionEnd = newCursorPosition
-          }, 0)
-        }
-      }
-    },
-    [isUserAutocompleteActive, onSubmit, handleSubmit, handleBackspace]
-  )
+    return [
+      startPosition,
+      endPosition === -1 ? value.length : endPosition + startPosition + 1
+    ]
+  }, [autocompleteAtIndex, isUserAutocompleteActive, value])
 
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
-      const cursorPosition = ref.current?.selectionStart || 0
-      const atPosition = value.slice(0, cursorPosition).lastIndexOf(AT_KEY)
-      const autocompleteRange = isUserAutocompleteActive
-        ? [atPosition, cursorPosition]
-        : [0, 1]
+      const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
+        setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
@@ -227,90 +199,209 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }
       setIsUserAutocompleteActive(false)
     },
-    [isUserAutocompleteActive, userMentions, value]
+    [getAutocompleteRange, userMentions]
   )
 
-  const renderDisplayText = (value: string) => {
-    const cursorPosition = ref.current?.selectionStart || 0
-    const matches = getMatches(value) ?? []
-    const mentions = getUserMentions(value) ?? []
-    const fullMatches = [...matches, ...mentions]
-
-    // If there are no highlightable sections, render text normally
-    if (!fullMatches.length && !isUserAutocompleteActive) {
-      return createTextSections(value)
-    }
-
-    const renderedTextSections = []
-    const atPosition = value.slice(0, cursorPosition).lastIndexOf(AT_KEY)
-    const autocompleteRange = isUserAutocompleteActive
-      ? [atPosition, cursorPosition]
-      : null
-
-    // Filter out matches split by an autocomplete section
-    const filteredMatches = fullMatches.filter(({ index }) => {
-      if (index === undefined) return false
-      if (autocompleteRange) {
-        return !(index >= autocompleteRange[0] && index <= autocompleteRange[1])
+  const handleChange = useCallback(
+    async (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setValue(e.target.value)
+      const currentOpId = ++changeOpIdRef.current
+      const editedValue = await resolveLinks(e.target.value)
+      if (submittedRef.current || currentOpId !== changeOpIdRef.current) {
+        return
       }
-      return true
-    })
+      setValue(editedValue)
+      // TODO: Need to update this to move to the proper position affect link change to human text
+      // setTimeout(() => {
+      //   textarea.selectionStart = cursorPosition
+      //   textarea.selectionEnd = cursorPosition
+      // }, 0)
+    },
+    [resolveLinks, setValue, submittedRef]
+  )
 
-    // Add the autocomplete section
-    if (
-      autocompleteRange &&
-      autocompleteRange[0] >= 0 &&
-      autocompleteRange[1] >= autocompleteRange[0]
-    ) {
-      filteredMatches.push({
-        type: 'autocomplete',
-        text: value.slice(autocompleteRange[0], autocompleteRange[1]),
-        index: autocompleteRange[0],
-        link: ''
+  const handleSubmit = useCallback(() => {
+    submittedRef.current = true
+    changeOpIdRef.current++
+    onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+    submittedRef.current = false
+  }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
+
+  // Submit when pressing enter while not holding shift
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const textarea = ref.current as HTMLTextAreaElement
+      const cursorPosition = textarea.selectionStart
+
+      if (isUserAutocompleteActive) {
+        if (e.key === ENTER_KEY || e.key === TAB_KEY) {
+          e.preventDefault()
+          if (firstAutocompleteResult.current) {
+            handleAutocomplete(firstAutocompleteResult.current)
+          }
+        }
+
+        if (e.key === ESCAPE_KEY || e.key === SPACE_KEY) {
+          setIsUserAutocompleteActive(false)
+        }
+
+        if (e.key === BACKSPACE_KEY) {
+          const deletedChar = textarea.value[cursorPosition - 1]
+          if (deletedChar === AT_KEY) {
+            setIsUserAutocompleteActive(false)
+          }
+        }
+
+        const autocompleteRange = getAutocompleteRange()
+
+        if (
+          autocompleteRange &&
+          (autocompleteRange[0] >= cursorPosition ||
+            autocompleteRange[1] < cursorPosition)
+        ) {
+          setIsUserAutocompleteActive(false)
+        }
+
+        return
+      }
+
+      // Submit on enter
+      if (e.key === ENTER_KEY && !e.shiftKey) {
+        if (onSubmit) {
+          e.preventDefault()
+          handleSubmit()
+        }
+      }
+
+      // Start user autocomplete
+      if (e.key === AT_KEY) {
+        setAutocompleteAtIndex(cursorPosition)
+        setIsUserAutocompleteActive(true)
+      }
+
+      // Delete any matched values with a single backspace
+      if (e.key === BACKSPACE_KEY) {
+        const textBeforeCursor = textarea.value.slice(0, cursorPosition)
+        const { editValue, newCursorPosition } = handleBackspace({
+          cursorPosition,
+          textBeforeCursor
+        })
+        if (editValue) {
+          e.preventDefault()
+          setValue(editValue)
+          setTimeout(() => {
+            textarea.selectionStart = newCursorPosition
+            textarea.selectionEnd = newCursorPosition
+          }, 0)
+        }
+      }
+    },
+    [
+      isUserAutocompleteActive,
+      getAutocompleteRange,
+      handleAutocomplete,
+      onSubmit,
+      handleSubmit,
+      handleBackspace
+    ]
+  )
+
+  const renderDisplayText = useCallback(
+    (value: string) => {
+      const matches = getMatches(value) ?? []
+      const mentions = getUserMentions(value) ?? []
+      const timestamps = getTimestamps(value)
+      const fullMatches = [...matches, ...mentions, ...timestamps]
+
+      // If there are no highlightable sections, render text normally
+      if (!fullMatches.length && !isUserAutocompleteActive) {
+        return createTextSections(value)
+      }
+
+      const renderedTextSections = []
+      const autocompleteRange = getAutocompleteRange()
+
+      // Filter out matches split by an autocomplete section
+      const filteredMatches = fullMatches.filter(({ index }) => {
+        if (index === undefined) return false
+        if (autocompleteRange) {
+          return !(
+            index >= autocompleteRange[0] && index <= autocompleteRange[1]
+          )
+        }
+        return true
       })
-    }
 
-    // Sort match sections by index
-    const sortedMatches = filteredMatches.sort(
-      (a, b) => (a.index ?? 0) - (b.index ?? 0)
-    )
-
-    let lastIndex = 0
-    for (const match of sortedMatches) {
-      const { type, text, index } = match
-      if (index === undefined) continue
-
-      // Add text before the match
-      if (index > lastIndex) {
-        renderedTextSections.push(
-          ...createTextSections(value.slice(lastIndex, index))
-        )
+      // Add the autocomplete section
+      if (
+        autocompleteRange &&
+        autocompleteRange[0] >= 0 &&
+        autocompleteRange[1] >= autocompleteRange[0]
+      ) {
+        filteredMatches.push({
+          type: 'autocomplete',
+          text: value.slice(autocompleteRange[0], autocompleteRange[1]),
+          index: autocompleteRange[0],
+          link: ''
+        })
       }
 
-      // Add the matched word with accent color
-      if (type === 'autocomplete') {
-        // Autocomplete highlight
-        renderedTextSections.push(
-          <AutocompleteText text={text} onConfirm={handleAutocomplete} />
-        )
-      } else {
-        // User Mention or Link match
-        renderedTextSections.push(
-          <ComposerText color='accent'>{text}</ComposerText>
-        )
+      // Sort match sections by index
+      const sortedMatches = filteredMatches.sort(
+        (a, b) => (a.index ?? 0) - (b.index ?? 0)
+      )
+
+      let lastIndex = 0
+      for (const match of sortedMatches) {
+        const { type, text, index } = match
+        if (index === undefined) continue
+
+        // Add text before the match
+        if (index > lastIndex) {
+          renderedTextSections.push(
+            ...createTextSections(value.slice(lastIndex, index))
+          )
+        }
+
+        // Add the matched word with accent color
+        if (type === 'autocomplete') {
+          // Autocomplete highlight
+          renderedTextSections.push(
+            <AutocompleteText
+              text={text}
+              onConfirm={handleAutocomplete}
+              onResultsLoaded={(results) => {
+                firstAutocompleteResult.current = results[0] ?? null
+              }}
+            />
+          )
+        } else {
+          // User Mention or Link match
+          renderedTextSections.push(
+            <ComposerText color='accent'>{text}</ComposerText>
+          )
+        }
+
+        // Update lastIndex to the end of the current match
+        lastIndex = index + text.length
       }
 
-      // Update lastIndex to the end of the current match
-      lastIndex = index + text.length
-    }
+      // Add remaining text after the last match
+      if (lastIndex < value.length) {
+        renderedTextSections.push(...createTextSections(value.slice(lastIndex)))
+      }
 
-    // Add remaining text after the last match
-    if (lastIndex < value.length) {
-      renderedTextSections.push(...createTextSections(value.slice(lastIndex)))
-    }
-
-    return renderedTextSections
-  }
+      return renderedTextSections
+    },
+    [
+      getAutocompleteRange,
+      getMatches,
+      getTimestamps,
+      getUserMentions,
+      handleAutocomplete,
+      isUserAutocompleteActive
+    ]
+  )
 
   return (
     <TextAreaV2

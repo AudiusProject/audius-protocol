@@ -37,7 +37,8 @@ import {
   RequestManagerNotification,
   ApproveManagerNotification,
   ClaimableRewardNotification,
-  RewardInCooldownNotification
+  RewardInCooldownNotification,
+  CommentNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -71,6 +72,7 @@ import { RequestManager } from './requestManager'
 import { TrackAddedToPurchasedAlbum } from './trackAddedToPurchasedAlbum'
 import { RewardInCooldown } from './rewardInCooldown'
 import { ClaimableReward } from './claimableReward'
+import { Comment } from './comment'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -281,6 +283,11 @@ const mapNotification = (
   ) {
     const messageEmailNotification = notification as DMEmailNotification
     return new MessageEmail(dnDb, identityDb, messageEmailNotification)
+  } else if (notification.type == 'comment') {
+    const saveNotification = notification as NotificationRow & {
+      data: CommentNotification
+    }
+    return new Comment(dnDb, identityDb, saveNotification)
   }
 
   logger.info(`Notification type: ${notification.type} has no handler`)

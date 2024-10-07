@@ -19,7 +19,8 @@ import {
   UsdcPurchaseRow,
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
-  GrantRow
+  GrantRow,
+  CommentRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -31,8 +32,7 @@ import {
 import { getDB } from '../conn'
 import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
-import { getRedisConnection } from './redisConnection'
-import { config } from '../config'
+import { clearRedisKeys } from './redisConnection'
 import { EmailFrequency } from '../processNotifications/mappers/userNotificationSettings'
 
 type SetupTestConfig = {
@@ -68,9 +68,7 @@ export const setupTest = async (setupConfig?: SetupTestConfig) => {
   if (mockTime) {
     Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
   }
-  const redis = await getRedisConnection()
-  redis.del(config.lastIndexedMessageRedisKey)
-  redis.del(config.lastIndexedReactionRedisKey)
+  await clearRedisKeys()
   return { processor }
 }
 
@@ -687,6 +685,44 @@ export async function insertReaction(
     .into('chat_message_reactions')
 }
 
+export async function insertBlast(
+  db: Knex,
+  senderId: number,
+  blastId: string,
+  plaintext: string,
+  audience: string,
+  audienceContentType: 'track' | 'album',
+  audienceContentId: string,
+  timestamp: Date
+) {
+  await db
+    .insert({
+      blast_id: blastId,
+      from_user_id: senderId,
+      audience,
+      audience_content_type: audienceContentType,
+      audience_content_id: audienceContentId,
+      plaintext,
+      created_at: timestamp.toISOString()
+    })
+    .into('chat_blast')
+}
+
+export async function insertChatPermission(
+  db: Knex,
+  userId: number,
+  permits: string
+) {
+  await db
+    .insert({
+      user_id: userId,
+      permits,
+      updated_at: new Date(Date.now()).toISOString(),
+      allowed: true
+    })
+    .into('chat_permissions')
+}
+
 type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(
@@ -768,6 +804,25 @@ export async function insertAbusiveSettings(
     .into('Users')
 }
 
+type CreateComment = Pick<CommentRow, 'user_id' | 'entity_id' | 'entity_type'> &
+  Partial<CommentRow>
+export const createComments = async (db: Knex, comments: CreateComment[]) => {
+  await db
+    .insert(
+      comments.map((comment, index) => ({
+        comment_id: index,
+        is_delete: false,
+        created_at: new Date(Date.now()),
+        text: '',
+        txhash: `0x${comment.entity_id}`,
+        blockhash: `0x${comment.entity_id}`,
+        // blocknumber: 0,
+        ...comment
+      }))
+    )
+    .into('comments')
+}
+
 export type UserWithDevice = {
   userId: number
   name: string
@@ -813,4 +868,40 @@ export async function setupTwoUsersWithDevices(
       awsARN: awsARN2
     }
   }
+}
+
+export async function setupNUsersWithDevices(
+  discoveryDB: Knex,
+  identityDB: Knex,
+  numUsers: number
+): Promise<UserWithDevice[]> {
+  await createUsers(
+    discoveryDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { user_id: i, name: `user${i}`, is_current: true }
+    })
+  )
+
+  await insertMobileSettings(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, messages: true }
+    })
+  )
+  const deviceType = enum_NotificationDeviceTokens_deviceType.ios
+  await insertMobileDevices(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, deviceType: deviceType, awsARN: `arn:${i}` }
+    })
+  )
+
+  return Array.from({ length: numUsers }, (_, i) => {
+    return {
+      userId: i,
+      name: `user${i}`,
+      deviceType: deviceType,
+      awsARN: `arn:${i}`
+    }
+  })
 }

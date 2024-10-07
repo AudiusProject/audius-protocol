@@ -47,18 +47,13 @@ const messages = {
   priceTooHigh: (maxPrice: number) =>
     `Price must be less than $${formatPrice(maxPrice)}.`,
   gatedNoDownloadableAssets:
-    'You must enable full track download or upload a stem file before setting download availability.',
-  noUsdcUploadAccess:
-    'You don’t have access to sell your downloads. Please change your availability settings.'
+    'You must enable full track download or upload a stem file before setting download availability.'
 }
 
-type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
-  isUsdcUploadEnabled: boolean
-}
+type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
-  maxContentPriceCents,
-  isUsdcUploadEnabled
+  maxContentPriceCents
 }: StemsAndDownloadsSchemaProps) =>
   z
     .object({
@@ -124,20 +119,6 @@ export const stemsAndDownloadsSchema = ({
       },
       {
         message: messages.gatedNoDownloadableAssets,
-        path: [IS_DOWNLOAD_GATED]
-      }
-    )
-    .refine(
-      // cannot be download gated if usdc upload disabled
-      (values) => {
-        const formValues = values as StemsAndDownloadsFormValues
-        const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
-        const isUsdcGated =
-          availabilityType === DownloadTrackAvailabilityType.USDC_PURCHASE
-        return !isUsdcGated || isUsdcUploadEnabled
-      },
-      {
-        message: messages.noUsdcUploadAccess,
         path: [IS_DOWNLOAD_GATED]
       }
     )

@@ -9,7 +9,8 @@ import {
   TransactionDetails
 } from '@audius/common/store'
 import { formatDate, Nullable, removeNullable } from '@audius/common/utils'
-import { AudiusLibs, full } from '@audius/sdk'
+import { full } from '@audius/sdk'
+import { AudiusLibs } from '@audius/sdk/dist/libs'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'

@@ -66,6 +66,7 @@ import IconMessageSVG from '../assets/icons/Message.svg'
 import IconMessageBlockSVG from '../assets/icons/MessageBlock.svg'
 import IconMessageLockedSVG from '../assets/icons/MessageLocked.svg'
 import IconMessageUnblockSVG from '../assets/icons/MessageUnblock.svg'
+import IconMessagesSVG from '../assets/icons/Messages.svg'
 import IconMinusSVG from '../assets/icons/Minus.svg'
 import IconMoneyBracketSVG from '../assets/icons/MoneyBracket.svg'
 import IconMoodSVG from '../assets/icons/Mood.svg'
@@ -198,6 +199,7 @@ export const IconCaretUp = IconCaretUpSVG as IconComponent
 export const IconLockUnlocked = IconLockUnlockedSVG as IconComponent
 export const IconSpecialAccess = IconSpecialAccessSVG as IconComponent
 export const IconCart = IconCartSVG as IconComponent
+export const IconMessages = IconMessagesSVG as IconComponent
 export const IconMessage = IconMessageSVG as IconComponent
 export const IconStar = IconStarSVG as IconComponent
 export const IconCastAirplay = IconCastAirplaySVG as IconComponent

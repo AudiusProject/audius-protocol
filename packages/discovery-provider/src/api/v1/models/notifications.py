@@ -811,6 +811,79 @@ announcement_notification = ns.clone(
     },
 )
 
+comment_notification_action_data = ns.model(
+    "comment_notification_action_data",
+    {
+        "type": fields.String(required=True, enum=["Track", "Playlist", "Album"]),
+        "user_id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+    },
+)
+comment_notification_action = ns.clone(
+    "comment_notification_action",
+    notification_action_base,
+    {"data": fields.Nested(comment_notification_action_data, required=True)},
+)
+comment_notification = ns.clone(
+    "comment_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(comment_notification_action, required=True), required=True
+        )
+    },
+)
+
+comment_thread_notification_action_data = ns.model(
+    "comment_thread_notification_action_data",
+    {
+        "type": fields.String(required=True, enum=["Track", "Playlist", "Album"]),
+        "entity_id": fields.String(required=True),
+        "entity_user_id": fields.String(required=True),
+        "comment_user_id": fields.String(required=True),
+    },
+)
+comment_thread_notification_action = ns.clone(
+    "comment_thread_notification_action",
+    notification_action_base,
+    {"data": fields.Nested(comment_thread_notification_action_data, required=True)},
+)
+comment_thread_notification = ns.clone(
+    "comment_thread_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(comment_thread_notification_action, required=True),
+            required=True,
+        )
+    },
+)
+
+comment_mention_notification_action_data = ns.model(
+    "comment_mention_notification_action_data",
+    {
+        "type": fields.String(required=True, enum=["Track", "Playlist", "Album"]),
+        "entity_id": fields.String(required=True),
+        "entity_user_id": fields.String(required=True),
+        "comment_user_id": fields.String(required=True),
+    },
+)
+comment_mention_notification_action = ns.clone(
+    "comment_mention_notification_action",
+    notification_action_base,
+    {"data": fields.Nested(comment_mention_notification_action_data, required=True)},
+)
+comment_mention_notification = ns.clone(
+    "comment_mention_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(comment_mention_notification_action, required=True),
+            required=True,
+        )
+    },
+)
+
 
 notification = ns.add_model(
     "notification",
@@ -846,6 +919,9 @@ notification = ns.add_model(
             "trending_playlist": trending_playlist_notification,
             "trending_underground": trending_underground_notification,
             "announcement": announcement_notification,
+            "comment": comment_notification,
+            "comment_thread": comment_thread_notification,
+            "comment_mention": comment_mention_notification,
         },
         discriminator="type",
     ),

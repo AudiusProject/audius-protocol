@@ -1,11 +1,10 @@
-import fetch from 'cross-fetch'
-
 import {
   ErrorContext,
   Middleware,
   RequestContext
 } from '../../api/generated/default'
 import { productionConfig } from '../../config/production'
+import fetch from '../../utils/fetch'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'

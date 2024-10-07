@@ -14,6 +14,10 @@
   text-align: left;
 }
 
+.settingsCardFull {
+  flex: 1 1 calc(100% - var(--harmony-unit-3)); /* Leave room for gap */
+}
+
 .title {
   display: inline-flex;
   align-items: center;
@@ -45,7 +49,8 @@
 
 /** Breakpoint for collapsed cards **/
 @media (max-width: 990px) {
-  .settingsCard {
+  .settingsCard,
+  .settingsCardFull {
     text-align: center;
   }
 }

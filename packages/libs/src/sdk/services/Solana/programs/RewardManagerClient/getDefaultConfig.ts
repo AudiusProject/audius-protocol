@@ -10,5 +10,8 @@ export const getDefaultRewardManagerClentConfig = (
 ): RewardManagerClientConfigInternal => ({
   programId: new PublicKey(config.solana.rewardManagerProgramAddress),
   rewardManagerState: new PublicKey(config.solana.rewardManagerStateAddress),
+  rewardManagerLookupTable: new PublicKey(
+    config.solana.rewardManagerLookupTableAddress
+  ),
   logger: new Logger()
 })
