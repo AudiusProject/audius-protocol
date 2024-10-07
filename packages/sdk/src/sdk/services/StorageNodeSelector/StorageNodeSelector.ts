@@ -1,6 +1,5 @@
-import fetch from 'cross-fetch'
-
 import { productionConfig } from '../../config/production'
+import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { RendezvousHash } from '../../utils/rendezvous'
 import type { AuthService } from '../Auth'

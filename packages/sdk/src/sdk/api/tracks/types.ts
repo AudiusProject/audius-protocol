@@ -290,7 +290,7 @@ export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
 
 export const RecordTrackDownloadSchema = z
   .object({
-    userId: HashId,
+    userId: HashId.optional(),
     trackId: HashId
   })
   .strict()
@@ -321,7 +321,6 @@ const PurchaseTrackSchemaBase = z.object({
 export const GetPurchaseTrackInstructionsSchema = z
   .object({})
   .merge(PurchaseTrackSchemaBase)
-  .strict()
 
 export type GetPurchaseTrackInstructionsRequest = z.input<
   typeof GetPurchaseTrackInstructionsSchema

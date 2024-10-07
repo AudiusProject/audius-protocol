@@ -1,4 +1,3 @@
-import fetch, { Headers } from 'cross-fetch'
 import type Web3Type from 'web3'
 import type { TransactionReceipt } from 'web3-core'
 import type { Contract } from 'web3-eth-contract'
@@ -6,6 +5,7 @@ import type { AbiItem } from 'web3-utils'
 
 import { abi as EntityManagerABI } from '../../abi/EntityManager.json'
 import { productionConfig } from '../../config/production'
+import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { getNonce, generators } from '../../utils/signatureSchemas'
 import Web3 from '../../utils/web3'

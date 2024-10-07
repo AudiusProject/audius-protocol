@@ -157,6 +157,9 @@ export const GetNotificationsValidTypesEnum = {
     TrackAddedToPurchasedAlbum: 'track_added_to_purchased_album',
     RequestManager: 'request_manager',
     ApproveManagerRequest: 'approve_manager_request',
-    ClaimableReward: 'claimable_reward'
+    ClaimableReward: 'claimable_reward',
+    Comment: 'comment',
+    CommentThread: 'comment_thread',
+    CommentMention: 'comment_mention'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

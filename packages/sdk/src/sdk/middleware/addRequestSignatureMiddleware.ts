@@ -9,11 +9,6 @@ const SIGNATURE_EXPIRY_MS = 60 * 1000
 const MESSAGE_HEADER = 'Encoded-Data-Message'
 const SIGNATURE_HEADER = 'Encoded-Data-Signature'
 
-let message: string | null = null
-let signatureAddress: string | null = null
-let signature: string | null = null
-let timestamp: number | null = null
-
 /**
  * Appends request authentication headers to a request.
  * Request headers are computed only every SIGNATURE_EXPIRY_MS or when the value returned by `auth.getAddress()` changes.
@@ -24,57 +19,81 @@ export const addRequestSignatureMiddleware = ({
 }: {
   services: Pick<ServicesContainer, 'auth' | 'logger'>
 }): Middleware => {
+  let message: string | null = null
+  let signatureAddress: string | null = null
+  let signature: string | null = null
+  let timestamp: number | null = null
+
+  let signaturePromise: Promise<void> | null = null
+
   return {
     pre: async (context: RequestContext): Promise<FetchParams> => {
       const { auth, logger } = services
-      try {
-        const currentAddress = await auth.getAddress()
-        const currentTimestamp = new Date().getTime()
-        const isExpired =
-          !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
 
-        if (
-          !message ||
-          !signature ||
-          isExpired ||
-          signatureAddress !== currentAddress
-        ) {
-          signatureAddress = currentAddress
-          const m = `signature:${currentTimestamp}`
-          // Add Ethereum-specific prefixes
-          const prefix = `\x19Ethereum Signed Message:\n${m.length}`
-          const prefixedMessage = prefix + m
+      // Using a promise so that only one request at a time is allowed to
+      // update the signature.
+      // Any requests that queue behind the one updating will wait for the promise
+      // to resolve and then read the result.
+      if (!signaturePromise) {
+        signaturePromise = (async () => {
+          const currentAddress = await auth.getAddress()
+          const currentTimestamp = new Date().getTime()
+          const isExpired =
+            !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
 
-          const [sig, recid] = await auth.sign(
-            Buffer.from(prefixedMessage, 'utf-8')
-          )
-          const r = Buffer.from(sig.slice(0, 32)).toString('hex')
-          const s = Buffer.from(sig.slice(32, 64)).toString('hex')
-          // Add Ethereum Recovery ID offset
-          const v = (recid + 27).toString(16)
+          const needsUpdate =
+            !message ||
+            !signature ||
+            isExpired ||
+            signatureAddress !== currentAddress
 
-          message = m
-          signature = `0x${r}${s}${v}`
-          timestamp = currentTimestamp
-        }
+          if (needsUpdate) {
+            try {
+              signatureAddress = currentAddress
 
-        return {
-          ...context,
-          url: context.url,
-          init: {
-            ...context.init,
-            headers: {
-              ...context.init.headers,
-              [MESSAGE_HEADER]: message,
-              [SIGNATURE_HEADER]: signature
+              const m = `signature:${currentTimestamp}`
+              const prefix = `\x19Ethereum Signed Message:\n${m.length}`
+              const prefixedMessage = prefix + m
+
+              const [sig, recid] = await auth.sign(
+                Buffer.from(prefixedMessage, 'utf-8')
+              )
+              const r = Buffer.from(sig.slice(0, 32)).toString('hex')
+              const s = Buffer.from(sig.slice(32, 64)).toString('hex')
+              const v = (recid + 27).toString(16)
+
+              // Cache the new signature and message
+              message = m
+              signature = `0x${r}${s}${v}`
+              timestamp = currentTimestamp
+            } catch (e) {
+              logger.warn(`Unable to add request signature: ${e}`)
+            } finally {
+              // Clear the promise after update is complete
+              signaturePromise = null
             }
           }
-        }
-      } catch (e) {
-        // Exepected if the configured auth does not suport signing
-        logger.warn(`Unable to add request signature: ${e}`)
-        return context
+        })()
       }
+
+      // Wait for current check/update signature to complete
+      await signaturePromise
+
+      // Return the updated request with the signature in the headers
+      return !!message && !!signature
+        ? {
+            ...context,
+            url: context.url,
+            init: {
+              ...context.init,
+              headers: {
+                ...context.init.headers,
+                [MESSAGE_HEADER]: message,
+                [SIGNATURE_HEADER]: signature
+              }
+            }
+          }
+        : context
     }
   }
 }

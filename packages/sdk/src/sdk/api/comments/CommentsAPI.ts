@@ -1,10 +1,12 @@
 import snakecaseKeys from 'snakecase-keys'
+import { OverrideProperties } from 'type-fest'
 
 import { AuthService, LoggerService } from '../../services'
 import {
   Action,
   EntityManagerService,
-  EntityType
+  EntityType,
+  ManageEntityOptions
 } from '../../services/EntityManager/types'
 import { encodeHashId } from '../../utils/hashId'
 import {
@@ -13,6 +15,11 @@ import {
 } from '../generated/default'
 
 import { CommentMetadata } from './types'
+
+type CommentNotificationOptions = OverrideProperties<
+  Omit<ManageEntityOptions, 'metadata' | 'auth'>,
+  { action: Action.MUTE | Action.UNMUTE }
+>
 
 export class CommentsApi extends GeneratedCommentsApi {
   constructor(
@@ -25,8 +32,8 @@ export class CommentsApi extends GeneratedCommentsApi {
   }
 
   async postComment(metadata: CommentMetadata) {
-    const { userId } = metadata
-    const newCommentId = Math.floor(Math.random() * 10000000) // TODO: need to get an unclaimed id. SEE TrackUploadHelper.generateId
+    const { userId, entityType = EntityType.TRACK, commentId } = metadata
+    const newCommentId = commentId ?? Math.floor(Math.random() * 1000000) // TODO: request an unused id instead of a random number
     await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
@@ -34,7 +41,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(metadata)
+        data: snakecaseKeys({ entityType, ...metadata })
       }),
       auth: this.auth
     })
@@ -77,6 +84,51 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.COMMENT,
       entityId,
       action: isLiked ? Action.REACT : Action.UNREACT,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async pinComment(userId: number, entityId: number, isPin: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: isPin ? Action.PIN : Action.UNPIN,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async reportComment(userId: number, entityId: number) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.COMMENT,
+      entityId,
+      action: Action.REPORT,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async muteUser(userId: number, mutedUserId: number, isMuted: boolean) {
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: mutedUserId,
+      action: isMuted ? Action.UNMUTE : Action.MUTE,
+      metadata: '',
+      auth: this.auth
+    })
+    return response
+  }
+
+  async updateCommentNotificationSetting(config: CommentNotificationOptions) {
+    const response = await this.entityManager.manageEntity({
+      ...config,
       metadata: '',
       auth: this.auth
     })
