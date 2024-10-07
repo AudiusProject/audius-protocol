@@ -1,6 +1,7 @@
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
+from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
@@ -321,7 +322,24 @@ def unpin_comment(params: ManageEntityParameters):
     params.add_record(comment_id, comment)
 
 
-# def mute_comment(params: ManageEntityParameters):
-#     entity_id = params.entity_id
+def update_comment_notification_setting(params: ManageEntityParameters):
+    entity_id = params.entity_id
+    entity_type = params.entity_type
+    user_id = params.user_id
+    action = params.action
+    created_at = params.block_datetime
+    updated_at = params.block_datetime
 
-#     comment_notification_setting = CommentNotificationSetting()
+    comment_notification_record = CommentNotificationSetting(
+        user_id=user_id,
+        entity_id=entity_id,
+        entity_type=entity_type,
+        is_muted=action == Action.MUTE,
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    params.add_record(
+        (user_id, entity_id, entity_type),
+        comment_notification_record,
+        EntityType.COMMENT_NOTIFICATION_SETTING,
+    )

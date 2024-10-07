@@ -50,8 +50,6 @@ from src.tasks.entity_manager.entities.comment import (
     unpin_comment,
     unreact_comment,
     update_comment,
-)
-from src.tasks.entity_manager.entities.comment_notification_setting import (
     update_comment_notification_setting,
 )
 from src.tasks.entity_manager.entities.dashboard_wallet_user import (
