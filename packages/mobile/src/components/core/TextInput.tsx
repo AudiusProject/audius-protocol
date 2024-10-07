@@ -1,5 +1,12 @@
-import { ComponentType, ReactNode, useMemo } from 'react'
-import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import {
+  useMemo,
+  useState,
+  useRef,
+  forwardRef,
+  useCallback,
+  useEffect
+} from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -234,7 +241,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         Animated.parallel(animations).start()
       },
-      [onFocus, isLabelActive, hideKeyboard]
+      [onFocus, hideKeyboard, borderFocusAnimation, isLabelActive]
     )
 
     const handleBlur = useCallback(
@@ -272,7 +279,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
         }
         Animated.parallel(animations).start()
       },
-      [onBlur, isFocused, value, startAdornment]
+      [onBlur, borderFocusAnimation, isFocused, value, startAdornment]
     )
 
     const handlePressRoot = useCallback(() => {
