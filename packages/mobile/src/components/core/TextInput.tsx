@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import { ComponentType, ReactNode, useMemo } from 'react'
 import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
@@ -167,7 +167,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     )
 
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
-    const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
+    const borderFocusAnimation = useMemo(
+      () => new Animated.Value(isFocused ? 1 : 0),
+      [isFocused]
+    )
     const iconProps = { ...styles.icon, ...iconProp }
 
     const hideInputAccessory =
@@ -202,13 +205,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 1,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 1,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -244,13 +244,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 0,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 0,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -304,7 +301,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             {
               borderColor: error
                 ? accentRed
-                : borderFocusAnimation.current.interpolate({
+                : borderFocusAnimation.interpolate({
                     inputRange: [0, 1],
                     outputRange: [
                       convertHexToRGBA(neutralLight7),
