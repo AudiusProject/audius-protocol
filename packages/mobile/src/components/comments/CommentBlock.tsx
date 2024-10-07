@@ -74,10 +74,7 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TimestampLink
-                    timestampSeconds={trackTimestampS}
-                    size='xs'
-                  ></TimestampLink>
+                  <TimestampLink timestampSeconds={trackTimestampS} size='xs' />
                 </>
               ) : null}
             </Flex>
