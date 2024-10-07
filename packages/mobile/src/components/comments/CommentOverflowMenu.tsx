@@ -38,7 +38,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
 
-  const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
+  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })
