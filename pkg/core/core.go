@@ -329,5 +329,8 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		cometConfig.P2P.ListenAddress = envConfig.P2PLaddr
 	}
 
+	cometConfig.P2P.MaxNumOutboundPeers = envConfig.MaxOutboundPeers
+	cometConfig.P2P.MaxNumInboundPeers = envConfig.MaxInboundPeers
+
 	return envConfig, cometConfig, nil
 }

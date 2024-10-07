@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { useGetTrackById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
@@ -9,7 +11,12 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+
+import { useHistoryContext } from 'app/HistoryProvider'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
@@ -81,6 +88,20 @@ const CommentSectionContent = () => {
 }
 
 export const CommentSectionMobile = () => {
+  const dispatch = useDispatch()
+  const { track } = useCurrentCommentSection()
+  const [searchParams] = useSearchParams()
+  const showComments = searchParams.get('showComments')
+  const { history } = useHistoryContext()
+
+  // Show the comment screen if the showComments query param is present
+  useEffect(() => {
+    if (showComments) {
+      history.replace({ search: '' })
+      dispatch(pushRoute(`${track?.permalink}/comments`))
+    }
+  }, [showComments, track, dispatch, searchParams, history])
+
   return (
     <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
       <CommentSectionHeader />

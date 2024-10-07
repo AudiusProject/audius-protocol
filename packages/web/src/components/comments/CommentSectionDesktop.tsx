@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -12,6 +12,7 @@ import {
   Skeleton
 } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useMainContentRef } from 'pages/MainContentContext'
 
@@ -76,6 +77,23 @@ export const CommentSectionDesktop = () => {
   const commentPostAllowed = currentUserId !== undefined && commentPostFlag
   const commentSectionRef = useRef<HTMLDivElement | null>(null)
   const showCommentSortBar = commentIds.length > 1
+
+  const [searchParams] = useSearchParams()
+  const showComments = searchParams.get('showComments')
+  const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
+
+  // Scroll to the comment section if the showComments query param is present
+  useEffect(() => {
+    if (
+      showComments &&
+      !hasScrolledIntoView &&
+      !commentSectionLoading &&
+      commentSectionRef.current
+    ) {
+      commentSectionRef.current.scrollIntoView()
+      setHasScrolledIntoView(true)
+    }
+  }, [commentSectionLoading, showComments, hasScrolledIntoView])
 
   if (commentSectionLoading) {
     return <FullCommentSkeletons />
