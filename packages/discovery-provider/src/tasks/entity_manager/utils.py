@@ -359,6 +359,8 @@ def get_metadata_type_and_format(entity_type, action=None):
     elif entity_type == EntityType.COMMENT:
         metadata_type = "comment"
         metadata_format = comment_metadata_format
+    else:         
+        raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
 
 
