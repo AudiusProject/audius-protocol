@@ -1,8 +1,4 @@
-import {
-  LocalStorage,
-  AudiusBackend,
-  HedgehogInstance
-} from '@audius/common/services'
+import { LocalStorage, AudiusBackend } from '@audius/common/services'
 
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
 
