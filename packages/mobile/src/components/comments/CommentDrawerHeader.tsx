@@ -1,9 +1,9 @@
 import React from 'react'
 
-import { useGetTrackCommentNotificationSetting } from '@audius/common/api'
 import {
   useCurrentCommentSection,
-  useMuteTrackCommentNotifications
+  useGetTrackCommentNotificationSetting,
+  useUpdateTrackCommentNotificationSetting
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
@@ -35,13 +35,10 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   const { commentCount, currentUserId, artistId, entityId } =
     useCurrentCommentSection()
   const isOwner = currentUserId === artistId
-  const { data: isMuted } = useGetTrackCommentNotificationSetting({
-    trackId: entityId,
-    currentUserId
-  })
+  const isMuted = useGetTrackCommentNotificationSetting(entityId)
 
   const [muteTrackCommentNotifications] =
-    useMuteTrackCommentNotifications(entityId)
+    useUpdateTrackCommentNotificationSetting(entityId)
 
   const [isNotificationActionDrawerOpen, toggleNotificationActionDrawer] =
     useToggle(false)

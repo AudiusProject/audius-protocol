@@ -1,9 +1,9 @@
 import { useContext } from 'react'
 
-import { useGetTrackCommentNotificationSetting } from '@audius/common/api'
 import {
   useCurrentCommentSection,
-  useMuteTrackCommentNotifications
+  useGetTrackCommentNotificationSetting,
+  useUpdateTrackCommentNotificationSetting
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import {
@@ -25,18 +25,14 @@ type CommentHeaderProps = {
 export const CommentHeader = (props: CommentHeaderProps) => {
   const { isLoading } = props
   const { toast } = useContext(ToastContext)
-  const { isEntityOwner, commentCount, entityId, currentUserId } =
-    useCurrentCommentSection()
-  const { data: isMuted } = useGetTrackCommentNotificationSetting({
-    trackId: entityId,
-    currentUserId
-  })
-  const [muteTrackCommentNotifications] =
-    useMuteTrackCommentNotifications(entityId)
+  const { isEntityOwner, commentCount, entityId } = useCurrentCommentSection()
+  const isMuted = useGetTrackCommentNotificationSetting(entityId)
+  const [updateTrackCommentNotificationSetting] =
+    useUpdateTrackCommentNotificationSetting(entityId)
   const { motion } = useTheme()
 
   const handleToggleTrackCommentNotifications = () => {
-    muteTrackCommentNotifications(isMuted ? 'unmute' : 'mute')
+    updateTrackCommentNotificationSetting(isMuted ? 'unmute' : 'mute')
     toast(
       isMuted
         ? messages.toasts.unmutedTrackNotifs

@@ -139,6 +139,7 @@ entity_type_table_mapping = {
     "Comment": Comment.__tablename__,
     "CommentReaction": CommentReaction.__tablename__,
     "MutedUser": MutedUser.__tablename__,
+    "CommentNotificationSetting": CommentNotificationSetting.__tablename__,
 }
 
 

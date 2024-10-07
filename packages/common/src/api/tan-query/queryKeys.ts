@@ -1,5 +1,6 @@
 export const QUERY_KEYS = {
   trackCommentList: 'trackCommentList',
   comment: 'comment',
-  commentReplies: 'commentReplies'
+  commentReplies: 'commentReplies',
+  trackCommentNotificationSetting: 'trackCommentNotificationSetting'
 } as const

@@ -2,7 +2,7 @@ import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
-  useMuteCommentNotifications,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReactToComment,
   useReportComment,
@@ -108,7 +108,7 @@ export const CommentActionBar = ({
   const { toast } = useContext(ToastContext)
 
   const [handleMuteCommentNotifications] =
-    useMuteCommentNotifications(commentId)
+    useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
@@ -283,8 +283,8 @@ export const CommentActionBar = ({
         canMuteNotifs && {
           onClick: handleMuteNotifs,
           text: areNotifsMuted
-            ? messages.menuActions.turnOffNotifications
-            : messages.menuActions.turnOnNotifications
+            ? messages.menuActions.turnOnNotifications
+            : messages.menuActions.turnOffNotifications
         }
       ].filter(removeNullable),
     [

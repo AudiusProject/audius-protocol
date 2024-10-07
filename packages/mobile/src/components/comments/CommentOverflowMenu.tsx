@@ -5,7 +5,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection,
   useDeleteComment,
-  useMuteCommentNotifications,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReportComment,
   useMuteUser
@@ -91,7 +91,8 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const [reportComment] = useReportComment()
   const [muteUser] = useMuteUser()
 
-  const [handleMuteCommentNotifications] = useMuteCommentNotifications(id)
+  const [handleMuteCommentNotifications] =
+    useUpdateCommentNotificationSetting(id)
 
   const handleMuteNotifs = () => {
     handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
