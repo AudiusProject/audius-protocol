@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
