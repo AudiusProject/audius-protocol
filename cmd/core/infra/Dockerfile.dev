@@ -1,13 +1,28 @@
+# First stage: Certs
 FROM alpine as certs
 
 RUN apk update && apk add --no-cache ca-certificates
 
+# Intermediate stage for debugging
+FROM alpine as debug
+
+WORKDIR /bin
+
+# Copy the file and use ls to list the files in the directory
+COPY ../../../bin/core-amd64 ./core
+
+RUN ls -lah /bin
+
+# Now switch back to scratch for the final image
 FROM scratch
 
 WORKDIR /bin
 
-COPY ./bin/core-amd64 ./core
+# Copy the core binary from the build context
+COPY ../../../bin/core-amd64 ./core
 
+# Copy the certs from the certs stage
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
+# Run the core binary
 CMD ["./core"]
