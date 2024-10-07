@@ -425,7 +425,7 @@ function* validateEmail(
 
 function* refreshHedgehogWallet() {
   const hedgehogInstance = yield* getContext('hedgehogInstance')
-  yield* call([hedgehogInstance, hedgehogInstance.restoreLocalWallet])
+  yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
 }
 
 function* signUp() {

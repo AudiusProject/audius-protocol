@@ -4,7 +4,8 @@ import {
   tokenDashboardPageActions,
   feedPageLineupActions,
   signOutActions,
-  searchActions
+  searchActions,
+  getContext
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
 import { setupBackend } from '@audius/web/src/common/store/backend/actions'
@@ -34,6 +35,7 @@ const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY, SEARCH_HISTORY_KEY]
 
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))
+  const hedgehogInstance = yield* getContext('hedgehogInstance')
 
   // Wait for in-flight set up to resolve
   yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
@@ -52,6 +54,7 @@ function* signOut() {
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
   yield* call([audiusBackendInstance, 'signOut'])
+  yield* call([hedgehogInstance, hedgehogInstance.logout])
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)
   }
