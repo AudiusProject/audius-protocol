@@ -9,6 +9,7 @@ import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
+import { hedgehogInstance } from 'services/audius-sdk/hedgehog'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
 import { localStorage } from 'services/local-storage'
@@ -72,6 +73,7 @@ export const buildStoreContext = ({
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
+  hedgehogInstance,
   imageUtils: {
     generatePlaylistArtwork
   },

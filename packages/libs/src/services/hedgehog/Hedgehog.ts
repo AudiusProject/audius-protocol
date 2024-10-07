@@ -15,40 +15,6 @@ export type HedgehogConfig = {
   createKey?: CreateKey
 }
 
-const walletEventMethods = [
-  'signUp',
-  'login',
-  'logout',
-  'resetPassword',
-  'changeCredentials',
-  'createWalletObj'
-] as const
-
-// Utility function to wrap methods on HedgehogBase that modify the wallet
-// and dispatch an event afterwards
-function wrapAndNotify(
-  obj: HedgehogBase,
-  methodName: keyof HedgehogBase
-): void {
-  const originalMethod = obj[methodName] as Function
-
-  // @ts-expect-error -- Not worth getting the types right for this
-  obj[methodName] = async function (this: HedgehogBase, ...args: any[]) {
-    const result = await originalMethod.apply(this, args)
-
-    try {
-      console.debug(`Dispatching hedgehogWalletUpdate event for ${methodName}`)
-      const event = new Event('hedgehogWalletUpdate')
-      window.dispatchEvent(event)
-    } catch (e) {
-      // Don't prevent original method from returning if event dispatch errors
-    }
-
-    // Return the original result
-    return result
-  }
-}
-
 export class Hedgehog {
   identityService: IdentityService
   getFn: IdentityService['getFn']
@@ -131,10 +97,6 @@ export class Hedgehog {
         hedgehog.createKey
       )
     }
-
-    // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-    // Add events for methods that modify the wallet so that other instances can sync
-    walletEventMethods.forEach((fnName) => wrapAndNotify(hedgehog, fnName))
 
     this.instance = hedgehog
   }
