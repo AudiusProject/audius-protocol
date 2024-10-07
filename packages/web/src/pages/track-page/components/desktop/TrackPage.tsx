@@ -2,7 +2,8 @@ import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
+import { Link } from 'react-router-dom-v5-compat'
 
 import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -10,11 +11,11 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import SectionButton from 'components/section-button/SectionButton'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
+import { trackRemixesPage } from 'utils/route'
 
 import { TrackRemixes } from '../TrackRemixes'
 
@@ -208,7 +209,7 @@ const TrackPage = ({
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
-  const { fieldVisibility, remixTrackIds } = defaults
+  const { fieldVisibility, remixTrackIds, permalink } = defaults
 
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
@@ -235,7 +236,7 @@ const TrackPage = ({
         css={{ position: 'relative', padding: '200px 16px 60px' }}
       >
         {renderGiantTrackTile()}
-        {hasRemixes && !isCommentingEnabled ? (
+        {hasRemixes && !commentsFlagEnabled ? (
           <Flex justifyContent='center' mt='3xl' ph='l'>
             <Remixes
               trackIds={defaults.remixTrackIds!}
@@ -278,11 +279,14 @@ const TrackPage = ({
                 // Styles for leading element (original track if remix).
                 leadingElementId={defaults.remixParentTrackId}
                 leadingElementDelineator={
-                  <Flex gap='3xl' direction='column' alignItems='center'>
-                    <SectionButton
-                      text={messages.viewOtherRemixes}
-                      onClick={goToParentRemixesPage}
-                    />
+                  <Flex gap='3xl' direction='column'>
+                    <Box alignSelf='flex-start'>
+                      <Button size='xs' iconRight={IconArrowRight} asChild>
+                        <Link to={trackRemixesPage(permalink)}>
+                          {messages.viewOtherRemixes}
+                        </Link>
+                      </Button>
+                    </Box>
                     <Flex
                       mb='l'
                       justifyContent={

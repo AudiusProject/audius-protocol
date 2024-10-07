@@ -23,6 +23,8 @@ import { Link } from 'react-router-dom-v5-compat'
 
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { trackRemixesPage } from 'utils/route'
 
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -46,6 +48,7 @@ type TrackRemixesProrps = {
 
 export const TrackRemixes = (props: TrackRemixesProrps) => {
   const { trackId } = props
+  const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -80,7 +83,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     return null
   }
 
-  const { _remixes } = track as unknown as Track
+  const { _remixes, permalink } = track as unknown as Track
 
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
@@ -92,7 +95,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     <Flex direction='column' gap='l'>
       <Flex row alignItems='center' gap='s'>
         <IconRemix color='default' />
-        <Text variant='title' size='l'>
+        <Text variant='title' size={isMobile ? 'm' : 'l'}>
           {messages.remixes}
         </Text>
       </Flex>
@@ -116,7 +119,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
       {/* {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? ( */}
       <Box alignSelf='flex-start'>
         <Button iconRight={IconArrowRight} size='xs' asChild>
-          <Link to={`/track/${trackId}/remixes`}>
+          <Link to={trackRemixesPage(permalink)}>
             {messages.viewAllRemixes}
           </Link>
         </Button>
