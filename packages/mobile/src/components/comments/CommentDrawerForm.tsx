@@ -11,7 +11,6 @@ import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
-import type { TextInput } from 'react-native'
 
 import { Box } from '@audius/harmony-native'
 

@@ -44,7 +44,7 @@ func TestShardCID(t *testing.T) {
 	assert.Equal(t, "2y2/QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22", ShardCID(v0CID))
 	assert.Equal(t, "ru7u2/baeaaaiqsecffzabbj7utfkkmywbhlls46twtaq3fbvpbozvugl4bqszfru7u2", ShardCID(v1CID))
 
-	assert.Equal(t, "img/XK5X5/01HA2C60D80CYWZP3FWZZXK5X5/150x150", ImageVariantPath("01HA2C60D80CYWZP3FWZZXK5X5", "150x150"))
+	assert.Equal(t, "img/2y2/QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22/150x150", ImageVariantPath("QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22", "150x150"))
 
 }
 
