@@ -36,9 +36,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     disabled
   } = props
 
+  const { track } = useCurrentCommentSection()
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
 
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })
@@ -84,7 +84,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     setEditingComment,
     currentSort
   } = useCurrentCommentSection()
+
   const isCommentOwner = Number(userId) === currentUserId
+  const isPinned = track.pinned_comment_id === id
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
