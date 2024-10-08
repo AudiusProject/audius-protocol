@@ -52,25 +52,40 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
   return (
     <TouchableHighlight onPress={handlePress}>
       {otherUser ? (
-        <Box pv='l' ph='xl' backgroundColor='white' borderBottom='default'>
-          <Flex row justifyContent='space-between'>
-            <Flex row>
+        <Flex
+          column
+          pv='l'
+          ph='xl'
+          backgroundColor='white'
+          borderBottom='default'
+          w='100%'
+        >
+          <Flex row justifyContent='space-between' w='100%' gap='s'>
+            <Flex row flex={1} justifyContent='space-between'>
               <ProfilePicture
                 userId={otherUser.user_id}
                 style={css({ width: spacing.unit12, height: spacing.unit12 })}
               />
-              <Flex column pt='2xs' ml='s' mb='s'>
-                <Flex row mb='xs'>
-                  <Text size='l' strength='strong'>
-                    {otherUser.name}
+              <Flex column pt='2xs' ml='s' mb='s' flex={1}>
+                <Flex row mb='xs' wrap='nowrap'>
+                  <Text
+                    size='l'
+                    strength='strong'
+                    numberOfLines={1}
+                    flexShrink={1}
+                  >
+                    {/* {otherUser.name} */}
+                    ads;lkfja;lskdjf;laksdjf;lkajsdf;lkajsdf;lkjasdf
                   </Text>
                   <UserBadges user={otherUser} hideName />
                 </Flex>
-                <Text size='s'>@{otherUser.handle}</Text>
+                <Text size='s' numberOfLines={1}>
+                  @{otherUser.handle}
+                </Text>
               </Flex>
             </Flex>
             {chat?.unread_message_count && chat?.unread_message_count > 0 ? (
-              <Box>
+              <Box style={css({ flexShrink: 0 })}>
                 <Flex
                   pv='xs'
                   ph='s'
@@ -95,7 +110,7 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
             ) : null}
           </Flex>
           <Text numberOfLines={1}>{lastMessage}</Text>
-        </Box>
+        </Flex>
       ) : (
         <ChatListItemSkeleton />
       )}
