@@ -3,32 +3,41 @@
 ENV_FILE="/env/prod.env"
 OVERRIDE_ENV_FILE="/env/override.env"
 
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --stage) ENV_FILE="/env/stage.env";;
-        --prod) ENV_FILE="/env/prod.env";;
-    esac
-    shift
-done
-
-if [ -f "$ENV_FILE" ]; then
-    echo "Sourcing environment variables from $ENV_FILE"
-    set -a
-    source "$ENV_FILE"
-    set +a
-else
-    echo "Environment file $ENV_FILE not found!"
-    exit 1
+if [ "$NETWORK" == "stage" ]; then
+    ENV_FILE="/env/stage.env"
 fi
 
-if [ -f "$OVERRIDE_ENV_FILE" ]; then
-    echo "Sourcing environment variables from $OVERRIDE_ENV_FILE"
-    set -a
-    source "$OVERRIDE_ENV_FILE"
-    set +a
-fi
+# source environment variables without overwriting existing ones
+source_env_file() {
+    local file=$1
+    if [ -f "$file" ]; then
+        echo "Sourcing environment variables from $file"
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            # skip lines that are comments or empty
+            [[ "$key" =~ ^#.*$ ]] && continue
+            [[ -z "$key" ]] && continue
+            # only set variables that are not already defined (prioritize docker-passed env)
+            if [ -z "${!key}" ]; then
+                export "$key"="$value"
+            fi
+        done < "$file"
+    else
+        echo "Environment file $file not found!"
+    fi
+}
 
+source_env_file "$ENV_FILE"
+source_env_file "$OVERRIDE_ENV_FILE"
+
+# default values for environment variables to make things run out of the box
+# if not already set by docker or the .env files
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+POSTGRES_DB=${POSTGRES_DB:-audiusd}
 POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
+dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audiusd?sslmode=disable}
+uptimeDataDir=${uptimeDataDir:-/data/bolt}
+audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
+creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
 if [ ! -d "$POSTGRES_DATA_DIR" ]; then
     echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
