@@ -1,7 +1,7 @@
 {
   "name": "audius-react-hono-example",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@audius/harmony": "latest",
-    "@audius/sdk": "latest",
+    "@audius/sdk": "^6.0.0",
     "@hono/zod-validator": "^0.2.2",
     "hono": "^4.4.6",
     "zod": "^3.23.8"

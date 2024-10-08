@@ -667,3 +667,265 @@ def test_comment_threads(app, mocker):
         assert len(comment_notifications) == 2
         assert comment_notifications[0].type == "comment"
         assert comment_notifications[1].type == "comment_thread"
+
+
+def test_mute_track_notifications(app, mocker):
+    "Tests comment notifications are not sent when track is muted"
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+    }
+
+    tx_receipts = {
+        "MuteTrackComments": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Mute",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        comments = session.query(Comment).all()
+        assert len(comments) == 1
+
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 0
+
+
+def test_unmute_track_notifications(app, mocker):
+    "Tests comment notifications are sent when track is unmuted"
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+        "comment_notification_settings": [
+            {"entity_id": 1, "entity_type": "Track", "user_id": 1, "is_muted": True},
+        ],
+    }
+
+    tx_receipts = {
+        "UnMuteTrackComments": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Unmute",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 1
+
+
+def test_mute_comment_notifications(app, mocker):
+    "Tests comment reply notifications are not sent when comment is muted"
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "comments": [{"comment_id": 1, "user_id": 1}],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+    }
+
+    tx_receipts = {
+        "MuteTrackComments": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Mute",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 2, "entity_type": "Track", "body": "comment text", "parent_comment_id": 1})}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # validate db records
+        comments = session.query(Comment).all()
+        assert len(comments) == 2
+
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 0
+
+
+def test_unmute_comment_notifications(app, mocker):
+    "Tests comment notifications are sent when track is unmuted"
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "artist1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "artist2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+        "comment_notification_settings": [
+            {
+                "entitity_id": 1,
+                "entity_type": "Comment",
+                "user_id": 2,
+                "is_muted": True,
+            },
+        ],
+    }
+
+    tx_receipts = {
+        "UnMuteTrackComments": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Unmute",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        comment_notifications = session.query(Notification).all()
+        assert len(comment_notifications) == 1

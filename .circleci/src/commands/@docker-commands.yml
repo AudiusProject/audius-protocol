@@ -25,7 +25,6 @@ docker-tag-images:
           'creator-node',
           'identity-service',
           'core',
-          'ddex',
           'all'
         ]
   steps:
@@ -52,6 +51,7 @@ docker-tag-images:
             solana-relay
             trending-challenge-rewards
             crm
+            mri
             trpc
             backfill-audio-analyses
             verified-notifications

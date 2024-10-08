@@ -32,8 +32,7 @@ import {
 import { getDB } from '../conn'
 import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
-import { getRedisConnection } from './redisConnection'
-import { config } from '../config'
+import { clearRedisKeys } from './redisConnection'
 import { EmailFrequency } from '../processNotifications/mappers/userNotificationSettings'
 
 type SetupTestConfig = {
@@ -69,9 +68,7 @@ export const setupTest = async (setupConfig?: SetupTestConfig) => {
   if (mockTime) {
     Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
   }
-  const redis = await getRedisConnection()
-  redis.del(config.lastIndexedMessageRedisKey)
-  redis.del(config.lastIndexedReactionRedisKey)
+  await clearRedisKeys()
   return { processor }
 }
 
@@ -871,4 +868,40 @@ export async function setupTwoUsersWithDevices(
       awsARN: awsARN2
     }
   }
+}
+
+export async function setupNUsersWithDevices(
+  discoveryDB: Knex,
+  identityDB: Knex,
+  numUsers: number
+): Promise<UserWithDevice[]> {
+  await createUsers(
+    discoveryDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { user_id: i, name: `user${i}`, is_current: true }
+    })
+  )
+
+  await insertMobileSettings(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, messages: true }
+    })
+  )
+  const deviceType = enum_NotificationDeviceTokens_deviceType.ios
+  await insertMobileDevices(
+    identityDB,
+    Array.from({ length: numUsers }, (_, i) => {
+      return { userId: i, deviceType: deviceType, awsARN: `arn:${i}` }
+    })
+  )
+
+  return Array.from({ length: numUsers }, (_, i) => {
+    return {
+      userId: i,
+      name: `user${i}`,
+      deviceType: deviceType,
+      awsARN: `arn:${i}`
+    }
+  })
 }

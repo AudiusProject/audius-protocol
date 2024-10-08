@@ -5,6 +5,7 @@ from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
+from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
@@ -137,6 +138,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment,
                 func.count(CommentReaction.comment_id).label("react_count"),
                 func.count(ReplyCountAlias.comment_id).label("reply_count"),
+                CommentNotificationSetting.is_muted,
             )
             .outerjoin(
                 CommentThreadAlias,
@@ -164,7 +166,12 @@ def get_track_comments(args, track_id, current_user_id=None):
                 ReplyCountAlias,
                 Comment.comment_id == ReplyCountAlias.parent_comment_id,
             )
-            .group_by(Comment.comment_id)
+            .outerjoin(
+                CommentNotificationSetting,
+                (Comment.comment_id == CommentNotificationSetting.entity_id)
+                & (CommentNotificationSetting.entity_type == "Comment"),
+            )
+            .group_by(Comment.comment_id, CommentNotificationSetting.is_muted)
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
@@ -203,6 +210,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             .limit(limit)
             .all()
         )
+
         return [
             {
                 "id": encode_int_id(track_comment.comment_id),
@@ -231,8 +239,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "created_at": str(track_comment.created_at),
                 "updated_at": str(track_comment.updated_at),
                 "is_tombstone": track_comment.is_delete and reply_count > 0,
+                "is_muted": is_muted if is_muted is not None else False,
             }
-            for [track_comment, react_count, reply_count] in track_comments
+            for [track_comment, react_count, reply_count, is_muted] in track_comments
         ]
 
 
@@ -253,3 +262,23 @@ def get_muted_users(current_user_id):
         )
 
     return users
+
+
+def get_track_notification_setting(track_id, current_user_id):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        notification_setting = (
+            session.query(
+                CommentNotificationSetting, CommentNotificationSetting.is_muted
+            )
+            .filter(
+                CommentNotificationSetting.user_id == current_user_id,
+                CommentNotificationSetting.entity_id == track_id,
+                CommentNotificationSetting.entity_type == "Track",
+            )
+            .first()
+        )
+
+        return {
+            "is_muted": notification_setting.is_muted if notification_setting else False
+        }

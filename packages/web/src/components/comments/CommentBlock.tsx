@@ -2,11 +2,9 @@ import { useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
-  useCommentPostStatus,
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
-import { useStatusChange } from '@audius/common/hooks'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
@@ -61,13 +59,6 @@ const CommentBlockInternal = (
 
   const [deleteComment] = useDeleteComment()
 
-  // This status checks specifically for this comment - no matter where the post request originated
-  const commentPostStatus = useCommentPostStatus(comment)
-
-  useStatusChange(commentPostStatus, {
-    onSuccess: () => setShowReplyInput(false)
-  })
-
   // triggers a fetch to get user profile info
   useGetUserById({ id: userId }) // TODO: display a load state while fetching
 
@@ -100,7 +91,7 @@ const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TimestampLink trackTimestampS={trackTimestampS} />
+                  <TimestampLink size='xs' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>
@@ -140,10 +131,10 @@ const CommentBlockInternal = (
   )
 }
 
-// This is an extra component wrapper because the comment data coming back from aquery could be undefined
+// This is an extra component wrapper because the comment data coming back from tan-query could be undefined
 // There's no way to return early in the above component due to rules of hooks ordering
 export const CommentBlock = (props: CommentBlockProps) => {
-  const { data: comment } = useGetCommentById({ id: props.commentId })
-  if (!comment) return null
+  const { data: comment } = useGetCommentById(props.commentId)
+  if (!comment || !('id' in comment)) return null
   return <CommentBlockInternal {...props} comment={comment} />
 }

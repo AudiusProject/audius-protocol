@@ -1,0 +1,6 @@
+**/*.env
+*.env
+
+Dockerfile*
+.dockerignore
+.gitignore

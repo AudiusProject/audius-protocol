@@ -89,11 +89,11 @@ services:
 
   core-discovery-1:
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/discovery-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -103,11 +103,11 @@ services:
 
   core-content-1:
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-one.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -117,11 +117,11 @@ services:
 
   core-content-2:
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-two.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -131,11 +131,11 @@ services:
 
   core-content-3:
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
       target: final
     env_file:
-      - ${PROJECT_ROOT}/core/infra/dev_config/content-three.docker.env
+      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
     profiles:
       - core-tests
@@ -145,10 +145,10 @@ services:
 
   test-core:
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile.tests
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile.tests
     logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test -v ./... -timeout 60s "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test -v ./pkg/core/... -timeout 60s "$$@")' -
     profiles:
       - core-tests
     depends_on:
@@ -397,15 +397,15 @@ services:
       timeout: 3s
     logging: *default-logging
     volumes:
-      - ${PROJECT_ROOT}/mediorum/.initdb:/docker-entrypoint-initdb.d
+      - ${PROJECT_ROOT}/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d
     profiles:
       - mediorum
       - mediorum-unittests
 
   mediorum:
     build:
-      context: ${PROJECT_ROOT}/mediorum
-      dockerfile: Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
     restart: unless-stopped
     environment:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
@@ -424,8 +424,8 @@ services:
 
   test-mediorum:
     build:
-      context: ${PROJECT_ROOT}/mediorum
-      dockerfile: Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
     entrypoint:
       - '/bin/mediorum-cmd'
     environment:
@@ -440,10 +440,10 @@ services:
 
   test-mediorum-unittests:
     build:
-      context: ${PROJECT_ROOT}/mediorum
-      dockerfile: Dockerfile.unittests
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile.unittests
     logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./pkg/mediorum/... -count 1 -timeout 60s "$$@")' -
     environment:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'

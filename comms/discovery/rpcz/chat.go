@@ -97,7 +97,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 }
 
 func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.Time) error {
-	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
+	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0, is_hidden = true where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
 	return err
 }
 
@@ -132,32 +132,28 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 
 	// set chat_member.is_hidden to false
 	// if there are any non-blast messages, reactions,
-	// or any blasts from the other party
+	// or any blasts from the other party after cleared_history_at
 	_, err = tx.Exec(`
 	UPDATE chat_member member
 	SET is_hidden = NOT EXISTS(
-	    SELECT * FROM (
-        -- Check for chat messages
-        SELECT msg.message_id
-        FROM chat_message msg
-        LEFT JOIN chat_blast b USING (blast_id)
-        LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
-        WHERE msg.chat_id = member.chat_id
-        AND (
-            msg.blast_id IS NULL OR
-            b.from_user_id != member.user_id OR
-            r.user_id != member.user_id
-        )
 
-        UNION
+		-- Check for chat messages
+		SELECT msg.message_id
+		FROM chat_message msg
+		LEFT JOIN chat_blast b USING (blast_id)
+		WHERE msg.chat_id = member.chat_id
+		AND (cleared_history_at IS NULL OR msg.created_at > cleared_history_at)
+		AND (msg.blast_id IS NULL OR b.from_user_id != member.user_id)
 
-        -- Check for chat message reactions
-        SELECT r.message_id
-        FROM chat_message_reactions r
-        LEFT JOIN chat_message msg ON r.message_id = msg.message_id
-        WHERE msg.chat_id = member.chat_id
-        AND r.user_id != member.user_id
-    ) combined
+		UNION
+
+		-- Check for chat message reactions
+		SELECT r.message_id
+		FROM chat_message_reactions r
+		LEFT JOIN chat_message msg ON r.message_id = msg.message_id
+		WHERE msg.chat_id = member.chat_id
+		AND r.user_id != member.user_id
+		AND (cleared_history_at IS NULL OR (r.created_at > cleared_history_at AND msg.created_at > cleared_history_at))
 	)
 	WHERE member.chat_id = $1
 	`, chatId)

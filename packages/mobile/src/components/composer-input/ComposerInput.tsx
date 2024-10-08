@@ -1,15 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import type { Ref } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import { splitOnNewline } from '@audius/common/utils'
+import type { UserMetadata } from '@audius/common/models'
+import {
+  getDurationFromTimestampMatch,
+  splitOnNewline,
+  timestampRegex
+} from '@audius/common/utils'
 import { Platform, TouchableOpacity, View } from 'react-native'
+import type { TextInput as RnTextInput } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { Flex, IconSend } from '@audius/harmony-native'
+import { IconSend } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -22,10 +37,20 @@ import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import type { ComposerInputProps } from './types'
 
 const BACKSPACE_KEY = 'Backspace'
+const AT_KEY = '@'
+const SPACE_KEY = ' '
 
 const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
+}
+
+const createTextSections = (text: string) => {
+  const splitText = splitOnNewline(text)
+  return splitText.map((t) => (
+    // eslint-disable-next-line react/jsx-key
+    <Text>{`${t === '\n' ? '\n\n' : t}`}</Text>
+  ))
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -47,6 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   overlayTextContainer: {
     position: 'absolute',
+    pointerEvents: 'none',
     right: spacing(10),
     left: 0,
     zIndex: 0,
@@ -70,22 +96,57 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-export const ComposerInput = (props: ComposerInputProps) => {
+export const ComposerInput = forwardRef(function ComposerInput(
+  props: ComposerInputProps,
+  ref: Ref<RnTextInput>
+) {
   const styles = useStyles()
   const {
     onSubmit,
     onChange,
+    onAutocompleteChange,
+    setAutocompleteHandler,
     isLoading,
     messageId,
     placeholder,
     presetMessage,
-    extraOffset = 0
+    entityId,
+    styles: propStyles,
+    TextInputComponent
   } = props
   const [value, setValue] = useState(presetMessage ?? '')
+  const [autocompletePosition, setAutocompletePosition] = useState(0)
+  const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
+  const [userMentions, setUserMentions] = useState<string[]>([])
+  // const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const [selection, setSelection] = useState<{ start: number; end: number }>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const messageIdRef = useRef(messageId)
+  const lastKeyPressMsRef = useRef<number | null>(null)
+  const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+
+  const getAutocompleteRange = useCallback(() => {
+    if (!isAutocompleteActive) return null
+
+    const startPosition = Math.min(autocompletePosition, value.length)
+    const endPosition = value
+      .slice(startPosition + 1)
+      .split('')
+      .findIndex((c) => {
+        return c === SPACE_KEY || c === AT_KEY
+      })
+
+    return [
+      startPosition,
+      endPosition === -1 ? value.length : endPosition + startPosition + 1
+    ]
+  }, [autocompletePosition, isAutocompleteActive, value])
+
+  const autocompleteText = useMemo(() => {
+    if (!isAutocompleteActive) return ''
+    return value.slice(...getAutocompleteRange()!)
+  }, [getAutocompleteRange, isAutocompleteActive, value])
 
   const {
     linkEntities,
@@ -98,6 +159,23 @@ export const ComposerInput = (props: ComposerInputProps) => {
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+
+  const getTimestamps = useCallback(
+    (value: string) => {
+      if (!track || !track.access.stream) return []
+
+      const { duration } = track
+      return Array.from(value.matchAll(timestampRegex))
+        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+        .map((match) => ({
+          type: 'timestamp',
+          text: match[0],
+          index: match.index,
+          link: ''
+        }))
+    },
+    [track]
+  )
 
   useEffect(() => {
     const fn = async () => {
@@ -119,6 +197,56 @@ export const ComposerInput = (props: ComposerInputProps) => {
       setValue('')
     }
   }, [messageId])
+
+  const getUserMentions = useCallback(
+    (value: string) => {
+      const regexString = [...userMentions]
+        .sort((a, b) => b.length - a.length)
+        .join('|')
+      const regex = regexString.length ? new RegExp(regexString, 'g') : null
+
+      return regex
+        ? Array.from(value.matchAll(regex)).map((match) => ({
+            type: 'mention',
+            text: match[0],
+            index: match.index,
+            link: ''
+          }))
+        : null
+    },
+    [userMentions]
+  )
+
+  const handleAutocomplete = useCallback(
+    (user: UserMetadata) => {
+      if (!user) return
+      const autocompleteRange = getAutocompleteRange() ?? [0, 1]
+      const mentionText = `@${user.handle}`
+
+      if (!userMentions.includes(mentionText)) {
+        setUserMentions((mentions) => [...mentions, mentionText])
+        // TODO: For notifications later
+        // setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+      }
+      setValue((value) => {
+        const textBeforeMention = value.slice(0, autocompleteRange[0])
+        const textAfterMention = value.slice(autocompleteRange[1])
+        return `${textBeforeMention}${mentionText}${textAfterMention}`
+      })
+      setIsAutocompleteActive(false)
+    },
+    [getAutocompleteRange, userMentions]
+  )
+
+  useEffect(() => {
+    onAutocompleteChange?.(isAutocompleteActive, autocompleteText)
+  }, [onAutocompleteChange, isAutocompleteActive, autocompleteText])
+
+  useEffect(() => {
+    if (isAutocompleteActive && setAutocompleteHandler) {
+      setAutocompleteHandler(handleAutocomplete)
+    }
+  }, [handleAutocomplete, isAutocompleteActive, setAutocompleteHandler])
 
   const handleChange = useCallback(
     async (value: string) => {
@@ -142,7 +270,52 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (e.nativeEvent.key === BACKSPACE_KEY && selection) {
+      const { key } = e.nativeEvent
+      const isBackspaceAvailable =
+        lastKeyPressMsRef.current === null ||
+        Date.now() - lastKeyPressMsRef.current > 300
+
+      if (key === BACKSPACE_KEY) {
+        if (!isBackspaceAvailable) return
+      } else {
+        lastKeyPressMsRef.current = Date.now()
+      }
+
+      if (isAutocompleteActive && selection) {
+        if (key === SPACE_KEY) {
+          setIsAutocompleteActive(false)
+        }
+
+        if (key === BACKSPACE_KEY && selection) {
+          const cursorPosition = selection.start
+          const deletedChar = value[cursorPosition - 1]
+          if (deletedChar === AT_KEY) {
+            setIsAutocompleteActive(false)
+          }
+        }
+
+        const autocompleteRange = getAutocompleteRange()
+        const cursorPosition = selection.start
+
+        if (
+          autocompleteRange &&
+          (autocompleteRange[0] >= cursorPosition ||
+            autocompleteRange[1] < cursorPosition)
+        ) {
+          setIsAutocompleteActive(false)
+        }
+
+        return
+      }
+
+      // Start user autocomplete
+      if (key === AT_KEY && onAutocompleteChange) {
+        const cursorPosition = selection?.start ?? 0
+        setAutocompletePosition(cursorPosition)
+        setIsAutocompleteActive(true)
+      }
+
+      if (key === BACKSPACE_KEY && selection) {
         const textBeforeCursor = value.slice(0, selection.start)
         const cursorPosition = selection.start
         const { editValue } = handleBackspace({
@@ -161,7 +334,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
         }
       }
     },
-    [handleBackspace, selection, value]
+    [
+      getAutocompleteRange,
+      handleBackspace,
+      isAutocompleteActive,
+      onAutocompleteChange,
+      selection,
+      value
+    ]
   )
 
   const renderIcon = () => (
@@ -182,87 +362,95 @@ export const ComposerInput = (props: ComposerInputProps) => {
     </TouchableOpacity>
   )
 
-  const renderTextDisplay = (value: string) => {
-    const matches = getMatches(value)
-    if (!matches) {
-      const text = splitOnNewline(value)
-      return text.map((t, i) => (
-        <Text key={i}>{`${t === '\n' ? '\n\n' : t}`}</Text>
-      ))
-    }
-    const parts: JSX.Element[] = []
-    let lastIndex = 0
-    for (const match of matches) {
-      const { index, text } = match
-      if (index === undefined) {
-        continue
+  const renderDisplayText = useCallback(
+    (value: string) => {
+      const matches = getMatches(value) ?? []
+      const timestamps = getTimestamps(value)
+      const mentions = getUserMentions(value) ?? []
+      const fullMatches = [...matches, ...mentions, ...timestamps]
+
+      // If there are no highlightable sections, render text normally
+      if (!fullMatches.length && !isAutocompleteActive) {
+        return createTextSections(value)
       }
 
-      if (index > lastIndex) {
-        // Add text before the match
-        const text = splitOnNewline(value.slice(lastIndex, index))
-        parts.push(
-          ...text.map((t, i) => (
-            <Text key={`${lastIndex}${i}`}>{`${t === '\n' ? '\n\n' : t}`}</Text>
-          ))
-        )
+      const renderedTextSections: JSX.Element[] = []
+      const autocompleteRange = getAutocompleteRange()
+
+      // Filter out matches split by an autocomplete section
+      const filteredMatches = fullMatches.filter(({ index }) => {
+        if (index === undefined) return false
+        if (autocompleteRange) {
+          return !(
+            index >= autocompleteRange[0] && index <= autocompleteRange[1]
+          )
+        }
+        return true
+      })
+
+      // Add the autocomplete section
+      if (
+        autocompleteRange &&
+        autocompleteRange[0] >= 0 &&
+        autocompleteRange[1] >= autocompleteRange[0]
+      ) {
+        filteredMatches.push({
+          type: 'autocomplete',
+          text: value.slice(autocompleteRange[0], autocompleteRange[1]),
+          index: autocompleteRange[0],
+          link: ''
+        })
       }
-      // Add the matched word with accent color
-      parts.push(
-        <Text color='secondary' key={index}>
-          {text}
-        </Text>
+
+      // Sort match sections by index
+      const sortedMatches = filteredMatches.sort(
+        (a, b) => (a.index ?? 0) - (b.index ?? 0)
       )
 
-      // Update lastIndex to the end of the current match
-      lastIndex = index + text.length
-    }
+      let lastIndex = 0
+      for (const match of sortedMatches) {
+        const { index, text } = match
+        if (index === undefined) {
+          continue
+        }
 
-    // Add remaining text after the last match
-    if (lastIndex < value.length) {
-      const text = splitOnNewline(value.slice(lastIndex))
-      parts.push(
-        ...text.map((t, i) => <Text key={`${lastIndex}${i}`}>{`${t}\n`}</Text>)
-      )
-    }
+        if (index > lastIndex) {
+          // Add text before the match
+          renderedTextSections.push(
+            ...createTextSections(value.slice(lastIndex, index))
+          )
+        }
+        // Add the matched word with accent color
+        renderedTextSections.push(<Text color='secondary'>{text}</Text>)
 
-    return parts
-  }
+        // Update lastIndex to the end of the current match
+        lastIndex = index + text.length
+      }
 
-  // For iOS: default padding + extra padding
-  // For Android: extra padding is slightly larger than iOS, and only
-  // needed if the screen header size changes
-  const offset =
-    Platform.OS === 'ios'
-      ? spacing(1.5) + extraOffset
-      : Platform.OS === 'android'
-      ? extraOffset
-        ? spacing(1.5) + extraOffset
-        : undefined
-      : undefined
+      // Add remaining text after the last match
+      if (lastIndex < value.length) {
+        renderedTextSections.push(...createTextSections(value.slice(lastIndex)))
+      }
+
+      return renderedTextSections
+    },
+    [
+      getMatches,
+      getTimestamps,
+      getUserMentions,
+      isAutocompleteActive,
+      getAutocompleteRange
+    ]
+  )
 
   return (
-    <Flex
-      style={{
-        position: 'relative',
-        // maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80),
-        paddingBottom: offset
-      }}
-    >
-      <View
-        style={[
-          styles.overlayTextContainer,
-          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
-        ]}
-      >
-        <Text style={styles.overlayText}>{renderTextDisplay(value)}</Text>
-      </View>
+    <>
       <TextInput
+        ref={ref}
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
         styles={{
-          root: styles.composeTextContainer,
+          root: [styles.composeTextContainer, propStyles?.container],
           input: [
             styles.composeTextInput,
             Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
@@ -279,7 +467,17 @@ export const ComposerInput = (props: ComposerInputProps) => {
         value={value}
         maxLength={10000}
         autoCorrect
+        TextInputComponent={TextInputComponent}
       />
-    </Flex>
+      <View
+        style={[
+          styles.overlayTextContainer,
+          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
+          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
+        ]}
+      >
+        <Text style={styles.overlayText}>{renderDisplayText(value)}</Text>
+      </View>
+    </>
   )
-}
+})

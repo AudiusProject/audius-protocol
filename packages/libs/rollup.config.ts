@@ -18,7 +18,8 @@ const external = [
   'ethers/lib/utils',
   'ethers/lib/index',
   'hashids/cjs',
-  'readable-stream'
+  'readable-stream',
+  'debug'
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
@@ -29,7 +30,7 @@ const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
  * - are ignored via `ignore`
  */
 const browserInternal = [
-  // '@metamask/eth-sig-util',
+  '@metamask/eth-sig-util',
   '@scure/base',
   'eth-sig-util',
   'ethereumjs-tx',
