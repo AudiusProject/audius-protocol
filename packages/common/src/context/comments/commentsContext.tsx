@@ -38,10 +38,17 @@ type CommentSectionProviderProps = {
 
   // These are optional because they are only used on mobile
   // and provided for the components in CommentDrawer
+  replyingAndEditingState?: ReplyingAndEditingState
+  setReplyingAndEditingState?: (
+    state: ReplyingAndEditingState | undefined
+  ) => void
+}
+
+export type ReplyingAndEditingState = {
   replyingToComment?: Comment | ReplyComment
-  setReplyingToComment?: (comment: Comment | ReplyComment | undefined) => void
+  // This can be different from replyingToComment if we are replying to a reply
+  replyingToCommentId?: ID
   editingComment?: Comment | ReplyComment
-  setEditingComment?: (comment: Comment | ReplyComment | undefined) => void
 }
 
 type CommentSectionContextType = {
@@ -72,10 +79,8 @@ export const CommentSectionProvider = (
     entityId,
     entityType = EntityType.TRACK,
     children,
-    replyingToComment,
-    setReplyingToComment,
-    editingComment,
-    setEditingComment
+    replyingAndEditingState,
+    setReplyingAndEditingState
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
 
@@ -168,10 +173,8 @@ export const CommentSectionProvider = (
         reset,
         hasMorePages: !!hasNextPage,
         currentSort,
-        replyingToComment,
-        setReplyingToComment,
-        editingComment,
-        setEditingComment,
+        replyingAndEditingState,
+        setReplyingAndEditingState,
         setCurrentSort,
         playTrack,
         loadMorePages

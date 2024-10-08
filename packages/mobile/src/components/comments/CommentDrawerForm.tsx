@@ -24,12 +24,10 @@ type CommentDrawerFormProps = {
 
 export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
-  const {
-    editingComment,
-    replyingToComment,
-    setReplyingToComment,
-    setEditingComment
-  } = useCurrentCommentSection()
+  const { replyingAndEditingState, setReplyingAndEditingState } =
+    useCurrentCommentSection()
+  const { replyingToComment, replyingToCommentId, editingComment } =
+    replyingAndEditingState ?? {}
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
@@ -37,7 +35,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
     } else {
-      postComment(message, replyingToComment?.id)
+      postComment(message, replyingToCommentId ?? replyingToComment?.id)
     }
 
     // Scroll to top of comments when posting a new comment
@@ -45,8 +43,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
       commentListRef.current?.scrollToOffset({ offset: 0 })
     }
 
-    setReplyingToComment?.(undefined)
-    setEditingComment?.(undefined)
+    setReplyingAndEditingState?.(undefined)
   }
 
   // TODO:
