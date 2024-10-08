@@ -8,6 +8,7 @@ import {
   IconCloudDownload,
   IconInfo,
   IconMessage,
+  IconMessages,
   IconNotificationOn,
   IconSettings,
   IconUserUnfollow
@@ -101,7 +102,7 @@ export const SettingsScreen = () => {
           <Divider />
           <AppearanceSettingsRow />
           <SettingsRow onPress={handlePressInbox}>
-            <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
+            <SettingsRowLabel label={messages.inbox} icon={IconMessages} />
             <SettingsRowDescription>
               {messages.inboxDescription}
             </SettingsRowDescription>

@@ -37,7 +37,9 @@ const messages = {
   save: 'Save Changes',
   message: 'Send Message',
   unblockMessages: 'Unblock Messages',
-  blockMessages: 'Block Messages'
+  blockMessages: 'Block Messages',
+  unmuteComments: 'Unmute Comments',
+  muteComments: 'Mute Comments'
 }
 
 export type ProfileMode = 'visitor' | 'owner' | 'editing'
@@ -62,7 +64,10 @@ type StatsBannerProps = {
   onMessage?: () => void
   onBlock?: () => void
   onUnblock?: () => void
+  onMute?: () => void
+  onUnmute?: () => void
   isBlocked?: boolean
+  isMuted?: boolean
   accountUserId?: number | null
 }
 
@@ -70,16 +75,22 @@ type StatsMenuPopupProps = {
   onShare: () => void
   accountUserId?: ID | null
   isBlocked?: boolean
+  isMuted?: boolean
   onBlock: () => void
   onUnblock: () => void
+  onMute: () => void
+  onUnmute: () => void
 }
 
 const StatsPopupMenu = ({
   onShare,
   accountUserId,
   isBlocked,
+  isMuted,
   onBlock,
-  onUnblock
+  onUnblock,
+  onMute,
+  onUnmute
 }: StatsMenuPopupProps) => {
   const isManagedAccount = useIsManagedAccount()
   const menuItems = [
@@ -101,6 +112,22 @@ const StatsPopupMenu = ({
         : {
             text: messages.blockMessages,
             onClick: onBlock,
+            icon: <IconMessageBlock />
+          }
+    )
+  }
+
+  if (accountUserId) {
+    menuItems.push(
+      isMuted
+        ? {
+            text: messages.unmuteComments,
+            onClick: onMute,
+            icon: <IconMessageUnblock />
+          }
+        : {
+            text: messages.muteComments,
+            onClick: onMute,
             icon: <IconMessageBlock />
           }
     )
@@ -147,7 +174,10 @@ export const StatBanner = (props: StatsBannerProps) => {
     onMessage,
     onBlock,
     onUnblock,
+    onMute,
+    onUnmute,
     isBlocked,
+    isMuted,
     accountUserId,
     isSubscribed,
     onToggleSubscribe
@@ -205,14 +235,17 @@ export const StatBanner = (props: StatsBannerProps) => {
     default:
       buttons = (
         <>
-          {onShare && onUnblock && onBlock ? (
+          {onShare && onUnblock && onBlock && onMute && onUnmute ? (
             <>
               <StatsPopupMenu
                 onShare={onShare}
                 accountUserId={accountUserId}
                 isBlocked={isBlocked}
+                isMuted={isMuted}
                 onBlock={onBlock}
                 onUnblock={onUnblock}
+                onMute={onMute}
+                onUnmute={onUnmute}
               />
               {onMessage && !isManagedAccount ? (
                 <Button

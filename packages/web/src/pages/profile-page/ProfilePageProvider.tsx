@@ -128,6 +128,8 @@ type ProfilePageState = {
   areArtistRecommendationsVisible: boolean
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
+  showMuteUserConfirmationModal: boolean
+  showUnmuteUserConfirmationModal: boolean
 }
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
@@ -141,12 +143,16 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     areArtistRecommendationsVisible: false,
     showBlockUserConfirmationModal: false,
     showUnblockUserConfirmationModal: false,
+    showMuteUserConfirmationModal: false,
+    showUnmuteUserConfirmationModal: false,
     ...INITIAL_UPDATE_FIELDS
   }
 
   unlisten!: UnregisterCallback
 
   componentDidMount() {
+    console.log('asdf state: ', this.state)
+
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
     this.fetchProfile(getPathname(this.props.location))
@@ -284,6 +290,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   onCloseUnblockUserConfirmationModal = () => {
     this.setState({ showUnblockUserConfirmationModal: false })
+  }
+
+  onCloseMuteUserConfirmationModal = () => {
+    this.setState({ showMuteUserConfirmationModal: false })
+  }
+
+  onCloseUnmuteUserConfirmationModal = () => {
+    this.setState({ showUnmuteUserConfirmationModal: false })
   }
 
   fetchProfile = (
@@ -738,7 +752,18 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onUnblock = () => {
+    console.log('asdf on unblock ')
     return this.setState({ showUnblockUserConfirmationModal: true })
+  }
+
+  onMute = () => {
+    console.log('asdf on mute')
+    return this.setState({ showMuteUserConfirmationModal: true })
+  }
+
+  onUnmute = () => {
+    console.log('asdf on un mute')
+    return this.setState({ showUnmuteUserConfirmationModal: true })
   }
 
   render() {
@@ -930,7 +955,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       didChangeTabsFrom: this.didChangeTabsFrom,
       onMessage: this.onMessage,
       onBlock: this.onBlock,
-      onUnblock: this.onUnblock
+      onUnblock: this.onUnblock,
+      onMute: this.onMute,
+      onUnmute: this.onUnmute
     }
 
     const mobileProps = {
@@ -984,7 +1011,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       showUnblockUserConfirmationModal:
         this.state.showUnblockUserConfirmationModal,
       onCloseUnblockUserConfirmationModal:
-        this.onCloseUnblockUserConfirmationModal
+        this.onCloseUnblockUserConfirmationModal,
+      showMuteUserConfirmationModal: this.state.showMuteUserConfirmationModal,
+      onCloseMuteUserConfirmationModal: this.onCloseMuteUserConfirmationModal
     }
 
     return (
@@ -1206,6 +1235,12 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     },
     onUnblock: (userId: ID) => {
       dispatch(unblockUser({ userId }))
+    },
+    onMute: (userId: ID) => {
+      console.log('asdf muting')
+    },
+    onUnmute: (userId: ID) => {
+      console.log('asdf unmuting')
     },
     redirectUnauthenticatedAction: () => {
       dispatch(openSignOn())
