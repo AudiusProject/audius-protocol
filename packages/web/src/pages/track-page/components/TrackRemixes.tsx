@@ -116,15 +116,15 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         pauseTrack={handlePause}
         useSmallTiles
       />
-      {/* {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? ( */}
-      <Box alignSelf='flex-start'>
-        <Button iconRight={IconArrowRight} size='xs' asChild>
-          <Link to={trackRemixesPage(permalink)}>
-            {messages.viewAllRemixes}
-          </Link>
-        </Button>
-      </Box>
-      {/* ) : null} */}
+      {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
+        <Box alignSelf='flex-start'>
+          <Button iconRight={IconArrowRight} size='xs' asChild>
+            <Link to={trackRemixesPage(permalink)}>
+              {messages.viewAllRemixes}
+            </Link>
+          </Button>
+        </Box>
+      ) : null}
     </Flex>
   )
 }
