@@ -113,7 +113,9 @@ def get_comment_replies(args, comment_id, current_user_id=None):
 
 
 def get_track_comments(args, track_id, current_user_id=None):
-    offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    offset, limit = format_offset(args), format_limit(
+        args, default_limit=COMMENT_THREADS_LIMIT
+    )
     sort_method = args.get("sort_method", "top")
     if sort_method == "top":
         sort_method_order_by = desc(func.count(CommentReaction.comment_id))
