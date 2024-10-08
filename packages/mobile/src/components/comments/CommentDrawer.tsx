@@ -258,10 +258,12 @@ export const CommentDrawer = () => {
         </CommentSectionProvider>
       </BottomSheetFooter>
     ),
+    // intentionally excluding insets.bottom because it causes a rerender
+    // when the keyboard is opened on android, causing the keyboard to close
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       editingComment,
       entityId,
-      insets.bottom,
       onAutoCompleteChange,
       replyingToComment,
       setAutocompleteHandler
@@ -292,6 +294,7 @@ export const CommentDrawer = () => {
         )}
         footerComponent={renderFooterComponent}
         onDismiss={handleClose}
+        android_keyboardInputMode='adjustResize'
       >
         <CommentSectionProvider
           entityId={entityId}
