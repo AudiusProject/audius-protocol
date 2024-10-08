@@ -60,7 +60,7 @@ type PurchasableContentOption = {
 }
 
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -88,7 +88,7 @@ export const ChatBlastModal = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })
@@ -102,7 +102,7 @@ export const ChatBlastModal = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ submitForm }) => (
+        {({ submitForm, isSubmitting }) => (
           <>
             <ModalHeader>
               <ModalTitle
@@ -128,6 +128,8 @@ export const ChatBlastModal = () => {
                   type='submit'
                   css={{ flexGrow: 1 }}
                   onClick={submitForm}
+                  // Empty default audience means there are no users in any audience
+                  disabled={!!isSubmitting || !defaultAudience}
                 >
                   {messages.continue}
                 </Button>

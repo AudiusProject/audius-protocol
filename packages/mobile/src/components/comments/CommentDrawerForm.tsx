@@ -36,10 +36,9 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   const handlePostComment = (message: string, mentions?: ID[]) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
-      return
+    } else {
+      postComment(message, replyingToComment?.id)
     }
-
-    postComment(message, replyingToComment?.id)
 
     // Scroll to top of comments when posting a new comment
     if (!editingComment && !replyingToComment) {

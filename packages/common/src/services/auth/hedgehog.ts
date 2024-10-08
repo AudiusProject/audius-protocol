@@ -21,6 +21,7 @@ export type HedgehogInstance = Hedgehog & {
     username: string
     password: string
   }) => Promise<string>
+  refreshWallet: () => Promise<void>
 }
 
 export const createHedgehog = ({
@@ -87,6 +88,16 @@ export const createHedgehog = ({
       password,
       hedgehog.createKey
     )
+  }
+
+  // @ts-expect-error -- adding our own custom method to hedgehog
+  hedgehog.refreshWallet = async () => {
+    // Important, set ready to false to block any new requests while we async update
+    // the wallet from entropy
+    hedgehog.ready = false
+    hedgehog.restoreLocalWallet().finally(() => {
+      hedgehog.ready = true
+    })
   }
 
   return hedgehog as HedgehogInstance

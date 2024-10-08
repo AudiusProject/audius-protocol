@@ -84,7 +84,7 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
 const HandleLink = ({
   handle,
   ...other
-}: TextLinkProps & { handle: string }) => {
+}: Omit<TextLinkProps, 'to'> & { handle: string }) => {
   const currentUserId = useSelector(getUserId)
 
   const { data: user } = useGetUserByHandle({
