@@ -3,6 +3,10 @@ export const config = {
   dmNotificationDelay: 500,
   // ms between jobs
   pollInterval: 500,
+  // Batch size of users for chat blast notifications
+  blastUserBatchSize: 100,
   lastIndexedMessageRedisKey: 'latestDMNotificationTimestamp',
-  lastIndexedReactionRedisKey: 'latestDMReactionNotificationTimestamp'
+  lastIndexedReactionRedisKey: 'latestDMReactionNotificationTimestamp',
+  lastIndexedBlastIdRedisKey: 'latestBlastNotificationID',
+  lastIndexedBlastUserIdRedisKey: 'latestBlastNotificationUserID'
 }

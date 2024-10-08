@@ -7,6 +7,7 @@ declare
   entity_type text;
   blocknumber int;
   created_at timestamp without time zone;
+  notification_muted boolean;
 begin
   select comments.user_id, comments.entity_id, comments.entity_type 
   into parent_comment_user_id, entity_id, entity_type 
@@ -23,8 +24,15 @@ begin
   from tracks 
   where track_id = entity_id;
 
+  select comment_notification_settings.is_muted
+  into notification_muted
+  from comment_notification_settings
+  where user_id = parent_comment_user_id 
+  and comment_notification_settings.entity_id = new.parent_comment_id
+  and comment_notification_settings.entity_type = 'Comment';
+
   begin
-    if comment_user_id != parent_comment_user_id then
+    if notification_muted is not true and comment_user_id != parent_comment_user_id then
       insert into notification
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values

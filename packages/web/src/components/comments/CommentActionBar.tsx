@@ -2,6 +2,7 @@ import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 import {
   useCurrentCommentSection,
+  useUpdateCommentNotificationSetting,
   usePinComment,
   useReactToComment,
   useReportComment,
@@ -19,7 +20,6 @@ import {
   IconKebabHorizontal,
   IconQuestionCircle,
   PopupMenu,
-  PopupMenuItem,
   Text,
   TextLink
 } from '@audius/harmony'
@@ -35,11 +35,13 @@ import {
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
+import { removeNullable } from 'utils/typeUtils'
 const { getUser } = cacheUsersSelectors
 
 type ConfirmationAction =
   | 'pin'
   | 'unpin'
+  | 'flagAndHide'
   | 'flagAndRemove'
   | 'muteUser'
   | 'delete'
@@ -76,6 +78,7 @@ export const CommentActionBar = ({
   const dispatch = useDispatch()
   // Comment from props
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
+  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'isPinned' in comment
   const isTombstone = isParentComment ? comment.isTombstone : false
   const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
@@ -87,9 +90,10 @@ export const CommentActionBar = ({
   const [muteUser] = useMuteUser()
 
   // Comment context data
-  const { currentUserId, isEntityOwner, entityId } = useCurrentCommentSection()
+  const { currentUserId, isEntityOwner, entityId, currentSort } =
+    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const isUserGettingNotifs = isCommentOwner && isParentComment
+  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -103,15 +107,13 @@ export const CommentActionBar = ({
   const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
-  // Internal state
-  const [reactionState, setReactionState] = useState(isCurrentUserReacted)
-  const [notificationsOn, setNotificationsMuted] = useState(false) // TODO: This needs some API support
+  const [handleMuteCommentNotifications] =
+    useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
   const handleReact = useAuthenticatedCallback(() => {
-    setReactionState(!reactionState)
-    reactToComment(commentId, !reactionState)
-  }, [commentId, reactToComment, reactionState])
+    reactToComment(commentId, !isCurrentUserReacted)
+  }, [commentId, isCurrentUserReacted, reactToComment])
 
   const handleDelete = useCallback(() => {
     // note: we do some UI logic in the CommentBlock above this so we can't trigger directly from here
@@ -119,14 +121,13 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    // TODO: call backend here
-    setNotificationsMuted((prev) => !prev)
+    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
     toast(
-      notificationsOn
+      areNotifsMuted
         ? messages.toasts.unmutedNotifs
         : messages.toasts.mutedNotifs
     )
-  }, [notificationsOn, toast])
+  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -137,13 +138,20 @@ export const CommentActionBar = ({
     muteUser({
       mutedUserId: comment.userId,
       isMuted: false,
-      entityId
+      trackId: entityId,
+      currentSort
     })
     toast(messages.toasts.mutedUser)
-  }, [comment.userId, entityId, muteUser, toast])
+  }, [comment.userId, currentSort, entityId, muteUser, toast])
 
-  const handleReport = useCallback(() => {
+  const handleFlagComment = useCallback(() => {
     reportComment(commentId)
+    toast(messages.toasts.flaggedAndHidden)
+  }, [commentId, reportComment, toast])
+
+  const handleFlagAndRemoveComment = useCallback(() => {
+    reportComment(commentId)
+    // TODO: remove comment
     toast(messages.toasts.flaggedAndRemoved)
   }, [commentId, reportComment, toast])
 
@@ -205,12 +213,29 @@ export const CommentActionBar = ({
         confirmButtonType: 'destructive',
         confirmCallback: handleMute
       },
+      flagAndHide: {
+        messages: {
+          ...messages.popups.flagAndHide,
+          body: messages.popups.flagAndHide.body(userDisplayName as string)
+        },
+        confirmCallback: handleFlagComment
+      },
       flagAndRemove: {
-        messages: messages.popups.flagAndRemove,
-        confirmCallback: handleReport
+        messages: {
+          ...messages.popups.flagAndRemove,
+          body: messages.popups.flagAndRemove.body(userDisplayName as string)
+        },
+        confirmCallback: handleFlagAndRemoveComment
       }
     }),
-    [handleDelete, handleMute, handlePin, handleReport, userDisplayName]
+    [
+      handleDelete,
+      handleMute,
+      handlePin,
+      handleFlagComment,
+      handleFlagAndRemoveComment,
+      userDisplayName
+    ]
   )
 
   const currentConfirmationModal = useMemo(
@@ -222,67 +247,56 @@ export const CommentActionBar = ({
   )
 
   // Popup menu items
-  const popupMenuItems = useMemo(() => {
-    let items: PopupMenuItem[] = []
-    // Pin
-    const entityOwnerMenuItems: PopupMenuItem[] = [
-      {
-        onClick: () => setCurrentConfirmationModalType('pin'),
-        text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin
-      }
+  const popupMenuItems = useMemo(
+    () =>
+      [
+        isEntityOwner && {
+          onClick: () => setCurrentConfirmationModalType('pin'),
+          text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin
+        },
+        !isEntityOwner &&
+          !isCommentOwner && {
+            onClick: () => setCurrentConfirmationModalType('flagAndHide'),
+            text: messages.menuActions.flagAndHide
+          },
+        isEntityOwner &&
+          !isCommentOwner && {
+            onClick: () => setCurrentConfirmationModalType('flagAndRemove'),
+            text: messages.menuActions.flagAndRemove
+          },
+        isEntityOwner &&
+          !isCommentOwner && {
+            onClick: () => setCurrentConfirmationModalType('muteUser'),
+            text: messages.menuActions.muteUser
+          },
+        isCommentOwner && {
+          onClick: onClickEdit,
+          text: messages.menuActions.edit
+        },
+        (isCommentOwner || isEntityOwner) && {
+          onClick: () =>
+            setCurrentConfirmationModalType(
+              !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
+            ),
+          text: messages.menuActions.delete
+        },
+        canMuteNotifs && {
+          onClick: handleMuteNotifs,
+          text: areNotifsMuted
+            ? messages.menuActions.turnOnNotifications
+            : messages.menuActions.turnOffNotifications
+        }
+      ].filter(removeNullable),
+    [
+      isPinned,
+      onClickEdit,
+      handleMuteNotifs,
+      areNotifsMuted,
+      isCommentOwner,
+      isEntityOwner,
+      canMuteNotifs
     ]
-    const commentOwnerMenuItems: PopupMenuItem[] = [
-      { onClick: onClickEdit, text: messages.menuActions.edit }
-    ]
-    const nonCommentOwnerItems: PopupMenuItem[] = [
-      {
-        onClick: () => setCurrentConfirmationModalType('flagAndRemove'),
-        text: messages.menuActions.flagAndRemove
-      },
-      {
-        onClick: () => setCurrentConfirmationModalType('muteUser'),
-        text: messages.menuActions.muteUser
-      }
-    ]
-    const muteNotifs: PopupMenuItem = {
-      onClick: handleMuteNotifs,
-      text: notificationsOn
-        ? messages.menuActions.turnOffNotifications
-        : messages.menuActions.turnOnNotifications
-    }
-    const deleteComment: PopupMenuItem = {
-      onClick: () =>
-        setCurrentConfirmationModalType(
-          !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
-        ),
-      text: messages.menuActions.delete
-    }
-
-    if (isEntityOwner) {
-      items = items.concat(entityOwnerMenuItems)
-    }
-    if (isCommentOwner) {
-      items = items.concat(commentOwnerMenuItems)
-      if (isUserGettingNotifs) {
-        items.push(muteNotifs)
-      }
-    }
-    if (!isCommentOwner) {
-      items = items.concat(nonCommentOwnerItems)
-    }
-    if (isCommentOwner || isEntityOwner) {
-      items.push(deleteComment)
-    }
-    return items
-  }, [
-    isPinned,
-    onClickEdit,
-    handleMuteNotifs,
-    notificationsOn,
-    isCommentOwner,
-    isEntityOwner,
-    isUserGettingNotifs
-  ])
+  )
 
   return (
     <Flex gap='l' alignItems='center'>
@@ -290,19 +304,22 @@ export const CommentActionBar = ({
         {/* TODO: we should use FavoriteButton here */}
         <IconButton
           icon={IconHeart}
-          color={reactionState ? 'active' : 'subdued'}
+          color={isCurrentUserReacted ? 'active' : 'subdued'}
           aria-label='Heart comment'
           onClick={handleReact}
           disabled={isDisabled}
         />
         {!hideReactCount ? (
-          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+          <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
+            {' '}
+            {reactCount}
+          </Text>
         ) : null}
       </Flex>
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
-        size='m'
+        size='s'
         disabled={isDisabled || isTombstone}
       >
         {messages.reply}
@@ -310,6 +327,8 @@ export const CommentActionBar = ({
 
       <PopupMenu
         items={popupMenuItems}
+        anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         renderTrigger={(anchorRef, triggerPopup) => (
           <IconButton
             aria-label='Show Comment Management Options'
@@ -317,6 +336,7 @@ export const CommentActionBar = ({
             color='subdued'
             ref={anchorRef}
             disabled={isDisabled}
+            size='m'
             onClick={() => {
               if (isMobile) {
                 toggleIsMobileAppDrawer()

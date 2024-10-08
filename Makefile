@@ -70,3 +70,12 @@ uninstall:
 .PHONY: clean
 clean:
 	rm -f bin/*
+
+.PHONY: mediorum-dev
+mediorum-dev:
+	@if [ "$$(docker ps -q -f name=postgres)" ]; then \
+		echo "container 'postgres' is already running"; \
+	else \
+		docker run --rm --name postgres -v $$(pwd)/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d -e POSTGRES_PASSWORD=example -p 5454:5432 -d postgres; \
+	fi
+	go run cmd/mediorum/main.go

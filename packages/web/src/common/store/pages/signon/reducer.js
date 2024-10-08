@@ -30,6 +30,7 @@ import {
   SIGN_IN,
   SIGN_IN_FAILED,
   SIGN_IN_SUCCEEDED,
+  COMPLETE_FOLLOW_ARTISTS,
   CONFIGURE_META_MASK,
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
@@ -77,7 +78,7 @@ const initialState = {
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
   page: Pages.EMAIL,
   startedSignUpProcess: false,
-  /** @deprecated */
+  /** Whether or not the user has fully completed the sign up flow */
   finishedSignUpProcess: false,
   /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
   finishedPhase1: false,
@@ -434,6 +435,12 @@ const actionsMap = {
         ...state.followArtists,
         selectedCategory: action.category
       }
+    }
+  },
+  [COMPLETE_FOLLOW_ARTISTS](state, action) {
+    return {
+      ...state,
+      finishedSignUpProcess: true
     }
   },
   [ADD_FOLLOW_ARTISTS](state, action) {

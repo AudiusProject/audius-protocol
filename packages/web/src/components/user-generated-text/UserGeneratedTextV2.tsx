@@ -88,7 +88,12 @@ const Link = ({
   const to = isExternalLink ? formatExternalLink(url) : formatAudiusUrl(url)
 
   return (
-    <TextLink {...other} to={to} variant='visible' isExternal={isExternalLink}>
+    <TextLink
+      {...other}
+      to={to}
+      variant={other.variant ?? 'visible'}
+      isExternal={isExternalLink}
+    >
       {unfurledContent ?? children}
     </TextLink>
   )

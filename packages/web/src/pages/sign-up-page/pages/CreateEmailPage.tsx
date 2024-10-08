@@ -15,7 +15,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { Formik } from 'formik'
+import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
@@ -105,6 +105,7 @@ export const CreateEmailPage = () => {
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
       const { email, withMetaMask } = values
+      dispatch(startSignUp())
       dispatch(setValueField('email', email))
       if (withMetaMask) {
         setIsMetaMaskModalOpen(true)
@@ -131,7 +132,7 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, setFieldValue, submitForm }) => (
-        <Page pt={isMobile ? 'xl' : 'unit13'}>
+        <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
           <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
             {isMobile || isSmallDesktop ? (
               <IconAudiusLogoHorizontalColor />

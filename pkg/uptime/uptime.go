@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/registrar"
 	"github.com/labstack/echo/v4"

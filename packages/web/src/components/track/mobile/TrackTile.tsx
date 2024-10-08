@@ -65,6 +65,7 @@ type ExtraProps = {
   onShare: (trackId: ID) => void
   makeGoToRepostsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   makeGoToFavoritesPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
+  makeGoToCommentsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
   isMatrix: boolean
@@ -470,12 +471,17 @@ const TrackTile = (props: CombinedProps) => {
                       props.isUnlisted ||
                       props.commentsDisabled
                   })}
+                  onClick={
+                    props.commentCount && !isReadonly
+                      ? props.makeGoToCommentsPage(id)
+                      : undefined
+                  }
                 >
                   <IconMessage
                     className={styles.favoriteButton}
                     color='subdued'
                   />
-                  {formatCount(props.saveCount)}
+                  {formatCount(props.commentCount)}
                 </div>
               </>
             )}
