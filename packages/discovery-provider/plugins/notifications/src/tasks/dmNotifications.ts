@@ -11,6 +11,7 @@ import type {
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
 import { makeChatId } from '../utils/chatId'
+import { chunk } from 'lodash'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -357,12 +358,17 @@ export async function sendDMNotifications(
     notifications.sort(notificationTimestampComparator)
     timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
 
-    // Send push notifications
-    for (const notification of notifications) {
-      notification.processNotification({
-        isLiveEmailEnabled: false,
-        isBrowserPushEnabled
-      })
+    // Send push notifications in batches
+    const batches = chunk(notifications, config.notificationBatchSize)
+    for (const batch of batches) {
+      await Promise.all(
+        batch.map((notification) => {
+          notification.processNotification({
+            isLiveEmailEnabled: false,
+            isBrowserPushEnabled
+          })
+        })
+      )
     }
 
     // Set last indexed timestamps in redis
