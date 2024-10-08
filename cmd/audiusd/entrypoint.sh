@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ENV_FILE="/env/prod.env"
+OVERRIDE_ENV_FILE="/env/override.env"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --stage) ENV_FILE="/env/stage.env";;
         --prod) ENV_FILE="/env/prod.env";;
-        *) echo "Unknown parameter passed: $1"; exit 1;;
     esac
     shift
 done
@@ -19,6 +19,13 @@ if [ -f "$ENV_FILE" ]; then
 else
     echo "Environment file $ENV_FILE not found!"
     exit 1
+fi
+
+if [ -f "$OVERRIDE_ENV_FILE" ]; then
+    echo "Sourcing environment variables from $OVERRIDE_ENV_FILE"
+    set -a
+    source "$OVERRIDE_ENV_FILE"
+    set +a
 fi
 
 POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}

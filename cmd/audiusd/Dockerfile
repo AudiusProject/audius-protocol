@@ -102,6 +102,7 @@ RUN go build -o audiusd cmd/audiusd/main.go
 
 FROM debian:bullseye-slim as final
 
+# TODO: some dynamic libs still required for cpp bins
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg2 \
@@ -110,10 +111,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     ffmpeg \
     libsamplerate0 \
+    postgresql \
     zlib1g \
     && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y postgresql
 
 COPY --from=cpp-builder /bin/analyze-key /bin/analyze-bpm /bin/
 COPY --from=go-builder /app/audiusd /bin/audiusd
@@ -129,7 +129,6 @@ ENV GIT_SHA=$git_sha
 
 EXPOSE 80
 EXPOSE 443
-EXPOSE 5432
 EXPOSE 26656
 
 VOLUME ["/data"]
