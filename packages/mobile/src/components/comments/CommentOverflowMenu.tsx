@@ -81,7 +81,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     entityId,
     isEntityOwner,
     currentUserId,
-    setEditingComment,
+    setReplyingAndEditingState,
     currentSort
   } = useCurrentCommentSection()
   const isCommentOwner = Number(userId) === currentUserId
@@ -148,7 +148,8 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     },
     isCommentOwner && {
       text: messages.menuActions.edit,
-      callback: () => setEditingComment?.(props.comment)
+      callback: () =>
+        setReplyingAndEditingState?.({ editingComment: props.comment })
     },
     (isCommentOwner || isEntityOwner) && {
       text: messages.menuActions.delete,

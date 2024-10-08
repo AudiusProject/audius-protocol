@@ -3,11 +3,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
+import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { Comment, ReplyComment, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -205,10 +206,8 @@ export const CommentDrawer = () => {
   >(() => {})
   const [autoCompleteActive, setAutoCompleteActive] = useState(false)
   const [acText, setAcText] = useState('')
-  const [replyingToComment, setReplyingToComment] = useState<
-    Comment | ReplyComment
-  >()
-  const [editingComment, setEditingComment] = useState<Comment | ReplyComment>()
+  const [replyingAndEditingState, setReplyingAndEditingState] =
+    useState<ReplyingAndEditingState>()
 
   const setAutocompleteHandler = useCallback(
     (autocompleteHandler: (user: UserMetadata) => void) => {
@@ -245,10 +244,8 @@ export const CommentDrawer = () => {
         <Divider orientation='horizontal' />
         <CommentSectionProvider
           entityId={entityId}
-          replyingToComment={replyingToComment}
-          setReplyingToComment={setReplyingToComment}
-          editingComment={editingComment}
-          setEditingComment={setEditingComment}
+          replyingAndEditingState={replyingAndEditingState}
+          setReplyingAndEditingState={setReplyingAndEditingState}
         >
           <CommentDrawerForm
             commentListRef={commentListRef}
@@ -259,12 +256,11 @@ export const CommentDrawer = () => {
       </BottomSheetFooter>
     ),
     [
-      editingComment,
       entityId,
       insets.bottom,
       onAutoCompleteChange,
-      replyingToComment,
-      setAutocompleteHandler
+      setAutocompleteHandler,
+      replyingAndEditingState
     ]
   )
 
@@ -295,10 +291,8 @@ export const CommentDrawer = () => {
       >
         <CommentSectionProvider
           entityId={entityId}
-          replyingToComment={replyingToComment}
-          setReplyingToComment={setReplyingToComment}
-          editingComment={editingComment}
-          setEditingComment={setEditingComment}
+          replyingAndEditingState={replyingAndEditingState}
+          setReplyingAndEditingState={setReplyingAndEditingState}
         >
           <CommentDrawerHeader
             minimal={autoCompleteActive}
