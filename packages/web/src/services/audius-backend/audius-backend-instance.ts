@@ -37,7 +37,7 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: env.ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  getLibs: () => import('@audius/sdk/dist/web-libs'),
+  getLibs: () => import('@audius/sdk-legacy/dist/web-libs'),
   discoveryNodeSelectorService,
   getStorageNodeSelector,
   getWeb3Config: async (

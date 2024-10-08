@@ -37,6 +37,7 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
     "@google/model-viewer": "3.3.0",

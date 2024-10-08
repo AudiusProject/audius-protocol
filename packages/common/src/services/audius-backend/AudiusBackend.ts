@@ -1,13 +1,8 @@
-import {
-  Genre,
-  Mood,
-  type DiscoveryNodeSelector,
-  type StorageNodeSelectorService
-} from '@audius/sdk'
-import { DiscoveryAPI } from '@audius/sdk/dist/core'
-import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
-import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
-import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
+import { Genre, Mood, type StorageNodeSelectorService } from '@audius/sdk'
+import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/AudiusLibs'
+import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
+import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
+import type { LocalStorage } from '@audius/sdk-legacy/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   PublicKey,
@@ -52,9 +47,6 @@ import { ReportToSentryArgs } from '../../models/ErrorReporting'
 import * as schemas from '../../schemas'
 import {
   FeatureFlags,
-  BooleanKeys,
-  IntKeys,
-  StringKeys,
   RemoteConfigInstance
 } from '../../services/remote-config'
 import {
@@ -251,82 +243,26 @@ type AudiusBackendParams = {
 }
 
 export const audiusBackend = ({
-  claimDistributionContractAddress,
   imagePreloader,
-  env,
-  ethOwnerWallet,
-  ethProviderUrls,
-  ethRegistryAddress,
-  ethTokenAddress,
-  discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl,
-  getLibs,
   getStorageNodeSelector,
-  getWeb3Config,
-  hedgehogConfig,
   identityServiceUrl,
   generalAdmissionUrl,
-  isElectron,
-  localStorage,
-  monitoringCallbacks,
   nativeMobile,
-  onLibsInit,
-  recaptchaSiteKey,
   recordAnalytics,
-  registryAddress,
-  entityManagerAddress,
   reportError,
   remoteConfigInstance,
   setLocalStorageItem,
-  solanaConfig: {
-    claimableTokenPda,
-    claimableTokenProgramAddress,
-    rewardsManagerProgramId,
-    rewardsManagerProgramPda,
-    rewardsManagerTokenPda,
-    paymentRouterProgramId,
-    solanaClusterEndpoint,
-    solanaFeePayerAddress,
-    solanaTokenAddress,
-    waudioMintAddress,
-    usdcMintAddress,
-    wormholeAddress
-  },
   userNodeUrl,
   waitForLibsInit,
   waitForWeb3,
-  web3NetworkId,
-  web3ProviderUrls,
-  withEagerOption,
-  wormholeConfig: {
-    ethBridgeAddress,
-    ethTokenBridgeAddress,
-    solBridgeAddress,
-    solTokenBridgeAddress,
-    wormholeRpcHosts
-  }
+  withEagerOption
 }: AudiusBackendParams) => {
-  const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
+  const { waitForRemoteConfig } = remoteConfigInstance
 
   const currentDiscoveryProvider: Nullable<string> = null
   const didSelectDiscoveryProviderListeners: DiscoveryProviderListener[] = []
-
-  /**
-   * Gets a blockList set from remote config
-   */
-  const getBlockList = (remoteVarKey: StringKeys) => {
-    const list = getRemoteVar(remoteVarKey)
-    if (list) {
-      try {
-        return new Set(list.split(','))
-      } catch (e) {
-        console.error(e)
-        return null
-      }
-    }
-    return null
-  }
 
   function addDiscoveryProviderSelectionListener(
     listener: DiscoveryProviderListener
@@ -2058,7 +1994,7 @@ export const audiusBackend = ({
 
   async function getAudiusLibsTyped() {
     await waitForLibsInit()
-    return audiusLibs
+    return audiusLibs as AudiusLibsType
   }
 
   async function getWeb3() {
