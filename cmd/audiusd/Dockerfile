@@ -100,7 +100,7 @@ COPY ./cmd/audiusd/main.go ./cmd/audiusd/main.go
 RUN go build -o audiusd cmd/audiusd/main.go
 
 
-FROM debian:bullseye-slim as final
+FROM debian:bullseye-slim AS final
 
 # TODO: some dynamic libs still required for cpp bins
 RUN apt-get update && apt-get install -y \
@@ -118,7 +118,10 @@ RUN apt-get update && apt-get install -y \
 COPY --from=cpp-builder /bin/analyze-key /bin/analyze-bpm /bin/
 COPY --from=go-builder /app/audiusd /bin/audiusd
 
-COPY ./cmd/audiusd/*.env /env/
+RUN mkdir -p /env && \
+    curl -o /env/stage.env https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/refs/heads/stage/creator-node/stage.env && \
+    curl -o /env/prod.env https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/refs/heads/stage/creator-node/prod.env
+
 COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh
 
