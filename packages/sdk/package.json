@@ -37,7 +37,7 @@
     "start:sdk:browser": "rollup -c rollup.sdk.browser.config.ts -w --configPlugin typescript",
     "start:sdk:browser:dist": "rollup -c rollup.sdk.browser.dist.config.ts -w --configPlugin typescript",
     "start:sdk:native": "rollup -c rollup.sdk.native.config.ts -w --configPlugin typescript",
-    "lint": "eslint ./src ./types",
+    "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck",

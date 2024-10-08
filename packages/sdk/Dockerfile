@@ -42,4 +42,4 @@ RUN npx turbo run build --filter=@audius/sdk
 ARG git_sha
 ENV GIT_SHA=$git_sha
 
-WORKDIR /app/packages/libs
+WORKDIR /app/packages/sdk
