@@ -74,8 +74,7 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
                     numberOfLines={1}
                     flexShrink={1}
                   >
-                    {/* {otherUser.name} */}
-                    ads;lkfja;lskdjf;laksdjf;lkajsdf;lkajsdf;lkjasdf
+                    {otherUser.name}
                   </Text>
                   <UserBadges user={otherUser} hideName />
                 </Flex>
