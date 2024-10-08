@@ -32,14 +32,23 @@ echo "Updating PostgreSQL configuration for password authentication..."
 sed -i "s/peer/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
 sed -i "s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
 
+echo "Configuring PostgreSQL to log to stderr for docker capture..."
+sed -i "s|#log_destination = 'stderr'|log_destination = 'stderr'|" "$POSTGRES_DATA_DIR/postgresql.conf"
+sed -i "s|#logging_collector = on|logging_collector = off|" "$POSTGRES_DATA_DIR/postgresql.conf"
+
 echo "Starting PostgreSQL service..."
-su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -l /var/log/postgresql/postgresql.log start"
+su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -o '-c config_file=$POSTGRES_DATA_DIR/postgresql.conf' start"
+
+until su - postgres -c "pg_isready -q"; do
+    echo "Waiting for PostgreSQL to start..."
+    sleep 2
+done
 
 echo "Setting up PostgreSQL user and database..."
 su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';\""
 su - postgres -c "psql -c \"CREATE DATABASE $POSTGRES_DB;\""
 
-su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -l /var/log/postgresql/postgresql.log restart"
+su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -o '-c config_file=$POSTGRES_DATA_DIR/postgresql.conf' restart"
 
 echo "Starting audiusd..."
 exec /bin/audiusd "$@"
