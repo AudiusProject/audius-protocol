@@ -32,7 +32,7 @@ export const developmentConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
-    "web3ProviderUrl": "http://audius-protocol-poa-ganache-1"
+    "chainId": 1337
   },
   "solana": {
     "claimableTokensProgramAddress": "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9",
@@ -42,7 +42,8 @@ export const developmentConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "",
     "rpcEndpoint": "http://audius-protocol-solana-test-validator-1",
     "usdcTokenMint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
-    "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3"
+    "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3",
+    "rewardManagerLookupTableAddress": "GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J"
   },
   "ethereum": {
     "rpcEndpoint": "https://audius-protocol-eth-ganache-1",

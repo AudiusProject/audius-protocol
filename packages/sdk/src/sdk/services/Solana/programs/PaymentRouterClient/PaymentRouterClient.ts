@@ -74,7 +74,7 @@ export class PaymentRouterClient {
     params: CreateTransferInstructionRequest
   ) {
     const args = await parseParams(
-      'crateTransferInstruction',
+      'createTransferInstruction',
       CreateTransferInstructionSchema
     )(params)
     const { mint, token } = parseMintToken(args.mint, this.mints)

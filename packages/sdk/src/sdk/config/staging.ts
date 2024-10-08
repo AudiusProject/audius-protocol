@@ -6,7 +6,7 @@
 import type { SdkServicesConfig } from './types'
 export const stagingConfig: SdkServicesConfig = {
   "network": {
-    "minVersion": "0x302e362e30000000000000000000000000000000000000000000000000000000",
+    "minVersion": "0.6.0",
     "discoveryNodes": [
       {
         "endpoint": "https://discoveryprovider.staging.audius.co",
@@ -27,11 +27,6 @@ export const stagingConfig: SdkServicesConfig = {
         "endpoint": "https://discoveryprovider5.staging.audius.co",
         "ownerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1",
         "delegateOwnerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1"
-      },
-      {
-        "endpoint": "",
-        "ownerWallet": "0x0000000000000000000000000000000000000000",
-        "delegateOwnerWallet": "0x0000000000000000000000000000000000000000"
       }
     ],
     "storageNodes": [
@@ -82,7 +77,7 @@ export const stagingConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-    "web3ProviderUrl": "https://poa-gateway.staging.audius.co"
+    "chainId": 1056801
   },
   "solana": {
     "claimableTokensProgramAddress": "2sjQNmUfkV6yKKi4dPR8gWRgtyma5aiymE3aXL2RAZww",
@@ -92,7 +87,8 @@ export const stagingConfig: SdkServicesConfig = {
     "stakingBridgeProgramAddress": "stkuyR7dTzxV1YnoDo5tfuBmkuKn7zDatimYRDTmQvj",
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo"
+    "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   },
   "ethereum": {
     "rpcEndpoint": "https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ",

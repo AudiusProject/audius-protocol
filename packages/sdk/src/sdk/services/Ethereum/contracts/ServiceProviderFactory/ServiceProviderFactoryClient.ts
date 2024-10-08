@@ -35,7 +35,8 @@ export class ServiceProviderFactoryClient extends EthereumContract {
           })
       )
     )
-    return list.filter(Boolean)
+    // Remove empty endpoints
+    return list.filter(([_, endpoint]) => endpoint !== '')
   }
 
   getContentNodes = async () => {
@@ -52,6 +53,7 @@ export class ServiceProviderFactoryClient extends EthereumContract {
           })
       )
     )
-    return list.filter(Boolean)
+    // Remove empty endpoints
+    return list.filter(([_, endpoint]) => endpoint !== '')
   }
 }

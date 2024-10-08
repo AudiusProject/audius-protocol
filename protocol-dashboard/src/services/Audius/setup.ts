@@ -1,4 +1,4 @@
-import { libs as AudiusLibs } from '@audius/sdk/dist/web-libs'
+import { libs as AudiusLibs } from '@audius/sdk-legacy/dist/web-libs'
 import { Eip1193Provider } from 'ethers'
 
 import { CHAIN_ID, ETH_PROVIDER_URL } from 'utils/eth'

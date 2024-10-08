@@ -1,5 +1,3 @@
-import fetch from 'cross-fetch'
-
 import { DeveloperAppsApi } from '../api/developer-apps/DeveloperAppsApi'
 import {
   type Middleware,
@@ -8,6 +6,7 @@ import {
   Configuration,
   querystring
 } from '../api/generated/default'
+import fetch from '../utils/fetch'
 
 let appName: string | undefined
 let apiKey: string | undefined

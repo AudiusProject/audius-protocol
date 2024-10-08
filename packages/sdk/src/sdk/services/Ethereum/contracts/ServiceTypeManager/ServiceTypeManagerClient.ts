@@ -1,4 +1,5 @@
 import { ServiceTypeManager } from '@audius/eth'
+import { hexToString } from 'viem'
 
 import { EthereumContract } from '../EthereumContract'
 
@@ -20,15 +21,17 @@ export class ServiceTypeManagerClient extends EthereumContract {
     })
   }
 
-  getDiscoveryNodeVersion = () => {
-    return this.contract.getCurrentVersion({
+  getDiscoveryNodeVersion = async () => {
+    const version = await this.contract.getCurrentVersion({
       serviceType: this.discoveryNodeServiceType
     })
+    return hexToString(version, { size: 32 })
   }
 
-  getContentNodeVersion = () => {
-    return this.contract.getCurrentVersion({
+  getContentNodeVersion = async () => {
+    const version = await this.contract.getCurrentVersion({
       serviceType: this.contentNodeServiceType
     })
+    return hexToString(version, { size: 32 })
   }
 }

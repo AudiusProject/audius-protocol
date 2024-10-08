@@ -91,6 +91,7 @@ export const BuildTransactionSchema = z
           minimumMicroLamports: z.number().min(0).optional()
         })
       ])
+      .nullable()
       .optional()
   })
   .strict()

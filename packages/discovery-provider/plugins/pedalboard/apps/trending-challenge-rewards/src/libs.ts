@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 
 // TODO: promote this into a packages instead of tcr
 export const initAudiusLibs = async (): Promise<AudiusLibs> => {

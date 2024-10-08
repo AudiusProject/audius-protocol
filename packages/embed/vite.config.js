@@ -24,7 +24,7 @@ export default defineConfig(({ command, mode }) => {
       'process.env': env
     },
     optimizeDeps: {
-      include: ['@audius/sdk/dist/web-libs', '@audius/fetch-nft'],
+      include: ['@audius/sdk-legacy/dist/web-libs', '@audius/fetch-nft'],
       esbuildOptions: {
         define: {
           global: 'globalThis'

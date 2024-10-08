@@ -1,5 +1,5 @@
 import { audiusBackend } from '@audius/common/services'
-import * as nativeLibs from '@audius/sdk/dist/native-libs'
+import * as nativeLibs from '@audius/sdk-legacy/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'react-native'
 

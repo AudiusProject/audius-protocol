@@ -13,7 +13,7 @@ const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
-const { libs } = require('@audius/sdk/dist/libs')
+const { libs } = require('@audius/sdk-legacy/dist/libs')
 const config = require('../config.js')
 
 module.exports = function (app) {

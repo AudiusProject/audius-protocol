@@ -1,4 +1,4 @@
-import { IdentityRequestError } from '@audius/sdk/dist/libs'
+import { IdentityRequestError } from '@audius/sdk-legacy/dist/libs'
 import {
   call,
   takeEvery,

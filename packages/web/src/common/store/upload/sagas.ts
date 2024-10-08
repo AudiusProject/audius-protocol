@@ -33,8 +33,11 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { EntityManagerAction } from '@audius/sdk'
-import type { ProgressCB } from '@audius/sdk/dist/services/creatorNode'
-import type { TrackMetadata, UploadTrackMetadata } from '@audius/sdk/dist/utils'
+import type { ProgressCB } from '@audius/sdk-legacy/dist/services/creatorNode'
+import type {
+  TrackMetadata,
+  UploadTrackMetadata
+} from '@audius/sdk-legacy/dist/utils'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {

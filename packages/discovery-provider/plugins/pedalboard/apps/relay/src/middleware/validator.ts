@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { RelayRequest } from '../types/relay'
 import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
-import { AudiusABIDecoder } from '@audius/sdk/dist/libs'
+import { AudiusABIDecoder } from '@audius/sdk-legacy/dist/libs'
 import { config, discoveryDb } from '..'
 import {
   isTrackDownload,

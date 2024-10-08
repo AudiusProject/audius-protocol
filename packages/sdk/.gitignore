@@ -1,5 +1,3 @@
-src/data-contracts/config.json
-src/eth-contracts/config.json
 node_modules/
 *.swp
 *.swo
