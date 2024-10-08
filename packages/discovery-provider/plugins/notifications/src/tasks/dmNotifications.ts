@@ -166,60 +166,6 @@ async function getNewBlasts(
       WITH blast AS (
         SELECT * FROM chat_blast WHERE ${blastCondition}
       ),
-      aud AS (
-        -- follower_audience
-        SELECT blast_id, follower_user_id AS to_user_id
-        FROM follows
-        JOIN blast
-          ON blast.audience = 'follower_audience'
-          AND follows.followee_user_id = blast.from_user_id
-          AND follows.is_delete = false
-          AND follows.created_at < blast.created_at
-
-        UNION
-
-        -- tipper_audience
-        SELECT blast_id, sender_user_id AS to_user_id
-        FROM user_tips tip
-        JOIN blast
-          ON blast.audience = 'tipper_audience'
-          AND receiver_user_id = blast.from_user_id
-          AND tip.created_at < blast.created_at
-
-        UNION
-
-        -- remixer_audience
-        SELECT blast_id, t.owner_id AS to_user_id
-        FROM tracks t
-        JOIN remixes ON remixes.child_track_id = t.track_id
-        JOIN tracks og ON remixes.parent_track_id = og.track_id
-        JOIN blast
-          ON blast.audience = 'remixer_audience'
-          AND og.owner_id = blast.from_user_id
-          AND (
-            blast.audience_content_id IS NULL
-            OR (
-              blast.audience_content_type = 'track'
-              AND blast.audience_content_id = og.track_id
-            )
-          )
-
-        UNION
-
-        -- customer_audience
-        SELECT blast_id, buyer_user_id AS to_user_id
-        FROM usdc_purchases p
-        JOIN blast
-          ON blast.audience = 'customer_audience'
-          AND p.seller_user_id = blast.from_user_id
-          AND (
-            blast.audience_content_id IS NULL
-            OR (
-              blast.audience_content_type = p.content_type::text
-              AND blast.audience_content_id = p.content_id
-            )
-          )
-      ),
       targ AS (
         SELECT
           blast_id,
@@ -227,7 +173,7 @@ async function getNewBlasts(
           to_user_id,
           blast.created_at
         FROM blast
-        JOIN aud USING (blast_id)
+        JOIN chat_blast_audience(blast.blast_id) USING (blast_id)
         WHERE chat_allowed(from_user_id, to_user_id)
         AND (${userCondition})
         ORDER BY to_user_id ASC
