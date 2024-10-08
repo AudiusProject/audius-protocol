@@ -3,7 +3,6 @@ import {
   transformAndCleanList
 } from '@audius/common/adapters'
 import { Id, ID, OptionalId } from '@audius/common/models'
-import { getTrackId } from '@audius/common/src/store/user-list/remixers/selectors'
 import {
   accountSelectors,
   UserListSagaFactory,
@@ -19,7 +18,7 @@ import { watchRemixersError } from './errorSagas'
 export const MAX_REMIXERS = 50
 
 const { getRemixersError } = remixersUserListActions
-const { getId, getUserList } = remixersUserListSelectors
+const { getId, getUserList, getTrackId } = remixersUserListSelectors
 
 type FetchRemixersArgs = {
   id: ID

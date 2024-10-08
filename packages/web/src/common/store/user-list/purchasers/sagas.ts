@@ -4,10 +4,6 @@ import {
 } from '@audius/common/adapters'
 import { Id, ID, OptionalId } from '@audius/common/models'
 import {
-  getContentId,
-  getContentType
-} from '@audius/common/src/store/user-list/purchasers/selectors'
-import {
   accountSelectors,
   UserListSagaFactory,
   purchasersUserListActions,
@@ -23,7 +19,8 @@ import { watchPurchasersError } from './errorSagas'
 export const MAX_PURCHASERS = 50
 
 const { getPurchasersError } = purchasersUserListActions
-const { getId, getUserList } = purchasersUserListSelectors
+const { getId, getUserList, getContentId, getContentType } =
+  purchasersUserListSelectors
 
 type FetchPurchasersArgs = {
   id: ID
@@ -50,7 +47,7 @@ function* fetchPurchasers({
     offset,
     userId: OptionalId.parse(currentUserId),
     contentType,
-    contentId: OptionalId.parse(contentId?.toString())
+    contentId: contentId?.toString()
   })
 
   const users = transformAndCleanList(data, userMetadataFromSDK)
