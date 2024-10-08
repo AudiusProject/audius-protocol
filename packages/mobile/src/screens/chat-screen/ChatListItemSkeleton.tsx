@@ -1,9 +1,6 @@
-import { View } from 'react-native'
-
+import { Flex } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
-
-import { useStyles as useChatListItemStyles } from './ChatListItem'
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   profilePicture: {
@@ -45,28 +42,32 @@ export const ChatListItemSkeleton = ({
   index?: number // Required when shouldFade = true
 }) => {
   const styles = useStyles()
-  const ChatListItemStyles = useChatListItemStyles()
 
   return (
-    <View
+    <Flex
+      column
+      pv='l'
+      ph='xl'
+      backgroundColor='white'
+      borderBottom='default'
+      w='100%'
       style={[
-        ChatListItemStyles.root,
         // Only the first 4 items will be visible and have decreasing opacity.
         shouldFade ? { opacity: (4 - index) * 0.25 } : null
       ]}
     >
-      <View style={[ChatListItemStyles.contentRoot]}>
-        <View style={ChatListItemStyles.userContainer}>
+      <Flex row justifyContent='space-between' w='100%' gap='s'>
+        <Flex row flex={1} justifyContent='space-between'>
           <Skeleton style={styles.profilePicture} />
-          <View style={ChatListItemStyles.userTextContainer}>
-            <View style={styles.userNameContainer}>
+          <Flex column pt='2xs' ml='s' mb='s' flex={1}>
+            <Flex row mb='xs' wrap='nowrap'>
               <Skeleton style={styles.userName} />
-            </View>
+            </Flex>
             <Skeleton style={styles.handle} />
-          </View>
-        </View>
-      </View>
+          </Flex>
+        </Flex>
+      </Flex>
       <Skeleton style={styles.latestMessage} />
-    </View>
+    </Flex>
   )
 }
