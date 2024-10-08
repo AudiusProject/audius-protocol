@@ -1,5 +1,26 @@
 #!/bin/bash
 
+ENV_FILE="/env/prod.env"
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --stage) ENV_FILE="/env/stage.env";;
+        --prod) ENV_FILE="/env/prod.env";;
+        *) echo "Unknown parameter passed: $1"; exit 1;;
+    esac
+    shift
+done
+
+if [ -f "$ENV_FILE" ]; then
+    echo "Sourcing environment variables from $ENV_FILE"
+    set -a
+    source "$ENV_FILE"
+    set +a
+else
+    echo "Environment file $ENV_FILE not found!"
+    exit 1
+fi
+
 POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
 
 if [ ! -d "$POSTGRES_DATA_DIR" ]; then
@@ -8,8 +29,8 @@ if [ ! -d "$POSTGRES_DATA_DIR" ]; then
 fi
 
 echo "Updating PostgreSQL configuration for password authentication..."
-sed -i "s/peer/trust/g" $POSTGRES_DATA_DIR/pg_hba.conf
-sed -i "s/md5/trust/g" $POSTGRES_DATA_DIR/pg_hba.conf
+sed -i "s/peer/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
+sed -i "s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
 
 echo "Starting PostgreSQL service..."
 su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -l /var/log/postgresql/postgresql.log start"
@@ -19,13 +40,6 @@ su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWOR
 su - postgres -c "psql -c \"CREATE DATABASE $POSTGRES_DB;\""
 
 su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -l /var/log/postgresql/postgresql.log restart"
-
-if [ -f /env/prod.env ]; then
-    echo "Sourcing environment variables from /env/prod.env"
-    set -a
-    source /env/prod.env
-    set +a
-fi
 
 echo "Starting audiusd..."
 exec /bin/audiusd "$@"

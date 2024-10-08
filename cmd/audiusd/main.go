@@ -15,9 +15,9 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
-	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"

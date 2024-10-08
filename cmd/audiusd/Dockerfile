@@ -79,6 +79,7 @@ RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     -Wl,-Bdynamic -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lavresample -lpthread -lz -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
+
 FROM golang:1.22-bullseye AS go-builder
 
 RUN apt-get update && apt-get install -y \
@@ -101,13 +102,10 @@ RUN go build -o audiusd cmd/audiusd/main.go
 
 FROM debian:bullseye-slim as final
 
-RUN apt-get update && apt-get install -y wget gnupg2 lsb-release && \
-    echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    apt-get update && apt-get install -y \
-    postgresql-15 \
-    postgresql-client-15 \
-    postgresql-contrib-15 \
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg2 \
+    lsb-release \
     ca-certificates \
     curl \
     ffmpeg \
@@ -115,31 +113,25 @@ RUN apt-get update && apt-get install -y wget gnupg2 lsb-release && \
     zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y postgresql
+
 COPY --from=cpp-builder /bin/analyze-key /bin/analyze-bpm /bin/
 COPY --from=go-builder /app/audiusd /bin/audiusd
 
-COPY ./cmd/audiusd/prod.env /env/prod.env
+COPY ./cmd/audiusd/*.env /env/
 COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh
 
 RUN mkdir -p /data && chown -R postgres:postgres /data
 
-VOLUME ["/data"]
-
 ARG git_sha
 ENV GIT_SHA=$git_sha
-
-ENV POSTGRES_PASSWORD="postgres"
-ENV POSTGRES_DB="audiusd"
-ENV POSTGRES_DATA_DIR="/data/postgres"
-ENV dbUrl="postgresql://postgres:postgres@localhost:5432/audiusd"
-ENV uptimeDataDir="/bolt"
-ENV audius_core_root_dir="/audiusd"
 
 EXPOSE 80
 EXPOSE 443
 EXPOSE 5432
 EXPOSE 26656
 
-ENTRYPOINT ["/bin/entrypoint.sh"]
+VOLUME ["/data"]
 
+ENTRYPOINT ["/bin/entrypoint.sh"]

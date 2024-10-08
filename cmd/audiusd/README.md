@@ -5,16 +5,16 @@ Single binary content node, running Audius Core.
 > This binary is experimental at this stage and is expected to evolve and change rapidly.
   These docs exist to describe a basic method to get something running that works. They are not intended to be the end UX.
 
-## Run a local node
-
-### Docker
+## Run
 
 ```
 docker build -t audiusd:latest -f cmd/audiusd/Dockerfile .
-docker run -d -v /tmp/audiusd_data:/data -p 80:80 -p 443:443 audiusd
+docker run -d -v /tmp/audiusd:/data -p 80:80 -p 443:443 audiusd [--stage]
 
 open http://localhost/console/overview
 ```
+
+## Dev
 
 ### Build from source
 ```bash
