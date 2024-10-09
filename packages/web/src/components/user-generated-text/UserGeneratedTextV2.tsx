@@ -24,6 +24,7 @@ import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { TextLink, TextLinkProps } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -111,9 +112,11 @@ const HandleLink = ({
   })
 
   return user ? (
-    <TextLink {...other} to={profilePage(user.handle)}>
-      {handle}
-    </TextLink>
+    <ArtistPopover handle={user.handle} component='span'>
+      <TextLink {...other} to={profilePage(user.handle)}>
+        {handle}
+      </TextLink>
+    </ArtistPopover>
   ) : (
     <Text
       {...(omit(other, ['textVariant']) as any)}
