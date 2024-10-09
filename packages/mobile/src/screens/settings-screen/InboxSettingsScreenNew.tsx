@@ -20,16 +20,10 @@ const messages = {
 }
 
 export const InboxSettingsScreenNew = () => {
-  const {
-    permissions,
-    doFetchPermissions,
-    permissionsStatus,
-    savePermissionStatus,
-    showSpinner,
-    savePermissions
-  } = useSetInboxPermissions({
-    audiusSdk
-  })
+  const { permissions, doFetchPermissions, savePermissions } =
+    useSetInboxPermissions({
+      audiusSdk
+    })
 
   const initialValues = useMemo(() => {
     return transformPermitListToMap(
