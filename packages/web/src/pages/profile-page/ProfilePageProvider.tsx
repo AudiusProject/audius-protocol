@@ -151,8 +151,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   unlisten!: UnregisterCallback
 
   componentDidMount() {
-    console.log('asdf state: ', this.state)
-
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
     this.fetchProfile(getPathname(this.props.location))
@@ -752,17 +750,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onUnblock = () => {
-    console.log('asdf on unblock ')
     return this.setState({ showUnblockUserConfirmationModal: true })
   }
 
   onMute = () => {
-    console.log('asdf on mute')
     return this.setState({ showMuteUserConfirmationModal: true })
   }
 
   onUnmute = () => {
-    console.log('asdf on un mute')
     return this.setState({ showUnmuteUserConfirmationModal: true })
   }
 
@@ -1236,12 +1231,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     onUnblock: (userId: ID) => {
       dispatch(unblockUser({ userId }))
     },
-    onMute: (userId: ID) => {
-      console.log('asdf muting')
-    },
-    onUnmute: (userId: ID) => {
-      console.log('asdf unmuting')
-    },
+    onMute: (userId: ID) => {},
+    onUnmute: (userId: ID) => {},
     redirectUnauthenticatedAction: () => {
       dispatch(openSignOn())
       dispatch(showRequiresAccountModal())

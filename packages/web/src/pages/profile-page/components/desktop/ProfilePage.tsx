@@ -1,21 +1,7 @@
-import {
-  useCallback,
-  memo,
-  ReactNode,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
+import { useCallback, memo, ReactNode } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
-import {
-  useCurrentCommentSection,
-  useUpdateCommentNotificationSetting,
-  usePinComment,
-  useReactToComment,
-  useReportComment,
-  useMuteUser
-} from '@audius/common/context'
+import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
   CreatePlaylistSource,
@@ -634,12 +620,10 @@ const ProfilePage = ({
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
-  console.log('asdf mutedUsers: ', mutedUsers)
   const [isMuted, toggleMuted] = useToggle(
     mutedUsers?.some((user) => user.user_id === userId) ?? false
   )
 
-  console.log('asdf has some: ', isMuted)
   return (
     <Page
       title={title}

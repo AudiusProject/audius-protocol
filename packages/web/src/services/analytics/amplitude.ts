@@ -53,6 +53,7 @@ export const identify = (
   }
   amp.getInstance().setUserId(handle)
   if (traits && Object.keys(traits).length > 0) {
+    console.log('asdf identify: ', traits)
     amp.getInstance().setUserProperties(traits)
   }
   if (callback) callback()
@@ -69,6 +70,8 @@ export const track = (
     if (callback) callback()
     return
   }
+  console.log('asdf track: ', event, properties)
+
   amp.getInstance().logEvent(event, properties)
   if (callback) {
     callback()
