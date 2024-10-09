@@ -737,15 +737,7 @@ export const useUpdateTrackCommentNotificationSetting = () => {
     onMutate: ({ trackId, action }) => {
       queryClient.setQueryData(
         [QUERY_KEYS.trackCommentNotificationSetting, trackId],
-        (prevData) => {
-          if (prevData) {
-            return {
-              ...prevData,
-              isMuted: action === EntityManagerAction.MUTE
-            }
-          }
-          return { isMuted: action === EntityManagerAction.MUTE }
-        }
+        () => ({ data: { isMuted: action === EntityManagerAction.MUTE } })
       )
     },
     onError: (error: Error, args) => {
