@@ -14,6 +14,7 @@ from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 
@@ -186,19 +187,15 @@ def test_dupe_comment_react(app, mocker):
 
 
 def test_comment_pin(app, mocker):
+    "Test track owner can pin a comment, and existing comment pinned comment is unpinned"
 
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
         ],
-        "tracks": [
-            {
-                "track_id": 1,
-                "owner_id": 1,
-            },
-        ],
-        "comments": [{"comment_id": 1, "user_id": 2}],
+        "tracks": [{"track_id": 1, "owner_id": 1, "pinned_comment_id": 2}],
+        "comments": [{"comment_id": 1, "user_id": 2}, {"comment_id": 2, "user_id": 2}],
     }
 
     tx_receipts = {
@@ -210,7 +207,7 @@ def test_comment_pin(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Pin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -230,8 +227,8 @@ def test_comment_pin(app, mocker):
             block_hash=hex(0),
         )
 
-        comments = session.query(Comment).all()
-        assert comments[0].is_pinned == True
+        tracks = session.query(Track).filter(Track.track_id == 1).all()
+        assert tracks[0].pinned_comment_id == 1
 
 
 def test_comment_unpin(app, mocker):
@@ -253,7 +250,7 @@ def test_comment_unpin(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Unpin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -273,8 +270,8 @@ def test_comment_unpin(app, mocker):
             block_hash=hex(0),
         )
 
-        comments = session.query(Comment).all()
-        assert comments[0].is_pinned == False
+        tracks = session.query(Track).filter(Track.track_id == 1).all()
+        assert tracks[0].pinned_comment_id == None
 
 
 def test_dupe_pin(app, mocker):
@@ -297,7 +294,7 @@ def test_dupe_pin(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Pin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -311,7 +308,7 @@ def test_dupe_pin(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Pin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -331,9 +328,8 @@ def test_dupe_pin(app, mocker):
             block_hash=hex(0),
         )
 
-        comments = session.query(Comment).all()
-        # Assert first pin
-        assert comments[0].is_pinned == True
+        tracks = session.query(Track).filter(Track.track_id == 1).all()
+        assert tracks[0].pinned_comment_id == 1
 
 
 def test_pin_missing_comment(app, mocker):
@@ -355,7 +351,7 @@ def test_pin_missing_comment(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Pin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -369,7 +365,7 @@ def test_pin_missing_comment(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 1,
                         "_action": "Pin",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
                         "_signer": "user1wallet",
                     }
                 )

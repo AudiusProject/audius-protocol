@@ -266,6 +266,7 @@ def populate_mock_db(db, entities, block_offset=None):
                     "playlists_previously_containing_track", {}
                 ),
                 comments_disabled=track_meta.get("comments_disabled", False),
+                pinned_comment_id=track_meta.get("pinned_comment_id", None),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
@@ -813,7 +814,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 entity_id=comment_meta.get("entity_id", i),
                 entity_type=comment_meta.get("entity_type", "Track"),
                 text=comment_meta.get("text", ""),
-                is_pinned=comment_meta.get("is_pinned", False),
                 is_edited=comment_meta.get("is_edited", False),
                 is_delete=comment_meta.get("is_delete", False),
                 created_at=comment_meta.get("created_at", datetime.now()),
