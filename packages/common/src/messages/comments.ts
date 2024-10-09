@@ -86,7 +86,7 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     muteUser: {
-      title: 'Mute user',
+      title: 'Mute User',
       body: (userDisplayName: string | undefined) =>
         `Mute ${userDisplayName} from commenting on your tracks?`,
       hint: 'This will not affect their ability to view your profile or interact with your content.',
@@ -94,7 +94,7 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     unmuteUser: {
-      title: 'Unmute user',
+      title: 'Unmute User',
       body: (userDisplayName: string | undefined) =>
         `Unmute ${userDisplayName} from commenting on your tracks?`,
       hint: 'You can mute them again from their profile.',

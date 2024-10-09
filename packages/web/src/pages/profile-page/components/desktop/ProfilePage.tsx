@@ -2,6 +2,7 @@ import { useCallback, memo, ReactNode } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { commentsMessages } from '@audius/common/messages'
 import {
   CreatePlaylistSource,
@@ -14,6 +15,7 @@ import {
   LineupState,
   Track
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
@@ -163,7 +165,6 @@ export type ProfilePageProps = {
   onBlock: () => void
   onUnblock: () => void
   onMute: () => void
-  onUnmute: () => void
   onCloseBlockUserConfirmationModal: () => void
   onCloseUnblockUserConfirmationModal: () => void
   onCloseMuteUserConfirmationModal: () => void
@@ -224,7 +225,6 @@ const ProfilePage = ({
   onBlock,
   onUnblock,
   onMute,
-  onUnmute,
   isBlocked,
   // Chat modals
   showBlockUserConfirmationModal,
@@ -705,7 +705,6 @@ const ProfilePage = ({
             onBlock={onBlock}
             onUnblock={onUnblock}
             onMute={onMute}
-            onUnmute={onUnmute}
           />
           <Flex direction='column'>
             <NavBanner

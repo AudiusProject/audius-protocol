@@ -951,8 +951,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       onMessage: this.onMessage,
       onBlock: this.onBlock,
       onUnblock: this.onUnblock,
-      onMute: this.onMute,
-      onUnmute: this.onUnmute
+      onMute: this.onMute
     }
 
     const mobileProps = {
@@ -1231,8 +1230,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     onUnblock: (userId: ID) => {
       dispatch(unblockUser({ userId }))
     },
-    onMute: (userId: ID) => {},
-    onUnmute: (userId: ID) => {},
     redirectUnauthenticatedAction: () => {
       dispatch(openSignOn())
       dispatch(showRequiresAccountModal())

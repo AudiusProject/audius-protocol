@@ -1,7 +1,8 @@
 import { useRef } from 'react'
 
-import { useIsManagedAccount } from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -79,7 +80,6 @@ type StatsMenuPopupProps = {
   onBlock: () => void
   onUnblock: () => void
   onMute: () => void
-  onUnmute: () => void
 }
 
 const StatsPopupMenu = ({
@@ -89,8 +89,7 @@ const StatsPopupMenu = ({
   isMuted,
   onBlock,
   onUnblock,
-  onMute,
-  onUnmute
+  onMute
 }: StatsMenuPopupProps) => {
   const isManagedAccount = useIsManagedAccount()
   const menuItems = [
@@ -116,8 +115,11 @@ const StatsPopupMenu = ({
           }
     )
   }
+  const { isEnabled: commentPostFlag = false } = useFeatureFlag(
+    FeatureFlags.COMMENT_POSTING_ENABLED
+  )
 
-  if (accountUserId) {
+  if (accountUserId && commentPostFlag) {
     menuItems.push(
       isMuted
         ? {
@@ -175,7 +177,6 @@ export const StatBanner = (props: StatsBannerProps) => {
     onBlock,
     onUnblock,
     onMute,
-    onUnmute,
     isBlocked,
     isMuted,
     accountUserId,
@@ -235,7 +236,7 @@ export const StatBanner = (props: StatsBannerProps) => {
     default:
       buttons = (
         <>
-          {onShare && onUnblock && onBlock && onMute && onUnmute ? (
+          {onShare && onUnblock && onBlock && onMute ? (
             <>
               <StatsPopupMenu
                 onShare={onShare}
@@ -245,7 +246,6 @@ export const StatBanner = (props: StatsBannerProps) => {
                 onBlock={onBlock}
                 onUnblock={onUnblock}
                 onMute={onMute}
-                onUnmute={onUnmute}
               />
               {onMessage && !isManagedAccount ? (
                 <Button

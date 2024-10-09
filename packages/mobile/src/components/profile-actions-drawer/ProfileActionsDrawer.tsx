@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
-import { useMuteUser } from '@audius/common/context'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { commentsMessages } from '@audius/common/messages'
 import { ShareSource } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   profilePageSelectors,
   chatActions,
@@ -10,13 +12,11 @@ import {
   shareModalUIActions
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
-import { useToggle } from 'react-use'
 
 import ActionDrawer from 'app/components/action-drawer'
 import type { AppState } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
 
-import { useDrawerState } from '../drawer'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getProfileUserId } = profilePageSelectors
 const { getBlockees } = chatSelectors
@@ -27,9 +27,7 @@ const PROFILE_ACTIONS_MODAL_NAME = 'ProfileActions'
 const messages = {
   shareProfile: 'Share Profile',
   blockMessages: 'Block Messages',
-  unblockMessages: 'Unblock Messages',
-  muteComments: 'Mute Comments',
-  unmuteComments: 'Unmute Comments'
+  unblockMessages: 'Unblock Messages'
 }
 
 export const ProfileActionsDrawer = () => {
@@ -37,6 +35,9 @@ export const ProfileActionsDrawer = () => {
   const userId = useSelector((state: AppState) => getProfileUserId(state))
   const blockeeList = useSelector(getBlockees)
   const isBlockee = userId ? blockeeList.includes(userId) : false
+  const { isEnabled: commentPostFlag = false } = useFeatureFlag(
+    FeatureFlags.COMMENT_POSTING_ENABLED
+  )
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: mutedUsers } = useGetMutedUsers(
@@ -113,15 +114,22 @@ export const ProfileActionsDrawer = () => {
         text: isBlockee ? messages.unblockMessages : messages.blockMessages,
         callback: handleBlockMessagesPress
       },
-      {
-        text: isMuted ? messages.unmuteComments : messages.muteComments,
-        callback: handleMuteCommentPress
-      }
+      ...(commentPostFlag
+        ? [
+            {
+              text: isMuted
+                ? commentsMessages.popups.unmuteUser.title
+                : commentsMessages.popups.muteUser.title,
+              callback: handleMuteCommentPress
+            }
+          ]
+        : [])
     ],
     [
       handleShareProfilePress,
       isBlockee,
       handleBlockMessagesPress,
+      commentPostFlag,
       isMuted,
       handleMuteCommentPress
     ]
