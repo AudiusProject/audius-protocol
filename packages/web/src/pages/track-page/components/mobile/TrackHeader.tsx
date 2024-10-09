@@ -38,8 +38,9 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import dayjs from 'dayjs'
-import { shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -197,6 +198,7 @@ const TrackHeader = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+  const dispatch = useDispatch()
   const hasDownloadableAssets =
     track?.is_downloadable || (track?._stems?.length ?? 0) > 0
 
@@ -273,6 +275,10 @@ const TrackHeader = ({
   const onClickReposts = useCallback(() => {
     goToRepostsPage(trackId)
   }, [goToRepostsPage, trackId])
+
+  const onClickComments = useCallback(() => {
+    dispatch(pushRoute(`${track?.permalink}/comments`))
+  }, [dispatch, track?.permalink])
 
   const imageElement = coSign ? (
     <CoSign
@@ -432,6 +438,7 @@ const TrackHeader = ({
         commentCount={commentCount}
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
+        onClickComments={onClickComments}
       />
       {aiAttributedUserId ? (
         <AiTrackSection
