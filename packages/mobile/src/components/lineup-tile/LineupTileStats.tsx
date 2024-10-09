@@ -141,7 +141,7 @@ export const LineupTileStats = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
-  const hasEngagement = Boolean(repostCount || saveCount)
+  const hasEngagement = Boolean(repostCount || saveCount || commentCount)
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
   const handlePressFavorites = useCallback(() => {
