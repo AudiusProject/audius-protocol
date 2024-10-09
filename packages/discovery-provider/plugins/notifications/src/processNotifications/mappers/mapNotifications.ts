@@ -39,7 +39,8 @@ import {
   ClaimableRewardNotification,
   RewardInCooldownNotification,
   CommentNotification,
-  CommentThreadNotification
+  CommentThreadNotification,
+  CommentMentionNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -75,6 +76,7 @@ import { RewardInCooldown } from './rewardInCooldown'
 import { ClaimableReward } from './claimableReward'
 import { Comment } from './comment'
 import { CommentThread } from './commentThread'
+import { CommentMention } from './commentMention'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -295,6 +297,11 @@ const mapNotification = (
       data: CommentThreadNotification
     }
     return new CommentThread(dnDb, identityDb, saveNotification)
+  } else if (notification.type == 'comment_mention') {
+    const saveNotification = notification as NotificationRow & {
+      data: CommentMentionNotification
+    }
+    return new CommentMention(dnDb, identityDb, saveNotification)
   }
 
   logger.info(`Notification type: ${notification.type} has no handler`)

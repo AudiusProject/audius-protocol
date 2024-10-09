@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import {
   AppEmailNotification,
-  CommentThreadNotification
+  CommentMentionNotification
 } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
@@ -16,10 +16,10 @@ import {
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
-type CommentThreadNotificationRow = Omit<NotificationRow, 'data'> & {
-  data: CommentThreadNotification
+type CommentMentionNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: CommentMentionNotification
 }
-export class CommentThread extends BaseNotification<CommentThreadNotificationRow> {
+export class CommentMention extends BaseNotification<CommentMentionNotificationRow> {
   receiverUserId: number
   entityId: number
   entityType: EntityType
@@ -29,7 +29,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: CommentThreadNotificationRow
+    notification: CommentMentionNotificationRow
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
@@ -90,10 +90,10 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
       [this.receiverUserId, this.commenterUserId]
     )
 
-    const title = 'New Reply'
+    const title = 'New Mention'
     const body = `${
       users[this.commenterUserId]?.name
-    } replied to your comment on ${
+    } tagged you in a comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
         : `${users[this.entityUserId]?.name}'s`
@@ -146,7 +146,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
-                type: 'CommentThread'
+                type: 'CommentMention'
               }
             }
           )
@@ -196,7 +196,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
 
   formatEmailProps(
     resources: Resources,
-    additionalGroupNotifications: CommentThread[] = []
+    additionalGroupNotifications: CommentMention[] = []
   ) {
     const user = resources.users[this.commenterUserId]
     const additionalUsers = additionalGroupNotifications.map(

@@ -21,7 +21,8 @@ import {
   UsdcUserBankAccountRow,
   GrantRow,
   CommentRow,
-  CommentThreadRow
+  CommentThreadRow,
+  CommentMentionRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -831,6 +832,30 @@ export const createCommentThreads = async (
   commentThreads: CreateCommentThread[]
 ) => {
   await db.insert(commentThreads).into('comment_threads')
+}
+
+type CreateCommentMention = Pick<CommentMentionRow, 'comment_id' | 'user_id'> &
+  Partial<CommentMentionRow>
+
+export const createCommentMentions = async (
+  db: Knex,
+  commentMentions: CreateCommentMention[]
+) => {
+  await db
+    .insert(
+      commentMentions.map((mention) => ({
+        comment_id: mention.comment_id,
+        user_id: mention.user_id,
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
+        is_delete: false,
+        txhash: `0x${mention.comment_id}`,
+        blockhash: `0x${mention.comment_id}`,
+        blocknumber: 0,
+        ...mention
+      }))
+    )
+    .into('comment_mentions')
 }
 
 export type UserWithDevice = {

@@ -194,6 +194,14 @@ const snippetMap = {
         ? 'your'
         : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
+  ['comment_mention'](notification) {
+    const [user] = notification.users
+    return `${user.name} tagged you in a comment on ${
+      notification.entityUser.user_id === notification.receiverUserId
+        ? 'your'
+        : `${notification.entityUser.name}'s`
+    } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
 }
 
