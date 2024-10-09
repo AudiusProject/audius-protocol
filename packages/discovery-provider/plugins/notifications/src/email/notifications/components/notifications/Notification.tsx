@@ -479,6 +479,24 @@ const notificationMap = {
         {entity}
       </span>
     )
+  },
+  ['comment_thread'](notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return (
+      <span className={'notificationText'}>
+        {user}
+        <BodyText text={` replied to your comment on `} />
+        <BodyText
+          text={
+            notification.entityUser.user_id === notification.receiverUserId
+              ? 'your'
+              : `${notification.entityUser.name}'s`
+          }
+        />
+        {entity}
+      </span>
+    )
   }
 }
 

@@ -841,6 +841,12 @@ export interface CommentRow {
   is_edited: boolean
   txhash?: string
 }
+
+export interface CommentThreadRow {
+  comment_id: number
+  parent_comment_id: number
+}
+
 export enum wallet_chain {
   'eth' = 'eth',
   'sol' = 'sol'

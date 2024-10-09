@@ -20,7 +20,8 @@ import {
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
   GrantRow,
-  CommentRow
+  CommentRow,
+  CommentThreadRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -821,6 +822,15 @@ export const createComments = async (db: Knex, comments: CreateComment[]) => {
       }))
     )
     .into('comments')
+}
+
+type CreateCommentThread = CommentThreadRow
+
+export const createCommentThreads = async (
+  db: Knex,
+  commentThreads: CreateCommentThread[]
+) => {
+  await db.insert(commentThreads).into('comment_threads')
 }
 
 export type UserWithDevice = {

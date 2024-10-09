@@ -37,7 +37,8 @@ export enum MappingVariable {
   PushRequestManager = 'push_request_manager',
   PushApproveManagerRequest = 'push_approve_manager_request',
   PushRewardInCooldown = 'push_reward_in_cooldown',
-  PushComment = 'push_comment'
+  PushComment = 'push_comment',
+  PushCommentThread = 'push_comment_thread'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'
