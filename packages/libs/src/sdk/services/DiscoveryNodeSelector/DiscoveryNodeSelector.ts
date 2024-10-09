@@ -6,13 +6,13 @@ import { AbortController as AbortControllerPolyfill } from 'node-abort-controlle
 import semver from 'semver'
 import type TypedEventEmitter from 'typed-emitter'
 
+import { productionConfig } from '../../config/production'
 import type {
   ErrorContext,
   Middleware,
   RequestContext,
   ResponseContext
-} from '../../api/generated/default'
-import { productionConfig } from '../../config/production'
+} from '../../runtime'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'

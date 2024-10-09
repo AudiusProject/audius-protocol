@@ -1,7 +1,7 @@
 import type { LoggerService } from './types'
 
 const DEFAULT_LOG_LEVEL = 'warn'
-const DEFAULT_LOG_PREFIX = '[audius-sdk]'
+const DEFAULT_LOG_PREFIX = '[audius-sdk-legacy]'
 const logLevels = ['debug', 'info', 'warn', 'error'] as const
 
 type LogLevel = (typeof logLevels)[number]
@@ -13,7 +13,7 @@ type LoggerConfiguration = {
 
 export class Logger implements LoggerService {
   private logLevel: LogLevel
-  private logPrefix = '[audius-sdk]'
+  private logPrefix = '[audius-sdk-legacy]'
 
   constructor(config?: LoggerConfiguration) {
     this.logLevel = config?.logLevel ?? DEFAULT_LOG_LEVEL

@@ -2,7 +2,7 @@ import shuffle from 'lodash/shuffle'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 
-import type { FetchParams } from '../../api/generated/default'
+import type { FetchParams } from '../../runtime'
 import fetch, { Response } from '../../utils/fetch'
 
 import { DiscoveryNodeSelector } from './DiscoveryNodeSelector'

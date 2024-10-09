@@ -1,6 +1,5 @@
 import semver from 'semver'
 
-import type { CommsResponse } from '../../../sdk/api/chats/serverTypes'
 import fetch from '../../utils/fetch'
 
 import {
@@ -22,12 +21,6 @@ export const isFullFlaskResponse = (
   data: ApiHealthResponseData
 ): data is FlaskFullResponse => {
   return (data as FlaskFullResponse).version !== undefined
-}
-
-export const isCommsResponse = (
-  data: ApiHealthResponseData
-): data is CommsResponse => {
-  return (data as CommsResponse).health !== undefined
 }
 
 const isIndexerHealthy = ({
@@ -115,11 +108,6 @@ export const parseApiHealthStatusReason = ({
     if (!isApiSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
       return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
     }
-  } else if (isCommsResponse(data)) {
-    // TODO: Re-enable once is_healthy is correctly reporting
-    // if (!isApiCommsHealthy({ data })) {
-    //   return { health: HealthCheckStatus.UNHEALTHY, reason: 'comms' }
-    // }
   }
 
   return { health: HealthCheckStatus.HEALTHY }

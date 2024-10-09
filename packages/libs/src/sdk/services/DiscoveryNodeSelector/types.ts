@@ -1,4 +1,4 @@
-import type { Middleware } from '../../api/generated/default'
+import type { Middleware } from '../../runtime'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import type { DeepPartial } from '../../utils/deepPartial'
 import type { LoggerService } from '../Logger'

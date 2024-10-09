@@ -1,4 +1,3 @@
-import type { CommsResponse } from '../../api/chats/serverTypes'
 import type { DeepPartial } from '../../utils/deepPartial'
 import type { StorageNode } from '../StorageNodeSelector'
 
@@ -18,10 +17,7 @@ export type FlaskFullResponse = Partial<{
   data: unknown
 }>
 
-export type ApiHealthResponseData =
-  | FlaskFullResponse
-  | CommsResponse
-  | { data: unknown } // V1 non-full has no health fields
+export type ApiHealthResponseData = FlaskFullResponse | { data: unknown } // V1 non-full has no health fields
 
 export type HealthCheckComms = Partial<{
   healthy: boolean
