@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
 import type { InboxSettingsFormValues } from '@audius/common/store'
