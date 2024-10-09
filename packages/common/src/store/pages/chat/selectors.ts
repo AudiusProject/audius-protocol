@@ -47,7 +47,11 @@ export const getBlockees = (state: CommonState) => state.pages.chat.blockees
 
 export const getBlockers = (state: CommonState) => state.pages.chat.blockers
 
-const getChatPermissions = (state: CommonState) => state.pages.chat.permissions
+export const getChatPermissions = (state: CommonState) =>
+  state.pages.chat.permissions
+
+export const getChatPermissionsStatus = (state: CommonState) =>
+  state.pages.chat.permissionsStatus
 
 // Gets a chat and its optimistic read status
 export const getChat = createSelector(

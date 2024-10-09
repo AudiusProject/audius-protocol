@@ -1,7 +1,9 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
-import { Status } from '@audius/common/models'
+import { Status, statusIsNotFinalized } from '@audius/common/models'
+import { transformPermitListToMap } from '@audius/common/utils'
+import type { InboxSettingsFormValues } from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
@@ -13,7 +15,8 @@ import {
   Text,
   Flex,
   Checkbox,
-  Switch
+  Switch,
+  LoadingSpinner
 } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
 import { Formik, useField } from 'formik'
@@ -57,40 +60,27 @@ const options = [
   }
 ]
 
-type InboxSettingsFormValues = {
-  allowAll: boolean
-  [ChatPermission.FOLLOWEES]: boolean
-  [ChatPermission.TIPPERS]: boolean
-  [ChatPermission.TIPPEES]: boolean
-  [ChatPermission.FOLLOWERS]: boolean
-  [ChatPermission.VERIFIED]: boolean
-}
-
 export const InboxSettingsModalNew = () => {
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
 
   const {
-    localPermission,
+    permissions,
     doFetchPermissions,
-    permissionStatus,
-    showSpinner
-    // setAndSavePermissions
+    permissionsStatus,
+    savePermissionStatus,
+    showSpinner,
+    savePermissions
   } = useSetInboxPermissions({
     audiusSdk
   })
 
   const handleSave = useCallback(
     (values: InboxSettingsFormValues) => {
-      window.alert(JSON.stringify(values, null, 2))
-      if (values.allowAll) {
-        // setAndSavePermissions({ permit: ChatPermission.ALL })
-      }
-      // TODO: setAndSavePermissions doesn't accept multiple permissions yet
-      // setAndSavePermissions({})
+      savePermissions(values)
       handleClose()
     },
-    [handleClose]
+    [handleClose, savePermissions]
   )
 
   // Fetch the latest permissions for the current user when the modal is made visible
@@ -99,62 +89,81 @@ export const InboxSettingsModalNew = () => {
     doFetchPermissions()
   }, [doFetchPermissions])
 
-  const allowAll = localPermission === ChatPermission.ALL
-  const initialValues = {
-    allowAll,
-    [ChatPermission.FOLLOWEES]:
-      allowAll || localPermission === ChatPermission.FOLLOWEES,
-    [ChatPermission.TIPPERS]:
-      allowAll || localPermission === ChatPermission.TIPPERS,
-    [ChatPermission.TIPPEES]:
-      allowAll || localPermission === ChatPermission.TIPPEES,
-    [ChatPermission.FOLLOWERS]:
-      allowAll || localPermission === ChatPermission.FOLLOWERS,
-    [ChatPermission.VERIFIED]:
-      allowAll || localPermission === ChatPermission.VERIFIED
-  }
+  const initialValues = useMemo(() => {
+    return transformPermitListToMap(
+      permissions?.permit_list ?? [ChatPermission.ALL]
+    )
+  }, [permissions])
 
   return (
-    <Formik<InboxSettingsFormValues>
-      initialValues={initialValues}
-      onSubmit={handleSave}
-    >
-      {({ submitForm }) => (
-        <Modal onClose={handleClose} isOpen={isVisible} size='medium'>
-          <ModalHeader onClose={handleClose}>
-            <ModalTitle title={messages.title} icon={<IconMessage />} />
-          </ModalHeader>
-          <ModalContent>
-            <InboxSettingsModalFields />
-          </ModalContent>
-          <ModalFooter>
-            <Flex gap='xl' flex={1}>
-              <Button variant='secondary' fullWidth>
-                {messages.cancel}
-              </Button>
-              <Button
-                variant='primary'
-                isLoading={permissionStatus === Status.LOADING && showSpinner}
-                type='submit'
-                onClick={submitForm}
-                fullWidth
-              >
-                {messages.save}
-              </Button>
-            </Flex>
-          </ModalFooter>
-        </Modal>
+    <Modal onClose={handleClose} isOpen={isVisible} size='medium'>
+      <ModalHeader onClose={handleClose}>
+        <ModalTitle title={messages.title} icon={<IconMessage />} />
+      </ModalHeader>
+      {statusIsNotFinalized(permissionsStatus) ? (
+        <LoadingSpinner />
+      ) : (
+        <Formik<InboxSettingsFormValues>
+          initialValues={initialValues}
+          onSubmit={handleSave}
+        >
+          {({ submitForm }) => (
+            <>
+              <ModalContent>
+                <InboxSettingsModalFields
+                  permissionsStatus={permissionsStatus}
+                />
+              </ModalContent>
+              <ModalFooter>
+                <Flex gap='xl' flex={1}>
+                  <Button variant='secondary' fullWidth onClick={handleClose}>
+                    {messages.cancel}
+                  </Button>
+                  <Button
+                    variant='primary'
+                    isLoading={
+                      savePermissionStatus === Status.LOADING && showSpinner
+                    }
+                    type='submit'
+                    onClick={submitForm}
+                    fullWidth
+                  >
+                    {messages.save}
+                  </Button>
+                </Flex>
+              </ModalFooter>
+            </>
+          )}
+        </Formik>
       )}
-    </Formik>
+    </Modal>
   )
 }
 
-const InboxSettingsModalFields = () => {
-  const [allowAllField] = useField({ name: 'allowAll', type: 'checkbox' })
-  return (
+const InboxSettingsModalFields = ({
+  permissionsStatus
+}: {
+  permissionsStatus: Status
+}) => {
+  const [allowAllField, , { setValue: setAllowAll }] = useField({
+    name: 'all',
+    type: 'checkbox'
+  })
+
+  const handleAllChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const isChecked = e.target.checked
+      setAllowAll(isChecked)
+    },
+    [setAllowAll]
+  )
+
+  return statusIsNotFinalized(permissionsStatus) ? (
+    <LoadingSpinner />
+  ) : (
     <Flex column gap='xl'>
       <Flex row gap='l'>
-        <Switch {...allowAllField} />
+        <Switch {...allowAllField} onChange={handleAllChange} />
         <Text variant='title' size='l'>
           {messages.allTitle}
         </Text>
@@ -177,20 +186,29 @@ const InboxSettingsModalFields = () => {
 
 function CheckboxField(props: { title: string; value: ChatPermission }) {
   const { title, value } = props
-  const [allowAllField] = useField({ name: 'allowAll', type: 'checkbox' })
+  const [allowAllField] = useField({ name: 'all', type: 'checkbox' })
 
-  const [field] = useField({
+  const [field, , { setValue }] = useField({
     name: value,
     type: 'checkbox'
   })
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const isChecked = e.target.checked
+      setValue(isChecked)
+    },
+    [setValue]
+  )
 
   return (
     <Flex row gap='l' key={title}>
       <Checkbox
         {...field}
         id={title}
-        checked={field.checked}
+        checked={field.checked || allowAllField.checked}
         disabled={allowAllField.checked}
+        onChange={handleChange}
       />
       <Text tag='label' htmlFor={title} variant='title' strength='weak'>
         {title}
