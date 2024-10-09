@@ -171,6 +171,10 @@ export const InboxUnavailableModal = () => {
       }
     } else if (callToAction === ChatPermissionAction.FOLLOW) {
       dispatch(followUser(userId, FollowSource.INBOX_UNAVAILABLE_MODAL))
+      dispatch(createChat({ userIds: [userId], presetMessage }))
+      if (onSuccessAction) {
+        dispatch(onSuccessAction)
+      }
     } else {
       window.open(CHAT_BLOG_POST_URL, '_blank')
     }
