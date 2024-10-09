@@ -2,7 +2,6 @@ import { useCallback, memo, ReactNode } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { commentsMessages } from '@audius/common/messages'
 import {
   CreatePlaylistSource,
@@ -15,7 +14,6 @@ import {
   LineupState,
   Track
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
