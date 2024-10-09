@@ -67,6 +67,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     isLoading,
     entityId,
     entityType,
+    autoFocus,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -109,7 +110,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }
     }
     fn()
-  }, [presetMessage, resolveLinks])
+  }, [presetMessage, resolveLinks, autoFocus])
+
+  useEffect(() => {
+    if (ref.current && autoFocus) {
+      ref.current.focus()
+      ref.current.selectionStart = ref.current.value.length
+    }
+  }, [autoFocus])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
