@@ -101,7 +101,7 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
         this.receiverUserId,
-        'comments'
+        'mentions'
       )
     ) {
       await sendBrowserNotification(
@@ -121,7 +121,7 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
       }) &&
       userNotificationSettings.isNotificationTypeEnabled(
         this.receiverUserId,
-        'comments'
+        'mentions'
       )
     ) {
       const devices: Device[] = userNotificationSettings.getDevices(

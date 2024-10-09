@@ -725,11 +725,11 @@ export async function insertChatPermission(
     .into('chat_permissions')
 }
 
-type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
+type MobileDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(
   db: Knex,
-  mobileDevices: MoblieDevice[]
+  mobileDevices: MobileDevice[]
 ) {
   const currentTimestamp = new Date(Date.now()).toISOString()
   await db
