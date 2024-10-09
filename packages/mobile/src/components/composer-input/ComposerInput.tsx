@@ -10,7 +10,7 @@ import {
 
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import type { UserMetadata } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
   splitOnNewline,
@@ -118,7 +118,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])
-  // const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
   const [selection, setSelection] = useState<{ start: number; end: number }>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
@@ -225,8 +225,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
-        // TODO: For notifications later
-        // setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+        setUserIdMap((map) => {
+          map[mentionText] = user.user_id
+          return map
+        })
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
@@ -265,8 +267,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    onSubmit?.(restoreLinks(value), linkEntities)
-  }, [linkEntities, onSubmit, restoreLinks, value])
+    const userIds =
+      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
+    onSubmit?.(restoreLinks(value), userIds)
+  }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {

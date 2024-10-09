@@ -12,7 +12,7 @@ export type ComposerInputProps = {
   entityId?: ID
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
-  onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
+  onSubmit?: (value: string, mentionIds: ID[]) => void
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   presetMessage?: string

@@ -81,7 +81,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
   // Ref to keep track of the submit state of the input
@@ -182,7 +182,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
-        setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+        setUserIdMap((map) => {
+          map[mentionText] = user.user_id
+          return map
+        })
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
@@ -223,9 +226,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleSubmit = useCallback(() => {
     submittedRef.current = true
     changeOpIdRef.current++
-    onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+    const userIds =
+      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
+    onSubmit?.(restoreLinks(value), linkEntities, userIds)
     submittedRef.current = false
-  }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
+  }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(
