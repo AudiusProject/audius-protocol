@@ -362,8 +362,8 @@ export async function sendDMNotifications(
     const batches = chunk(notifications, config.notificationBatchSize)
     for (const batch of batches) {
       await Promise.all(
-        batch.map((notification) => {
-          notification.processNotification({
+        batch.map(async (notification) => {
+          await notification.processNotification({
             isLiveEmailEnabled: false,
             isBrowserPushEnabled
           })
