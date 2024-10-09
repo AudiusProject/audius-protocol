@@ -6,7 +6,7 @@ import { logger } from 'hono/logger'
 import { HTTPException } from 'hono/http-exception'
 import type { AudiusSdk } from '@audius/sdk'
 
-const apiKey = import.meta.env.VITE_AUDIUS_API_SECRET as string
+const apiKey = import.meta.env.VITE_AUDIUS_API_KEY as string
 const apiSecret = import.meta.env.VITE_AUDIUS_API_SECRET as string
 
 const app = new Hono()
