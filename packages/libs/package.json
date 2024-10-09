@@ -107,6 +107,7 @@
     "zod": "3.21.4"
   },
   "devDependencies": {
+    "@audius/sdk": "*",
     "@babel/plugin-transform-runtime": "7.18.2",
     "@babel/preset-env": "7.16.11",
     "@babel/preset-typescript": "7.23.3",

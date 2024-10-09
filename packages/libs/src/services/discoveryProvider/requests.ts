@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
+import { Genre, Mood } from '@audius/sdk'
 import type { ResponseType } from 'axios'
 
-import { Genre, Mood } from '../../sdk'
 import type { Nullable } from '../../utils'
 
 export const getUsers = (
