@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
+import { InboxSettingsFormValues } from '@audius/common/store'
 import { transformPermitListToMap } from '@audius/common/utils'
-import type { InboxSettingsFormValues } from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
@@ -101,7 +101,18 @@ export const InboxSettingsModalNew = () => {
         <ModalTitle title={messages.title} icon={<IconMessage />} />
       </ModalHeader>
       {statusIsNotFinalized(permissionsStatus) ? (
-        <LoadingSpinner />
+        <Flex
+          justifyContent='center'
+          alignItems='center'
+          m='xl'
+          p='4xl'
+          h='unit10'
+          css={{
+            opacity: 0.5
+          }}
+        >
+          <LoadingSpinner />
+        </Flex>
       ) : (
         <Formik<InboxSettingsFormValues>
           initialValues={initialValues}
@@ -158,9 +169,7 @@ const InboxSettingsModalFields = ({
     [setAllowAll]
   )
 
-  return statusIsNotFinalized(permissionsStatus) ? (
-    <LoadingSpinner />
-  ) : (
+  return (
     <Flex column gap='xl'>
       <Flex row gap='l'>
         <Switch {...allowAllField} onChange={handleAllChange} />
