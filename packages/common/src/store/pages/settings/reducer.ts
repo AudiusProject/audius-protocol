@@ -31,7 +31,8 @@ export const initialState = {
     [BrowserNotificationSetting.Favorites]: true,
     [BrowserNotificationSetting.Remixes]: true,
     [BrowserNotificationSetting.Messages]: true,
-    [BrowserNotificationSetting.Comments]: true
+    [BrowserNotificationSetting.Comments]: true,
+    [BrowserNotificationSetting.Mentions]: true
   },
   pushNotifications: {
     [PushNotificationSetting.MobilePush]: true,
@@ -41,7 +42,8 @@ export const initialState = {
     [PushNotificationSetting.Remixes]: true,
     [PushNotificationSetting.Favorites]: true,
     [PushNotificationSetting.Messages]: true,
-    [BrowserNotificationSetting.Comments]: true
+    [PushNotificationSetting.Comments]: true,
+    [PushNotificationSetting.Mentions]: true
   },
   [emailFrequency]: EmailFrequency.Daily
 }
@@ -60,7 +62,8 @@ const actionsMap: ActionsMap<SettingsPageState> = {
         [BrowserNotificationSetting.Favorites]: action.settings.favorites,
         [BrowserNotificationSetting.Remixes]: action.settings.remixes,
         [BrowserNotificationSetting.Messages]: action.settings.messages,
-        [BrowserNotificationSetting.Comments]: action.settings.comments
+        [BrowserNotificationSetting.Comments]: action.settings.comments,
+        [BrowserNotificationSetting.Mentions]: action.settings.mentions
       }
     }
   },
@@ -78,7 +81,8 @@ const actionsMap: ActionsMap<SettingsPageState> = {
         [PushNotificationSetting.Remixes]: action.settings.remixes,
         [PushNotificationSetting.Favorites]: action.settings.favorites,
         [PushNotificationSetting.Messages]: action.settings.messages,
-        [PushNotificationSetting.Comments]: action.settings.comments
+        [PushNotificationSetting.Comments]: action.settings.comments,
+        [PushNotificationSetting.Mentions]: action.settings.mentions
       }
     }
   },

@@ -149,7 +149,8 @@ function* watchSetBrowserNotificationSettingsOn() {
           [BrowserNotificationSetting.Favorites]: true,
           [BrowserNotificationSetting.Remixes]: true,
           [BrowserNotificationSetting.Messages]: true,
-          [BrowserNotificationSetting.Comments]: true
+          [BrowserNotificationSetting.Comments]: true,
+          [BrowserNotificationSetting.Mentions]: true
         }
         yield* put(actions.setNotificationSettings(updatedSettings))
         yield* call(
@@ -178,7 +179,8 @@ function* watchSetBrowserNotificationSettingsOff() {
           [BrowserNotificationSetting.Favorites]: false,
           [BrowserNotificationSetting.Remixes]: false,
           [BrowserNotificationSetting.Messages]: false,
-          [BrowserNotificationSetting.Comments]: false
+          [BrowserNotificationSetting.Comments]: false,
+          [BrowserNotificationSetting.Mentions]: false
         }
         yield* put(actions.setNotificationSettings(updatedSettings))
         yield* call(

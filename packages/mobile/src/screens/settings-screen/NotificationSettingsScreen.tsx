@@ -25,7 +25,8 @@ const messages = {
   favorites: 'Favorites',
   remixes: 'Remixes of My Tracks',
   messages: 'Messages',
-  comments: 'Comments'
+  comments: 'Comments',
+  mentions: 'Mentions'
 }
 
 export const NotificationSettingsScreen = () => {
@@ -73,10 +74,16 @@ export const NotificationSettingsScreen = () => {
           type={PushNotificationSetting.Messages}
         />
         {isCommentsEnabled ? (
-          <NotificationRow
-            label={messages.comments}
-            type={PushNotificationSetting.Comments}
-          />
+          <>
+            <NotificationRow
+              label={messages.comments}
+              type={PushNotificationSetting.Comments}
+            />
+            <NotificationRow
+              label={messages.mentions}
+              type={PushNotificationSetting.Mentions}
+            />
+          </>
         ) : null}
         <Divider />
         <EmailFrequencyControlRow />
