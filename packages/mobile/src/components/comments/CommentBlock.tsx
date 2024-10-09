@@ -26,7 +26,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, hideActions } = props
+  const { comment, hideActions, parentCommentId } = props
   const { artistId, track } = useCurrentCommentSection()
   const {
     id: commentId,
@@ -87,6 +87,7 @@ export const CommentBlockInternal = (
             comment={comment}
             isDisabled={isTombstone}
             hideReactCount={isTombstone}
+            parentCommentId={parentCommentId}
           />
         ) : null}
       </Flex>

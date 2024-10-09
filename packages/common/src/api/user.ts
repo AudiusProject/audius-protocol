@@ -3,7 +3,7 @@ import { full } from '@audius/sdk'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { ID, Kind, OptionalId, StringUSDC } from '~/models'
+import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -316,7 +316,11 @@ const userApi = createApi({
         const { data = [] } = await sdk.users.getUserTracksRemixed({
           id: Id.parse(userId)
         })
-        return data
+
+        return data.map((item) => ({
+          ...item,
+          trackId: HashId.parse(item.trackId)
+        }))
       },
       options: {}
     },
@@ -326,6 +330,7 @@ const userApi = createApi({
         const { data } = await sdk.users.getSalesAggregate({
           id: Id.parse(userId)
         })
+
         return data
       },
       options: {}

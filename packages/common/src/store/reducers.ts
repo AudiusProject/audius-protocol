@@ -126,7 +126,9 @@ import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
 import mutualsUserListReducer from './user-list/mutuals/reducers'
 import notificationsUserListReducer from './user-list/notifications/reducers'
+import purchasersUserListReducer from './user-list/purchasers/reducers'
 import relatedArtistsListReducer from './user-list/related-artists/reducers'
+import remixersUserListReducer from './user-list/remixers/reducers'
 import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
@@ -210,7 +212,9 @@ export const reducers = (storage: Storage, history?: History) => ({
       supporting: supportingUserListReducer,
       mutuals: mutualsUserListReducer,
       notifications: notificationsUserListReducer,
-      relatedArtists: relatedArtistsListReducer
+      relatedArtists: relatedArtistsListReducer,
+      purchasers: purchasersUserListReducer,
+      remixers: remixersUserListReducer
     }),
     theme,
     vipDiscordModal: vipDiscordModalReducer,
@@ -338,6 +342,8 @@ export type CommonState = {
       topSupporters: ReturnType<typeof topSupportersUserListReducer>
       supporting: ReturnType<typeof supportingUserListReducer>
       relatedArtists: ReturnType<typeof relatedArtistsListReducer>
+      purchasers: ReturnType<typeof purchasersUserListReducer>
+      remixers: ReturnType<typeof remixersUserListReducer>
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState

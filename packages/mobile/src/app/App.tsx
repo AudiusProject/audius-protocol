@@ -102,8 +102,8 @@ const App = () => {
                                 <NotificationReminder />
                                 <RateCtaReminder />
                                 <PortalHost name='ChatReactionsPortal' />
-                                <PortalHost name='DrawerPortal' />
                               </BottomSheetModalProvider>
+                              <PortalHost name='DrawerPortal' />
                             </NavigationContainer>
                           </ErrorBoundary>
                         </PortalProvider>

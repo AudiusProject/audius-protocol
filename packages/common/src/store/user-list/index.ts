@@ -41,3 +41,11 @@ export * from './favorites/types'
 export * as relatedArtistsUserListActions from './related-artists/actions'
 export * as relatedArtistsUserListSelectors from './related-artists/selectors'
 export * from './related-artists/types'
+
+export * as purchasersUserListActions from './purchasers/actions'
+export * as purchasersUserListSelectors from './purchasers/selectors'
+export * from './purchasers/types'
+
+export * as remixersUserListActions from './remixers/actions'
+export * as remixersUserListSelectors from './remixers/selectors'
+export * from './remixers/types'
