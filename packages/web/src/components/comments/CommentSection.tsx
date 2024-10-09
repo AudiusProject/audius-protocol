@@ -10,7 +10,7 @@ import { CommentSectionMobile } from './CommentSectionMobile'
 type CommentSectionProps = {
   entityId: ID
   entityType?: EntityType.TRACK
-  commentSectionRef: React.RefObject<HTMLDivElement>
+  commentSectionRef?: React.RefObject<HTMLDivElement>
 }
 
 export const CommentSection = (props: CommentSectionProps) => {
@@ -22,7 +22,7 @@ export const CommentSection = (props: CommentSectionProps) => {
       {isMobile ? (
         <CommentSectionMobile />
       ) : (
-        <CommentSectionDesktop commentSectionRef={commentSectionRef} />
+        <CommentSectionDesktop commentSectionRef={commentSectionRef!} />
       )}
     </CommentSectionProvider>
   )
