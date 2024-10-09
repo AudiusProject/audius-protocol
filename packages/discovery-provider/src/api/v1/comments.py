@@ -1,4 +1,5 @@
 import logging
+from src.queries.get_unclaimed_id import get_unclaimed_id
 
 from flask_restx import Namespace, Resource, fields
 
@@ -40,3 +41,21 @@ class CommentReplies(Resource):
         current_user_id = args.get("user_id")
         comment_replies = get_comment_replies(args, decoded_id, current_user_id)
         return success_response(comment_replies)
+
+
+unclaimed_id_response = make_response(
+    "unclaimed_id_response", ns, fields.String()
+)
+
+@ns.route("/unclaimed_id")
+class GetUnclaimedCommentId(Resource):
+    @ns.doc(
+        id="""Get unclaimed comment ID""",
+        description="""Gets an unclaimed blockchain comment ID""",
+        responses={200: "Success", 500: "Server error"},
+    )
+    @ns.marshal_with(unclaimed_id_response)
+    def get(self):
+        unclaimed_id = get_unclaimed_id("comment")
+        return success_response(unclaimed_id)
+
