@@ -35,17 +35,10 @@ export const InboxSettingsScreenNew = () => {
     doFetchPermissions()
   }, [doFetchPermissions])
 
-  const handleSave = useCallback(
-    (values) => {
-      savePermissions(values)
-    },
-    [savePermissions]
-  )
-
   return (
     <Formik<InboxSettingsFormValues>
       initialValues={initialValues}
-      onSubmit={handleSave}
+      onSubmit={savePermissions}
     >
       {({ submitForm, isSubmitting }) => (
         <FormScreen

@@ -6,6 +6,7 @@ import {
   User,
   ChatPermission
 } from '@audius/sdk'
+import { mapValues } from 'lodash'
 
 import { Status } from '~/models/Status'
 import { InboxSettingsFormValues } from '~/store'
@@ -269,10 +270,7 @@ export const transformPermitListToMap = (
   permitList: ChatPermission[]
 ): InboxSettingsFormValues => {
   if (permitList.includes(ChatPermission.ALL)) {
-    return Object.keys(defaultChatPermitMap).reduce((acc, key) => {
-      acc[key as keyof InboxSettingsFormValues] = true
-      return acc
-    }, {} as InboxSettingsFormValues)
+    return mapValues(defaultChatPermitMap, () => true)
   }
 
   if (permitList.includes(ChatPermission.NONE)) {
@@ -281,9 +279,7 @@ export const transformPermitListToMap = (
 
   return permitList.reduce(
     (acc, permit) => {
-      if (permit in acc) {
-        acc[permit as keyof InboxSettingsFormValues] = true
-      }
+      acc[permit as keyof InboxSettingsFormValues] = true
       return acc
     },
     { ...defaultChatPermitMap }

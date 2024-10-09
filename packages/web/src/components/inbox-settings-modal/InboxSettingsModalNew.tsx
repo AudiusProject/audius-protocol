@@ -60,6 +60,21 @@ const options = [
   }
 ]
 
+const Spinner = () => (
+  <Flex
+    justifyContent='center'
+    alignItems='center'
+    m='xl'
+    p='4xl'
+    h='unit10'
+    css={{
+      opacity: 0.5
+    }}
+  >
+    <LoadingSpinner />
+  </Flex>
+)
+
 export const InboxSettingsModalNew = () => {
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
@@ -68,8 +83,6 @@ export const InboxSettingsModalNew = () => {
     permissions,
     doFetchPermissions,
     permissionsStatus,
-    savePermissionStatus,
-    showSpinner,
     savePermissions
   } = useSetInboxPermissions({
     audiusSdk
@@ -101,24 +114,13 @@ export const InboxSettingsModalNew = () => {
         <ModalTitle title={messages.title} icon={<IconMessage />} />
       </ModalHeader>
       {statusIsNotFinalized(permissionsStatus) ? (
-        <Flex
-          justifyContent='center'
-          alignItems='center'
-          m='xl'
-          p='4xl'
-          h='unit10'
-          css={{
-            opacity: 0.5
-          }}
-        >
-          <LoadingSpinner />
-        </Flex>
+        <Spinner />
       ) : (
         <Formik<InboxSettingsFormValues>
           initialValues={initialValues}
           onSubmit={handleSave}
         >
-          {({ submitForm }) => (
+          {({ submitForm, isSubmitting }) => (
             <>
               <ModalContent>
                 <InboxSettingsModalFields
@@ -132,9 +134,8 @@ export const InboxSettingsModalNew = () => {
                   </Button>
                   <Button
                     variant='primary'
-                    isLoading={
-                      savePermissionStatus === Status.LOADING && showSpinner
-                    }
+                    isLoading={isSubmitting}
+                    disabled={isSubmitting}
                     type='submit'
                     onClick={submitForm}
                     fullWidth
