@@ -1,3 +1,5 @@
+import { useCallback, useRef } from 'react'
+
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -132,7 +134,15 @@ const TrackPage = ({
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
 
+  const commentSectionRef = useRef<HTMLDivElement | null>(null)
+
   const defaults = getTrackDefaults(heroTrack)
+
+  const scrollToCommentSection = useCallback(() => {
+    if (commentSectionRef.current) {
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [commentSectionRef])
 
   const renderGiantTrackTile = () => (
     <GiantTrackTile
@@ -177,6 +187,7 @@ const TrackPage = ({
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}
       coSign={defaults.coSign}
+      scrollToCommentSection={scrollToCommentSection}
       // Actions
       onPlay={onPlay}
       onPreview={onPreview}
@@ -256,7 +267,10 @@ const TrackPage = ({
         >
           {isCommentingEnabled ? (
             <Flex flex='3'>
-              <CommentSection entityId={defaults.trackId} />
+              <CommentSection
+                entityId={defaults.trackId}
+                commentSectionRef={commentSectionRef}
+              />
             </Flex>
           ) : null}
           {hasRemixes || hasMoreByTracks ? (
