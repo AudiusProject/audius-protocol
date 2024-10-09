@@ -1,5 +1,5 @@
 import type { Hedgehog } from '@audius/hedgehog'
-import { Genre, Mood } from '@audius/sdk'
+import type { Genre, Mood } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 import type { BN } from 'ethereumjs-util'
 

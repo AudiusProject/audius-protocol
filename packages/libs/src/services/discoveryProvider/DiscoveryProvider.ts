@@ -1,11 +1,10 @@
-import {
+import type {
   DiscoveryNodeSelector,
-  FetchError,
   Genre,
   Middleware,
-  Mood,
-  ResponseError
+  Mood
 } from '@audius/sdk'
+import { FetchError, ResponseError } from '@audius/sdk'
 import axios, {
   AxiosError,
   AxiosRequestConfig,
