@@ -64,7 +64,7 @@ def create_comment(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    params.add_record(comment_id, comment_record)
+    params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
     if params.metadata.get("mentions"):
         new_mention_user_ids = set(params.metadata["mentions"])
