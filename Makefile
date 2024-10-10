@@ -158,10 +158,10 @@ core-sandbox: core-build-amd64
 
 .PHONY: core-down-sandbox
 core-down-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev down
+	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev down
 
 .PHONY: core-prod-sandbox
-core-prod-sandbox:
+core-prod-sandbox: core-clean-sandbox core-build-amd64
 	@docker compose -f ./infra/docker-compose.yml --profile prod up --build -d
 
 .PHONY: core-stage-sandbox
@@ -173,7 +173,7 @@ core-dev-sandbox:
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile dev up --build -d
 
 .PHONY: core-clean-sandbox
-core-clean-sandbox: down-sandbox
+core-clean-sandbox: core-down-sandbox
 	rm -rf ./bin/*
 
 .PHONY: core-livereload

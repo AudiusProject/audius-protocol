@@ -53,5 +53,5 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
 	e.Any("/grpc/*", s.proxyGRPCRequest)
-	e.Any("/pprof/*", echo.WrapHandler(http.DefaultServeMux))
+	e.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/core", http.DefaultServeMux)))
 }
