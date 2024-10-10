@@ -9,7 +9,8 @@ export enum BrowserNotificationSetting {
   Permission = 'permission',
   Remixes = 'remixes',
   Messages = 'messages',
-  Comments = 'comments'
+  Comments = 'comments',
+  Mentions = 'mentions'
 }
 
 export enum PushNotificationSetting {
@@ -20,7 +21,8 @@ export enum PushNotificationSetting {
   Favorites = 'favorites',
   Remixes = 'remixes',
   Messages = 'messages',
-  Comments = 'comments'
+  Comments = 'comments',
+  Mentions = 'mentions'
 }
 
 export enum EmailFrequency {
@@ -42,6 +44,7 @@ export type Notifications = {
   [BrowserNotificationSetting.Remixes]: boolean
   [BrowserNotificationSetting.Messages]: boolean
   [BrowserNotificationSetting.Comments]: boolean
+  [BrowserNotificationSetting.Mentions]: boolean
 }
 
 export type PushNotifications = {
@@ -53,6 +56,7 @@ export type PushNotifications = {
   [PushNotificationSetting.Remixes]: boolean
   [PushNotificationSetting.Messages]: boolean
   [PushNotificationSetting.Comments]: boolean
+  [PushNotificationSetting.Mentions]: boolean
 }
 
 export enum Cast {

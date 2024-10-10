@@ -20,7 +20,9 @@ import {
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
   GrantRow,
-  CommentRow
+  CommentRow,
+  CommentThreadRow,
+  CommentMentionRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -723,11 +725,11 @@ export async function insertChatPermission(
     .into('chat_permissions')
 }
 
-type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
+type MobileDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(
   db: Knex,
-  mobileDevices: MoblieDevice[]
+  mobileDevices: MobileDevice[]
 ) {
   const currentTimestamp = new Date(Date.now()).toISOString()
   await db
@@ -821,6 +823,39 @@ export const createComments = async (db: Knex, comments: CreateComment[]) => {
       }))
     )
     .into('comments')
+}
+
+type CreateCommentThread = CommentThreadRow
+
+export const createCommentThreads = async (
+  db: Knex,
+  commentThreads: CreateCommentThread[]
+) => {
+  await db.insert(commentThreads).into('comment_threads')
+}
+
+type CreateCommentMention = Pick<CommentMentionRow, 'comment_id' | 'user_id'> &
+  Partial<CommentMentionRow>
+
+export const createCommentMentions = async (
+  db: Knex,
+  commentMentions: CreateCommentMention[]
+) => {
+  await db
+    .insert(
+      commentMentions.map((mention) => ({
+        comment_id: mention.comment_id,
+        user_id: mention.user_id,
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
+        is_delete: false,
+        txhash: `0x${mention.comment_id}`,
+        blockhash: `0x${mention.comment_id}`,
+        blocknumber: 0,
+        ...mention
+      }))
+    )
+    .into('comment_mentions')
 }
 
 export type UserWithDevice = {
