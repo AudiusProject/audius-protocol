@@ -478,7 +478,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
 
-    if not chain_health:
+    is_dev = shared_config["discprov"]["env"] == "dev"
+    if not is_dev and not chain_health:
         errors.append("no chain response")
 
     if verbose:
