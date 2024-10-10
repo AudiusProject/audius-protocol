@@ -43,7 +43,7 @@ export const CommentText = (props: CommentTextProps) => {
         ref={textRef}
         internalLinksOnly
         maxLines={isExpanded ? undefined : 3}
-        css={{ textAlign: 'left' }}
+        css={{ textAlign: 'left', wordBreak: 'break-word' }}
         suffix={
           isEdited ? (
             <Text color='subdued' size='s'>
