@@ -13,6 +13,7 @@ import { InboxSettingsFormValues } from '~/store'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'
+import { decodeHashId } from './hashIds'
 
 export const CHAT_BLOG_POST_URL =
   'http://support.audius.co/help/How-to-Send-Messages-on-Audius'
@@ -298,4 +299,25 @@ export const transformMapToPermitList = (
   return Object.keys(permitMap).filter(
     (key) => permitMap[key as keyof InboxSettingsFormValues]
   ) as ChatPermission[]
+}
+
+export const getOtherUserIdFromChatId = (
+  chatId: string,
+  currentUserId: string
+): number | null => {
+  const [userId1, userId2] = chatId.split(':')
+
+  if (userId1 === null || userId2 === null) {
+    console.error('Failed to decode user IDs from chatId')
+    return null
+  }
+
+  if (userId1 === currentUserId) {
+    return decodeHashId(userId2)
+  } else if (userId2 === currentUserId) {
+    return decodeHashId(userId1)
+  } else {
+    console.error('Current user ID not found in chatId')
+    return null
+  }
 }

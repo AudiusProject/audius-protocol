@@ -22,7 +22,9 @@ import {
   encodeHashId,
   hasTail,
   isEarliestUnread,
-  chatCanFetchMoreMessages
+  chatCanFetchMoreMessages,
+  decodeHashId,
+  getOtherUserIdFromChatId
 } from '@audius/common/utils'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -43,7 +45,8 @@ import { StickyScrollList } from './StickyScrollList'
 
 const SPINNER_HEIGHT = 48
 
-const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
+const { fetchMoreMessages, markChatAsRead, setActiveChat, createChat } =
+  chatActions
 const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
@@ -196,6 +199,17 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     }, [dispatch, chatId, chat?.messagesStatus])
 
     // Fix for if the initial load doesn't have enough messages to cause scrolling
+    useEffect(() => {
+      if (!chat && chatId && currentUserId) {
+        const otherUserId = getOtherUserIdFromChatId(chatId, currentUserId)
+        if (otherUserId) {
+          dispatch(createChat({ userIds: [otherUserId] }))
+        } else {
+          console.error('Failed to determine other user ID for chat creation')
+        }
+      }
+    }, [chat, chatId, currentUserId, dispatch])
+
     useEffect(() => {
       if (
         chatId &&

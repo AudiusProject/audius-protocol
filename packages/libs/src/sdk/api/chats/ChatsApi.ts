@@ -3,6 +3,7 @@ import EventEmitter from 'events'
 import * as secp from '@noble/secp256k1'
 import { base64 } from '@scure/base'
 import WebSocket from 'isomorphic-ws'
+import { uniqBy, orderBy } from 'lodash'
 import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
@@ -804,8 +805,13 @@ export class ChatsApi
 
   private async upgradeBlasts(userId: string) {
     const blasts = await this.getBlasts()
-    Promise.all(
-      blasts.data.map(async (blast) => {
+    const uniqueBlasts = uniqBy(
+      orderBy(blasts.data, ['created_at'], ['desc']),
+      'pending_chat_id'
+    )
+
+    await Promise.all(
+      uniqueBlasts.map(async (blast) => {
         const encodedSenderId = encodeHashId(blast.from_user_id)
         if (encodedSenderId) {
           await this.create({
@@ -815,7 +821,8 @@ export class ChatsApi
           this.eventEmitter.emit('message', {
             chatId: blast.pending_chat_id,
             message: {
-              message_id: blast.pending_chat_id + blast.chat_id,
+              // this order needs to match Misc.BlastMessageID in comms
+              message_id: blast.blast_id + blast.pending_chat_id,
               message: blast.plaintext,
               sender_user_id: encodedSenderId,
               created_at: blast.created_at,
