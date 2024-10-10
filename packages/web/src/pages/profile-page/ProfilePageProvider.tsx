@@ -128,6 +128,8 @@ type ProfilePageState = {
   areArtistRecommendationsVisible: boolean
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
+  showMuteUserConfirmationModal: boolean
+  showUnmuteUserConfirmationModal: boolean
 }
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
@@ -141,6 +143,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     areArtistRecommendationsVisible: false,
     showBlockUserConfirmationModal: false,
     showUnblockUserConfirmationModal: false,
+    showMuteUserConfirmationModal: false,
+    showUnmuteUserConfirmationModal: false,
     ...INITIAL_UPDATE_FIELDS
   }
 
@@ -284,6 +288,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   onCloseUnblockUserConfirmationModal = () => {
     this.setState({ showUnblockUserConfirmationModal: false })
+  }
+
+  onCloseMuteUserConfirmationModal = () => {
+    this.setState({ showMuteUserConfirmationModal: false })
+  }
+
+  onCloseUnmuteUserConfirmationModal = () => {
+    this.setState({ showUnmuteUserConfirmationModal: false })
   }
 
   fetchProfile = (
@@ -741,6 +753,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     return this.setState({ showUnblockUserConfirmationModal: true })
   }
 
+  onMute = () => {
+    return this.setState({ showMuteUserConfirmationModal: true })
+  }
+
+  onUnmute = () => {
+    return this.setState({ showUnmuteUserConfirmationModal: true })
+  }
+
   render() {
     const {
       profile: {
@@ -930,7 +950,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       didChangeTabsFrom: this.didChangeTabsFrom,
       onMessage: this.onMessage,
       onBlock: this.onBlock,
-      onUnblock: this.onUnblock
+      onUnblock: this.onUnblock,
+      onMute: this.onMute
     }
 
     const mobileProps = {
@@ -984,7 +1005,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       showUnblockUserConfirmationModal:
         this.state.showUnblockUserConfirmationModal,
       onCloseUnblockUserConfirmationModal:
-        this.onCloseUnblockUserConfirmationModal
+        this.onCloseUnblockUserConfirmationModal,
+      showMuteUserConfirmationModal: this.state.showMuteUserConfirmationModal,
+      onCloseMuteUserConfirmationModal: this.onCloseMuteUserConfirmationModal
     }
 
     return (
