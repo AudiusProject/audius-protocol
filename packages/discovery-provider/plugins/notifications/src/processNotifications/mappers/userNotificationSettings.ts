@@ -33,6 +33,7 @@ export type NotificationSettings = {
   remixes: boolean
   messages: boolean
   comments: boolean
+  mentions: boolean
 }
 
 type UserBrowserSettings = {
@@ -253,6 +254,7 @@ export class UserNotificationSettings {
       remixes: boolean
       messages: boolean
       comments: boolean
+      mentions: boolean
       deviceType: string
       awsARN: string
       deviceToken: string
@@ -268,6 +270,7 @@ export class UserNotificationSettings {
         'UserNotificationMobileSettings.remixes',
         'UserNotificationMobileSettings.messages',
         'UserNotificationMobileSettings.comments',
+        'UserNotificationMobileSettings.mentions',
         'NotificationDeviceTokens.deviceType',
         'NotificationDeviceTokens.awsARN',
         'NotificationDeviceTokens.deviceToken',
@@ -301,7 +304,8 @@ export class UserNotificationSettings {
             followers: setting.followers,
             remixes: setting.remixes,
             messages: setting.messages,
-            comments: setting.comments
+            comments: setting.comments,
+            mentions: setting.mentions
           },
           devices: [
             ...(acc?.[setting.userId]?.devices ?? []),
@@ -381,6 +385,7 @@ export class UserNotificationSettings {
       remixes: boolean
       messages: boolean
       comments: boolean
+      mentions: boolean
       deviceType?: string
       awsARN?: string
       deviceToken?: string
@@ -397,6 +402,8 @@ export class UserNotificationSettings {
         'UserNotificationBrowserSettings.followers',
         'UserNotificationBrowserSettings.remixes',
         'UserNotificationBrowserSettings.messages',
+        'UserNotificationBrowserSettings.comments',
+        'UserNotificationBrowserSettings.mentions',
         'NotificationBrowserSubscriptions.endpoint',
         'NotificationBrowserSubscriptions.p256dhKey',
         'NotificationBrowserSubscriptions.authKey'
@@ -442,7 +449,8 @@ export class UserNotificationSettings {
             followers: setting.followers,
             remixes: setting.remixes,
             messages: setting.messages,
-            comments: setting.comments
+            comments: setting.comments,
+            mentions: setting.mentions
           },
           browser: acc?.[setting.userId]?.browser ?? []
         }
