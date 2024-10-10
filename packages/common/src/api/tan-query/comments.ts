@@ -21,7 +21,10 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, ID, ReplyComment } from '~/models'
-import { setPinnedCommentId } from '~/store/cache/tracks/actions'
+import {
+  incrementTrackCommentCount,
+  setPinnedCommentId
+} from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { encodeHashId, Nullable } from '~/utils'
 
@@ -219,6 +222,7 @@ type PostCommentArgs = {
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useMutation({
     mutationFn: async (args: PostCommentArgs) => {
@@ -283,6 +287,8 @@ export const usePostComment = () => {
       }
       // Update the individual comment cache
       queryClient.setQueryData([QUERY_KEYS.comment, newId], newComment)
+      // Update the track comment count (separate cache)
+      dispatch(incrementTrackCommentCount(trackId, 1))
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
@@ -291,6 +297,8 @@ export const usePostComment = () => {
         additionalInfo: args,
         name: 'Comments'
       })
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, -1))
       // Toast generic error message
       toast({ content: messages.mutationError('posting') })
       // TODO: avoid hard reset here?
@@ -473,6 +481,8 @@ export const useDeleteComment = () => {
           return newCommentData
         }
       )
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, 1))
     },
     onSuccess: (_res, { commentId }) => {
       // Wait till success to remove the individual comment from the cache
@@ -488,6 +498,8 @@ export const useDeleteComment = () => {
         additionalInfo: args,
         name: 'Comments'
       })
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, 1))
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('deleting') }))
       // Since this mutation handles sort data, its difficult to undo the optimistic update so we just re-load everything
