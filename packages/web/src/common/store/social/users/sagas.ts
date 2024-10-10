@@ -10,6 +10,7 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
+import { Action } from '@reduxjs/toolkit'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -84,7 +85,12 @@ export function* followUser(
   const event = make(Name.FOLLOW, { id: action.userId, source: action.source })
   yield* put(event)
 
-  yield* call(confirmFollowUser, action.userId, accountId)
+  yield* call(
+    confirmFollowUser,
+    action.userId,
+    accountId,
+    action.onSuccessActions
+  )
   yield* put(
     setNotificationSubscription(
       action.userId,
@@ -94,7 +100,11 @@ export function* followUser(
   )
 }
 
-export function* confirmFollowUser(userId: ID, accountId: ID) {
+export function* confirmFollowUser(
+  userId: ID,
+  accountId: ID,
+  onSuccessActions?: Action[]
+) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -117,7 +127,7 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
         return accountId
       },
       function* () {
-        yield* put(socialActions.followUserSucceeded(userId))
+        yield* put(socialActions.followUserSucceeded(userId, onSuccessActions))
       },
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         yield* put(
@@ -150,6 +160,24 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
       }
     )
   )
+}
+
+export function* watchFollowUserSucceeded() {
+  yield* takeEvery(socialActions.FOLLOW_USER_SUCCEEDED, followUserSucceeded)
+}
+
+export function* followUserSucceeded(
+  action: ReturnType<typeof socialActions.followUserSucceeded>
+) {
+  const { onSuccessActions } = action
+  // Do any callbacks
+  if (onSuccessActions) {
+    // Spread here to unfreeze the action
+    // Redux sagas can't "put" frozen actions
+    for (const onSuccessAction of onSuccessActions) {
+      yield* put({ ...onSuccessAction })
+    }
+  }
 }
 
 export function* watchUnfollowUser() {
@@ -434,7 +462,13 @@ export function* watchShareUser() {
 }
 
 const sagas = () => {
-  return [watchFollowUser, watchUnfollowUser, watchShareUser, errorSagas]
+  return [
+    watchFollowUser,
+    watchUnfollowUser,
+    watchFollowUserSucceeded,
+    watchShareUser,
+    errorSagas
+  ]
 }
 
 export default sagas

@@ -14,6 +14,7 @@ import {
   usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
+import type { Action } from '@reduxjs/toolkit'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -170,10 +171,22 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
 
   const handleFollowPress = useCallback(() => {
     if (userId) {
-      dispatch(followUser(userId, FollowSource.INBOX_UNAVAILABLE_MODAL))
-      dispatch(createChat({ userIds: [userId], presetMessage }))
+      const followSuccessActions: Action[] = [
+        chatActions.createChat({
+          userIds: [userId]
+        })
+      ]
+      dispatch(
+        followUser(
+          userId,
+          FollowSource.INBOX_UNAVAILABLE_MODAL,
+          undefined,
+          followSuccessActions
+        )
+      )
     }
-  }, [userId, dispatch, presetMessage])
+    onClose()
+  }, [userId, dispatch, onClose])
 
   switch (callToAction) {
     case ChatPermissionAction.NONE:

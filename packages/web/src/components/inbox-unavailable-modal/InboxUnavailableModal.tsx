@@ -130,6 +130,7 @@ export const InboxUnavailableModal = () => {
   )
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||
+    callToAction === ChatPermissionAction.FOLLOW ||
     callToAction === ChatPermissionAction.UNBLOCK
 
   const handleClick = useCallback(() => {
@@ -163,14 +164,25 @@ export const InboxUnavailableModal = () => {
           ]
         })
       )
+    } else if (callToAction === ChatPermissionAction.FOLLOW && currentUserId) {
+      const followSuccessActions: Action[] = [
+        chatActions.createChat({
+          userIds: [userId]
+        })
+      ]
+      if (onSuccessAction) {
+        followSuccessActions.push(onSuccessAction)
+      }
+      dispatch(
+        followUser(
+          userId,
+          FollowSource.INBOX_UNAVAILABLE_MODAL,
+          undefined,
+          followSuccessActions
+        )
+      )
     } else if (callToAction === ChatPermissionAction.UNBLOCK) {
       dispatch(unblockUser({ userId }))
-      dispatch(createChat({ userIds: [userId], presetMessage }))
-      if (onSuccessAction) {
-        dispatch(onSuccessAction)
-      }
-    } else if (callToAction === ChatPermissionAction.FOLLOW) {
-      dispatch(followUser(userId, FollowSource.INBOX_UNAVAILABLE_MODAL))
       dispatch(createChat({ userIds: [userId], presetMessage }))
       if (onSuccessAction) {
         dispatch(onSuccessAction)
