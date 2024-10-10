@@ -131,7 +131,7 @@ const TrackPage = ({
     FeatureFlags.COMMENTS_ENABLED
   )
   const isCommentingEnabled =
-    commentsFlagEnabled && !heroTrack?.comments_disabled
+    commentsFlagEnabled && heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 
@@ -241,7 +241,7 @@ const TrackPage = ({
             // Styles for leading element (original track if remix).
             leadingElementId={defaults.remixParentTrackId}
             leadingElementDelineator={
-              <Flex>
+              <Flex direction='column' gap='xl'>
                 <Box alignSelf='flex-start'>
                   <Button size='xs' iconRight={IconArrowRight} asChild>
                     <Link to={trackRemixesPage(permalink)}>
