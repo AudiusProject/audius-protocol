@@ -60,7 +60,11 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
         >
           {messages.reply}
         </PlainButton>
-        <CommentOverflowMenu comment={comment} disabled={isDisabled} />
+        <CommentOverflowMenu
+          comment={comment}
+          disabled={isDisabled}
+          parentCommentId={parentCommentId}
+        />
       </Flex>
     </>
   )

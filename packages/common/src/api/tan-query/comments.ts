@@ -448,6 +448,7 @@ type DeleteCommentArgs = {
   userId: ID
   trackId: ID // track id
   currentSort: CommentSortMethod
+  parentCommentId?: ID
 }
 export const useDeleteComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
@@ -459,14 +460,27 @@ export const useDeleteComment = () => {
       const sdk = await audiusSdk()
       return await sdk.comments.deleteComment(commentData)
     },
-    onMutate: ({ commentId, trackId, currentSort }) => {
-      // Remove the comment from the current sort - this will cause it to no longer display
+    onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
+      // If reply, filter it from the parent's list of replies
+      if (parentCommentId) {
+        queryClient.setQueryData<Comment>(
+          [QUERY_KEYS.comment, parentCommentId],
+          (prev) =>
+            ({
+              ...prev,
+              replies: (prev?.replies ?? []).filter(
+                (reply) => reply.id !== commentId
+              )
+            } as Comment)
+        )
+      }
+      // If not a reply, remove from the sort list
       queryClient.setQueryData<InfiniteData<ID[]>>(
         [QUERY_KEYS.trackCommentList, trackId, currentSort],
         (prevCommentData) => {
           const newCommentData = cloneDeep(prevCommentData)
           if (!newCommentData) return
-          // Filter out the comment from its current page
+          // Filter out the comment from itsz current page
           newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
             page.filter((id: ID) => id !== commentId)
           )
@@ -475,7 +489,7 @@ export const useDeleteComment = () => {
       )
     },
     onSuccess: (_res, { commentId }) => {
-      // Wait till success to remove the individual comment from the cache
+      // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
       queryClient.removeQueries({
         queryKey: [QUERY_KEYS.comment, commentId],
         exact: true
