@@ -213,6 +213,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
+      let textLength = mentionText.length
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
@@ -224,14 +225,19 @@ export const ComposerInput = (props: ComposerInputProps) => {
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        textLength = fillText.length
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       const textarea = ref.current
       if (textarea) {
         setTimeout(() => {
           textarea.focus()
-          textarea.selectionStart = autocompleteRange[0] + mentionText.length
-          textarea.selectionEnd = autocompleteRange[0] + mentionText.length
+          textarea.selectionStart = autocompleteRange[0] + textLength
+          textarea.selectionEnd = autocompleteRange[0] + textLength
         }, 0)
       }
       setIsUserAutocompleteActive(false)

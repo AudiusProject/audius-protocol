@@ -40,7 +40,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
       editComment(editingComment.id, message, mentions)
     } else {
       const trackTimestampS =
-        playerTrackId && playerPosition && playerTrackId === entityId
+        playerTrackId !== null && playerPosition && playerTrackId === entityId
           ? Math.floor(playerPosition)
           : undefined
 

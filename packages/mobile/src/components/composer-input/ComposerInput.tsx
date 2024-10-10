@@ -258,7 +258,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       setIsAutocompleteActive(false)
     },
@@ -266,7 +269,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   useEffect(() => {
-    onAutocompleteChange?.(isAutocompleteActive, autocompleteText)
+    onAutocompleteChange?.(isAutocompleteActive, autocompleteText.slice(1))
   }, [onAutocompleteChange, isAutocompleteActive, autocompleteText])
 
   useEffect(() => {
