@@ -160,11 +160,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         setIsDeleteConfirmationVisible(true)
       },
       isDestructive: true
-    },
-    // TODO: check if receiving notifications
-    isCommentOwner && {
-      text: messages.menuActions.turnOffNotifications,
-      callback: () => {} // TODO
     }
   ].filter(removeNullable)
 
