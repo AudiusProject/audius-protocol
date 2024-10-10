@@ -64,7 +64,7 @@ def create_comment(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    params.add_record(comment_id, comment_record)
+    params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
     if params.metadata.get("mentions"):
         new_mention_user_ids = set(params.metadata["mentions"])
@@ -126,7 +126,7 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.is_edited = True
     edited_comment.text = params.metadata["body"]
 
-    params.add_record(comment_id, edited_comment)
+    params.add_record(comment_id, edited_comment, EntityType.COMMENT)
 
     if "mentions" in params.metadata:
         new_mentions = set(params.metadata["mentions"])
@@ -147,7 +147,11 @@ def update_comment(params: ManageEntityParameters):
             if existing_mention:
                 existing_mention.is_delete = True
 
-                params.add_record((comment_id, mention_user_id), existing_mention)
+                params.add_record(
+                    (comment_id, mention_user_id),
+                    existing_mention,
+                    EntityType.COMMENT_MENTION,
+                )
 
         # Add new mentions
         for mention_user_id in new_mentions - existing_mention_ids:
@@ -184,7 +188,7 @@ def delete_comment(params: ManageEntityParameters):
     )
     deleted_comment.is_delete = True
 
-    params.add_record(comment_id, deleted_comment)
+    params.add_record(comment_id, deleted_comment, EntityType.COMMENT)
 
 
 def validate_comment_reaction_tx(params: ManageEntityParameters):
@@ -316,7 +320,7 @@ def pin_comment(params: ManageEntityParameters):
 
     track.pinned_comment_id = comment_id
 
-    params.add_record(track_id, track)
+    params.add_record(track_id, track, EntityType.TRACK)
 
 
 def unpin_comment(params: ManageEntityParameters):
@@ -334,7 +338,7 @@ def unpin_comment(params: ManageEntityParameters):
 
     track.pinned_comment_id = None
 
-    params.add_record(track_id, track)
+    params.add_record(track_id, track, EntityType.TRACK)
 
 
 def update_comment_notification_setting(params: ManageEntityParameters):
