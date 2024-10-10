@@ -130,7 +130,9 @@ export type ChatDeleteRequest = z.infer<typeof ChatDeleteRequestSchema>
 
 export const ChatPermitRequestSchema = z.object({
   currentUserId: z.optional(z.string()),
-  permit: z.nativeEnum(ChatPermission)
+  permit: z.optional(z.nativeEnum(ChatPermission)),
+  permitList: z.optional(z.array(z.nativeEnum(ChatPermission)).min(1)),
+  allow: z.optional(z.boolean())
 })
 
 export type ChatPermitRequest = z.infer<typeof ChatPermitRequestSchema>
