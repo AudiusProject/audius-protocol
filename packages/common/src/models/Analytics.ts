@@ -856,6 +856,7 @@ export enum FavoriteSource {
   NAVIGATOR = 'navigator'
 }
 export enum FollowSource {
+  INBOX_UNAVAILABLE_MODAL = 'inbox unavailable modal',
   PROFILE_PAGE = 'profile page',
   TRACK_PAGE = 'track page',
   COLLECTION_PAGE = 'collection page',

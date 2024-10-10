@@ -10,6 +10,8 @@ export enum ChatPermissionAction {
   NONE,
   /** Current user can tip user */
   TIP,
+  /** Current user can follow user */
+  FOLLOW,
   /** Current user can unblock user */
   UNBLOCK,
   /** User is signed out and needs to sign in */

@@ -46,7 +46,7 @@ describe('follow', () => {
         fieldName: 'followee_count',
         delta: 1
       })
-      .call(sagas.confirmFollowUser, 2, 1)
+      .call(sagas.confirmFollowUser, 2, 1, undefined)
       .put(
         cacheActions.update(Kind.USERS, [
           {
