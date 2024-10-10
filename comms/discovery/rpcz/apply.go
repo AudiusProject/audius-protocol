@@ -281,7 +281,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatSetPermissions(tx, userId, params.Permit, params.Allow, messageTs)
+			err = chatSetPermissions(tx, userId, params.Permit, params.PermitList, params.Allow, messageTs)
 			if err != nil {
 				return err
 			}

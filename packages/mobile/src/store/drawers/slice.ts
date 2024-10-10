@@ -25,6 +25,7 @@ export type Drawer =
   | 'CreateChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
+  | 'MuteComments'
   | 'DeleteChat'
   | 'SupportersInfo'
   | 'OfflineListening'
@@ -65,6 +66,7 @@ export type DrawerData = {
     shouldOpenChat: boolean
     isReportAbuse: boolean
   }
+  MuteComments: { userId: number; isMuted: boolean }
   DeleteChat: { chatId: string }
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
@@ -98,6 +100,7 @@ const initialState: DrawersState = {
   CreateChatActions: false,
   ProfileActions: false,
   BlockMessages: false,
+  MuteComments: false,
   DeleteChat: false,
   SupportersInfo: false,
   Welcome: false,

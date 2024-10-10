@@ -57,6 +57,7 @@ type ChatState = {
   blockees: ID[]
   blockers: ID[]
   permissions: Record<ID, ValidatedChatPermissions>
+  permissionsStatus: Status
   reactionsPopupMessageId: string | null
 }
 
@@ -140,6 +141,7 @@ const initialState: ChatState = {
   blockees: [],
   blockers: [],
   permissions: {},
+  permissionsStatus: Status.IDLE,
   reactionsPopupMessageId: null
 }
 
@@ -615,7 +617,8 @@ const slice = createSlice({
     unblockUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
       // triggers saga
     },
-    fetchPermissions: (_state, _action: PayloadAction<{ userIds: ID[] }>) => {
+    fetchPermissions: (state, _action: PayloadAction<{ userIds: ID[] }>) => {
+      state.permissionsStatus = Status.LOADING
       // triggers saga
     },
     fetchPermissionsSucceeded: (
@@ -628,6 +631,7 @@ const slice = createSlice({
         ...state.permissions,
         ...action.payload.permissions
       }
+      state.permissionsStatus = Status.SUCCESS
     },
     // Note: is not associated with any chatId because there will be at most
     // one popup message at a time. Used for reactions popup overlay in mobile.

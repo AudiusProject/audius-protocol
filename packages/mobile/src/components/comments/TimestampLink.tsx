@@ -6,7 +6,7 @@ import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 type TimestampLinkProps = {
   timestampSeconds: number
-} & TextLinkProps
+} & Omit<TextLinkProps, 'to'>
 
 export const TimestampLink = (props: TimestampLinkProps) => {
   const { timestampSeconds, ...other } = props

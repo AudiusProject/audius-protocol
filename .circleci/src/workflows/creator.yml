@@ -17,7 +17,7 @@ jobs:
       service: mediorum-unittests
 
   # Deploy audius-protocol `main` branch (stage)
-  - deploy-stage-nodes:
+  - deploy-stage-nodes-just-tag:
       name: deploy-stage-creator-node
       requires:
         - test-mediorum

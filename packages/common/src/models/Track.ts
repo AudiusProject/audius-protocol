@@ -246,6 +246,7 @@ export type TrackMetadata = {
   audio_analysis_error_count?: number
   comments_disabled?: boolean
   comment_count: number
+  pinned_comment_id?: Nullable<ID>
 
   // Optional Fields
   is_playlist_upload?: boolean

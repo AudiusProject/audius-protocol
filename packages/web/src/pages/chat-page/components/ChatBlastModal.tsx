@@ -4,7 +4,11 @@ import {
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { useChatBlastModal, chatActions } from '@audius/common/src/store'
+import {
+  useChatBlastModal,
+  chatActions,
+  useCreateChatModal
+} from '@audius/common/src/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -60,7 +64,7 @@ type PurchasableContentOption = {
 }
 
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -68,6 +72,8 @@ type ChatBlastFormValues = {
 export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
+  const { onOpen: openCreateChatModal, data: createChatModalData } =
+    useCreateChatModal()
 
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
@@ -88,11 +94,16 @@ export const ChatBlastModal = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })
     )
+  }
+
+  const handleCancel = () => {
+    onClose()
+    openCreateChatModal(createChatModalData)
   }
 
   return (
@@ -102,7 +113,7 @@ export const ChatBlastModal = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ submitForm }) => (
+        {({ submitForm, isSubmitting }) => (
           <>
             <ModalHeader>
               <ModalTitle
@@ -119,7 +130,7 @@ export const ChatBlastModal = () => {
                   variant='secondary'
                   iconLeft={IconCaretLeft}
                   css={{ flexGrow: 1 }}
-                  onClick={onClose}
+                  onClick={handleCancel}
                 >
                   {messages.back}
                 </Button>
@@ -128,6 +139,8 @@ export const ChatBlastModal = () => {
                   type='submit'
                   css={{ flexGrow: 1 }}
                   onClick={submitForm}
+                  // Empty default audience means there are no users in any audience
+                  disabled={!!isSubmitting || !defaultAudience}
                 >
                   {messages.continue}
                 </Button>

@@ -102,11 +102,6 @@ steps:
           git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
           cd audius-docker-compose
           last_release_commit=$(git log --format=format:%H --grep='^release-v.*auto-deploy$' -1)
-          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" creator-node/docker-compose*.yml
-          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" discovery-provider/docker-compose*.yml
-          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
-          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" ddex/docker-compose*.yml
-          git add */docker-compose*.yml
           git commit --allow-empty -m "$CIRCLE_BRANCH auto-deploy"
           git push origin stage
 

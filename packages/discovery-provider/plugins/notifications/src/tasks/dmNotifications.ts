@@ -11,6 +11,7 @@ import type {
 import { getRedisConnection } from './../utils/redisConnection'
 import { Timer } from '../utils/timer'
 import { makeChatId } from '../utils/chatId'
+import { chunk } from 'lodash'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -82,6 +83,7 @@ async function getUnreadMessages(
     )
     .from('chat_message')
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
+    .where('chat_message.blast_id', null)
     // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
     .whereRaw(
       `date_trunc('milliseconds', chat_message.created_at) > greatest(chat_member.last_active_at, ?::timestamp)`,
@@ -165,60 +167,6 @@ async function getNewBlasts(
       WITH blast AS (
         SELECT * FROM chat_blast WHERE ${blastCondition}
       ),
-      aud AS (
-        -- follower_audience
-        SELECT blast_id, follower_user_id AS to_user_id
-        FROM follows
-        JOIN blast
-          ON blast.audience = 'follower_audience'
-          AND follows.followee_user_id = blast.from_user_id
-          AND follows.is_delete = false
-          AND follows.created_at < blast.created_at
-
-        UNION
-
-        -- tipper_audience
-        SELECT blast_id, sender_user_id AS to_user_id
-        FROM user_tips tip
-        JOIN blast
-          ON blast.audience = 'tipper_audience'
-          AND receiver_user_id = blast.from_user_id
-          AND tip.created_at < blast.created_at
-
-        UNION
-
-        -- remixer_audience
-        SELECT blast_id, t.owner_id AS to_user_id
-        FROM tracks t
-        JOIN remixes ON remixes.child_track_id = t.track_id
-        JOIN tracks og ON remixes.parent_track_id = og.track_id
-        JOIN blast
-          ON blast.audience = 'remixer_audience'
-          AND og.owner_id = blast.from_user_id
-          AND (
-            blast.audience_content_id IS NULL
-            OR (
-              blast.audience_content_type = 'track'
-              AND blast.audience_content_id = og.track_id
-            )
-          )
-
-        UNION
-
-        -- customer_audience
-        SELECT blast_id, buyer_user_id AS to_user_id
-        FROM usdc_purchases p
-        JOIN blast
-          ON blast.audience = 'customer_audience'
-          AND p.seller_user_id = blast.from_user_id
-          AND (
-            blast.audience_content_id IS NULL
-            OR (
-              blast.audience_content_type = p.content_type::text
-              AND blast.audience_content_id = p.content_id
-            )
-          )
-      ),
       targ AS (
         SELECT
           blast_id,
@@ -226,11 +174,8 @@ async function getNewBlasts(
           to_user_id,
           blast.created_at
         FROM blast
-        JOIN aud USING (blast_id)
-        LEFT JOIN chat_member member_a ON from_user_id = member_a.user_id
-        LEFT JOIN chat_member member_b ON to_user_id = member_b.user_id AND member_b.chat_id = member_a.chat_id
-        WHERE member_b.chat_id IS NULL -- !! note this is the opposite from the query in chat_blast.go
-        AND chat_allowed(from_user_id, to_user_id)
+        JOIN chat_blast_audience(blast.blast_id) USING (blast_id)
+        WHERE chat_allowed(from_user_id, to_user_id)
         AND (${userCondition})
         ORDER BY to_user_id ASC
         LIMIT ?
@@ -252,7 +197,7 @@ async function getNewBlasts(
   // If no messages found, move to next blast id, with no user id conditions
   if (!messages?.length) {
     messages = await fetchMessages(
-      'chat_blast.created_at > ? ORDER BY chat_blast.created_at ASC LIMIT 1',
+      "date_trunc('milliseconds', chat_blast.created_at) > ? ORDER BY chat_blast.created_at ASC LIMIT 1",
       '1=1',
       [lastIndexedBlastTimestamp, config.blastUserBatchSize]
     )
@@ -266,9 +211,25 @@ async function getNewBlasts(
     }
   })
 
-  // If there are no new messages, the cursors will remain the same. Otherwise,
-  // update them to the blast id of the current batch and the last user id in the batch.
-  const newBlastIdCursor = formattedMessages[0]?.blast_id ?? lastIndexedBlastId
+  // If still no messages after 2nd fetch, attempt to skip to the next blast.
+  // If there isn't one, then we've reached the end of the blast table. Cursor
+  // should stay the same until new blasts come in.
+  let newBlastIdCursor
+  if (!messages?.length) {
+    const blastIdResult = await discoveryDB
+      .select('blast_id')
+      .from('chat_blast')
+      .whereRaw(
+        "date_trunc('milliseconds', chat_blast.created_at) > ?",
+        lastIndexedBlastTimestamp
+      )
+      .orderBy('chat_blast.created_at', 'asc')
+      .first()
+    newBlastIdCursor = blastIdResult?.blast_id ?? lastIndexedBlastId
+  } else {
+    newBlastIdCursor = formattedMessages[0].blast_id
+  }
+
   const newUserIdCursor = formattedMessages.at(-1)?.receiver_user_id ?? null
 
   return {
@@ -374,6 +335,9 @@ export async function sendDMNotifications(
           newBlasts
         )}`
       )
+      logger.info(
+        `dmNotifications: last indexed blastId: ${lastIndexedBlastId}, last indexed userId: ${lastIndexedBlastUserId} total new chat blast notifications: ${newBlasts.length}`
+      )
     }
 
     // Convert to notifications
@@ -394,12 +358,17 @@ export async function sendDMNotifications(
     notifications.sort(notificationTimestampComparator)
     timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
 
-    // Send push notifications
-    for (const notification of notifications) {
-      notification.processNotification({
-        isLiveEmailEnabled: false,
-        isBrowserPushEnabled
-      })
+    // Send push notifications in batches
+    const batches = chunk(notifications, config.notificationBatchSize)
+    for (const batch of batches) {
+      await Promise.all(
+        batch.map(async (notification) => {
+          await notification.processNotification({
+            isLiveEmailEnabled: false,
+            isBrowserPushEnabled
+          })
+        })
+      )
     }
 
     // Set last indexed timestamps in redis

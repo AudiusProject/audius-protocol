@@ -1,8 +1,11 @@
+import { useCallback, useRef } from 'react'
+
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
+import { Link } from 'react-router-dom-v5-compat'
 
 import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -10,11 +13,13 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import SectionButton from 'components/section-button/SectionButton'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
+import { trackRemixesPage } from 'utils/route'
+
+import { TrackRemixes } from '../TrackRemixes'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
@@ -129,7 +134,15 @@ const TrackPage = ({
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
 
+  const commentSectionRef = useRef<HTMLDivElement | null>(null)
+
   const defaults = getTrackDefaults(heroTrack)
+
+  const scrollToCommentSection = useCallback(() => {
+    if (commentSectionRef.current) {
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [commentSectionRef])
 
   const renderGiantTrackTile = () => (
     <GiantTrackTile
@@ -174,6 +187,7 @@ const TrackPage = ({
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}
       coSign={defaults.coSign}
+      scrollToCommentSection={scrollToCommentSection}
       // Actions
       onPlay={onPlay}
       onPreview={onPreview}
@@ -190,7 +204,7 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <Text color='default' variant='title' size='l'>
+    <Text color='default' variant='title' size='l' textAlign='left'>
       {messages.originalTrack}
     </Text>
   )
@@ -202,8 +216,14 @@ const TrackPage = ({
         color='default'
         variant='title'
         size='l'
+        textAlign='left'
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
+
+  const { fieldVisibility, remixTrackIds, permalink } = defaults
+
+  const hasRemixes =
+    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   return (
     <Page
@@ -224,24 +244,18 @@ const TrackPage = ({
       </Box>
       <Flex
         direction='column'
-        css={{
-          display: 'flex',
-          position: 'relative',
-          padding: '200px 16px 60px'
-        }}
+        css={{ position: 'relative', padding: '200px 16px 60px' }}
       >
         {renderGiantTrackTile()}
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
-            <Flex justifyContent='center' mt='3xl' ph='l'>
-              <Remixes
-                trackIds={defaults.remixTrackIds}
-                goToAllRemixes={goToAllRemixesPage}
-                count={defaults.remixesCount}
-              />
-            </Flex>
-          )}
+        {hasRemixes && !commentsFlagEnabled ? (
+          <Flex justifyContent='center' mt='3xl' ph='l'>
+            <Remixes
+              trackIds={defaults.remixTrackIds!}
+              goToAllRemixes={goToAllRemixesPage}
+              count={defaults.remixesCount}
+            />
+          </Flex>
+        ) : null}
         <Flex
           gap='2xl'
           w='100%'
@@ -253,10 +267,13 @@ const TrackPage = ({
         >
           {isCommentingEnabled ? (
             <Flex flex='3'>
-              <CommentSection entityId={defaults.trackId} />
+              <CommentSection
+                entityId={defaults.trackId}
+                commentSectionRef={commentSectionRef}
+              />
             </Flex>
           ) : null}
-          {hasMoreByTracks ? (
+          {hasRemixes || hasMoreByTracks ? (
             <Flex
               direction='column'
               alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
@@ -267,6 +284,7 @@ const TrackPage = ({
                 maxWidth: isCommentingEnabled ? '100%' : '774px'
               }}
             >
+              {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
               {hasValidRemixParent
                 ? renderOriginalTrackTitle()
                 : renderMoreByTitle()}
@@ -275,11 +293,20 @@ const TrackPage = ({
                 // Styles for leading element (original track if remix).
                 leadingElementId={defaults.remixParentTrackId}
                 leadingElementDelineator={
-                  <Flex gap='3xl' direction='column' alignItems='center'>
-                    <SectionButton
-                      text={messages.viewOtherRemixes}
-                      onClick={goToParentRemixesPage}
-                    />
+                  <Flex gap='3xl' direction='column'>
+                    <Box
+                      alignSelf={isCommentingEnabled ? 'flex-start' : 'center'}
+                    >
+                      <Button
+                        size={isCommentingEnabled ? 'xs' : 'small'}
+                        iconRight={IconArrowRight}
+                        asChild
+                      >
+                        <Link to={trackRemixesPage(permalink)}>
+                          {messages.viewOtherRemixes}
+                        </Link>
+                      </Button>
+                    </Box>
                     <Flex
                       mb='l'
                       justifyContent={

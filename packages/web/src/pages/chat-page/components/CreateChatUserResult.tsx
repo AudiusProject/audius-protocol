@@ -14,7 +14,7 @@ import {
   IconButton,
   IconKebabHorizontal,
   IconMessage,
-  IconMessageBlock,
+  IconMessageSlash,
   IconMessageUnblock as IconUnblockMessages,
   IconUser,
   PopupMenu
@@ -39,7 +39,8 @@ const messages = {
   unblock: 'Unblock Messages',
   notPermitted: 'Cannot Be Messaged',
   sendTipRequired: 'Send a Tip to Message',
-  unblockRequired: 'Blocked'
+  unblockRequired: 'Blocked',
+  followRequired: 'Follow to Message'
 }
 
 type UserResultComposeProps = {
@@ -74,21 +75,28 @@ const renderCustomChip = (callToAction: ChatPermissionAction) => {
     case ChatPermissionAction.TIP:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock size='s' color='default' />
+          <IconMessageSlash size='s' color='default' />
           <span>{messages.sendTipRequired}</span>
+        </div>
+      )
+    case ChatPermissionAction.FOLLOW:
+      return (
+        <div className={styles.notPermitted}>
+          <IconMessageSlash size='s' color='default' />
+          <span>{messages.followRequired}</span>
         </div>
       )
     case ChatPermissionAction.UNBLOCK:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock size='s' color='default' />
+          <IconMessageSlash size='s' color='default' />
           <span>{messages.unblockRequired}</span>
         </div>
       )
     default:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock size='s' color='default' />
+          <IconMessageSlash size='s' color='default' />
           <span>{messages.notPermitted}</span>
         </div>
       )
@@ -145,7 +153,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
           onClick: handleUnblockClicked
         }
       : {
-          icon: <IconMessageBlock />,
+          icon: <IconMessageSlash />,
           text: messages.block,
           onClick: handleBlockClicked
         }

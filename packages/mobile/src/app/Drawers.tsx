@@ -19,6 +19,7 @@ import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-a
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { ArtistPickConfirmationDrawer } from 'app/components/drawers/ArtistPickConfirmationDrawer'
+import { MuteCommentsConfirmationDrawer } from 'app/components/drawers/MuteCommentsConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
@@ -149,6 +150,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   ChatActions: ChatActionsDrawer,
   CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
+  MuteComments: MuteCommentsConfirmationDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
   Welcome: WelcomeDrawer,

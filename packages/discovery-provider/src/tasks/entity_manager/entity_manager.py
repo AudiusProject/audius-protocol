@@ -603,6 +603,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.REPORTED_COMMENT].add(
                         (user_id, entity_id)
                     )
+                elif action == Action.PIN or action == Action.UNPIN:
+                    try:
+                        json_metadata = json.loads(metadata)
+                    except Exception as e:
+                        logger.error(
+                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                        )
+                        # skip invalid metadata
+                        continue
+                    track_id = json_metadata.get("data", {}).get("entity_id")
+                    entities_to_fetch[EntityType.TRACK].add(track_id)
                 elif action == Action.MUTE or action == Action.UNMUTE:
                     entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
                         (user_id, entity_id, entity_type)

@@ -819,7 +819,9 @@ export const getUserReplicaSet = (encodedUserId: string) => {
   }
 }
 
-export const getUnclaimedId = (type: 'users' | 'playlists' | 'tracks') => {
+export const getUnclaimedId = (
+  type: 'users' | 'playlists' | 'tracks' | 'comments'
+) => {
   return {
     endpoint: `/v1/${type}/unclaimed_id`,
     timeout: 5000,

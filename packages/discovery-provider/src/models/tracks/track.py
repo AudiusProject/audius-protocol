@@ -97,6 +97,7 @@ class Track(Base, RepresentableMixin):
     )
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)
+    pinned_comment_id = Column(Integer)
 
     # Audio analysis
     bpm = Column(Float)

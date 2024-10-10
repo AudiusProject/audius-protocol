@@ -11,6 +11,7 @@ from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.queries.query_helpers import helpers, populate_user_metadata
 from src.utils import redis_connection
@@ -23,6 +24,7 @@ redis = redis_connection.get_redis()
 
 COMMENT_THREADS_LIMIT = 5
 COMMENT_REPLIES_LIMIT = 3
+COMMENT_REPORT_KARMA_THRESHOLD = 1_720_000
 
 
 # Returns whether a comment has been reacted to by a particular user
@@ -57,7 +59,10 @@ def get_replies(
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
         .group_by(Comment.comment_id)
-        .filter(CommentThread.parent_comment_id == parent_comment_id)
+        .filter(
+            CommentThread.parent_comment_id == parent_comment_id,
+            Comment.is_delete == False,
+        )
         .order_by(asc(Comment.created_at))
         .offset(offset)
         .limit(limit)
@@ -79,7 +84,6 @@ def get_replies(
             "message": reply.text,
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
-            "is_pinned": reply.is_pinned,
             "is_current_user_reacted": get_is_reacted(
                 session, current_user_id, reply.comment_id
             ),
@@ -111,7 +115,9 @@ def get_comment_replies(args, comment_id, current_user_id=None):
 
 
 def get_track_comments(args, track_id, current_user_id=None):
-    offset, limit = format_offset(args), format_limit(args, COMMENT_THREADS_LIMIT)
+    offset, limit = format_offset(args), format_limit(
+        args, default_limit=COMMENT_THREADS_LIMIT
+    )
     sort_method = args.get("sort_method", "top")
     if sort_method == "top":
         sort_method_order_by = desc(func.count(CommentReaction.comment_id))
@@ -127,9 +133,9 @@ def get_track_comments(args, track_id, current_user_id=None):
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        artist_id = (
-            session.query(Track).filter(Track.track_id == track_id).first().owner_id
-        )
+        track = session.query(Track).filter(Track.track_id == track_id).first()
+        artist_id = track.owner_id
+        pinned_comment_id = track.pinned_comment_id
 
         track_comments = (
             session.query(
@@ -145,6 +151,10 @@ def get_track_comments(args, track_id, current_user_id=None):
             .outerjoin(
                 CommentReport,
                 Comment.comment_id == CommentReport.comment_id,
+            )
+            .outerjoin(
+                AggregateUser,
+                AggregateUser.user_id == CommentReport.user_id,
             )
             .outerjoin(
                 CommentReaction, Comment.comment_id == CommentReaction.comment_id
@@ -171,20 +181,32 @@ def get_track_comments(args, track_id, current_user_id=None):
                 Comment.entity_type == "Track",
                 CommentThreadAlias.parent_comment_id
                 == None,  # Check if parent_comment_id is null
-                (CommentReport.comment_id == None)
-                | (current_user_id == None)
-                | (CommentReport.user_id != current_user_id),
                 or_(
-                    MutedUser.muted_user_id == None, MutedUser.is_delete == True
+                    CommentReport.comment_id == None,
+                    current_user_id == None,
+                    CommentReport.user_id != current_user_id,
+                ),
+                or_(
+                    CommentReport.comment_id == None,
+                    CommentReport.comment_id != artist_id,
+                ),
+                or_(
+                    MutedUser.muted_user_id == None,
+                    MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
-                | (Comment.is_delete == False)
+                | (Comment.is_delete == False),
+            )
+            # Ensure that the combined follower count of all users who reported the comment is below the threshold.
+            .having(
+                func.coalesce(func.sum(AggregateUser.follower_count), 0)
+                <= COMMENT_REPORT_KARMA_THRESHOLD,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
-                desc(Comment.is_pinned),
+                desc(Comment.comment_id == pinned_comment_id),
                 asc(Comment.is_delete),
                 sort_method_order_by,
             )
@@ -204,7 +226,6 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "message": (
                     track_comment.text if not track_comment.is_delete else "[Removed]"
                 ),
-                "is_pinned": track_comment.is_pinned,
                 "is_edited": track_comment.is_edited,
                 "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": react_count,

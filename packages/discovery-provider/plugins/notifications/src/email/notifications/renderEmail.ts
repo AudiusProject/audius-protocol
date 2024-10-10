@@ -355,6 +355,7 @@ export const renderEmail = async ({
       }
     }
   }
+
   const notificationProps = await getNotificationProps(
     dnDb,
     identityDb,

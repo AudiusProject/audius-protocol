@@ -18,9 +18,11 @@ import {
   INCREMENT_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
   SET_STREAM_URLS,
+  SET_PINNED_COMMENT_ID,
   incrementTrackCommentCount,
   setPermalink,
-  setStreamUrls
+  setStreamUrls,
+  setPinnedCommentId
 } from './actions'
 import { TracksCacheState } from './types'
 
@@ -114,6 +116,18 @@ const actionsMap = {
               commentCountIncrement
           }
         }
+      }
+    })
+  },
+  [SET_PINNED_COMMENT_ID](
+    state: TracksCacheState,
+    action: ReturnType<typeof setPinnedCommentId>
+  ): TracksCacheState {
+    const { trackId, commentId } = action
+
+    return merge(state, {
+      entries: {
+        [trackId]: { metadata: { pinned_comment_id: commentId } }
       }
     })
   }

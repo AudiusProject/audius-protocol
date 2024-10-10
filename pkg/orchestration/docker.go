@@ -235,7 +235,9 @@ func runNode(
 	override := config.ToOverrideEnv(host, nconf)
 	// generate the override.env file locally
 	// WARNING: not thread safe due to constant filename
-	appendRemoteConfig(host, override, config.RemoteConfigFile)
+	if err := appendRemoteConfig(host, override, config.RemoteConfigFile); err != nil {
+		return logger.Error(err)
+	}
 	localOverridePath := "./override.env"
 	if err := godotenv.Write(override, localOverridePath); err != nil {
 		return logger.Error(err)
