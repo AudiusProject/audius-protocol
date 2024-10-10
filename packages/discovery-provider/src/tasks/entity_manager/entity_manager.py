@@ -438,6 +438,9 @@ def entity_manager_update(
                     logger.error(
                         f"entity_manager.py | Indexing error {e}", exc_info=True
                     )
+                    create_and_raise_indexing_error(
+                        indexing_error, update_task.redis, session
+                    )
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
@@ -480,7 +483,7 @@ def entity_manager_update(
             )
     except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
-        # raise e
+        raise e
     return num_total_changes, changed_entity_ids
 
 
