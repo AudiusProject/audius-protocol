@@ -147,7 +147,11 @@ def update_comment(params: ManageEntityParameters):
             if existing_mention:
                 existing_mention.is_delete = True
 
-                params.add_record((comment_id, mention_user_id), existing_mention, EntityType.COMMENT_MENTION)
+                params.add_record(
+                    (comment_id, mention_user_id),
+                    existing_mention,
+                    EntityType.COMMENT_MENTION,
+                )
 
         # Add new mentions
         for mention_user_id in new_mentions - existing_mention_ids:
