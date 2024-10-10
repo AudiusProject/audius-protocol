@@ -1,4 +1,4 @@
-import { formatCount, pluralize } from '~/utils'
+import { formatCount } from '~/utils'
 
 export const commentsMessages = {
   // Generic messages across the page
@@ -16,7 +16,7 @@ export const commentsMessages = {
   replies: 'Replies',
   replyingTo: (handle: string) => `Replying to @${handle}`,
   showReplies: (replyCount: number) =>
-    `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
+    `${formatCount(replyCount)} ${replyCount > 1 ? 'Replies' : 'Reply'}`,
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
