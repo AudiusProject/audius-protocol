@@ -77,6 +77,7 @@ type ArtistChipProps = {
   user: User
   onClickArtistName?: () => void
   showPopover?: boolean
+  showFollowsYou?: boolean
   showSupportFor?: ID
   showSupportFrom?: ID
   className?: string
@@ -88,6 +89,7 @@ const ArtistChip = ({
   user,
   onClickArtistName,
   showPopover = true,
+  showFollowsYou = true,
   showSupportFor,
   showSupportFrom,
   className = '',
@@ -159,7 +161,11 @@ const ArtistChip = ({
         </div>
         {customChips || (
           <>
-            <ArtistChipFollowers userId={userId} followerCount={followers} />
+            <ArtistChipFollowers
+              showFollowsYou={showFollowsYou}
+              userId={userId}
+              followerCount={followers}
+            />
             {showSupportFor ? (
               <ArtistChipSupportFor
                 artistId={user.user_id}

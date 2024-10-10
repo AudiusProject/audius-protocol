@@ -97,6 +97,7 @@ export const CommentSettingsModal = () => {
 }
 
 export const MutedUser = (props: { user: any }) => {
+  const [, setIsVisible] = useModalState('CommentSettings')
   const { user } = props
   const isMobile = useIsMobile()
   const [muteUser] = useMuteUser()
@@ -104,6 +105,7 @@ export const MutedUser = (props: { user: any }) => {
   const [isMuted, toggleMuted] = useToggle(true)
   const onClickArtistName = (handle: string) => {
     dispatch(pushRoute(profilePage(handle)))
+    setIsVisible(false)
   }
 
   return (
@@ -115,6 +117,7 @@ export const MutedUser = (props: { user: any }) => {
         }}
         showPopover={!isMobile}
         popoverMount={MountPlacement.BODY}
+        showFollowsYou={false}
       />
       <Button
         size='small'
