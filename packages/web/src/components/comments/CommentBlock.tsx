@@ -97,6 +97,7 @@ const CommentBlockInternal = (
         ) : null}
         {showEditInput ? (
           <CommentForm
+            autoFocus
             onSubmit={() => setShowEditInput(false)}
             commentId={commentId}
             initialValue={message}
@@ -119,8 +120,9 @@ const CommentBlockInternal = (
 
         {showReplyInput ? (
           <CommentForm
+            autoFocus
             parentCommentId={parentCommentId ?? comment.id}
-            initialValue={`@${userHandle}`}
+            initialValue={`@${userHandle} `}
             onSubmit={() => setShowReplyInput(false)}
           />
         ) : null}
