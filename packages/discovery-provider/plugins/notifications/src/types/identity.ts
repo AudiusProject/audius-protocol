@@ -237,6 +237,8 @@ export interface UserNotificationBrowserSettingRow {
   milestonesAndAchievements?: boolean
   remixes?: boolean
   reposts?: boolean
+  comments?: boolean
+  mentions?: boolean
   updatedAt: Date
   userId: number
 }
@@ -249,24 +251,8 @@ export interface UserNotificationMobileSettingRow {
   milestonesAndAchievements?: boolean
   remixes?: boolean
   reposts?: boolean
-  updatedAt: Date
-  userId: number
-}
-export interface UserNotificationSettingRow {
-  announcements?: boolean
-  browserPushNotifications?: boolean
-  createdAt: Date
-  emailFrequency?: enum_UserNotificationSettings_emailFrequency
-  favorites?: boolean
-  followers?: boolean
-  milestonesAndAchievements?: boolean
-  reposts?: boolean
-  updatedAt: Date
-  userId: number
-}
-export interface UserPlaylistFavoriteRow {
-  createdAt: Date
-  favorites: string[]
+  comments?: boolean
+  mentions?: boolean
   updatedAt: Date
   userId: number
 }
@@ -287,20 +273,6 @@ export interface UserRow {
   timezone?: string | null
   updatedAt: Date
   walletAddress?: string | null
-}
-export interface UserTrackListenRow {
-  count?: number
-  createdAt: Date
-  id?: number
-  trackId: number
-  updatedAt: Date
-  userId: number
-}
-export enum enum_UserNotificationSettings_emailFrequency {
-  'daily' = 'daily',
-  'weekly' = 'weekly',
-  'off' = 'off',
-  'live' = 'live'
 }
 export enum enum_SolanaNotifications_type {
   'ChallengeReward' = 'ChallengeReward',

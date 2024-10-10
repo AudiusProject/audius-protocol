@@ -2,7 +2,11 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_comments import get_comment_replies, get_track_comments
+from src.queries.get_comments import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    get_comment_replies,
+    get_track_comments,
+)
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -126,10 +130,9 @@ def test_get_comments_pinned(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": True,
             },
         ],
-        "tracks": [{"track_id": 1, "owner_id": 10}],
+        "tracks": [{"track_id": 1, "owner_id": 10, "pinned_comment_id": 2}],
     }
 
     with app.app_context():
@@ -230,7 +233,6 @@ def test_get_tombstone_comments(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": True,
             }
             for i in range(1, 5)
         ]
@@ -251,7 +253,6 @@ def test_get_tombstone_comments(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": False,
             },
         ],
         "tracks": [{"track_id": 1, "owner_id": 10}],
@@ -286,3 +287,38 @@ def test_get_tombstone_comments(app):
             decode_string_id(comments[-1]["id"])
         ) == 0  # deleted comment should be last
         assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+
+def test_get_reported_comments(app):
+    "Test that we do not receive comments that have been reported by artist or high-karma user"
+
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+        ],
+        "comment_reports": [
+            {"comment_id": 1, "user_id": 1},
+            {"comment_id": 2, "user_id": 3},
+        ],
+        "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
+        "aggregate_user": [
+            {"user_id": 3, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD + 1}
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({}, 1, 4)
+        assert len(comments) == 0

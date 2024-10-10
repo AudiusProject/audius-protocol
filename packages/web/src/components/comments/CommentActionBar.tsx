@@ -76,12 +76,13 @@ export const CommentActionBar = ({
   hideReactCount
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
-  // Comment from props
+  const { currentUserId, isEntityOwner, entityId, currentSort, track } =
+    useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'isPinned' in comment
-  const isTombstone = isParentComment ? comment.isTombstone : false
-  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+  const isPinned = track.pinned_comment_id === commentId
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
   // API actions
   const [reactToComment] = useReactToComment()
@@ -89,9 +90,6 @@ export const CommentActionBar = ({
   const [pinComment] = usePinComment()
   const [muteUser] = useMuteUser()
 
-  // Comment context data
-  const { currentUserId, isEntityOwner, entityId, currentSort } =
-    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
   const canMuteNotifs = isCommentOwner && isParentComment
 

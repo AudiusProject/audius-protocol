@@ -8,13 +8,20 @@ import {
   EntityType,
   ManageEntityOptions
 } from '../../services/EntityManager/types'
-import { encodeHashId } from '../../utils/hashId'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import {
   Configuration,
   CommentsApi as GeneratedCommentsApi
 } from '../generated/default'
 
 import { CommentMetadata } from './types'
+
+type PinCommentMetadata = {
+  userId: number
+  entityId: number
+  trackId: number
+  isPin: boolean
+}
 
 type CommentNotificationOptions = OverrideProperties<
   Omit<ManageEntityOptions, 'metadata' | 'auth'>,
@@ -31,9 +38,18 @@ export class CommentsApi extends GeneratedCommentsApi {
     super(configuration)
   }
 
+  private async generateCommentId() {
+    const response = await this.getUnclaimedCommentID()
+    const { data: unclaimedId } = response
+    if (!unclaimedId) {
+      return Math.floor(Math.random() * 1000000)
+    }
+    return decodeHashId(unclaimedId)!
+  }
+
   async postComment(metadata: CommentMetadata) {
     const { userId, entityType = EntityType.TRACK, commentId } = metadata
-    const newCommentId = commentId ?? Math.floor(Math.random() * 1000000) // TODO: request an unused id instead of a random number
+    const newCommentId = commentId ?? (await this.generateCommentId())
     await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
@@ -90,13 +106,17 @@ export class CommentsApi extends GeneratedCommentsApi {
     return response
   }
 
-  async pinComment(userId: number, entityId: number, isPin: boolean) {
+  async pinComment(metadata: PinCommentMetadata) {
+    const { userId, entityId, trackId, isPin } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
       entityId,
       action: isPin ? Action.PIN : Action.UNPIN,
-      metadata: '',
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys({ entityId: trackId })
+      }),
       auth: this.auth
     })
     return response

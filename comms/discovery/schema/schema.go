@@ -118,8 +118,9 @@ type ChatPermitRPC struct {
 }
 
 type ChatPermitRPCParams struct {
-	Allow  *bool          `json:"allow,omitempty"`
-	Permit ChatPermission `json:"permit"`
+	Allow      *bool            `json:"allow,omitempty"`
+	Permit     ChatPermission   `json:"permit"`
+	PermitList []ChatPermission `json:"permit_list"`
 }
 
 type RPCPayloadRequest struct {
@@ -143,6 +144,7 @@ type RPCPayloadRequestParams struct {
 	UserID              *string              `json:"user_id,omitempty"`
 	Allow               *bool                `json:"allow,omitempty"`
 	Permit              *ChatPermission      `json:"permit,omitempty"`
+	PermitList          []ChatPermission     `json:"permit_list,omitempty"`
 }
 
 type TentacledInvite struct {
@@ -290,6 +292,7 @@ type RPCPayloadParams struct {
 	UserID              *string              `json:"user_id,omitempty"`
 	Allow               *bool                `json:"allow,omitempty"`
 	Permit              *ChatPermission      `json:"permit,omitempty"`
+	PermitList          []ChatPermission     `json:"permit_list,omitempty"`
 }
 
 type StickyInvite struct {

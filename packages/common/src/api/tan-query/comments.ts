@@ -21,6 +21,7 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, ID, ReplyComment } from '~/models'
+import { setPinnedCommentId } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { encodeHashId, Nullable } from '~/utils'
 
@@ -247,7 +248,6 @@ export const usePostComment = () => {
         id: newId,
         userId,
         message: body,
-        isPinned: false,
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
@@ -380,15 +380,23 @@ type PinCommentArgs = {
   isPinned: boolean
   trackId: ID
   currentSort: CommentSortMethod
+  previousPinnedCommentId?: Nullable<ID>
 }
+
 export const usePinComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
-    mutationFn: async ({ userId, commentId, isPinned }: PinCommentArgs) => {
+    mutationFn: async (args: PinCommentArgs) => {
+      const { userId, commentId, isPinned, trackId } = args
       const sdk = await audiusSdk()
-      return await sdk.comments.pinComment(userId, commentId, isPinned)
+      return await sdk.comments.pinComment({
+        userId,
+        entityId: commentId,
+        trackId,
+        isPin: isPinned
+      })
     },
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
       // Finally - update our individual comment
@@ -401,30 +409,7 @@ export const usePinComment = () => {
           } as CommentOrReply)
       )
       if (isPinned) {
-        // Un-pin the current top comment (if it's already not pinned nothing changes)
-        const commentData = queryClient.getQueryData<InfiniteData<ID[]>>([
-          QUERY_KEYS.trackCommentList,
-          trackId,
-          currentSort
-        ])
-        // if we somehow hit an empty cache this will be undefined
-        if (commentData === undefined) return
-        const prevTopCommentId = commentData.pages[0][0]
-        // If we're pinning the comment at the top already,
-        // there's no need to do any unpinning of other comments or rearrange sort
-        if (prevTopCommentId === commentId) return
-
-        // Un-pin the current top comment (not the comment we're pinning at the moment)
-        queryClient.setQueryData<CommentOrReply | undefined>(
-          [QUERY_KEYS.comment, prevTopCommentId],
-          (prevCommentState) =>
-            ({
-              ...prevCommentState,
-              isPinned: false
-            } as CommentOrReply)
-        )
-
-        // Move our newly pinned comment from its old spot to the top of the sort data
+        // Loop through the sort list and move the newly pinned comment
         queryClient.setQueryData<InfiniteData<ID[]>>(
           [QUERY_KEYS.trackCommentList, trackId, currentSort],
           (prevCommentData) => {
@@ -444,9 +429,11 @@ export const usePinComment = () => {
           }
         )
       }
+
+      dispatch(setPinnedCommentId(trackId, isPinned ? commentId : null))
     },
     onError: (error: Error, args) => {
-      const { trackId, currentSort, commentId, isPinned } = args
+      const { trackId, currentSort, previousPinnedCommentId } = args
       reportToSentry({
         error,
         additionalInfo: args,
@@ -454,17 +441,8 @@ export const usePinComment = () => {
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('pinning') }))
+      dispatch(setPinnedCommentId(trackId, previousPinnedCommentId ?? null))
       // Since this mutationx handles sort data, its difficult to undo the optimistic update so we just re-load everything
-      // Revert our optimistic cache change
-      queryClient.setQueryData(
-        [QUERY_KEYS.comment, commentId],
-        (prevCommentState: CommentOrReply | undefined) =>
-          ({
-            ...prevCommentState,
-            isPinned: !isPinned
-          } as CommentOrReply)
-      )
-      // TODO: avoid hard reset here?
       queryClient.resetQueries([
         QUERY_KEYS.trackCommentList,
         trackId,
@@ -782,15 +760,7 @@ export const useUpdateTrackCommentNotificationSetting = () => {
     onMutate: ({ trackId, action }) => {
       queryClient.setQueryData(
         [QUERY_KEYS.trackCommentNotificationSetting, trackId],
-        (prevData) => {
-          if (prevData) {
-            return {
-              ...prevData,
-              isMuted: action === EntityManagerAction.MUTE
-            }
-          }
-          return { isMuted: action === EntityManagerAction.MUTE }
-        }
+        () => ({ data: { isMuted: action === EntityManagerAction.MUTE } })
       )
     },
     onError: (error: Error, args) => {

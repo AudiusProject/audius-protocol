@@ -37,15 +37,16 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
           <Artwork
             src={audienceContentType === 'track' ? trackArtwork : albumArtwork}
             w='48px'
+            css={{ flexShrink: 0 }}
           />
         ) : null}
         <Flex column gap='xs' alignItems='flex-start'>
           <Flex gap='s' alignItems='center'>
             <IconTowerBroadcast size='m' color='default' />
-            <Text variant='title' size='l' ellipses>
+            <Text variant='title' size='l'>
               {chatBlastSecondaryTitle}
             </Text>
-            <Text variant='title' size='l' color='subdued' ellipses>
+            <Text variant='title' size='l' color='subdued' maxLines={1}>
               {contentTitle}
             </Text>
           </Flex>

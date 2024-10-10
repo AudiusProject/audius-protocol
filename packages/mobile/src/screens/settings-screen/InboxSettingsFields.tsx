@@ -38,7 +38,7 @@ const options = [
 
 export const InboxSettingsFields = () => {
   const [allowAllField, , allowAllHelpers] = useField({
-    name: 'allowAll',
+    name: 'all',
     type: 'checkbox'
   })
 
@@ -71,7 +71,7 @@ export const InboxSettingsFields = () => {
 
 function SwitchField(props: { title: string; value: ChatPermission }) {
   const { title, value } = props
-  const [allowAllField] = useField({ name: 'allowAll', type: 'checkbox' })
+  const [allowAllField] = useField({ name: 'all', type: 'checkbox' })
 
   const [field, , helpers] = useField({
     name: value,
@@ -82,7 +82,7 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
     <Flex row gap='l' key={title}>
       <Switch
         id={title}
-        value={field.checked}
+        value={field.checked || allowAllField.checked}
         disabled={allowAllField.checked}
         onValueChange={helpers.setValue}
       />

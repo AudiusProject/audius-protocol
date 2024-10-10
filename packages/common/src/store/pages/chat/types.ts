@@ -1,3 +1,5 @@
+import { ChatPermission } from '@audius/sdk'
+
 /** Action current user can take to be able to message another user */
 export enum ChatPermissionAction {
   /** Permissions haven't loaded yet */
@@ -8,6 +10,8 @@ export enum ChatPermissionAction {
   NONE,
   /** Current user can tip user */
   TIP,
+  /** Current user can follow user */
+  FOLLOW,
   /** Current user can unblock user */
   UNBLOCK,
   /** User is signed out and needs to sign in */
@@ -26,4 +30,13 @@ export class ChatWebsocketError extends Error {
   constructor(public code: string = 'UNKNOWN', public url?: string) {
     super(`Chat Websocket Error, code: ${code}`)
   }
+}
+
+export type InboxSettingsFormValues = {
+  [ChatPermission.ALL]: boolean
+  [ChatPermission.FOLLOWEES]: boolean
+  [ChatPermission.TIPPERS]: boolean
+  [ChatPermission.TIPPEES]: boolean
+  [ChatPermission.FOLLOWERS]: boolean
+  [ChatPermission.VERIFIED]: boolean
 }

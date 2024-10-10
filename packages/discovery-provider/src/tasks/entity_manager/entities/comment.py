@@ -64,7 +64,7 @@ def create_comment(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    params.add_record(comment_id, comment_record)
+    params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
     if params.metadata.get("mentions"):
         new_mention_user_ids = set(params.metadata["mentions"])
@@ -126,7 +126,7 @@ def update_comment(params: ManageEntityParameters):
     edited_comment.is_edited = True
     edited_comment.text = params.metadata["body"]
 
-    params.add_record(comment_id, edited_comment)
+    params.add_record(comment_id, edited_comment, EntityType.COMMENT)
 
     if "mentions" in params.metadata:
         new_mentions = set(params.metadata["mentions"])
@@ -147,7 +147,11 @@ def update_comment(params: ManageEntityParameters):
             if existing_mention:
                 existing_mention.is_delete = True
 
-                params.add_record((comment_id, mention_user_id), existing_mention)
+                params.add_record(
+                    (comment_id, mention_user_id),
+                    existing_mention,
+                    EntityType.COMMENT_MENTION,
+                )
 
         # Add new mentions
         for mention_user_id in new_mentions - existing_mention_ids:
@@ -184,7 +188,7 @@ def delete_comment(params: ManageEntityParameters):
     )
     deleted_comment.is_delete = True
 
-    params.add_record(comment_id, deleted_comment)
+    params.add_record(comment_id, deleted_comment, EntityType.COMMENT)
 
 
 def validate_comment_reaction_tx(params: ManageEntityParameters):
@@ -281,45 +285,60 @@ def validate_pin_tx(params: ManageEntityParameters, is_pin):
     if comment_id not in comment_records:
         raise IndexingValidationError(f"Comment {comment_id} doesn't exist")
 
-    comment = comment_records[comment_id]
-    if is_pin and comment.is_pinned:
+    user_id = params.user_id
+    metadata = params.metadata
+    track_records = params.existing_records[EntityType.TRACK.value]
+    track_id = metadata["entity_id"]
+    if track_id not in track_records:
+        raise IndexingValidationError(
+            f"Comment {comment_id}'s Track {track_id} does not exist"
+        )
+    track = track_records[track_id]
+    if track.owner_id != user_id:
+        raise IndexingValidationError(
+            f"Comment {comment_id} cannot be pinned by user {user_id}"
+        )
+    elif track.pinned_comment_id == comment_id and is_pin:
         raise IndexingValidationError(f"Comment {comment_id} already pinned")
-    elif not is_pin and not comment.is_pinned:
+    elif track.pinned_comment_id != comment_id and not is_pin:
         raise IndexingValidationError(f"Comment {comment_id} already unpinned")
 
 
 def pin_comment(params: ManageEntityParameters):
     validate_pin_tx(params, True)
     comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    track_id = params.metadata["entity_id"]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
 
-    comment = copy_record(
-        existing_comment,
+    track = copy_record(
+        existing_track,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    comment.is_pinned = True
 
-    params.add_record(comment_id, comment)
+    track.pinned_comment_id = comment_id
+
+    params.add_record(track_id, track, EntityType.TRACK)
 
 
 def unpin_comment(params: ManageEntityParameters):
-    validate_pin_tx(params, False)
-    comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    validate_pin_tx(params, True)
+    track_id = params.metadata["entity_id"]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
 
-    comment = copy_record(
-        existing_comment,
+    track = copy_record(
+        existing_track,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    comment.is_pinned = False
 
-    params.add_record(comment_id, comment)
+    track.pinned_comment_id = None
+
+    params.add_record(track_id, track, EntityType.TRACK)
 
 
 def update_comment_notification_setting(params: ManageEntityParameters):

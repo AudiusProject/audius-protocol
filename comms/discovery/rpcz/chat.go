@@ -217,10 +217,38 @@ func chatReadMessages(tx *sqlx.Tx, userId int32, chatId string, readTimestamp ti
 	return err
 }
 
-func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission, allow *bool, messageTimestamp time.Time) error {
+var permissions = []schema.ChatPermission{
+	schema.Followees,
+	schema.Followers,
+	schema.Tippees,
+	schema.Tippers,
+	schema.Verified,
+}
+
+// Helper function to check if a permit is in the permitList
+func isInPermitList(permit schema.ChatPermission, permitList []schema.ChatPermission) bool {
+	for _, p := range permitList {
+		if p == permit {
+			return true
+		}
+	}
+	return false
+}
+
+func updatePermissions(tx *sqlx.Tx, userId int32, permit schema.ChatPermission, permitAllowed bool, messageTimestamp time.Time) error {
+	_, err := tx.Exec(`
+    insert into chat_permissions (user_id, permits, allowed, updated_at)
+    values ($1, $2, $3, $4)
+    on conflict (user_id, permits)
+    do update set allowed = $3 where chat_permissions.updated_at < $4
+    `, userId, permit, permitAllowed, messageTimestamp)
+	return err
+}
+
+func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission, permitList []schema.ChatPermission, allow *bool, messageTimestamp time.Time) error {
 
 	// if "all" or "none" or is singular permission style (allow == nil) delete any old rows
-	if allow == nil || permits == schema.All || permits == schema.None {
+	if allow == nil || permits == schema.All || permits == schema.None || isInPermitList(schema.All, permitList) || isInPermitList(schema.None, permitList) {
 		_, err := tx.Exec(`
 			delete from chat_permissions where user_id = $1 and updated_at < $2
 		`, userId, messageTimestamp)
@@ -239,14 +267,24 @@ func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission
 		return err
 	}
 
+	// Special case for "all" and "none" - no other rows should be inserted
+	if isInPermitList(schema.All, permitList) {
+		err := updatePermissions(tx, userId, schema.All, true, messageTimestamp)
+		return err
+	} else if isInPermitList(schema.None, permitList) {
+		err := updatePermissions(tx, userId, schema.None, true, messageTimestamp)
+		return err
+	}
+
 	// new: multiple (checkbox) permission style
-	_, err := tx.Exec(`
-	insert into chat_permissions (user_id, permits, allow, updated_at)
-	values ($1, $2, $3, $4)
-	on conflict (user_id, permits)
-	do update set allow = $3 where updated_at < $4
-	`, userId, permits, *allow, messageTimestamp)
-	return err
+	for _, permit := range permissions {
+		permitAllowed := isInPermitList(permit, permitList)
+		err := updatePermissions(tx, userId, permit, permitAllowed, messageTimestamp)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func chatBlock(tx *sqlx.Tx, userId int32, blockeeUserId int32, messageTimestamp time.Time) error {

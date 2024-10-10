@@ -143,6 +143,7 @@ export type GiantTrackTileProps = {
   trackTitle: string
   userId: number
   ddexApp?: string | null
+  scrollToCommentSection: () => void
 }
 
 export const GiantTrackTile = ({
@@ -188,7 +189,8 @@ export const GiantTrackTile = ({
   trackId,
   trackTitle,
   userId,
-  ddexApp
+  ddexApp,
+  scrollToCommentSection
 }: GiantTrackTileProps) => {
   const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
@@ -487,7 +489,10 @@ export const GiantTrackTile = ({
                     )}
                   </Flex>
                   <div className={cn(fadeIn)}>
-                    <TrackStats trackId={trackId} />
+                    <TrackStats
+                      trackId={trackId}
+                      scrollToCommentSection={scrollToCommentSection}
+                    />
                   </div>
                 </Flex>
 

@@ -533,7 +533,8 @@ class TrackCommentNotificationSetting(Resource):
     def get(self, track_id):
         args = track_comments_parser.parse_args()
         decoded_id = decode_with_abort(track_id, ns)
-        current_user_id = args.get("user_id")
+
+        current_user_id = get_current_user_id(args)
         track_comments = get_track_notification_setting(decoded_id, current_user_id)
         return success_response(track_comments)
 

@@ -7,7 +7,7 @@ import { route } from '@audius/common/utils'
 import {
   IconButton,
   PopupMenu,
-  IconMessageBlock,
+  IconMessageSlash,
   IconMessageUnblock,
   IconUser,
   IconTrash,
@@ -94,7 +94,7 @@ export const UserChatHeader = ({ chatId }: { chatId?: string }) => {
         }
       : {
           text: messages.block,
-          icon: <IconMessageBlock />,
+          icon: <IconMessageSlash />,
           onClick: handleBlockClicked
         },
     {

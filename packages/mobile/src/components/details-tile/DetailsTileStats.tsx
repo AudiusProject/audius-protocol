@@ -21,6 +21,7 @@ type DetailsTileStatsProps = {
   hideCommentCount?: boolean
   onPressFavorites?: GestureResponderHandler
   onPressReposts?: GestureResponderHandler
+  onPressComments?: GestureResponderHandler
 }
 
 /**
@@ -36,7 +37,8 @@ export const DetailsTileStats = ({
   hideFavoriteCount,
   hideCommentCount,
   onPressFavorites,
-  onPressReposts
+  onPressReposts,
+  onPressComments
 }: DetailsTileStatsProps) => {
   const shouldHidePlayCount = hidePlayCount || playCount <= 0
   const shouldHideRepostCount = hideRepostCount || repostCount <= 0
@@ -73,7 +75,7 @@ export const DetailsTileStats = ({
         </PlainButton>
       )}
       {shouldHideCommentCount ? null : (
-        <PlainButton iconLeft={IconMessage}>
+        <PlainButton onPress={onPressComments} iconLeft={IconMessage}>
           {formatCount(commentCount)}
         </PlainButton>
       )}

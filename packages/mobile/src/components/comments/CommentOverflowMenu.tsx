@@ -38,9 +38,9 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     parentCommentId
   } = props
 
+  const { track } = useCurrentCommentSection()
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
 
-  const isPinned = 'isPinned' in comment ? comment.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })
@@ -83,10 +83,12 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     entityId,
     isEntityOwner,
     currentUserId,
-    setEditingComment,
+    setReplyingAndEditingState,
     currentSort
   } = useCurrentCommentSection()
+
   const isCommentOwner = Number(userId) === currentUserId
+  const isPinned = track.pinned_comment_id === id
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
@@ -150,7 +152,8 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     },
     isCommentOwner && {
       text: messages.menuActions.edit,
-      callback: () => setEditingComment?.(props.comment)
+      callback: () =>
+        setReplyingAndEditingState?.({ editingComment: props.comment })
     },
     (isCommentOwner || isEntityOwner) && {
       text: messages.menuActions.delete,

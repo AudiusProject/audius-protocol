@@ -25,7 +25,7 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
 
   const [reactToComment] = useReactToComment()
   const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
-  const { setReplyingToComment } = useCurrentCommentSection()
+  const { setReplyingAndEditingState } = useCurrentCommentSection()
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -51,7 +51,10 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
         <PlainButton
           variant='subdued'
           onPress={() => {
-            setReplyingToComment?.(comment)
+            setReplyingAndEditingState?.({
+              replyingToComment: comment,
+              replyingToCommentId: parentCommentId ?? comment.id
+            })
           }}
           disabled={isDisabled}
         >
