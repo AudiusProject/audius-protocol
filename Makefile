@@ -105,13 +105,13 @@ VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/pkg/core/config.Ve
 core-build-native: $(NATIVE_BIN)
 
 $(NATIVE_BIN): $(GO_SRCS) $(JS_SRCS)
-	@cd ./pkg/core && @go build -ldflags "$(VERSION_LDFLAG)" -o ../../bin ./main.go
+	@cd ./pkg/core && @go build -ldflags "$(VERSION_LDFLAG)" -o ./bin ./main.go
 
 .PHONY: core-build-amd64
 core-build-amd64: $(AMD64_BIN)
 
 $(AMD64_BIN): $(GO_SRCS) $(JS_SRCS)
-	@cd ./pkg/core && GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ../../bin/core-amd64
+	@cd ./cmd/core && GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ../../bin/core-amd64
 
 .PHONY: core-deps
 core-deps:
@@ -162,7 +162,7 @@ core-down-sandbox:
 
 .PHONY: core-prod-sandbox
 core-prod-sandbox:
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod up --build -d
+	@docker compose -f ./infra/docker-compose.yml --profile prod up --build -d
 
 .PHONY: core-stage-sandbox
 core-stage-sandbox:
