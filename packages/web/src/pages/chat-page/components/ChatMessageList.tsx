@@ -198,7 +198,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       }
     }, [dispatch, chatId, chat?.messagesStatus])
 
-    // Fix for if the initial load doesn't have enough messages to cause scrolling
+    // For initial load, create chat if it doesn't exist
+    // Useful for when deep linking into a chat directly before it's created
     useEffect(() => {
       if (!chat && chatId && currentUserId) {
         const otherUserId = getOtherUserIdFromChatId(chatId, currentUserId)
@@ -210,6 +211,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       }
     }, [chat, chatId, currentUserId, dispatch])
 
+    // Fix for if the initial load doesn't have enough messages to cause scrolling
     useEffect(() => {
       if (
         chatId &&
