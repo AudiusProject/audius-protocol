@@ -4,7 +4,11 @@ import {
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { useChatBlastModal, chatActions } from '@audius/common/src/store'
+import {
+  useChatBlastModal,
+  chatActions,
+  useCreateChatModal
+} from '@audius/common/src/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -68,6 +72,8 @@ type ChatBlastFormValues = {
 export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
+  const { onOpen: openCreateChatModal, data: createChatModalData } =
+    useCreateChatModal()
 
   const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
@@ -95,6 +101,11 @@ export const ChatBlastModal = () => {
     )
   }
 
+  const handleCancel = () => {
+    onClose()
+    openCreateChatModal(createChatModalData)
+  }
+
   return (
     <Modal size='small' isOpen={isOpen} onClose={onClose}>
       <Formik<ChatBlastFormValues>
@@ -119,7 +130,7 @@ export const ChatBlastModal = () => {
                   variant='secondary'
                   iconLeft={IconCaretLeft}
                   css={{ flexGrow: 1 }}
-                  onClick={onClose}
+                  onClick={handleCancel}
                 >
                   {messages.back}
                 </Button>
