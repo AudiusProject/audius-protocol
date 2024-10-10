@@ -10,12 +10,12 @@ const { clearDatabase, runMigrations } = require('../lib/app')
  */
 const initialNotifications = [
   {
-    'initiator': 142,
-    'metadata': {
-      'challenge_id': 'profile-completion'
+    initiator: 142,
+    metadata: {
+      challenge_id: 'p'
     },
-    'slot': 112519144,
-    'type': 'ChallengeReward'
+    slot: 112519144,
+    type: 'ChallengeReward'
   }
 ]
 
@@ -32,11 +32,15 @@ describe('Test Challenge Rewards Notifications', function () {
     await tx1.commit()
 
     // ======================================= Run checks against the Notification action =======================================
-    const userNotifications = await models.SolanaNotification.findAll({ where: { userId: 142, type: notificationTypes.ChallengeReward } })
+    const userNotifications = await models.SolanaNotification.findAll({
+      where: { userId: 142, type: notificationTypes.ChallengeReward }
+    })
     assert.deepStrictEqual(userNotifications.length, 1)
 
-    const notificationAction = await models.SolanaNotificationAction.findAll({ where: { notificationId: userNotifications[0].id } })
+    const notificationAction = await models.SolanaNotificationAction.findAll({
+      where: { notificationId: userNotifications[0].id }
+    })
     assert.deepStrictEqual(notificationAction.length, 1)
-    assert.deepStrictEqual(notificationAction[0].actionEntityType, 'profile-completion')
+    assert.deepStrictEqual(notificationAction[0].actionEntityType, 'p')
   })
 })

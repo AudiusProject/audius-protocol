@@ -9,10 +9,11 @@ from src.challenges.challenge import (
     UserChallenge,
 )
 from src.models.users.user import User
+from src.utils.helpers import encode_int_id
 
 
 def generate_referral_specifier(user_id: int, extra: Dict) -> str:
-    return f"{user_id}=>{extra['referred_user_id']}"
+    return f"{encode_int_id(user_id)}:{encode_int_id(extra['referred_user_id'])}"
 
 
 def does_user_exist_with_verification_status(
@@ -70,9 +71,9 @@ class ReferredChallengeUpdater(ChallengeUpdater):
             user_challenge.is_complete = True
 
 
-referral_challenge_manager = ChallengeManager("referrals", ReferralChallengeUpdater())
+referral_challenge_manager = ChallengeManager("r", ReferralChallengeUpdater())
 verified_referral_challenge_manager = ChallengeManager(
-    "ref-v", VerifiedReferralChallengeUpdater()
+    "rv", VerifiedReferralChallengeUpdater()
 )
 
-referred_challenge_manager = ChallengeManager("referred", ReferredChallengeUpdater())
+referred_challenge_manager = ChallengeManager("rd", ReferredChallengeUpdater())

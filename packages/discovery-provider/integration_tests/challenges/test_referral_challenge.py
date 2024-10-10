@@ -110,9 +110,9 @@ def test_referral_challenge(app):
         # set challenge as active for purposes of test
         session.query(Challenge).filter(
             or_(
-                Challenge.id == "referred",
-                Challenge.id == "referrals",
-                Challenge.id == "ref-v",
+                Challenge.id == "rd",
+                Challenge.id == "r",
+                Challenge.id == "rv",
             )
         ).update({"active": True, "starting_block": BLOCK_NUMBER})
 
@@ -160,7 +160,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == referrer.user_id,
-                UserChallenge.challenge_id == "referrals",
+                UserChallenge.challenge_id == "r",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -169,7 +169,7 @@ def test_referral_challenge(app):
         challenges = (
             session.query(UserChallenge)
             .filter(
-                UserChallenge.challenge_id == "referred",
+                UserChallenge.challenge_id == "rd",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -183,7 +183,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == referrer.user_id,
-                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.challenge_id == "rv",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -221,7 +221,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals",
+                UserChallenge.challenge_id == "r",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -233,7 +233,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.challenge_id == "rv",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -258,7 +258,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "ref-v",
+                UserChallenge.challenge_id == "rv",
                 UserChallenge.is_complete == True,
             )
             .all()
@@ -270,7 +270,7 @@ def test_referral_challenge(app):
             session.query(UserChallenge)
             .filter(
                 UserChallenge.user_id == verified_user.user_id,
-                UserChallenge.challenge_id == "referrals",
+                UserChallenge.challenge_id == "r",
                 UserChallenge.is_complete == True,
             )
             .all()

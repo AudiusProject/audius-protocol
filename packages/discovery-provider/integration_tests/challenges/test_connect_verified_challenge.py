@@ -40,7 +40,7 @@ def test_connect_verified_challenge(app):
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
-        session.query(Challenge).filter(Challenge.id == "connect-verified").update(
+        session.query(Challenge).filter(Challenge.id == "v").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 

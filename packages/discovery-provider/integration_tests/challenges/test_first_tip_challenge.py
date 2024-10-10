@@ -40,7 +40,7 @@ def test_first_tip_challenge(app):
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
-        session.query(Challenge).filter(Challenge.id == "send-first-tip").update(
+        session.query(Challenge).filter(Challenge.id == "ft").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 

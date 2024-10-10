@@ -44,7 +44,7 @@ def test_profile_completion_challenge_with_tracks(app):
         bus = ChallengeEventBus(redis_conn)
 
         # set challenge as active for purposes of test
-        session.query(Challenge).filter(Challenge.id == "profile-completion").update(
+        session.query(Challenge).filter(Challenge.id == "p").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 
@@ -250,7 +250,7 @@ def test_profile_completion_challenge_with_playlists(app):
         bus = ChallengeEventBus(redis_conn)
 
         # set challenge as active for purposes of test
-        session.query(Challenge).filter(Challenge.id == "profile-completion").update(
+        session.query(Challenge).filter(Challenge.id == "p").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 

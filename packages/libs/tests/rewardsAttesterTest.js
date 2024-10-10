@@ -339,7 +339,7 @@ describe('Rewards Attester Tests', () => {
 
     const { errors } = await attester.processChallenges([
       {
-        challengeId: 'profile-completion',
+        challengeId: 'p',
         userId: encodeHashId(1),
         specifier: '1',
         amount: '1',
@@ -364,7 +364,7 @@ const withSuccess = (objs) => ({
 })
 
 const makeChallenge = (index, completedBlocknumber) => ({
-  challenge_id: 'profile-completion',
+  challenge_id: 'p',
   user_id: encodeHashId(index),
   specifier: index,
   amount: '1',
