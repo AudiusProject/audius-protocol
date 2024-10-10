@@ -92,6 +92,7 @@ export type ChatPermitRPC = {
   method: 'chat.permit'
   params: {
     permit: ChatPermission
+    permit_list: ChatPermission[]
     allow?: boolean
   }
 }
