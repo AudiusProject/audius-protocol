@@ -1,6 +1,0 @@
-export * from './SolanaRelay'
-export * from './SolanaRelayWalletAdapter'
-export * from './programs/ClaimableTokensClient'
-export * from './programs/RewardManagerClient'
-export * from './programs/PaymentRouterClient'
-export * from './types'
