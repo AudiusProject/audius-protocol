@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 
+	_ "net/http/pprof"
+
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
@@ -51,4 +53,5 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
 	e.Any("/grpc/*", s.proxyGRPCRequest)
+	e.Any("/pprof/*", echo.WrapHandler(http.DefaultServeMux))
 }
