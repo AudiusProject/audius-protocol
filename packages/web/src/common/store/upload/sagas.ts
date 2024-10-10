@@ -199,9 +199,15 @@ const makeOnProgress = (
 export function* deleteTracks(trackIds: ID[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+  const userId = yield* select(accountSelectors.getUserId)
+  if (!userId) {
+    throw new Error('No user id found during delete. Not signed in?')
+  }
 
   yield* all(
-    trackIds.map((id) => call([libs.Track, libs.Track!.deleteTrack], id))
+    trackIds.map((id) =>
+      call([libs.Track, libs.Track!.deleteTrack], userId, id)
+    )
   )
 }
 
@@ -221,11 +227,16 @@ function* uploadWorker(
     const { trackIndex, stemIndex, track } = task
     try {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const userId = yield* select(accountSelectors.getUserId)
+      if (!userId) {
+        throw new Error('No user id found during upload. Not signed in?')
+      }
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
       const metadata = toUploadTrackMetadata(track.metadata)
 
       const updatedMetadata = yield* call(
         [libs.Track, libs.Track!.uploadTrackV2],
+        userId,
         track.file as File,
         (track.metadata.artwork?.file ?? null) as File | null,
         metadata,

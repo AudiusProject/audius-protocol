@@ -661,10 +661,14 @@ function* watchUpdateHCaptchaScore() {
     updateHCaptchaScore.type,
     function* (action: ReturnType<typeof updateHCaptchaScore>): any {
       const { token } = action.payload
-      const result = yield* call(
-        audiusBackendInstance.updateHCaptchaScore,
+      const userId = yield* select(accountSelectors.getUserId)
+      if (!userId) {
+        yield* put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
+        return
+      }
+      const result = yield* call(audiusBackendInstance.updateHCaptchaScore, {
         token
-      )
+      })
       if (result.error) {
         yield* put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
       } else {

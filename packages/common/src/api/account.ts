@@ -1,10 +1,12 @@
+import { useMemo } from 'react'
+
 import dayjs from 'dayjs'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
 
-import { useGetUserById } from './user'
+import { userApiFetch } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -30,19 +32,39 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    getCurrentUserId: {
+    getCurrentUser: {
       async fetch(_, context) {
         const { audiusBackend } = context
-        const account = await audiusBackend.getAccount()
-        return account?.user_id || null
+        const libs = await audiusBackend.getAudiusLibsTyped()
+        // TODO-NOW: Needs to be the override wallet address if specified
+        const wallet = libs.web3Manager?.getWalletAddress()
+        if (!wallet) {
+          console.warn('No wallet found for current user')
+          return null
+        }
+        const account = await userApiFetch.getUserAccount({ wallet }, context)
+        return account?.user
       },
-      options: {}
+      options: {
+        // TODO-NOW: Only doing this to avoid double caching of user
+        // Decide if that's necessary (also applies to getCurrentWeb3User)
+        schemaKey: 'currentUser'
+      }
     },
     getCurrentWeb3User: {
-      async fetch(_, { audiusBackend }) {
+      async fetch(_, context) {
+        const { audiusBackend } = context
         const libs = await audiusBackend.getAudiusLibsTyped()
-        return libs.Account?.getWeb3User() as UserMetadata | null
+
+        const wallet = libs.web3Manager?.getWalletAddress()
+        if (!wallet) {
+          console.warn('No wallet found for current user')
+          return null
+        }
+        const account = await userApiFetch.getUserAccount({ wallet }, context)
+        return account?.user
       },
+      // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
       options: {
         // Note that this schema key is used to prevent caching of the
         // web3 user as it does not match the standard user schema.
@@ -240,13 +262,17 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUser = () => {
-  const { data: userId } = accountApi.hooks.useGetCurrentUserId({})
-  return useGetUserById({ id: userId! })
+export const useGetCurrentUserId = (
+  ...args: Parameters<typeof accountApi.hooks.useGetCurrentUser>
+) => {
+  const result = accountApi.hooks.useGetCurrentUser(...args)
+  return useMemo(() => {
+    return { ...result, data: result.data ? result.data.user_id : null }
+  }, [result])
 }
 
 export const {
-  useGetCurrentUserId,
+  useGetCurrentUser,
   useGetCurrentWeb3User,
   useResetPassword,
   useGetManagedAccounts,

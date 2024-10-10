@@ -11,6 +11,7 @@ import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
 import { Nullable } from '~/utils/typeUtils'
 
+import { AccountCollection } from './Collection'
 import { Grant } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
@@ -78,6 +79,13 @@ export type UserMetadata = {
   local?: boolean
   events?: UserEvent
 } & Timestamped
+
+export type AccountUserMetadata = {
+  user: UserMetadata & { playlists: AccountCollection[] }
+  playlists: AccountCollection[]
+  track_save_count: number
+  playlist_library?: Nullable<PlaylistLibrary>
+}
 
 export type ManagedUserMetadata = {
   grant: Grant

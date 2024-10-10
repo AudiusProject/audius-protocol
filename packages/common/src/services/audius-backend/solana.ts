@@ -191,10 +191,9 @@ export const getUserbankAccountInfo = async (
   { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
   commitment?: Commitment
 ): Promise<Account | null> => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const ethAddress =
-    sourceEthAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
+  const libs: AudiusLibs = await audiusBackendInstance.getAudiusLibsTyped()
 
+  const ethAddress = sourceEthAddress ?? libs.getCurrentUser().wallet
   if (!ethAddress) {
     throw new Error(
       `getUserbankAccountInfo: unexpected error getting eth address`
@@ -228,8 +227,7 @@ export const createUserBankIfNeeded = async (
 ) => {
   const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
 
-  const recipientEthAddress =
-    ethAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
+  const recipientEthAddress = ethAddress ?? audiusLibs.getCurrentUser().wallet
 
   if (!recipientEthAddress) {
     throw new Error(

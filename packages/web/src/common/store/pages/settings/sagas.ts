@@ -11,13 +11,17 @@ import { call, put, takeEvery, select } from 'typed-redux-saga'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-const { getAccountUser } = accountSelectors
+
+const { getAccountUser, getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
       yield* call(waitForWrite)
+      const userId = yield* select(getUserId)
+      if (!userId) return
+
       const emailSettings = yield* call(
         audiusBackendInstance.getEmailNotificationSettings
       )
@@ -38,11 +42,15 @@ function* watchUpdateEmailFrequency() {
   yield* takeEvery(
     actions.UPDATE_EMAIL_FREQUENCY,
     function* (action: actions.UpdateEmailFrequency) {
-      if (action.updateServer) {
-        yield* call(
-          audiusBackendInstance.updateEmailNotificationSettings,
-          action.frequency
-        )
+      const { frequency: emailFrequency, updateServer } = action
+
+      const userId = yield* select(getUserId)
+
+      if (userId && updateServer) {
+        yield* call(audiusBackendInstance.updateEmailNotificationSettings, {
+          userId,
+          emailFrequency
+        })
       }
     }
   )

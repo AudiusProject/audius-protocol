@@ -55,11 +55,15 @@ function* watchUpdatedPlaylistViewedSaga() {
   yield* takeEvery(
     updatedPlaylistViewed.type,
     function* updatePlaylistLastViewedAt(action: UpdatedPlaylistViewedAction) {
+      const { playlistId } = action.payload
+      const userId = yield* select(getUserId)
+      if (!userId) return
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield* call(
-        audiusBackendInstance.updatePlaylistLastViewedAt,
-        action.payload.playlistId
-      )
+
+      yield* call(audiusBackendInstance.updatePlaylistLastViewedAt, {
+        playlistId,
+        userId
+      })
     }
   )
 }
