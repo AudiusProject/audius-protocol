@@ -3,14 +3,7 @@ import { useEffect, useState } from 'react'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  Button,
-  Divider,
-  Flex,
-  LoadingSpinner,
-  Paper,
-  Skeleton
-} from '@audius/harmony'
+import { Divider, Flex, LoadingSpinner, Paper, Skeleton } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
@@ -70,7 +63,6 @@ export const CommentSectionDesktop = (props: CommentSectionDesktopProps) => {
     commentIds,
     commentSectionLoading,
     isLoadingMorePages,
-    reset,
     hasMorePages,
     loadMorePages
   } = useCurrentCommentSection()
@@ -117,13 +109,6 @@ export const CommentSectionDesktop = (props: CommentSectionDesktopProps) => {
       ref={commentSectionRef}
     >
       <CommentHeader />
-      <Button
-        onClick={() => {
-          reset(true)
-        }}
-      >
-        Refresh{' '}
-      </Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed ? (
           <>

@@ -30,6 +30,7 @@ export const commentsMessages = {
     'You haven’t muted any users. Once you do, they will appear here.',
   seeMore: 'See More',
   seeLess: 'See Less',
+  newComments: 'New Comments!',
 
   // Overflow Menu Actions
   menuActions: {

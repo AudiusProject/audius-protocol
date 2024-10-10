@@ -15,6 +15,8 @@ import {
   IconButton,
   IconCloseAlt,
   IconKebabHorizontal,
+  IconRefresh,
+  PlainButton,
   Text
 } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
@@ -32,7 +34,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   const { bottomSheetModalRef, minimal = false } = props
   const { toast } = useToast()
 
-  const { commentCount, currentUserId, artistId, entityId } =
+  const { commentCount, currentUserId, artistId, entityId, reset } =
     useCurrentCommentSection()
   const isOwner = currentUserId === artistId
   const isMuted = useGetTrackCommentNotificationSetting(entityId)
@@ -67,10 +69,20 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           justifyContent='space-between'
           alignItems='center'
         >
-          <Text variant='body' size={minimal ? 'l' : 'm'}>
-            {messages.title}
-            <Text color='subdued'>&nbsp;({commentCount})</Text>
-          </Text>
+          <Flex direction='row' gap='m' alignItems='center'>
+            <Text variant='body' size={minimal ? 'l' : 'm'}>
+              {messages.title}
+              <Text color='subdued'>&nbsp;({commentCount})</Text>
+            </Text>
+
+            <PlainButton
+              iconLeft={IconRefresh}
+              variant='subdued'
+              onPress={() => reset(true)}
+            >
+              {messages.newComments}
+            </PlainButton>
+          </Flex>
           <IconButton
             icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
             onPress={
