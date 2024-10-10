@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import HDWalletProvider from '@truffle/hdwallet-provider'
 import Web3 from 'web3'
 

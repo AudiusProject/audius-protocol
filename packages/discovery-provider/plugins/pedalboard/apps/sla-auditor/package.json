@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",

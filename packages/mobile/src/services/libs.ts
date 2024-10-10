@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 
 import type { Nullable } from '@audius/common/utils'
-import type { AudiusLibs } from '@audius/sdk/dist/libs'
+import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {

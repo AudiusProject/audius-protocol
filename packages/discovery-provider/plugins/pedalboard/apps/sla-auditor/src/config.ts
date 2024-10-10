@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import dotenv from 'dotenv'
 import { initAudiusLibs } from './libs'
 import { Ok, Result } from 'ts-results'

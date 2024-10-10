@@ -1,0 +1,9 @@
+{
+  "extends": ["audius", "plugin:mocha/recommended"],
+  "plugins": ["mocha"],
+  "rules": {
+    "mocha/no-mocha-arrows": "off",
+    "mocha/max-top-level-suites": "off"
+  },
+  "ignorePatterns": ["jest.config.ts"]
+}

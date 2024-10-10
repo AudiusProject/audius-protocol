@@ -12,10 +12,10 @@ const redisClient = new Redis(
 const sigUtil = require('eth-sig-util')
 const {
   generators
-} = require('@audius/sdk/src/data-contracts/signatureSchemas.js')
+} = require('@audius/sdk-legacy/src/data-contracts/signatureSchemas.js')
 
 const models = require('./models')
-const { libs } = require('@audius/sdk/dist/libs')
+const { libs } = require('@audius/sdk-legacy/dist/libs')
 const { errorResponseRateLimited, sendResponse } = require('./apiHelpers.js')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 

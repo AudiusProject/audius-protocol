@@ -1,5 +1,5 @@
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
-import { AudiusABIDecoder } from '@audius/sdk/dist/libs'
+import { AudiusABIDecoder } from '@audius/sdk-legacy/dist/libs'
 import { RateLimiterRes } from 'rate-limiter-flexible'
 import { DeveloperApps, Users } from '@pedalboard/storage'
 import { config } from '..'

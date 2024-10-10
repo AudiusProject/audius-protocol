@@ -34,7 +34,7 @@ import {
   convertWeiToWAudio
 } from '@audius/common/utils'
 /* eslint-disable new-cap */
-import { TransactionHandler } from '@audius/sdk/dist/core'
+import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
 import {
   AddressLookupTableAccount,

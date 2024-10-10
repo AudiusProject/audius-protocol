@@ -1,4 +1,4 @@
-const { libs: AudiusLibs } = require('@audius/sdk/dist/libs')
+const { libs: AudiusLibs } = require('@audius/sdk-legacy/dist/libs')
 const {
   setDefaultWasm
 } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')

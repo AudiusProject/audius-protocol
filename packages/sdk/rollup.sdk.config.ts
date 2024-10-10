@@ -1,0 +1,3 @@
+import { outputConfigs } from './rollup.config'
+
+export default [outputConfigs.sdkConfigEs, outputConfigs.sdkConfigCjs]
