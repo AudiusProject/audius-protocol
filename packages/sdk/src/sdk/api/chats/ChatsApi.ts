@@ -66,7 +66,8 @@ import {
   type ValidatedChatPermissions,
   type ChatCreateRPC,
   type UpgradableChatBlast,
-  ChatBlastAudience
+  ChatBlastAudience,
+  ChatPermission
 } from './serverTypes'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
@@ -659,7 +660,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async permit(params: ChatPermitRequest) {
-    const { currentUserId, permit } = await parseParams(
+    const { currentUserId, permit, permitList, allow } = await parseParams(
       'permit',
       ChatPermitRequestSchema
     )(params)
@@ -667,7 +668,9 @@ export class ChatsApi
       current_user_id: currentUserId,
       method: 'chat.permit',
       params: {
-        permit
+        permit: permit ?? ChatPermission.ALL,
+        permit_list: permitList ?? [ChatPermission.ALL],
+        allow
       }
     })
   }
