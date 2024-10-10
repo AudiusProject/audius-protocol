@@ -1,5 +1,4 @@
 import logging
-from src.queries.get_unclaimed_id import get_unclaimed_id
 
 from flask_restx import Namespace, Resource, fields
 
@@ -11,6 +10,7 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.comments import reply_comment_model
 from src.queries.get_comments import get_comment_replies
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -43,9 +43,8 @@ class CommentReplies(Resource):
         return success_response(comment_replies)
 
 
-unclaimed_id_response = make_response(
-    "unclaimed_id_response", ns, fields.String()
-)
+unclaimed_id_response = make_response("unclaimed_id_response", ns, fields.String())
+
 
 @ns.route("/unclaimed_id")
 class GetUnclaimedCommentId(Resource):
@@ -58,4 +57,3 @@ class GetUnclaimedCommentId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("comment")
         return success_response(unclaimed_id)
-

@@ -2,10 +2,10 @@ import logging
 import random
 
 from src import exceptions
+from src.models.comments.comment import Comment
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
-from src.models.comments.comment import Comment
 from src.tasks.entity_manager.utils import (
     COMMENT_ID_OFFSET,
     PLAYLIST_ID_OFFSET,
