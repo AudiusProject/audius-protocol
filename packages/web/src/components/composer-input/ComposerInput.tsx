@@ -110,7 +110,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }
     }
     fn()
-  }, [presetMessage, resolveLinks, autoFocus])
+  }, [presetMessage, resolveLinks])
 
   useEffect(() => {
     if (ref.current && autoFocus) {
