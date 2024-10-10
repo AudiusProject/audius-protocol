@@ -280,8 +280,14 @@ const TrackPage = ({
                 leadingElementId={defaults.remixParentTrackId}
                 leadingElementDelineator={
                   <Flex gap='3xl' direction='column'>
-                    <Box alignSelf='flex-start'>
-                      <Button size='xs' iconRight={IconArrowRight} asChild>
+                    <Box
+                      alignSelf={isCommentingEnabled ? 'flex-start' : 'center'}
+                    >
+                      <Button
+                        size={isCommentingEnabled ? 'xs' : 'small'}
+                        iconRight={IconArrowRight}
+                        asChild
+                      >
                         <Link to={trackRemixesPage(permalink)}>
                           {messages.viewOtherRemixes}
                         </Link>

@@ -1,7 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   playerSelectors,
@@ -55,7 +57,9 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
   const { data: track } = useGetTrackById({ id: trackId })
-
+  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
@@ -83,8 +87,8 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     return null
   }
 
-  const { _remixes, permalink } = track as unknown as Track
-
+  const { _remixes, permalink, comments_disabled } = track as unknown as Track
+  const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
   if (!remixTrackIds || !remixTrackIds.length) {
@@ -92,8 +96,17 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   }
 
   return (
-    <Flex direction='column' gap='l'>
-      <Flex row alignItems='center' gap='s'>
+    <Flex
+      direction='column'
+      gap='l'
+      w={isMobile || isCommentingEnabled ? '100%' : 720}
+    >
+      <Flex
+        row
+        alignItems='center'
+        gap='s'
+        justifyContent={!isMobile && !isCommentingEnabled ? 'center' : 'left'}
+      >
         <IconRemix color='default' />
         <Text variant='title' size={isMobile ? 'm' : 'l'}>
           {messages.remixes}
@@ -114,7 +127,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         buffering={isBuffering}
         playTrack={handlePlay}
         pauseTrack={handlePause}
-        useSmallTiles
+        useSmallTiles={isCommentingEnabled}
       />
       {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
         <Box alignSelf='flex-start'>
