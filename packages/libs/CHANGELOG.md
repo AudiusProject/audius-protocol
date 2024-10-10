@@ -1,5 +1,12 @@
 # @audius/sdk
 
+## 6.0.2
+
+### Patch Changes
+
+- 41b62a5: fix concurrency issue with addRequestSignatureMiddleware
+- 3ad4d63: Chat permissions accepts permit_list
+
 ## 6.0.1
 
 ### Patch Changes
