@@ -478,6 +478,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
 
+    if not chain_health:
+        errors.append("no chain response")
+
     if verbose:
         api_healthy, reason = is_api_healthy(url)
         if not api_healthy:
