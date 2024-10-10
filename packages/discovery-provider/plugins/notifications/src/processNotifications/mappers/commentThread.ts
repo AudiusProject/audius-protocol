@@ -113,7 +113,6 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
       )
     }
 
-    // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
         initiatorUserId: this.commenterUserId,

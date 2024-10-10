@@ -113,7 +113,6 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
       )
     }
 
-    // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
         initiatorUserId: this.commenterUserId,
