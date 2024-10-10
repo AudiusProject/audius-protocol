@@ -54,7 +54,7 @@
     "eslint": "8.56.0",
     "eslint-config-custom-server": "*",
     "tsconfig": "*",
-    "typescript": "4.5.3",
+    "typescript": "5.0.4",
     "vitest": "0.34.6"
   }
 }
