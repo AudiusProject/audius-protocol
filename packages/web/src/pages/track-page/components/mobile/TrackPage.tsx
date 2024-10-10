@@ -131,7 +131,7 @@ const TrackPage = ({
     FeatureFlags.COMMENTS_ENABLED
   )
   const isCommentingEnabled =
-    commentsFlagEnabled && heroTrack?.comments_disabled
+    commentsFlagEnabled && !heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 
