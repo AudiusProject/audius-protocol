@@ -399,15 +399,6 @@ export const usePinComment = () => {
       })
     },
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
-      // Finally - update our individual comment
-      queryClient.setQueryData(
-        [QUERY_KEYS.comment, commentId],
-        (prevCommentState: CommentOrReply | undefined) =>
-          ({
-            ...prevCommentState,
-            isPinned
-          } as CommentOrReply)
-      )
       if (isPinned) {
         // Loop through the sort list and move the newly pinned comment
         queryClient.setQueryData<InfiniteData<ID[]>>(
