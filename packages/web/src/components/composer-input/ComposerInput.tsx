@@ -224,7 +224,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        return `${textBeforeMention}${mentionText} ${textAfterMention}`
       })
       const textarea = ref.current
       if (textarea) {
