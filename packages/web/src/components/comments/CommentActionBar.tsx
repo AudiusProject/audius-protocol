@@ -79,7 +79,7 @@ export const CommentActionBar = ({
   const { currentUserId, isEntityOwner, entityId, currentSort, track } =
     useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
-  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
   const isParentComment = 'replyCount' in comment
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
@@ -91,7 +91,6 @@ export const CommentActionBar = ({
   const [muteUser] = useMuteUser()
 
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -119,13 +118,9 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
-    toast(
-      areNotifsMuted
-        ? messages.toasts.unmutedNotifs
-        : messages.toasts.mutedNotifs
-    )
-  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast(isMuted ? messages.toasts.unmutedNotifs : messages.toasts.mutedNotifs)
+  }, [handleMuteCommentNotifications, isMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -270,12 +265,13 @@ export const CommentActionBar = ({
             onClick: () => setCurrentConfirmationModalType('muteUser'),
             text: messages.menuActions.muteUser
           },
-        canMuteNotifs && {
-          onClick: handleMuteNotifs,
-          text: areNotifsMuted
-            ? messages.menuActions.unmuteThread
-            : messages.menuActions.muteThread
-        },
+        isCommentOwner &&
+          isParentComment && {
+            onClick: handleMuteNotifs,
+            text: isMuted
+              ? messages.menuActions.unmuteThread
+              : messages.menuActions.muteThread
+          },
         isCommentOwner && {
           onClick: onClickEdit,
           text: messages.menuActions.edit
@@ -295,8 +291,7 @@ export const CommentActionBar = ({
       isCommentOwner,
       onClickEdit,
       handleMuteNotifs,
-      areNotifsMuted,
-      canMuteNotifs
+      isMuted
     ]
   )
 
