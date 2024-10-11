@@ -300,24 +300,3 @@ export const transformMapToPermitList = (
     (key) => permitMap[key as keyof InboxSettingsFormValues]
   ) as ChatPermission[]
 }
-
-export const getOtherUserIdFromChatId = (
-  chatId: string,
-  currentUserId: string
-): number | null => {
-  const [userId1, userId2] = chatId.split(':')
-
-  if (userId1 === null || userId2 === null) {
-    console.error('Failed to decode user IDs from chatId')
-    return null
-  }
-
-  if (userId1 === currentUserId) {
-    return decodeHashId(userId2)
-  } else if (userId2 === currentUserId) {
-    return decodeHashId(userId1)
-  } else {
-    console.error('Current user ID not found in chatId')
-    return null
-  }
-}

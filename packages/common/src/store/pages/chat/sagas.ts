@@ -431,7 +431,6 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
         throw new Error("Chat couldn't be found after creating")
       }
       yield* put(createChatSucceeded({ chat }))
-      yield* put(fetchMoreMessages({ chatId }))
       yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
     }
   } catch (e) {

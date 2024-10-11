@@ -805,10 +805,7 @@ export class ChatsApi
 
   private async upgradeBlasts(userId: string) {
     const blasts = await this.getBlasts()
-    const uniqueBlasts = uniqBy(
-      orderBy(blasts.data, ['created_at'], ['desc']),
-      'pending_chat_id'
-    )
+    const uniqueBlasts = uniqBy(blasts.data, 'pending_chat_id')
 
     await Promise.all(
       uniqueBlasts.map(async (blast) => {
@@ -818,21 +815,27 @@ export class ChatsApi
             userId,
             invitedUserIds: [encodedSenderId]
           })
-          this.eventEmitter.emit('message', {
-            chatId: blast.pending_chat_id,
-            message: {
-              // this order needs to match Misc.BlastMessageID in comms
-              message_id: blast.blast_id + blast.pending_chat_id,
-              message: blast.plaintext,
-              sender_user_id: encodedSenderId,
-              created_at: blast.created_at,
-              reactions: [],
-              is_plaintext: true
-            }
-          })
         }
       })
     )
+
+    for (const blast of blasts.data) {
+      const encodedSenderId = encodeHashId(blast.from_user_id)
+      if (encodedSenderId) {
+        this.eventEmitter.emit('message', {
+          chatId: blast.pending_chat_id,
+          message: {
+            // the order of blast_id + pending_chat_id needs to match Misc.BlastMessageID in comms
+            message_id: blast.blast_id + blast.pending_chat_id,
+            message: blast.plaintext,
+            sender_user_id: encodedSenderId,
+            created_at: blast.created_at,
+            reactions: [],
+            is_plaintext: true
+          }
+        })
+      }
+    }
   }
 
   private async getSignatureHeader(payload: string) {

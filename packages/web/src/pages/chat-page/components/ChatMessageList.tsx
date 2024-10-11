@@ -45,8 +45,7 @@ import { StickyScrollList } from './StickyScrollList'
 
 const SPINNER_HEIGHT = 48
 
-const { fetchMoreMessages, markChatAsRead, setActiveChat, createChat } =
-  chatActions
+const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
 const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
@@ -197,19 +196,6 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         dispatch(setActiveChat({ chatId }))
       }
     }, [dispatch, chatId, chat?.messagesStatus])
-
-    // For initial load, create chat if it doesn't exist
-    // Useful for when deep linking into a chat directly before it's created
-    useEffect(() => {
-      if (!chat && chatId && currentUserId) {
-        const otherUserId = getOtherUserIdFromChatId(chatId, currentUserId)
-        if (otherUserId) {
-          dispatch(createChat({ userIds: [otherUserId] }))
-        } else {
-          console.error('Failed to determine other user ID for chat creation')
-        }
-      }
-    }, [chat, chatId, currentUserId, dispatch])
 
     // Fix for if the initial load doesn't have enough messages to cause scrolling
     useEffect(() => {
