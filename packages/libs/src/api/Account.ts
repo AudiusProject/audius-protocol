@@ -1,9 +1,9 @@
 import type { Hedgehog } from '@audius/hedgehog'
+import type { Genre, Mood } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 import type { BN } from 'ethereumjs-util'
 
 import { AuthHeaders } from '../constants'
-import { Genre, Mood } from '../sdk'
 import { Nullable, UserMetadata, Utils } from '../utils'
 import { getPermitDigest, sign } from '../utils/signatures'
 
