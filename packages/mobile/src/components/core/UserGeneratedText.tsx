@@ -254,7 +254,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             matchers={[
               // Handle matcher e.g. @handle
               {
-                pattern: /@[a-zA-Z0-9_.]{1,15}/,
+                pattern: /@[a-zA-Z0-9_.]+/,
                 renderLink: renderHandleLink
               },
               // URL match
