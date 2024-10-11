@@ -19,7 +19,7 @@ import {
   LoadingSpinner
 } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
-import { Formik, useField } from 'formik'
+import { Formik, useField, useFormikContext } from 'formik'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { audiusSdk } from 'services/audius-sdk'
@@ -157,7 +157,8 @@ const InboxSettingsModalFields = ({
 }: {
   permissionsStatus: Status
 }) => {
-  const [allowAllField, , { setValue: setAllowAll }] = useField({
+  const { values, setValues } = useFormikContext<InboxSettingsFormValues>()
+  const [allowAllField] = useField({
     name: 'all',
     type: 'checkbox'
   })
@@ -165,9 +166,19 @@ const InboxSettingsModalFields = ({
   const handleAllChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const isChecked = e.target.checked
-      setAllowAll(isChecked)
+      let newValues = {
+        ...values,
+        all: isChecked
+      }
+      if (isChecked) {
+        newValues = options.reduce((acc, opt) => {
+          acc[opt.value as keyof InboxSettingsFormValues] = true
+          return acc
+        }, newValues)
+      }
+      setValues(newValues)
     },
-    [setAllowAll]
+    [setValues, values]
   )
 
   return (
@@ -216,7 +227,7 @@ function CheckboxField(props: { title: string; value: ChatPermission }) {
       <Checkbox
         {...field}
         id={title}
-        checked={field.checked || allowAllField.checked}
+        checked={field.checked}
         disabled={allowAllField.checked}
         onChange={handleChange}
       />
