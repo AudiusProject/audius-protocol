@@ -22,9 +22,7 @@ import {
   encodeHashId,
   hasTail,
   isEarliestUnread,
-  chatCanFetchMoreMessages,
-  decodeHashId,
-  getOtherUserIdFromChatId
+  chatCanFetchMoreMessages
 } from '@audius/common/utils'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
