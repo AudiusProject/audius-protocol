@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 
+	_ "net/http/pprof"
+
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
@@ -34,6 +36,11 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		self:    nil,
 	}
 
+	// start pprof server
+	go func() {
+		s.logger.Errorf("error starting pprof server: %v", http.ListenAndServe(":6060", nil))
+	}()
+
 	g := e.Group("/core")
 	s.registerRoutes(g)
 
@@ -51,4 +58,5 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
 	e.Any("/grpc/*", s.proxyGRPCRequest)
+	e.GET("/debug/pprof/*", echo.WrapHandler(http.DefaultServeMux))
 }

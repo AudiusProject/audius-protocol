@@ -7,6 +7,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 )
 
+
 func main() {
 	logger := common.NewLogger(nil)
 	ctx := context.Background()

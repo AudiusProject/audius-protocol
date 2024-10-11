@@ -95,6 +95,8 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 	logger.Info("initialized contracts")
 
+	logger.Info("creating node")
+
 	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
