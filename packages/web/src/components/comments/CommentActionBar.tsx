@@ -80,7 +80,7 @@ export const CommentActionBar = ({
     useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
-  const isParentComment = 'isPinned' in comment
+  const isParentComment = 'replyCount' in comment
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
@@ -270,6 +270,12 @@ export const CommentActionBar = ({
             onClick: () => setCurrentConfirmationModalType('muteUser'),
             text: messages.menuActions.muteUser
           },
+        canMuteNotifs && {
+          onClick: handleMuteNotifs,
+          text: areNotifsMuted
+            ? messages.menuActions.unmuteThread
+            : messages.menuActions.muteThread
+        },
         isCommentOwner && {
           onClick: onClickEdit,
           text: messages.menuActions.edit
@@ -280,12 +286,6 @@ export const CommentActionBar = ({
               !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
             ),
           text: messages.menuActions.delete
-        },
-        canMuteNotifs && {
-          onClick: handleMuteNotifs,
-          text: areNotifsMuted
-            ? messages.menuActions.turnOnNotifications
-            : messages.menuActions.turnOffNotifications
         }
       ].filter(removeNullable),
     [
