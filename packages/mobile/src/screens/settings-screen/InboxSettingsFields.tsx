@@ -100,7 +100,7 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
     <Flex row gap='l' key={title}>
       <Switch
         id={title}
-        value={field.checked || allowAllField.checked}
+        value={field.checked}
         disabled={allowAllField.checked}
         onValueChange={helpers.setValue}
       />
