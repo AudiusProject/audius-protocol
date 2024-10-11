@@ -18,7 +18,6 @@ import {
 } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
-import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
@@ -174,11 +173,6 @@ type ContainerLayoutStatus = {
   bottom: number
 }
 
-type ReactionContainerStyle = {
-  paddingTop: number
-  bottom: number
-}
-
 const getAutoscrollThreshold = ({ top, bottom }: ContainerLayoutStatus) => {
   return (bottom - top) / 4
 }
@@ -250,7 +244,6 @@ export const ChatScreen = () => {
   const scrollPosition = useRef(0)
   const latestMessageId = useRef('')
   const flatListInnerHeight = useRef(0)
-  const { keyboardShown } = useKeyboard()
   const insets = useSafeAreaInsets()
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
