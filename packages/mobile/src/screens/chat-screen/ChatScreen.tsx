@@ -14,8 +14,7 @@ import {
   decodeHashId,
   encodeHashId,
   isEarliestUnread,
-  chatCanFetchMoreMessages,
-  getOtherUserIdFromChatId
+  chatCanFetchMoreMessages
 } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
@@ -83,7 +82,6 @@ const {
 const {
   fetchLatestMessages,
   fetchMoreMessages,
-  createChat,
   markChatAsRead,
   setReactionsPopupMessageId,
   fetchBlockers,
