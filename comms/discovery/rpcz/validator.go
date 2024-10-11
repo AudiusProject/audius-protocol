@@ -99,28 +99,42 @@ func (vtor *Validator) validateChatCreate(tx *sqlx.Tx, userId int32, rpc schema.
 		return errors.New("Chat already exists")
 	}
 
-	if len(params.Invites) == 2 {
-		user1, err := misc.DecodeHashId(params.Invites[0].UserID)
-		if err != nil {
-			return err
-		}
-		user2, err := misc.DecodeHashId(params.Invites[1].UserID)
-		if err != nil {
-			return err
-		}
-
-		// validate receiver permits chats from sender
-		receiver := int32(user1)
-		if receiver == userId {
-			receiver = int32(user2)
-		}
-		err = validatePermissions(q, userId, receiver)
-		if err != nil {
-			return err
-		}
-	} else {
-		// validate chat has 2 members
+	if len(params.Invites) != 2 {
 		return errors.New("Chat must have 2 members")
+	}
+
+	user1, err := misc.DecodeHashId(params.Invites[0].UserID)
+	if err != nil {
+		return err
+	}
+	user2, err := misc.DecodeHashId(params.Invites[1].UserID)
+	if err != nil {
+		return err
+	}
+
+	receiver := int32(user1)
+	if receiver == userId {
+		receiver = int32(user2)
+	}
+
+	// if recipient is creating a chat from a blast
+	// we ignore the receiver's inbox settings
+	// because receiver has sent a blast to this user.
+	{
+		blasts, _ := queries.GetNewBlasts(q, context.Background(), queries.ChatMembershipParams{
+			UserID: userId,
+		})
+		for _, b := range blasts {
+			if b.FromUserID == receiver {
+				return nil
+			}
+		}
+	}
+
+	// validate receiver permits chats from sender
+	err = validatePermissions(q, userId, receiver)
+	if err != nil {
+		return err
 	}
 
 	// validate does not exceed new chat rate limit for any invited users
