@@ -17,6 +17,8 @@ import { useAppDrawerNavigation } from '../app-drawer-screen'
 
 import { useKeyboardAvoidingPlaybarStyle } from './hooks/useKeyboardAvoidingPlaybarStyle'
 
+const CTA_HEIGHT = 80
+
 const messages = {
   title: 'Send a Message Blast',
   description: 'Send messages to your fans in bulk.',
@@ -39,7 +41,7 @@ export const ChatBlastCTA = () => {
 
   return (
     <KeyboardAvoidingView
-      keyboardShowingOffset={80 + PLAY_BAR_HEIGHT}
+      keyboardShowingOffset={CTA_HEIGHT + PLAY_BAR_HEIGHT}
       style={keyboardAvoidingPlaybarStyle}
     >
       <TouchableHighlight onPress={handleClick}>
