@@ -13,7 +13,6 @@ import { InboxSettingsFormValues } from '~/store'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'
-import { decodeHashId } from './hashIds'
 
 export const CHAT_BLOG_POST_URL =
   'http://support.audius.co/help/How-to-Send-Messages-on-Audius'

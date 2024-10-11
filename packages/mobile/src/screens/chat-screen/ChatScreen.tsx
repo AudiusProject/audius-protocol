@@ -349,19 +349,6 @@ export const ChatScreen = () => {
     }
   }, [earliestUnreadIndex, chatMessages])
 
-  // For initial load, create chat if it doesn't exist
-  // Useful for when deep linking into a chat directly before it's created
-  useEffect(() => {
-    if (!chat && chatId && userIdEncoded) {
-      const otherUserId = getOtherUserIdFromChatId(chatId, userIdEncoded)
-      if (otherUserId) {
-        dispatch(createChat({ userIds: [otherUserId] }))
-      } else {
-        console.error('Failed to determine other user ID for chat creation')
-      }
-    }
-  }, [chat, chatId, userIdEncoded, dispatch])
-
   // Scroll to bottom when user navigates to this screen and there are no unread
   // messages, because if there are we want to scroll to the earliest unread message.
   useFocusEffect(
