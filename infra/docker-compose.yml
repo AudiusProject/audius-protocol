@@ -45,13 +45,10 @@ services:
       context: ../
       dockerfile: ./infra/Dockerfile.dev
     volumes:
-      - /tmp:/bin/tmp
+      - ../bin/tmp:/bin/tmp
     restart: unless-stopped
-    mem_limit: 500m
-    cpus: 0.1
-    ports:
-      # pprof
-      - "6060:6060"
+    mem_limit: 1g
+    cpus: 1
     networks:
       - sandbox-core-net
     environment: []

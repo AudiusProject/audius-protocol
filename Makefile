@@ -102,13 +102,13 @@ GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
 VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/pkg/core/config.Version=$(shell git rev-parse HEAD)
 
 .PHONY: core-build-native
-core-build-native: $(NATIVE_BIN)
+core-build-native: core-gen $(NATIVE_BIN)
 
 $(NATIVE_BIN): $(GO_SRCS) $(JS_SRCS)
 	@cd ./pkg/core && @go build -ldflags "$(VERSION_LDFLAG)" -o ./bin ./main.go
 
 .PHONY: core-build-amd64
-core-build-amd64: $(AMD64_BIN)
+core-build-amd64: core-gen $(AMD64_BIN)
 
 $(AMD64_BIN): $(GO_SRCS) $(JS_SRCS)
 	@cd ./cmd/core && GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o ../../bin/core-amd64
@@ -152,31 +152,35 @@ core-test: core-gen
 core-sandbox-hosts:
 	chmod +x ./cmd/core/infra/add-sandbox-hosts.sh && ./cmd/core/infra/add-sandbox-hosts.sh
 
-.PHONY: core-sandbox
-core-sandbox: core-build-amd64
-	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
+.PHONY: core-up
+core-up:
+	@docker compose -f ./infra/docker-compose.yml up --build -d
 
-.PHONY: core-down-sandbox
-core-down-sandbox:
+.PHONY: core-down
+core-down:
 	@docker compose -f ./infra/docker-compose.yml --profile prod --profile stage --profile dev down
 
+.PHONY: core-clean-build
+core-clean-build:
+	rm ./bin/core-amd64
+
+.PHONY: core-clean
+core-clean: core-down-sandbox
+	rm -rf ./bin/*
+
 .PHONY: core-prod-sandbox
-core-prod-sandbox: core-clean-sandbox core-build-amd64
+core-prod-sandbox: core-clean-build core-build-amd64
 	@docker compose -f ./infra/docker-compose.yml --profile prod up --build -d
 
 .PHONY: core-stage-sandbox
-core-stage-sandbox:
+core-stage-sandbox: core-clean-build core-build-amd64
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile stage up --build -d
 
 .PHONY: core-dev-sandbox
-core-dev-sandbox:
+core-dev-sandbox: core-clean-build core-build-amd64
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile dev up --build -d
 
-.PHONY: core-clean-sandbox
-core-clean-sandbox: core-down-sandbox
-	rm -rf ./bin/*
-
 .PHONY: core-livereload
-core-livereload:
+core-prod-sandbox-livereload:
 	modd
 

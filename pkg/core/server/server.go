@@ -36,6 +36,11 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		self:    nil,
 	}
 
+	// start pprof server
+	go func() {
+		s.logger.Errorf("error starting pprof server: %v", http.ListenAndServe(":6060", nil))
+	}()
+
 	g := e.Group("/core")
 	s.registerRoutes(g)
 
@@ -53,5 +58,5 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
 	e.Any("/grpc/*", s.proxyGRPCRequest)
-	e.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/core", http.DefaultServeMux)))
+	e.GET("/debug/pprof/*", echo.WrapHandler(http.DefaultServeMux))
 }
