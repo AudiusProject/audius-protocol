@@ -81,7 +81,7 @@ jobs:
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
-            - ./package/sdk/node_modules
+            - ./packages/sdk/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
