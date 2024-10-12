@@ -192,5 +192,8 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs"
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs",
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.24.0"
+  }
 }
