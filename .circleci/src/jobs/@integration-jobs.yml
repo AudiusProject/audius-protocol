@@ -24,6 +24,8 @@ integration-init:
           - packages/common/node_modules
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/sdk/node_modules
+          - packages/sdk/dist
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 

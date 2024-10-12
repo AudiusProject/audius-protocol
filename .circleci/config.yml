@@ -341,8 +341,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true
@@ -402,8 +402,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true

@@ -36,6 +36,8 @@ mobile-init:
           - packages/common/node_modules
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/sdk/node_modules
+          - packages/sdk/dist
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
 
