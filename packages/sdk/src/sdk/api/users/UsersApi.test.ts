@@ -3,7 +3,6 @@ import path from 'path'
 
 import { ClaimableTokensProgram } from '@audius/spl'
 import { DecodedTransferClaimableTokensInstruction } from '@audius/spl/dist/types/claimable-tokens/types'
-import { beforeAll, expect, jest } from '@jest/globals'
 import {
   PublicKey,
   Secp256k1Program,
@@ -11,6 +10,7 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
@@ -35,9 +35,9 @@ const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
 )
 
-jest.mock('../../services/EntityManager')
+vitest.mock('../../services/EntityManager')
 
-jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
+vitest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   return {
     id: 'a',
     status: 'done',
@@ -57,7 +57,7 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   }
 })
 
-jest
+vitest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
@@ -96,10 +96,10 @@ describe('UsersApi', () => {
       claimableTokens,
       solanaClient
     )
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'info').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    vitest.spyOn(console, 'warn').mockImplementation(() => {})
+    vitest.spyOn(console, 'info').mockImplementation(() => {})
+    vitest.spyOn(console, 'debug').mockImplementation(() => {})
+    vitest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('updateProfile', () => {
@@ -282,7 +282,7 @@ describe('UsersApi', () => {
       }
 
       // Turn the relay call into a bunch of assertions on the final transaction
-      jest
+      vitest
         .spyOn(SolanaRelay.prototype, 'relay')
         .mockImplementation(async ({ transaction }) => {
           let instructions: TransactionInstruction[] = []
@@ -322,14 +322,14 @@ describe('UsersApi', () => {
         })
 
       // Mock getFeePayer
-      jest
+      vitest
         .spyOn(SolanaRelay.prototype, 'getFeePayer')
         .mockImplementation(async () => {
           return feePayer
         })
 
       // Mock getWalletAndUserBank
-      jest
+      vitest
         // @ts-ignore
         .spyOn(UsersApi.prototype, 'getWalletAndUserBank')
         // @ts-ignore
@@ -341,7 +341,7 @@ describe('UsersApi', () => {
         })
 
       // Mock sign
-      jest.spyOn(auth, 'sign').mockImplementation(async () => {
+      vitest.spyOn(auth, 'sign').mockImplementation(async () => {
         return [Uint8Array.from(new Array(64).fill(0)), 0]
       })
 

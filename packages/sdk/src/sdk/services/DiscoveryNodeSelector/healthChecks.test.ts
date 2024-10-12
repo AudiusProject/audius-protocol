@@ -1,4 +1,4 @@
-import { expect, describe, test } from '@jest/globals'
+import { expect, describe, it } from 'vitest'
 
 import { HealthCheckStatus } from './healthCheckTypes'
 import {
@@ -7,7 +7,7 @@ import {
 } from './healthChecks'
 
 describe('health_check', () => {
-  test('no data is unhealthy', () => {
+  it('no data is unhealthy', () => {
     const { health, reason } = parseHealthStatusReason({
       data: null,
       comms: null,
@@ -21,7 +21,7 @@ describe('health_check', () => {
     expect(reason).toBe('data')
   })
 
-  test('slot diff exceeded marked behind', () => {
+  it('slot diff exceeded marked behind', () => {
     const { health, reason } = parseHealthStatusReason({
       data: {
         version: '1.2.3',
@@ -47,7 +47,7 @@ describe('health_check', () => {
     expect(reason).toBe('slot diff')
   })
 
-  test('comms unhealthy', () => {
+  it('comms unhealthy', () => {
     const { health, reason } = parseHealthStatusReason({
       data: {
         version: '1.2.3',
@@ -74,7 +74,7 @@ describe('health_check', () => {
   })
 
   describe('api response', () => {
-    test('check service name', () => {
+    it('check service name', () => {
       const { health, reason } = parseApiHealthStatusReason({
         data: {
           version: {
@@ -92,7 +92,7 @@ describe('health_check', () => {
       expect(reason).toBe('name')
     })
 
-    test('lower patch version marked behind', () => {
+    it('lower patch version marked behind', () => {
       const { health, reason } = parseApiHealthStatusReason({
         data: {
           version: {
@@ -110,7 +110,7 @@ describe('health_check', () => {
       expect(reason).toBe('version')
     })
 
-    test('lower minor version marked behind', () => {
+    it('lower minor version marked behind', () => {
       const { health, reason } = parseApiHealthStatusReason({
         data: {
           version: {
@@ -128,7 +128,7 @@ describe('health_check', () => {
       expect(reason).toBe('version')
     })
 
-    test('slot diff exceeded marked behind', () => {
+    it('slot diff exceeded marked behind', () => {
       const { health, reason } = parseApiHealthStatusReason({
         data: {
           version: {

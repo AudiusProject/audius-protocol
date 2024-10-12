@@ -1,6 +1,15 @@
 import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import {
+  vitest,
+  it,
+  expect,
+  describe,
+  beforeAll,
+  afterEach,
+  afterAll
+} from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import Web3 from '../../utils/web3'
@@ -15,28 +24,30 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
 const discoveryNode = 'https://discovery-provider.audius.co'
 
-jest.mock('../DiscoveryNodeSelector')
-jest.mock('../../utils/web3', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      eth: {
-        getChainId: () => '',
-        Contract: jest.fn().mockImplementation(() => ({
-          methods: {
-            manageEntity: () => ({
-              encodeABI: () => ''
-            })
-          }
-        }))
+vitest.mock('../DiscoveryNodeSelector')
+vitest.mock('../../utils/web3', () => {
+  return {
+    default: vitest.fn().mockImplementation(() => {
+      return {
+        eth: {
+          getChainId: () => '',
+          Contract: vitest.fn().mockImplementation(() => ({
+            methods: {
+              manageEntity: () => ({
+                encodeABI: () => ''
+              })
+            }
+          }))
+        }
       }
-    }
-  })
+    })
+  }
 })
 ;(Web3 as any).providers = {
-  HttpProvider: jest.fn().mockImplementation(() => {})
+  HttpProvider: vitest.fn().mockImplementation(() => {})
 }
 
-jest
+vitest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
   .mockImplementation(async () => discoveryNode)
 
@@ -117,7 +128,7 @@ describe('EntityManager', () => {
 
   describe('manageEntity', () => {
     it('calls relay and confirms the transaction', async () => {
-      const confirmWriteSpy = jest.spyOn(entityManager, 'confirmWrite')
+      const confirmWriteSpy = vitest.spyOn(entityManager, 'confirmWrite')
 
       await entityManager.manageEntity({
         userId: 1,

@@ -1,6 +1,15 @@
 import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import {
+  expect,
+  it,
+  describe,
+  beforeAll,
+  afterAll,
+  afterEach,
+  vitest
+} from 'vitest'
 import waitForExpect from 'wait-for-expect'
 
 import type { AuthService } from '../Auth/types'
@@ -81,10 +90,10 @@ const server = setupServer(...mswHandlers)
 describe('StorageNodeSelector', () => {
   beforeAll(() => {
     server.listen()
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'info').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    vitest.spyOn(console, 'warn').mockImplementation(() => {})
+    vitest.spyOn(console, 'info').mockImplementation(() => {})
+    vitest.spyOn(console, 'debug').mockImplementation(() => {})
+    vitest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {

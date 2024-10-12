@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest'
+
 import { AppAuth, Logger } from '../services'
 
 import { addRequestSignatureMiddleware } from './addRequestSignatureMiddleware'

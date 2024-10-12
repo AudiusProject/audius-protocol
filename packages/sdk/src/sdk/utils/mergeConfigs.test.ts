@@ -1,9 +1,9 @@
-import { expect, describe, test } from '@jest/globals'
+import { expect, describe, it } from 'vitest'
 
 import { mergeConfigWithDefaults } from './mergeConfigs'
 
 describe('merge configs', () => {
-  test("doesn't merge arrays", () => {
+  it("doesn't merge arrays", () => {
     expect(
       mergeConfigWithDefaults({ a: ['foo'] }, { a: ['bar'] })
     ).toMatchObject({
@@ -11,7 +11,7 @@ describe('merge configs', () => {
     })
   })
 
-  test('merges deep properties', () => {
+  it('merges deep properties', () => {
     expect(
       mergeConfigWithDefaults(
         { a: { b: 'foo' } },
@@ -20,7 +20,7 @@ describe('merge configs', () => {
     ).toMatchObject({ a: { b: 'foo', c: 'bar' } })
   })
 
-  test('passes real use case', () => {
+  it('passes real use case', () => {
     expect(
       mergeConfigWithDefaults(
         {
