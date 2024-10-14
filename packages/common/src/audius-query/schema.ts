@@ -26,11 +26,16 @@ export const managedUserSchema = new schema.Object({
   user: userSchema
 })
 
+export const accountUserSchema = new schema.Object({
+  user: userSchema
+})
+
 export const userManagerSchema = new schema.Object({
   manager: userSchema
 })
 
 export const schemas = {
+  accountUser: accountUserSchema,
   managedUsers: new schema.Array(managedUserSchema),
   user: userSchema,
   userManagers: new schema.Array(userManagerSchema),

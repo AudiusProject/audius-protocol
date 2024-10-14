@@ -13,7 +13,7 @@ export class SanityChecks {
   /**
    * Runs sanity checks
    */
-  async run() {
-    await needsRecoveryEmail(this.libs)
+  async run(args: { wallet: string; handle: string }) {
+    await needsRecoveryEmail(this.libs, args)
   }
 }

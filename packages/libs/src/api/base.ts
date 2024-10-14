@@ -10,7 +10,6 @@ import type { IdentityService } from '../services/identity'
 import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
 import type { Wormhole } from '../services/wormhole'
-import type { UserStateManager } from '../userStateManager'
 
 export const Services = Object.freeze({
   IDENTITY_SERVICE: 'Identity Service',
@@ -22,7 +21,6 @@ export const Services = Object.freeze({
 })
 
 export type BaseConstructorArgs = [
-  UserStateManager,
   IdentityService,
   Hedgehog,
   DiscoveryProvider,
@@ -39,7 +37,6 @@ export type BaseConstructorArgs = [
 ]
 
 export class Base {
-  userStateManager: UserStateManager
   identityService: IdentityService
   hedgehog: Hedgehog
   discoveryProvider: DiscoveryProvider
@@ -57,7 +54,6 @@ export class Base {
   _serviceMapping: { [service: string]: any }
 
   constructor(
-    userStateManager: UserStateManager,
     identityService: IdentityService,
     hedgehog: Hedgehog,
     discoveryProvider: DiscoveryProvider,
@@ -72,7 +68,6 @@ export class Base {
     isServer: boolean,
     logger: any = console
   ) {
-    this.userStateManager = userStateManager
     this.identityService = identityService
     this.hedgehog = hedgehog
     this.discoveryProvider = discoveryProvider

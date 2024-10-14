@@ -5,10 +5,7 @@ import { AudiusBackend, AuthHeaders } from './AudiusBackend'
 export const recordIP = async (
   audiusBackendInstance: AudiusBackend
 ): Promise<{ userIP: string } | { error: boolean }> => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const account = audiusLibs.Account.getCurrentUser()
-  if (!account) return { error: true }
-
+  await audiusBackendInstance.getAudiusLibs()
   try {
     const { data, signature } = await audiusBackendInstance.signData()
     const response = await fetch(

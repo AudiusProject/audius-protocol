@@ -4,6 +4,7 @@ import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
+  AccountCollection,
   PlaylistTrackId,
   UserCollectionMetadata,
   Variant
@@ -111,4 +112,27 @@ export const userCollectionMetadataFromSDK = (
   }
 
   return newCollection
+}
+
+export const accountCollectionFromSDK = (
+  // TODO-NOW: Update with type from SDK once generated
+  input: any
+): AccountCollection | undefined => {
+  const playlistId = decodeHashId(input.id)
+  const ownerId = decodeHashId(input.user.id)
+  if (!playlistId || !ownerId) {
+    return undefined
+  }
+
+  return {
+    id: playlistId,
+    is_album: input.isAlbum,
+    name: input.name,
+    permalink: input.permalink,
+    user: {
+      id: ownerId,
+      handle: input.user.handle,
+      is_deactivated: !!input.user.isDeactivated
+    }
+  }
 }
