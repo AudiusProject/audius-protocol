@@ -118,15 +118,15 @@ def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(
         args, default_limit=COMMENT_THREADS_LIMIT
     )
-
     # default to top sort
     sort_method = args.get("sort_method", "top")
-
-    sort_method_order_by = desc(Comment.created_at)
     if sort_method == "top":
         sort_method_order_by = desc(func.count(CommentReaction.comment_id))
+    elif sort_method == "newest":
+        sort_method_order_by = desc(Comment.created_at)
     elif sort_method == "timestamp":
         sort_method_order_by = asc(Comment.track_timestamp_s).nullslast()
+
     track_comments = []
     db = get_db_read_replica()
 
