@@ -213,7 +213,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
       content: messages.toasts.deleted,
       type: 'info'
     })
-  }, [deleteComment, id, toast])
+  }, [deleteComment, id, toast, parentCommentId])
 
   return (
     <>

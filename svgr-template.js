@@ -1,9 +1,20 @@
+const {
+  identifier,
+  jsxAttribute,
+  jsxIdentifier,
+  jsxExpressionContainer,
+  isJSXElement
+} = require('@babel/types')
+
 const webImports = `
   import {css, cx} from '@emotion/css'
 `
 
 const nativeImports = `
   import {css} from '@emotion/native'
+  import Animated from 'react-native-reanimated'
+  import {Path as RNSVGPath} from 'react-native-svg'
+  const AnimatedPath = Animated.createAnimatedComponent(RNSVGPath)
 `
 
 const webStyles = `
@@ -22,8 +33,24 @@ const nativeStyles = `
   other.style = style ? [style, styleProp] : styleProp
 `
 
+const updatePathElements = (element) => {
+  if (element.openingElement && element.openingElement.name.name === 'path') {
+    element.openingElement.attributes.push(
+      jsxAttribute(
+        jsxIdentifier('animatedProps'),
+        jsxExpressionContainer(identifier('animatedProps'))
+      )
+    )
+  }
+  element.children = element.children.map((child) =>
+    isJSXElement(child) ? updatePathElements(child) : child
+  )
+  return element
+}
+
 const template = (variables, { tpl, options }) => {
   const { native } = options
+
   return tpl`
 ${variables.imports};
 import {useTheme} from '@emotion/react'
@@ -42,6 +69,7 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
     height: heightProp,
     width: widthProp,
     shadow,
+    animatedProps,
     ...other
   } = props
 
@@ -64,7 +92,9 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
 
   props = {...other, ref, fillColor}
 
-  return (${variables.jsx})
+  ${native ? `const Path = animatedProps ? AnimatedPath : RNSVGPath` : ''}
+
+  return (${native ? updatePathElements(variables.jsx) : variables.jsx})
 });
 
 ${variables.exports};
