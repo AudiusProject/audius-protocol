@@ -118,14 +118,15 @@ def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(
         args, default_limit=COMMENT_THREADS_LIMIT
     )
+
+    # default to top sort
     sort_method = args.get("sort_method", "top")
+
+    sort_method_order_by = desc(Comment.created_at)
     if sort_method == "top":
         sort_method_order_by = desc(func.count(CommentReaction.comment_id))
-    elif sort_method == "newest":
-        sort_method_order_by = desc(Comment.created_at)
     elif sort_method == "timestamp":
         sort_method_order_by = asc(Comment.track_timestamp_s).nullslast()
-
     track_comments = []
     db = get_db_read_replica()
 
@@ -194,6 +195,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments
+                Comment.is_delete == False,
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
@@ -207,8 +209,9 @@ def get_track_comments(args, track_id, current_user_id=None):
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
                 desc(Comment.comment_id == pinned_comment_id),
-                asc(Comment.is_delete),
                 sort_method_order_by,
+                desc(func.sum(AggregateUser.follower_count)),  # karma
+                desc(Comment.created_at),
             )
             .offset(offset)
             .limit(limit)
