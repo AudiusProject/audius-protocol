@@ -13,6 +13,7 @@ const harmonyPath = path.resolve(__dirname, '../../packages/harmony')
 const splPath = path.resolve(__dirname, '../../packages/spl')
 const libsPath = path.resolve(__dirname, '../../packages/libs')
 const sdkPath = path.resolve(__dirname, '../../packages/sdk')
+const ethPath = path.resolve(__dirname, '../../packages/eth')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
 const fixedDecimalPath = path.resolve(__dirname, '../../packages/fixed-decimal')
 
@@ -65,6 +66,7 @@ const config = {
     harmonyPath,
     sdkPath,
     libsPath,
+    ethPath,
     fixedDecimalPath,
     splPath
   ],
