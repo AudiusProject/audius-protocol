@@ -195,7 +195,6 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments
-                Comment.is_delete == False,
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
@@ -209,6 +208,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
                 desc(Comment.comment_id == pinned_comment_id),
+                asc(Comment.is_delete),  # required for tombstone
                 sort_method_order_by,
                 desc(func.sum(AggregateUser.follower_count)),  # karma
                 desc(Comment.created_at),
