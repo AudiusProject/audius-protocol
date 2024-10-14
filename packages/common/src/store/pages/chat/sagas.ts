@@ -464,8 +464,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
   } = action.payload
 
   const { track, make } = yield* getContext('analytics')
+  const currentUserId = yield* select(getUserId)
   try {
-    const currentUserId = yield* select(getUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
@@ -499,7 +499,16 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
           chat: newBlast
         })
       )
-      yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
+      yield* call(
+        track,
+        make({
+          eventName: Name.CREATE_CHAT_BLAST_SUCCESS,
+          audience,
+          audienceContentType,
+          audienceContentId,
+          sentBy: currentUserId
+        })
+      )
     }
   } catch (e) {
     console.error('createChatBlastFailed', e)
@@ -519,7 +528,17 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         audienceContentType
       }
     })
-    yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.CREATE_CHAT_BLAST_FAILURE,
+        audience,
+        audienceContentType,
+        audienceContentId,
+        sentBy: currentUserId ?? undefined
+      })
+    )
   }
 }
 

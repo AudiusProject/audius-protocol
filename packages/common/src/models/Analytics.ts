@@ -482,6 +482,8 @@ export enum Name {
   // Chat
   CREATE_CHAT_SUCCESS = 'Create Chat: Success',
   CREATE_CHAT_FAILURE = 'Create Chat: Failure',
+  CREATE_CHAT_BLAST_SUCCESS = 'Create Chat Blast: Success',
+  CREATE_CHAT_BLAST_FAILURE = 'Create Chat Blast: Failure',
   SEND_MESSAGE_SUCCESS = 'Send Message: Success',
   SEND_MESSAGE_FAILURE = 'Send Message: Failure',
   DELETE_CHAT_SUCCESS = 'Delete Chat: Success',
@@ -2303,6 +2305,22 @@ type CreateChatFailure = {
   eventName: Name.CREATE_CHAT_FAILURE
 }
 
+type CreateChatBlastSuccess = {
+  eventName: Name.CREATE_CHAT_BLAST_SUCCESS
+  audience: string
+  audienceContentType?: string
+  audienceContentId?: number
+  sentBy: ID
+}
+
+type CreateChatBlastFailure = {
+  eventName: Name.CREATE_CHAT_BLAST_FAILURE
+  audience: string
+  audienceContentType?: string
+  audienceContentId?: number
+  sentBy?: ID
+}
+
 type SendMessageSuccess = {
   eventName: Name.SEND_MESSAGE_SUCCESS
 }
@@ -2746,6 +2764,8 @@ export type AllTrackingEvents =
   | SendMessageSuccess
   | CreateChatSuccess
   | CreateChatFailure
+  | CreateChatBlastSuccess
+  | CreateChatBlastFailure
   | SendMessageSuccess
   | SendMessageFailure
   | DeleteChatSuccess
