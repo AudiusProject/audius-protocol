@@ -23,6 +23,6 @@ identity-init:
           - packages/libs/node_modules
           - packages/libs/dist
           - packages/sdk/node_modules
-          - packages/libs/dist
+          - packages/sdk/dist
           - packages/spl/dist
           - packages/spl/node_modules
