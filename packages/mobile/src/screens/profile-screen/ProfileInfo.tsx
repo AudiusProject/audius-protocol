@@ -93,7 +93,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     )
 
   return (
-    <Flex pointerEvents='box-none' pv='s'>
+    <Flex pointerEvents='box-none' pv='s' gap='s'>
       <Flex
         direction='row'
         justifyContent='flex-end'
