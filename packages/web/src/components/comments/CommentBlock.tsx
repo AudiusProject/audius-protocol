@@ -7,6 +7,7 @@ import {
 } from '@audius/common/context'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import { dayjs } from '@audius/common/utils'
 import { Box, Flex, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -49,7 +50,10 @@ const CommentBlockInternal = (
 
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
-  const createdAtDate = useMemo(() => new Date(createdAt), [createdAt])
+  const createdAtDate = useMemo(
+    () => dayjs.utc(createdAt).toDate(),
+    [createdAt]
+  )
 
   const userHandle = useSelector(
     (state: AppState) => getUser(state, { id: userId })?.handle
