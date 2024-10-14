@@ -8,7 +8,11 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetUserByHandle,
+  useGetTrackById
+} from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -35,6 +39,8 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 import type { ComposerInputProps } from './types'
+
+const userMentionRegex = /^@\w+$/
 
 const BACKSPACE_KEY = 'Backspace'
 const AT_KEY = '@'
@@ -114,11 +120,17 @@ export const ComposerInput = forwardRef(function ComposerInput(
     styles: propStyles,
     TextInputComponent
   } = props
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
   const [userMentions, setUserMentions] = useState<string[]>([])
   const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
+  const [presetUserMention, setPresetUserMention] = useState('')
+  const { data: replyUser } = useGetUserByHandle({
+    handle: presetUserMention.slice(1), // slice to remove the @
+    currentUserId
+  })
   const [selection, setSelection] = useState<{ start: number; end: number }>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
@@ -182,10 +194,23 @@ export const ComposerInput = forwardRef(function ComposerInput(
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
+        if (userMentionRegex.test(editedValue.trimEnd())) {
+          setPresetUserMention(editedValue.trimEnd())
+        }
       }
     }
     fn()
   }, [presetMessage, resolveLinks])
+
+  useEffect(() => {
+    if (replyUser && !userMentions.includes(presetUserMention)) {
+      setUserMentions((mentions) => [...mentions, presetUserMention])
+      setUserIdMap((map) => {
+        map[presetUserMention] = replyUser.user_id
+        return map
+      })
+    }
+  }, [presetUserMention, replyUser, userMentions])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
@@ -233,7 +258,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       setIsAutocompleteActive(false)
     },
@@ -241,7 +269,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   useEffect(() => {
-    onAutocompleteChange?.(isAutocompleteActive, autocompleteText)
+    onAutocompleteChange?.(isAutocompleteActive, autocompleteText.slice(1))
   }, [onAutocompleteChange, isAutocompleteActive, autocompleteText])
 
   useEffect(() => {

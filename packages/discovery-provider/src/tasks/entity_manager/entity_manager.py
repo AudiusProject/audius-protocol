@@ -135,6 +135,7 @@ entity_type_table_mapping = {
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
     "Comment": Comment.__tablename__,
+    "CommentMention": CommentMention.__tablename__,
     "CommentReaction": CommentReaction.__tablename__,
     "MutedUser": MutedUser.__tablename__,
     "CommentNotificationSetting": CommentNotificationSetting.__tablename__,

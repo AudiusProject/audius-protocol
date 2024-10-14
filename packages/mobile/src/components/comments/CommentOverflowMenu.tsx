@@ -40,6 +40,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const { track } = useCurrentCommentSection()
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
+  const isParentComment = 'replyCount' in comment
 
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
@@ -108,18 +109,19 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   }
 
   const rows: ActionDrawerRow[] = [
-    isEntityOwner && {
-      text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
-      callback: () => {
-        if (isPinned) {
-          // Unpin the comment
-          handlePinComment()
-        } else {
-          setIsPinConfirmationOpen(true)
-          setIsPinConfirmationVisible(true)
+    isEntityOwner &&
+      isParentComment && {
+        text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
+        callback: () => {
+          if (isPinned) {
+            // Unpin the comment
+            handlePinComment()
+          } else {
+            setIsPinConfirmationOpen(true)
+            setIsPinConfirmationVisible(true)
+          }
         }
-      }
-    },
+      },
     !isEntityOwner &&
       !isCommentOwner && {
         text: messages.menuActions.flagAndHide,
@@ -144,12 +146,13 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsMuteUserConfirmationVisible(true)
         }
       },
-    isCommentOwner && {
-      text: isMuted
-        ? messages.menuActions.turnOnNotifications
-        : messages.menuActions.turnOffNotifications,
-      callback: () => handleMuteNotifs
-    },
+    isCommentOwner &&
+      isParentComment && {
+        text: isMuted
+          ? messages.menuActions.unmuteThread
+          : messages.menuActions.muteThread,
+        callback: () => handleMuteNotifs
+      },
     isCommentOwner && {
       text: messages.menuActions.edit,
       callback: () =>

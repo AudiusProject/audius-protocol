@@ -30,6 +30,7 @@ export const commentsMessages = {
     'You haven’t muted any users. Once you do, they will appear here.',
   seeMore: 'See More',
   seeLess: 'See Less',
+  newComments: 'New Comments!',
 
   // Overflow Menu Actions
   menuActions: {
@@ -38,8 +39,8 @@ export const commentsMessages = {
     flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
-    turnOnNotifications: 'Turn On Notifications',
-    turnOffNotifications: 'Turn Off Notifications',
+    unmuteThread: 'Unmute This Thread',
+    muteThread: 'Mute This Thread',
     edit: 'Edit',
     delete: 'Delete',
     moreActions: 'more actions'
