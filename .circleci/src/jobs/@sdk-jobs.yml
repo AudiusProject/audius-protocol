@@ -18,3 +18,22 @@ sdk-init:
         name: lint & typecheck
         command: |
           npx turbo run verify --filter=@audius/sdk
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/sdk/node_modules
+          - packages/sdk/dist
+
+sdk-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - attach_workspace:
+        at: ./
+    - run:
+        name: test
+        command: |
+          npx turbo run test --filter=@audius/sdk
