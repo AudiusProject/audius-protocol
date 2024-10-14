@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Protocol_SendTransaction_FullMethodName = "/protocol.Protocol/SendTransaction"
 	Protocol_GetTransaction_FullMethodName  = "/protocol.Protocol/GetTransaction"
+	Protocol_GetBlock_FullMethodName        = "/protocol.Protocol/GetBlock"
 	Protocol_Ping_FullMethodName            = "/protocol.Protocol/Ping"
 )
 
@@ -30,6 +31,7 @@ const (
 type ProtocolClient interface {
 	SendTransaction(ctx context.Context, in *SendTransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
 	GetTransaction(ctx context.Context, in *GetTransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
+	GetBlock(ctx context.Context, in *GetBlockRequest, opts ...grpc.CallOption) (*GetBlockResponse, error)
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
@@ -61,6 +63,16 @@ func (c *protocolClient) GetTransaction(ctx context.Context, in *GetTransactionR
 	return out, nil
 }
 
+func (c *protocolClient) GetBlock(ctx context.Context, in *GetBlockRequest, opts ...grpc.CallOption) (*GetBlockResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBlockResponse)
+	err := c.cc.Invoke(ctx, Protocol_GetBlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *protocolClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PingResponse)
@@ -77,6 +89,7 @@ func (c *protocolClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc
 type ProtocolServer interface {
 	SendTransaction(context.Context, *SendTransactionRequest) (*TransactionResponse, error)
 	GetTransaction(context.Context, *GetTransactionRequest) (*TransactionResponse, error)
+	GetBlock(context.Context, *GetBlockRequest) (*GetBlockResponse, error)
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedProtocolServer()
 }
@@ -93,6 +106,9 @@ func (UnimplementedProtocolServer) SendTransaction(context.Context, *SendTransac
 }
 func (UnimplementedProtocolServer) GetTransaction(context.Context, *GetTransactionRequest) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTransaction not implemented")
+}
+func (UnimplementedProtocolServer) GetBlock(context.Context, *GetBlockRequest) (*GetBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlock not implemented")
 }
 func (UnimplementedProtocolServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
@@ -154,6 +170,24 @@ func _Protocol_GetTransaction_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Protocol_GetBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).GetBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_GetBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).GetBlock(ctx, req.(*GetBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Protocol_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PingRequest)
 	if err := dec(in); err != nil {
@@ -186,6 +220,10 @@ var Protocol_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTransaction",
 			Handler:    _Protocol_GetTransaction_Handler,
+		},
+		{
+			MethodName: "GetBlock",
+			Handler:    _Protocol_GetBlock_Handler,
 		},
 		{
 			MethodName: "Ping",

@@ -9,6 +9,7 @@ option go_package = "./proto;proto";
 service Protocol {
   rpc SendTransaction (SendTransactionRequest) returns (TransactionResponse);
   rpc GetTransaction (GetTransactionRequest) returns (TransactionResponse);
+  rpc GetBlock (GetBlockRequest) returns (GetBlockResponse);
   rpc Ping (PingRequest) returns (PingResponse);
 }
 
@@ -34,6 +35,16 @@ message GetTransactionRequest {
 message TransactionResponse {
   string txhash = 1;
   SignedTransaction transaction = 2;
+}
+
+message GetBlockRequest {
+  int64 height = 1;
+}
+
+message GetBlockResponse {
+  string hash = 1;
+  int64 height = 2;
+  repeated SignedTransaction transactions = 3;
 }
 
 message TrackPlays {
