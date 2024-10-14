@@ -1,4 +1,11 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import {
   useGetCurrentUserId,
@@ -351,6 +358,20 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ]
   )
 
+  const isTextHighlighted = useMemo(() => {
+    const matches = getMatches(value) ?? []
+    const timestamps = getTimestamps(value)
+    const mentions = getUserMentions(value) ?? []
+    const fullMatches = [...matches, ...mentions, ...timestamps]
+    return Boolean(fullMatches.length || isUserAutocompleteActive)
+  }, [
+    getMatches,
+    getTimestamps,
+    getUserMentions,
+    isUserAutocompleteActive,
+    value
+  ])
+
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
@@ -471,7 +492,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       showMaxLength={
         !!value && value.length > maxLength * MAX_LENGTH_DISPLAY_PERCENT
       }
-      renderDisplayElement={renderDisplayText}
+      renderDisplayElement={isTextHighlighted ? renderDisplayText : undefined}
       grows
       {...other}
     >

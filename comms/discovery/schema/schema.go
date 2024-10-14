@@ -216,6 +216,7 @@ type UpgradableChatBlast struct {
 	Audience            ChatBlastAudience    `json:"audience"`
 	AudienceContentID   *string              `json:"audience_content_id,omitempty"`
 	AudienceContentType *AudienceContentType `json:"audience_content_type,omitempty"`
+	BlastID             string               `json:"blast_id"`
 	ChatID              string               `json:"chat_id"`
 	CreatedAt           string               `json:"created_at"`
 	FromUserID          float64              `json:"from_user_id"`

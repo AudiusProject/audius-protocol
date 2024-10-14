@@ -40,8 +40,7 @@ export const Text = forwardRef(
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
-      fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
-    Arial, sans-serif`,
+      fontFamily: typography.font,
       position: 'relative',
       boxSizing: 'border-box',
       ...(color &&

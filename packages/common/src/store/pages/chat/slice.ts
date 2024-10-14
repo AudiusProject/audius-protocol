@@ -402,7 +402,13 @@ const slice = createSlice({
       if (dayjs(chat.cleared_history_at).isAfter(chat.last_message_at)) {
         chat.last_message = ''
       }
-      chatsAdapter.upsertOne(state.chats, chat)
+      const existingChat = getChat(state, chat.chat_id)
+      // If the chat already exists, use its existing messagesStatus, otherwise default to IDLE
+      const messagesStatus = existingChat?.messagesStatus ?? Status.IDLE
+      chatsAdapter.upsertOne(state.chats, {
+        ...chat,
+        messagesStatus
+      })
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
