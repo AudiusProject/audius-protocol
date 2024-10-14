@@ -11,7 +11,7 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/common/models'
+import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 
@@ -27,18 +27,21 @@ import { ConfirmationDrawerWithoutRedux } from '../drawers'
 type CommentOverflowMenuProps = {
   comment: Comment | ReplyComment
   disabled?: boolean
+  parentCommentId?: ID
 }
 
 export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
     comment,
     comment: { id, userId },
-    disabled
+    disabled,
+    parentCommentId
   } = props
 
+  const { track } = useCurrentCommentSection()
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
+  const isParentComment = 'replyCount' in comment
 
-  const isPinned = 'isPinned' in props ? props.isPinned : false // pins dont exist on replies
   const { data: commentUser } = useGetUserById({
     id: Number(userId)
   })
@@ -81,10 +84,12 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     entityId,
     isEntityOwner,
     currentUserId,
-    setEditingComment,
+    setReplyingAndEditingState,
     currentSort
   } = useCurrentCommentSection()
+
   const isCommentOwner = Number(userId) === currentUserId
+  const isPinned = track.pinned_comment_id === id
 
   const [pinComment] = usePinComment()
   const [deleteComment] = useDeleteComment()
@@ -104,18 +109,19 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   }
 
   const rows: ActionDrawerRow[] = [
-    isEntityOwner && {
-      text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
-      callback: () => {
-        if (isPinned) {
-          // Unpin the comment
-          handlePinComment()
-        } else {
-          setIsPinConfirmationOpen(true)
-          setIsPinConfirmationVisible(true)
+    isEntityOwner &&
+      isParentComment && {
+        text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,
+        callback: () => {
+          if (isPinned) {
+            // Unpin the comment
+            handlePinComment()
+          } else {
+            setIsPinConfirmationOpen(true)
+            setIsPinConfirmationVisible(true)
+          }
         }
-      }
-    },
+      },
     !isEntityOwner &&
       !isCommentOwner && {
         text: messages.menuActions.flagAndHide,
@@ -140,15 +146,17 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
           setIsMuteUserConfirmationVisible(true)
         }
       },
-    isCommentOwner && {
-      text: isMuted
-        ? messages.menuActions.turnOnNotifications
-        : messages.menuActions.turnOffNotifications,
-      callback: () => handleMuteNotifs
-    },
+    isCommentOwner &&
+      isParentComment && {
+        text: isMuted
+          ? messages.menuActions.unmuteThread
+          : messages.menuActions.muteThread,
+        callback: () => handleMuteNotifs
+      },
     isCommentOwner && {
       text: messages.menuActions.edit,
-      callback: () => setEditingComment?.(props.comment)
+      callback: () =>
+        setReplyingAndEditingState?.({ editingComment: props.comment })
     },
     (isCommentOwner || isEntityOwner) && {
       text: messages.menuActions.delete,
@@ -157,11 +165,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         setIsDeleteConfirmationVisible(true)
       },
       isDestructive: true
-    },
-    // TODO: check if receiving notifications
-    isCommentOwner && {
-      text: messages.menuActions.turnOffNotifications,
-      callback: () => {} // TODO
     }
   ].filter(removeNullable)
 
@@ -205,7 +208,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   }, [id, isPinned, pinComment, toast])
 
   const handleDeleteComment = useCallback(() => {
-    deleteComment(id)
+    deleteComment(id, parentCommentId)
     toast({
       content: messages.toasts.deleted,
       type: 'info'

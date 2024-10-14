@@ -31,6 +31,7 @@ type CommentFormProps = {
   commentId?: ID
   parentCommentId?: ID
   isEdit?: boolean
+  autoFocus?: boolean
 }
 
 export const CommentForm = ({
@@ -39,7 +40,8 @@ export const CommentForm = ({
   commentId,
   parentCommentId,
   isEdit,
-  hideAvatar = false
+  hideAvatar = false,
+  autoFocus
 }: CommentFormProps) => {
   const { currentUserId, entityId, entityType, commentIds } =
     useCurrentCommentSection()
@@ -106,6 +108,7 @@ export const CommentForm = ({
           />
         ) : null}
         <ComposerInput
+          autoFocus={autoFocus}
           placeholder={
             isFirstComment && isMobile
               ? messages.firstComment

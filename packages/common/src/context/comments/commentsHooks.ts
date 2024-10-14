@@ -92,7 +92,8 @@ export const useEditComment = () => {
 }
 
 export const usePinComment = () => {
-  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
+  const { currentUserId, entityId, currentSort, track } =
+    useCurrentCommentSection()
   const { mutate: pinComment, ...rest } = useTqPinComment()
   const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
@@ -101,7 +102,8 @@ export const usePinComment = () => {
         userId: currentUserId,
         trackId: entityId,
         isPinned,
-        currentSort
+        currentSort,
+        previousPinnedCommentId: track?.pinned_comment_id
       })
     }
   }
@@ -156,13 +158,14 @@ export const useDeleteComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: deleteComment, ...rest } = useTqDeleteComment()
 
-  const wrappedHandler = (commentId: ID) => {
+  const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
       deleteComment({
         commentId,
         userId: currentUserId,
         trackId: entityId,
-        currentSort
+        currentSort,
+        parentCommentId
       })
     }
   }

@@ -1,5 +1,8 @@
-import { useCallback, memo } from 'react'
+import { useCallback, memo, ReactNode } from 'react'
 
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useMuteUser } from '@audius/common/context'
+import { commentsMessages } from '@audius/common/messages'
 import {
   CreatePlaylistSource,
   Status,
@@ -25,11 +28,16 @@ import {
   IconCollectible as IconCollectibles,
   IconNote,
   IconPlaylists,
-  IconRepost as IconReposts
+  IconRepost as IconReposts,
+  Text,
+  Hint,
+  IconQuestionCircle
 } from '@audius/harmony'
+import { useToggle } from 'react-use'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
+import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -93,6 +101,8 @@ export type ProfilePageProps = {
   canCreateChat: boolean
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
+  showMuteUserConfirmationModal: boolean
+  showUnmuteUserConfirmationModal: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -152,8 +162,11 @@ export type ProfilePageProps = {
   onMessage: () => void
   onBlock: () => void
   onUnblock: () => void
+  onMute: () => void
   onCloseBlockUserConfirmationModal: () => void
   onCloseUnblockUserConfirmationModal: () => void
+  onCloseMuteUserConfirmationModal: () => void
+  onCloseUnmuteUserConfirmationModal: () => void
 }
 
 const ProfilePage = ({
@@ -209,14 +222,17 @@ const ProfilePage = ({
   onMessage,
   onBlock,
   onUnblock,
+  onMute,
   isBlocked,
-
   // Chat modals
   showBlockUserConfirmationModal,
   onCloseBlockUserConfirmationModal,
   showUnblockUserConfirmationModal,
   onCloseUnblockUserConfirmationModal,
-
+  showMuteUserConfirmationModal,
+  showUnmuteUserConfirmationModal,
+  onCloseMuteUserConfirmationModal,
+  onCloseUnmuteUserConfirmationModal,
   accountUserId,
   userId,
   handle,
@@ -574,6 +590,38 @@ const ProfilePage = ({
     structuredData
   } = getUserPageSEOFields({ handle, userName: name, bio })
 
+  const muteUserConfirmationBody = (
+    <Flex gap='l' direction='column'>
+      <Text color='default' textAlign='left'>
+        {commentsMessages.popups.muteUser.body(name)}
+      </Text>
+      <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
+        {commentsMessages.popups.muteUser.hint}
+      </Hint>
+    </Flex>
+  ) as ReactNode
+
+  const unMuteUserConfirmationBody = (
+    <Flex gap='l' direction='column'>
+      <Text color='default' textAlign='left'>
+        {commentsMessages.popups.unmuteUser.body(name)}
+      </Text>
+      <Hint icon={IconQuestionCircle} css={{ textAlign: 'left' }}>
+        {commentsMessages.popups.unmuteUser.hint}
+      </Hint>
+    </Flex>
+  ) as ReactNode
+
+  const [muteUser] = useMuteUser()
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  const { data: mutedUsers } = useGetMutedUsers({
+    userId: currentUserId!
+  })
+  const [isMuted, toggleMuted] = useToggle(
+    mutedUsers?.some((user) => user.user_id === userId) ?? false
+  )
+
   return (
     <Page
       title={title}
@@ -650,9 +698,11 @@ const ProfilePage = ({
             canCreateChat={canCreateChat}
             onMessage={onMessage}
             isBlocked={isBlocked}
+            isMuted={isMuted}
             accountUserId={accountUserId}
             onBlock={onBlock}
             onUnblock={onUnblock}
+            onMute={onMute}
           />
           <Flex direction='column'>
             <NavBanner
@@ -690,6 +740,32 @@ const ProfilePage = ({
             isVisible={showUnblockUserConfirmationModal}
             onClose={onCloseUnblockUserConfirmationModal}
           />
+          <ConfirmationModal
+            onClose={onCloseMuteUserConfirmationModal}
+            isOpen={showMuteUserConfirmationModal}
+            messages={
+              isMuted
+                ? {
+                    header: commentsMessages.popups.unmuteUser.title,
+                    description: unMuteUserConfirmationBody,
+                    confirm: commentsMessages.popups.unmuteUser.confirm
+                  }
+                : {
+                    header: commentsMessages.popups.muteUser.title,
+                    description: muteUserConfirmationBody,
+                    confirm: commentsMessages.popups.muteUser.confirm
+                  }
+            }
+            onConfirm={() => {
+              if (userId) {
+                muteUser({
+                  mutedUserId: userId,
+                  isMuted
+                })
+                toggleMuted()
+              }
+            }}
+          ></ConfirmationModal>
         </>
       ) : null}
     </Page>

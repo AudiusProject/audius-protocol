@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useEffect } from 'react'
 
-import { useSetInboxPermissions } from '@audius/common/hooks'
+import { useSetInboxPermissionsLegacy } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
   Modal,
@@ -73,7 +73,7 @@ export const InboxSettingsModalLegacy = () => {
     doFetchPermissions,
     permissionStatus,
     showSpinner
-  } = useSetInboxPermissions({
+  } = useSetInboxPermissionsLegacy({
     audiusSdk
   })
 

@@ -76,12 +76,13 @@ export const CommentActionBar = ({
   hideReactCount
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
-  // Comment from props
+  const { currentUserId, isEntityOwner, entityId, currentSort, track } =
+    useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
-  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
-  const isParentComment = 'isPinned' in comment
-  const isTombstone = isParentComment ? comment.isTombstone : false
-  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
+  const isParentComment = 'replyCount' in comment
+  const isPinned = track.pinned_comment_id === commentId
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
   // API actions
   const [reactToComment] = useReactToComment()
@@ -89,11 +90,7 @@ export const CommentActionBar = ({
   const [pinComment] = usePinComment()
   const [muteUser] = useMuteUser()
 
-  // Comment context data
-  const { currentUserId, isEntityOwner, entityId, currentSort } =
-    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -121,13 +118,9 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
-    toast(
-      areNotifsMuted
-        ? messages.toasts.unmutedNotifs
-        : messages.toasts.mutedNotifs
-    )
-  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast(isMuted ? messages.toasts.unmutedNotifs : messages.toasts.mutedNotifs)
+  }, [handleMuteCommentNotifications, isMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -250,10 +243,13 @@ export const CommentActionBar = ({
   const popupMenuItems = useMemo(
     () =>
       [
-        isEntityOwner && {
-          onClick: () => setCurrentConfirmationModalType('pin'),
-          text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin
-        },
+        isEntityOwner &&
+          isParentComment && {
+            onClick: () => setCurrentConfirmationModalType('pin'),
+            text: isPinned
+              ? messages.menuActions.unpin
+              : messages.menuActions.pin
+          },
         !isEntityOwner &&
           !isCommentOwner && {
             onClick: () => setCurrentConfirmationModalType('flagAndHide'),
@@ -269,6 +265,13 @@ export const CommentActionBar = ({
             onClick: () => setCurrentConfirmationModalType('muteUser'),
             text: messages.menuActions.muteUser
           },
+        isCommentOwner &&
+          isParentComment && {
+            onClick: handleMuteNotifs,
+            text: isMuted
+              ? messages.menuActions.unmuteThread
+              : messages.menuActions.muteThread
+          },
         isCommentOwner && {
           onClick: onClickEdit,
           text: messages.menuActions.edit
@@ -279,22 +282,16 @@ export const CommentActionBar = ({
               !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
             ),
           text: messages.menuActions.delete
-        },
-        canMuteNotifs && {
-          onClick: handleMuteNotifs,
-          text: areNotifsMuted
-            ? messages.menuActions.turnOnNotifications
-            : messages.menuActions.turnOffNotifications
         }
       ].filter(removeNullable),
     [
+      isEntityOwner,
+      isParentComment,
       isPinned,
+      isCommentOwner,
       onClickEdit,
       handleMuteNotifs,
-      areNotifsMuted,
-      isCommentOwner,
-      isEntityOwner,
-      canMuteNotifs
+      isMuted
     ]
   )
 

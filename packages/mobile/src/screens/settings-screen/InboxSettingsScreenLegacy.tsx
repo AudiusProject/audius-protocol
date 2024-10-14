@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useSetInboxPermissions } from '@audius/common/hooks'
+import { useSetInboxPermissionsLegacy } from '@audius/common/hooks'
 import { ChatPermission } from '@audius/sdk'
 import { TouchableOpacity, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -99,7 +99,7 @@ const options = [
 export const InboxSettingsScreenLegacy = () => {
   const styles = useStyles()
   const { setAndSavePermissions, localPermission, doFetchPermissions } =
-    useSetInboxPermissions({
+    useSetInboxPermissionsLegacy({
       audiusSdk
     })
 

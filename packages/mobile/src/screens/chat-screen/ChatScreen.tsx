@@ -18,7 +18,6 @@ import {
 } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
-import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
@@ -66,6 +65,7 @@ import {
   NEW_MESSAGE_TOAST_SCROLL_THRESHOLD,
   SCROLL_TO_BOTTOM_THRESHOLD
 } from './constants'
+import { useKeyboardAvoidingPlaybarStyle } from './hooks/useKeyboardAvoidingPlaybarStyle'
 
 type ChatFlatListProps = FlatListProps<ChatMessageWithExtras>
 type ChatListEventHandler<K extends keyof ChatFlatListProps> = NonNullable<
@@ -173,11 +173,6 @@ type ContainerLayoutStatus = {
   bottom: number
 }
 
-type ReactionContainerStyle = {
-  paddingTop: number
-  bottom: number
-}
-
 const getAutoscrollThreshold = ({ top, bottom }: ContainerLayoutStatus) => {
   return (bottom - top) / 4
 }
@@ -249,7 +244,6 @@ export const ChatScreen = () => {
   const scrollPosition = useRef(0)
   const latestMessageId = useRef('')
   const flatListInnerHeight = useRef(0)
-  const { keyboardShown } = useKeyboard()
   const insets = useSafeAreaInsets()
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
@@ -545,20 +539,7 @@ export const ChatScreen = () => {
     }, 0)
   }, [flatListRef])
 
-  // For some reason the bottom padding behavior is different between the platforms.
-  const getKeyboardAvoidingPlaybarAwareStyle = useCallback(() => {
-    const style = {} as ReactionContainerStyle
-    if (Platform.OS === 'ios') {
-      style.bottom = hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
-      style.paddingTop = hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
-    } else if (Platform.OS === 'android') {
-      style.bottom =
-        hasCurrentlyPlayingTrack && !keyboardShown ? PLAY_BAR_HEIGHT : 0
-      style.paddingTop =
-        hasCurrentlyPlayingTrack && !keyboardShown ? PLAY_BAR_HEIGHT : 0
-    }
-    return style
-  }, [hasCurrentlyPlayingTrack, keyboardShown])
+  const keyboardAvoidingPlaybarStyle = useKeyboardAvoidingPlaybarStyle()
 
   return (
     <Screen
@@ -598,10 +579,7 @@ export const ChatScreen = () => {
                 ? PLAY_BAR_HEIGHT + BOTTOM_BAR_HEIGHT + insets.bottom
                 : BOTTOM_BAR_HEIGHT + insets.bottom
             }
-            style={[
-              styles.keyboardAvoiding,
-              getKeyboardAvoidingPlaybarAwareStyle()
-            ]}
+            style={[styles.keyboardAvoiding, keyboardAvoidingPlaybarStyle]}
             onKeyboardHide={measureChatContainerBottom}
             onKeyboardShow={measureChatContainerBottom}
           >

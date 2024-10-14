@@ -168,7 +168,7 @@ export type ChatInvite = {
 }
 
 type ChatBlastBase = {
-  chat_id: string // maps to blast_id on the backend
+  chat_id: string
   audience: ChatBlastAudience
   audience_content_id?: string
   audience_content_type?: 'track' | 'album'
@@ -180,6 +180,7 @@ export type UpgradableChatBlast = ChatBlastBase & {
   from_user_id: number
   plaintext: string
   created_at: string
+  blast_id: string
 }
 
 // Client-side chat blast

@@ -1,6 +1,8 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
+import type { InboxSettingsFormValues } from '@audius/common/store'
+import { transformPermitListToMap } from '@audius/common/utils'
 import { ChatPermission } from '@audius/sdk'
 import { Formik } from 'formik'
 
@@ -17,53 +19,26 @@ const messages = {
   save: 'Save Changes'
 }
 
-type InboxSettingsFormValues = {
-  allowAll: boolean
-  [ChatPermission.FOLLOWEES]: boolean
-  [ChatPermission.TIPPERS]: boolean
-  [ChatPermission.TIPPEES]: boolean
-  [ChatPermission.FOLLOWERS]: boolean
-  [ChatPermission.VERIFIED]: boolean
-}
-
 export const InboxSettingsScreenNew = () => {
-  const { localPermission, doFetchPermissions } = useSetInboxPermissions({
-    audiusSdk
-  })
+  const { permissions, doFetchPermissions, savePermissions } =
+    useSetInboxPermissions({
+      audiusSdk
+    })
 
-  const allowAll = localPermission === ChatPermission.ALL
-  const initialValues = {
-    allowAll,
-    [ChatPermission.FOLLOWEES]:
-      allowAll || localPermission === ChatPermission.FOLLOWEES,
-    [ChatPermission.TIPPERS]:
-      allowAll || localPermission === ChatPermission.TIPPERS,
-    [ChatPermission.TIPPEES]:
-      allowAll || localPermission === ChatPermission.TIPPEES,
-    [ChatPermission.FOLLOWERS]:
-      allowAll || localPermission === ChatPermission.FOLLOWERS,
-    [ChatPermission.VERIFIED]:
-      allowAll || localPermission === ChatPermission.VERIFIED
-  }
+  const initialValues = useMemo(() => {
+    return transformPermitListToMap(
+      permissions?.permit_list ?? [ChatPermission.ALL]
+    )
+  }, [permissions])
 
   useEffect(() => {
     doFetchPermissions()
   }, [doFetchPermissions])
 
-  const handleSubmit = useCallback((values: typeof initialValues) => {
-    if (values.allowAll) {
-      // submit all permissions
-      alert(JSON.stringify({ allowAll: true }, null, 2))
-    } else {
-      // submit only the sub permissions that are checked
-      alert(JSON.stringify(values, null, 2))
-    }
-  }, [])
-
   return (
     <Formik<InboxSettingsFormValues>
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={savePermissions}
     >
       {({ submitForm, isSubmitting }) => (
         <FormScreen

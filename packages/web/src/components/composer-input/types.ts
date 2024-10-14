@@ -21,4 +21,5 @@ export type ComposerInputProps = {
   | 'disabled'
   | 'readOnly'
   | 'id'
+  | 'autoFocus'
 >

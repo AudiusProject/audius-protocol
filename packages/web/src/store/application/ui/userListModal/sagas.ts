@@ -9,7 +9,9 @@ import {
   followersUserListActions as followerActions,
   favoritesUserListActions as favoritesActions,
   relatedArtistsUserListActions,
-  RepostType
+  RepostType,
+  remixersUserListActions,
+  purchasersUserListActions
 } from '@audius/common/store'
 import { takeEvery, put } from 'redux-saga/effects'
 
@@ -66,6 +68,12 @@ function* watchSetUsers() {
           break
         case UserListType.SUPPORTING:
           yield put(supportingActions.setSupporting(id))
+          break
+        case UserListType.REMIXER:
+          yield put(remixersUserListActions.setRemixers(id))
+          break
+        case UserListType.PURCHASER:
+          yield put(purchasersUserListActions.setPurchasers(id))
           break
         default:
           break

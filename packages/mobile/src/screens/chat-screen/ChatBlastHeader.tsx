@@ -1,10 +1,12 @@
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
 
 import { Flex, Text, IconTowerBroadcast } from '@audius/harmony-native'
 
 const messages = {
-  chatBlastTitleAudienceCount: (audienceCount: number) => `(${audienceCount})`
+  chatBlastTitleAudienceCount: (audienceCount: number) =>
+    `(${formatCount(audienceCount)})`
 }
 
 export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {

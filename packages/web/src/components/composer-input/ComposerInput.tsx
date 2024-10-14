@@ -1,6 +1,10 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetTrackById,
+  useGetUserByHandle
+} from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -28,6 +32,8 @@ const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
 }
+
+const userMentionRegex = /^@\w+$/
 
 const MAX_LENGTH_DISPLAY_PERCENT = 0.85
 const ENTER_KEY = 'Enter'
@@ -67,6 +73,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     isLoading,
     entityId,
     entityType,
+    autoFocus,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -74,14 +81,21 @@ export const ComposerInput = (props: ComposerInputProps) => {
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
+  const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
   const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
+  const [presetUserMention, setPresetUserMention] = useState('')
+  const { data: replyUser } = useGetUserByHandle({
+    handle: presetUserMention.slice(1), // slice to remove the @
+    currentUserId
+  })
+
   const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
   // Ref to keep track of the submit state of the input
@@ -106,10 +120,30 @@ export const ComposerInput = (props: ComposerInputProps) => {
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
+        if (userMentionRegex.test(editedValue.trimEnd())) {
+          setPresetUserMention(editedValue.trimEnd())
+        }
       }
     }
     fn()
   }, [presetMessage, resolveLinks])
+
+  useEffect(() => {
+    if (replyUser && !userMentions.includes(presetUserMention)) {
+      setUserMentions((mentions) => [...mentions, presetUserMention])
+      setUserIdMap((map) => {
+        map[presetUserMention] = replyUser.user_id
+        return map
+      })
+    }
+  }, [presetUserMention, replyUser, userMentions])
+
+  useEffect(() => {
+    if (ref.current && autoFocus) {
+      ref.current.focus()
+      ref.current.selectionStart = ref.current.value.length
+    }
+  }, [autoFocus])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
@@ -179,22 +213,31 @@ export const ComposerInput = (props: ComposerInputProps) => {
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
+      let textLength = mentionText.length
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
-        setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+        setUserIdMap((map) => {
+          map[mentionText] = user.user_id
+          return map
+        })
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        textLength = fillText.length
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       const textarea = ref.current
       if (textarea) {
         setTimeout(() => {
           textarea.focus()
-          textarea.selectionStart = autocompleteRange[0] + mentionText.length
-          textarea.selectionEnd = autocompleteRange[0] + mentionText.length
+          textarea.selectionStart = autocompleteRange[0] + textLength
+          textarea.selectionEnd = autocompleteRange[0] + textLength
         }, 0)
       }
       setIsUserAutocompleteActive(false)
@@ -223,9 +266,11 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleSubmit = useCallback(() => {
     submittedRef.current = true
     changeOpIdRef.current++
-    onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+    const userIds =
+      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
+    onSubmit?.(restoreLinks(value), linkEntities, userIds)
     submittedRef.current = false
-  }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
+  }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(

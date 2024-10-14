@@ -25,18 +25,18 @@ type CommentFormHelperTextProps = {
 
 const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
   const { replyingToUserHandle } = props
-  const { replyingToComment, setReplyingToComment, setEditingComment } =
+  const { replyingAndEditingState, setReplyingAndEditingState } =
     useCurrentCommentSection()
   const { color, spacing } = useTheme()
+  const { replyingToComment } = replyingAndEditingState ?? {}
 
   const text = replyingToComment
     ? messages.replyingTo(replyingToUserHandle ?? '')
     : messages.editing
 
   const handlePressClear = useCallback(() => {
-    setReplyingToComment?.(undefined)
-    setEditingComment?.(undefined)
-  }, [setEditingComment, setReplyingToComment])
+    setReplyingAndEditingState?.(undefined)
+  }, [setReplyingAndEditingState])
 
   return (
     <Flex
@@ -85,13 +85,9 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const {
-    currentUserId,
-    commentIds,
-    entityId,
-    replyingToComment,
-    editingComment
-  } = useCurrentCommentSection()
+  const { currentUserId, commentIds, entityId, replyingAndEditingState } =
+    useCurrentCommentSection()
+  const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
 
   const replyingToUserId = Number(replyingToComment?.userId)

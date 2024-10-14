@@ -36,48 +36,45 @@ export const CommentText = (props: CommentTextProps) => {
 
   return (
     <Flex direction='column' alignItems='flex-start' gap='xs'>
-      <p css={{ textAlign: 'left' }}>
-        <UserGeneratedTextV2
-          size='s'
-          variant='body'
-          color='default'
-          ref={textRef}
-          internalLinksOnly
-          maxLines={isExpanded ? undefined : 3}
-          suffix={
-            isEdited ? (
-              <Text color='subdued' size='s'>
-                {' '}
-                ({messages.edited})
-              </Text>
-            ) : null
-          }
-          matchers={[
-            {
-              pattern: timestampRegex,
-              renderLink: (text, _, index) => {
-                const matches = [...text.matchAll(new RegExp(timestampRegex))]
+      <UserGeneratedTextV2
+        size='s'
+        variant='body'
+        color='default'
+        ref={textRef}
+        internalLinksOnly
+        maxLines={isExpanded ? undefined : 3}
+        css={{ textAlign: 'left', wordBreak: 'break-word' }}
+        suffix={
+          isEdited ? (
+            <Text color='subdued' size='s'>
+              {' '}
+              ({messages.edited})
+            </Text>
+          ) : null
+        }
+        matchers={[
+          {
+            pattern: timestampRegex,
+            renderLink: (text, _, index) => {
+              const matches = [...text.matchAll(new RegExp(timestampRegex))]
 
-                if (matches.length === 0) return null
+              if (matches.length === 0) return null
 
-                const timestampSeconds = getDurationFromTimestampMatch(
-                  matches[0]
-                )
-                const showLink = timestampSeconds <= duration
+              const timestampSeconds = getDurationFromTimestampMatch(matches[0])
+              const showLink = timestampSeconds <= duration
 
-                return showLink ? (
-                  <TimestampLink
-                    key={index}
-                    timestampSeconds={timestampSeconds}
-                  />
-                ) : null
-              }
+              return showLink ? (
+                <TimestampLink
+                  key={index}
+                  timestampSeconds={timestampSeconds}
+                />
+              ) : null
             }
-          ]}
-        >
-          {children}
-        </UserGeneratedTextV2>
-      </p>
+          }
+        ]}
+      >
+        {children}
+      </UserGeneratedTextV2>
 
       {isOverflowing ? (
         <TextLink

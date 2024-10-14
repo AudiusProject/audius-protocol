@@ -309,7 +309,6 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -318,14 +317,12 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
-            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -374,7 +371,6 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -383,14 +379,12 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
-            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false

@@ -65,6 +65,7 @@ import IconMerchSVG from '../assets/icons/Merch.svg'
 import IconMessageSVG from '../assets/icons/Message.svg'
 import IconMessageBlockSVG from '../assets/icons/MessageBlock.svg'
 import IconMessageLockedSVG from '../assets/icons/MessageLocked.svg'
+import IconMessageSlashSVG from '../assets/icons/MessageSlash.svg'
 import IconMessageUnblockSVG from '../assets/icons/MessageUnblock.svg'
 import IconMessagesSVG from '../assets/icons/Messages.svg'
 import IconMinusSVG from '../assets/icons/Minus.svg'
@@ -204,6 +205,7 @@ export const IconMessage = IconMessageSVG as IconComponent
 export const IconStar = IconStarSVG as IconComponent
 export const IconCastAirplay = IconCastAirplaySVG as IconComponent
 export const IconMessageBlock = IconMessageBlockSVG as IconComponent
+export const IconMessageSlash = IconMessageSlashSVG as IconComponent
 export const IconStars = IconStarsSVG as IconComponent
 export const IconCastChromecast = IconCastChromecastSVG as IconComponent
 export const IconMessageLocked = IconMessageLockedSVG as IconComponent

@@ -33,6 +33,7 @@ BEGIN
   JOIN chat_message USING (chat_id)
   WHERE member_a.user_id = from_user_id
     AND member_b.user_id = to_user_id
+    AND (member_b.cleared_history_at IS NULL OR chat_message.created_at > member_b.cleared_history_at)
   ;
 
   IF can_message THEN

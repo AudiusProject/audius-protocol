@@ -39,7 +39,8 @@ export const CommentThread = (props: CommentThreadProps) => {
       enabled: hasRequestedMore
     })
 
-  const hasMoreReplies = (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage
+  const hasMoreReplies =
+    (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage !== false // note: hasNextPage is undefined when inactive - have to explicitly check for false
 
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {

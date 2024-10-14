@@ -58,15 +58,17 @@ var Version string
 
 type Config struct {
 	/* Comet Config */
-	RootDir         string
-	RPCladdr        string
-	P2PLaddr        string
-	PSQLConn        string
-	RetainBlocks    uint
-	PersistentPeers string
-	Seeds           string
-	ExternalAddress string
-	AddrBookStrict  bool
+	RootDir          string
+	RPCladdr         string
+	P2PLaddr         string
+	PSQLConn         string
+	RetainBlocks     uint
+	PersistentPeers  string
+	Seeds            string
+	ExternalAddress  string
+	AddrBookStrict   bool
+	MaxInboundPeers  int
+	MaxOutboundPeers int
 
 	/* Audius Config */
 	Environment        string
@@ -129,6 +131,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		standaloneConsole = false
 	}
 	cfg.StandaloneConsole = standaloneConsole
+	cfg.MaxInboundPeers = getEnvIntWithDefault("maxInboundPeers", 200)
+	cfg.MaxOutboundPeers = getEnvIntWithDefault("maxOutboundPeers", 200)
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
@@ -184,7 +188,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
 		cfg.SlaRollupInterval = 12
-
 	}
 
 	// Disable ssl for local postgres db connection
@@ -198,6 +201,17 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 func getEnvWithDefault(key, defaultValue string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
+	}
+	return defaultValue
+}
+
+func getEnvIntWithDefault(key string, defaultValue int) int {
+	if value, exists := os.LookupEnv(key); exists {
+		val, err := strconv.Atoi(value)
+		if err == nil {
+			return val
+		}
+		return defaultValue
 	}
 	return defaultValue
 }

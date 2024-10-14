@@ -21,6 +21,10 @@ import {
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, ID, ReplyComment } from '~/models'
+import {
+  incrementTrackCommentCount,
+  setPinnedCommentId
+} from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { encodeHashId, Nullable } from '~/utils'
 
@@ -218,6 +222,7 @@ type PostCommentArgs = {
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useMutation({
     mutationFn: async (args: PostCommentArgs) => {
@@ -247,7 +252,6 @@ export const usePostComment = () => {
         id: newId,
         userId,
         message: body,
-        isPinned: false,
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
@@ -283,6 +287,8 @@ export const usePostComment = () => {
       }
       // Update the individual comment cache
       queryClient.setQueryData([QUERY_KEYS.comment, newId], newComment)
+      // Update the track comment count (separate cache)
+      dispatch(incrementTrackCommentCount(trackId, 1))
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
@@ -291,6 +297,8 @@ export const usePostComment = () => {
         additionalInfo: args,
         name: 'Comments'
       })
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, -1))
       // Toast generic error message
       toast({ content: messages.mutationError('posting') })
       // TODO: avoid hard reset here?
@@ -380,39 +388,26 @@ type PinCommentArgs = {
   isPinned: boolean
   trackId: ID
   currentSort: CommentSortMethod
+  previousPinnedCommentId?: Nullable<ID>
 }
+
 export const usePinComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
-    mutationFn: async ({ userId, commentId, isPinned }: PinCommentArgs) => {
+    mutationFn: async (args: PinCommentArgs) => {
+      const { userId, commentId, isPinned, trackId } = args
       const sdk = await audiusSdk()
-      return await sdk.comments.pinComment(userId, commentId, isPinned)
+      return await sdk.comments.pinComment({
+        userId,
+        entityId: commentId,
+        trackId,
+        isPin: isPinned
+      })
     },
     onMutate: ({ commentId, isPinned, trackId, currentSort }) => {
       if (isPinned) {
-        // Un-pin the current top comment (if it's already not pinned nothing changes)
-        const commentData = queryClient.getQueryData<InfiniteData<ID[]>>([
-          QUERY_KEYS.trackCommentList,
-          trackId,
-          currentSort
-        ])
-        // if we somehow hit an empty cache this will be undefined
-        if (commentData === undefined) return
-        const prevTopCommentId = commentData.pages[0][0]
-        // If we're pinning the comment at the top already, no need to do anything
-        if (prevTopCommentId === commentId) return
-
-        queryClient.setQueryData<CommentOrReply | undefined>(
-          [QUERY_KEYS.comment, prevTopCommentId],
-          (prevCommentState) =>
-            ({
-              ...prevCommentState,
-              isPinned: false
-            } as CommentOrReply)
-        )
-
         // Loop through the sort list and move the newly pinned comment
         queryClient.setQueryData<InfiniteData<ID[]>>(
           [QUERY_KEYS.trackCommentList, trackId, currentSort],
@@ -433,18 +428,11 @@ export const usePinComment = () => {
           }
         )
       }
-      // Finally - update our individual comment
-      queryClient.setQueryData(
-        [QUERY_KEYS.comment, commentId],
-        (prevCommentState: CommentOrReply | undefined) =>
-          ({
-            ...prevCommentState,
-            isPinned
-          } as CommentOrReply)
-      )
+
+      dispatch(setPinnedCommentId(trackId, isPinned ? commentId : null))
     },
     onError: (error: Error, args) => {
-      const { trackId, currentSort, commentId, isPinned } = args
+      const { trackId, currentSort, previousPinnedCommentId } = args
       reportToSentry({
         error,
         additionalInfo: args,
@@ -452,17 +440,8 @@ export const usePinComment = () => {
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('pinning') }))
+      dispatch(setPinnedCommentId(trackId, previousPinnedCommentId ?? null))
       // Since this mutationx handles sort data, its difficult to undo the optimistic update so we just re-load everything
-      // Revert our optimistic cache change
-      queryClient.setQueryData(
-        [QUERY_KEYS.comment, commentId],
-        (prevCommentState: CommentOrReply | undefined) =>
-          ({
-            ...prevCommentState,
-            isPinned: !isPinned
-          } as CommentOrReply)
-      )
-      // TODO: avoid hard reset here?
       queryClient.resetQueries([
         QUERY_KEYS.trackCommentList,
         trackId,
@@ -477,6 +456,7 @@ type DeleteCommentArgs = {
   userId: ID
   trackId: ID // track id
   currentSort: CommentSortMethod
+  parentCommentId?: ID
 }
 export const useDeleteComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
@@ -488,23 +468,38 @@ export const useDeleteComment = () => {
       const sdk = await audiusSdk()
       return await sdk.comments.deleteComment(commentData)
     },
-    onMutate: ({ commentId, trackId, currentSort }) => {
-      // Remove the comment from the current sort - this will cause it to no longer display
+    onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
+      // If reply, filter it from the parent's list of replies
+      if (parentCommentId) {
+        queryClient.setQueryData<Comment>(
+          [QUERY_KEYS.comment, parentCommentId],
+          (prev) =>
+            ({
+              ...prev,
+              replies: (prev?.replies ?? []).filter(
+                (reply) => reply.id !== commentId
+              )
+            } as Comment)
+        )
+      }
+      // If not a reply, remove from the sort list
       queryClient.setQueryData<InfiniteData<ID[]>>(
         [QUERY_KEYS.trackCommentList, trackId, currentSort],
         (prevCommentData) => {
           const newCommentData = cloneDeep(prevCommentData)
           if (!newCommentData) return
-          // Filter out the comment from its current page
+          // Filter out the comment from itsz current page
           newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
             page.filter((id: ID) => id !== commentId)
           )
           return newCommentData
         }
       )
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, 1))
     },
     onSuccess: (_res, { commentId }) => {
-      // Wait till success to remove the individual comment from the cache
+      // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
       queryClient.removeQueries({
         queryKey: [QUERY_KEYS.comment, commentId],
         exact: true
@@ -517,6 +512,8 @@ export const useDeleteComment = () => {
         additionalInfo: args,
         name: 'Comments'
       })
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, 1))
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('deleting') }))
       // Since this mutation handles sort data, its difficult to undo the optimistic update so we just re-load everything
@@ -766,15 +763,7 @@ export const useUpdateTrackCommentNotificationSetting = () => {
     onMutate: ({ trackId, action }) => {
       queryClient.setQueryData(
         [QUERY_KEYS.trackCommentNotificationSetting, trackId],
-        (prevData) => {
-          if (prevData) {
-            return {
-              ...prevData,
-              isMuted: action === EntityManagerAction.MUTE
-            }
-          }
-          return { isMuted: action === EntityManagerAction.MUTE }
-        }
+        () => ({ data: { isMuted: action === EntityManagerAction.MUTE } })
       )
     },
     onError: (error: Error, args) => {

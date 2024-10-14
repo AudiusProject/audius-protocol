@@ -3,10 +3,13 @@ import {
   ChatMessage,
   Track,
   Playlist,
-  User
+  User,
+  ChatPermission
 } from '@audius/sdk'
+import { mapValues } from 'lodash'
 
 import { Status } from '~/models/Status'
+import { InboxSettingsFormValues } from '~/store'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 import dayjs from './dayjs'
@@ -252,4 +255,47 @@ export const getChatBlastCTA = ({
         messages.blastCTABase + messages.blastCTARemixers(audienceContentId)
       )
   }
+}
+
+export const defaultChatPermitMap: InboxSettingsFormValues = {
+  [ChatPermission.ALL]: false,
+  [ChatPermission.FOLLOWERS]: false,
+  [ChatPermission.FOLLOWEES]: false,
+  [ChatPermission.TIPPERS]: false,
+  [ChatPermission.TIPPEES]: false,
+  [ChatPermission.VERIFIED]: false
+}
+
+export const transformPermitListToMap = (
+  permitList: ChatPermission[]
+): InboxSettingsFormValues => {
+  if (permitList.includes(ChatPermission.ALL)) {
+    return mapValues(defaultChatPermitMap, () => true)
+  }
+
+  if (permitList.includes(ChatPermission.NONE)) {
+    return { ...defaultChatPermitMap }
+  }
+
+  return permitList.reduce(
+    (acc, permit) => {
+      acc[permit as keyof InboxSettingsFormValues] = true
+      return acc
+    },
+    { ...defaultChatPermitMap }
+  )
+}
+
+export const transformMapToPermitList = (
+  permitMap: InboxSettingsFormValues
+): ChatPermission[] => {
+  if (permitMap[ChatPermission.ALL]) {
+    return [ChatPermission.ALL]
+  }
+  if (Object.values(permitMap).every((value) => !value)) {
+    return [ChatPermission.NONE]
+  }
+  return Object.keys(permitMap).filter(
+    (key) => permitMap[key as keyof InboxSettingsFormValues]
+  ) as ChatPermission[]
 }

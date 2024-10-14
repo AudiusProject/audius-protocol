@@ -20,8 +20,7 @@ jobs:
       requires:
         - identity-init
 
-  # Deploy audius-protocol `main` branch (stage)
-  - deploy-stage-nodes:
+  - deploy-stage-nodes-just-tag:
       name: deploy-stage-identity-service
       requires:
         - test-identity-service

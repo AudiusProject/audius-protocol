@@ -8,7 +8,7 @@ import {
   ModalHeader,
   ModalTitle,
   ModalFooter,
-  IconMessageBlock,
+  IconMessageSlash,
   IconInfo,
   Button,
   Hint
@@ -70,7 +70,7 @@ export const BlockUserConfirmationModal = ({
   return (
     <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle title={messages.title} icon={<IconMessageBlock />} />
+        <ModalTitle title={messages.title} icon={<IconMessageSlash />} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div>{messages.content(user, isReportAbuse)}</div>

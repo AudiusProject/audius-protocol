@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
+import { formatCount } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
 import { css } from '@emotion/native'
 import { TouchableHighlight } from 'react-native'
@@ -64,7 +65,7 @@ export const ChatListBlastItem = ({ chat }: { chat: ChatBlast }) => {
             <Flex row gap='xs'>
               <IconUser width={spacing.l} height={spacing.l} color='subdued' />
               <Text variant='label' color='subdued'>
-                {audienceCount}
+                {formatCount(audienceCount)}
               </Text>
             </Flex>
           ) : null}

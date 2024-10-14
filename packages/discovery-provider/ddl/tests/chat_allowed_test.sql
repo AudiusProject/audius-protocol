@@ -44,6 +44,10 @@ ASSERT (SELECT chat_allowed(11, 10) = TRUE);
 UPDATE chat_permissions SET allowed = FALSE WHERE user_id = 10 AND permits = 'followers';
 ASSERT (SELECT chat_allowed(2,10) = FALSE);
 
+-- 10 cleares history... now 10 + 11 preexisting chat is invalidated
+-- and followers-only applies
+UPDATE chat_member SET cleared_history_at = now() where user_id = 10;
+ASSERT (SELECT chat_allowed(11, 10) = FALSE);
 
 
 

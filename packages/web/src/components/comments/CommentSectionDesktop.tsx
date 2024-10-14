@@ -1,16 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  Button,
-  Divider,
-  Flex,
-  LoadingSpinner,
-  Paper,
-  Skeleton
-} from '@audius/harmony'
+import { Divider, Flex, LoadingSpinner, Paper, Skeleton } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
@@ -53,19 +46,23 @@ const FullCommentSkeletons = () => (
   </Flex>
 )
 
+type CommentSectionDesktopProps = {
+  commentSectionRef: React.RefObject<HTMLDivElement>
+}
+
 /**
  * This component is responsible for
  * - Render header & containers
  * - Mapping through the root comments array
  * - Infinite scrolling pagination
  */
-export const CommentSectionDesktop = () => {
+export const CommentSectionDesktop = (props: CommentSectionDesktopProps) => {
+  const { commentSectionRef } = props
   const {
     currentUserId,
     commentIds,
     commentSectionLoading,
     isLoadingMorePages,
-    reset,
     hasMorePages,
     loadMorePages
   } = useCurrentCommentSection()
@@ -75,7 +72,6 @@ export const CommentSectionDesktop = () => {
     FeatureFlags.COMMENT_POSTING_ENABLED
   )
   const commentPostAllowed = currentUserId !== undefined && commentPostFlag
-  const commentSectionRef = useRef<HTMLDivElement | null>(null)
   const showCommentSortBar = commentIds.length > 1
 
   const [searchParams] = useSearchParams()
@@ -93,7 +89,12 @@ export const CommentSectionDesktop = () => {
       commentSectionRef.current.scrollIntoView()
       setHasScrolledIntoView(true)
     }
-  }, [commentSectionLoading, showComments, hasScrolledIntoView])
+  }, [
+    commentSectionLoading,
+    showComments,
+    hasScrolledIntoView,
+    commentSectionRef
+  ])
 
   if (commentSectionLoading) {
     return <FullCommentSkeletons />
@@ -108,13 +109,6 @@ export const CommentSectionDesktop = () => {
       ref={commentSectionRef}
     >
       <CommentHeader />
-      <Button
-        onClick={() => {
-          reset(true)
-        }}
-      >
-        Refresh{' '}
-      </Button>
       <Paper w='100%' direction='column'>
         {commentPostAllowed ? (
           <>

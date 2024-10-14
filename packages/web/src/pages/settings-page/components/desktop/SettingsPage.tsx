@@ -21,6 +21,7 @@ import {
   IconKey,
   IconRecoveryEmail as IconMail,
   IconMessage,
+  IconMessages,
   IconNotificationOn as IconNotification,
   IconReceive,
   IconRobot,
@@ -306,7 +307,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         ) : null}
         {!isManagedAccount ? (
           <SettingsCard
-            icon={<IconMessage />}
+            icon={<IconMessages />}
             title={messages.inboxSettingsCardTitle}
             description={messages.inboxSettingsCardDescription}
           >

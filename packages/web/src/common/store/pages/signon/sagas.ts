@@ -423,6 +423,11 @@ function* validateEmail(
   }
 }
 
+function* refreshHedgehogWallet() {
+  const hedgehogInstance = yield* getContext('hedgehogInstance')
+  yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
+}
+
 function* signUp() {
   const signOn = yield* select(getSignOn)
   const email = signOn.email.value
@@ -652,6 +657,8 @@ function* signUp() {
         }
       },
       function* () {
+        // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
+        yield* call(refreshHedgehogWallet)
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* fetchAccountAsync({ isSignUp: true })
         yield* put(signOnActions.followArtists())
@@ -796,6 +803,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       signInResponse.user &&
       signInResponse.user.name
     ) {
+      // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
+      yield* call(refreshHedgehogWallet)
       yield* put(accountActions.fetchAccount())
       yield* put(signOnActions.signInSucceeded())
       const route = yield* select(getRouteOnCompletion)
