@@ -26,3 +26,5 @@ identity-init:
           - packages/sdk/dist
           - packages/spl/dist
           - packages/spl/node_modules
+          - packages/eth/dist
+          - packages/eth/node_modules
