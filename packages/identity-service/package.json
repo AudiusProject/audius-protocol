@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@amplitude/node": "1.9.2",
+    "@audius/sdk": "*",
     "@audius/sdk-legacy": "*",
     "@audius/spl": "*",
     "@certusone/wormhole-sdk": "0.1.1",
