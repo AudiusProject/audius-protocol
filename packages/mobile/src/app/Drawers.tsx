@@ -13,7 +13,6 @@ import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/C
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
-import { CommentDrawer } from 'app/components/comments/CommentDrawer'
 import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
@@ -153,8 +152,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   MuteComments: MuteCommentsConfirmationDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
-  Welcome: WelcomeDrawer,
-  Comment: CommentDrawer
+  Welcome: WelcomeDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

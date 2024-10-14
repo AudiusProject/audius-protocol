@@ -9,7 +9,6 @@ import {
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
-import { useDrawer } from 'app/hooks/useDrawer'
 
 import { TimestampLink } from './TimestampLink'
 
@@ -24,9 +23,10 @@ export const CommentText = (props: CommentTextProps) => {
   const { children, isEdited } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
-  const { onClosed: closeDrawer } = useDrawer('Comment')
   const {
-    track: { duration }
+    track: { duration },
+    navigation,
+    setIsDrawerOpen
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -47,9 +47,10 @@ export const CommentText = (props: CommentTextProps) => {
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
         internalLinksOnly
+        navigation={navigation}
         linkProps={{
           onPress: () => {
-            closeDrawer()
+            setIsDrawerOpen?.(false)
           }
         }}
         suffix={

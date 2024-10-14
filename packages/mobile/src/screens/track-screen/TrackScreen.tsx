@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
@@ -21,7 +21,6 @@ import {
   VirtualizedScrollView
 } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -47,6 +46,8 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
+  const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false)
+
   const {
     searchTrack,
     id,
@@ -56,11 +57,9 @@ export const TrackScreen = () => {
     showComments
   } = params ?? {}
 
-  const { onOpen: openDrawer } = useDrawer('Comment')
-
   useEffectOnce(() => {
     if (showComments) {
-      openDrawer({ entityId: id })
+      setIsCommentDrawerOpen(true)
     }
   })
 
@@ -162,7 +161,11 @@ export const TrackScreen = () => {
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
-                    <CommentSection entityId={track_id} />
+                    <CommentSection
+                      entityId={track_id}
+                      isDrawerOpen={isCommentDrawerOpen}
+                      setIsDrawerOpen={setIsCommentDrawerOpen}
+                    />
                   </Flex>
                 ) : null}
 

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   CommentSectionProvider,
   useCurrentCommentSection,
@@ -19,6 +21,7 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import Skeleton from '../skeleton'
 
 import { CommentBlock } from './CommentBlock'
+import { CommentDrawer } from './CommentDrawer'
 import { CommentForm } from './CommentForm'
 
 const CommentSectionHeader = () => {
@@ -105,15 +108,15 @@ const CommentSectionContent = () => {
 
 type CommentSectionProps = {
   entityId: ID
+  isDrawerOpen: boolean
+  setIsDrawerOpen: (isOpen: boolean) => void
 }
 
 export const CommentSection = (props: CommentSectionProps) => {
-  const { entityId } = props
-
-  const { onOpen: openDrawer } = useDrawer('Comment')
+  const { entityId, isDrawerOpen, setIsDrawerOpen } = props
 
   const handlePress = () => {
-    openDrawer({ entityId })
+    setIsDrawerOpen(true)
   }
 
   return (
@@ -125,6 +128,11 @@ export const CommentSection = (props: CommentSectionProps) => {
             <CommentSectionContent />
           </TouchableOpacity>
         </Paper>
+        <CommentDrawer
+          entityId={entityId}
+          isOpen={isDrawerOpen}
+          setIsOpen={setIsDrawerOpen}
+        />
       </Flex>
     </CommentSectionProvider>
   )

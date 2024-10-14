@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
+import type { NavigationProp } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -38,10 +39,14 @@ type CommentSectionProviderProps = {
 
   // These are optional because they are only used on mobile
   // and provided for the components in CommentDrawer
+  // TODO: maybe use a discriminated union for mobile/desktop type
   replyingAndEditingState?: ReplyingAndEditingState
   setReplyingAndEditingState?: (
     state: ReplyingAndEditingState | undefined
   ) => void
+  navigation?: NavigationProp<ReactNavigation.RootParamList>
+  isDrawerOpen?: boolean
+  setIsDrawerOpen?: (isOpen: boolean) => void
 }
 
 export type ReplyingAndEditingState = {
@@ -80,7 +85,10 @@ export const CommentSectionProvider = (
     entityType = EntityType.TRACK,
     children,
     replyingAndEditingState,
-    setReplyingAndEditingState
+    setReplyingAndEditingState,
+    navigation,
+    isDrawerOpen,
+    setIsDrawerOpen
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
 
@@ -178,7 +186,10 @@ export const CommentSectionProvider = (
         setReplyingAndEditingState,
         setCurrentSort,
         playTrack,
-        loadMorePages
+        loadMorePages,
+        navigation,
+        isDrawerOpen,
+        setIsDrawerOpen
       }}
     >
       {children}

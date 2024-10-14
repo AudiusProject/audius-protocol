@@ -21,6 +21,7 @@ import {
   BottomSheetFooter,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
+import { useNavigation } from '@react-navigation/native'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -30,7 +31,6 @@ import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
-import { useDrawer } from 'app/hooks/useDrawer'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
 import { CommentDrawerHeader } from './CommentDrawerHeader'
@@ -196,10 +196,18 @@ const CommentDrawerContent = (props: {
 
 const BORDER_RADIUS = 40
 
-export const CommentDrawer = () => {
+type CommentDrawerPropsType = {
+  entityId: number
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
+}
+
+export const CommentDrawer = (props: CommentDrawerPropsType) => {
+  const { entityId, isOpen, setIsOpen } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const commentListRef = useRef<BottomSheetFlatListMethods>(null)
+  const navigation = useNavigation()
 
   const [onAutocomplete, setOnAutocomplete] = useState<
     (user: UserMetadata) => void
@@ -222,25 +230,22 @@ export const CommentDrawer = () => {
   }, [])
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const {
-    data: { entityId },
-    isOpen,
-    onClosed
-  } = useDrawer('Comment')
 
   useEffect(() => {
     if (isOpen) {
       bottomSheetModalRef.current?.present()
+    } else {
+      bottomSheetModalRef.current?.dismiss()
     }
   }, [isOpen])
 
   const handleClose = useCallback(() => {
-    onClosed()
-  }, [onClosed])
+    setIsOpen(false)
+  }, [setIsOpen])
 
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+      <BottomSheetFooter {...props}>
         <Divider orientation='horizontal' />
         <CommentSectionProvider
           entityId={entityId}
@@ -296,6 +301,9 @@ export const CommentDrawer = () => {
           entityId={entityId}
           replyingAndEditingState={replyingAndEditingState}
           setReplyingAndEditingState={setReplyingAndEditingState}
+          navigation={navigation}
+          isDrawerOpen={isOpen}
+          setIsDrawerOpen={setIsOpen}
         >
           <CommentDrawerHeader
             minimal={autoCompleteActive}
@@ -312,16 +320,6 @@ export const CommentDrawer = () => {
           )}
         </CommentSectionProvider>
       </BottomSheetModal>
-      <Box
-        style={{
-          backgroundColor: color.background.white,
-          position: 'absolute',
-          bottom: 0,
-          width: '100%',
-          zIndex: 5,
-          height: insets.bottom
-        }}
-      />
     </>
   )
 }
