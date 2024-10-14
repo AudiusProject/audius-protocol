@@ -137,9 +137,7 @@ export const TrackResults = (props: TrackResultsProps) => {
 
   return (
     <Lineup
-      variant={
-        viewLayout === 'grid' ? LineupVariant.SECTION : LineupVariant.MAIN
-      }
+      variant={viewLayout === 'grid' ? LineupVariant.GRID : LineupVariant.MAIN}
       count={count}
       loadMore={loadMore}
       scrollParent={mainContentRef.current}

@@ -514,7 +514,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
       tileSize = TrackTileSize.LARGE
       lineupStyle = styles.main
-    } else if (variant === LineupVariant.SECTION) {
+    } else if (variant === LineupVariant.GRID) {
       tileSize = TrackTileSize.SMALL
       lineupStyle = styles.section
       statSize = 'small'

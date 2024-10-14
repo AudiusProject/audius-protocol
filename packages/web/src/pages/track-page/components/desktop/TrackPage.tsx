@@ -104,7 +104,7 @@ const TrackPage = ({
   play,
   pause
 }: OwnProps) => {
-  const isDesktop = useTrackPageSize()
+  const { isDesktop, isMobile } = useTrackPageSize()
   const { entries } = tracks
   const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
@@ -224,6 +224,11 @@ const TrackPage = ({
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
+
   return (
     <Page
       title={title}
@@ -334,7 +339,7 @@ const TrackPage = ({
                 count={6}
                 // Managed from the parent rather than allowing the lineup to fetch content itself.
                 selfLoad={false}
-                variant={LineupVariant.CONDENSED}
+                variant={lineupVariant}
                 playingUid={currentQueueItem.uid}
                 playingSource={currentQueueItem.source}
                 playingTrackId={
@@ -345,7 +350,6 @@ const TrackPage = ({
                 playTrack={play}
                 pauseTrack={pause}
                 actions={tracksActions}
-                useSmallTiles={isCommentingEnabled}
               />
             </Flex>
           ) : null}

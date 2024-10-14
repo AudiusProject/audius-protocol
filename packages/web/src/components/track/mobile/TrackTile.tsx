@@ -1,4 +1,4 @@
-import { useCallback, useEffect, MouseEvent } from 'react'
+import { useCallback, useEffect, MouseEvent, ReactNode } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -74,6 +74,7 @@ type ExtraProps = {
   hasPreview?: boolean
   hasStreamAccess: boolean
   trackId?: number
+  renderOverflow?: () => ReactNode
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
@@ -209,7 +210,8 @@ const TrackTile = (props: CombinedProps) => {
     containerClassName,
     hasPreview = false,
     title,
-    source
+    source,
+    renderOverflow
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -515,6 +517,7 @@ const TrackTile = (props: CombinedProps) => {
             toggleSave={onToggleSave}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
+            renderOverflow={renderOverflow}
             onClickGatedUnlockPill={onClickPill}
             isOwner={isOwner}
             readonly={isReadonly}

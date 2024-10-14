@@ -51,7 +51,7 @@ type TrackRemixesProrps = {
 
 export const TrackRemixes = (props: TrackRemixesProrps) => {
   const { trackId } = props
-  const isDesktop = useTrackPageSize()
+  const { isDesktop, isMobile } = useTrackPageSize()
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -92,6 +92,11 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
+
   if (!remixTrackIds || !remixTrackIds.length) {
     return null
   }
@@ -117,7 +122,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         lineup={remixesLineup}
         actions={remixesPageLineupActions}
         count={Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)}
-        variant={LineupVariant.CONDENSED}
+        variant={lineupVariant}
         selfLoad
         playingUid={currentQueueItem.uid}
         playingSource={currentQueueItem.source}
@@ -128,7 +133,6 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         buffering={isBuffering}
         playTrack={handlePlay}
         pauseTrack={handlePause}
-        useSmallTiles={isCommentingEnabled}
       />
       {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
         <Box alignSelf='flex-start'>
