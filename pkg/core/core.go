@@ -14,6 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
 
 	cconfig "github.com/cometbft/cometbft/config"
@@ -105,10 +106,10 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	// registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
-	// if err != nil {
-	// 	return fmt.Errorf("registry bridge init error: %v", err)
-	// }
+	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
+	if err != nil {
+		return fmt.Errorf("registry bridge init error: %v", err)
+	}
 
 	con, err := console.NewConsole(config, logger, e, rpc, pool)
 	if err != nil {
@@ -165,10 +166,10 @@ func run(ctx context.Context, logger *common.Logger) error {
 	})
 
 	// Start the registry bridge
-	// eg.Go(func() error {
-	// 	logger.Info("core registry bridge starting")
-	// 	return registryBridge.Start()
-	// })
+	eg.Go(func() error {
+		logger.Info("core registry bridge starting")
+		return registryBridge.Start()
+	})
 
 	eg.Go(func() error {
 		logger.Info("core Console starting")
