@@ -60,7 +60,7 @@
     "@audius/fixed-decimal": "0.1.1",
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/spl": "2.0.0",
-    "@babel/core": "^7.23.7",
+    "@babel/core": "7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",
     "@certusone/wormhole-sdk": "0.1.1",
