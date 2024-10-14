@@ -28,8 +28,7 @@ import {
   encodeHashId,
   ErrorWithCause,
   makeBlastChatId,
-  removeNullable,
-  toErrorWithMessage
+  removeNullable
 } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
@@ -49,7 +48,6 @@ const {
   createChatBlast,
   createChatSucceeded,
   fetchUnreadMessagesCount,
-  fetchUnreadMessagesCountSucceeded,
   fetchUnreadMessagesCountFailed,
   goToChat,
   fetchChatIfNecessary,
