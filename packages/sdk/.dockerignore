@@ -1,0 +1,13 @@
+node_modules/
+*.swp
+*.swo
+*.swn
+.DS_Store*
+test.js
+tests/assets/random.txt
+*.code-workspace
+local-storage/
+.npmrc
+.nyc_output/*
+coverage/
+dist

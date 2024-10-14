@@ -8,10 +8,15 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"google.golang.org/protobuf/proto"
 )
 
 // checks mainnet eth for itself, if registered and not
@@ -26,6 +31,7 @@ func (r *Registry) RegisterSelf() error {
 	logger := r.logger
 
 	web3 := r.contracts
+	queries := r.queries
 
 	privKey := r.config.EthereumKey
 	nodeAddress := crypto.PubkeyToAddress(privKey.PublicKey)
@@ -54,6 +60,79 @@ func (r *Registry) RegisterSelf() error {
 		logger.Info("continuing unregistered")
 		return nil
 	}
+
+	serviceType, err := contracts.ServiceType(r.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
+	if err != nil {
+		return fmt.Errorf("could not get service endpoint info: %v", err)
+	}
+
+	if info.DelegateOwnerWallet != nodeAddress {
+		return fmt.Errorf("node %s is claiming to be %s but that endpoint is owned by %s", nodeAddress.Hex(), nodeEndpoint, info.DelegateOwnerWallet.Hex())
+	}
+
+	ethBlock := info.BlockNumber.String()
+
+	nodeRecord, err := queries.GetNodeByEndpoint(ctx, nodeEndpoint)
+	if err != nil {
+		logger.Infof("node %s not found on comet but found on eth, registering", nodeEndpoint)
+		if err := r.registerSelfOnComet(ethBlock, spID.String()); err != nil {
+			return fmt.Errorf("could not register on comet: %v", err)
+		}
+		return r.RegisterSelf()
+	}
+
+	logger.Infof("node %s : %s registered on network %s", nodeRecord.EthAddress, nodeRecord.Endpoint, r.config.Environment)
+	return nil
+}
+
+func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
+	privKey, err := accounts.EthToEthKey(r.config.DelegatePrivateKey)
+	if err != nil {
+		return fmt.Errorf("invalid privkey: %v", err)
+	}
+
+	serviceType, err := contracts.ServiceType(r.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	registrationTx := &gen_proto.ValidatorRegistration{
+		Endpoint:     r.config.NodeEndpoint,
+		CometAddress: r.config.ProposerAddress,
+		EthBlock:     ethBlock,
+		NodeType:     common.HexToUtf8(serviceType),
+		SpId:         spID,
+	}
+
+	eventBytes, err := proto.Marshal(registrationTx)
+	if err != nil {
+		return fmt.Errorf("failure to marshal register event: %v", err)
+	}
+
+	sig, err := accounts.EthSign(privKey, eventBytes)
+	if err != nil {
+		return fmt.Errorf("could not sign register event: %v", err)
+	}
+
+	event := &gen_proto.SignedTransaction{
+		Signature: sig,
+		RequestId: uuid.NewString(),
+		Transaction: &gen_proto.SignedTransaction_ValidatorRegistration{
+			ValidatorRegistration: registrationTx,
+		},
+	}
+
+	txhash, err := grpc.SendTx(r.logger, r.rpc, event)
+	if err != nil {
+		return fmt.Errorf("send register tx failed: %v", err)
+	}
+
+	r.logger.Infof("registered node %s in tx %s", r.config.NodeEndpoint, txhash)
 
 	return nil
 }

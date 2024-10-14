@@ -8,7 +8,7 @@
     "@apollo/client": "3.3.7",
     "@audius/common": "*",
     "@audius/harmony": "*",
-    "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@audius/stems": "0.3.10",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

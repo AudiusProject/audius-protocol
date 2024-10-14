@@ -73,9 +73,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     lineHeight: spacing(6),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 0
-  },
-  hideText: {
+    paddingTop: 0,
     color: 'transparent'
   },
   overlayTextContainer: {
@@ -396,14 +394,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
     </TouchableOpacity>
   )
 
-  const isTextHighlighted = useMemo(() => {
-    const matches = getMatches(value) ?? []
-    const timestamps = getTimestamps(value)
-    const mentions = getUserMentions(value) ?? []
-    const fullMatches = [...matches, ...mentions, ...timestamps]
-    return Boolean(fullMatches.length || isAutocompleteActive)
-  }, [getMatches, getTimestamps, getUserMentions, isAutocompleteActive, value])
-
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
@@ -495,8 +485,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
           root: [styles.composeTextContainer, propStyles?.container],
           input: [
             styles.composeTextInput,
-            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null,
-            isTextHighlighted ? styles.hideText : null
+            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
+            // {
+            //   maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80)
+            // }
           ]
         }}
         onChangeText={handleChange}
@@ -509,16 +501,15 @@ export const ComposerInput = forwardRef(function ComposerInput(
         autoCorrect
         TextInputComponent={TextInputComponent}
       />
-      {isTextHighlighted ? (
-        <View
-          style={[
-            styles.overlayTextContainer,
-            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-          ]}
-        >
-          <Text style={styles.overlayText}>{renderDisplayText(value)}</Text>
-        </View>
-      ) : null}
+      <View
+        style={[
+          styles.overlayTextContainer,
+          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
+          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
+        ]}
+      >
+        <Text style={styles.overlayText}>{renderDisplayText(value)}</Text>
+      </View>
     </>
   )
 })

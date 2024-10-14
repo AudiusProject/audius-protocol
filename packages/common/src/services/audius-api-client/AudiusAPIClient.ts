@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk/dist/libs'
+import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 
 import { ID } from '../../models'
 import { encodeHashId } from '../../utils/hashIds'
