@@ -505,7 +505,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
           eventName: Name.CREATE_CHAT_BLAST_SUCCESS,
           audience,
           audienceContentType,
-          audienceContentId,
+          audienceContentId: encodedContentId,
           sentBy: currentUserId
         })
       )
@@ -529,13 +529,17 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       }
     })
 
+    const encodedContentId = audienceContentId
+      ? encodeHashId(audienceContentId)
+      : undefined
+
     yield* call(
       track,
       make({
         eventName: Name.CREATE_CHAT_BLAST_FAILURE,
         audience,
         audienceContentType,
-        audienceContentId,
+        audienceContentId: encodedContentId,
         sentBy: currentUserId ?? undefined
       })
     )
@@ -618,6 +622,15 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
         blastId: messageIdToUse,
         message
       })
+      yield* call(
+        track,
+        make({
+          eventName: Name.CHAT_BLAST_MESSAGE_SENT,
+          audience: chat.audience,
+          audienceContentType: chat.audience_content_type,
+          audienceContentId: chat.audience_content_id ?? undefined
+        })
+      )
     } else {
       yield* call([sdk.chats, sdk.chats.message], {
         chatId,

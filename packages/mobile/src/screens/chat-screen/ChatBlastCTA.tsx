@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useCanSendChatBlast } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 
 import {
@@ -12,6 +13,7 @@ import {
 } from '@audius/harmony-native'
 import { KeyboardAvoidingView } from 'app/components/core'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer/constants'
+import { make, track } from 'app/services/analytics'
 
 import { useAppDrawerNavigation } from '../app-drawer-screen'
 
@@ -32,6 +34,7 @@ export const ChatBlastCTA = () => {
 
   const handleClick = useCallback(() => {
     navigation.navigate('CreateChatBlast')
+    track(make({ eventName: Name.CHAT_BLAST_CTA_CLICKED }))
   }, [navigation])
 
   const userMeetsRequirements = useCanSendChatBlast()
