@@ -1,6 +1,11 @@
-import { Genre, Mood, type StorageNodeSelectorService } from '@audius/sdk'
-import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/AudiusLibs'
+import {
+  Genre,
+  Mood,
+  type DiscoveryNodeSelector,
+  type StorageNodeSelectorService
+} from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
+import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk-legacy/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -47,6 +52,9 @@ import { ReportToSentryArgs } from '../../models/ErrorReporting'
 import * as schemas from '../../schemas'
 import {
   FeatureFlags,
+  BooleanKeys,
+  IntKeys,
+  StringKeys,
   RemoteConfigInstance
 } from '../../services/remote-config'
 import {
@@ -117,11 +125,12 @@ export const AuthHeaders = Object.freeze({
 })
 
 // TODO: type these once libs types are improved
-const AudiusLibs: any = null
-export const BackendUtils: any = null
-const SolanaUtils: any = null
+let AudiusLibs: any = null
+export let BackendUtils: any = null
+let SanityChecks: any = null
+let SolanaUtils: any = null
 
-const audiusLibs: any = null
+let audiusLibs: any = null
 const unauthenticatedUuid = uuid()
 /**
  * Combines two lists by concatting `maxSaved` results from the `savedList` onto the head of `normalList`,
@@ -243,26 +252,82 @@ type AudiusBackendParams = {
 }
 
 export const audiusBackend = ({
+  claimDistributionContractAddress,
   imagePreloader,
+  env,
+  ethOwnerWallet,
+  ethProviderUrls,
+  ethRegistryAddress,
+  ethTokenAddress,
+  discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl,
+  getLibs,
   getStorageNodeSelector,
+  getWeb3Config,
+  hedgehogConfig,
   identityServiceUrl,
   generalAdmissionUrl,
+  isElectron,
+  localStorage,
+  monitoringCallbacks,
   nativeMobile,
+  onLibsInit,
+  recaptchaSiteKey,
   recordAnalytics,
+  registryAddress,
+  entityManagerAddress,
   reportError,
   remoteConfigInstance,
   setLocalStorageItem,
+  solanaConfig: {
+    claimableTokenPda,
+    claimableTokenProgramAddress,
+    rewardsManagerProgramId,
+    rewardsManagerProgramPda,
+    rewardsManagerTokenPda,
+    paymentRouterProgramId,
+    solanaClusterEndpoint,
+    solanaFeePayerAddress,
+    solanaTokenAddress,
+    waudioMintAddress,
+    usdcMintAddress,
+    wormholeAddress
+  },
   userNodeUrl,
   waitForLibsInit,
   waitForWeb3,
-  withEagerOption
+  web3NetworkId,
+  web3ProviderUrls,
+  withEagerOption,
+  wormholeConfig: {
+    ethBridgeAddress,
+    ethTokenBridgeAddress,
+    solBridgeAddress,
+    solTokenBridgeAddress,
+    wormholeRpcHosts
+  }
 }: AudiusBackendParams) => {
-  const { waitForRemoteConfig } = remoteConfigInstance
+  const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
   const currentDiscoveryProvider: Nullable<string> = null
   const didSelectDiscoveryProviderListeners: DiscoveryProviderListener[] = []
+
+  /**
+   * Gets a blockList set from remote config
+   */
+  const getBlockList = (remoteVarKey: StringKeys) => {
+    const list = getRemoteVar(remoteVarKey)
+    if (list) {
+      try {
+        return new Set(list.split(','))
+      } catch (e) {
+        console.error(e)
+        return null
+      }
+    }
+    return null
+  }
 
   function addDiscoveryProviderSelectionListener(
     listener: DiscoveryProviderListener
@@ -409,12 +474,239 @@ export const audiusBackend = ({
     }
   }
 
+  // Record the endpoint and reason for selecting the endpoint
+  function discoveryProviderSelectionCallback(
+    endpoint: string,
+    decisionTree: { stage: string }[]
+  ) {
+    recordAnalytics({
+      eventName: Name.DISCOVERY_PROVIDER_SELECTION,
+      properties: {
+        endpoint,
+        reason: decisionTree.map((reason) => reason.stage).join(' -> ')
+      }
+    })
+    didSelectDiscoveryProviderListeners.forEach((listener) =>
+      listener(endpoint)
+    )
+  }
+
+  async function sanityChecks(audiusLibs: any) {
+    try {
+      const sanityChecks = new SanityChecks(audiusLibs)
+      await sanityChecks.run()
+    } catch (e) {
+      console.error(`Sanity checks failed: ${e}`)
+    }
+  }
+
   async function setup() {
     // Wait for web3 to load if necessary
     await waitForWeb3()
     // Wait for optimizely to load if necessary
     await waitForRemoteConfig()
-    return { libsError: null, web3Error: false }
+
+    const libsModule = await getLibs()
+
+    AudiusLibs = libsModule.AudiusLibs
+    BackendUtils = libsModule.Utils
+    SanityChecks = libsModule.SanityChecks
+    SolanaUtils = libsModule.SolanaUtils
+    // initialize libs
+    let libsError: Nullable<string> = null
+    const { web3Config } = await getWeb3Config(
+      AudiusLibs,
+      registryAddress,
+      entityManagerAddress,
+      web3ProviderUrls,
+      web3NetworkId
+    )
+    const { ethWeb3Config } = getEthWeb3Config()
+    const { solanaWeb3Config } = getSolanaWeb3Config()
+    const { wormholeConfig } = getWormholeConfig()
+
+    const contentNodeBlockList = getBlockList(
+      StringKeys.CONTENT_NODE_BLOCK_LIST
+    )
+    const discoveryNodeBlockList = getBlockList(
+      StringKeys.DISCOVERY_NODE_BLOCK_LIST
+    )
+
+    const useSdkDiscoveryNodeSelector = await getFeatureEnabled(
+      FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
+    )
+
+    const isManagerModeEnabled = await getFeatureEnabled(
+      FeatureFlags.MANAGER_MODE
+    )
+
+    let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
+
+    if (useSdkDiscoveryNodeSelector) {
+      discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+
+      const initialSelectedNode: string | undefined =
+        // TODO: Need a synchronous method to check if a discovery node is already selected?
+        // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
+        // @ts-ignore config is private
+        discoveryNodeSelector.config.initialSelectedNode
+      if (initialSelectedNode) {
+        discoveryProviderSelectionCallback(initialSelectedNode, [])
+      }
+      discoveryNodeSelector.addEventListener('change', (endpoint) => {
+        console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
+        discoveryProviderSelectionCallback(endpoint, [])
+      })
+    }
+
+    const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
+      userNodeUrl,
+      /* passList */ null,
+      contentNodeBlockList,
+      monitoringCallbacks.contentNode
+    )
+
+    try {
+      const newAudiusLibs = new AudiusLibs({
+        localStorage,
+        web3Config,
+        ethWeb3Config,
+        solanaWeb3Config,
+        wormholeConfig,
+        discoveryProviderConfig: {
+          blacklist: discoveryNodeBlockList,
+          reselectTimeout: getRemoteVar(
+            IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS
+          ),
+          selectionCallback: discoveryProviderSelectionCallback,
+          monitoringCallbacks: monitoringCallbacks.discoveryNode,
+          selectionRequestTimeout: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT
+          ),
+          selectionRequestRetries: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES
+          ),
+          unhealthySlotDiffPlays: getRemoteVar(
+            BooleanKeys.ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
+          )
+            ? getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS)
+            : null,
+          unhealthyBlockDiff:
+            getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
+
+          discoveryNodeSelector,
+          enableUserWalletOverride: isManagerModeEnabled
+        },
+        identityServiceConfig:
+          AudiusLibs.configIdentityService(identityServiceUrl),
+        creatorNodeConfig: {
+          ...baseCreatorNodeConfig,
+          storageNodeSelector: await getStorageNodeSelector()
+        },
+        // Electron cannot use captcha until it serves its assets from
+        // a "domain" (e.g. localhost) rather than the file system itself.
+        // i.e. there is no way to instruct captcha that the domain is "file://"
+        captchaConfig: isElectron ? undefined : { siteKey: recaptchaSiteKey },
+        isServer: false,
+        preferHigherPatchForPrimary: await getFeatureEnabled(
+          FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
+        ),
+        preferHigherPatchForSecondaries: await getFeatureEnabled(
+          FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
+        ),
+        hedgehogConfig
+      })
+      await newAudiusLibs.init()
+      audiusLibs = newAudiusLibs
+      onLibsInit(audiusLibs)
+      audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
+
+      sanityChecks(audiusLibs)
+    } catch (err) {
+      console.error(err)
+      libsError = getErrorMessage(err)
+    }
+
+    return { libsError, web3Error: false }
+  }
+
+  function getEthWeb3Config() {
+    // In a dev env, always ignore the remote var which is inherited from staging
+    const isDevelopment = env.ENVIRONMENT === 'development'
+    const providerUrls = isDevelopment
+      ? ethProviderUrls
+      : getRemoteVar(StringKeys.ETH_PROVIDER_URLS) || ethProviderUrls
+
+    return {
+      ethWeb3Config: AudiusLibs.configEthWeb3(
+        ethTokenAddress,
+        ethRegistryAddress,
+        providerUrls,
+        ethOwnerWallet,
+        claimDistributionContractAddress,
+        wormholeAddress
+      )
+    }
+  }
+
+  function getSolanaWeb3Config() {
+    if (
+      !solanaClusterEndpoint ||
+      !waudioMintAddress ||
+      !solanaTokenAddress ||
+      !solanaFeePayerAddress ||
+      !claimableTokenProgramAddress ||
+      !rewardsManagerProgramId ||
+      !rewardsManagerProgramPda ||
+      !rewardsManagerTokenPda ||
+      !paymentRouterProgramId
+    ) {
+      return {
+        error: true
+      }
+    }
+    return {
+      error: false,
+      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
+        solanaClusterEndpoint,
+        mintAddress: waudioMintAddress,
+        usdcMintAddress,
+        solanaTokenAddress,
+        claimableTokenPDA: claimableTokenPda,
+        feePayerAddress: solanaFeePayerAddress,
+        claimableTokenProgramAddress,
+        rewardsManagerProgramId,
+        rewardsManagerProgramPDA: rewardsManagerProgramPda,
+        rewardsManagerTokenPDA: rewardsManagerTokenPda,
+        paymentRouterProgramId,
+        useRelay: true
+      })
+    }
+  }
+
+  function getWormholeConfig() {
+    if (
+      !wormholeRpcHosts ||
+      !ethBridgeAddress ||
+      !solBridgeAddress ||
+      !ethTokenBridgeAddress ||
+      !solTokenBridgeAddress
+    ) {
+      return {
+        error: true
+      }
+    }
+
+    return {
+      error: false,
+      wormholeConfig: AudiusLibs.configWormhole({
+        rpcHosts: wormholeRpcHosts,
+        solBridgeAddress,
+        solTokenBridgeAddress,
+        ethBridgeAddress,
+        ethTokenBridgeAddress
+      })
+    }
   }
 
   async function setCreatorNodeEndpoint(endpoint: string) {
@@ -2010,7 +2302,7 @@ export const audiusBackend = ({
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
-    audiusLibs,
+    audiusLibs: audiusLibs as AudiusLibsType,
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
@@ -2067,6 +2359,7 @@ export const audiusBackend = ({
     repostCollection,
     repostTrack,
     resetPassword,
+    sanityChecks,
     saveCollection,
     saveTrack,
     searchTags,

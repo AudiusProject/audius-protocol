@@ -74,6 +74,7 @@ export * from './TrackResponse';
 export * from './TrackSearch';
 export * from './TracksResponse';
 export * from './TrendingPlaylistsResponse';
+export * from './UnclaimedIdResponse';
 export * from './UndisbursedChallenge';
 export * from './UndisbursedChallenges';
 export * from './User';

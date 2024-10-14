@@ -17,10 +17,13 @@
 import * as runtime from '../runtime';
 import type {
   CommentResponse,
+  UnclaimedIdResponse,
 } from '../models';
 import {
     CommentResponseFromJSON,
     CommentResponseToJSON,
+    UnclaimedIdResponseFromJSON,
+    UnclaimedIdResponseToJSON,
 } from '../models';
 
 export interface GetCommentRepliesRequest {
@@ -70,6 +73,33 @@ export class CommentsApi extends runtime.BaseAPI {
      */
     async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
         const response = await this.getCommentRepliesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets an unclaimed blockchain comment ID
+     */
+    async getUnclaimedCommentIDRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UnclaimedIdResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/comments/unclaimed_id`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UnclaimedIdResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets an unclaimed blockchain comment ID
+     */
+    async getUnclaimedCommentID(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnclaimedIdResponse> {
+        const response = await this.getUnclaimedCommentIDRaw(initOverrides);
         return await response.value();
     }
 
