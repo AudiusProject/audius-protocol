@@ -20,6 +20,7 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 import { trackRemixesPage } from 'utils/route'
 
 import { TrackRemixes } from '../TrackRemixes'
+import { useTrackPageSize } from '../useTrackPageSize'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
@@ -53,7 +54,6 @@ export type OwnProps = {
     isPreview?: boolean
   }) => void
   goToAllRemixesPage: () => void
-  goToParentRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
@@ -87,7 +87,6 @@ const TrackPage = ({
   trendingBadgeLabel,
   onHeroPlay,
   goToAllRemixesPage,
-  goToParentRemixesPage,
   onHeroShare,
   onHeroRepost,
   onSaveTrack,
@@ -105,6 +104,7 @@ const TrackPage = ({
   play,
   pause
 }: OwnProps) => {
+  const isDesktop = useTrackPageSize()
   const { entries } = tracks
   const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
@@ -204,7 +204,7 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <Text color='default' variant='title' size='l' textAlign='left'>
+    <Text color='default' variant='title' size='l'>
       {messages.originalTrack}
     </Text>
   )
@@ -216,7 +216,6 @@ const TrackPage = ({
         color='default'
         variant='title'
         size='l'
-        textAlign='left'
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
@@ -259,7 +258,7 @@ const TrackPage = ({
         <Flex
           gap='2xl'
           w='100%'
-          direction='row'
+          direction={isDesktop ? 'row' : 'column'}
           mt='3xl'
           mh='auto'
           css={{ maxWidth: 1080 }}
@@ -276,7 +275,9 @@ const TrackPage = ({
           {hasRemixes || hasMoreByTracks ? (
             <Flex
               direction='column'
-              alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
+              alignItems={
+                isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
+              }
               gap='l'
               flex={1}
               css={{
