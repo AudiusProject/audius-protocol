@@ -66,7 +66,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     backgroundColor: 'transparent',
     paddingLeft: spacing(4),
     paddingVertical: spacing(2),
-    borderRadius: spacing(1)
+    borderRadius: spacing(1),
+    maxHeight: 240
   },
   composeTextInput: {
     fontSize: typography.fontSize.medium,
