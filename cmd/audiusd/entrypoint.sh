@@ -61,7 +61,7 @@ done
 
 echo "Setting up PostgreSQL user and database..."
 su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';\""
-su - postgres -c "psql -c \"CREATE DATABASE $POSTGRES_DB;\""
+su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$POSTGRES_DB'\" | grep -q 1 || psql -c 'CREATE DATABASE $POSTGRES_DB;'"
 
 su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -o '-c config_file=$POSTGRES_DATA_DIR/postgresql.conf' restart"
 
