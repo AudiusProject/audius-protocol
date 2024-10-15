@@ -42,7 +42,7 @@ def test_track_upload_challenge(app):
         txhash="xyz",
         owner_id=1,
         track_id=1,
-        route_id="1",
+        route_id="7eP5n",
         track_segments=[],
         is_unlisted=False,
         is_current=True,
@@ -149,7 +149,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenges = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )
 
         # We should not have registered a count for this event
@@ -161,7 +161,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )[0]
 
         # We should have completed a single step (one track upload)
@@ -176,7 +176,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )[0]
 
         # Ensure stem is not counted
@@ -191,7 +191,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )[0]
 
         # We should have completed the challenge
@@ -207,7 +207,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )[0]
 
         # The challenge should still be completed
