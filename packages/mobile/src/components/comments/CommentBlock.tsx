@@ -1,6 +1,7 @@
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
@@ -68,7 +69,7 @@ export const CommentBlockInternal = (
           <Flex direction='row' gap='s' alignItems='center'>
             <UserLink size='s' userId={userId} strength='strong' />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
-              <Timestamp time={new Date(createdAt)} />
+              <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
                 <>
                   <Text color='subdued' size='xs'>
