@@ -1,7 +1,7 @@
 import { App } from '@pedalboard/basekit'
 import { Knex } from 'knex'
 import { Ok, Err, Result } from 'ts-results'
-import { AudiusLibs } from '@audius/sdk/dist/libs'
+import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { SharedData } from './config'
 import {
   getChallengesDisbursementsUserbanksFriendlyEnsureSlots,

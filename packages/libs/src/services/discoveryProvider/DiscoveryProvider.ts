@@ -1,3 +1,10 @@
+import type {
+  DiscoveryNodeSelector,
+  Genre,
+  Middleware,
+  Mood
+} from '@audius/sdk'
+import { FetchError, ResponseError } from '@audius/sdk'
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -11,14 +18,6 @@ import { cloneDeep } from 'lodash'
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
 
-import {
-  DiscoveryNodeSelector,
-  FetchError,
-  Genre,
-  Middleware,
-  Mood,
-  ResponseError
-} from '../../sdk'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'

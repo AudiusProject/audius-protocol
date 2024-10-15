@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { program } from 'commander'
 
 import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
-import { Utils } from '@audius/sdk/dist/libs.js'
+import { Utils } from '@audius/sdk-legacy/dist/libs.js'
 
 program
   .command('purchase-track')
