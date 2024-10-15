@@ -85,11 +85,6 @@ export const BaseButton = (props: BaseButtonProps) => {
     })
   }))
 
-  const handleLayoutChange = useCallback((event: LayoutChangeEvent) => {
-    // const { width } = event.nativeEvent.layout
-    // setButtonWidth(width)
-  }, [])
-
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       onPress?.(e)
@@ -104,7 +99,6 @@ export const BaseButton = (props: BaseButtonProps) => {
     <GestureDetector gesture={tap}>
       <AnimatedPressable
         style={[rootStyles, animatedStyles, style]}
-        onLayout={handleLayoutChange}
         onPress={handlePress}
         {...other}
       >
