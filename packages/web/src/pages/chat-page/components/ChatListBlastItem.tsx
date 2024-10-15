@@ -49,12 +49,22 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
           </Text>
         </Box>
         {contentTitle ? (
-          <Text size='l' color='subdued' ellipses css={{ display: 'block' }} className={styles.messagePreview}>
+          <Text
+            size='l'
+            color='subdued'
+            ellipses
+            css={{ display: 'block' }}
+            className={styles.messagePreview}
+          >
             {contentTitle}
           </Text>
         ) : null}
       </Flex>
-      <Flex justifyContent='space-between' w='100%' className={styles.messagePreview}>
+      <Flex
+        justifyContent='space-between'
+        w='100%'
+        className={styles.messagePreview}
+      >
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
         </Text>

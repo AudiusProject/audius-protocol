@@ -76,6 +76,7 @@
     "@typescript-eslint/parser": "6.16.0",
     "concurrently": "7.4.0",
     "eslint": "8.56.0",
+    "eslint-config-audius": "^1.5.76",
     "eslint-config-prettier": "8.5.0",
     "eslint-config-prettier-standard": "4.0.1",
     "eslint-config-standard": "17.0.0",
