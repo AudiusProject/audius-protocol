@@ -17,6 +17,7 @@ import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
+  handleRegex,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
@@ -44,8 +45,6 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 import type { ComposerInputProps } from './types'
-
-const userMentionRegex = /^@\w+$/
 
 const BACKSPACE_KEY = 'Backspace'
 const AT_KEY = '@'
@@ -205,7 +204,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
-        if (userMentionRegex.test(editedValue.trimEnd())) {
+        if (handleRegex.test(editedValue.trimEnd())) {
           setPresetUserMention(editedValue.trimEnd())
         }
       }

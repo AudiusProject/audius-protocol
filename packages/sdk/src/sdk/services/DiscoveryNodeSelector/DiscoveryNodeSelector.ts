@@ -13,6 +13,7 @@ import type {
   ResponseContext
 } from '../../api/generated/default'
 import { productionConfig } from '../../config/production'
+import { Timeout } from '../../types/Timeout'
 import { getPathFromUrl } from '../../utils/getPathFromUrl'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { promiseAny } from '../../utils/promiseAny'
@@ -87,12 +88,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Reference to a setTimeout for removing services from the unhealthy list so they can be retried
    */
-  private unhealthyCleanupTimeout: NodeJS.Timeout | null = null
+  private unhealthyCleanupTimeout: Timeout | null = null
 
   /**
    * Reference to a setTimeout for removing services from the backup list so they can be retried
    */
-  private backupCleanupTimeout: NodeJS.Timeout | null = null
+  private backupCleanupTimeout: Timeout | null = null
 
   private reselectLock: boolean = false
 

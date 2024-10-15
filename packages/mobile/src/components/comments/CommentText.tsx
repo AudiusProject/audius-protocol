@@ -24,7 +24,9 @@ export const CommentText = (props: CommentTextProps) => {
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const {
-    track: { duration }
+    track: { duration },
+    navigation,
+    setIsDrawerOpen
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -45,6 +47,12 @@ export const CommentText = (props: CommentTextProps) => {
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
         internalLinksOnly
+        navigation={navigation}
+        linkProps={{
+          onPress: () => {
+            setIsDrawerOpen?.(false)
+          }
+        }}
         suffix={
           isEdited ? (
             <>

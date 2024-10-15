@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetUserByHandle } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import {
+  decodeHashId,
   formatCollectionName,
   formatTrackName,
   formatUserName,
@@ -13,9 +14,15 @@ import {
 } from '@audius/common/utils'
 import { ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
+import type { NavigationProp } from '@react-navigation/native'
+import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
-import type { LayoutRectangle, Text as TextRef } from 'react-native'
+import type {
+  GestureResponderEvent,
+  LayoutRectangle,
+  Text as TextRef
+} from 'react-native'
 import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
 import { useSelector } from 'react-redux'
@@ -24,6 +31,7 @@ import { useAsync } from 'react-use'
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 const { getUserId } = accountSelectors
@@ -52,11 +60,24 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
 
     // Suffix to append after the text. Used for "edited" text in comments
     suffix?: ReactNode
+
+    navigation?: NavigationProp<ReactNavigation.RootParamList>
   }
 
-const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
+const Link = ({
+  children,
+  url,
+  navigation: navigationProp,
+  ...other
+}: TextLinkProps & {
+  url: string
+  navigation?: NavigationProp<ReactNavigation.RootParamList>
+}) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
+  const [to, setTo] = useState<To<any> | undefined>(undefined)
   const shouldUnfurl = isAudiusUrl(url)
+  const currentNavigation = useNavigation()
+  const navigation = navigationProp ?? currentNavigation
 
   useAsync(async () => {
     if (shouldUnfurl && !unfurledContent) {
@@ -65,20 +86,46 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
+          setTo({ screen: 'Track', params: { id: decodeHashId(res.data.id) } })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+          setTo({
+            screen: 'Collection',
+            params: { id: decodeHashId(res.data[0].id) }
+          })
         } else if (instanceOfUserResponse(res)) {
           setUnfurledContent(formatUserName({ user: res.data }))
+          setTo({
+            screen: 'Profile',
+            params: { id: decodeHashId(res.data.id) }
+          })
         }
       }
     }
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
-  return (
-    <TextLink {...other} url={url}>
-      {unfurledContent ?? url}
-    </TextLink>
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      if (to) {
+        if ('push' in navigation) {
+          // @ts-ignore
+          navigation.push(to.screen, to.params)
+        } else {
+          // @ts-ignore
+          navigation.navigate(to.screen, to.params)
+        }
+        other.onPress?.(e)
+      }
+    },
+    [to, other, navigation]
   )
+
+  const linkProps = {
+    ...other,
+    ...(to ? { onPress: handlePress } : { url })
+  }
+
+  return <TextLink {...linkProps}>{unfurledContent ?? url}</TextLink>
 }
 
 const HandleLink = ({
@@ -116,6 +163,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     suffix,
     matchers,
     internalLinksOnly,
+    navigation,
     ...other
   } = props
 
@@ -199,6 +247,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
           variant='visible'
           textVariant={other.variant}
           url={url}
+          navigation={navigation}
           {...linkProps}
         />
       ) : (
@@ -254,7 +303,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             matchers={[
               // Handle matcher e.g. @handle
               {
-                pattern: /@[a-zA-Z0-9_.]{1,15}/,
+                pattern: /@[a-zA-Z0-9_.]+/,
                 renderLink: renderHandleLink
               },
               // URL match
