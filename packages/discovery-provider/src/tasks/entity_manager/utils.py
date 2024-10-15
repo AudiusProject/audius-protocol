@@ -22,7 +22,6 @@ from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
 from src.models.moderation.muted_user import MutedUser
-from src.models.moderation.reported_comment import ReportedComment
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -119,7 +118,6 @@ class EntityType(str, Enum):
     COMMENT_THREAD = "CommentThread"
     COMMENT_MENTION = "CommentMention"
     MUTED_USER = "MutedUser"
-    REPORTED_COMMENT = "ReportedComment"
     COMMENT_NOTIFICATION_SETTING = "CommentNotificationSetting"
 
     def __str__(self) -> str:
@@ -206,7 +204,7 @@ class EntitiesToFetchDict(TypedDict):
     CommentMention: Set[Tuple]
     CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
-    ReportedComment: Set[Tuple]
+    CommentReport: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
