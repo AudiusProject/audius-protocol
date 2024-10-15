@@ -162,7 +162,7 @@ export const useGetCommentRepliesById = ({
         return (pages.length ?? 0) * pageSize
       },
       queryFn: async ({
-        pageParam: currentPage = 1
+        pageParam: currentPage = 3
       }): Promise<ReplyComment[]> => {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getCommentReplies({

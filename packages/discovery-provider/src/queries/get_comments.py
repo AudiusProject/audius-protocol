@@ -116,15 +116,6 @@ def get_replies(
     ]
 
 
-def get_reply_count(session, parent_comment_id):
-    reply_count = (
-        session.query(func.count(CommentThread.comment_id)).filter(
-            CommentThread.parent_comment_id == parent_comment_id,
-        )
-    ).first()
-    return reply_count[0]
-
-
 def get_comment_replies(args, comment_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
@@ -252,7 +243,11 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "is_edited": track_comment.is_edited,
                 "track_timestamp_s": track_comment.track_timestamp_s,
                 "react_count": react_count,
-                "reply_count": reply_count,
+                "reply_count": len(
+                    get_replies(
+                        session, track_comment.comment_id, current_user_id, artist_id
+                    )
+                ),
                 "is_current_user_reacted": get_is_reacted(
                     session, current_user_id, track_comment.comment_id
                 ),
