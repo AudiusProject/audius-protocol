@@ -12,7 +12,8 @@ import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
-  formatUserName
+  formatUserName,
+  handleRegex
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import {
@@ -188,7 +189,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
     },
     // Handle matcher e.g. @handle
     {
-      pattern: /@[\w|.]+/g,
+      pattern: handleRegex,
       renderLink: renderHandleLink
     },
     ...(matchersProp ?? [])
