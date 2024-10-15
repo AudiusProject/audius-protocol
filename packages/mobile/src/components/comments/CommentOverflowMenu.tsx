@@ -34,7 +34,7 @@ type CommentOverflowMenuProps = {
   parentCommentId?: ID
 }
 
-const CommentOverflowMenuComponent = (props: CommentOverflowMenuProps) => {
+export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const {
     comment,
     comment: { id, userId },
@@ -325,7 +325,3 @@ const CommentOverflowMenuComponent = (props: CommentOverflowMenuProps) => {
     </>
   )
 }
-
-CommentOverflowMenuComponent.whyDidYouRender = true
-
-export const CommentOverflowMenu = CommentOverflowMenuComponent
