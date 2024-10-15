@@ -90,18 +90,19 @@ func readOrCreateContext() (*conf.ContextConfig, error) {
 }
 
 func runDownNodes(all bool, force bool, hosts []string) error {
-	if all && len(hosts) > 0 {
-		return logger.Error("Cannot combine specific nodes with flag --all/-a.")
-	} else if !all && len(hosts) == 0 {
-		return logger.Error("Must specify which nodes to take down or use --all/-a.")
-	}
-
 	ctx, err := readOrCreateContext()
 	if err != nil {
 		return logger.Error("Could not get current context:", err)
 	}
+
+	if all && len(hosts) > 0 {
+		return logger.Error("Cannot combine specific nodes with flag --all/-a.")
+	} else if !all && len(hosts) == 0 && len(ctx.Nodes) > 1 {
+		return logger.Error("Must specify which nodes to take down or use --all/-a.")
+	}
+
 	var nodesToRunDown map[string]conf.NodeConfig
-	if all {
+	if all || len(ctx.Nodes) == 1 {
 		nodesToRunDown = ctx.Nodes
 	} else {
 		nodesToRunDown, err = filterNodesFromContext(hosts, ctx)
@@ -120,8 +121,8 @@ func runDownNodes(all bool, force bool, hosts []string) error {
 		return logger.Error("Aborted")
 	}
 
-	for host := range nodesToRunDown {
-		if err := orchestration.RunDownNode(host); err != nil {
+	for host, config := range nodesToRunDown {
+		if err := orchestration.RunDownNode(host, config.IsLocalhost); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: skipping error encountered while spinning down %s: %s", host, err.Error())
 		}
 	}
@@ -147,18 +148,19 @@ func runUpNodes(waitForHealthy bool, audiusdTag string, hosts []string) error {
 }
 
 func restartNodes(all, force, waitForHealthy bool, hosts []string) error {
-	if all && len(hosts) > 0 {
-		return logger.Error("Cannot combine specific nodes with flag --all/-a.")
-	} else if !all && len(hosts) == 0 {
-		return logger.Error("Must specify which nodes to take down or use --all/-a.")
-	}
-
 	ctx, err := readOrCreateContext()
 	if err != nil {
 		return logger.Error("Could not get current context:", err)
 	}
+
+	if all && len(hosts) > 0 {
+		return logger.Error("Cannot combine specific nodes with flag --all/-a.")
+	} else if !all && len(hosts) == 0 && len(ctx.Nodes) > 1 {
+		return logger.Error("Must specify which nodes to take down or use --all/-a.")
+	}
+
 	var nodesToRestart map[string]conf.NodeConfig
-	if all {
+	if all || len(ctx.Nodes) == 1 {
 		nodesToRestart = ctx.Nodes
 	} else {
 		nodesToRestart, err = filterNodesFromContext(hosts, ctx)
@@ -178,7 +180,7 @@ func restartNodes(all, force, waitForHealthy bool, hosts []string) error {
 	}
 
 	for host, config := range nodesToRestart {
-		if err := orchestration.RunDownNode(host); err != nil {
+		if err := orchestration.RunDownNode(host, config.IsLocalhost); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: skipping error encountered while spinning down %s: %s", host, err.Error())
 		}
 		orchestration.RunAudiusNodes(
