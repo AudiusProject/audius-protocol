@@ -141,7 +141,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     handle: presetUserMention.slice(1), // slice to remove the @
     currentUserId
   })
-  const selectionRef = useRef<{ start: number; end: number }>()
+  const selectionRef = useRef<TextInputSelectionChangeEventData['selection']>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const internalRef = useRef<RnTextInput>(null)
