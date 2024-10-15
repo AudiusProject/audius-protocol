@@ -55,9 +55,23 @@
 }
 
 @media (max-width: 1080px) {
+
   .messagePreview,
   .userText,
   .unreadIndicatorTag {
+    display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  .headingContainer {
+    justify-content: center;
+  }
+
+  .messagePreview,
+  .userText,
+  .unreadIndicatorTag,
+  .hideOnSmallScreen {
     display: none;
   }
 }

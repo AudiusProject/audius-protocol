@@ -41,20 +41,20 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       onClick={handleClick}
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
-      <Flex row gap='s' w='100%'>
+      <Flex row gap='s' w='100%' className={styles.headingContainer}>
         <IconTowerBroadcast size='l' color='default' />
-        <Box css={{ flexShrink: 0 }}>
+        <Box css={{ flexShrink: 0 }} className={styles.messagePreview}>
           <Text size='l' strength='strong'>
             {chatBlastTitle}
           </Text>
         </Box>
         {contentTitle ? (
-          <Text size='l' color='subdued' ellipses css={{ display: 'block' }}>
+          <Text size='l' color='subdued' ellipses css={{ display: 'block' }} className={styles.messagePreview}>
             {contentTitle}
           </Text>
         ) : null}
       </Flex>
-      <Flex justifyContent='space-between' w='100%'>
+      <Flex justifyContent='space-between' w='100%' className={styles.messagePreview}>
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
         </Text>
