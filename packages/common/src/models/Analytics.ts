@@ -482,6 +482,10 @@ export enum Name {
   // Chat
   CREATE_CHAT_SUCCESS = 'Create Chat: Success',
   CREATE_CHAT_FAILURE = 'Create Chat: Failure',
+  CHAT_BLAST_CTA_CLICKED = 'Chat Blast: CTA Clicked',
+  CREATE_CHAT_BLAST_SUCCESS = 'Chat Blast: Create - Success',
+  CREATE_CHAT_BLAST_FAILURE = 'Chat Blast: Create - Failure',
+  CHAT_BLAST_MESSAGE_SENT = 'Chat Blast: Message Sent',
   SEND_MESSAGE_SUCCESS = 'Send Message: Success',
   SEND_MESSAGE_FAILURE = 'Send Message: Failure',
   DELETE_CHAT_SUCCESS = 'Delete Chat: Success',
@@ -2295,12 +2299,39 @@ type ConnectWalletError = {
   error: string
 }
 
+type ChatBlastCTAClicked = {
+  eventName: Name.CHAT_BLAST_CTA_CLICKED
+}
+
 type CreateChatSuccess = {
   eventName: Name.CREATE_CHAT_SUCCESS
 }
 
 type CreateChatFailure = {
   eventName: Name.CREATE_CHAT_FAILURE
+}
+
+type CreateChatBlastSuccess = {
+  eventName: Name.CREATE_CHAT_BLAST_SUCCESS
+  audience: string
+  audienceContentType?: string
+  audienceContentId?: ID
+  sentBy: ID
+}
+
+type CreateChatBlastFailure = {
+  eventName: Name.CREATE_CHAT_BLAST_FAILURE
+  audience: string
+  audienceContentType?: string
+  audienceContentId?: ID
+  sentBy?: ID
+}
+
+type ChatBlastMessageSent = {
+  eventName: Name.CHAT_BLAST_MESSAGE_SENT
+  audience: string
+  audienceContentType?: string
+  audienceContentId?: ID
 }
 
 type SendMessageSuccess = {
@@ -2743,9 +2774,12 @@ export type AllTrackingEvents =
   | ConnectWalletAlreadyAssociated
   | ConnectWalletAssociationError
   | ConnectWalletError
-  | SendMessageSuccess
+  | ChatBlastCTAClicked
+  | ChatBlastMessageSent
   | CreateChatSuccess
   | CreateChatFailure
+  | CreateChatBlastSuccess
+  | CreateChatBlastFailure
   | SendMessageSuccess
   | SendMessageFailure
   | DeleteChatSuccess

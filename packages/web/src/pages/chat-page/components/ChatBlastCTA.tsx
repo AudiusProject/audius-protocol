@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useCanSendChatBlast } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import { useChatBlastModal } from '@audius/common/src/store'
 import {
   Box,
@@ -13,6 +14,7 @@ import {
   IconTokenBronze
 } from '@audius/harmony'
 
+import { make, track } from 'services/analytics'
 const messages = {
   title: 'Send a Message Blast',
   description: 'Send messages to your fans in bulk.',
@@ -32,6 +34,7 @@ export const ChatBlastCTA = (props: ChatBlastCTAProps) => {
   const handleClick = useCallback(() => {
     onClick()
     openChatBlastModal()
+    track(make({ eventName: Name.CHAT_BLAST_CTA_CLICKED }))
   }, [onClick, openChatBlastModal])
 
   const userMeetsRequirements = useCanSendChatBlast()

@@ -1,5 +1,6 @@
 import {
   ChatBlast,
+  HashId,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -464,8 +465,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
   } = action.payload
 
   const { track, make } = yield* getContext('analytics')
+  const currentUserId = yield* select(getUserId)
   try {
-    const currentUserId = yield* select(getUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
@@ -499,7 +500,16 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
           chat: newBlast
         })
       )
-      yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
+      yield* call(
+        track,
+        make({
+          eventName: Name.CREATE_CHAT_BLAST_SUCCESS,
+          audience,
+          audienceContentType,
+          audienceContentId,
+          sentBy: currentUserId
+        })
+      )
     }
   } catch (e) {
     console.error('createChatBlastFailed', e)
@@ -519,7 +529,17 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         audienceContentType
       }
     })
-    yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.CREATE_CHAT_BLAST_FAILURE,
+        audience,
+        audienceContentType,
+        audienceContentId,
+        sentBy: currentUserId ?? undefined
+      })
+    )
   }
 }
 
@@ -599,6 +619,15 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
         blastId: messageIdToUse,
         message
       })
+      yield* call(
+        track,
+        make({
+          eventName: Name.CHAT_BLAST_MESSAGE_SENT,
+          audience: chat.audience,
+          audienceContentType: chat.audience_content_type,
+          audienceContentId: HashId.parse(chat.audience_content_id)
+        })
+      )
     } else {
       yield* call([sdk.chats, sdk.chats.message], {
         chatId,
