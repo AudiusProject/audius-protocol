@@ -32,15 +32,3 @@ export function getErrorMessage(error: unknown) {
 
 export const isResponseError = (error: unknown): error is ResponseError =>
   error instanceof Error && error.name === 'ResponseError'
-
-export class ErrorWithCause extends Error {
-  cause: unknown
-
-  constructor(message: string, cause?: unknown) {
-    super(message)
-    this.name = 'ErrorWithCause'
-    this.cause = cause
-
-    Object.setPrototypeOf(this, ErrorWithCause.prototype)
-  }
-}
