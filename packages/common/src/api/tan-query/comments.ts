@@ -75,7 +75,7 @@ export const useGetCommentsByTrackId = ({
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const queryRes = useInfiniteQuery({
-    enabled: !!userId && !!trackId && isMutating === 0,
+    enabled: !!trackId && isMutating === 0,
     getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
@@ -111,7 +111,7 @@ export const useGetCommentsByTrackId = ({
         error,
         name: 'Comments'
       })
-      toast({ content: messages.loadError('replies') })
+      toast({ content: messages.loadError('comments') })
     },
     staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
     cacheTime: 1 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
