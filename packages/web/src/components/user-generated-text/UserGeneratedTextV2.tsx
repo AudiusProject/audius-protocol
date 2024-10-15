@@ -243,6 +243,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
       elements = newElements
       key++
     })
+
     return elements
   }
 
