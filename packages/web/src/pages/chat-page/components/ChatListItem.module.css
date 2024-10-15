@@ -55,6 +55,10 @@
 }
 
 @media (max-width: 1080px) {
+  .headingContainer {
+    justify-content: center;
+  }
+
   .messagePreview,
   .userText,
   .unreadIndicatorTag {
