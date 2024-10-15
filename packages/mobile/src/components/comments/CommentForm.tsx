@@ -155,6 +155,7 @@ export const CommentForm = (props: CommentFormProps) => {
             presetMessage={initialMessage}
             placeholder={placeholder}
             onSubmit={handleSubmit}
+            displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
             styles={{
               container: {

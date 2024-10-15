@@ -15,6 +15,7 @@ export type ComposerInputProps = {
   onSubmit?: (value: string, mentionIds: ID[]) => void
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+  displayCancelAccessory?: boolean
   presetMessage?: string
   isLoading?: boolean
   styles?: StylesProp<{
