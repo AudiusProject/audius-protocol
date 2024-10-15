@@ -22,7 +22,6 @@ import { ChatPermission } from '@audius/sdk'
 import { Formik, useField, useFormikContext } from 'formik'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { audiusSdk } from 'services/audius-sdk'
 
 const messages = {
   title: 'Inbox Settings',
@@ -84,9 +83,7 @@ export const InboxSettingsModalNew = () => {
     doFetchPermissions,
     permissionsStatus,
     savePermissions
-  } = useSetInboxPermissions({
-    audiusSdk
-  })
+  } = useSetInboxPermissions()
 
   const handleSave = useCallback(
     (values: InboxSettingsFormValues) => {
