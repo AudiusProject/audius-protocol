@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   CommentSectionProvider,
   useCurrentCommentSection,
@@ -6,6 +8,7 @@ import {
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
 import { TouchableOpacity } from 'react-native'
+import { useEffectOnce } from 'react-use'
 
 import {
   Flex,
@@ -15,6 +18,7 @@ import {
   Text
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useRoute } from 'app/hooks/useRoute'
 
 import Skeleton from '../skeleton'
 
@@ -106,12 +110,21 @@ const CommentSectionContent = () => {
 
 type CommentSectionProps = {
   entityId: ID
-  isDrawerOpen: boolean
-  setIsDrawerOpen: (isOpen: boolean) => void
 }
 
 export const CommentSection = (props: CommentSectionProps) => {
-  const { entityId, isDrawerOpen, setIsDrawerOpen } = props
+  const { entityId } = props
+
+  const { params } = useRoute<'Track'>()
+  const { showComments } = params ?? {}
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  useEffectOnce(() => {
+    if (showComments) {
+      setIsDrawerOpen(true)
+    }
+  })
 
   const handlePress = () => {
     setIsDrawerOpen(true)

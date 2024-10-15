@@ -46,22 +46,7 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false)
-
-  const {
-    searchTrack,
-    id,
-    canBeUnlisted = true,
-    handle,
-    slug,
-    showComments
-  } = params ?? {}
-
-  useEffectOnce(() => {
-    if (showComments) {
-      setIsCommentDrawerOpen(true)
-    }
-  })
+  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -161,11 +146,7 @@ export const TrackScreen = () => {
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
-                    <CommentSection
-                      entityId={track_id}
-                      isDrawerOpen={isCommentDrawerOpen}
-                      setIsDrawerOpen={setIsCommentDrawerOpen}
-                    />
+                    <CommentSection entityId={track_id} />
                   </Flex>
                 ) : null}
 

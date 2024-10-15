@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -27,10 +27,17 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
   const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
   const { setReplyingAndEditingState } = useCurrentCommentSection()
 
-  const handleCommentReact = () => {
+  const handleCommentReact = useCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
-  }
+  }, [commentId, reactToComment, reactionState])
+
+  const handleReply = useCallback(() => {
+    setReplyingAndEditingState?.({
+      replyingToComment: comment,
+      replyingToCommentId: parentCommentId ?? comment.id
+    })
+  }, [comment, parentCommentId, setReplyingAndEditingState])
 
   return (
     <>
@@ -50,12 +57,7 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
         </Flex>
         <PlainButton
           variant='subdued'
-          onPress={() => {
-            setReplyingAndEditingState?.({
-              replyingToComment: comment,
-              replyingToCommentId: parentCommentId ?? comment.id
-            })
-          }}
+          onPress={handleReply}
           disabled={isDisabled}
         >
           {messages.reply}
