@@ -188,7 +188,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
     },
     // Handle matcher e.g. @handle
     {
-      pattern: /@[a-zA-Z0-9_.]+/g,
+      pattern: /@[\w|.]+/g,
       renderLink: renderHandleLink
     },
     ...(matchersProp ?? [])
