@@ -51,7 +51,7 @@ integration-test:
     - run:
         name: verify sdk types
         command: |
-          cd ~/audius-protocol/packages/libs
+          cd ~/audius-protocol/packages/sdk
           . ~/.profile
           audius-compose connect --nopass
           ./scripts/check-generated-types.sh
