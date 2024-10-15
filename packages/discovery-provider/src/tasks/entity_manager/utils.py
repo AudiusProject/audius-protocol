@@ -179,7 +179,6 @@ class ExistingRecordDict(TypedDict):
     CommentMention: Dict[Tuple, CommentMention]
     CommentThread: Dict[Tuple, CommentThread]
     MutedUser: Dict[Tuple, MutedUser]
-    ReportedComment: Dict[Tuple, ReportedComment]
 
 
 class EntitiesToFetchDict(TypedDict):
