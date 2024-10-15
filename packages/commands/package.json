@@ -15,6 +15,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@audius/spl": "*",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.93.4",

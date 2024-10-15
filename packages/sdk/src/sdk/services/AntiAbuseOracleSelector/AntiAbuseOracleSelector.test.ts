@@ -1,5 +1,6 @@
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 
 import { AntiAbuseOracleSelector } from './AntiAbuseOracleSelector'
 

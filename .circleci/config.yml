@@ -61,6 +61,8 @@ jobs:
           keys:
             - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y build-essential libssl-dev
       - run:
           name: Install dependencies
           # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
@@ -79,6 +81,7 @@ jobs:
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
+            - ./packages/sdk/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
@@ -340,8 +343,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true
@@ -401,8 +404,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true

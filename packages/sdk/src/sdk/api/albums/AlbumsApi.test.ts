@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { beforeAll, expect, jest } from '@jest/globals'
+import { describe, it, expect, vitest, beforeAll } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import { DefaultAuth } from '../../services/Auth/DefaultAuth'
@@ -36,15 +36,15 @@ const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
 )
 
-jest.mock('../../services/EntityManager')
-jest.mock('../../services/DiscoveryNodeSelector')
-jest.mock('../../services/StorageNodeSelector')
-jest.mock('../../services/Storage')
-jest.mock('../tracks/TrackUploadHelper')
-jest.mock('../tracks/TrackUploadHelper')
-jest.mock('../generated/default/apis/PlaylistsApi')
+vitest.mock('../../services/EntityManager')
+vitest.mock('../../services/DiscoveryNodeSelector')
+vitest.mock('../../services/StorageNodeSelector')
+vitest.mock('../../services/Storage')
+vitest.mock('../tracks/TrackUploadHelper')
+vitest.mock('../tracks/TrackUploadHelper')
+vitest.mock('../generated/default/apis/PlaylistsApi')
 
-jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
+vitest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   return {
     id: 'a',
     status: 'done',
@@ -64,24 +64,24 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   }
 })
 
-jest
+vitest
   .spyOn(TrackUploadHelper.prototype, 'generateId' as any)
   .mockImplementation(async () => {
     return 1
   })
 
-jest
+vitest
   .spyOn(
     TrackUploadHelper.prototype,
     'populateTrackMetadataWithUploadResponse' as any
   )
   .mockImplementation(async () => ({}))
 
-jest
+vitest
   .spyOn(TrackUploadHelper.prototype, 'transformTrackUploadMetadata' as any)
   .mockImplementation(async () => ({}))
 
-jest
+vitest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
@@ -90,7 +90,7 @@ jest
     } as any
   })
 
-jest
+vitest
   .spyOn(EntityManager.prototype, 'getCurrentBlock')
   .mockImplementation(async () => {
     return {
@@ -98,7 +98,7 @@ jest
     }
   })
 
-jest
+vitest
   .spyOn(GeneratedPlaylistsApi.prototype, 'getPlaylist')
   .mockImplementation(async () => {
     return {
@@ -158,10 +158,10 @@ describe('AlbumsApi', () => {
       ),
       solanaClient
     )
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'info').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    vitest.spyOn(console, 'warn').mockImplementation(() => {})
+    vitest.spyOn(console, 'info').mockImplementation(() => {})
+    vitest.spyOn(console, 'debug').mockImplementation(() => {})
+    vitest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('uploadAlbum', () => {

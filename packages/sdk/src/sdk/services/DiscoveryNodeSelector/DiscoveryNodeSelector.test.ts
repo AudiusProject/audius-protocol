@@ -1,6 +1,15 @@
 import shuffle from 'lodash/shuffle'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import {
+  describe,
+  it,
+  expect,
+  vitest,
+  beforeAll,
+  afterAll,
+  afterEach
+} from 'vitest'
 
 import type { FetchParams } from '../../api/generated/default'
 import fetch, { Response } from '../../utils/fetch'
@@ -178,30 +187,30 @@ const handlers = [
 const server = setupServer(...handlers)
 
 const logger = {
-  warn: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn()
+  warn: vitest.fn(),
+  info: vitest.fn(),
+  debug: vitest.fn(),
+  error: vitest.fn()
 }
 
 // Disable logging so test output is clean
 const mockLogger = {
-  createPrefixedLogger: jest.fn(() => logger)
+  createPrefixedLogger: vitest.fn(() => logger)
 }
 
 describe('discoveryNodeSelector', () => {
   beforeAll(() => {
     server.listen()
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'info').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
+    vitest.spyOn(console, 'warn').mockImplementation(() => {})
+    vitest.spyOn(console, 'info').mockImplementation(() => {})
+    vitest.spyOn(console, 'debug').mockImplementation(() => {})
   })
 
   afterEach(() => server.resetHandlers())
 
   afterAll(() => server.close())
 
-  test('prefers a healthy service', async () => {
+  it('prefers a healthy service', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       healthCheckThresholds: {
@@ -221,7 +230,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('falls back to patch version backup before blockdiff backup', async () => {
+  it('falls back to patch version backup before blockdiff backup', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       healthCheckThresholds: {
@@ -240,7 +249,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(true)
   })
 
-  test('falls back to best blockdiff backup', async () => {
+  it('falls back to best blockdiff backup', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       healthCheckThresholds: {
@@ -257,7 +266,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(true)
   })
 
-  test('respects allowlist', async () => {
+  it('respects allowlist', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       allowlist: new Set([BEHIND_BLOCKDIFF_NODE]),
@@ -284,7 +293,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('respects blocklist', async () => {
+  it('respects blocklist', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       blocklist: new Set([HEALTHY_NODE]),
@@ -311,7 +320,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('uses configured default', async () => {
+  it('uses configured default', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
@@ -328,7 +337,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('rejects configured default if blocklisted', async () => {
+  it('rejects configured default if blocklisted', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
@@ -348,7 +357,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('selects fastest discovery node', async () => {
+  it('selects fastest discovery node', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)].map(
@@ -363,7 +372,7 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(false)
   })
 
-  test('does not select unhealthy nodes', async () => {
+  it('does not select unhealthy nodes', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       requestTimeout: 50,
@@ -381,7 +390,7 @@ describe('discoveryNodeSelector', () => {
     expect(selected).toBe(null)
   })
 
-  test('waits for existing selections to finish gracefully', async () => {
+  it('waits for existing selections to finish gracefully', async () => {
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
       bootstrapServices: generateHealthyNodes(100).map(addDelegateOwnerWallets),
@@ -400,8 +409,8 @@ describe('discoveryNodeSelector', () => {
     expect(selected.every((s) => s === selected[0])).toBe(true)
   })
 
-  test('removes backups when TTL is complete', async () => {
-    jest.useFakeTimers()
+  it('removes backups when TTL is complete', async () => {
+    vitest.useFakeTimers()
     const TEMP_BEHIND_BLOCKDIFF_NODE = 'https://temp-behind.audius.co'
     const selector = new DiscoveryNodeSelector({
       logger: mockLogger,
@@ -446,7 +455,7 @@ describe('discoveryNodeSelector', () => {
     const middleware = selector.createMiddleware()
 
     // Move time
-    jest.advanceTimersByTime(11)
+    vitest.advanceTimersByTime(11)
 
     // Trigger cleanup by retriggering selection
     await middleware.post!({
@@ -474,7 +483,7 @@ describe('discoveryNodeSelector', () => {
   })
 
   describe('middleware', () => {
-    test('prepends URL to requests', async () => {
+    it('prepends URL to requests', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         bootstrapServices: [HEALTHY_NODE].map(addDelegateOwnerWallets)
@@ -490,7 +499,7 @@ describe('discoveryNodeSelector', () => {
       expect((result as FetchParams).url.startsWith(HEALTHY_NODE)).toBe(true)
     })
 
-    test('reselects if request succeeds but node fell behind', async () => {
+    it('reselects if request succeeds but node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
@@ -504,7 +513,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
@@ -528,7 +537,7 @@ describe('discoveryNodeSelector', () => {
       expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
-    test("doesn't reselect if behind but was already behind", async () => {
+    it("doesn't reselect if behind but was already behind", async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
@@ -542,7 +551,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
@@ -566,7 +575,7 @@ describe('discoveryNodeSelector', () => {
       expect(changeHandler).not.toHaveBeenCalled()
     })
 
-    test('reselects if request fails and node fell behind', async () => {
+    it('reselects if request fails and node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
@@ -580,7 +589,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const response = {
@@ -612,7 +621,7 @@ describe('discoveryNodeSelector', () => {
       expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
-    test('reselects if request fails and node unhealthy', async () => {
+    it('reselects if request fails and node unhealthy', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         initialSelectedNode: UNHEALTHY_NODE,
@@ -626,7 +635,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const response = {
@@ -657,7 +666,7 @@ describe('discoveryNodeSelector', () => {
       expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
-    test("doesn't reselect if request fails but node is healthy", async () => {
+    it("doesn't reselect if request fails but node is healthy", async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         initialSelectedNode: HEALTHY_NODE,
@@ -671,7 +680,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const response = {
@@ -691,7 +700,7 @@ describe('discoveryNodeSelector', () => {
       expect(changeHandler).not.toHaveBeenCalled()
     })
 
-    test('resets isBehind when request shows the node is caught up', async () => {
+    it('resets isBehind when request shows the node is caught up', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
@@ -705,7 +714,7 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
@@ -729,7 +738,7 @@ describe('discoveryNodeSelector', () => {
       expect(selector.isBehind).toBe(false)
     })
 
-    test('reselects when encountering network error', async () => {
+    it('reselects when encountering network error', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         bootstrapServices: [BEHIND_BLOCKDIFF_NODE].map(addDelegateOwnerWallets),
@@ -738,7 +747,7 @@ describe('discoveryNodeSelector', () => {
         }
       })
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       let requestCount = 0
@@ -789,7 +798,7 @@ describe('discoveryNodeSelector', () => {
       expect(selected).not.toBe(BEHIND_BLOCKDIFF_NODE)
     })
 
-    test('does not reselect for client error status', async () => {
+    it('does not reselect for client error status', async () => {
       const selector = new DiscoveryNodeSelector({
         logger: mockLogger,
         bootstrapServices: NETWORK_DISCOVERY_NODES.map(addDelegateOwnerWallets),
@@ -800,7 +809,7 @@ describe('discoveryNodeSelector', () => {
 
       const before = await selector.getSelectedEndpoint()
 
-      const changeHandler = jest.fn(() => {})
+      const changeHandler = vitest.fn(() => {})
       selector.addEventListener('change', changeHandler)
 
       const middleware = selector.createMiddleware()
@@ -817,7 +826,7 @@ describe('discoveryNodeSelector', () => {
   })
 
   describe('getUniquelyOwnedEndpoints', () => {
-    test('gets three uniquely owned discovery nodes', async () => {
+    it('gets three uniquely owned discovery nodes', async () => {
       const operators = ['0x1', '0x2', '0x3', '0x4'] as const
       const healthyNodes = generateHealthyNodes(3)
       const unhealthyNodes = generateUnhealthyNodes(50)
@@ -848,7 +857,7 @@ describe('discoveryNodeSelector', () => {
       expect(nodes).toContain(healthyNodes[2])
     })
 
-    test('filters to allowlist', async () => {
+    it('filters to allowlist', async () => {
       const operators = ['0x1', '0x2', '0x3', '0x4'] as const
       const healthyNodes = generateHealthyNodes(3)
       const unhealthyNodes = generateUnhealthyNodes(10)
@@ -882,7 +891,7 @@ describe('discoveryNodeSelector', () => {
       )
     })
 
-    test('filters to blocklist', async () => {
+    it('filters to blocklist', async () => {
       const operators = ['0x1', '0x2', '0x3', '0x4'] as const
       const healthyNodes = generateHealthyNodes(3)
       const unhealthyNodes = generateUnhealthyNodes(10)
@@ -916,7 +925,7 @@ describe('discoveryNodeSelector', () => {
       )
     })
 
-    test('fails when not enough owners', async () => {
+    it('fails when not enough owners', async () => {
       const operators = ['0x1', '0x2'] as const
       const healthyNodes = generateHealthyNodes(3)
       const unhealthyNodes = generateUnhealthyNodes(10)

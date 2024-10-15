@@ -24,9 +24,9 @@
   },
   "react-native": "./dist/index.native.js",
   "scripts": {
-    "test:sdk": "./node_modules/.bin/jest --coverage=false",
-    "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
-    "test": "npm run test:unit && npm run test:sdk",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "vitest run --environment=jsdom",
     "build": "rm -rf ./dist && rollup -c --configPlugin typescript",
     "build:sdk": "rm -rf ./dist && rollup -c rollup.sdk.config.ts --configPlugin typescript",
     "build:sdk:browser": "rm -rf ./dist && rollup -c rollup.sdk.browser.config.ts --configPlugin typescript",
@@ -60,7 +60,7 @@
     "@audius/fixed-decimal": "0.1.1",
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/spl": "2.0.0",
-    "@babel/core": "^7.23.7",
+    "@babel/core": "7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",
     "@certusone/wormhole-sdk": "0.1.1",
@@ -144,7 +144,6 @@
     "@types/expect": "24.3.0",
     "@types/form-data": "2.5.0",
     "@types/hashids": "2.0.1",
-    "@types/jest": "29.5.2",
     "@types/lodash": "4.14.149",
     "@types/mocha": "9.1.0",
     "@types/node": "18.17.0",
@@ -152,12 +151,9 @@
     "@types/pify": "5.0.1",
     "@types/proper-url-join": "2.1.1",
     "@types/semver": "7.3.9",
-    "babel-jest": "29.7.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "commander": "9.2.0",
     "eslint-plugin-mocha": "10.0.3",
-    "jest": "29.4.1",
-    "jest-environment-jsdom": "29.7.0",
     "mocha": "9.2.2",
     "msw": "1.3.1",
     "nock": "13.1.2",
@@ -171,13 +167,12 @@
     "rollup-plugin-polyfill-node": "0.9.0",
     "rollup-plugin-terser": "7.0.2",
     "sinon": "9.0.2",
-    "ts-jest": "29.0.5",
-    "ts-mocha": "9.0.2",
     "ts-node": "10.9.2",
     "tslib": "^2.6.2",
     "tsx": "^4.18.0",
     "typed-emitter": "2.1.0",
     "typescript": "5.4.5",
+    "vitest": "2.1.1",
     "wait-for-expect": "3.0.2"
   },
   "repository": {
@@ -192,5 +187,8 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs"
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs",
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.24.0"
+  }
 }

@@ -20,7 +20,7 @@ services:
     volumes:
       - ../startup/initdb:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
     deploy:
@@ -74,7 +74,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: [ 'CMD', 'true' ]
+      test: ['CMD', 'true']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -181,20 +181,6 @@ services:
     profiles:
       - tests
 
-  test-audius-sdk:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
-      args:
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - tests
-
   # contracts
   test-contracts:
     build:
@@ -258,7 +244,7 @@ services:
     environment:
       POSTGRES_DB: 'discovery_provider'
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -272,7 +258,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'PING' ]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -392,7 +378,7 @@ services:
     environment:
       POSTGRES_PASSWORD: example
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 3s
       timeout: 3s
     logging: *default-logging
@@ -411,7 +397,7 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -462,7 +448,7 @@ services:
     environment:
       POSTGRES_DB: 'identity_service'
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -477,7 +463,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'PING' ]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -557,12 +543,12 @@ services:
     container_name: ddex-s3
     image: localstack/localstack:s3-latest
     ports:
-      - "127.0.0.1:4566:4566"
+      - '127.0.0.1:4566:4566'
     networks:
       - ddex-network
     volumes:
-      - "ddex-s3:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - 'ddex-s3:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
 
   ddex-mongo:
     extends:
@@ -588,7 +574,7 @@ services:
     logging: *default-logging
     environment:
       AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: "ERNReleaseByRelease"
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     networks:
       - ddex-network
     profiles:
@@ -610,7 +596,7 @@ services:
     logging: *default-logging
     environment:
       AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: "ERNBatched"
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
     networks:
       - ddex-network
     profiles:
@@ -630,7 +616,6 @@ services:
 
 networks:
   ddex-network:
-
 
 volumes:
   poa-contracts-abis:
