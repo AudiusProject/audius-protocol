@@ -248,7 +248,11 @@ export const UserGeneratedTextV2 = forwardRef(function (
   }
 
   return (
-    <Text ref={ref as ForwardedRef<'p'>} {...other}>
+    <Text
+      style={{ whiteSpace: 'pre-wrap' }}
+      ref={ref as ForwardedRef<'p'>}
+      {...other}
+    >
       {parseText(children)}
       {suffix}
     </Text>
