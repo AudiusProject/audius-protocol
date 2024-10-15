@@ -1,5 +1,6 @@
 import {
   ChatBlast,
+  HashId,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -505,7 +506,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
           eventName: Name.CREATE_CHAT_BLAST_SUCCESS,
           audience,
           audienceContentType,
-          audienceContentId: encodedContentId,
+          audienceContentId,
           sentBy: currentUserId
         })
       )
@@ -529,17 +530,13 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       }
     })
 
-    const encodedContentId = audienceContentId
-      ? encodeHashId(audienceContentId)
-      : undefined
-
     yield* call(
       track,
       make({
         eventName: Name.CREATE_CHAT_BLAST_FAILURE,
         audience,
         audienceContentType,
-        audienceContentId: encodedContentId,
+        audienceContentId,
         sentBy: currentUserId ?? undefined
       })
     )
@@ -628,7 +625,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           eventName: Name.CHAT_BLAST_MESSAGE_SENT,
           audience: chat.audience,
           audienceContentType: chat.audience_content_type,
-          audienceContentId: chat.audience_content_id ?? undefined
+          audienceContentId: HashId.parse(chat.audience_content_id)
         })
       )
     } else {

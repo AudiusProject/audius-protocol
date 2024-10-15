@@ -2315,7 +2315,7 @@ type CreateChatBlastSuccess = {
   eventName: Name.CREATE_CHAT_BLAST_SUCCESS
   audience: string
   audienceContentType?: string
-  audienceContentId?: string
+  audienceContentId?: ID
   sentBy: ID
 }
 
@@ -2323,7 +2323,7 @@ type CreateChatBlastFailure = {
   eventName: Name.CREATE_CHAT_BLAST_FAILURE
   audience: string
   audienceContentType?: string
-  audienceContentId?: string
+  audienceContentId?: ID
   sentBy?: ID
 }
 
@@ -2331,7 +2331,7 @@ type ChatBlastMessageSent = {
   eventName: Name.CHAT_BLAST_MESSAGE_SENT
   audience: string
   audienceContentType?: string
-  audienceContentId?: string
+  audienceContentId?: ID
 }
 
 type SendMessageSuccess = {
