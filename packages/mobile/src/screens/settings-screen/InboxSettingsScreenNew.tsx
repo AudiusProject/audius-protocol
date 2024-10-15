@@ -8,7 +8,6 @@ import { Formik } from 'formik'
 
 import { Button, Flex, IconMessage } from '@audius/harmony-native'
 import { HeaderShadow, ScreenContent } from 'app/components/core'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 import { FormScreen } from '../form-screen'
 
@@ -21,9 +20,7 @@ const messages = {
 
 export const InboxSettingsScreenNew = () => {
   const { permissions, doFetchPermissions, savePermissions } =
-    useSetInboxPermissions({
-      audiusSdk
-    })
+    useSetInboxPermissions()
 
   const initialValues = useMemo(() => {
     return transformPermitListToMap(

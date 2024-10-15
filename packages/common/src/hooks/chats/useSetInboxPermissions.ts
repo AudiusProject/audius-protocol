@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import type { AudiusSdk } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { accountSelectors } from '~/store/account'
@@ -17,13 +17,8 @@ const { fetchPermissions } = chatActions
 const { getChatPermissionsStatus, getUserChatPermissions } = chatSelectors
 const { getUserId } = accountSelectors
 
-type useSetInboxPermissionsProps = {
-  audiusSdk: () => Promise<AudiusSdk>
-}
-
-export const useSetInboxPermissions = ({
-  audiusSdk
-}: useSetInboxPermissionsProps) => {
+export const useSetInboxPermissions = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const permissions = useSelector(getUserChatPermissions)
   const {
@@ -53,7 +48,10 @@ export const useSetInboxPermissions = ({
           })
         )
       } catch (e) {
-        console.error('Error saving chat permissions:', e)
+        reportToSentry({
+          name: 'Chats',
+          error: e as Error
+        })
         track(
           make({
             eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE,
@@ -62,7 +60,7 @@ export const useSetInboxPermissions = ({
         )
       }
     },
-    [audiusSdk, track, make, doFetchPermissions]
+    [audiusSdk, doFetchPermissions, track, make, reportToSentry]
   )
 
   return {
