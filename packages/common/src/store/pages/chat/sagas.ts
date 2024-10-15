@@ -625,7 +625,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           eventName: Name.CHAT_BLAST_MESSAGE_SENT,
           audience: chat.audience,
           audienceContentType: chat.audience_content_type,
-          audienceContentId: HashId.parse(chat.audience_content_id)
+          audienceContentId: decodeHashId(chat.audience_content_id) ?? undefined
         })
       )
     } else {
