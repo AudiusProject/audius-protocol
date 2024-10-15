@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { Pressable } from 'react-native'
 import type {
@@ -31,7 +31,6 @@ export const BaseButton = (props: BaseButtonProps) => {
     iconRight: RightIconComponent,
     isLoading,
     isStaticIcon,
-    widthToHideText,
     innerProps,
     children,
     style,
@@ -47,21 +46,12 @@ export const BaseButton = (props: BaseButtonProps) => {
   const pressedInternal = useSharedValue(0)
   const pressed = sharedValueProp || pressedInternal
   const { spacing, motion } = useTheme()
-  const [buttonWidth, setButtonWidth] = useState<number | null>(null)
   const isTextChild = typeof children === 'string'
 
-  const isTextHidden =
-    isTextChild &&
-    widthToHideText &&
-    buttonWidth &&
-    buttonWidth <= widthToHideText
-
   const childElement = isTextChild ? (
-    !isTextHidden ? (
-      <AnimatedText {...innerProps?.text} style={styles?.text}>
-        {children}
-      </AnimatedText>
-    ) : null
+    <AnimatedText {...innerProps?.text} style={styles?.text}>
+      {children}
+    </AnimatedText>
   ) : (
     children
   )
@@ -96,8 +86,8 @@ export const BaseButton = (props: BaseButtonProps) => {
   }))
 
   const handleLayoutChange = useCallback((event: LayoutChangeEvent) => {
-    const { width } = event.nativeEvent.layout
-    setButtonWidth(width)
+    // const { width } = event.nativeEvent.layout
+    // setButtonWidth(width)
   }, [])
 
   const handlePress = useCallback(

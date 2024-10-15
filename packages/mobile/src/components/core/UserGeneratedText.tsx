@@ -177,32 +177,34 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     useState<LayoutRectangle>()
 
   useEffect(() => {
-    let layouts = {}
-    const linkKeys = Object.keys(links)
+    if (allowPointerEventsToPassThrough) {
+      let layouts = {}
+      const linkKeys = Object.keys(links)
 
-    // Measure the layout of each link
-    linkKeys.forEach((key) => {
-      const linkRef = linkRefs[key]
-      if (linkRef) {
-        // Need to use `measureInWindow` instead of `onLayout` or `measure` because
-        // android doesn't return the correct layout for nested text elements
-        linkRef.measureInWindow((x, y, width, height) => {
-          layouts = { ...layouts, [key]: { x, y, width, height } }
+      // Measure the layout of each link
+      linkKeys.forEach((key) => {
+        const linkRef = linkRefs[key]
+        if (linkRef) {
+          // Need to use `measureInWindow` instead of `onLayout` or `measure` because
+          // android doesn't return the correct layout for nested text elements
+          linkRef.measureInWindow((x, y, width, height) => {
+            layouts = { ...layouts, [key]: { x, y, width, height } }
 
-          // If all the links have been measured, update state
-          if (linkKeys.length === Object.keys(layouts).length) {
-            setLinkLayouts(layouts)
-          }
-        })
+            // If all the links have been measured, update state
+            if (linkKeys.length === Object.keys(layouts).length) {
+              setLinkLayouts(layouts)
+            }
+          })
+        }
+      })
+
+      if (linkContainerRef.current) {
+        linkContainerRef.current.measureInWindow((x, y, width, height) =>
+          setLinkContainerLayout({ x, y, width, height })
+        )
       }
-    })
-
-    if (linkContainerRef.current) {
-      linkContainerRef.current.measureInWindow((x, y, width, height) =>
-        setLinkContainerLayout({ x, y, width, height })
-      )
     }
-  }, [links, linkRefs, linkContainerRef])
+  }, [allowPointerEventsToPassThrough, links, linkRefs, linkContainerRef])
 
   // We let Autolink lay out each link invisibly, and capture their position and data
   const renderHiddenLink = useCallback(
