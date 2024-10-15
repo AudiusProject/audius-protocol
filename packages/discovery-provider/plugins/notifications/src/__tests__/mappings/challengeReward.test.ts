@@ -40,7 +40,7 @@ describe('Challenge Reward Notification', () => {
     ])
     await createChallengeReward(processor.discoveryDB, [
       {
-        challenge_id: 'p
+        challenge_id: 'p',
         user_id: 1,
         specifier: '1',
         amount: '100000000',
