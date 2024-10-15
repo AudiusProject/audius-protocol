@@ -326,13 +326,13 @@ export const ComposerInput = forwardRef(function ComposerInput(
         lastKeyPressMsRef.current = Date.now()
       }
 
-      if (isAutocompleteActive && selectionRef.current) {
+      const cursorPosition = selectionRef.current?.start
+      if (isAutocompleteActive && !!cursorPosition) {
         if (key === SPACE_KEY) {
           setIsAutocompleteActive(false)
         }
 
-        if (key === BACKSPACE_KEY && selectionRef.current) {
-          const cursorPosition = selectionRef.current.start
+        if (key === BACKSPACE_KEY) {
           const deletedChar = value[cursorPosition - 1]
           if (deletedChar === AT_KEY) {
             setIsAutocompleteActive(false)
@@ -340,7 +340,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
         }
 
         const autocompleteRange = getAutocompleteRange()
-        const cursorPosition = selectionRef.current.start
 
         if (
           autocompleteRange &&
@@ -355,14 +354,12 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
       // Start user autocomplete
       if (key === AT_KEY && onAutocompleteChange) {
-        const cursorPosition = selectionRef.current?.start ?? 0
-        setAutocompletePosition(cursorPosition)
+        setAutocompletePosition(cursorPosition ?? 0)
         setIsAutocompleteActive(true)
       }
 
-      if (key === BACKSPACE_KEY && selectionRef.current) {
-        const textBeforeCursor = value.slice(0, selectionRef.current.start)
-        const cursorPosition = selectionRef.current.start
+      if (key === BACKSPACE_KEY && !!cursorPosition) {
+        const textBeforeCursor = value.slice(0, cursorPosition)
         const { editValue } = handleBackspace({
           cursorPosition,
           textBeforeCursor
