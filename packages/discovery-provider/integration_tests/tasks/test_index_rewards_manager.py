@@ -28,7 +28,7 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 
 
 def test_decode_reward_manager_transfer_instruction():
-    transfer_data = "4uzJ5EwVTSPet22fnLDyB9JaEMWSqopW7F5PYKjf65j76BGhtMR5LXfv3twbV7Bq3CSH2iMRr7fNJzyijZ7"
+    transfer_data = "2dMckupP2dfPwa1UR3LcxX1JgXQbkV7JYgDvmg3j7FuqqsZn36ue3tonBeiR"
     decoded_data = parse_transfer_instruction_data(transfer_data)
     assert decoded_data == {
         "amount": 10000000000,
@@ -233,7 +233,7 @@ mock_tx_info = GetTransactionResp.from_json(
                             },
                             {
                                 "accounts": [2, 10, 11, 3, 1, 4, 12, 0, 7, 8, 9],
-                                "data": "4uzJ5EwVTSPet22fnLDyB9JaEMWSqopW7F5PYKjf65j76BGhtMR5LXfv3twbV7Bq3CSH2iMRr7fNJzyijZ7",
+                                "data": "2dMckupP2dfPwa1UR3LcxX1JgXQbkV7JYgDvmg3j7FuqqsZn36ue3tonBeiR",
                                 "programIdIndex": 14,
                             },
                         ],
