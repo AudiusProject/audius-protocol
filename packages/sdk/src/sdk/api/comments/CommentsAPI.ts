@@ -38,7 +38,7 @@ export class CommentsApi extends GeneratedCommentsApi {
     super(configuration)
   }
 
-  private async generateCommentId() {
+  async generateCommentId() {
     const response = await this.getUnclaimedCommentID()
     const { data: unclaimedId } = response
     if (!unclaimedId) {
