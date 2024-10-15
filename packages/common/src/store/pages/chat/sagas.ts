@@ -16,7 +16,6 @@ import {
 import { ulid } from 'ulid'
 
 import { Name } from '~/models/Analytics'
-import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { getAccountUser, getUserId } from '~/store/account/selectors'
@@ -26,7 +25,6 @@ import dayjs from '~/utils/dayjs'
 import {
   decodeHashId,
   encodeHashId,
-  ErrorWithCause,
   makeBlastChatId,
   removeNullable
 } from '../../../utils'
@@ -48,6 +46,7 @@ const {
   createChatBlast,
   createChatSucceeded,
   fetchUnreadMessagesCount,
+  fetchUnreadMessagesCountSucceeded,
   fetchUnreadMessagesCountFailed,
   goToChat,
   fetchChatIfNecessary,
@@ -114,7 +113,12 @@ function* fetchUsersForChats(chats: UserChat[]) {
 
 function* doFetchUnreadMessagesCount() {
   try {
-    throw new Error('test2')
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const response = yield* call([sdk.chats, sdk.chats.getUnreadCount])
+    yield* put(
+      fetchUnreadMessagesCountSucceeded({ unreadMessagesCount: response.data })
+    )
   } catch (e) {
     yield* put(fetchUnreadMessagesCountFailed())
     const reportToSentry = yield* getContext('reportToSentry')
