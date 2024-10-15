@@ -15,12 +15,12 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
+from src.models.comments.comment_report import CommentReport
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.revert_block import RevertBlock
 from src.models.moderation.muted_user import MutedUser
-from src.models.moderation.reported_comment import ReportedComment
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -601,7 +601,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                         (user_id, entity_id)
                     )
                 elif action == Action.REPORT:
-                    entities_to_fetch[EntityType.REPORTED_COMMENT].add(
+                    entities_to_fetch[EntityType.COMMENT_REPORT].add(
                         (user_id, entity_id)
                     )
                 elif action == Action.PIN or action == Action.UNPIN:
@@ -1255,41 +1255,41 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             ): muted_user_json
             for _, muted_user_json in muted_users
         }
-    if entities_to_fetch[EntityType.REPORTED_COMMENT.value]:
-        reported_comments_to_fetch: Set[Tuple] = entities_to_fetch[
-            EntityType.REPORTED_COMMENT.value
+    if entities_to_fetch[EntityType.COMMENT_REPORT.value]:
+        comment_reports_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.COMMENT_REPORT.value
         ]
         or_queries = []
-        for reported_comment in reported_comments_to_fetch:
-            user_id, reported_comment_id = reported_comment
+        for comment_report in comment_reports_to_fetch:
+            user_id, comment_id = comment_report
             or_queries.append(
                 or_(
-                    ReportedComment.user_id == user_id,
-                    ReportedComment.reported_comment_id == reported_comment_id,
+                    CommentReport.user_id == user_id,
+                    CommentReport.comment_id == comment_id,
                 )
             )
 
-        reported_comments: List[Tuple[ReportedComment, dict]] = (
+        comment_reports: List[Tuple[CommentReport, dict]] = (
             session.query(
-                ReportedComment,
-                literal_column(f"row_to_json({ReportedComment.__tablename__})"),
+                CommentReport,
+                literal_column(f"row_to_json({CommentReport.__tablename__})"),
             )
             .filter(or_(*or_queries))
             .all()
         )
-        existing_entities[EntityType.REPORTED_COMMENT] = {
+        existing_entities[EntityType.COMMENT_REPORT] = {
             (
-                reported_comment.user_id,
-                reported_comment.reported_comment_id,
-            ): reported_comment
-            for reported_comment, _ in reported_comments
+                comment_reports.user_id,
+                comment_reports.comment_id,
+            ): comment_reports
+            for comment_reports, _ in comment_reports
         }
-        existing_entities_in_json[EntityType.REPORTED_COMMENT] = {
+        existing_entities_in_json[EntityType.COMMENT_REPORT] = {
             (
-                reported_comment_json["user_id"],
-                reported_comment_json["reported_comment_id"],
-            ): reported_comment_json
-            for _, reported_comment_json in reported_comments
+                comment_report_json["user_id"],
+                comment_report_json["comment_id"],
+            ): comment_report_json
+            for _, comment_report_json in comment_reports
         }
 
     if entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING.value]:
