@@ -141,7 +141,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     handle: presetUserMention.slice(1), // slice to remove the @
     currentUserId
   })
-  const [selection, setSelection] = useState<{ start: number; end: number }>()
+  const selectionRef = useRef<{ start: number; end: number }>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const internalRef = useRef<RnTextInput>(null)
@@ -293,16 +293,18 @@ export const ComposerInput = forwardRef(function ComposerInput(
     async (value: string) => {
       setValue(value)
       const editedValue = await resolveLinks(value)
-      setValue(editedValue)
+      if (value !== editedValue) {
+        setValue(editedValue)
+      }
     },
     [resolveLinks]
   )
 
   const handleSelectionChange = useCallback(
     (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-      setSelection(e.nativeEvent.selection)
+      selectionRef.current = e.nativeEvent.selection
     },
-    [setSelection]
+    [selectionRef]
   )
 
   const handleSubmit = useCallback(() => {
@@ -324,13 +326,13 @@ export const ComposerInput = forwardRef(function ComposerInput(
         lastKeyPressMsRef.current = Date.now()
       }
 
-      if (isAutocompleteActive && selection) {
+      if (isAutocompleteActive && selectionRef.current) {
         if (key === SPACE_KEY) {
           setIsAutocompleteActive(false)
         }
 
-        if (key === BACKSPACE_KEY && selection) {
-          const cursorPosition = selection.start
+        if (key === BACKSPACE_KEY && selectionRef.current) {
+          const cursorPosition = selectionRef.current.start
           const deletedChar = value[cursorPosition - 1]
           if (deletedChar === AT_KEY) {
             setIsAutocompleteActive(false)
@@ -338,7 +340,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         }
 
         const autocompleteRange = getAutocompleteRange()
-        const cursorPosition = selection.start
+        const cursorPosition = selectionRef.current.start
 
         if (
           autocompleteRange &&
@@ -353,14 +355,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
       // Start user autocomplete
       if (key === AT_KEY && onAutocompleteChange) {
-        const cursorPosition = selection?.start ?? 0
+        const cursorPosition = selectionRef.current?.start ?? 0
         setAutocompletePosition(cursorPosition)
         setIsAutocompleteActive(true)
       }
 
-      if (key === BACKSPACE_KEY && selection) {
-        const textBeforeCursor = value.slice(0, selection.start)
-        const cursorPosition = selection.start
+      if (key === BACKSPACE_KEY && selectionRef.current) {
+        const textBeforeCursor = value.slice(0, selectionRef.current.start)
+        const cursorPosition = selectionRef.current.start
         const { editValue } = handleBackspace({
           cursorPosition,
           textBeforeCursor
@@ -382,7 +384,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
       handleBackspace,
       isAutocompleteActive,
       onAutocompleteChange,
-      selection,
+      selectionRef,
       value
     ]
   )

@@ -34,7 +34,6 @@ export const ChatTextInput = ({
 }: ChatTextInputProps) => {
   const dispatch = useDispatch()
   const [messageId, setMessageId] = useState(0)
-  const [value, setValue] = useState(presetMessage ?? '')
   // The track and collection ids used to render the composer preview
   const [trackId, setTrackId] = useState<Nullable<ID>>(null)
   const [collectionId, setCollectionId] = useState<Nullable<ID>>(null)
@@ -42,8 +41,6 @@ export const ChatTextInput = ({
   const handleChange = useCallback(
     // (value: string, linkEntities: LinkEntity[]) => {
     (value: string, linkEntities: any[]) => {
-      setValue(value)
-
       const track = linkEntities.find((e) => e.type === 'track')
       setTrackId(track ? decodeHashId(track.data.id) : null)
 
@@ -53,13 +50,16 @@ export const ChatTextInput = ({
     []
   )
 
-  const handleSubmit = useCallback(async () => {
-    if (chatId && value) {
-      dispatch(sendMessage({ chatId, message: value }))
-      onMessageSent()
-      setMessageId((id) => ++id)
-    }
-  }, [chatId, dispatch, onMessageSent, value])
+  const handleSubmit = useCallback(
+    async (value: string) => {
+      if (chatId && value) {
+        dispatch(sendMessage({ chatId, message: value }))
+        onMessageSent()
+        setMessageId((id) => ++id)
+      }
+    },
+    [chatId, dispatch, onMessageSent]
+  )
 
   // For iOS: default padding + extra padding
   // For Android: extra padding is slightly larger than iOS, and only
