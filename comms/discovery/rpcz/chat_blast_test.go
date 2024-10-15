@@ -218,6 +218,8 @@ func TestChatBlast(t *testing.T) {
 
 	// user 999 does not
 	{
+		assertChatCreateAllowed(t, tx, 999, 69, false)
+
 		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
 			UserID: 999,
 		})
@@ -227,6 +229,9 @@ func TestChatBlast(t *testing.T) {
 
 	// user 101 upgrades it to a real DM
 	{
+
+		assertChatCreateAllowed(t, tx, 101, 69, true)
+
 		err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
 			ChatID: chatId_101_69,
 			Invites: []schema.PurpleInvite{
