@@ -7,7 +7,7 @@ import cn from 'classnames'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -30,7 +30,7 @@ export type RemixesPageProps = {
   count: number | null
   originalTrack: Track | null
   user: User | null
-  getLineupProps: () => LineupWithoutTile
+  getLineupProps: () => LineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
 }

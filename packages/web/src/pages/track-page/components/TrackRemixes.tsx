@@ -25,8 +25,9 @@ import { Link } from 'react-router-dom-v5-compat'
 
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { trackRemixesPage } from 'utils/route'
+
+import { useTrackPageSize } from './useTrackPageSize'
 
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -50,7 +51,7 @@ type TrackRemixesProrps = {
 
 export const TrackRemixes = (props: TrackRemixesProrps) => {
   const { trackId } = props
-  const isMobile = useIsMobile()
+  const { isDesktop, isMobile } = useTrackPageSize()
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
   const currentQueueItem = useSelector(getCurrentQueueItem)
@@ -91,6 +92,11 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
   const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
 
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
+
   if (!remixTrackIds || !remixTrackIds.length) {
     return null
   }
@@ -99,16 +105,16 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     <Flex
       direction='column'
       gap='l'
-      w={isMobile || isCommentingEnabled ? '100%' : 720}
+      w={!isDesktop || isCommentingEnabled ? '100%' : 720}
     >
       <Flex
         row
         alignItems='center'
         gap='s'
-        justifyContent={!isMobile && !isCommentingEnabled ? 'center' : 'left'}
+        justifyContent={!isCommentingEnabled ? 'center' : 'left'}
       >
         <IconRemix color='default' />
-        <Text variant='title' size={isMobile ? 'm' : 'l'}>
+        <Text variant='title' size={isDesktop ? 'l' : 'm'}>
           {messages.remixes}
         </Text>
       </Flex>
@@ -116,7 +122,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         lineup={remixesLineup}
         actions={remixesPageLineupActions}
         count={Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)}
-        variant={LineupVariant.CONDENSED}
+        variant={lineupVariant}
         selfLoad
         playingUid={currentQueueItem.uid}
         playingSource={currentQueueItem.source}
@@ -127,7 +133,6 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         buffering={isBuffering}
         playTrack={handlePlay}
         pauseTrack={handlePause}
-        useSmallTiles={isCommentingEnabled}
       />
       {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
         <Box alignSelf='flex-start'>

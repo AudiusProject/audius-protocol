@@ -20,6 +20,7 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 import { trackRemixesPage } from 'utils/route'
 
 import { TrackRemixes } from '../TrackRemixes'
+import { useTrackPageSize } from '../useTrackPageSize'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
@@ -53,7 +54,6 @@ export type OwnProps = {
     isPreview?: boolean
   }) => void
   goToAllRemixesPage: () => void
-  goToParentRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
@@ -87,7 +87,6 @@ const TrackPage = ({
   trendingBadgeLabel,
   onHeroPlay,
   goToAllRemixesPage,
-  goToParentRemixesPage,
   onHeroShare,
   onHeroRepost,
   onSaveTrack,
@@ -105,6 +104,7 @@ const TrackPage = ({
   play,
   pause
 }: OwnProps) => {
+  const { isDesktop, isMobile } = useTrackPageSize()
   const { entries } = tracks
   const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
@@ -204,7 +204,7 @@ const TrackPage = ({
   )
 
   const renderOriginalTrackTitle = () => (
-    <Text color='default' variant='title' size='l' textAlign='left'>
+    <Text color='default' variant='title' size='l'>
       {messages.originalTrack}
     </Text>
   )
@@ -216,7 +216,6 @@ const TrackPage = ({
         color='default'
         variant='title'
         size='l'
-        textAlign='left'
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
@@ -224,6 +223,11 @@ const TrackPage = ({
 
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
+
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
 
   return (
     <Page
@@ -259,7 +263,7 @@ const TrackPage = ({
         <Flex
           gap='2xl'
           w='100%'
-          direction='row'
+          direction={isDesktop ? 'row' : 'column'}
           mt='3xl'
           mh='auto'
           css={{ maxWidth: 1080 }}
@@ -276,7 +280,9 @@ const TrackPage = ({
           {hasRemixes || hasMoreByTracks ? (
             <Flex
               direction='column'
-              alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
+              alignItems={
+                isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
+              }
               gap='l'
               flex={1}
               css={{
@@ -333,7 +339,7 @@ const TrackPage = ({
                 count={6}
                 // Managed from the parent rather than allowing the lineup to fetch content itself.
                 selfLoad={false}
-                variant={LineupVariant.CONDENSED}
+                variant={lineupVariant}
                 playingUid={currentQueueItem.uid}
                 playingSource={currentQueueItem.source}
                 playingTrackId={
@@ -344,7 +350,6 @@ const TrackPage = ({
                 playTrack={play}
                 pauseTrack={pause}
                 actions={tracksActions}
-                useSmallTiles={isCommentingEnabled}
               />
             </Flex>
           ) : null}
