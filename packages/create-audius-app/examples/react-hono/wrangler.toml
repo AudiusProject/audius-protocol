@@ -1,0 +1,4 @@
+name = "react-hono"
+pages_build_output_dir = "./dist"
+compatibility_flags = [ "nodejs_compat_v2" ]
+compatibility_date = "2024-08-23"

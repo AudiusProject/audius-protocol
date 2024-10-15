@@ -47,5 +47,6 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   coSign: heroTrack?._co_sign ?? null,
   remixTrackIds: heroTrack?._remixes?.map(({ track_id }) => track_id) ?? null,
   remixesCount: heroTrack?._remixes_count ?? null,
-  remixParentTrackId: heroTrack?.remix_of?.tracks?.[0]?.parent_track_id
+  remixParentTrackId: heroTrack?.remix_of?.tracks?.[0]?.parent_track_id,
+  permalink: heroTrack?.permalink ?? ''
 })

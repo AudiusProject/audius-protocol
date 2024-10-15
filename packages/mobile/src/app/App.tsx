@@ -1,6 +1,10 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
+import {
+  QueryClientProvider,
+  QueryClient as TanQueryClient
+} from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
@@ -41,6 +45,8 @@ Sentry.init({
   dsn: env.SENTRY_DSN
 })
 
+const tanQueryClient = new TanQueryClient()
+
 const Airplay = Platform.select({
   ios: () => require('../components/audio/Airplay').default,
   android: () => () => null
@@ -78,32 +84,34 @@ const App = () => {
         <Provider store={store}>
           <AudiusTrpcProvider>
             <AudiusQueryProvider>
-              <PersistGate loading={null} persistor={persistor}>
-                <ThemeProvider>
-                  <WalletConnectProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <PortalProvider>
-                        <ErrorBoundary>
-                          <NavigationContainer>
-                            <BottomSheetModalProvider>
-                              <Toasts />
-                              <Airplay />
-                              <RootScreen />
-                              <Drawers />
-                              <Modals />
-                              <OAuthWebView />
-                              <NotificationReminder />
-                              <RateCtaReminder />
-                              <PortalHost name='ChatReactionsPortal' />
+              <QueryClientProvider client={tanQueryClient}>
+                <PersistGate loading={null} persistor={persistor}>
+                  <ThemeProvider>
+                    <WalletConnectProvider>
+                      <GestureHandlerRootView style={{ flex: 1 }}>
+                        <PortalProvider>
+                          <ErrorBoundary>
+                            <NavigationContainer>
+                              <BottomSheetModalProvider>
+                                <Toasts />
+                                <Airplay />
+                                <RootScreen />
+                                <Drawers />
+                                <Modals />
+                                <OAuthWebView />
+                                <NotificationReminder />
+                                <RateCtaReminder />
+                                <PortalHost name='ChatReactionsPortal' />
+                              </BottomSheetModalProvider>
                               <PortalHost name='DrawerPortal' />
-                            </BottomSheetModalProvider>
-                          </NavigationContainer>
-                        </ErrorBoundary>
-                      </PortalProvider>
-                    </GestureHandlerRootView>
-                  </WalletConnectProvider>
-                </ThemeProvider>
-              </PersistGate>
+                            </NavigationContainer>
+                          </ErrorBoundary>
+                        </PortalProvider>
+                      </GestureHandlerRootView>
+                    </WalletConnectProvider>
+                  </ThemeProvider>
+                </PersistGate>
+              </QueryClientProvider>
             </AudiusQueryProvider>
           </AudiusTrpcProvider>
         </Provider>

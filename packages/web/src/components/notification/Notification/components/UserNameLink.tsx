@@ -24,10 +24,11 @@ type UserNameLinkProps = {
   className?: string
   notification: Notification
   user: User
+  isOwner?: boolean
 }
 
 export const UserNameLink = (props: UserNameLinkProps) => {
-  const { className, notification, user } = props
+  const { className, notification, user, isOwner } = props
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
@@ -71,6 +72,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
     <span className={rootClassName}>
       <a onClick={handleClick} href={profileLink} className={styles.link}>
         {name}
+        {isOwner ? "'s" : null}
       </a>
       <UserBadges
         inline

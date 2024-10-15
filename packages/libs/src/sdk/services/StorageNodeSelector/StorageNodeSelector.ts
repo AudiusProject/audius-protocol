@@ -1,9 +1,8 @@
-import fetch from 'cross-fetch'
-
 import { isNodeHealthy } from '../../../utils/getNStorageNodes'
 import RendezvousHash from '../../../utils/rendezvous'
 import type { Maybe } from '../../../utils/types'
 import { productionConfig } from '../../config/production'
+import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react'
+import { useEffect, useCallback, useRef, CSSProperties } from 'react'
 import * as React from 'react'
 
 import cn from 'classnames'
 
 import styles from './Slider.module.css'
-import { useAnimations } from './hooks'
+import { usePlaybackPositionTracking } from './hooks'
 import { ScrubberProps } from './types'
 
 /** Gets the X-position of a div. */
@@ -18,20 +18,18 @@ const getXPosition = (element: HTMLDivElement) => {
  * than progress ticks to achieve fluidity.
  */
 export const Slider = ({
-  mediaKey,
   isPlaying,
   isMobile,
   isDisabled,
-  elapsedSeconds,
   totalSeconds,
-  playbackRate,
+  elapsedSeconds,
   onScrub,
   onScrubRelease,
+  getAudioPosition,
+  getTotalTime,
   includeExpandedTargets = true,
   style
 }: ScrubberProps) => {
-  const [previousMediaKey, setPreviousMediaKey] = useState('')
-
   // Percentage of the complete scrubber being dragged to.
   // e.g. 0.25 means the user has dragged the scrubber 1/4th of the way.
   const dragPercent = useRef<number | null>(0)
@@ -51,12 +49,17 @@ export const Slider = ({
   const trackRef = useRef<HTMLDivElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
 
-  const { play, pause, setPercent } = useAnimations(
+  const {
+    play,
+    pause,
+    refreshPosition,
+    setPositionOverrideEnabled,
+    setPosition
+  } = usePlaybackPositionTracking(
     trackRef,
     handleRef,
-    elapsedSeconds,
-    totalSeconds,
-    playbackRate
+    getAudioPosition,
+    getTotalTime
   )
 
   /**
@@ -105,14 +108,14 @@ export const Slider = ({
 
       setDragPercentMouse(e)
       if (dragPercent.current !== null) {
-        setPercent(dragPercent.current)
+        setPosition(dragPercent.current)
         const seconds = dragPercent.current * totalSeconds
         if (onScrub) {
           onScrub(seconds)
         }
       }
     },
-    [dragPercent, setDragPercentMouse, totalSeconds, setPercent, onScrub]
+    [dragPercent, setDragPercentMouse, totalSeconds, onScrub, setPosition]
   )
 
   /**
@@ -125,7 +128,7 @@ export const Slider = ({
 
       setDragPercentTouch(e)
       if (dragPercent.current !== null) {
-        setPercent(dragPercent.current)
+        setPosition(dragPercent.current)
 
         const seconds = dragPercent.current * totalSeconds
         if (onScrub) {
@@ -133,7 +136,7 @@ export const Slider = ({
         }
       }
     },
-    [dragPercent, setDragPercentTouch, totalSeconds, setPercent, onScrub]
+    [dragPercent, setDragPercentTouch, totalSeconds, onScrub, setPosition]
   )
 
   /**
@@ -147,6 +150,7 @@ export const Slider = ({
     if (mouseUpRef.current) {
       document.removeEventListener('mouseup', mouseUpRef.current)
     }
+    setPositionOverrideEnabled(false)
 
     if (dragPercent.current !== null) {
       const seconds = dragPercent.current * totalSeconds
@@ -156,7 +160,14 @@ export const Slider = ({
 
       dragPercent.current = null
     }
-  }, [mouseMoveRef, mouseUpRef, dragPercent, totalSeconds, onScrubRelease])
+  }, [
+    mouseMoveRef,
+    mouseUpRef,
+    dragPercent,
+    totalSeconds,
+    onScrubRelease,
+    setPositionOverrideEnabled
+  ])
 
   /**
    * Watches for a touch-end action (which may not occur on the scrubber itself),
@@ -169,6 +180,7 @@ export const Slider = ({
     if (touchEndRef.current) {
       document.removeEventListener('touchend', touchEndRef.current)
     }
+    setPositionOverrideEnabled(false)
 
     if (dragPercent.current !== null) {
       const seconds = dragPercent.current * totalSeconds
@@ -178,7 +190,14 @@ export const Slider = ({
 
       dragPercent.current = null
     }
-  }, [touchMoveRef, touchEndRef, dragPercent, totalSeconds, onScrubRelease])
+  }, [
+    touchMoveRef,
+    touchEndRef,
+    dragPercent,
+    totalSeconds,
+    onScrubRelease,
+    setPositionOverrideEnabled
+  ])
 
   /**
    * Attaches mouse-move and mouse-up event listeners and sets dragging state.
@@ -191,11 +210,9 @@ export const Slider = ({
     mouseUpRef.current = onMouseUp
     document.addEventListener('mousemove', mouseMoveRef.current)
     document.addEventListener('mouseup', mouseUpRef.current)
+    setPositionOverrideEnabled(true)
 
     setDragPercentMouse(e)
-    if (dragPercent.current !== null) {
-      setPercent(dragPercent.current)
-    }
   }
 
   /**
@@ -206,11 +223,9 @@ export const Slider = ({
     touchEndRef.current = onTouchEnd
     document.addEventListener('touchmove', touchMoveRef.current)
     document.addEventListener('touchend', touchEndRef.current)
+    setPositionOverrideEnabled(true)
 
     setDragPercentTouch(e)
-    if (dragPercent.current !== null) {
-      setPercent(dragPercent.current)
-    }
   }
 
   // Watch interactions to the scrubber and call to animate
@@ -222,28 +237,8 @@ export const Slider = ({
   }, [isPlaying, dragPercent, play, pause])
 
   useEffect(() => {
-    setPercent(elapsedSeconds / totalSeconds)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playbackRate, elapsedSeconds, totalSeconds])
-
-  // When the key changes, reset the animation
-  useEffect(() => {
-    if (mediaKey !== previousMediaKey) {
-      if (!totalSeconds) {
-        setPercent(0)
-      } else {
-        setPercent(elapsedSeconds / totalSeconds)
-      }
-      setPreviousMediaKey(mediaKey)
-    }
-  }, [
-    mediaKey,
-    previousMediaKey,
-    setPreviousMediaKey,
-    setPercent,
-    elapsedSeconds,
-    totalSeconds
-  ])
+    refreshPosition()
+  }, [elapsedSeconds, totalSeconds, refreshPosition])
 
   const getShowHandle = () =>
     !style || style.showHandle === undefined ? true : style.showHandle

@@ -80,6 +80,7 @@ import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
@@ -221,6 +222,7 @@ export const TrackScreenDetailsTile = ({
     { trackId },
     { enabled: !!trackId }
   )
+  const { onOpen: openDrawer } = useDrawer('Comment')
 
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -358,6 +360,10 @@ export const TrackScreenDetailsTile = ({
     dispatch(setRepost(trackId, RepostType.TRACK))
     navigation.push('Reposts', { id: trackId, repostType: RepostType.TRACK })
   }, [dispatch, trackId, navigation])
+
+  const handlePressComments = useCallback(() => {
+    openDrawer({ entityId: trackId })
+  }, [openDrawer, trackId])
 
   const handlePressSave = () => {
     if (!isOwner) {
@@ -636,6 +642,7 @@ export const TrackScreenDetailsTile = ({
           hideCommentCount={shouldHideCommentCount}
           onPressFavorites={handlePressFavorites}
           onPressReposts={handlePressReposts}
+          onPressComments={handlePressComments}
         />
         {description ? (
           <Box w='100%'>

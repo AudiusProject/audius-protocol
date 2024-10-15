@@ -57,6 +57,7 @@ type ChatState = {
   blockees: ID[]
   blockers: ID[]
   permissions: Record<ID, ValidatedChatPermissions>
+  permissionsStatus: Status
   reactionsPopupMessageId: string | null
 }
 
@@ -140,6 +141,7 @@ const initialState: ChatState = {
   blockees: [],
   blockers: [],
   permissions: {},
+  permissionsStatus: Status.IDLE,
   reactionsPopupMessageId: null
 }
 
@@ -400,7 +402,13 @@ const slice = createSlice({
       if (dayjs(chat.cleared_history_at).isAfter(chat.last_message_at)) {
         chat.last_message = ''
       }
-      chatsAdapter.upsertOne(state.chats, chat)
+      const existingChat = getChat(state, chat.chat_id)
+      // If the chat already exists, use its existing messagesStatus, otherwise default to IDLE
+      const messagesStatus = existingChat?.messagesStatus ?? Status.IDLE
+      chatsAdapter.upsertOne(state.chats, {
+        ...chat,
+        messagesStatus
+      })
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
@@ -485,17 +493,28 @@ const slice = createSlice({
         return
       }
 
-      // Update the chat metadata, but don't update recheck_permissions unless
-      // it's a message received from someone else
+      // Always update the last message, but don't update
+      // last_message_at if it's a blast message sent by current user,
+      // to avoid chat list re-sorting.
+      // Note: is_plaintext indicates that the message originated from a blast
+      const existingChat = getChat(state, chatId)
+      const changes =
+        message.is_plaintext && isSelfMessage && !existingChat?.is_blast
+          ? {
+              last_message: message.message
+            }
+          : {
+              last_message: message.message,
+              last_message_at: message.created_at
+            }
+
       chatsAdapter.updateOne(state.chats, {
         id: chatId,
-        changes: {
-          last_message: message.message,
-          last_message_at: message.created_at
-        }
+        changes
       })
 
-      // Return early if we've seen this message
+      // Return early if we've seen this message: don't update
+      // recheck_permissions unless it's a message received from someone else
       const existingMessage = getMessage(
         state.messages[chatId],
         message.message_id
@@ -520,7 +539,6 @@ const slice = createSlice({
       recalculatePreviousMessageHasTail(state.messages[chatId], 0)
 
       // Handle unread counts
-      const existingChat = getChat(state, chatId)
       if (!existingChat || existingChat.is_blast) return
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
@@ -605,7 +623,8 @@ const slice = createSlice({
     unblockUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
       // triggers saga
     },
-    fetchPermissions: (_state, _action: PayloadAction<{ userIds: ID[] }>) => {
+    fetchPermissions: (state, _action: PayloadAction<{ userIds: ID[] }>) => {
+      state.permissionsStatus = Status.LOADING
       // triggers saga
     },
     fetchPermissionsSucceeded: (
@@ -618,6 +637,7 @@ const slice = createSlice({
         ...state.permissions,
         ...action.payload.permissions
       }
+      state.permissionsStatus = Status.SUCCESS
     },
     // Note: is not associated with any chatId because there will be at most
     // one popup message at a time. Used for reactions popup overlay in mobile.

@@ -16,3 +16,8 @@ export async function getRedisConnection(): Promise<RedisClientType> {
   }
   return redisClient
 }
+
+export async function clearRedisKeys() {
+  const redis = await getRedisConnection()
+  redis.flushAll()
+}

@@ -11,6 +11,7 @@ import {
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'
@@ -20,6 +21,7 @@ import {
   VirtualizedScrollView
 } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -45,7 +47,22 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
+  const {
+    searchTrack,
+    id,
+    canBeUnlisted = true,
+    handle,
+    slug,
+    showComments
+  } = params ?? {}
+
+  const { onOpen: openDrawer } = useDrawer('Comment')
+
+  useEffectOnce(() => {
+    if (showComments) {
+      openDrawer({ entityId: id })
+    }
+  })
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -90,7 +107,16 @@ export const TrackScreen = () => {
     navigation.push('TrackRemixes', { id: remixParentTrack.track_id })
   }
 
-  const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
+  const {
+    track_id,
+    permalink,
+    field_visibility,
+    remix_of,
+    _remixes,
+    comments_disabled
+  } = track
+
+  const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
 
   const showMoreByArtistTitle =
     isReachable &&
@@ -102,6 +128,9 @@ export const TrackScreen = () => {
     !!remixParentTrack &&
     remixParentTrack.is_delete === false &&
     !remixParentTrack.user?.is_deactivated
+
+  const hasRemixes =
+    field_visibility?.remixes && _remixes && _remixes.length > 0
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
     <Text variant='title' size='m'>
@@ -115,10 +144,8 @@ export const TrackScreen = () => {
     </Text>
   )
 
-  const { track_id, field_visibility, _remixes, comments_disabled } = track
-
   return (
-    <Screen url={track?.permalink}>
+    <Screen url={permalink}>
       <ScreenContent isOfflineCapable>
         <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
@@ -140,9 +167,7 @@ export const TrackScreen = () => {
                 ) : null}
 
                 {/* Remixes */}
-                {field_visibility?.remixes &&
-                  _remixes &&
-                  _remixes.length > 0 && <TrackScreenRemixes track={track} />}
+                {hasRemixes ? <TrackScreenRemixes track={track} /> : null}
 
                 {/* More by Artist / Remix Parent */}
                 <Flex>

@@ -39,6 +39,7 @@ export const UserCard = (props: UserCardProps) => {
     (e: GestureResponderEvent) => {
       onPress?.(e)
       if (noNavigation) return
+
       navigation.navigate('Profile', { id: userId })
     },
     [onPress, noNavigation, navigation, userId]

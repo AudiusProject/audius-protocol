@@ -165,28 +165,29 @@ export class ChallengesApi extends GeneratedChallengesApi {
       instructions = instructions.concat(ix)
     }
 
-    const txSoFar = await this.solanaClient.buildTransaction({
-      instructions,
-      addressLookupTables: [this.rewardManager.lookupTable],
-      priorityFee: null
-    })
-    // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
-    const estimatedEvaluateInstructionSize = 145
-    const threshold = PACKET_DATA_SIZE - estimatedEvaluateInstructionSize
-    if (txSoFar.serialize().byteLength >= threshold) {
-      logger.debug(
-        `Transaction size too large (size: ${
-          txSoFar.serialize().byteLength
-        }), submitting attestations separately...`
-      )
-      const submissionSignature = await this.rewardManager.sendTransaction(
-        txSoFar
-      )
-      logger.debug('Confirming attestation submissions...')
-      await this.solanaClient.confirmAllTransactions([submissionSignature])
-      instructions = []
+    if (instructions.length > 0) {
+      const txSoFar = await this.solanaClient.buildTransaction({
+        instructions,
+        addressLookupTables: [this.rewardManager.lookupTable],
+        priorityFee: null
+      })
+      // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
+      const estimatedEvaluateInstructionSize = 145
+      const threshold = PACKET_DATA_SIZE - estimatedEvaluateInstructionSize
+      if (txSoFar.serialize().byteLength >= threshold) {
+        logger.debug(
+          `Transaction size too large (size: ${
+            txSoFar.serialize().byteLength
+          }), submitting attestations separately...`
+        )
+        const submissionSignature = await this.rewardManager.sendTransaction(
+          txSoFar
+        )
+        logger.debug('Confirming attestation submissions...')
+        await this.solanaClient.confirmAllTransactions([submissionSignature])
+        instructions = []
+      }
     }
-
     logger.debug('Creating evaluate instruction...')
     const { userBank: destinationUserBank } = await userBankPromise
     const evaluate =
@@ -206,7 +207,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
       priorityFee: null
     })
     const signature = await this.rewardManager.sendTransaction(tx, {
-      preflightCommitment: 'confirmed'
+      skipPreflight: true
     })
     return signature
   }

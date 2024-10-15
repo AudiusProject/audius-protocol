@@ -15,22 +15,14 @@ jobs:
       name: test-mediorum-unittests
       context: Vercel
       service: mediorum-unittests
-  - push-docker-image:
-      name: push-uptime
-      context: [Vercel, dockerhub]
-      service: uptime
-      filters:
-        branches:
-          only: main
 
   # Deploy audius-protocol `main` branch (stage)
-  - deploy-stage-nodes:
+  - deploy-stage-nodes-just-tag:
       name: deploy-stage-creator-node
       requires:
         - test-mediorum
         - test-mediorum-unittests
         - push-mediorum
-        - push-uptime
       filters:
         branches:
           only: main

@@ -1,5 +1,6 @@
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -36,15 +37,16 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
           <Artwork
             src={audienceContentType === 'track' ? trackArtwork : albumArtwork}
             w='48px'
+            css={{ flexShrink: 0 }}
           />
         ) : null}
         <Flex column gap='xs' alignItems='flex-start'>
           <Flex gap='s' alignItems='center'>
             <IconTowerBroadcast size='m' color='default' />
-            <Text variant='title' size='l' ellipses>
+            <Text variant='title' size='l'>
               {chatBlastSecondaryTitle}
             </Text>
-            <Text variant='title' size='l' color='subdued' ellipses>
+            <Text variant='title' size='l' color='subdued' maxLines={1}>
               {contentTitle}
             </Text>
           </Flex>
@@ -54,12 +56,14 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
         </Flex>
       </Flex>
       <Flex alignItems='flex-end'>
-        <Flex gap='s' alignItems='center'>
-          <IconUserList size='m' color='default' />
-          <Text variant='title' size='xl'>
-            {audienceCount}
-          </Text>
-        </Flex>
+        {audienceCount ? (
+          <Flex gap='s' alignItems='center'>
+            <IconUserList size='m' color='default' />
+            <Text variant='title' size='xl'>
+              {formatCount(audienceCount)}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
     </Flex>
   )

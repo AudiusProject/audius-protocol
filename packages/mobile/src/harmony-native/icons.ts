@@ -1,10 +1,14 @@
 import type { FunctionComponent } from 'react'
 
 import { type IconProps as HarmonyIconProps } from '@audius/harmony/src/components/icon'
+import type { AnimatedProps } from 'react-native-reanimated'
 import type { SvgProps } from 'react-native-svg'
 
 export type IconProps = Omit<SvgProps, 'color'> &
-  HarmonyIconProps & { fillSecondary?: string }
+  HarmonyIconProps &
+  AnimatedProps<SvgProps> & {
+    fillSecondary?: string
+  }
 
 export type IconComponent = FunctionComponent<IconProps>
 
@@ -60,6 +64,7 @@ export { default as IconMerch } from '@audius/harmony/src/assets/icons/Merch.svg
 export { default as IconStar } from '@audius/harmony/src/assets/icons/Star.svg'
 export { default as IconCastAirplay } from '@audius/harmony/src/assets/icons/CastAirplay.svg'
 export { default as IconMessageBlock } from '@audius/harmony/src/assets/icons/MessageBlock.svg'
+export { default as IconMessageSlash } from '@audius/harmony/src/assets/icons/MessageSlash.svg'
 export { default as IconStars } from '@audius/harmony/src/assets/icons/Stars.svg'
 export { default as IconCastChromecast } from '@audius/harmony/src/assets/icons/CastChromecast.svg'
 export { default as IconMessageLocked } from '@audius/harmony/src/assets/icons/MessageLocked.svg'

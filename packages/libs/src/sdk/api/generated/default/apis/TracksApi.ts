@@ -20,6 +20,7 @@ import type {
   StemsResponse,
   StreamUrlResponse,
   TopListener,
+  TrackCommentNotificationResponse,
   TrackCommentsResponse,
   TrackInspect,
   TrackResponse,
@@ -35,6 +36,8 @@ import {
     StreamUrlResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
+    TrackCommentNotificationResponseFromJSON,
+    TrackCommentNotificationResponseToJSON,
     TrackCommentsResponseFromJSON,
     TrackCommentsResponseToJSON,
     TrackInspectFromJSON,
@@ -69,7 +72,6 @@ export interface GetTrackRequest {
 export interface GetTrackAccessInfoRequest {
     trackId: string;
     userId?: string;
-    includeNetworkCut?: boolean;
 }
 
 export interface GetTrackStemsRequest {
@@ -123,6 +125,11 @@ export interface StreamTrackRequest {
     apiKey?: string;
     skipCheck?: boolean;
     noRedirect?: boolean;
+}
+
+export interface TrackCommentNotificationSettingRequest {
+    trackId: string;
+    userId?: string;
 }
 
 export interface TrackCommentsRequest {
@@ -273,10 +280,6 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.includeNetworkCut !== undefined) {
-            queryParameters['include_network_cut'] = params.includeNetworkCut;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -617,6 +620,41 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreamUrlResponse> {
         const response = await this.streamTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the comment notification setting for a track
+     */
+    async trackCommentNotificationSettingRaw(params: TrackCommentNotificationSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentNotificationResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackCommentNotificationSetting.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comment_notification_setting`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentNotificationResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the comment notification setting for a track
+     */
+    async trackCommentNotificationSetting(params: TrackCommentNotificationSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentNotificationResponse> {
+        const response = await this.trackCommentNotificationSettingRaw(params, initOverrides);
         return await response.value();
     }
 

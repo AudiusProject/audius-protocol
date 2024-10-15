@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { useGetTrackById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
@@ -9,7 +11,12 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+
+import { useHistoryContext } from 'app/HistoryProvider'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
@@ -18,12 +25,12 @@ const CommentSectionHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
-    comments
+    commentIds
   } = useCurrentCommentSection()
 
   const { data: track } = useGetTrackById({ id: entityId })
 
-  const isShowingComments = !isLoading && comments?.length
+  const isShowingComments = !isLoading && commentIds?.length
 
   return (
     <Flex
@@ -35,7 +42,7 @@ const CommentSectionHeader = () => {
       <Text variant='title' size='m'>
         Comments
         {isShowingComments ? (
-          <Text color='subdued'>&nbsp;({comments.length})</Text>
+          <Text color='subdued'>&nbsp;({commentIds.length})</Text>
         ) : null}
       </Text>
       {isShowingComments ? (
@@ -51,7 +58,7 @@ const CommentSectionContent = () => {
   const {
     currentUserId,
     commentSectionLoading: isLoading,
-    comments
+    commentIds
   } = useCurrentCommentSection()
 
   // Loading state
@@ -68,7 +75,7 @@ const CommentSectionContent = () => {
   }
 
   // Empty state
-  if (!comments || !comments.length) {
+  if (!commentIds || !commentIds.length) {
     return (
       <Flex gap='m' column alignItems='flex-start'>
         <Text variant='body'>{messages.noComments}</Text>
@@ -77,10 +84,24 @@ const CommentSectionContent = () => {
     )
   }
 
-  return <CommentBlock commentId={comments[0].id} hideActions />
+  return <CommentBlock commentId={commentIds[0]} hideActions />
 }
 
 export const CommentSectionMobile = () => {
+  const dispatch = useDispatch()
+  const { track } = useCurrentCommentSection()
+  const [searchParams] = useSearchParams()
+  const showComments = searchParams.get('showComments')
+  const { history } = useHistoryContext()
+
+  // Show the comment screen if the showComments query param is present
+  useEffect(() => {
+    if (showComments) {
+      history.replace({ search: '' })
+      dispatch(pushRoute(`${track?.permalink}/comments`))
+    }
+  }, [showComments, track, dispatch, searchParams, history])
+
   return (
     <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
       <CommentSectionHeader />

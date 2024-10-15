@@ -190,6 +190,11 @@ const ConnectedTrackTile = ({
       goToRoute(FAVORITING_USERS_ROUTE)
     }
 
+  const makeGoToCommentsPage = (_: ID) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation()
+    goToRoute(track?.permalink + '?showComments=true')
+  }
+
   const onClickOverflow = (trackId: ID) => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
@@ -274,6 +279,7 @@ const ConnectedTrackTile = ({
       toggleRepost={toggleRepost}
       makeGoToRepostsPage={makeGoToRepostsPage}
       makeGoToFavoritesPage={makeGoToFavoritesPage}
+      makeGoToCommentsPage={makeGoToCommentsPage}
       goToRoute={goToRoute}
       isOwner={isOwner}
       darkMode={darkMode}

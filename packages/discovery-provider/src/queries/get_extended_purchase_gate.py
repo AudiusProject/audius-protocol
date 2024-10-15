@@ -95,7 +95,7 @@ cents_to_usdc_multiplier = 10**4
 
 # Network take rate is a percentage of the total price that goes to the network
 # It is denoted in the config as a whole number, e.g. 10 for 10%
-network_take_rate = int(shared_config["solana"]["network_take_rate"])
+network_take_rate_config = int(shared_config["solana"]["network_take_rate"])
 
 staking_bridge_usdc_payout_wallet = shared_config["solana"][
     "staking_bridge_usdc_payout_wallet"
@@ -103,7 +103,9 @@ staking_bridge_usdc_payout_wallet = shared_config["solana"][
 
 
 def calculate_split_amounts(
-    price: int | None, splits: List[Split], include_network_cut=False
+    price: int | None,
+    splits: List[Split],
+    network_take_rate=network_take_rate_config,
 ) -> List[ExtendedSplit]:
     """
     Deterministically calculates the USDC amounts to pay to each person,
@@ -117,9 +119,8 @@ def calculate_split_amounts(
     new_splits: List[Dict] = []
 
     # Deduct network cut from the total price
-    if include_network_cut:
-        network_cut = int(price_in_usdc * network_take_rate / 100)
-        price_in_usdc -= network_cut
+    network_cut = int(price_in_usdc * network_take_rate / 100)
+    price_in_usdc -= network_cut
 
     for index in range(len(splits)):
         split = splits[index]
@@ -156,14 +157,14 @@ def calculate_split_amounts(
         del s["_index"]
         del s["_amount_fractional"]
 
-    if include_network_cut:
-        new_splits.append(
-            {
-                "percentage": network_take_rate,
-                "amount": network_cut,
-                "payout_wallet": staking_bridge_usdc_payout_wallet,
-            }
-        )
+    # append network cut
+    new_splits.append(
+        {
+            "percentage": network_take_rate,
+            "amount": network_cut,
+            "payout_wallet": staking_bridge_usdc_payout_wallet,
+        }
+    )
     return [cast(ExtendedSplit, split) for split in new_splits]
 
 
@@ -230,46 +231,40 @@ def to_wallet_amount_map(splits: List[ExtendedSplit]):
     }
 
 
-def _get_extended_purchase_gate(
-    session: Session, gate: PurchaseGate, include_network_cut=False
-):
+def _get_extended_purchase_gate(session: Session, gate: PurchaseGate):
     price = gate.get("usdc_purchase", {}).get("price", None)
     original_splits = gate.get("usdc_purchase", {}).get("splits", [])
     splits = [orig.copy() for orig in original_splits]
     splits = add_wallet_info_to_splits(session, splits, datetime.now())
-    extended_splits = calculate_split_amounts(price, splits, include_network_cut)
+    extended_splits = calculate_split_amounts(price, splits)
     extended_gate: ExtendedPurchaseGate = {
         "usdc_purchase": {"price": price, "splits": extended_splits}
     }
     return extended_gate
 
 
-def get_extended_purchase_gate(
-    gate: AccessGate, session=None, include_network_cut=False
-):
+def get_extended_purchase_gate(gate: AccessGate, session=None):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            return _get_extended_purchase_gate(session, gate, include_network_cut)
+            return _get_extended_purchase_gate(session, gate)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                return _get_extended_purchase_gate(session, gate, include_network_cut)
+                return _get_extended_purchase_gate(session, gate)
 
 
-def get_legacy_purchase_gate(gate: AccessGate, session=None, include_network_cut=False):
+def get_legacy_purchase_gate(gate: AccessGate, session=None):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
         if session:
-            new_gate = _get_extended_purchase_gate(session, gate, include_network_cut)
+            new_gate = _get_extended_purchase_gate(session, gate)
         else:
             db: SessionManager = get_db_read_replica()
             with db.scoped_session() as session:
-                new_gate = _get_extended_purchase_gate(
-                    session, gate, include_network_cut
-                )
+                new_gate = _get_extended_purchase_gate(session, gate)
         extended_splits = new_gate["usdc_purchase"]["splits"]
         splits = to_wallet_amount_map(extended_splits)
         new_gate["usdc_purchase"]["splits"] = splits

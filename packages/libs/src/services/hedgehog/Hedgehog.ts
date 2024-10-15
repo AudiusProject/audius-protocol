@@ -14,6 +14,7 @@ export type HedgehogConfig = {
   localStorage?: LocalStorage
   createKey?: CreateKey
 }
+
 export class Hedgehog {
   identityService: IdentityService
   getFn: IdentityService['getFn']

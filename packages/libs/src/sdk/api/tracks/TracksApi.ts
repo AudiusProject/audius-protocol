@@ -427,8 +427,7 @@ export class TracksApi extends GeneratedTracksApi {
       userId,
       trackId,
       price: priceNumber,
-      extraAmount: extraAmountNumber = 0,
-      includeNetworkCut
+      extraAmount: extraAmountNumber = 0
     } = await parseParams(
       'getPurchaseTrackInstructions',
       GetPurchaseTrackInstructionsSchema
@@ -441,8 +440,7 @@ export class TracksApi extends GeneratedTracksApi {
     this.logger.debug('Fetching track purchase info...', { trackId })
     const { data: track } = await this.getTrackAccessInfo({
       trackId: params.trackId, // use hashed trackId
-      userId: params.userId, // use hashed userId
-      includeNetworkCut
+      userId: params.userId // use hashed userId
     })
 
     // Validate purchase attempt

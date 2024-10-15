@@ -1,10 +1,14 @@
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGetUserByHandle } from '@audius/common/api'
+import { accountSelectors } from '@audius/common/store'
 import {
   formatCollectionName,
   formatTrackName,
   formatUserName,
   isAudiusUrl,
+  restrictedHandles,
   squashNewLines
 } from '@audius/common/utils'
 import { ResolveApi } from '@audius/sdk'
@@ -12,12 +16,17 @@ import { css } from '@emotion/native'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
 import type { LayoutRectangle, Text as TextRef } from 'react-native'
+import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
+import { useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
-import { TextLinkFlowing } from 'app/harmony-native/components/TextLink/TextLink'
+import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
+
+const { getUserId } = accountSelectors
 
 const {
   instanceOfTrackResponse,
@@ -30,43 +39,70 @@ type PositionedLink = {
   match: Match
 }
 
-export type UserGeneratedTextProps = Omit<TextProps, 'children'> & {
-  children: string
-  source?: 'profile page' | 'track page' | 'collection page'
-  // Pass touches through text elements
-  allowPointerEventsToPassThrough?: boolean
-  linkProps?: Partial<TextLinkProps>
-}
+export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
+  Pick<AutolinkProps, 'matchers'> & {
+    children: string
+    source?: 'profile page' | 'track page' | 'collection page'
+    // Pass touches through text elements
+    allowPointerEventsToPassThrough?: boolean
+    linkProps?: Partial<TextLinkProps>
+
+    // If true, only linkify Audius URLs
+    internalLinksOnly?: boolean
+
+    // Suffix to append after the text. Used for "edited" text in comments
+    suffix?: ReactNode
+  }
 
 const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
   const shouldUnfurl = isAudiusUrl(url)
 
-  useEffect(() => {
+  useAsync(async () => {
     if (shouldUnfurl && !unfurledContent) {
-      const fn = async () => {
-        const sdk = await audiusSdk()
-        const res = await sdk.resolve({ url })
-        if (res.data) {
-          if (instanceOfTrackResponse(res)) {
-            setUnfurledContent(formatTrackName({ track: res.data }))
-          } else if (instanceOfPlaylistResponse(res)) {
-            setUnfurledContent(
-              formatCollectionName({ collection: res.data[0] })
-            )
-          } else if (instanceOfUserResponse(res)) {
-            setUnfurledContent(formatUserName({ user: res.data }))
-          }
+      const sdk = await audiusSdk()
+      const res = await sdk.resolve({ url })
+      if (res.data) {
+        if (instanceOfTrackResponse(res)) {
+          setUnfurledContent(formatTrackName({ track: res.data }))
+        } else if (instanceOfPlaylistResponse(res)) {
+          setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+        } else if (instanceOfUserResponse(res)) {
+          setUnfurledContent(formatUserName({ user: res.data }))
         }
       }
-      fn()
     }
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
   return (
-    <TextLinkFlowing {...other} url={url}>
-      {unfurledContent ?? children}
-    </TextLinkFlowing>
+    <TextLink {...other} url={url}>
+      {unfurledContent ?? url}
+    </TextLink>
+  )
+}
+
+const HandleLink = ({
+  handle,
+  ...other
+}: Omit<TextLinkProps, 'to'> & { handle: string }) => {
+  const currentUserId = useSelector(getUserId)
+
+  const { data: user } = useGetUserByHandle({
+    handle: handle.replace('@', ''),
+    currentUserId
+  })
+
+  return user ? (
+    <TextLink
+      {...other}
+      to={{ screen: 'Profile', params: { id: user.user_id } }}
+    >
+      {handle}
+    </TextLink>
+  ) : (
+    <Text {...other} variant={other.textVariant}>
+      {handle}
+    </Text>
   )
 }
 
@@ -77,6 +113,9 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     style,
     children,
     linkProps,
+    suffix,
+    matchers,
+    internalLinksOnly,
     ...other
   } = props
 
@@ -151,20 +190,40 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   )
 
   const renderLink = useCallback(
-    (text: string, match: Match) => (
-      <Link
-        {...other}
-        variant='visible'
-        textVariant={other.variant}
-        url={match.getAnchorHref()}
-        {...linkProps}
-      >
-        {text}
-      </Link>
-    ),
+    (text: string, match: Match) => {
+      const url = match.getAnchorHref()
+      const shouldLinkify = !internalLinksOnly || isAudiusUrl(url)
+      return shouldLinkify ? (
+        <Link
+          {...other}
+          variant='visible'
+          textVariant={other.variant}
+          url={url}
+          {...linkProps}
+        />
+      ) : (
+        renderText(text)
+      )
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
+
+  const renderHandleLink = useCallback((text: string) => {
+    const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
+    return isHandleUnrestricted ? (
+      <HandleLink
+        {...other}
+        variant='visible'
+        textVariant={other.variant}
+        handle={text}
+        {...linkProps}
+      />
+    ) : (
+      renderText(text)
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const renderText = useCallback(
     (text: string) => (
@@ -182,16 +241,34 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
       >
-        <Autolink
-          renderLink={
-            allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
-          }
-          renderText={renderText}
-          email
-          url
-          style={[{ marginBottom: 3 }, style]}
-          text={squashNewLines(children) as string}
-        />
+        <Text>
+          <Autolink
+            renderLink={
+              allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
+            }
+            renderText={renderText}
+            email
+            url={false}
+            style={[{ marginBottom: 3 }, style]}
+            text={squashNewLines(children) as string}
+            matchers={[
+              // Handle matcher e.g. @handle
+              {
+                pattern: /@[a-zA-Z0-9_.]{1,15}/,
+                renderLink: renderHandleLink
+              },
+              // URL match
+              // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
+              {
+                pattern:
+                  /(https?:\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g
+              },
+              // custom matchers provided via props
+              ...(matchers ?? [])
+            ]}
+          />
+          {suffix}
+        </Text>
       </View>
       {/* We overlay copies of each link on top of the invisible links */}
       <View style={{ position: 'absolute' }}>

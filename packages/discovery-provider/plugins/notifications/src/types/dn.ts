@@ -841,6 +841,23 @@ export interface CommentRow {
   is_edited: boolean
   txhash?: string
 }
+
+export interface CommentThreadRow {
+  comment_id: number
+  parent_comment_id: number
+}
+
+export interface CommentMentionRow {
+  comment_id: number
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+  is_delete: boolean
+  txhash: string
+  blockhash: string
+  blocknumber: number
+}
+
 export enum wallet_chain {
   'eth' = 'eth',
   'sol' = 'sol'

@@ -77,7 +77,7 @@ export const stagingConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-    "web3ProviderUrl": "https://poa-gateway.staging.audius.co"
+    "chainId": 1056801
   },
   "solana": {
     "claimableTokensProgramAddress": "2sjQNmUfkV6yKKi4dPR8gWRgtyma5aiymE3aXL2RAZww",

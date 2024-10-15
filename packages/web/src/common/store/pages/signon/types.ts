@@ -70,7 +70,6 @@ export default interface SignOnPageState {
   routeOnCompletion: string
   startedSignUpProcess: boolean
   finishedPhase1: boolean
-  /** @deprecated */
   finishedSignUpProcess: boolean
   routeOnExit: boolean
   page: number

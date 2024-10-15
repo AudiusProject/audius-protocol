@@ -1,7 +1,7 @@
 import type BN from 'bn.js'
 
-import { FixedDecimal } from './FixedDecimal'
-import { Brand } from './utilityTypes'
+import { FixedDecimal } from './FixedDecimal.js'
+import { Brand } from './utilityTypes.js'
 
 /**
  * Creates a {@link FixedDecimal} constructor for a currency.

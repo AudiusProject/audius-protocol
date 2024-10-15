@@ -6,11 +6,12 @@ import type {
   GestureResponderEvent,
   TouchableWithoutFeedbackProps
 } from 'react-native'
-import { Linking, TouchableWithoutFeedback } from 'react-native'
+import { Linking } from 'react-native'
 
 import { useToast } from 'app/hooks/useToast'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
+import { TextPressable } from './TextPressable'
 import type { Source } from './types'
 
 const messages = {
@@ -64,8 +65,8 @@ export const ExternalLink = (props: ExternalLinkProps) => {
   const handlePress = useExternalLinkHandlePress({ url, onPress })
 
   return (
-    <TouchableWithoutFeedback onPress={handlePress} {...other}>
+    <TextPressable onPress={handlePress} {...other}>
       {children}
-    </TouchableWithoutFeedback>
+    </TextPressable>
   )
 }

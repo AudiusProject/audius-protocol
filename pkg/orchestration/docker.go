@@ -61,8 +61,24 @@ func runNode(
 	}
 	defer dockerClient.Close()
 
+	var adcDir string
+	switch config.Type {
+	case conf.Content:
+		adcDir = "creator-node"
+	case conf.Discovery:
+		adcDir = "discovery-provider"
+	case conf.Identity:
+		adcDir = "identity-service"
+	}
+
 	if isContainerRunning(dockerClient, host) {
 		logger.Infof("audius-d container already running on %s", host)
+		logger.Info("Re-upping internal services for good measure...")
+		if err := audiusCli(dockerClient, host, "launch", "-y", adcDir); err != nil {
+			return logger.Error("Failed to launch node:", err)
+		}
+		logger.Infof("Done re-upping internal services on %s", host)
+		logger.Infof("Use 'audius-ctl restart %s' for a clean restart", host)
 		return nil
 	} else if isContainerNameInUse(dockerClient, host) {
 		logger.Infof("stopped audius-d container exists on %s, removing and starting with current config", host)
@@ -219,22 +235,15 @@ func runNode(
 	override := config.ToOverrideEnv(host, nconf)
 	// generate the override.env file locally
 	// WARNING: not thread safe due to constant filename
-	appendRemoteConfig(host, override, config.RemoteConfigFile)
+	if err := appendRemoteConfig(host, override, config.RemoteConfigFile); err != nil {
+		return logger.Error(err)
+	}
 	localOverridePath := "./override.env"
 	if err := godotenv.Write(override, localOverridePath); err != nil {
 		return logger.Error(err)
 	}
 
 	// copy the override.env file to the server and then into the wrapper container
-	var adcDir string
-	switch config.Type {
-	case conf.Content:
-		adcDir = "creator-node"
-	case conf.Discovery:
-		adcDir = "discovery-provider"
-	case conf.Identity:
-		adcDir = "identity-service"
-	}
 	overrideFile, err := os.Open(localOverridePath)
 	if err != nil {
 		return logger.Error(err)

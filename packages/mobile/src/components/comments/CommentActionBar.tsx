@@ -5,7 +5,7 @@ import {
   useReactToComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ReplyComment } from '@audius/sdk'
+import type { Comment, ID, ReplyComment } from '@audius/common/models'
 
 import { Flex, PlainButton, Text } from '@audius/harmony-native'
 
@@ -17,14 +17,15 @@ type CommentActionBarProps = {
   comment: Comment | ReplyComment
   isDisabled?: boolean
   hideReactCount?: boolean
+  parentCommentId?: ID
 }
 export const CommentActionBar = (props: CommentActionBarProps) => {
-  const { isDisabled, comment, hideReactCount } = props
+  const { isDisabled, comment, hideReactCount, parentCommentId } = props
   const { isCurrentUserReacted, reactCount, id: commentId } = comment
 
   const [reactToComment] = useReactToComment()
   const [reactionState, setReactionState] = useState(isCurrentUserReacted) // TODO: need to pull starting value from metadata
-  const { setReplyingToComment } = useCurrentCommentSection()
+  const { setReplyingAndEditingState } = useCurrentCommentSection()
 
   const handleCommentReact = () => {
     setReactionState(!reactionState)
@@ -50,13 +51,20 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
         <PlainButton
           variant='subdued'
           onPress={() => {
-            setReplyingToComment?.(comment)
+            setReplyingAndEditingState?.({
+              replyingToComment: comment,
+              replyingToCommentId: parentCommentId ?? comment.id
+            })
           }}
           disabled={isDisabled}
         >
           {messages.reply}
         </PlainButton>
-        <CommentOverflowMenu comment={comment} disabled={isDisabled} />
+        <CommentOverflowMenu
+          comment={comment}
+          disabled={isDisabled}
+          parentCommentId={parentCommentId}
+        />
       </Flex>
     </>
   )

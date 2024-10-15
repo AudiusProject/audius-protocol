@@ -22,6 +22,7 @@ type StatsButtonRowProps = {
   commentCount: number
   onClickFavorites: () => void
   onClickReposts: () => void
+  onClickComments: () => void
 }
 
 // A row of stats, visible on playlist and tracks pages.
@@ -36,6 +37,7 @@ const StatsButtonRow = ({
   commentCount,
   onClickFavorites,
   onClickReposts,
+  onClickComments,
   listenCount = 0
 }: StatsButtonRowProps) => {
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
@@ -60,7 +62,7 @@ const StatsButtonRow = ({
   )
 
   const renderCommentCount = () => (
-    <PlainButton iconLeft={IconMessage}>
+    <PlainButton onClick={onClickComments} iconLeft={IconMessage}>
       {formatCount(commentCount)}
     </PlainButton>
   )

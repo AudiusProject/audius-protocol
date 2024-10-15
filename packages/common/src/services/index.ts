@@ -1,3 +1,4 @@
+export * from './auth'
 export * from './remote-config'
 export * from './RandomImage'
 export * from './audius-api-client'

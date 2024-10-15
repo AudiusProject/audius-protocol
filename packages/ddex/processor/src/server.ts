@@ -11,6 +11,7 @@ import { HtmlEscapedString } from 'hono/utils/html'
 import {
   ReleaseProcessingStatus,
   ReleaseRow,
+  kvRepo,
   releaseRepo,
   userRepo,
   xmlRepo,
@@ -27,12 +28,18 @@ import { sources } from './sources'
 import { startUsersPoller } from './usersPoller'
 import { parseBool, simulateDeliveryForUserName } from './util'
 
-const { NODE_ENV, DDEX_URL, COOKIE_SECRET } = process.env
-const COOKIE_NAME = 'audiusUser'
+// read env
+const { NODE_ENV, DDEX_URL } = process.env
+const ADMIN_HANDLES = (process.env.ADMIN_HANDLES || '')
+  .split(',')
+  .map((h) => h.toLowerCase().trim())
 
 // validate ENV
 if (!DDEX_URL) console.warn('DDEX_URL not defined')
-if (!COOKIE_SECRET) console.warn('COOKIE_SECRET not defined')
+
+// globals
+const COOKIE_NAME = 'audiusUser'
+const COOKIE_SECRET = kvRepo.getCookieSecret()
 
 const IS_PROD = NODE_ENV == 'production'
 const API_HOST = IS_PROD
@@ -148,6 +155,16 @@ app.get('/auth/logout', async (c) => {
   return c.redirect('/')
 })
 
+// ====================== ADMIN REQUIRED ======================
+
+app.use('*', async (c, next) => {
+  const me = await getAudiusUser(c)
+  if (!me || !ADMIN_HANDLES.includes(me.handle.toLowerCase())) {
+    return c.text('you are not admin')
+  }
+  await next()
+})
+
 app.get('/releases', (c) => {
   const queryStatus = c.req.query('status')
   const rows = releaseRepo.all({
@@ -163,7 +180,6 @@ app.get('/releases', (c) => {
         <td colspan="10">
           <div style="margin-top: 20px;">
             <kbd>${row.source}</kbd>
-            <kbd>${row.createdAt}</kbd>
             <kbd>${row.xmlUrl}</kbd>
           </div>
         </td>
@@ -206,10 +222,10 @@ app.get('/releases', (c) => {
           <tr>
             <th></th>
             <th>Key</th>
-            <th>Release Type</th>
-            <th>Is Main</th>
-            <th>Audius User</th>
-            <th>Audius Genre</th>
+            <th>Type</th>
+            <th>Artist</th>
+            <th>Title</th>
+            <th>Genre</th>
             <th>Status</th>
             <th>Publish Errors</th>
             <th>Published?</th>
@@ -221,15 +237,19 @@ app.get('/releases', (c) => {
             (row) =>
               html` ${xmlSpacer(row)}
                 <tr>
-                  <td>${row._parsed?.ref}</td>
+                  <td class="${row._parsed?.isMainRelease ? 'bold' : ''}">
+                    ${row._parsed?.ref}
+                  </td>
                   <td>
                     <a href="/releases/${encodeURIComponent(row.key)}"
                       >${row.key}</a
                     >
                   </td>
                   <td>${row._parsed?.releaseType}</td>
-                  <td>${row._parsed?.isMainRelease ? 'Yes' : ''}</td>
-                  <td>${row._parsed?.audiusUser}</td>
+                  <td>
+                    ${row._parsed?.audiusUser || row._parsed?.artists[0]?.name}
+                  </td>
+                  <td>${row._parsed?.title}</td>
                   <td>${row._parsed?.audiusGenre}</td>
                   <td>
                     <mark><b>${row.status}</b></mark>
@@ -300,7 +320,7 @@ app.get('/releases/:key', (c) => {
       <div style="display: flex; gap: 20px">
         <div style="text-align: center">
           <img
-            src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+            src="/release/${row.key}/images/${parsedRelease.images[0]?.ref}"
             style="width: 200px; height: 200px; display: block; margin-bottom: 10px"
           />
           <mark>${parsedRelease.parentalWarningType}</mark>
@@ -595,6 +615,9 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
           }
           mark {
             margin-right: 5px;
+          }
+          .bold {
+            font-weight: bold;
           }
         </style>
       </head>

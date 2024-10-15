@@ -149,6 +149,8 @@ union all (
 		audience_content_id
   FROM chat_blast b
   WHERE from_user_id = $1
+	AND b.created_at < $3
+	AND b.created_at > $4
   ORDER BY
     audience,
     audience_content_type,

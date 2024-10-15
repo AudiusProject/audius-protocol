@@ -1,22 +1,26 @@
 import {
+  transformAndCleanList,
+  userFeedItemFromSDK
+} from '@audius/common/adapters'
+import {
   FeedFilter,
   Kind,
   Collection,
   UserCollectionMetadata,
   ID,
   TrackMetadata,
-  UserTrackMetadata,
-  LineupTrack
+  LineupTrack,
+  Id
 } from '@audius/common/models'
-import { GetSocialFeedArgs } from '@audius/common/services'
 import {
   accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
-  getContext,
-  CommonState
+  CommonState,
+  getSDK
 } from '@audius/common/store'
-import { select, all } from 'redux-saga/effects'
+import { full } from '@audius/sdk'
+import { all, call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -29,7 +33,7 @@ const getAccountUser = accountSelectors.getAccountUser
 
 type FeedItem = LineupTrack | Collection
 
-const filterMap = {
+const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
   [FeedFilter.ALL]: 'all',
   [FeedFilter.ORIGINAL]: 'original',
   [FeedFilter.REPOST]: 'repost'
@@ -43,31 +47,33 @@ function* getTracks({
   limit: number
 }): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
-  const currentUser = yield select(getAccountUser)
+  const currentUser = yield* select(getAccountUser)
   if (!currentUser) return []
-  const filterEnum: FeedFilter = yield select(getFeedFilter)
-  const apiClient = yield* getContext('apiClient')
+  const filterEnum: FeedFilter = yield* select(getFeedFilter)
+  const sdk = yield* getSDK()
   const filter = filterMap[filterEnum]
-
-  const params: GetSocialFeedArgs = {
-    offset,
-    limit,
-    filter,
-    with_users: true,
-    current_user_id: currentUser.user_id
-  }
 
   // If the user has followee user ids set, use those to fetch the feed.
   // It implies that the feed is otherwise going to be empty so we give a
   // hint to the API.
-  const followeeUserIds = yield select(getFollowIds)
-  if (followeeUserIds && followeeUserIds.length > 0) {
-    // Get the artists the user selected in signup or on their empty feed
-    params.followee_user_ids = followeeUserIds
-  }
+  const followeeUserIds = yield* select(getFollowIds)
 
-  const feed: (UserTrackMetadata | UserCollectionMetadata)[] =
-    yield apiClient.getSocialFeed(params)
+  const userId = Id.parse(currentUser.user_id)
+  const { data = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getUserFeed],
+    {
+      id: userId,
+      userId,
+      filter,
+      limit,
+      offset,
+      followeeUserId: followeeUserIds.length ? followeeUserIds : undefined,
+      withUsers: true
+    }
+  )
+  const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
+    ({ item }) => item
+  )
 
   if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
@@ -75,11 +81,10 @@ function* getTracks({
   const trackIds = tracks.map((t) => t.track_id)
 
   // Process (e.g. cache and remove entries)
-  const [processedTracks, processedCollections]: [LineupTrack[], Collection[]] =
-    yield all([
-      processAndCacheTracks(tracks),
-      processAndCacheCollections(collections, true, trackIds)
-    ])
+  const [processedTracks, processedCollections] = (yield* all([
+    processAndCacheTracks(tracks),
+    processAndCacheCollections(collections, true, trackIds)
+  ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),
     {}

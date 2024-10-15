@@ -32,7 +32,7 @@ export const developmentConfig: SdkServicesConfig = {
   },
   "acdc": {
     "entityManagerContractAddress": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
-    "web3ProviderUrl": "http://audius-protocol-poa-ganache-1"
+    "chainId": 1337
   },
   "solana": {
     "claimableTokensProgramAddress": "testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9",

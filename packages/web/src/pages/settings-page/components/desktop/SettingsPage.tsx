@@ -21,6 +21,7 @@ import {
   IconKey,
   IconRecoveryEmail as IconMail,
   IconMessage,
+  IconMessages,
   IconNotificationOn as IconNotification,
   IconReceive,
   IconRobot,
@@ -151,6 +152,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
     useState(false)
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
+  const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
     'AiAttributionSettings'
   )
@@ -223,6 +225,10 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsInboxSettingsModalVisible(true)
   }, [setIsInboxSettingsModalVisible])
 
+  const openCommentSettingsModal = useCallback(() => {
+    setIsCommentSettingsModalVisible(true)
+  }, [setIsCommentSettingsModalVisible])
+
   const openAiAttributionSettingsModal = useCallback(() => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
@@ -264,6 +270,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.AI_ATTRIBUTION
   )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
+  const { isEnabled: isCommentsEnabled } = useFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
@@ -284,6 +293,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             icon={<IconAppearance />}
             title={messages.appearanceTitle}
             description={messages.appearanceDescription}
+            isFull={true}
           >
             <SegmentedControl
               fullWidth
@@ -295,10 +305,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
             />
           </SettingsCard>
         ) : null}
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
         {!isManagedAccount ? (
           <SettingsCard
-            icon={<IconMessage />}
+            icon={<IconMessages />}
             title={messages.inboxSettingsCardTitle}
             description={messages.inboxSettingsCardDescription}
           >
@@ -308,6 +317,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
               fullWidth
             >
               {messages.inboxSettingsButtonText}
+            </Button>
+          </SettingsCard>
+        ) : null}
+        {isCommentsEnabled ? (
+          <SettingsCard
+            icon={<IconMessage />}
+            title={messages.commentSettingsCardTitle}
+            description={messages.commentSettingsCardDescription}
+          >
+            <Button
+              variant='secondary'
+              onClick={openCommentSettingsModal}
+              fullWidth
+            >
+              {messages.commentSettingsButtonText}
             </Button>
           </SettingsCard>
         ) : null}
@@ -434,6 +458,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
+        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button

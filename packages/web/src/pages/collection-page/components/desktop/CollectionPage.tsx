@@ -37,6 +37,10 @@ import { computeCollectionMetadataProps } from 'pages/collection-page/store/util
 
 import styles from './CollectionPage.module.css'
 
+const messages = {
+  noFilterMatches: 'No tracks match your search...'
+}
+
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
     ownerTitle: 'Nothing here yet',
@@ -50,23 +54,33 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   remove: 'Remove from this'
 })
 
-type EmptyPageProps = {
+type EmptyContentProps = {
   text?: string | null
   isOwner: boolean
   isAlbum: boolean
 }
 
-const EmptyPage = (props: EmptyPageProps) => {
+const EmptyContent = (props: EmptyContentProps) => {
   const { isAlbum, isOwner, text: textProp } = props
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
-    <Flex p='2xl' alignItems='center' direction='column' gap='s'>
+    <Flex column p='2xl' alignItems='center' gap='s'>
       <Text variant='title' size='l'>
         {textProp ?? isOwner
           ? messages.emptyPage.ownerTitle
           : messages.emptyPage.visitor}
       </Text>
       {isOwner ? <Text size='l'>{messages.emptyPage.ownerCta}</Text> : null}
+    </Flex>
+  )
+}
+
+const NoSearchResultsContent = () => {
+  return (
+    <Flex column p='2xl' alignItems='center' gap='s'>
+      <Text variant='title' size='l'>
+        {messages.noFilterMatches}
+      </Text>
     </Flex>
   )
 }
@@ -87,7 +101,7 @@ export type CollectionPageProps = {
     user: User | null
   }
   tracks: {
-    status: string
+    status: Status
     entries: CollectionTrack[]
   }
   userId?: ID | null
@@ -164,7 +178,7 @@ const CollectionPage = ({
       ? metadata._cover_art_sizes
       : null
   const duration =
-    tracks.entries?.reduce(
+    dataSource.reduce(
       (duration: number, entry: CollectionTrack) =>
         duration + entry.duration || 0,
       0
@@ -207,7 +221,7 @@ const CollectionPage = ({
     isAlbum,
     playlistSaveCount,
     playlistRepostCount
-  } = computeCollectionMetadataProps(metadata)
+  } = computeCollectionMetadataProps(metadata, tracks)
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
   const areAllTracksPremium = tracks.entries.every(
@@ -334,11 +348,13 @@ const CollectionPage = ({
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
-          <EmptyPage
+          <EmptyContent
             isOwner={isOwner}
             isAlbum={isAlbum}
             text={customEmptyText}
           />
+        ) : !collectionLoading && dataSource.length === 0 ? (
+          <NoSearchResultsContent />
         ) : (
           <div className={styles.tableWrapper}>
             <TableComponent

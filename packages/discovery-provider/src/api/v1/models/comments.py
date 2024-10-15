@@ -30,13 +30,19 @@ base_comment_model = ns.model(
         "track_timestamp_s": fields.Integer(required=False),
         "react_count": fields.Integer(required=True),
         "reply_count": fields.Integer(required=True),
-        "is_pinned": fields.Boolean(required=True),
         "is_edited": fields.Boolean(required=True),
         "is_current_user_reacted": fields.Boolean(required=False),
         "is_artist_reacted": fields.Boolean(required=False),
         "is_tombstone": fields.Boolean(required=False),
+        "is_muted": fields.Boolean(required=False),
         "created_at": fields.String(required=True),
         "updated_at": fields.String(required=False),
         "replies": fields.List(fields.Nested(reply_comment_model), require=True),
     },
+)
+
+
+comment_notification_setting_model = ns.model(
+    "comment_notification_setting",
+    {"is_muted": fields.Boolean(required=True)},
 )

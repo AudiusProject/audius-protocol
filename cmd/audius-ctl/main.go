@@ -83,7 +83,15 @@ func checkNewVersion(msg chan string) {
 
 	// Fetch the latest release information from GitHub API
 	ghClient := github.NewClient(nil)
-	release, resp, err := ghClient.Repositories.GetLatestRelease(context.Background(), "AudiusProject", "audius-d")
+	releases, resp, err := ghClient.Repositories.ListReleases(
+		context.Background(),
+		"AudiusProject",
+		"audius-protocol",
+		&github.ListOptions{
+			Page:    1,
+			PerPage: 30,
+		},
+	)
 	if err != nil {
 		logger.Debugf("Failed to check for new versions of audius-ctl: %s", err.Error())
 		msg <- ""
@@ -96,14 +104,22 @@ func checkNewVersion(msg chan string) {
 		return
 	}
 
-	if release.TagName == nil {
-		logger.Debug("Failed to check for new versions of audius-ctl: Null tag for latest release")
-		msg <- ""
-		return
+	var latestVersion string
+	for _, release := range releases {
+		if release.TagName == nil {
+			logger.Debug("Failed to check for new versions of audius-ctl: Null tag for latest release")
+			msg <- ""
+			return
+		}
+		splitTag := strings.Split(*release.TagName, "@")
+		if splitTag[0] != "audius-ctl" {
+			continue
+		} else {
+			latestVersion = splitTag[len(splitTag)-1]
+			break
+		}
 	}
-	splitTag := strings.Split(*release.TagName, "@")
-	latestVersion := splitTag[len(splitTag)-1]
-	if latestVersion != Version {
+	if latestVersion != "" && latestVersion != Version {
 		logger.Debugf("Found new version of audius-ctl: %s (current: %s)", latestVersion, Version)
 		msg <- fmt.Sprintf("\nNew version of audius-ctl available: %s (you have %s)\nRun `curl -sSL https://install.audius.org | sh` to install.\n", latestVersion, Version)
 	} else {

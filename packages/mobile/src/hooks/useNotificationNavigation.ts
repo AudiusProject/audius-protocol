@@ -42,7 +42,10 @@ import type {
   USDCPurchaseBuyerNotification,
   USDCPurchaseSellerNotification,
   RequestManagerNotification,
-  ApproveManagerRequestNotification
+  ApproveManagerRequestNotification,
+  CommentNotification,
+  CommentMentionNotification,
+  CommentThreadNotification
 } from '@audius/common/store'
 import {
   NotificationType,
@@ -123,10 +126,17 @@ export const useNotificationNavigation = () => {
         | FavoriteOfRepostNotification
         | USDCPurchaseBuyerNotification
         | USDCPurchaseSellerNotification
+        | CommentNotification
+        | CommentMentionNotification
+        | CommentThreadNotification
     ) => {
-      const { entityType, entityId } = notification
+      const { entityType, entityId, type } = notification
       if (entityType === Entity.Track) {
-        navigation.navigate('Track', { id: entityId, canBeUnlisted: false })
+        navigation.navigate('Track', {
+          id: entityId,
+          canBeUnlisted: false,
+          showComments: type.startsWith('Comment')
+        })
       } else if (
         entityType === Entity.Album ||
         entityType === Entity.Playlist
@@ -326,7 +336,10 @@ export const useNotificationNavigation = () => {
       [NotificationType.ApproveManagerRequest]: userIdHandler,
       [NotificationType.RequestManager]: userIdHandler,
       [PushNotificationType.Message]: messagesHandler,
-      [PushNotificationType.MessageReaction]: messagesHandler
+      [PushNotificationType.MessageReaction]: messagesHandler,
+      [NotificationType.Comment]: entityHandler,
+      [NotificationType.CommentMention]: entityHandler,
+      [NotificationType.CommentThread]: entityHandler
     }),
     [
       dispatch,

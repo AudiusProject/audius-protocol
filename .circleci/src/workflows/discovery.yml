@@ -98,13 +98,6 @@ jobs:
       filters:
         branches:
           only: main
-  - push-docker-image:
-      name: push-uptime
-      context: [Vercel, dockerhub]
-      service: uptime
-      filters:
-        branches:
-          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -123,7 +116,7 @@ jobs:
         - lint-discovery-provider
 
   # Deploy audius-protocol `main` branch (stage)
-  - deploy-stage-nodes:
+  - deploy-stage-nodes-just-tag:
       name: deploy-stage-discovery-provider
       requires:
         - lint-discovery-provider
@@ -141,7 +134,6 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-uptime
 
       filters:
         branches:

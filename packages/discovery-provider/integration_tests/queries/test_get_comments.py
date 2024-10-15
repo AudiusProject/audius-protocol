@@ -2,7 +2,11 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_comments import get_comment_replies, get_track_comments
+from src.queries.get_comments import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    get_comment_replies,
+    get_track_comments,
+)
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -126,10 +130,9 @@ def test_get_comments_pinned(app):
                 "entity_type": "Track",
                 "created_at": datetime(2022, 1, 2),
                 "track_timestamp_s": 2,
-                "is_pinned": True,
             },
         ],
-        "tracks": [{"track_id": 1, "owner_id": 10}],
+        "tracks": [{"track_id": 1, "owner_id": 10, "pinned_comment_id": 2}],
     }
 
     with app.app_context():
@@ -155,3 +158,167 @@ def test_get_comments_replies(app):
         )
         for comment in comments:
             assert 103 <= decode_string_id(comment["id"]) <= 105
+
+
+def test_get_muted_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+        ],
+        "comment_notification_settings": [
+            {
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Comment",
+                "is_muted": True,
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({}, 1)
+        assert comments[0]["is_muted"] == True
+
+
+def test_get_deleted_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 0,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            },
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 3,
+                "is_delete": True,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({"sort_method": "top"}, 1)
+        assert len(comments) == 1
+
+
+def test_get_tombstone_comments(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": i,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            }
+            for i in range(1, 5)
+        ]
+        + [
+            {  # deleted comment
+                "comment_id": 0,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+                "is_delete": True,
+            },
+            {  # this comment is a reply to the deleted comment
+                "comment_id": 6,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            },
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+        "comment_threads": [{"parent_comment_id": 0, "comment_id": 6}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # sort by top
+        comments = get_track_comments({"sort_method": "top"}, 1)
+
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"]) == 0
+        )  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+        # sort by newest
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"]) == 0
+        )  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+        # sort by timestamp
+        comments = get_track_comments({"sort_method": "timestamp"}, 1)
+        assert decode_string_id(comments[0]["id"]) == 1  # misc comment should be top
+        assert (
+            decode_string_id(comments[-1]["id"])
+        ) == 0  # deleted comment should be last
+        assert comments[-1]["is_tombstone"] == True  # deleted comment should be last
+
+
+def test_get_reported_comments(app):
+    "Test that we do not receive comments that have been reported by artist or high-karma user"
+
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 2,
+                "entity_id": 1,
+            },
+        ],
+        "comment_reports": [
+            {"comment_id": 1, "user_id": 1},
+            {"comment_id": 2, "user_id": 3},
+        ],
+        "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
+        "aggregate_user": [
+            {"user_id": 3, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD + 1}
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        comments = get_track_comments({}, 1, 4)
+        assert len(comments) == 0

@@ -112,3 +112,33 @@ def test_get_owner_comment_notifications(app):
             u1_notifications = get_notifications(session, args)
 
             assert len(u1_notifications) == 0
+
+
+def test_muted_track_notification(app):
+    with app.app_context():
+        db_mock = get_db()
+        populate_mock_db(
+            db_mock,
+            {
+                **test_entities,
+                "comment_notification_settings": [
+                    {
+                        "user_id": 1,
+                        "entity_id": 1,
+                        "entity_type": "Track",
+                        "is_muted": True,
+                    }
+                ],
+            },
+        )
+
+        test_actions = {
+            "comments": [{"user_id": 2, "entity_id": 1, "entity_type": "Track"}]
+        }
+        populate_mock_db(db_mock, test_actions)
+
+        with db_mock.scoped_session() as session:
+            args = {"user_id": 1, "valid_types": ["comment"]}
+            u1_notifications = get_notifications(session, args)
+
+            assert len(u1_notifications) == 0

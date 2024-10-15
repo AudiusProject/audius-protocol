@@ -1,0 +1,38 @@
+package pages
+
+import "github.com/AudiusProject/audius-protocol/core/db"
+
+type NodesView struct {
+	Nodes []db.CoreValidator
+}
+
+templ (p *Pages) NodesPageHTML(data *NodesView) {
+	@p.layout.SiteFrame() {
+		for _, node := range data.Nodes {
+			<div class="uk-padding-small">
+				<div class="uk-card">
+					<div class="uk-card-header">
+						<h2>
+							@p.components.ExternalLink("%s/%s", node.Endpoint, "/console") {
+								<div>{ node.Endpoint }</div>
+							}
+						</h2>
+					</div>
+					<div class="uk-card-body text-sm">
+						<div>
+							@p.components.Link("/node/%s", node.EthAddress) {
+								<div>Eth Address: { node.EthAddress } </div>
+							}
+						</div>
+						<div>
+							@p.components.Link("/node/%s", node.CometAddress) {
+								<div>Comet Address: { node.CometAddress } </div>
+							}
+						</div>
+						<div>Eth Block: { node.EthBlock }</div>
+					</div>
+				</div>
+			</div>
+		}
+	}
+}

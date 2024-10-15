@@ -3,6 +3,7 @@ import EventEmitter from 'events'
 import * as secp from '@noble/secp256k1'
 import { base64 } from '@scure/base'
 import WebSocket from 'isomorphic-ws'
+import { uniqBy } from 'lodash'
 import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
@@ -66,7 +67,8 @@ import {
   type ValidatedChatPermissions,
   type ChatCreateRPC,
   type UpgradableChatBlast,
-  ChatBlastAudience
+  ChatBlastAudience,
+  ChatPermission
 } from './serverTypes'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message cannot be displayed'
@@ -659,7 +661,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async permit(params: ChatPermitRequest) {
-    const { currentUserId, permit } = await parseParams(
+    const { currentUserId, permit, permitList, allow } = await parseParams(
       'permit',
       ChatPermitRequestSchema
     )(params)
@@ -667,7 +669,9 @@ export class ChatsApi
       current_user_id: currentUserId,
       method: 'chat.permit',
       params: {
-        permit
+        permit: permit ?? ChatPermission.ALL,
+        permit_list: permitList ?? [ChatPermission.ALL],
+        allow
       }
     })
   }
@@ -801,28 +805,37 @@ export class ChatsApi
 
   private async upgradeBlasts(userId: string) {
     const blasts = await this.getBlasts()
-    Promise.all(
-      blasts.data.map(async (blast) => {
+    const uniqueBlasts = uniqBy(blasts.data, 'pending_chat_id')
+
+    await Promise.all(
+      uniqueBlasts.map(async (blast) => {
         const encodedSenderId = encodeHashId(blast.from_user_id)
         if (encodedSenderId) {
           await this.create({
             userId,
             invitedUserIds: [encodedSenderId]
           })
-          this.eventEmitter.emit('message', {
-            chatId: blast.pending_chat_id,
-            message: {
-              message_id: blast.pending_chat_id + blast.chat_id,
-              message: blast.plaintext,
-              sender_user_id: encodedSenderId,
-              created_at: blast.created_at,
-              reactions: [],
-              is_plaintext: true
-            }
-          })
         }
       })
     )
+
+    for (const blast of blasts.data) {
+      const encodedSenderId = encodeHashId(blast.from_user_id)
+      if (encodedSenderId) {
+        this.eventEmitter.emit('message', {
+          chatId: blast.pending_chat_id,
+          message: {
+            // the order of blast_id + pending_chat_id needs to match Misc.BlastMessageID in comms
+            message_id: blast.blast_id + blast.pending_chat_id,
+            message: blast.plaintext,
+            sender_user_id: encodedSenderId,
+            created_at: blast.created_at,
+            reactions: [],
+            is_plaintext: true
+          }
+        })
+      }
+    }
   }
 
   private async getSignatureHeader(payload: string) {

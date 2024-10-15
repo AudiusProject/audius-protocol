@@ -1,6 +1,6 @@
+import { SignTypedDataVersion, signTypedData } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
-import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 
 import type { AuthService } from './types'
 
@@ -34,14 +34,17 @@ export class AppAuth implements AuthService {
     throw new Error('AppAuth does not support hashAndSign')
   }
 
-  signTransaction = async (data: MessageData<EIP712TypedData>['data']) => {
+  // TODO: replace this with a typed version of signature schemas
+  signTransaction = async (data: any) => {
     if (!this.apiSecret) {
       throw new Error(
         'AppAuth cannot `signTransaction` because apiSecret was not provided when initializing the SDK.'
       )
     }
-    return signTypedData(Buffer.from(this.apiSecret, 'hex'), {
-      data
+    return await signTypedData({
+      privateKey: Buffer.from(this.apiSecret, 'hex'),
+      data: data as any,
+      version: SignTypedDataVersion.V3
     })
   }
 

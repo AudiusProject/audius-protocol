@@ -34,10 +34,7 @@ build-audiusd:
     - persist_to_workspace:
         root: ./
         paths:
-          - bin/audius-ctl-arm64
-          - bin/audius-ctl-x86_64
-          - bin/audius-ctl-arm64-macos
-          - bin/audius-ctl-x86_64-macos
+          - bin/audius-ctl*
 
 test-audiusd-devnet:
   machine:

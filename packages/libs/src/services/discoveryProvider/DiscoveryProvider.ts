@@ -1236,7 +1236,7 @@ export class DiscoveryProvider {
    * @return encoded ID
    */
   async getUnclaimedId(
-    type: 'users' | 'playlists' | 'tracks'
+    type: Parameters<typeof Requests.getUnclaimedId>[0]
   ): Promise<null | undefined | string> {
     const req = Requests.getUnclaimedId(type)
     return await this._makeRequest(req)

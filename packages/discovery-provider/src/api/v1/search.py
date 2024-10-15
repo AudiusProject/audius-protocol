@@ -8,7 +8,6 @@ from src.api.v1.helpers import (
     full_search_parser,
     get_current_user_id,
     make_full_response,
-    parse_bool_param,
     success_response,
 )
 from src.api.v1.models.search import search_model
@@ -44,12 +43,12 @@ class FullSearch(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
-        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        include_purchaseable = args.get("includePurchaseable")
         genres = args.get("genre")
         moods = args.get("mood")
-        is_verified = parse_bool_param(args.get("is_verified"))
-        has_downloads = parse_bool_param(args.get("has_downloads"))
-        is_purchaseable = parse_bool_param(args.get("is_purchaseable"))
+        is_verified = args.get("is_verified")
+        has_downloads = args.get("has_downloads")
+        is_purchaseable = args.get("is_purchaseable")
         keys = args.get("key")
         bpm_min = args.get("bpm_min")
         bpm_max = args.get("bpm_max")
@@ -104,7 +103,7 @@ class FullSearchAutocomplete(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
-        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
+        include_purchaseable = args.get("includePurchaseable")
 
         search_args = {
             "is_auto_complete": True,

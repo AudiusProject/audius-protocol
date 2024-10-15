@@ -1,6 +1,7 @@
-import { sdk, stagingConfig } from '@audius/sdk'
+import { sdk } from '@audius/sdk'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
+
 
 /**
  * File that you can run via `npm run sandbox` to do some manual testing.
@@ -9,7 +10,7 @@ export const main = async () => {
   dotenv.config({ path: './dev.env' })
 
   const provider = new ethers.providers.JsonRpcProvider(
-    stagingConfig.acdc.web3ProviderUrl
+    'http://eth.staging.audius.co'
   )
   const { chainId } = await provider.getNetwork()
   console.log(`chain id = ${chainId}`)

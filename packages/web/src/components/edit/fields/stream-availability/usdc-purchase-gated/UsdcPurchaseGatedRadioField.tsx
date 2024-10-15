@@ -1,25 +1,16 @@
-import { useCallback } from 'react'
-
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import {
-  Name,
   StreamTrackAvailabilityType,
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { pluralize } from '@audius/common/utils'
-import { Hint, IconCart, IconStars } from '@audius/harmony'
+import { IconCart } from '@audius/harmony'
 
-import { ExternalTextLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useMessages } from 'hooks/useMessages'
-import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
-
-const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
-const PREMIUM_ALBUMS_BLOG =
-  'https://blog.audius.co/article/premium-albums-now-available'
 
 const messagesV1 = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
@@ -27,12 +18,7 @@ const messagesV1 = {
     `Unlockable by purchase, these ${pluralize(
       contentType,
       2
-    )} are visible to everyone but only playable by users who have paid for access.`,
-  waitlist:
-    'Start selling your music on Audius today! Limited access beta now available.',
-  join: 'Join the Waitlist',
-  learnMore: 'Learn More',
-  comingSoon: 'Coming Soon'
+    )} are visible to everyone but only playable by users who have paid for access.`
 }
 
 const messagesV2 = {
@@ -70,20 +56,9 @@ export const UsdcPurchaseGatedRadioField = (
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
 
-  const handleClickWaitListLink = useCallback(() => {
-    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
-  }, [])
-
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
   )
-  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
-  const { isEnabled: isNetworkCutEnabled } = useFeatureFlag(
-    FeatureFlags.NETWORK_CUT_ENABLED
-  )
-  const isPremiumUploadEnabled = isUsdcUploadEnabled || isNetworkCutEnabled
 
   const { disableUsdcGate } = useAccessAndRemixSettings({
     isEditableAccessEnabled: !!isEditableAccessEnabled,
@@ -94,31 +69,6 @@ export const UsdcPurchaseGatedRadioField = (
     isInitiallyUnlisted: !!isInitiallyUnlisted,
     isPublishDisabled
   })
-  const disabled = disableUsdcGate || !isPremiumUploadEnabled
-
-  const waitlistHint = (
-    <Hint
-      icon={IconStars}
-      actions={
-        <>
-          <ExternalTextLink
-            variant='visible'
-            to={WAITLIST_TYPEFORM}
-            onClick={handleClickWaitListLink}
-          >
-            {messages.join}
-          </ExternalTextLink>
-          {isAlbum ? (
-            <ExternalTextLink variant='visible' to={PREMIUM_ALBUMS_BLOG}>
-              {messages.learnMore}
-            </ExternalTextLink>
-          ) : null}
-        </>
-      }
-    >
-      {messages.waitlist}
-    </Hint>
-  )
 
   return (
     <ModalRadioItem
@@ -126,12 +76,10 @@ export const UsdcPurchaseGatedRadioField = (
       label={messages.usdcPurchase}
       description={messages.usdcPurchaseSubtitle(isAlbum ? 'album' : 'track')}
       value={StreamTrackAvailabilityType.USDC_PURCHASE}
-      disabled={disabled}
-      hint={!isPremiumUploadEnabled ? waitlistHint : undefined}
-      tag={!isPremiumUploadEnabled ? messages.comingSoon : undefined}
+      disabled={disableUsdcGate}
       checkedContent={
         <UsdcPurchaseFields
-          disabled={disabled}
+          disabled={disableUsdcGate}
           isAlbum={isAlbum}
           isUpload={isUpload}
         />

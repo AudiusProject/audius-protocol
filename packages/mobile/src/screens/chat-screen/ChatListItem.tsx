@@ -4,12 +4,12 @@ import { useProxySelector } from '@audius/common/hooks'
 import { chatSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
-import { View, TouchableHighlight } from 'react-native'
+import { TouchableHighlight } from 'react-native'
 
-import { Text, ProfilePicture } from 'app/components/core'
+import { Box, Flex, Text } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles'
 
 import type { AppTabScreenParamList } from '../app-screen'
 
@@ -20,58 +20,6 @@ const { getSingleOtherChatUser, getChat } = chatSelectors
 const messages = {
   new: 'new'
 }
-
-export const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    paddingVertical: spacing(4),
-    paddingHorizontal: spacing(6),
-    backgroundColor: palette.white,
-    borderColor: palette.neutralLight8,
-    borderBottomWidth: 1
-  },
-  contentRoot: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  },
-  userContainer: {
-    display: 'flex',
-    flexDirection: 'row'
-  },
-  userTextContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    paddingTop: 2,
-    marginLeft: spacing(2),
-    marginBottom: spacing(2)
-  },
-  userNameContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    marginBottom: spacing(1)
-  },
-  userName: {
-    fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.bold,
-    color: palette.neutral
-  },
-  handle: {
-    fontSize: typography.fontSize.small
-  },
-  unreadCountContainer: {
-    paddingVertical: spacing(1.5),
-    paddingHorizontal: spacing(2),
-    borderRadius: spacing(0.5),
-    backgroundColor: palette.secondary
-  },
-  unreadCount: {
-    fontSize: typography.fontSize.xxs,
-    textTransform: 'uppercase',
-    fontFamily: typography.fontByWeight.heavy,
-    color: palette.white,
-    letterSpacing: 0.5
-  }
-}))
 
 const clipMessageCount = (count: number) => {
   if (count > 9) {
@@ -85,7 +33,6 @@ const useRemoveLeadingWhitespace = (message: string) => {
 }
 
 export const ChatListItem = ({ chatId }: { chatId: string }) => {
-  const styles = useStyles()
   const { spacing } = useTheme()
   const navigation = useNavigation<AppTabScreenParamList>()
 
@@ -105,34 +52,64 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
   return (
     <TouchableHighlight onPress={handlePress}>
       {otherUser ? (
-        <View style={styles.root}>
-          <View style={styles.contentRoot}>
-            <View style={styles.userContainer}>
+        <Flex
+          column
+          pv='l'
+          ph='xl'
+          backgroundColor='white'
+          borderBottom='default'
+          w='100%'
+        >
+          <Flex row justifyContent='space-between' w='100%' gap='s'>
+            <Flex row flex={1} justifyContent='space-between'>
               <ProfilePicture
                 userId={otherUser.user_id}
                 style={css({ width: spacing.unit12, height: spacing.unit12 })}
               />
-              <View style={styles.userTextContainer}>
-                <View style={styles.userNameContainer}>
-                  <Text style={styles.userName}>{otherUser.name}</Text>
+              <Flex column pt='2xs' ml='s' mb='s' flex={1}>
+                <Flex row mb='xs' wrap='nowrap'>
+                  <Text
+                    size='l'
+                    strength='strong'
+                    numberOfLines={1}
+                    flexShrink={1}
+                  >
+                    {otherUser.name}
+                  </Text>
                   <UserBadges user={otherUser} hideName />
-                </View>
-                <Text style={styles.handle}>@{otherUser.handle}</Text>
-              </View>
-            </View>
+                </Flex>
+                <Text size='s' numberOfLines={1}>
+                  @{otherUser.handle}
+                </Text>
+              </Flex>
+            </Flex>
             {chat?.unread_message_count && chat?.unread_message_count > 0 ? (
-              <View>
-                <View style={styles.unreadCountContainer}>
-                  <Text style={styles.unreadCount}>
+              <Box style={css({ flexShrink: 0 })}>
+                <Flex
+                  pv='xs'
+                  ph='s'
+                  borderRadius='xs'
+                  backgroundColor='accent'
+                  justifyContent='center'
+                  alignItems='center'
+                >
+                  <Text
+                    variant='heading'
+                    size='xs'
+                    textTransform='uppercase'
+                    strength='strong'
+                    color='staticWhite'
+                    style={css({ letterSpacing: 0.5 })}
+                  >
                     {clipMessageCount(chat?.unread_message_count ?? 0)}{' '}
                     {messages.new}
                   </Text>
-                </View>
-              </View>
+                </Flex>
+              </Box>
             ) : null}
-          </View>
+          </Flex>
           <Text numberOfLines={1}>{lastMessage}</Text>
-        </View>
+        </Flex>
       ) : (
         <ChatListItemSkeleton />
       )}

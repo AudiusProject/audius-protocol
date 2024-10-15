@@ -13,7 +13,7 @@ export type SdkServicesConfig = {
   }
   acdc: {
     entityManagerContractAddress: string
-    web3ProviderUrl: string
+    chainId: number
   }
   solana: {
     claimableTokensProgramAddress: string

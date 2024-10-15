@@ -4,6 +4,7 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
+import { ChallengeName } from '@audius/common/models'
 import {
   accountSelectors,
   challengesSelectors,
@@ -107,8 +108,18 @@ const messages = {
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
-  twitterShare: (modalType: 'referrals' | 'ref-v') =>
-    `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
+  twitterShare: (
+    modalType:
+      | 'referrals'
+      | 'ref-v'
+      | ChallengeName.Referrals
+      | ChallengeName.ReferralsVerified
+  ) =>
+    `Share Invite With Your ${
+      modalType === 'referrals' || modalType === ChallengeName.Referrals
+        ? 'Friends'
+        : 'Fans'
+    }`,
   twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #Audius #AudioRewards\n\n`,
   twitterReferralLabel: 'Share referral link on Twitter',
   verifiedChallenge: 'VERIFIED CHALLENGE',
@@ -170,7 +181,11 @@ export const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
 }
 
 type TwitterShareButtonProps = {
-  modalType: 'referrals' | 'ref-v'
+  modalType:
+    | 'referrals'
+    | 'ref-v'
+    | ChallengeName.Referrals
+    | ChallengeName.ReferralsVerified
   inviteLink: string
 }
 
@@ -483,7 +498,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const renderReferralContent = () => {
-    if (userHandle && (modalType === 'referrals' || modalType === 'ref-v')) {
+    if (
+      userHandle &&
+      (modalType === 'referrals' ||
+        modalType === 'ref-v' ||
+        modalType === ChallengeName.Referrals ||
+        modalType === ChallengeName.ReferralsVerified)
+    ) {
       return (
         <div className={wm(styles.buttonContainer)}>
           <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
@@ -496,7 +517,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const renderMobileInstallContent = () => {
-    if (modalType === 'mobile-install') {
+    if (modalType === 'mobile-install' || modalType === 'm') {
       return (
         <div className={wm(styles.qrContainer)}>
           <img className={styles.qr} src={QRCode} alt='QR Code' />
@@ -577,7 +598,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                 {renderProgressStatusLabel()}
               </Flex>
             </Paper>
-            {modalType === 'profile-completion' ? <ProfileChecks /> : null}
+            {modalType === 'profile-completion' ||
+            modalType === ChallengeName.ProfileCompletion ? (
+              <ProfileChecks />
+            ) : null}
             {renderCooldownSummaryTable()}
           </>
         ) : (
@@ -612,7 +636,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                 {renderProgressStatusLabel()}
                 {renderProgressBar()}
               </Flex>
-              {modalType === 'profile-completion' ? <ProfileChecks /> : null}
+              {modalType === 'profile-completion' ||
+              modalType === ChallengeName.ProfileCompletion ? (
+                <ProfileChecks />
+              ) : null}
             </Paper>
             {renderCooldownSummaryTable()}
           </>

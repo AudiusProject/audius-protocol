@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
-import { Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
+import { formatCount } from '@audius/common/utils'
+import { Box, Flex, IconTowerBroadcast, IconUser, Text } from '@audius/harmony'
 import { ChatBlast } from '@audius/sdk'
 import cn from 'classnames'
 
@@ -40,21 +41,15 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       onClick={handleClick}
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
     >
-      <Flex gap='s' css={{ overflow: 'hidden' }}>
+      <Flex row gap='s' w='100%'>
         <IconTowerBroadcast size='l' color='default' />
-        <Text size='l' strength='strong' css={{ whiteSpace: 'nowrap' }}>
-          {chatBlastTitle}
-        </Text>
+        <Box css={{ flexShrink: 0 }}>
+          <Text size='l' strength='strong'>
+            {chatBlastTitle}
+          </Text>
+        </Box>
         {contentTitle ? (
-          <Text
-            size='l'
-            color='subdued'
-            css={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-          >
+          <Text size='l' color='subdued' ellipses css={{ display: 'block' }}>
             {contentTitle}
           </Text>
         ) : null}
@@ -63,12 +58,14 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
         </Text>
-        <Flex gap='xs'>
-          <IconUser size='s' color='subdued' />
-          <Text variant='label' color='subdued'>
-            {audienceCount}
-          </Text>
-        </Flex>
+        {audienceCount ? (
+          <Flex gap='xs'>
+            <IconUser size='s' color='subdued' />
+            <Text variant='label' color='subdued'>
+              {formatCount(audienceCount)}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
     </Flex>
   )

@@ -2,7 +2,6 @@ import { MouseEventHandler, useCallback } from 'react'
 
 import {
   notificationsSelectors,
-  Entity,
   CommentNotification as CommentNotificationType
 } from '@audius/common/store'
 import { IconMessage } from '@audius/harmony'
@@ -49,11 +48,6 @@ export const CommentNotification = (props: CommentNotificationProps) => {
     getNotificationEntity(state, notification)
   )
 
-  const entityTypeText =
-    entity && 'is_album' in entity && entity.is_album
-      ? Entity.Album
-      : entityType
-
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
@@ -98,8 +92,8 @@ export const CommentNotification = (props: CommentNotificationProps) => {
           <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
         ) : null}
         {messages.commented}
-        {entityTypeText.toLowerCase()}{' '}
-        <EntityLink entity={entity} entityType={entityTypeText} />
+        {entityType.toLowerCase()}{' '}
+        <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

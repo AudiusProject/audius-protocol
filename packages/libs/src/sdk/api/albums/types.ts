@@ -180,7 +180,6 @@ const PurchaseAlbumSchemaBase = z.object({
 export const GetPurchaseAlbumInstructionsSchema = z
   .object({})
   .merge(PurchaseAlbumSchemaBase)
-  .strict()
 
 export type GetPurchaseAlbumInstructionsRequest = z.input<
   typeof GetPurchaseAlbumInstructionsSchema

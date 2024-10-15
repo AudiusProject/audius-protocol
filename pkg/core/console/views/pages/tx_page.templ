@@ -1,0 +1,96 @@
+package pages
+
+import (
+	"encoding/json"
+	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	"github.com/dustin/go-humanize"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	"time"
+)
+
+type TxView struct {
+	Hash      string
+	Block     string
+	Timestamp time.Time
+	Tx        []byte
+}
+
+type TxPageJSONResponse struct {
+	Hash  string                 `json:"txhash"`
+	Block string                 `json:"block_height"`
+	Tx    map[string]interface{} `json:"tx"`
+}
+
+func (p *Pages) TxPageJSON(data *TxView) (*TxPageJSONResponse, error) {
+	obj := p.toJSON(data.Tx)
+
+	return &TxPageJSONResponse{
+		Hash:  data.Hash,
+		Block: data.Block,
+		Tx:    obj,
+	}, nil
+}
+
+func (p *Pages) toJSON(tx []byte) map[string]interface{} {
+	empty := make(map[string]interface{})
+
+	var transaction gen_proto.SignedTransaction
+	err := proto.Unmarshal(tx, &transaction)
+	if err != nil {
+		//  fmt.Errorf("could not marshal tx into signed tx: %v", err)
+		return empty
+	}
+
+	jsonData, err := protojson.Marshal(&transaction)
+	if err != nil {
+		// fmt.Errorf("could not marshal proto into json: %v", err)
+		return empty
+	}
+
+	var obj map[string]interface{}
+	if err := json.Unmarshal(jsonData, &obj); err != nil {
+		return empty
+	}
+
+	return obj
+}
+
+func (p *Pages) renderJSON(obj map[string]interface{}) string {
+	jsonData, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		// TODO: add log here
+		return ""
+	}
+	return string(jsonData)
+}
+
+templ (p *Pages) TxPageHTML(view *TxView) {
+	@p.layout.SiteFrame() {
+		<div class="uk-card">
+			<div class="uk-card-header">
+				<h1 class="font-semibold leading-none tracking-tight">
+					Transaction Details
+				</h1>
+			</div>
+			<div class="uk-card-body space-y-2">
+				<div>
+					@p.components.Link("/tx/%s", view.Hash) {
+						<div>Hash: { view.Hash }</div>
+					}
+				</div>
+				<div>
+					@p.components.Link("/block/%s", view.Block) {
+						<div>Block: { view.Block }</div>
+					}
+				</div>
+				<div>
+					Age: { humanize.Time(view.Timestamp) }
+				</div>
+				<div class="text-small p-4 rounded-lg">
+					<pre class="bg-gray-100 p-4 rounded-lg overflow-x-scroll">{ p.renderJSON(p.toJSON(view.Tx)) }</pre>
+				</div>
+			</div>
+		</div>
+	}
+}

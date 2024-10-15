@@ -1,4 +1,10 @@
-import { Name, Kind, Collection, ID } from '@audius/common/models'
+import {
+  Name,
+  Kind,
+  Collection,
+  ID,
+  ChallengeName
+} from '@audius/common/models'
 import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -22,6 +28,7 @@ import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
+import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
@@ -126,6 +133,13 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     setOptimisticChallengeCompleted({
       challengeId: 'first-playlist',
       specifier: userId.toString()
+    })
+  )
+
+  yield* put(
+    setOptimisticChallengeCompleted({
+      challengeId: ChallengeName.FirstPlaylist,
+      specifier: encodeHashId(userId)
     })
   )
 

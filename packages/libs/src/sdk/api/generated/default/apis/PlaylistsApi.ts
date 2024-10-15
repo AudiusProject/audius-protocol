@@ -48,7 +48,6 @@ export interface GetPlaylistRequest {
 export interface GetPlaylistAccessInfoRequest {
     playlistId: string;
     userId?: string;
-    includeNetworkCut?: boolean;
 }
 
 export interface GetPlaylistByHandleAndSlugRequest {
@@ -162,10 +161,6 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.includeNetworkCut !== undefined) {
-            queryParameters['include_network_cut'] = params.includeNetworkCut;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

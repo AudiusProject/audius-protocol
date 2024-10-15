@@ -64,6 +64,7 @@ const ProfileImageAvatar = ({
         ...(isEditing && { cursor: 'pointer' }),
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
+      isLoading={false}
     >
       {isEditing && !imageUrl ? (
         <IconButton

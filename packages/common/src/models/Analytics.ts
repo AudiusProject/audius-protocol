@@ -856,6 +856,7 @@ export enum FavoriteSource {
   NAVIGATOR = 'navigator'
 }
 export enum FollowSource {
+  INBOX_UNAVAILABLE_MODAL = 'inbox unavailable modal',
   PROFILE_PAGE = 'profile page',
   TRACK_PAGE = 'track page',
   COLLECTION_PAGE = 'collection page',
@@ -1445,6 +1446,7 @@ export enum ModalSource {
   TrackListItem = 'track list item',
   OverflowMenu = 'overflow menu',
   TrackLibrary = 'track library',
+  Comment = 'comment',
   // Should never be used, but helps with type-checking
   Unknown = 'unknown'
 }
@@ -2329,12 +2331,14 @@ type BlockUserFailure = {
 
 type ChangeInboxSettingsSuccess = {
   eventName: Name.CHANGE_INBOX_SETTINGS_SUCCESS
-  permission: ChatPermission
+  permission?: ChatPermission
+  permitList?: ChatPermission[]
 }
 
 type ChangeInboxSettingsFailure = {
   eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE
-  permission: ChatPermission
+  permission?: ChatPermission
+  permitList?: ChatPermission[]
 }
 
 type SendMessageReactionSuccess = {

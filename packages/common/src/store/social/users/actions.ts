@@ -1,3 +1,4 @@
+import { Action } from '@reduxjs/toolkit'
 import { createCustomAction } from 'typesafe-actions'
 
 import { FollowSource, ShareSource } from '../../../models/Analytics'
@@ -22,13 +23,14 @@ export const followUser = createCustomAction(
   (
     userId: ID,
     source: FollowSource,
-    trackId?: ID // in case the user is following the artist from a gated track page / modal
-  ) => ({ userId, source, trackId })
+    trackId?: ID, // in case the user is following the artist from a gated track page / modal
+    onSuccessActions?: Action[]
+  ) => ({ userId, source, trackId, onSuccessActions })
 )
 
 export const followUserSucceeded = createCustomAction(
   FOLLOW_USER_SUCCEEDED,
-  (userId: ID) => ({ userId })
+  (userId: ID, onSuccessActions?: Action[]) => ({ userId, onSuccessActions })
 )
 
 export const followUserFailed = createCustomAction(

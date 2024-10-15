@@ -1,5 +1,11 @@
 # @audius/fixed-decimal
 
+## 0.1.1
+
+### Patch Changes
+
+- 0a2fe3d: Add .js file extensions, and add package.json files to each dist w/ proper types to help node module resolution
+
 ## 0.1.0
 
 ### Minor Changes
