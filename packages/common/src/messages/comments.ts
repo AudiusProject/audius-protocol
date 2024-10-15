@@ -39,8 +39,8 @@ export const commentsMessages = {
     flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
-    turnOnNotifications: 'Turn On Notifications',
-    turnOffNotifications: 'Turn Off Notifications',
+    unmuteThread: 'Unmute This Thread',
+    muteThread: 'Mute This Thread',
     edit: 'Edit',
     delete: 'Delete',
     moreActions: 'more actions'

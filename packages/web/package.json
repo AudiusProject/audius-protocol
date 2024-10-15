@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.102",
+  "version": "1.5.103",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -76,6 +76,7 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@audius/trpc-server": "*",
     "@cloudflare/kv-asset-handler": "0.2.0",
     "@coinbase/cbpay-js": "1.2.0",

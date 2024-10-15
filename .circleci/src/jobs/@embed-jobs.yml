@@ -21,6 +21,8 @@ embed-init:
           - packages/harmony/dist
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/sdk/node_modules
+          - packages/sdk/dist
 
 embed-build-staging:
   working_directory: ~/audius-protocol

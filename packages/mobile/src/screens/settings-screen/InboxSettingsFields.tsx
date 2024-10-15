@@ -1,5 +1,8 @@
+import { useCallback } from 'react'
+
+import type { InboxSettingsFormValues } from '@audius/common/store'
 import { ChatPermission } from '@audius/sdk'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { Text, Flex } from '@audius/harmony-native'
 import { Switch } from 'app/components/core'
@@ -37,18 +40,33 @@ const options = [
 ]
 
 export const InboxSettingsFields = () => {
-  const [allowAllField, , allowAllHelpers] = useField({
+  const { values, setValues } = useFormikContext<InboxSettingsFormValues>()
+  const [allowAllField] = useField({
     name: 'all',
     type: 'checkbox'
   })
 
+  const handleAllChange = useCallback(
+    (isChecked: boolean) => {
+      let newValues = {
+        ...values,
+        all: isChecked
+      }
+      if (isChecked) {
+        newValues = options.reduce((acc, opt) => {
+          acc[opt.value as keyof InboxSettingsFormValues] = true
+          return acc
+        }, newValues)
+      }
+      setValues(newValues)
+    },
+    [setValues, values]
+  )
+
   return (
     <Flex gap='xl'>
       <Flex gap='l' row alignItems='center'>
-        <Switch
-          value={allowAllField.value}
-          onValueChange={allowAllHelpers.setValue}
-        />
+        <Switch value={allowAllField.value} onValueChange={handleAllChange} />
         <Text variant='title' strength='weak' size='l'>
           {messages.allowAll}
         </Text>
@@ -82,7 +100,7 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
     <Flex row gap='l' key={title}>
       <Switch
         id={title}
-        value={field.checked || allowAllField.checked}
+        value={field.checked}
         disabled={allowAllField.checked}
         onValueChange={helpers.setValue}
       />

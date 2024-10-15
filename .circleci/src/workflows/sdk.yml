@@ -4,16 +4,7 @@ jobs:
       context:
         - Vercel
 
-  - test:
-      name: test-audius-libs
+  - sdk-test:
       context: Vercel
-      service: audius-libs
-      requires:
-        - sdk-init
-
-  - test:
-      name: test-audius-sdk
-      context: Vercel
-      service: audius-sdk
       requires:
         - sdk-init
