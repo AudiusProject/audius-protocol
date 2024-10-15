@@ -223,6 +223,7 @@
     "@types/numeral": "2.0.2",
     "@types/react": "18.2.0",
     "@types/react-native-video": "5.0.19",
+    "@welldone-software/why-did-you-render": "^8.0.3",
     "babel-jest": "29.6.3",
     "babel-loader": "8.3.0",
     "babel-plugin-macros": "3.1.0",

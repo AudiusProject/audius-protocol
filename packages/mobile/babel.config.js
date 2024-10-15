@@ -27,6 +27,7 @@ module.exports = (api) => {
 
   if (babelEnv !== 'development') {
     plugins.push(['transform-remove-console', { exclude: ['error', 'warn'] }])
+    plugins.push(['@babel/plugin-transform-react-jsx', { runtime: 'classic' }])
   }
 
   plugins.push('react-native-reanimated/plugin')

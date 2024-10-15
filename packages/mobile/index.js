@@ -1,3 +1,4 @@
+import './wdyr' // <--- first import
 /* eslint-disable import/first */
 /* eslint-disable import/order */
 import 'react-native-gesture-handler'

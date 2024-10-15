@@ -30,7 +30,7 @@ type CommentOverflowMenuProps = {
   parentCommentId?: ID
 }
 
-export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
+const CommentOverflowMenuComponent = (props: CommentOverflowMenuProps) => {
   const {
     comment,
     comment: { id, userId },
@@ -213,7 +213,12 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
       content: messages.toasts.deleted,
       type: 'info'
     })
-  }, [deleteComment, id, toast, parentCommentId])
+  }, [deleteComment, id, parentCommentId, toast])
+
+  const handlePress = useCallback(() => {
+    setIsOpen(!isOpen)
+    setIsVisible(!isVisible)
+  }, [isOpen, isVisible])
 
   return (
     <>
@@ -222,10 +227,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         icon={IconKebabHorizontal}
         size='s'
         color='subdued'
-        onPress={() => {
-          setIsOpen(!isOpen)
-          setIsVisible(!isVisible)
-        }}
+        onPress={handlePress}
         disabled={disabled}
       />
 
@@ -321,3 +323,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     </>
   )
 }
+
+CommentOverflowMenuComponent.whyDidYouRender = true
+
+export const CommentOverflowMenu = CommentOverflowMenuComponent
