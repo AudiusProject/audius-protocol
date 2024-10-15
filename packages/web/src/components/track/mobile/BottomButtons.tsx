@@ -12,6 +12,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
@@ -39,9 +40,11 @@ type BottomButtonsProps = {
   isMatrixMode: boolean
   contentId: number
   contentType: string
+  renderOverflow?: () => React.ReactNode
 }
 
 const BottomButtons = (props: BottomButtonsProps) => {
+  const isMobile = useIsMobile()
   const isUSDCEnabled = useIsUSDCEnabled()
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(props.streamConditions)
@@ -51,15 +54,18 @@ const BottomButtons = (props: BottomButtonsProps) => {
     return null
   }
 
-  const moreButton = (
-    <MoreButton
-      wrapperClassName={styles.button}
-      className={styles.buttonContent}
-      onClick={props.onClickOverflow}
-      isDarkMode={props.isDarkMode}
-      isMatrixMode={props.isMatrixMode}
-    />
-  )
+  const moreButton =
+    !isMobile && props.renderOverflow ? (
+      props.renderOverflow()
+    ) : (
+      <MoreButton
+        wrapperClassName={styles.button}
+        className={styles.buttonContent}
+        onClick={props.onClickOverflow}
+        isDarkMode={props.isDarkMode}
+        isMatrixMode={props.isMatrixMode}
+      />
+    )
 
   // Stream conditions without access
   if (!props.isLoading && props.streamConditions && !props.hasStreamAccess) {

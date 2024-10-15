@@ -32,7 +32,8 @@ const {
   coinflowWithdrawalSucceeded,
   withdrawUSDCFailed,
   withdrawUSDCSucceeded,
-  cleanup: cleanupWithdrawUSDC
+  cleanup: cleanupWithdrawUSDC,
+  updateAmount
 } = withdrawUSDCActions
 const { set: setWithdrawUSDCModalData, close: closeWithdrawUSDCModal } =
   withdrawUSDCModalActions
@@ -110,6 +111,8 @@ function* doWithdrawUSDCCoinflow({
       signature,
       'finalized'
     )
+
+    yield* put(updateAmount({ amount }))
 
     yield* call(
       track,

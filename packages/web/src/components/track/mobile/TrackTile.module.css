@@ -10,7 +10,6 @@
   display: flex;
   padding: var(--harmony-unit-2);
   border-radius: var(--harmony-unit-2);
-  max-width: 400px;
   cursor: pointer;
   transition: all 0.2 ease-in-out;
   user-select: none;

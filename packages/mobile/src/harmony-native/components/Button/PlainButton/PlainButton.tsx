@@ -1,10 +1,9 @@
-import { useState } from 'react'
-
 import type { ReactNativeStyle } from '@emotion/native'
 import type { TextStyle } from 'react-native'
 import {
   interpolate,
   interpolateColor,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
@@ -25,14 +24,6 @@ export const PlainButton = (props: PlainButtonProps) => {
   const isPressable = !isDisabled && onPress
   const { color, spacing, typography } = useTheme()
   const pressed = useSharedValue(0)
-  const [isPressing, setIsPressing] = useState(false)
-
-  const handlePressIn = () => {
-    setIsPressing(true)
-  }
-  const handlePressOut = () => {
-    setIsPressing(false)
-  }
 
   // - Size Styles -
   const defaultStyles: ReactNativeStyle = {
@@ -107,6 +98,14 @@ export const PlainButton = (props: PlainButtonProps) => {
     [variant, isPressable]
   )
 
+  const animatedIconProps = useAnimatedProps(() => ({
+    fill: interpolateColor(
+      pressed.value,
+      [0, 1],
+      [dynamicStyles.default.text, dynamicStyles.press.text]
+    )
+  }))
+
   const textCss: TextStyle = useAnimatedStyle(
     () => ({
       ...(isPressable && {
@@ -122,11 +121,6 @@ export const PlainButton = (props: PlainButtonProps) => {
     [size, isPressable]
   )
 
-  const iconColor =
-    isPressing && isPressable
-      ? dynamicStyles.press.text
-      : dynamicStyles.default.text
-
   return (
     <BaseButton
       sharedValue={pressed}
@@ -134,12 +128,10 @@ export const PlainButton = (props: PlainButtonProps) => {
       styles={{ text: textCss, ...styles }}
       innerProps={{
         icon: {
-          fill: iconColor,
+          animatedProps: animatedIconProps,
           size: size === 'large' ? 'm' : 's'
         }
       }}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       {...baseProps}
     />
   )

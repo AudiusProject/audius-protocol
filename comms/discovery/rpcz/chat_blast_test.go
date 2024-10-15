@@ -62,6 +62,11 @@ func TestChatBlast(t *testing.T) {
 	`, t0)
 	assert.NoError(t, err)
 
+	// Blaster (user 69) closes inbox
+	// But recipients should still be able to upgrade.
+	err = chatSetPermissions(tx, 69, schema.None, nil, nil, t0)
+	assert.NoError(t, err)
+
 	// ----------------- some threads already exist -------------
 	// user 100 starts a thread with 69 before first blast
 	chatId_100_69 := misc.ChatID(100, 69)
@@ -213,6 +218,8 @@ func TestChatBlast(t *testing.T) {
 
 	// user 999 does not
 	{
+		assertChatCreateAllowed(t, tx, 999, 69, false)
+
 		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
 			UserID: 999,
 		})
@@ -222,6 +229,9 @@ func TestChatBlast(t *testing.T) {
 
 	// user 101 upgrades it to a real DM
 	{
+
+		assertChatCreateAllowed(t, tx, 101, 69, true)
+
 		err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
 			ChatID: chatId_101_69,
 			Invites: []schema.PurpleInvite{
@@ -398,6 +408,11 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ------- bi-directional blasting works with upgrade --------
+
+	// 69 re-opens inbox
+	err = chatSetPermissions(tx, 69, schema.All, nil, nil, t0)
+	assert.NoError(t, err)
+
 	// 68 sends a blast
 	chatId_68_69 := misc.ChatID(68, 69)
 

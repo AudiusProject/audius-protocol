@@ -7,7 +7,10 @@ import {
   useState
 } from 'react'
 
-import { EntityType, TrackCommentsSortMethodEnum } from '@audius/sdk'
+import {
+  EntityType,
+  TrackCommentsSortMethodEnum as CommentSortMethod
+} from '@audius/sdk'
 import type { NavigationProp } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
@@ -65,11 +68,11 @@ type CommentSectionContextType = {
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
   commentIds: ID[]
-  currentSort: TrackCommentsSortMethodEnum
+  currentSort: CommentSortMethod
   isLoadingMorePages: boolean
   hasMorePages: boolean
   reset: (hard?: boolean) => void
-  setCurrentSort: (sort: TrackCommentsSortMethodEnum) => void
+  setCurrentSort: (sort: CommentSortMethod) => void
   loadMorePages: () => void
 } & CommentSectionProviderProps
 
@@ -92,9 +95,13 @@ export const CommentSectionProvider = (
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
 
-  const [currentSort, setCurrentSort] = useState<TrackCommentsSortMethodEnum>(
-    TrackCommentsSortMethodEnum.Top
+  const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
+    CommentSortMethod.Top
   )
+  const handleSetCurrentSort = (sortMethod: CommentSortMethod) => {
+    queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
+    setCurrentSort(sortMethod)
+  }
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const {
@@ -184,7 +191,7 @@ export const CommentSectionProvider = (
         currentSort,
         replyingAndEditingState,
         setReplyingAndEditingState,
-        setCurrentSort,
+        setCurrentSort: handleSetCurrentSort,
         playTrack,
         loadMorePages,
         navigation,

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
@@ -98,10 +98,10 @@ const UserListItem = (props) => {
         <Pressable onPress={handleRowPress}>
           <Flex direction='row' gap='s'>
             <ProfilePicture userId={user.user_id} size='large' />
-            <Flex direction='column' gap='m'>
-              <Flex direction='column' gap='xs'>
-                <Flex direction='row' backgroundColor='white' gap='xs'>
-                  <Text>{user.name}</Text>
+            <Flex direction='column' gap='xs'>
+              <Flex direction='column' gap='2xs'>
+                <Flex direction='row' gap='xs' alignItems='center'>
+                  <Text size='s'>{user.name}</Text>
                   {user.is_verified ? (
                     <IconVerified
                       height={14}
@@ -110,9 +110,9 @@ const UserListItem = (props) => {
                       fillSecondary={palette.staticWhite}
                     />
                   ) : null}
-                  <IconAudioBadge tier={tier} height={16} width={16} />
+                  <IconAudioBadge tier={tier} height={14} width={14} />
                 </Flex>
-                <Text>@{user.handle}</Text>
+                <Text size='s'>@{user.handle}</Text>
               </Flex>
               <Flex direction='row' mb='auto' gap='xs' alignItems='center'>
                 <IconUser size='s' color='subdued' />

@@ -32,6 +32,7 @@ protocol-dashboard-init:
           - packages/harmony/node_modules
           - packages/common/node_modules
           - packages/libs/node_modules
+          - packages/sdk/node_modules
 
 protocol-dashboard-build-staging:
   working_directory: ~/audius-protocol

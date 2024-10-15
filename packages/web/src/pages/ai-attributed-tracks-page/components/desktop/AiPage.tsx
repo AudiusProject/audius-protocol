@@ -3,7 +3,7 @@ import { IconRobot } from '@audius/harmony'
 import cn from 'classnames'
 
 import Header from 'components/header/desktop/Header'
-import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullAiPage } from 'utils/route'
@@ -24,7 +24,7 @@ const messages = {
 export type AiPageProps = {
   title: string
   user: User | null
-  getLineupProps: () => LineupWithoutTile
+  getLineupProps: () => LineupProps
   goToArtistPage: () => void
 }
 

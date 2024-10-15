@@ -245,7 +245,8 @@ export const usePostComment = () => {
       const isReply = parentCommentId !== undefined
       // This executes before the mutationFn is called, and the reference to comment is the same in both
       // therefore, this sets the id that will be posted to the server
-      const newId = Math.floor(Math.random() * 1000000) // TODO: need to request an unused id instead of a random number
+      const sdk = await audiusSdk()
+      const newId = await sdk.comments.generateCommentId()
       // hack alert: there is no way to send context from onMutate to mutationFn so we hack it into the args
       args.newId = newId
       const newComment: Comment = {

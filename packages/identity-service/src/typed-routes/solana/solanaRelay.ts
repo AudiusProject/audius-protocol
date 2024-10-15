@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk/dist/libs'
+import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { parameterizedAuthMiddleware } from '../../authMiddleware'
 import express, { RequestHandler } from 'express'
 import {
