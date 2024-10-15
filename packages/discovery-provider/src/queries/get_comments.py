@@ -58,10 +58,30 @@ def get_replies(
         )
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+        .outerjoin(
+            MutedUser,
+            and_(
+                MutedUser.muted_user_id == Comment.user_id,
+                MutedUser.user_id == current_user_id,
+            ),
+        )
+        .outerjoin(
+            CommentReport,
+            Comment.comment_id == CommentReport.comment_id,
+        )
         .group_by(Comment.comment_id)
         .filter(
             CommentThread.parent_comment_id == parent_comment_id,
             Comment.is_delete == False,
+            or_(
+                MutedUser.muted_user_id == None,
+                MutedUser.is_delete == True,
+            ),  # Exclude muted users' comments
+            or_(
+                CommentReport.comment_id == None,
+                current_user_id == None,
+                CommentReport.user_id != current_user_id,
+            ),
         )
         .order_by(asc(Comment.created_at))
         .offset(offset)

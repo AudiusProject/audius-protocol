@@ -479,7 +479,8 @@ export const useDeleteComment = () => {
               ...prev,
               replies: (prev?.replies ?? []).filter(
                 (reply) => reply.id !== commentId
-              )
+              ),
+              replyCount: (prev?.replyCount ?? 0) - 1
             } as Comment)
         )
       }
@@ -684,12 +685,35 @@ export const useMuteUser = () => {
             // Filter out any comments by the muted user
             newState.pages = newState.pages.map((page) =>
               page.filter((id) => {
-                const comment = queryClient.getQueryData<
-                  CommentOrReply | undefined
+                const rootComment = queryClient.getQueryData<
+                  Comment | undefined
                 >([QUERY_KEYS.comment, id])
-                // If the comment is by the muted user, remove it
-                if (comment?.userId === mutedUserId) {
-                  queryClient.resetQueries([QUERY_KEYS.comment, comment.id])
+                if (!rootComment) return false
+                // Check for any replies by our muted user first
+                if (
+                  rootComment.replies &&
+                  (rootComment.replies.length ?? 0) > 0
+                ) {
+                  // Keep track of count
+                  const prevReplyCount = rootComment.replies.length
+                  // Filter out replies by the muted user
+                  rootComment.replies = rootComment.replies.filter((reply) => {
+                    if (reply.userId === mutedUserId) {
+                      queryClient.resetQueries([QUERY_KEYS.comment, reply.id])
+                      return false
+                    }
+                    return true
+                  })
+                  // Subtract how many replies were removed from total reply count
+                  // NOTE: remember that not all replies by the user may be showing due to pagination
+                  rootComment.replyCount =
+                    rootComment.replyCount -
+                    (prevReplyCount - rootComment.replies.length)
+                }
+
+                // Finally if the root comment is by the muted user, remove it
+                if (rootComment?.userId === mutedUserId) {
+                  queryClient.resetQueries([QUERY_KEYS.comment, rootComment.id])
                   return false
                 }
                 return true
