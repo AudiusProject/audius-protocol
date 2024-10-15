@@ -260,7 +260,7 @@ def validate_report_comment_tx(params: ManageEntityParameters):
 
 
 def report_comment(params: ManageEntityParameters):
-    validate_signer(params)
+    validate_report_comment_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
 
