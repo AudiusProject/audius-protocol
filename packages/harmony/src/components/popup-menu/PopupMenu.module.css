@@ -1,6 +1,7 @@
 .popup {
   margin: var(--harmony-spacing-s);
   padding: var(--harmony-spacing-s);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 .menu {
