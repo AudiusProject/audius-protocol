@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -11,8 +12,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/cometbft/cometbft/rpc/client"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	"github.com/cometbft/cometbft/types"
 )
 
 type State struct {
@@ -20,8 +19,6 @@ type State struct {
 	logger *common.Logger
 	db     *db.Queries
 
-	newBlockChan       <-chan coretypes.ResultEvent
-	newTxChan          <-chan coretypes.ResultEvent
 	latestBlocks       []pages.BlockView
 	latestTransactions []db.CoreTxResult
 
@@ -39,23 +36,11 @@ type State struct {
 }
 
 func NewState(config *config.Config, rpc client.Client, logger *common.Logger, db *db.Queries) (*State, error) {
-	newBlocksChan, err := rpc.Subscribe(context.Background(), "new-block-subscriber", types.EventQueryNewBlock.String())
-	if err != nil {
-		return nil, fmt.Errorf("could not create block subscriber: %v", err)
-	}
-
-	newTxsChan, err := rpc.Subscribe(context.Background(), "new-tx-subscriber", types.EventQueryTx.String())
-	if err != nil {
-		return nil, fmt.Errorf("could not create transaction subscriber: %v", err)
-	}
-
 	return &State{
 		rpc:    rpc,
 		logger: logger,
 		db:     db,
 
-		newBlockChan: newBlocksChan,
-		newTxChan:    newTxsChan,
 		chainId:      config.GenesisFile.ChainID,
 		ethAddress:   config.WalletAddress,
 		cometAddress: config.ProposerAddress,
@@ -153,19 +138,20 @@ func (state *State) Start() error {
 	state.recalculateState()
 
 	for {
-		newBlock := false
-		newTx := false
+		time.Sleep(5 * time.Second)
 
-		select {
-		case <-state.newBlockChan:
-			newBlock = true
-		case <-state.newTxChan:
-			newTx = true
+		totalBlocks, err := state.db.TotalBlocks(context.Background())
+		if err != nil {
+			state.logger.Errorf("could not get total blocks: %v", err)
+			continue
 		}
 
-		newEvent := newBlock || newTx
-		if newEvent {
-			state.recalculateState()
+		if totalBlocks <= state.totalBlocks {
+			// total blocks hasn't changed
+			continue
 		}
+		
+		// new block(s) present, rehydrate
+		state.recalculateState()
 	}
 }
