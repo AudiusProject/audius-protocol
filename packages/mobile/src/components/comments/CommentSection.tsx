@@ -33,7 +33,6 @@ const CommentSectionHeader = () => {
     commentCount
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
-  // console.log('asdf drawer: ', useDrawer('MuteComments'))
   const handlePressViewAll = () => {
     openDrawer({ entityId })
   }
