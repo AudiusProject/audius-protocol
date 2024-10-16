@@ -191,12 +191,6 @@
   margin-left: var(--harmony-unit-1);
 }
 
-.description {
-  padding-top: var(--harmony-unit-3);
-  line-height: 26px;
-  word-break: break-all;
-}
-
 .verified {
   margin-left: var(--harmony-unit-2);
   display: inline-block;
