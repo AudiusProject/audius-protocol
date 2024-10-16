@@ -182,7 +182,6 @@ const CommentDrawerContent = (props: {
       }
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
-      keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
