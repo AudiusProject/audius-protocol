@@ -486,13 +486,6 @@ const slice = createSlice({
       // triggers saga to get chat if not exists
       const { chatId, message, status, isSelfMessage } = action.payload
 
-      // If no chatId, don't add the message
-      // and abort early, relying on the saga
-      // to fetch the chat
-      if (!(chatId in state.messages)) {
-        return
-      }
-
       // Always update the last message, but don't update
       // last_message_at if it's a blast message sent by current user,
       // to avoid chat list re-sorting.
@@ -512,6 +505,13 @@ const slice = createSlice({
         id: chatId,
         changes
       })
+
+      // If no chatId, don't add the message
+      // and abort early, relying on the saga
+      // to fetch the chat
+      if (!(chatId in state.messages)) {
+        return
+      }
 
       // Return early if we've seen this message: don't update
       // recheck_permissions unless it's a message received from someone else
