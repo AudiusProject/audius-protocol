@@ -412,6 +412,25 @@ func TestChatBlast(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Len(t, blasts, 1)
+
+		// 104 does upgrade
+		chatId_104_69 := misc.ChatID(104, 69)
+
+		err = chatCreate(tx, 104, t6, schema.ChatCreateRPCParams{
+			ChatID: chatId_104_69,
+			Invites: []schema.PurpleInvite{
+				{UserID: misc.MustEncodeHashID(104), InviteCode: "earlier"},
+				{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+			},
+		})
+		assert.NoError(t, err)
+
+		// 104 convo seeded with 1 message
+
+		messages := mustGetMessagesAndReactions(104, chatId_104_69)
+		assert.Len(t, messages, 1)
+		messages = mustGetMessagesAndReactions(69, chatId_104_69)
+		assert.Len(t, messages, 1)
 	}
 
 	// ------ sender can get blasts in a given thread ----------
