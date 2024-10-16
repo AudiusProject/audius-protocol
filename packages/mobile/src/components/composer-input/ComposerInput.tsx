@@ -81,9 +81,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center',
     paddingTop: 0
   },
-  hideText: {
-    color: 'transparent'
-  },
   overlayTextContainer: {
     position: 'absolute',
     pointerEvents: 'none',
@@ -516,8 +513,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
           root: [styles.composeTextContainer, propStyles?.container],
           input: [
             styles.composeTextInput,
-            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null,
-            isTextHighlighted ? styles.hideText : null
+            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
           ]
         }}
         onChangeText={handleChange}
