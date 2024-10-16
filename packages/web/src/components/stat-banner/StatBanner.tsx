@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { ID, statusIsNotFinalized } from '@audius/common/models'
@@ -192,12 +192,6 @@ export const StatBanner = (props: StatsBannerProps) => {
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
-
-  const [flip, setFlip] = useState(false)
-  useEffect(() => {
-    const interval = setInterval(() => setFlip(!flip), 300)
-    return () => clearInterval(interval)
-  }, [flip])
 
   const shareButton = (
     <Button
