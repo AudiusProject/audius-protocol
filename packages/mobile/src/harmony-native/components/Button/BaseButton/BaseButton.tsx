@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
 import { Pressable } from 'react-native'
-import type {
-  GestureResponderEvent,
-  LayoutChangeEvent,
-  ViewStyle
-} from 'react-native'
+import type { GestureResponderEvent, ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolate,

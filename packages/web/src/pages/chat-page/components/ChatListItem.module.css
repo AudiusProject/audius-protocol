@@ -61,7 +61,8 @@
 
   .messagePreview,
   .userText,
-  .unreadIndicatorTag {
+  .unreadIndicatorTag,
+  .blastPreview {
     display: none;
   }
 }

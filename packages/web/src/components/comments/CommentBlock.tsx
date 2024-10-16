@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
@@ -8,7 +8,7 @@ import {
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex, PlainButton, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
@@ -48,6 +48,7 @@ const CommentBlockInternal = (
     isArtistReacted
   } = comment
 
+  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(
@@ -67,6 +68,10 @@ const CommentBlockInternal = (
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = userId === artistId
+
+  const handleUserMentionsChange = useCallback((userIds: ID[]) => {
+    setUserMentionIds(userIds)
+  }, [])
 
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
@@ -100,16 +105,30 @@ const CommentBlockInternal = (
           </Flex>
         ) : null}
         {showEditInput ? (
-          <CommentForm
-            autoFocus
-            onSubmit={() => setShowEditInput(false)}
-            commentId={commentId}
-            initialValue={message}
-            isEdit
-            hideAvatar
-          />
+          <Flex w='100%' direction='column' gap='s'>
+            <CommentForm
+              autoFocus
+              onSubmit={() => setShowEditInput(false)}
+              commentId={commentId}
+              initialValue={message}
+              initialUserMentionIds={userMentionIds}
+              isEdit
+              hideAvatar
+            />
+            <PlainButton
+              css={{ alignSelf: 'flex-end' }}
+              onClick={() => setShowEditInput(false)}
+            >
+              Cancel
+            </PlainButton>
+          </Flex>
         ) : (
-          <CommentText isEdited={isEdited}>{message}</CommentText>
+          <CommentText
+            isEdited={isEdited}
+            onUserMentionsChange={handleUserMentionsChange}
+          >
+            {message}
+          </CommentText>
         )}
         {hideActions ? null : (
           <CommentActionBar
@@ -117,19 +136,30 @@ const CommentBlockInternal = (
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
             onClickDelete={() => deleteComment(commentId, parentCommentId)}
-            isDisabled={isTombstone}
+            isDisabled={isTombstone || showReplyInput}
             hideReactCount={isTombstone}
             parentCommentId={parentCommentId}
           />
         )}
 
         {showReplyInput ? (
-          <CommentForm
-            autoFocus
-            parentCommentId={parentCommentId ?? comment.id}
-            initialValue={`@${userHandle} `}
-            onSubmit={() => setShowReplyInput(false)}
-          />
+          <Flex w='100%' direction='column' gap='s'>
+            <CommentForm
+              autoFocus
+              parentCommentId={parentCommentId ?? comment.id}
+              initialValue={`@${userHandle} `}
+              initialUserMentionIds={[userId]}
+              onSubmit={() => setShowReplyInput(false)}
+            />
+            <PlainButton
+              css={{ alignSelf: 'flex-end' }}
+              onClick={() => {
+                setShowReplyInput(false)
+              }}
+            >
+              Cancel
+            </PlainButton>
+          </Flex>
         ) : null}
       </Flex>
     </Flex>

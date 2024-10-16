@@ -40,7 +40,7 @@ def test_first_playlist_challenge(app):
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
-        session.query(Challenge).filter(Challenge.id == "first-playlist").update(
+        session.query(Challenge).filter(Challenge.id == "fp").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
 
@@ -67,7 +67,7 @@ def test_first_playlist_challenge(app):
         session.flush()
 
         state = first_playlist_challenge_manager.get_user_challenge_state(
-            session, ["1"]
+            session, ["7eP5n"]
         )[0]
 
         assert state.is_complete

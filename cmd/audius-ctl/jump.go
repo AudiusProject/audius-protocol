@@ -20,7 +20,7 @@ var (
 			if _, ok := ctx.Nodes[args[0]]; !ok {
 				return logger.Errorf("No host named '%s' in the current context.", args[0])
 			}
-			return orchestration.ShellIntoNode(args[0])
+			return orchestration.ShellIntoNode(args[0], ctx.Nodes[args[0]].IsLocalhost)
 		},
 	}
 )

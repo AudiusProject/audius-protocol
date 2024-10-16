@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
@@ -11,7 +11,6 @@ import {
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
 import { CommentSection } from 'app/components/comments/CommentSection'

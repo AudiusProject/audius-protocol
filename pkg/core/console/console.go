@@ -3,6 +3,7 @@
 package console
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -11,6 +12,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/layout"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/cometbft/cometbft/rpc/client"
+	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
@@ -27,15 +29,19 @@ type Console struct {
 	views   *views.Views
 }
 
-func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, rpc client.Client, pool *pgxpool.Pool) (*Console, error) {
+func NewConsole(config *config.Config, logger *common.Logger, e *echo.Echo, pool *pgxpool.Pool) (*Console, error) {
 	db := db.New(pool)
-	state, err := NewState(config, rpc, logger, db)
+	httprpc, err := rpchttp.New(config.RPCladdr)
+	if err != nil {
+		return nil, fmt.Errorf("could not create rpc client: %v", err)
+	}
+	state, err := NewState(config, httprpc, logger, db)
 	if err != nil {
 		return nil, err
 	}
 	c := &Console{
 		config:  config,
-		rpc:     rpc,
+		rpc:     httprpc,
 		e:       e,
 		logger:  logger.Child(strings.TrimPrefix(baseURL, "/")),
 		db:      db,

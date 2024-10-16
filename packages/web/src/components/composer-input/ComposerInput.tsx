@@ -7,11 +7,7 @@ import {
   useState
 } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetTrackById,
-  useGetUserByHandle
-} from '@audius/common/api'
+import { useGetTrackById, useGetUsersByIds } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -39,8 +35,6 @@ const messages = {
   sendMessage: 'Send Message',
   sendMessagePlaceholder: 'Start typing...'
 }
-
-const userMentionRegex = /^@\w+$/
 
 const MAX_LENGTH_DISPLAY_PERCENT = 0.85
 const ENTER_KEY = 'Enter'
@@ -75,6 +69,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     onSubmit,
     messageId,
     presetMessage,
+    presetUserMentionIds = [],
     maxLength = 400,
     placeholder,
     isLoading,
@@ -88,18 +83,15 @@ export const ComposerInput = (props: ComposerInputProps) => {
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: presetMentionUsers } = useGetUsersByIds({
+    ids: presetUserMentionIds
+  })
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
   const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
-  const [presetUserMention, setPresetUserMention] = useState('')
-  const { data: replyUser } = useGetUserByHandle({
-    handle: presetUserMention.slice(1), // slice to remove the @
-    currentUserId
-  })
 
   const [userMentions, setUserMentions] = useState<string[]>([])
   const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
@@ -109,6 +101,21 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const submittedRef = useRef(false)
   // Ref to keep track of a unique id for each change
   const changeOpIdRef = useRef(0)
+
+  useEffect(() => {
+    if (presetMentionUsers) {
+      setUserMentions((mentions) => [
+        ...mentions,
+        ...presetMentionUsers.map((user) => `@${user.handle}`)
+      ])
+      setUserIdMap((map) => {
+        presetMentionUsers.forEach((user) => {
+          map[user.handle] = user.user_id
+        })
+        return map
+      })
+    }
+  }, [presetMentionUsers])
 
   const {
     linkEntities,
@@ -127,23 +134,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
-        if (userMentionRegex.test(editedValue.trimEnd())) {
-          setPresetUserMention(editedValue.trimEnd())
-        }
       }
     }
     fn()
   }, [presetMessage, resolveLinks])
-
-  useEffect(() => {
-    if (replyUser && !userMentions.includes(presetUserMention)) {
-      setUserMentions((mentions) => [...mentions, presetUserMention])
-      setUserIdMap((map) => {
-        map[presetUserMention] = replyUser.user_id
-        return map
-      })
-    }
-  }, [presetUserMention, replyUser, userMentions])
 
   useEffect(() => {
     if (ref.current && autoFocus) {
