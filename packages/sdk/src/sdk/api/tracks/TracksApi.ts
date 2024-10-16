@@ -548,8 +548,8 @@ export class TracksApi extends GeneratedTracksApi {
 
     const {
       // only send the base params to getPurchaseInstructions
-      wallet: _wallet,
-      walletAdapter: _walletAdapter,
+      wallet: ignoredWallet,
+      walletAdapter: ignoredWalletAdapter,
       ...baseParams
     } = params
     const {

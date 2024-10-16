@@ -3,11 +3,7 @@
   "plugins": ["mocha"],
   "rules": {
     "mocha/no-mocha-arrows": "off",
-    "mocha/max-top-level-suites": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      { "ignoreRestSiblings": true }
-    ]
+    "mocha/max-top-level-suites": "off"
   },
   "ignorePatterns": ["jest.config.ts"]
 }
