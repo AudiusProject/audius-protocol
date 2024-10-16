@@ -32,6 +32,9 @@ type NodeConfig struct {
 
 	// *** Optional fields ***
 
+	// Whether this node is launched on the local machine.
+	IsLocalhost bool `yaml:"isLocalhost"`
+
 	// The version of the audius protocol to run (defaults to "current" behavior if omitted)
 	// "current"  - Run the latest tested release
 	// "edge"     - Run the latest release
@@ -63,7 +66,7 @@ type NodeConfig struct {
 	// (for compatibility with audius-docker-compose migrations)
 	OverrideConfig map[string]string `yaml:"overrideConfig,omitempty"`
 
-	// Path (on host machine) to env file containing additional private configuration
+	// (EXPERIMENTAL) Path on host machine to env file containing additional private configuration
 	RemoteConfigFile string `yaml:"remoteConfigFile,omitempty"`
 
 	PluginsConfig map[PluginName]map[string]string `yaml:"plugins,omitempty"`

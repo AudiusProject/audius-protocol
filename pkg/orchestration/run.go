@@ -69,9 +69,9 @@ func RunAudiusNodes(nodes map[string]conf.NodeConfig, network conf.NetworkConfig
 	}
 }
 
-func RunDownNode(host string) error {
+func RunDownNode(host string, isLocalhost bool) error {
 	logger.Infof("Spinning down %s...", host)
-	if err := downDockerNode(host); err != nil {
+	if err := downDockerNode(host, isLocalhost); err != nil {
 		return logger.Error(err)
 	} else {
 		logger.Infof("Node %s spun down.", host)
@@ -97,9 +97,9 @@ func NormalizedPrivateKey(host, privateKeyConfigValue string) (string, error) {
 	return privateKey, nil
 }
 
-// Append misc configuration stored on remote host.
-// This is a provisional feature to allow private config to remain on
-// the host instead of in audius-d configs.
+// Append misc configuration stored in a separate file on the host.
+// This is an experimental feature to allow private config to be stored
+// remotely and/or in a mountable secure file on the host.
 func appendRemoteConfig(host string, config map[string]string, remoteConfigPath string) error {
 	if remoteConfigPath == "" {
 		return nil
@@ -120,12 +120,12 @@ func appendRemoteConfig(host string, config map[string]string, remoteConfigPath 
 	}
 }
 
-func ShellIntoNode(host string) error {
+func ShellIntoNode(host string, isLocalhost bool) error {
 	var cmd *exec.Cmd
-	isLocalhost, err := resolvesToLocalhost(host)
-	if err != nil {
+	isProxiedLocalhost, err := resolvesToLocalhost(host)
+	if !isLocalhost && err != nil {
 		return logger.Error("Error determining origin of host:", err)
-	} else if isLocalhost {
+	} else if isLocalhost || isProxiedLocalhost {
 		cmd = exec.Command("docker", "exec", "-it", host, "/bin/bash")
 	} else {
 		cmd = exec.Command("ssh", "-o", "ConnectTimeout=10", "-t", host, "docker", "exec", "-it", host, "/bin/bash")
@@ -145,10 +145,10 @@ func execLocal(command string, args ...string) error {
 
 func execOnHost(host string, stdout io.Writer, stderr io.Writer, command string, args ...string) error {
 	var cmd *exec.Cmd
-	isLocalhost, err := resolvesToLocalhost(host)
+	isProxiedLocalhost, err := resolvesToLocalhost(host)
 	if err != nil {
 		return logger.Error("Error determining origin of host:", err)
-	} else if isLocalhost {
+	} else if isProxiedLocalhost {
 		cmd = exec.Command(command, args...)
 	} else {
 		cmd = exec.Command("ssh", append([]string{host, command}, args...)...)
