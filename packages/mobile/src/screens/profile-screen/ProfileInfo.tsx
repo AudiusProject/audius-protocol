@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { FollowSource } from '@audius/common/models'
+import { FollowSource, statusIsNotFinalized } from '@audius/common/models'
 import {
   accountSelectors,
   profilePageSelectors,
@@ -11,6 +11,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, Text } from '@audius/harmony-native'
+import Skeleton from 'app/components/skeleton'
 import { FollowButton, FollowsYouBadge } from 'app/components/user'
 import { UserLink } from 'app/components/user-link'
 import { useRoute } from 'app/hooks/useRoute'
@@ -22,7 +23,7 @@ import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
 
 const { getUserHandle } = accountSelectors
-const { getCanCreateChat } = chatSelectors
+const { getCanCreateChat, getChatPermissionsStatus } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getProfileUserId } = profilePageSelectors
 
@@ -44,6 +45,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: profileUserId })
   )
+  const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
   useEffect(() => {
     dispatch(fetchBlockees())
@@ -75,7 +77,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     ) : (
       <>
         {!isOwner ? (
-          canCreateChat ? (
+          statusIsNotFinalized(chatPermissionStatus) ? (
+            <Skeleton width={32} height={32} />
+          ) : canCreateChat ? (
             <MessageButton userId={user_id} />
           ) : (
             <MessageLockedButton userId={user_id} />
