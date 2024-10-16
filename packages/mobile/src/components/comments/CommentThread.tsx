@@ -13,6 +13,8 @@ import {
   PlainButton
 } from '@audius/harmony-native'
 
+import LoadingSpinner from '../loading-spinner/LoadingSpinner'
+
 import { CommentBlock } from './CommentBlock'
 
 type CommentThreadProps = {
@@ -35,11 +37,12 @@ export const CommentThread = (props: CommentThreadProps) => {
     setHiddenReplies(newHiddenReplies)
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies } = useGetCommentRepliesById({
-    commentId,
-    currentUserId,
-    enabled: hasRequestedMore
-  })
+  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
+    useGetCommentRepliesById({
+      commentId,
+      currentUserId,
+      enabled: hasRequestedMore
+    })
 
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {
@@ -91,11 +94,20 @@ export const CommentThread = (props: CommentThreadProps) => {
               ))}
             </Flex>
 
-            {hasMoreReplies ? (
-              <PlainButton onPress={handleLoadMoreReplies} variant='subdued'>
-                {messages.showMoreReplies}
-              </PlainButton>
-            ) : null}
+            <Flex direction='row' gap='s' alignItems='center'>
+              {hasMoreReplies ? (
+                <PlainButton
+                  onPress={handleLoadMoreReplies}
+                  variant='subdued'
+                  disabled={isFetchingReplies}
+                >
+                  {messages.showMoreReplies}
+                </PlainButton>
+              ) : null}
+              {isFetchingReplies ? (
+                <LoadingSpinner style={{ width: 20, height: 20 }} />
+              ) : null}
+            </Flex>
           </>
         )}
       </Flex>

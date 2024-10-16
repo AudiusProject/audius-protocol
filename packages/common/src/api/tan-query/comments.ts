@@ -91,6 +91,7 @@ export const useGetCommentsByTrackId = ({
         // TODO: why is this toString instead of encode
         userId: userId?.toString() ?? undefined
       })
+
       const commentList = transformAndCleanList(
         commentsRes.data,
         commentFromSDK
@@ -483,7 +484,7 @@ export const useDeleteComment = () => {
             ({
               ...prev,
               replies: (prev?.replies ?? []).filter(
-                (reply) => reply.id !== commentId
+                (reply: ReplyComment) => reply.id !== commentId
               ),
               replyCount: (prev?.replyCount ?? 0) - 1
             } as Comment)

@@ -21,7 +21,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
 
   const { currentUserId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, isFetching } =
+  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
     useGetCommentRepliesById({
       commentId,
       currentUserId,
@@ -100,10 +100,10 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
               onClick={handleLoadMoreReplies}
               variant='subdued'
               css={{ width: 'max-content' }}
-              disabled={isFetching}
+              disabled={isFetchingReplies}
             >
               {messages.showMoreReplies}
-              {isFetching ? (
+              {isFetchingReplies ? (
                 <LoadingSpinner css={{ width: 20, height: 20 }} />
               ) : null}
             </PlainButton>

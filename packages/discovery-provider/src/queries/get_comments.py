@@ -67,7 +67,10 @@ def get_replies(
         )
         .outerjoin(
             CommentReport,
-            Comment.comment_id == CommentReport.comment_id,
+            and_(
+                Comment.comment_id == CommentReport.comment_id,
+                CommentReport.user_id == current_user_id,
+            ),
         )
         .group_by(Comment.comment_id)
         .filter(
@@ -81,6 +84,7 @@ def get_replies(
                 CommentReport.comment_id == None,
                 current_user_id == None,
                 CommentReport.user_id != current_user_id,
+                CommentReport.is_delete == True,
             ),
         )
         .order_by(asc(Comment.created_at))
