@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -113,9 +113,7 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
       setInitialMessage(replyInitialMessage(replyingToUser.handle))
-      if (ref.current) {
-        ref.current.focus()
-      }
+      ref.current?.focus()
     }
   }, [replyingToComment, replyingToUser])
 
