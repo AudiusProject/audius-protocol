@@ -251,7 +251,6 @@ export const StatBanner = (props: StatsBannerProps) => {
                 <Button
                   variant='secondary'
                   size='small'
-                  disabled={!canCreateChat}
                   aria-label={messages.message}
                   iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
                   onClick={onMessage}
