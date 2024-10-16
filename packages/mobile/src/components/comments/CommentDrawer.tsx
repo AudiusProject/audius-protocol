@@ -197,12 +197,6 @@ const CommentDrawerContent = (props: {
 
 const BORDER_RADIUS = 40
 
-type CommentDrawerPropsType = {
-  entityId: number
-  isOpen: boolean
-  setIsOpen: (isOpen: boolean) => void
-}
-
 const drawerName = 'Comment'
 export const CommentDrawer = () => {
   const { data, isOpen, onClose } = useDrawer(drawerName)
