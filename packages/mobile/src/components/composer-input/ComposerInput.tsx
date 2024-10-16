@@ -501,7 +501,13 @@ export const ComposerInput = forwardRef(function ComposerInput(
     <>
       {displayCancelAccessory ? (
         <InputAccessoryView nativeID='cancelButtonAccessoryView'>
-          <Flex direction='row' justifyContent='flex-end' ph='l' pb='m'>
+          <Flex
+            backgroundColor='white'
+            direction='row'
+            justifyContent='flex-end'
+            ph='l'
+            pb='m'
+          >
             <PlainButton hitSlop={16} onPress={handleCancelButtonPress}>
               {messages.cancelLabel}
             </PlainButton>
