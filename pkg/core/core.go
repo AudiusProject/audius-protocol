@@ -21,7 +21,6 @@ import (
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 
-	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -58,30 +57,13 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 	defer pool.Close()
 
+	// Create an errgroup to manage concurrent tasks with context
+	eg, ctx := errgroup.WithContext(ctx)
+
 	e := echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.HideBanner = true
-
-	if config.StandaloneConsole && cometConfig == nil {
-		httprpc, err := rpchttp.New(config.RPCladdr)
-		if err != nil {
-			return fmt.Errorf("could not create rpc client: %v", err)
-		}
-
-		// run console in isolation
-		_, err = console.NewConsole(config, logger, e, httprpc, pool)
-		if err != nil {
-			return fmt.Errorf("console init error: %v", err)
-		}
-
-		go func() {
-			<-ctx.Done()
-			logger.Info("Shutting down HTTP server...")
-			e.Shutdown(ctx)
-		}()
-		return e.Start(config.CoreServerAddr)
-	}
 
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
@@ -95,10 +77,26 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 	logger.Info("initialized contracts")
 
+	eg.Go(func() error {
+		con, err := console.NewConsole(config, logger, e, pool)
+		if err != nil {
+			return fmt.Errorf("console init error: %v", err)
+		}
+
+		logger.Info("core Console starting")
+		return con.Start()
+	})
+
 	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
 	}
+
+	// Start the node (cometbft)
+	eg.Go(func() error {
+		logger.Info("core CometBFT node starting")
+		return node.Start()
+	})
 
 	logger.Info("new node created")
 
@@ -106,15 +104,16 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
-	if err != nil {
-		return fmt.Errorf("registry bridge init error: %v", err)
-	}
+	// Start the registry bridge
+	eg.Go(func() error {
+		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
+		if err != nil {
+			return fmt.Errorf("registry bridge init error: %v", err)
+		}
 
-	con, err := console.NewConsole(config, logger, e, rpc, pool)
-	if err != nil {
-		return fmt.Errorf("console init error: %v", err)
-	}
+		logger.Info("core registry bridge starting")
+		return registryBridge.Start()
+	})
 
 	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)
 	if err != nil {
@@ -130,13 +129,22 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("server init error: %v", err)
 	}
 
+	// Start the HTTP server
+	eg.Go(func() error {
+		logger.Info("core HTTP server starting")
+		return e.Start(config.CoreServerAddr)
+	})
+
 	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
 	if err != nil {
 		return fmt.Errorf("grpc listener not created: %v", err)
 	}
 
-	// Create an errgroup to manage concurrent tasks with context
-	eg, ctx := errgroup.WithContext(ctx)
+	// Start the gRPC server
+	eg.Go(func() error {
+		logger.Info("core gRPC server starting")
+		return grpcServer.Serve(grpcLis)
+	})
 
 	// Close all services when the context is canceled
 	defer func() {
@@ -146,35 +154,6 @@ func run(ctx context.Context, logger *common.Logger) error {
 		grpcLis.Close()
 		ethrpc.Close()
 	}()
-
-	// Start the HTTP server
-	eg.Go(func() error {
-		logger.Info("core HTTP server starting")
-		return e.Start(config.CoreServerAddr)
-	})
-
-	// Start the node (cometbft)
-	eg.Go(func() error {
-		logger.Info("core CometBFT node starting")
-		return node.Start()
-	})
-
-	// Start the gRPC server
-	eg.Go(func() error {
-		logger.Info("core gRPC server starting")
-		return grpcServer.Serve(grpcLis)
-	})
-
-	// Start the registry bridge
-	eg.Go(func() error {
-		logger.Info("core registry bridge starting")
-		return registryBridge.Start()
-	})
-
-	eg.Go(func() error {
-		logger.Info("core Console starting")
-		return con.Start()
-	})
 
 	// Wait for all services to finish or for context cancellation
 	return eg.Wait()

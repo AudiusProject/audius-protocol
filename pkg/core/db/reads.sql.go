@@ -64,6 +64,53 @@ func (q *Queries) GetAppStateAtHeight(ctx context.Context, blockHeight int64) (G
 	return i, err
 }
 
+const getBlock = `-- name: GetBlock :one
+select rowid, height, chain_id, created_at from core_blocks where height = $1
+`
+
+func (q *Queries) GetBlock(ctx context.Context, height int64) (CoreBlock, error) {
+	row := q.db.QueryRow(ctx, getBlock, height)
+	var i CoreBlock
+	err := row.Scan(
+		&i.Rowid,
+		&i.Height,
+		&i.ChainID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getBlockTransactions = `-- name: GetBlockTransactions :many
+select rowid, block_id, index, created_at, tx_hash, tx_result from core_tx_results where block_id = $1 order by created_at desc
+`
+
+func (q *Queries) GetBlockTransactions(ctx context.Context, blockID int64) ([]CoreTxResult, error) {
+	rows, err := q.db.Query(ctx, getBlockTransactions, blockID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreTxResult
+	for rows.Next() {
+		var i CoreTxResult
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.BlockID,
+			&i.Index,
+			&i.CreatedAt,
+			&i.TxHash,
+			&i.TxResult,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getInProgressRollupReports = `-- name: GetInProgressRollupReports :many
 select id, address, blocks_proposed, sla_rollup_id from sla_node_reports
 where sla_rollup_id is null 

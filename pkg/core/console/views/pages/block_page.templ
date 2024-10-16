@@ -3,7 +3,7 @@ package pages
 import (
 	"encoding/json"
 	"fmt"
-	gen_proto "github.com/AudiusProject/audius-protocol/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/dustin/go-humanize"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -11,7 +11,7 @@ import (
 )
 
 type BlockView struct {
-	Height    string
+	Height    int64
 	Hash      string
 	Proposer  string
 	Timestamp time.Time
@@ -58,7 +58,7 @@ func (p *Pages) BlockPageJSON(data *BlockView) (*BlockPageJSONResponse, error) {
 	resTxs := CamelCaseKeys(result)
 
 	return &BlockPageJSONResponse{
-		Height:   data.Height,
+		Height:   fmt.Sprint(data.Height),
 		Hash:     data.Hash,
 		Proposer: data.Proposer,
 		Txs:      resTxs,
@@ -67,24 +67,32 @@ func (p *Pages) BlockPageJSON(data *BlockView) (*BlockPageJSONResponse, error) {
 
 templ (p *Pages) BlockPageHTML(view *BlockView) {
 	@p.layout.SiteFrame() {
-		<div>
+		<div class="flex justify-between mt-4 text-sm">
+			@p.components.Link("/block/%d", view.Height-1) {
+				<div>Previous Block</div>
+			}
+			@p.components.Link("/block/%d", view.Height+1) {
+				<div>Next Block</div>
+			}
+		</div>
+		<div class="p-4">
 			<h1 class="text-xl">
-				Block Details
+				Block { fmt.Sprint(view.Height) } Details
 			</h1>
 			<div class="p-4 h-full">
+				// <div>
+				// 	@p.components.Link("/block/%s", view.Hash) {
+				// 		<div>Hash: { view.Hash }</div>
+				// 	}
+				// </div>
+				// <div>
+				// 	@p.components.Link("/nodes/%s", view.Proposer) {
+				// 		<div>Proposer: { view.Proposer }</div>
+				// 	}
+				// </div>
 				<div>
-					@p.components.Link("/block/%s", view.Hash) {
-						<div>Hash: { view.Hash }</div>
-					}
-				</div>
-				<div>
-					@p.components.Link("/nodes/%s", view.Proposer) {
-						<div>Proposer: { view.Proposer }</div>
-					}
-				</div>
-				<div>
-					@p.components.Link("/block/%s", view.Height) {
-						<div>Height: { view.Height }</div>
+					@p.components.Link("/block/%d", view.Height) {
+						<div>Height: { fmt.Sprint(view.Height) }</div>
 					}
 				</div>
 				<div>
