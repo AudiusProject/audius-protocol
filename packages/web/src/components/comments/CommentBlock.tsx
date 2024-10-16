@@ -119,6 +119,7 @@ const CommentBlockInternal = (
             onClickDelete={() => deleteComment(commentId, parentCommentId)}
             isDisabled={isTombstone}
             hideReactCount={isTombstone}
+            parentCommentId={parentCommentId}
           />
         )}
 

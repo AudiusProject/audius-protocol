@@ -142,16 +142,19 @@ export const useGetCommentById = (commentId: ID) => {
 
 type GetRepliesArgs = {
   commentId: ID
+  currentUserId?: Nullable<ID>
   enabled?: boolean
   pageSize?: number
 }
 export const useGetCommentRepliesById = ({
   commentId,
   enabled,
+  currentUserId,
   pageSize = 3
 }: GetRepliesArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery(
     [QUERY_KEYS.comment, commentId, QUERY_KEYS.commentReplies],
@@ -159,14 +162,15 @@ export const useGetCommentRepliesById = ({
       enabled: !!enabled,
       getNextPageParam: (lastPage: ReplyComment[], pages) => {
         if (lastPage?.length < pageSize) return undefined
-        return (pages.length ?? 0) * pageSize
+        return (pages.length ?? pageSize) * pageSize + startingLimit
       },
       queryFn: async ({
-        pageParam: currentPage = 3
+        pageParam: currentPage = startingLimit
       }): Promise<ReplyComment[]> => {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getCommentReplies({
           commentId: encodeHashId(commentId),
+          userId: currentUserId?.toString(),
           limit: pageSize,
           offset: currentPage
         })
@@ -196,7 +200,8 @@ export const useGetCommentRepliesById = ({
         })
         toast({ content: messages.loadError('replies') })
       },
-      staleTime: Infinity
+      staleTime: Infinity,
+      cacheTime: 1
     }
   )
   return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
@@ -607,6 +612,7 @@ export const useEditComment = () => {
 
 type ReportCommentArgs = {
   commentId: ID
+  parentCommentId?: ID
   userId: ID
   trackId: ID
   currentSort: CommentSortMethod
@@ -620,20 +626,37 @@ export const useReportComment = () => {
       const sdk = await audiusSdk()
       await sdk.comments.reportComment(userId, commentId)
     },
-    onMutate: ({ trackId, commentId, currentSort }) => {
-      // Optimistic update - filter out the comment
-      queryClient.setQueryData<InfiniteData<ID[]>>(
-        [QUERY_KEYS.trackCommentList, trackId, currentSort],
-        (prevData) => {
-          if (!prevData) return
-          const newState = cloneDeep(prevData)
-          // Filter out our reported comment
-          newState.pages = newState.pages.map((page) =>
-            page.filter((id) => id !== commentId)
-          )
-          return newState
-        }
-      )
+    onMutate: ({ trackId, commentId, currentSort, parentCommentId }) => {
+      // Optimistic update - filter out the comment from either the top list or the parent comment's replies
+      if (parentCommentId) {
+        queryClient.setQueryData<Comment>(
+          [QUERY_KEYS.comment, parentCommentId],
+          (prevData: Comment | undefined) => {
+            if (!prevData) return
+            return {
+              ...prevData,
+              replies: prevData.replies?.filter(
+                (reply: ReplyComment) => reply.id !== commentId
+              ),
+              replyCount: prevData.replyCount - 1
+            } as Comment
+          }
+        )
+      } else {
+        queryClient.setQueryData<InfiniteData<ID[]>>(
+          [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          (prevData) => {
+            if (!prevData) return
+            const newState = cloneDeep(prevData)
+            // Filter out our reported comment
+            newState.pages = newState.pages.map((page) =>
+              page.filter((id) => id !== commentId)
+            )
+            return newState
+          }
+        )
+      }
+
       queryClient.resetQueries([QUERY_KEYS.comment, commentId])
     },
     onError: (error: Error, args) => {

@@ -47,7 +47,7 @@ def get_replies(
     session,
     parent_comment_id,
     current_user_id,
-    # artist id could already have been queried for the track
+    # note: artist id already exists when used via get_track_comments - no need to requery for it
     artist_id=None,
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
@@ -116,11 +116,20 @@ def get_replies(
     ]
 
 
-def get_comment_replies(args, comment_id, current_user_id=None):
+# This method is only used by the API endpoint to get paginated replies directly /comments/<comment_id>/replies
+# NOT used by the get_track_comments
+def get_paginated_replies(args, comment_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        replies = get_replies(session, comment_id, current_user_id, offset, limit)
+        replies = get_replies(
+            session,
+            comment_id,
+            current_user_id,
+            artist_id=None,
+            offset=offset,
+            limit=limit,
+        )
 
     return replies
 
@@ -245,7 +254,12 @@ def get_track_comments(args, track_id, current_user_id=None):
                 "react_count": react_count,
                 "reply_count": len(
                     get_replies(
-                        session, track_comment.comment_id, current_user_id, artist_id
+                        session,
+                        track_comment.comment_id,
+                        current_user_id,
+                        artist_id=artist_id,
+                        offset=0,
+                        limit=None,
                     )
                 ),
                 "is_current_user_reacted": get_is_reacted(

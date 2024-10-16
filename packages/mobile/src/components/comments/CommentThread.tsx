@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 
@@ -27,20 +28,18 @@ export const CommentThread = (props: CommentThreadProps) => {
     [parentCommentId: number]: boolean
   }>({})
 
+  const { currentUserId } = useCurrentCommentSection()
   const toggleReplies = (commentId: ID) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, hasNextPage } =
-    useGetCommentRepliesById({
-      commentId,
-      enabled: hasRequestedMore
-    })
-
-  const hasMoreReplies =
-    (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage !== false // note: hasNextPage is undefined when inactive - have to explicitly check for false
+  const { fetchNextPage: loadMoreReplies } = useGetCommentRepliesById({
+    commentId,
+    currentUserId,
+    enabled: hasRequestedMore
+  })
 
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {
@@ -57,6 +56,8 @@ export const CommentThread = (props: CommentThreadProps) => {
   const { replyCount } = rootComment
 
   const replies = rootComment.replies ?? []
+
+  const hasMoreReplies = replyCount >= 3 && replies.length < replyCount // note: hasNextPage is undefined when inactive - have to explicitly check for false
 
   return (
     <>
