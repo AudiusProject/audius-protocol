@@ -11,6 +11,7 @@ export type ComposerInputProps = {
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
   onSubmit?: (value: string, linkEntities: LinkEntity[], mentions: ID[]) => void
   presetMessage?: string
+  presetUserMentionIds?: ID[]
   isLoading?: boolean
 } & Pick<
   TextAreaV2Props,

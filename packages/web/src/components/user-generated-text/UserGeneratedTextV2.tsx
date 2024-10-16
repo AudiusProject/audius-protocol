@@ -3,10 +3,12 @@ import {
   forwardRef,
   ReactNode,
   useCallback,
+  useEffect,
   useState
 } from 'react'
 
 import { useGetUserByHandle } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -46,6 +48,7 @@ type UserGeneratedTextV2Props = {
   children: string
   matchers?: Matcher[]
   linkProps?: Partial<TextLinkProps>
+  onUserIdsChange?: (userIds: ID[]) => void
 
   // If true, only linkify Audius URLs
   internalLinksOnly?: boolean
@@ -103,14 +106,22 @@ const Link = ({
 
 const HandleLink = ({
   handle,
+  onUserLoad,
   ...other
-}: Omit<TextLinkProps, 'to'> & { handle: string }) => {
+}: Omit<TextLinkProps, 'to'> & {
+  handle: string
+  onUserLoad: (userId: ID) => void
+}) => {
   const currentUserId = useSelector(getUserId)
 
   const { data: user } = useGetUserByHandle({
     handle: handle.replace('@', ''),
     currentUserId
   })
+
+  useEffect(() => {
+    if (user) onUserLoad(user.user_id)
+  }, [onUserLoad, user])
 
   return user ? (
     <ArtistPopover handle={user.handle} component='span'>
@@ -139,10 +150,26 @@ export const UserGeneratedTextV2 = forwardRef(function (
     children,
     matchers: matchersProp,
     linkProps,
+    onUserIdsChange,
     internalLinksOnly,
     suffix,
     ...other
   } = props
+
+  const [userIds, setUserIds] = useState<ID[]>([])
+
+  const handleUserLoad = useCallback(
+    (userId: ID) => {
+      if (!userIds.includes(userId)) {
+        setUserIds((ids) => [...ids, userId])
+      }
+    },
+    [userIds]
+  )
+
+  useEffect(() => {
+    onUserIdsChange?.(userIds)
+  }, [onUserIdsChange, userIds])
 
   const renderLink = useCallback(
     (text: string, _: RegExpMatchArray, index: number) => {
@@ -173,6 +200,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
           variant='visible'
           textVariant={other.variant}
           handle={text}
+          onUserLoad={handleUserLoad}
           {...linkProps}
         />
       ) : null

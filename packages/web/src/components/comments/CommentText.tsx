@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { ID } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
   timestampRegex
@@ -15,16 +16,24 @@ import { TimestampLink } from './TimestampLink'
 export type CommentTextProps = {
   children: string
   isEdited?: boolean
+  onUserMentionsChange?: (userIds: ID[]) => void
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited } = props
+  const { children, isEdited, onUserMentionsChange } = props
   const textRef = useRef<HTMLElement>()
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const {
     track: { duration }
   } = useCurrentCommentSection()
+
+  const handleUserIdsChange = useCallback(
+    (userIds: ID[]) => {
+      onUserMentionsChange?.(userIds)
+    },
+    [onUserMentionsChange]
+  )
 
   useEffect(() => {
     setIsOverflowing(
@@ -41,6 +50,7 @@ export const CommentText = (props: CommentTextProps) => {
         variant='body'
         color='default'
         ref={textRef}
+        onUserIdsChange={handleUserIdsChange}
         internalLinksOnly
         maxLines={isExpanded ? undefined : 3}
         css={{ textAlign: 'left', wordBreak: 'break-word' }}

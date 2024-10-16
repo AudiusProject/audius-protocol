@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
@@ -48,6 +48,7 @@ const CommentBlockInternal = (
     isArtistReacted
   } = comment
 
+  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(
@@ -67,6 +68,10 @@ const CommentBlockInternal = (
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = userId === artistId
+
+  const handleUserMentionsChange = useCallback((userIds: ID[]) => {
+    setUserMentionIds(userIds)
+  }, [])
 
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
@@ -105,11 +110,17 @@ const CommentBlockInternal = (
             onSubmit={() => setShowEditInput(false)}
             commentId={commentId}
             initialValue={message}
+            initialUserMentionIds={userMentionIds}
             isEdit
             hideAvatar
           />
         ) : (
-          <CommentText isEdited={isEdited}>{message}</CommentText>
+          <CommentText
+            isEdited={isEdited}
+            onUserMentionsChange={handleUserMentionsChange}
+          >
+            {message}
+          </CommentText>
         )}
         {hideActions ? null : (
           <CommentActionBar
@@ -127,6 +138,7 @@ const CommentBlockInternal = (
             autoFocus
             parentCommentId={parentCommentId ?? comment.id}
             initialValue={`@${userHandle} `}
+            initialUserMentionIds={[userId]}
             onSubmit={() => setShowReplyInput(false)}
           />
         ) : null}
