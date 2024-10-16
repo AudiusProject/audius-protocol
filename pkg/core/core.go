@@ -77,6 +77,16 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 	logger.Info("initialized contracts")
 
+	eg.Go(func() error {
+		con, err := console.NewConsole(config, logger, e, pool)
+		if err != nil {
+			return fmt.Errorf("console init error: %v", err)
+		}
+
+		logger.Info("core Console starting")
+		return con.Start()
+	})
+
 	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
@@ -94,25 +104,15 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
-	if err != nil {
-		return fmt.Errorf("registry bridge init error: %v", err)
-	}
-
 	// Start the registry bridge
 	eg.Go(func() error {
+		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
+		if err != nil {
+			return fmt.Errorf("registry bridge init error: %v", err)
+		}
+
 		logger.Info("core registry bridge starting")
 		return registryBridge.Start()
-	})
-
-	con, err := console.NewConsole(config, logger, e, pool)
-	if err != nil {
-		return fmt.Errorf("console init error: %v", err)
-	}
-
-	eg.Go(func() error {
-		logger.Info("core Console starting")
-		return con.Start()
 	})
 
 	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)

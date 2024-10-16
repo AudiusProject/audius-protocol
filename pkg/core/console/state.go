@@ -2,8 +2,6 @@ package console
 
 import (
 	"context"
-	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -51,8 +49,6 @@ func (state *State) recalculateState() {
 	ctx := context.Background()
 	logger := state.logger
 
-	state.latestTenBlocks()
-
 	recentTransactions, err := state.db.GetRecentTxs(ctx)
 	if err != nil {
 		logger.Errorf("could not get recent txs: %v", err)
@@ -96,42 +92,37 @@ func (state *State) recalculateState() {
 		state.totalValidators = totalValidators
 	}
 
-	status, err := state.rpc.Status(ctx)
-	if err == nil {
-		state.isSyncing = status.SyncInfo.CatchingUp
-	}
-}
-
-func (state *State) latestTenBlocks() {
-	client := state.rpc
-	status, err := client.Status(context.Background())
-	if err != nil {
-		state.logger.Errorf("failed to get status: %v", err)
-	}
-
-	latestHeight := status.SyncInfo.LatestBlockHeight
-	fmt.Printf("Latest Block Height: %d\n", latestHeight)
-
 	latestBlocks := []pages.BlockView{}
 
-	// Fetch the last 10 blocks
-	for height := latestHeight; height > latestHeight-10 && height > 0; height-- {
-		blockResult, err := client.Block(context.Background(), &height)
+	latestIndexedBlocks, err := state.db.GetRecentBlocks(context.Background())
+	if err != nil {
+		state.logger.Errorf("failed to get latest blocks in db: %v", err)
+	}
+
+	for _, block := range latestIndexedBlocks {
+		indexedTxs, err := state.db.GetBlockTransactions(context.Background(), block.Height)
 		if err != nil {
-			state.logger.Errorf("failed to get block at height %d: %v", height, err)
+			state.logger.Errorf("could not get block txs: %v", err)
 		}
 
-		block := blockResult.Block
+		txs := [][]byte{}
+		for _, tx := range indexedTxs {
+			txs = append(txs, tx.TxResult)
+		}
+
 		latestBlocks = append(latestBlocks, pages.BlockView{
-			Height:    fmt.Sprint(block.Height),
-			Hash:      hex.EncodeToString(block.Hash()),
-			Proposer:  block.Header.ProposerAddress.String(),
-			Timestamp: block.Time,
-			Txs:       block.Txs.ToSliceOfBytes(),
+			Height:    block.Height,
+			Timestamp: block.CreatedAt.Time,
+			Txs: txs,
 		})
 	}
 
 	state.latestBlocks = latestBlocks
+
+	status, err := state.rpc.Status(ctx)
+	if err == nil {
+		state.isSyncing = status.SyncInfo.CatchingUp
+	}
 }
 
 func (state *State) Start() error {
