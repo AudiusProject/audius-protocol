@@ -194,6 +194,7 @@
 .description {
   padding-top: var(--harmony-unit-3);
   line-height: 26px;
+  word-break: break-all;
 }
 
 .verified {
