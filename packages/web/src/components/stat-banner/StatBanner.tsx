@@ -1,8 +1,13 @@
 import { useRef } from 'react'
 
+import { useGetUserById } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  useInboxUnavailableModal,
+  createChatModalActions
+} from '@audius/common/store'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -21,6 +26,7 @@ import cn from 'classnames'
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
+import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
 
 import styles from './StatBanner.module.css'
 
@@ -183,6 +189,8 @@ export const StatBanner = (props: StatsBannerProps) => {
     isSubscribed,
     onToggleSubscribe
   } = props
+
+  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
@@ -198,6 +206,21 @@ export const StatBanner = (props: StatsBannerProps) => {
       {messages.share}
     </Button>
   )
+
+  const { data: user } = useGetUserById(
+    { id: profileId! },
+    { disabled: !profileId }
+  )
+
+  const handleComposeClicked = useComposeChat({
+    user: user as User,
+    onInboxUnavailable: (user) =>
+      openInboxUnavailableModal({
+        userId: user.user_id,
+        onSuccessAction: createChatModalActions.open({}),
+        onCancelAction: createChatModalActions.close()
+      })
+  })
 
   switch (mode) {
     case 'owner':
@@ -251,10 +274,9 @@ export const StatBanner = (props: StatsBannerProps) => {
                 <Button
                   variant='secondary'
                   size='small'
-                  disabled={!canCreateChat}
                   aria-label={messages.message}
                   iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
-                  onClick={onMessage}
+                  onClick={handleComposeClicked}
                 />
               ) : null}
             </>
