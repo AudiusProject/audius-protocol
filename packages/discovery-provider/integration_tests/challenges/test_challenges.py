@@ -75,7 +75,7 @@ def setup_challenges(app):
             UserChallenge(
                 challenge_id="test_challenge_1",
                 user_id=1,
-                specifier="1",
+                specifier="7eP5n",
                 is_complete=False,
                 current_step_count=1,
                 amount=5,
@@ -84,7 +84,7 @@ def setup_challenges(app):
             UserChallenge(
                 challenge_id="test_challenge_1",
                 user_id=2,
-                specifier="2",
+                specifier="ML51L",
                 is_complete=True,
                 completed_at=TEST_BLOCK_DATETIME,
                 current_step_count=3,
@@ -95,7 +95,7 @@ def setup_challenges(app):
             UserChallenge(
                 challenge_id="test_challenge_1",
                 user_id=3,
-                specifier="3",
+                specifier="lebQD",
                 current_step_count=2,
                 is_complete=False,
                 amount=5,
@@ -104,7 +104,7 @@ def setup_challenges(app):
             UserChallenge(
                 challenge_id="test_challenge_2",
                 user_id=4,
-                specifier="4",
+                specifier="ELKzn",
                 is_complete=True,
                 completed_at=TEST_BLOCK_DATETIME,
                 amount=5,
@@ -113,7 +113,7 @@ def setup_challenges(app):
             UserChallenge(
                 challenge_id="test_challenge_1",
                 user_id=5,
-                specifier="5",
+                specifier="pnagD",
                 is_complete=False,
                 current_step_count=2,
                 amount=5,
@@ -182,7 +182,7 @@ def test_handle_event(app):
         expected = {
             "challenge_id": "test_challenge_1",
             "user_id": 1,
-            "specifier": "1",
+            "specifier": "7eP5n",
             "is_complete": False,
             "completed_at": None,
             "current_step_count": 1,
@@ -244,7 +244,7 @@ def test_handle_event(app):
             {
                 "challenge_id": "test_challenge_1",
                 "user_id": 1,
-                "specifier": "1",
+                "specifier": "7eP5n",
                 "is_complete": False,
                 "completed_at": None,
                 "current_step_count": 2,
@@ -256,7 +256,7 @@ def test_handle_event(app):
             {
                 "challenge_id": "test_challenge_1",
                 "user_id": 2,
-                "specifier": "2",
+                "specifier": "ML51L",
                 "is_complete": True,
                 "completed_at": TEST_BLOCK_DATETIME,
                 "current_step_count": 3,
@@ -268,7 +268,7 @@ def test_handle_event(app):
             {
                 "challenge_id": "test_challenge_1",
                 "user_id": 3,
-                "specifier": "3",
+                "specifier": "lebQD",
                 "is_complete": True,
                 "completed_at": TEST_BLOCK_DATETIME,
                 "current_step_count": 3,
@@ -280,7 +280,7 @@ def test_handle_event(app):
             {
                 "challenge_id": "test_challenge_1",
                 "user_id": 5,
-                "specifier": "5",
+                "specifier": "pnagD",
                 "is_complete": False,
                 "completed_at": None,
                 "current_step_count": 2,
@@ -292,7 +292,7 @@ def test_handle_event(app):
             {
                 "challenge_id": "test_challenge_1",
                 "user_id": 6,
-                "specifier": "6",
+                "specifier": "AnlGe",
                 "is_complete": False,
                 "completed_at": None,
                 "current_step_count": 1,
@@ -543,12 +543,12 @@ def test_catches_exceptions_in_single_processor(app):
         except:
             # pylint: disable=W0707
             raise Exception("Shouldn't have propogated error!")
-        challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
+        challenge_1_state = correct_manager.get_user_challenge_state(session, ["7eP5n"])
         # Make sure that the 'correct_manager' still executes
         assert len(challenge_1_state) == 1
         assert challenge_1_state[0].current_step_count == 1
         # Make sure broken manager didn't do anything
-        challenge_2_state = broken_manager.get_user_challenge_state(session, ["1"])
+        challenge_2_state = broken_manager.get_user_challenge_state(session, ["7eP5n"])
         assert len(challenge_2_state) == 0
 
         # Try the other order
@@ -561,9 +561,9 @@ def test_catches_exceptions_in_single_processor(app):
         except:
             # pylint: disable=W0707
             raise Exception("Shouldn't have propogated error!")
-        challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
+        challenge_1_state = correct_manager.get_user_challenge_state(session, ["7eP5n"])
         assert len(challenge_1_state) == 1
         assert challenge_1_state[0].current_step_count == 2
         # Make sure broken manager didn't do anything
-        challenge_2_state = broken_manager.get_user_challenge_state(session, ["1"])
+        challenge_2_state = broken_manager.get_user_challenge_state(session, ["7eP5n"])
         assert len(challenge_2_state) == 0
