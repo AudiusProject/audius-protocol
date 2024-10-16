@@ -16,6 +16,7 @@ from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -594,6 +595,33 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if entity_type == EntityType.PLAYLIST:
                 entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
             if entity_type == EntityType.COMMENT:
+                if (
+                    action == Action.CREATE
+                    or action == Action.UPDATE
+                    or action == Action.PIN
+                    or action == Action.UNPIN
+                ):
+                    try:
+                        json_metadata = json.loads(metadata)
+                    except Exception as e:
+                        logger.error(
+                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                        )
+                        # skip invalid metadata
+                        continue
+                    track_id = json_metadata.get("data", {}).get("entity_id")
+                    parent_comment_id = json_metadata.get("data", {}).get(
+                        "parent_comment_id"
+                    )
+                    entities_to_fetch[EntityType.TRACK].add(track_id)
+                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                        (user_id, entity_id, entity_type)
+                    )
+                    if parent_comment_id:
+                        entities_to_fetch[EntityType.COMMENT].add(parent_comment_id)
+                        entities_to_fetch[EntityType.COMMENT_THREAD].add(
+                            (parent_comment_id, entity_id)
+                        )
                 if action == Action.UPDATE:
                     entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
                 elif action == Action.REACT or action == Action.UNREACT:
@@ -604,17 +632,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.COMMENT_REPORT].add(
                         (user_id, entity_id)
                     )
-                elif action == Action.PIN or action == Action.UNPIN:
-                    try:
-                        json_metadata = json.loads(metadata)
-                    except Exception as e:
-                        logger.error(
-                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
-                        )
-                        # skip invalid metadata
-                        continue
-                    track_id = json_metadata.get("data", {}).get("entity_id")
-                    entities_to_fetch[EntityType.TRACK].add(track_id)
                 elif action == Action.MUTE or action == Action.UNMUTE:
                     entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
                         (user_id, entity_id, entity_type)
@@ -1207,6 +1224,30 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.COMMENT_REACTION] = {
             (comment_json["user_id"], comment_json["comment_id"]): comment_json
             for _, comment_json in comment_reactions
+        }
+    if entities_to_fetch[EntityType.COMMENT_THREAD.value]:
+        comment_threads_to_fetch: Set[Tuple] = entities_to_fetch[
+            EntityType.COMMENT_THREAD.value
+        ]
+
+        or_queries = []
+        for comment_thread in comment_threads_to_fetch:
+            parent_comment_id, comment_id = comment_thread
+            or_queries.append(
+                or_(
+                    CommentThread.parent_comment_id == parent_comment_id,
+                    CommentThread.comment_id == comment_id,
+                )
+            )
+
+        comment_threads = session.query(CommentThread).filter(or_(*or_queries)).all()
+
+        existing_entities[EntityType.COMMENT_THREAD] = {
+            (
+                comment_thread.parent_comment_id,
+                comment_thread.comment_id,
+            ): comment_thread
+            for comment_thread in comment_threads
         }
     if entities_to_fetch[EntityType.COMMENT_MENTION.value]:
         comment_ids = entities_to_fetch[EntityType.COMMENT_MENTION.value]
