@@ -43,7 +43,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
     >
       <Flex row gap='s' w='100%' className={styles.headingContainer}>
         <IconTowerBroadcast size='l' color='default' />
-        <Box css={{ flexShrink: 0 }} className={styles.messagePreview}>
+        <Box css={{ flexShrink: 0 }} className={styles.blastPreview}>
           <Text size='l' strength='strong'>
             {chatBlastTitle}
           </Text>
@@ -54,7 +54,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
             color='subdued'
             ellipses
             css={{ display: 'block' }}
-            className={styles.messagePreview}
+            className={styles.blastPreview}
           >
             {contentTitle}
           </Text>
@@ -63,7 +63,7 @@ export const ChatListBlastItem = (props: ChatListBlastItemProps) => {
       <Flex
         justifyContent='space-between'
         w='100%'
-        className={styles.messagePreview}
+        className={styles.blastPreview}
       >
         <Text variant='label' textTransform='capitalize' color='subdued'>
           {messages.audience}
