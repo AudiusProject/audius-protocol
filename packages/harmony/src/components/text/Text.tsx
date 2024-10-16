@@ -3,8 +3,6 @@ import { ElementType, ForwardedRef, forwardRef, useContext } from 'react'
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
-import { typography } from '../../foundations/typography'
-
 import { bodyLineHeightMap, variantStylesMap, variantTagMap } from './constants'
 import { TextContext } from './textContext'
 import type { TextProps } from './types'
@@ -40,7 +38,7 @@ export const Text = forwardRef(
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
-      fontFamily: typography.font,
+      fontFamily: theme.typography.font,
       position: 'relative',
       boxSizing: 'border-box',
       ...(color &&
@@ -55,11 +53,11 @@ export const Text = forwardRef(
       ...(color && color !== 'heading' && { color: theme.color.text[color] }),
       ...(variantConfig && {
         // @ts-ignore
-        fontSize: typography.size[variantConfig.fontSize[size]],
+        fontSize: theme.typography.size[variantConfig.fontSize[size]],
 
         lineHeight:
           // @ts-ignore
-          typography.lineHeight[
+          theme.typography.lineHeight[
             lineHeight && variant === 'body' && size
               ? // @ts-ignore
                 bodyLineHeightMap[size][lineHeight]
@@ -67,11 +65,11 @@ export const Text = forwardRef(
                 variantConfig.lineHeight[size]
           ],
         // @ts-ignore
-        fontWeight: typography.weight[variantConfig.fontWeight[strength]],
+        fontWeight: theme.typography.weight[variantConfig.fontWeight[strength]],
         ...('css' in variantConfig && variantConfig.css)
       }),
       ...(shadow && {
-        textShadow: typography.shadow[shadow]
+        textShadow: theme.typography.shadow[shadow]
       }),
       textAlign,
       ...(textTransform && { textTransform }),
