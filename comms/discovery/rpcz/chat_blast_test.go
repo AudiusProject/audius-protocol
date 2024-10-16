@@ -67,6 +67,10 @@ func TestChatBlast(t *testing.T) {
 	err = chatSetPermissions(tx, 69, schema.None, nil, nil, t0)
 	assert.NoError(t, err)
 
+	// Other user (104) closes inbox
+	err = chatSetPermissions(tx, 104, schema.None, nil, nil, t0)
+	assert.NoError(t, err)
+
 	// ----------------- some threads already exist -------------
 	// user 100 starts a thread with 69 before first blast
 	chatId_100_69 := misc.ChatID(100, 69)
@@ -216,6 +220,15 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, blasts, 1)
 	}
 
+	// user 104 has zero blasts (inbox closed)
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 104,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 0)
+	}
+
 	// user 999 does not
 	{
 		assertChatCreateAllowed(t, tx, 999, 69, false)
@@ -308,6 +321,11 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ----------------- a second message ------------------------
+
+	// Other user (104) re-opens inbox
+	err = chatSetPermissions(tx, 104, schema.All, nil, nil, t3)
+	assert.NoError(t, err)
+
 	_, err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
@@ -384,6 +402,16 @@ func TestChatBlast(t *testing.T) {
 		if !found {
 			assert.Fail(t, "chat id should now be visible to user 69", chatId_101_69)
 		}
+	}
+
+	// user 104 should have just 1 blast
+	// since 104 opened inbox after first blast
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 104,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 1)
 	}
 
 	// ------ sender can get blasts in a given thread ----------
