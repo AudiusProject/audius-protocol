@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -22,6 +22,8 @@ import { ProfilePicture } from '../core'
 type CommentFormHelperTextProps = {
   replyingToUserHandle?: string
 }
+
+const replyInitialMessage = (handle: string) => `@${handle} `
 
 const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
   const { replyingToUserHandle } = props
@@ -60,6 +62,7 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
         icon={IconClose}
         onPress={handlePressClear}
         color='default'
+        hitSlop={10}
       />
     </Flex>
   )
@@ -109,8 +112,10 @@ export const CommentForm = (props: CommentFormProps) => {
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
-      setInitialMessage(`@${replyingToUser.handle} `)
-      ref.current?.focus()
+      setInitialMessage(replyInitialMessage(replyingToUser.handle))
+      if (ref.current) {
+        ref.current.focus()
+      }
     }
   }, [replyingToComment, replyingToUser])
 
@@ -123,6 +128,14 @@ export const CommentForm = (props: CommentFormProps) => {
       ref.current?.focus()
     }
   }, [editingComment])
+
+  const handleLayout = useCallback(() => {
+    if ((replyingToComment || editingComment) && ref.current) {
+      // Set the cursor position (required for android)
+      const initialMessageLength = initialMessage?.length ?? 0
+      ref.current.setSelection(initialMessageLength, initialMessageLength)
+    }
+  }, [editingComment, initialMessage?.length, replyingToComment])
 
   const placeholder = commentIds?.length
     ? messages.addComment
@@ -157,6 +170,7 @@ export const CommentForm = (props: CommentFormProps) => {
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
+            onLayout={handleLayout}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

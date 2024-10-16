@@ -241,6 +241,7 @@ export const CommentDrawer = (props: CommentDrawerPropsType) => {
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
+    setReplyingAndEditingState?.(undefined)
   }, [setIsOpen])
 
   const renderFooterComponent = useCallback(

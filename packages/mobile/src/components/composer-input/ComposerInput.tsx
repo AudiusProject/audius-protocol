@@ -127,7 +127,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     entityId,
     styles: propStyles,
     TextInputComponent,
-    displayCancelAccessory = false
+    displayCancelAccessory = false,
+    onLayout
   } = props
   const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
@@ -523,6 +524,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         onChangeText={handleChange}
         onKeyPress={handleKeyDown}
         onSelectionChange={handleSelectionChange}
+        onLayout={onLayout}
         multiline
         value={value}
         inputAccessoryViewID={
