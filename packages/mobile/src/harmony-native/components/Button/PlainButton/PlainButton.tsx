@@ -8,6 +8,8 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
+import { animatedPropAdapter } from 'app/utils/animation'
+
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
 
@@ -98,13 +100,17 @@ export const PlainButton = (props: PlainButtonProps) => {
     [variant, isPressable]
   )
 
-  const animatedIconProps = useAnimatedProps(() => ({
-    fill: interpolateColor(
-      pressed.value,
-      [0, 1],
-      [dynamicStyles.default.text, dynamicStyles.press.text]
-    )
-  }))
+  const animatedIconProps = useAnimatedProps(
+    () => ({
+      fill: interpolateColor(
+        pressed.value,
+        [0, 1],
+        [dynamicStyles.default.text, dynamicStyles.press.text]
+      )
+    }),
+    [variant],
+    animatedPropAdapter
+  )
 
   const textCss: TextStyle = useAnimatedStyle(
     () => ({
