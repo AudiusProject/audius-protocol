@@ -365,6 +365,13 @@ export class AlbumsApi {
       'purchaseAlbum',
       PurchaseAlbumSchema
     )(params)
+
+    const {
+      // only send the base params to getPurchaseInstructions
+      wallet: _wallet,
+      walletAdapter: _walletAdapter,
+      ...baseParams
+    } = params
     const {
       instructions: {
         routeInstruction,
@@ -372,7 +379,7 @@ export class AlbumsApi {
         locationMemoInstruction
       },
       total
-    } = await this.getPurchaseAlbumInstructions(params)
+    } = await this.getPurchaseAlbumInstructions(baseParams)
 
     let transaction
     const mint = 'USDC'
