@@ -2,10 +2,12 @@ import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import { decodeHashId } from '@audius/common/utils'
 import type { ChatBlast } from '@audius/sdk'
+import { css } from '@emotion/native'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { CollectionImageV2 } from 'app/components/image/CollectionImageV2'
 import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { zIndex } from 'app/utils/zIndex'
 
 export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
   const {
@@ -16,7 +18,13 @@ export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
     useChatBlastAudienceContent({ chat })
   const decodedId = decodeHashId(audienceContentId) ?? undefined
   return (
-    <Flex row backgroundColor='white' justifyContent='center' pb='s'>
+    <Flex
+      row
+      backgroundColor='white'
+      justifyContent='center'
+      pb='s'
+      style={css({ zIndex: zIndex.CHAT_BLAST_SUBHEADER })}
+    >
       {decodedId ? (
         <Flex row gap='xs'>
           {audienceContentType === 'track' ? (
