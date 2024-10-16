@@ -503,7 +503,7 @@ export const useDeleteComment = () => {
         }
       )
       // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, 1))
+      dispatch(incrementTrackCommentCount(trackId, -1))
     },
     onSuccess: (_res, { commentId }) => {
       // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
