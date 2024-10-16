@@ -33,6 +33,7 @@ const CommentSectionHeader = () => {
     commentCount
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
+
   const handlePressViewAll = () => {
     openDrawer({ entityId })
   }
