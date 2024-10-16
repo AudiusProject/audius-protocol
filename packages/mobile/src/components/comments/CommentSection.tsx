@@ -119,7 +119,7 @@ export const CommentSection = (props: CommentSectionProps) => {
 
   useEffectOnce(() => {
     if (showComments) {
-      // setIsDrawerOpen(true)
+      openDrawer({ entityId })
     }
   })
 
