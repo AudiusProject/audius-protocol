@@ -31,6 +31,7 @@ import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
+import { useDrawer } from 'app/hooks/useDrawer'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
 import { CommentDrawerHeader } from './CommentDrawerHeader'
@@ -202,8 +203,11 @@ type CommentDrawerPropsType = {
   setIsOpen: (isOpen: boolean) => void
 }
 
-export const CommentDrawer = (props: CommentDrawerPropsType) => {
-  const { entityId, isOpen, setIsOpen } = props
+const drawerName = 'Comment'
+export const CommentDrawer = () => {
+  const { data, isOpen, onClose } = useDrawer(drawerName)
+
+  const { entityId } = data
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const commentListRef = useRef<BottomSheetFlatListMethods>(null)
@@ -240,8 +244,8 @@ export const CommentDrawer = (props: CommentDrawerPropsType) => {
   }, [isOpen])
 
   const handleClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
+    onClose()
+  }, [onClose])
 
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
@@ -303,7 +307,6 @@ export const CommentDrawer = (props: CommentDrawerPropsType) => {
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
           isDrawerOpen={isOpen}
-          setIsDrawerOpen={setIsOpen}
         >
           <CommentDrawerHeader
             minimal={autoCompleteActive}

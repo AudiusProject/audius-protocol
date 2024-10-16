@@ -23,7 +23,6 @@ import { useRoute } from 'app/hooks/useRoute'
 import Skeleton from '../skeleton'
 
 import { CommentBlock } from './CommentBlock'
-import { CommentDrawer } from './CommentDrawer'
 import { CommentForm } from './CommentForm'
 
 const CommentSectionHeader = () => {
@@ -34,7 +33,7 @@ const CommentSectionHeader = () => {
     commentCount
   } = useCurrentCommentSection()
   const { onOpen: openDrawer } = useDrawer('Comment')
-
+  // console.log('asdf drawer: ', useDrawer('MuteComments'))
   const handlePressViewAll = () => {
     openDrawer({ entityId })
   }
@@ -117,17 +116,16 @@ export const CommentSection = (props: CommentSectionProps) => {
 
   const { params } = useRoute<'Track'>()
   const { showComments } = params ?? {}
-
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const { onOpen: openDrawer } = useDrawer('Comment')
 
   useEffectOnce(() => {
     if (showComments) {
-      setIsDrawerOpen(true)
+      // setIsDrawerOpen(true)
     }
   })
 
   const handlePress = () => {
-    setIsDrawerOpen(true)
+    openDrawer({ entityId })
   }
 
   return (
@@ -139,11 +137,6 @@ export const CommentSection = (props: CommentSectionProps) => {
             <CommentSectionContent />
           </TouchableOpacity>
         </Paper>
-        <CommentDrawer
-          entityId={entityId}
-          isOpen={isDrawerOpen}
-          setIsOpen={setIsDrawerOpen}
-        />
       </Flex>
     </CommentSectionProvider>
   )
