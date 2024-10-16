@@ -239,7 +239,11 @@ def get_track_comments(args, track_id, current_user_id=None):
         track_comment_res = []
         for [track_comment, react_count, is_muted] in track_comments.all():
             replies = get_replies(
-                session, track_comment.comment_id, current_user_id, artist_id
+                session,
+                track_comment.comment_id,
+                current_user_id,
+                artist_id,
+                limit=None,
             )
             reply_count = len(replies)
             track_comment_res.append(
@@ -265,7 +269,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     "is_artist_reacted": get_is_reacted(
                         session, artist_id, track_comment.comment_id
                     ),
-                    "replies": replies,
+                    "replies": replies[:3],
                     "created_at": str(track_comment.created_at),
                     "updated_at": str(track_comment.updated_at),
                     "is_tombstone": track_comment.is_delete and reply_count > 0,
