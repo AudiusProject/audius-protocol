@@ -1,5 +1,9 @@
 import type { GestureResponderEvent, NativeScrollEvent } from 'react-native'
 import { Animated } from 'react-native'
+import {
+  createAnimatedPropAdapter,
+  processColor
+} from 'react-native-reanimated'
 
 export const attachToDx =
   (animation: Animated.Value, newValue: number) =>
@@ -50,3 +54,12 @@ export const attachToScroll = (
     useNativeDriver: true,
     ...config
   })
+
+export const animatedPropAdapter = createAnimatedPropAdapter((props) => {
+  if (Object.keys(props).includes('fill')) {
+    props.fill = { type: 0, payload: processColor(props.fill) }
+  }
+  if (Object.keys(props).includes('stroke')) {
+    props.stroke = { type: 0, payload: processColor(props.stroke) }
+  }
+})

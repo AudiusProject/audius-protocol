@@ -1220,7 +1220,7 @@ PODS:
     - Sentry/HybridSDK (= 8.21.0)
   - RNShare (10.0.2):
     - React-Core
-  - RNSVG (13.14.0):
+  - RNSVG (15.7.1):
     - React-Core
   - RNZipArchive (7.0.1):
     - React-Core
@@ -1698,7 +1698,7 @@ SPEC CHECKSUMS:
   RNScreens: b582cb834dc4133307562e930e8fa914b8c04ef2
   RNSentry: 73baf47160d2f25b62e31a1850eb788f04c1706f
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
-  RNSVG: d00c8f91c3cbf6d476451313a18f04d220d4f396
+  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
