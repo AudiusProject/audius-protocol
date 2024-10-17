@@ -1,9 +1,4 @@
 create or replace function handle_comment() returns trigger as $$
-declare
-  entity_owner_id int;
-  parent_comment_id int;
-  parent_comment_owner_id int;
-  notification_muted boolean;
 begin
   if new.entity_type = 'Track' then
     insert into aggregate_track (track_id) 
