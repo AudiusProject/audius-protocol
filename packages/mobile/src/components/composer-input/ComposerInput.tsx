@@ -497,7 +497,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
   return (
     <>
-      {displayCancelAccessory ? (
+      {Platform.OS === 'ios' && displayCancelAccessory ? (
         <InputAccessoryView nativeID='cancelButtonAccessoryView'>
           <Flex
             backgroundColor='white'
