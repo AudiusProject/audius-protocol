@@ -11,7 +11,6 @@ import {
   EntityType,
   TrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
-import type { NavigationProp } from '@react-navigation/native'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -36,7 +35,7 @@ import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
 import { Nullable } from '~/utils'
 
-type CommentSectionProviderProps = {
+type CommentSectionProviderProps<NavigationProp> = {
   entityId: ID
   entityType?: EntityType.TRACK
 
@@ -47,9 +46,8 @@ type CommentSectionProviderProps = {
   setReplyingAndEditingState?: (
     state: ReplyingAndEditingState | undefined
   ) => void
-  navigation?: NavigationProp<ReactNavigation.RootParamList>
-  isDrawerOpen?: boolean
-  setIsDrawerOpen?: (isOpen: boolean) => void
+  navigation?: NavigationProp
+  closeDrawer?: () => void
 }
 
 export type ReplyingAndEditingState = {
@@ -59,7 +57,7 @@ export type ReplyingAndEditingState = {
   editingComment?: Comment | ReplyComment
 }
 
-type CommentSectionContextType = {
+type CommentSectionContextType<NavigationProp> = {
   currentUserId: Nullable<ID>
   artistId: ID
   isEntityOwner: boolean
@@ -74,15 +72,15 @@ type CommentSectionContextType = {
   reset: (hard?: boolean) => void
   setCurrentSort: (sort: CommentSortMethod) => void
   loadMorePages: () => void
-} & CommentSectionProviderProps
+} & CommentSectionProviderProps<NavigationProp>
 
 export const CommentSectionContext = createContext<
-  CommentSectionContextType | undefined
+  CommentSectionContextType<any> | undefined
 >(undefined)
 
-export const CommentSectionProvider = (
-  props: PropsWithChildren<CommentSectionProviderProps>
-) => {
+export function CommentSectionProvider<NavigationProp>(
+  props: PropsWithChildren<CommentSectionProviderProps<NavigationProp>>
+) {
   const {
     entityId,
     entityType = EntityType.TRACK,
@@ -90,8 +88,7 @@ export const CommentSectionProvider = (
     replyingAndEditingState,
     setReplyingAndEditingState,
     navigation,
-    isDrawerOpen,
-    setIsDrawerOpen
+    closeDrawer
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
 
@@ -195,8 +192,7 @@ export const CommentSectionProvider = (
         playTrack,
         loadMorePages,
         navigation,
-        isDrawerOpen,
-        setIsDrawerOpen
+        closeDrawer
       }}
     >
       {children}
