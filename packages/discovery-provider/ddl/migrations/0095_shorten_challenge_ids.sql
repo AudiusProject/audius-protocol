@@ -1,5 +1,9 @@
 BEGIN;
 
+ALTER TABLE user_challenges ALTER CONSTRAINT user_challenges_challenge_id_fkey DEFERRABLE INITIALLY IMMEDIATE;
+
+SET CONSTRAINTS user_challenges_challenge_id_fkey DEFERRED;
+
 UPDATE challenges SET id = 'p' WHERE id = 'profile-completion';
 UPDATE challenges SET id = 'l' WHERE id = 'listen-streak';
 UPDATE challenges SET id = 'u' WHERE id = 'track-upload';
@@ -22,8 +26,11 @@ UPDATE user_challenges SET challenge_id = 'm' WHERE challenge_id = 'mobile-insta
 UPDATE user_challenges SET challenge_id = 'ft' WHERE challenge_id = 'send-first-tip';
 UPDATE user_challenges SET challenge_id = 'fp' WHERE challenge_id = 'first-playlist';
 
+-- prepend with ':' at first to avoid uniqueness violations where the hash id is the same as an existing unhashed id
 UPDATE user_challenges
-    SET specifier = id_encode(CAST(specifier AS INTEGER)) WHERE specifier ~ '^\d+$';
+    SET specifier = ':' || id_encode(CAST(specifier AS INTEGER)) WHERE specifier ~ '^\d+$';
+UPDATE user_challenges
+    SET specifier = SUBSTRING(specifier, 1) WHERE specifier ~ '^:\d+$';
 UPDATE user_challenges 
     SET specifier = 
         id_encode(CAST(split_part(specifier, '=>', 1) AS INTEGER)) || 
@@ -42,8 +49,11 @@ UPDATE challenge_disbursements SET challenge_id = 'm' WHERE challenge_id = 'mobi
 UPDATE challenge_disbursements SET challenge_id = 'ft' WHERE challenge_id = 'send-first-tip';
 UPDATE challenge_disbursements SET challenge_id = 'fp' WHERE challenge_id = 'first-playlist';
 
+-- prepend with ':' at first to avoid uniqueness violations where the hash id is the same as an existing unhashed id
 UPDATE challenge_disbursements
-    SET specifier = id_encode(CAST(specifier AS INTEGER)) WHERE specifier ~ '^\d+$';
+    SET specifier = ':' || id_encode(CAST(specifier AS INTEGER)) WHERE specifier ~ '^\d+$';
+UPDATE challenge_disbursements
+    SET specifier = SUBSTRING(specifier, 1) WHERE specifier ~ '^:\d+$';
 UPDATE challenge_disbursements 
     SET specifier = 
         id_encode(CAST(split_part(specifier, '=>', 1) AS INTEGER)) || 
