@@ -2,8 +2,7 @@ import { useCallback } from 'react'
 
 import {
   CommentSectionProvider,
-  useCurrentCommentSection,
-  usePostComment
+  useCurrentCommentSection
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
@@ -81,12 +80,6 @@ const CommentSectionContent = (props: CommentSectionContentProps) => {
     isEntityOwner
   } = useCurrentCommentSection()
 
-  const [postComment] = usePostComment()
-
-  const handlePostComment = (message: string, mentions?: ID[]) => {
-    postComment(message, undefined, undefined, mentions)
-  }
-
   const handlePress = useCallback(() => {
     openCommentDrawer()
   }, [openCommentDrawer])
@@ -118,7 +111,7 @@ const CommentSectionContent = (props: CommentSectionContentProps) => {
         <TouchableWithoutFeedback onPress={handleFormPress}>
           <View>
             <View pointerEvents='none'>
-              <CommentForm onSubmit={handlePostComment} />
+              <CommentForm />
             </View>
           </View>
         </TouchableWithoutFeedback>

@@ -69,7 +69,7 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string, mentions?: ID[]) => void
+  onSubmit?: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
@@ -83,7 +83,7 @@ export const CommentForm = (props: CommentFormProps) => {
     isLoading,
     setAutocompleteHandler,
     onAutocompleteChange,
-    onSubmit,
+    onSubmit = () => {},
     initialValue,
     TextInputComponent,
     autoFocus
