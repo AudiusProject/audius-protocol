@@ -199,6 +199,7 @@ const BORDER_RADIUS = 40
 export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
+  autoFocusInput?: boolean
 }
 
 type CommentDrawerProps = {
@@ -207,7 +208,13 @@ type CommentDrawerProps = {
 } & CommentDrawerData
 
 export const CommentDrawer = (props: CommentDrawerProps) => {
-  const { entityId, navigation, bottomSheetModalRef, handleClose } = props
+  const {
+    entityId,
+    navigation,
+    bottomSheetModalRef,
+    handleClose,
+    autoFocusInput
+  } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const commentListRef = useRef<BottomSheetFlatListMethods>(null)
@@ -245,6 +252,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
             commentListRef={commentListRef}
             onAutocompleteChange={onAutoCompleteChange}
             setAutocompleteHandler={setAutocompleteHandler}
+            autoFocus={autoFocusInput}
           />
         </CommentSectionProvider>
       </BottomSheetFooter>

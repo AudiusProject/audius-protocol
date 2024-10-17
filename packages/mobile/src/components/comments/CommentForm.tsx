@@ -75,6 +75,7 @@ type CommentFormProps = {
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   TextInputComponent?: typeof RNTextInput
+  autoFocus?: boolean
 }
 
 export const CommentForm = (props: CommentFormProps) => {
@@ -84,7 +85,8 @@ export const CommentForm = (props: CommentFormProps) => {
     onAutocompleteChange,
     onSubmit,
     initialValue,
-    TextInputComponent
+    TextInputComponent,
+    autoFocus
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
@@ -127,6 +129,12 @@ export const CommentForm = (props: CommentFormProps) => {
       ref.current?.focus()
     }
   }, [editingComment])
+
+  useEffect(() => {
+    if (autoFocus) {
+      ref.current?.focus()
+    }
+  }, [autoFocus])
 
   const handleLayout = useCallback(() => {
     if (

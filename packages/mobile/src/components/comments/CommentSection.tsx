@@ -7,7 +7,7 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useEffectOnce } from 'react-use'
 
 import {
@@ -29,6 +29,7 @@ import { CommentForm } from './CommentForm'
 type CommentSectionHeaderProps = {
   openCommentDrawer: () => void
 }
+
 const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
   const { openCommentDrawer } = props
   const {
@@ -68,7 +69,12 @@ const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
   )
 }
 
-const CommentSectionContent = () => {
+type CommentSectionContentProps = {
+  openCommentDrawer: (autoFocus?: boolean) => void
+}
+
+const CommentSectionContent = (props: CommentSectionContentProps) => {
+  const { openCommentDrawer } = props
   const {
     commentSectionLoading: isLoading,
     commentIds,
@@ -80,6 +86,14 @@ const CommentSectionContent = () => {
   const handlePostComment = (message: string, mentions?: ID[]) => {
     postComment(message, undefined, undefined, mentions)
   }
+
+  const handlePress = useCallback(() => {
+    openCommentDrawer()
+  }, [openCommentDrawer])
+
+  const handleFormPress = useCallback(() => {
+    openCommentDrawer(true)
+  }, [openCommentDrawer])
 
   // Loading state
   if (isLoading) {
@@ -101,12 +115,22 @@ const CommentSectionContent = () => {
         <Text variant='body'>
           {isEntityOwner ? messages.noCommentsOwner : messages.noComments}
         </Text>
-        <CommentForm onSubmit={handlePostComment} />
+        <TouchableWithoutFeedback onPress={handleFormPress}>
+          <View>
+            <View pointerEvents='none'>
+              <CommentForm onSubmit={handlePostComment} />
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Flex>
     )
   }
 
-  return <CommentBlock commentId={commentIds[0]} hideActions />
+  return (
+    <TouchableOpacity onPress={handlePress}>
+      <CommentBlock commentId={commentIds[0]} hideActions />
+    </TouchableOpacity>
+  )
 }
 
 type CommentSectionProps = {
@@ -122,9 +146,12 @@ export const CommentSection = (props: CommentSectionProps) => {
   const navigation = useNavigation()
   const { open } = useCommentDrawer()
 
-  const openCommentDrawer = useCallback(() => {
-    open({ entityId, navigation })
-  }, [open, entityId, navigation])
+  const openCommentDrawer = useCallback(
+    (autoFocusInput?: boolean) => {
+      open({ entityId, navigation, autoFocusInput })
+    },
+    [open, entityId, navigation]
+  )
 
   useEffectOnce(() => {
     if (showComments) {
@@ -137,9 +164,7 @@ export const CommentSection = (props: CommentSectionProps) => {
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentSectionHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l'>
-          <TouchableOpacity onPress={openCommentDrawer}>
-            <CommentSectionContent />
-          </TouchableOpacity>
+          <CommentSectionContent openCommentDrawer={openCommentDrawer} />
         </Paper>
       </Flex>
     </CommentSectionProvider>
