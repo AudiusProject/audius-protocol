@@ -194,7 +194,7 @@ def test_comment_pin(app, mocker):
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
         ],
-        "tracks": [{"track_id": 1, "owner_id": 1, "pinned_comment_id": 2}],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
         "comments": [{"comment_id": 1, "user_id": 2}, {"comment_id": 2, "user_id": 2}],
     }
 
@@ -237,8 +237,8 @@ def test_comment_unpin(app, mocker):
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
         ],
-        "tracks": [{"track_id": 1, "owner_id": 1}],
-        "comments": [{"comment_id": 1, "user_id": 2, "is_pinned": True}],
+        "tracks": [{"track_id": 1, "owner_id": 1, "pinned_comment_id": 1}],
+        "comments": [{"comment_id": 1, "user_id": 2}],
     }
 
     tx_receipts = {
@@ -272,6 +272,48 @@ def test_comment_unpin(app, mocker):
 
         tracks = session.query(Track).filter(Track.track_id == 1).all()
         assert tracks[0].pinned_comment_id == None
+
+
+def test_comment_repin(app, mocker):
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 1, "pinned_comment_id": 2}],
+        "comments": [{"comment_id": 1, "user_id": 2}, {"comment_id": 2, "user_id": 2}],
+    }
+
+    tx_receipts = {
+        "PinComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Pin",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs, db, update_task = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        tracks = session.query(Track).filter(Track.track_id == 1).all()
+        assert tracks[0].pinned_comment_id == 1
 
 
 def test_dupe_pin(app, mocker):
