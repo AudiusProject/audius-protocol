@@ -106,7 +106,9 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
         return get_listen_streak_override(session, user_id)
 
 
-listen_streak_challenge_manager = ChallengeManager("l", ChallengeListenStreakUpdater())
+listen_streak_challenge_manager = ChallengeManager(
+    "listen-streak", ChallengeListenStreakUpdater()
+)
 
 
 # Accessors

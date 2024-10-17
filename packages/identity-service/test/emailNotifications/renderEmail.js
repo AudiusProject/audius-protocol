@@ -115,7 +115,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'l'
+      challenge_id: 'listen-streak'
     },
     slot: 112519141,
     type: 'ChallengeReward'
@@ -123,7 +123,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'u'
+      challenge_id: 'track-upload'
     },
     slot: 112519142,
     type: 'ChallengeReward'
@@ -131,7 +131,7 @@ const challengeNotifications = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'r'
+      challenge_id: 'referrals'
     },
     slot: 112519143,
     type: 'ChallengeReward'
@@ -142,7 +142,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'rv'
+      challenge_id: 'ref-v'
     },
     slot: 112519144,
     type: 'ChallengeReward'
@@ -150,7 +150,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'rd'
+      challenge_id: 'referred'
     },
     slot: 112519145,
     type: 'ChallengeReward'
@@ -158,7 +158,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'v'
+      challenge_id: 'connect-verified'
     },
     slot: 112519146,
     type: 'ChallengeReward'
@@ -166,7 +166,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'm'
+      challenge_id: 'mobile-install'
     },
     slot: 112519147,
     type: 'ChallengeReward'
@@ -174,7 +174,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'ft'
+      challenge_id: 'send-first-tip'
     },
     slot: 112519148,
     type: 'ChallengeReward'
@@ -182,7 +182,7 @@ const additionalChallengeNotificaitons = [
   {
     initiator: 1,
     metadata: {
-      challenge_id: 'fp'
+      challenge_id: 'first-playlist'
     },
     slot: 112519149,
     type: 'ChallengeReward'
@@ -222,10 +222,7 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(
-      __dirname,
-      './renderedEmails/testEmail.html'
-    )
+    const testEmailPath = path.join(__dirname, './renderedEmails/testEmail.html')
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)
@@ -263,10 +260,7 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(
-      __dirname,
-      './renderedEmails/challengeEmail.html'
-    )
+    const testEmailPath = path.join(__dirname, './renderedEmails/challengeEmail.html')
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)
@@ -304,10 +298,7 @@ describe('Test Render Email Notification', function () {
       copyrightYear: '2022'
     }
 
-    const testEmailPath = path.join(
-      __dirname,
-      './renderedEmails/additionalChallengeEmail.html'
-    )
+    const testEmailPath = path.join(__dirname, './renderedEmails/additionalChallengeEmail.html')
 
     const emailRendered = fs.readFileSync(testEmailPath, 'utf-8')
     const notifHtml = renderNotificationsEmail(renderProps)

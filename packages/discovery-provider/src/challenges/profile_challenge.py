@@ -161,7 +161,9 @@ class ProfileChallengeUpdater(ChallengeUpdater):
         )
 
 
-profile_challenge_manager = ChallengeManager("p", ProfileChallengeUpdater())
+profile_challenge_manager = ChallengeManager(
+    "profile-completion", ProfileChallengeUpdater()
+)
 
 
 # Accessors

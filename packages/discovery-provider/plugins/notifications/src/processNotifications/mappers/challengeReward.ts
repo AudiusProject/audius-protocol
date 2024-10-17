@@ -27,43 +27,43 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
   challengeId: ChallengeId
 
   challengeInfoMap = {
-    p: {
+    'profile-completion': {
       title: '✅️ Complete your Profile',
       amount: 1
     },
-    l: {
+    'listen-streak': {
       title: '🎧 Listening Streak: 7 Days',
       amount: 1
     },
-    u: {
+    'track-upload': {
       title: '🎶 Upload 3 Tracks',
       amount: 1
     },
-    r: {
+    referrals: {
       title: '📨 Invite your Friends',
       amount: 1
     },
-    rd: {
+    referred: {
       title: '📨 Invite your Friends',
       amount: 1
     },
-    rv: {
+    'ref-v': {
       title: '📨 Invite your Fans',
       amount: 1
     },
-    v: {
+    'connect-verified': {
       title: '✅️ Link Verified Accounts',
       amount: 5
     },
-    m: {
+    'mobile-install': {
       title: '📲 Get the App',
       amount: 1
     },
-    ft: {
+    'send-first-tip': {
       title: '🤑 Send Your First Tip',
       amount: 2
     },
-    fp: {
+    'first-playlist': {
       title: '🎼 Create a Playlist',
       amount: 2
     }
@@ -79,7 +79,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
   }
 
   getPushBodyText() {
-    if (this.challengeId === 'rd') {
+    if (this.challengeId === 'referred') {
       return `You’ve received ${
         this.challengeInfoMap[this.challengeId].amount
       } $AUDIO for being referred! Invite your friends to join to earn more!`
