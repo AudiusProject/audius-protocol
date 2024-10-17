@@ -5,7 +5,7 @@ import { S3Config, publishToS3 } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import { formatDateISO, getYearMonth } from '../date'
+import { formatDateISO, getYearMonthShorthand } from '../date'
 
 dayjs.extend(quarterOfYear)
 
@@ -13,29 +13,21 @@ const config = readConfig()
 const isDev = config.env === 'dev'
 
 type UsageDetailReporting = {
-  ServiceName: 'AUDIUS'
-  ReportPeriodType: 'Q'
-  ReportingPeriod: string // MMDDYYYY
-  ServiceType: 'I'
-  UniqueTrackIdentifier: number
-  SongTitle: string
-  Artist: string
-  AlbumId: number
-  ISRC: string
-  NumberOfPerformances: number
+  client_catalog_id: number
+  'Streams - Downloads / Monetized Content Offering': number
+  'Streams - Subscription Offerings': number
+  'Downloads - Downloads / Monetized Content Offering': number
+  'Downloads - Subscription Offerings': number
+  Territory: string
 }
 
 const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
-  'ServiceName',
-  'ReportPeriodType',
-  'ReportingPeriod',
-  'ServiceType',
-  'UniqueTrackIdentifier',
-  'SongTitle',
-  'Artist',
-  'AlbumId',
-  'ISRC',
-  'NumberOfPerformances'
+  'client_catalog_id',
+  'Streams - Subscription Offerings',
+  'Downloads - Subscription Offerings',
+  'Streams - Downloads / Monetized Content Offering',
+  'Downloads - Downloads / Monetized Content Offering',
+  'Territory'
 ]
 
 // gathers data from a quarter period prior to the provide\ date.
@@ -48,14 +40,12 @@ export const udr = async (
 ): Promise<void> => {
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
-  const startOfThisQuarter = dayjs(date).startOf('quarter')
-  const endOfLastQuarter = startOfThisQuarter.subtract(1, 'day')
-  const startOfPreviousQuarter = endOfLastQuarter.startOf('quarter')
-  const endOfPreviousQuarter = startOfPreviousQuarter.add(1, 'quarter').subtract(1, 'day')
+  const startOfThisMonth = dayjs(date).startOf('month')
+  const endOfLastMonth = startOfThisMonth.subtract(1, 'day')
+  const startOfLastMonth = endOfLastMonth.startOf('month')
 
-  const start = startOfPreviousQuarter.toDate()
-  const end = endOfPreviousQuarter.toDate()
-  const reportingPeriod = endOfPreviousQuarter.format('MMDDYYYY')
+  const start = startOfLastMonth.toDate()
+  const end = startOfThisMonth.toDate()
 
   logger.info(
     { start: start.toISOString(), end: end.toISOString() },
@@ -64,36 +54,42 @@ export const udr = async (
 
   const queryResult = await db.raw(
     `
-      with play_counts as (
-        select
-          play_item_id as track_id,
-          count(*) as play_count
-        from plays
-        where created_at > :start
-          and created_at < :end
-        group by 1
-      )
+    select
+      coalesce(t1.client_catalog_id, t2.client_catalog_id) as "client_catalog_id",
+      coalesce(t1."Streams - Subscription Offerings", 0) as "Streams - Subscription Offerings",
+      coalesce(t2."Downloads - Subscription Offerings", 0) as "Downloads - Subscription Offerings",
+      coalesce(t1."Streams - Downloads / Monetized Content Offering", 0) as "Streams - Downloads / Monetized Content Offering",
+      coalesce(t2."Downloads - Downloads / Monetized Content Offering", 0) as "Downloads - Downloads / Monetized Content Offering",
+      country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')) as "Territory"
+    from (
       select
-        'AUDIUS' as "ServiceName",
-        'Q' as "ReportPeriodType",
-        :reportingPeriod as "ReportingPeriod",
-        'I' as "ServiceType",
-        t.track_id as "UniqueTrackIdentifier",
-        t.title as "SongTitle",
-        u.name as "Artist",
-        (
-          select playlist_id
-          from playlists join playlist_tracks using (playlist_id)
-          where is_album = true and track_id = t.track_id
-          limit 1
-        ) as "AlbumId",
-        t.isrc as "ISRC",
-        play_count as "NumberOfPerformances"
-      from play_counts c
-      join tracks t using (track_id)
-      join users u on t.owner_id = u.user_id
+        "play_item_id" as "client_catalog_id",
+        sum("count") as "Streams - Downloads / Monetized Content Offering",
+        0 as "Streams - Subscription Offerings",
+        "country" as "Territory"
+      from
+        "aggregate_monthly_plays"
+      where
+        "timestamp" >= :start and
+        "timestamp" < :end
+      group by "country", "play_item_id"
+    ) t1
+    full outer join (
+      select
+        "parent_track_id" as "client_catalog_id",
+        count(*) as "Downloads - Downloads / Monetized Content Offering",
+        0 as "Downloads - Subscription Offerings",
+        '' as "Territory"
+      from
+        "track_downloads"
+      where
+        "created_at" >= :start and
+        "created_at" < :end
+      group by "parent_track_id"
+    ) t2
+    on t1.client_catalog_id = t2.client_catalog_id and (t1."Territory" = t2."Territory" or t2."Territory" = '')
     `,
-    { start, end, reportingPeriod }
+    { start, end }
   )
 
   const udrRows: UsageDetailReporting[] = queryResult.rows
@@ -101,8 +97,9 @@ export const udr = async (
   if (isDev) {
     logger.info(csv)
   }
-  // YYYYMM_Service_Territory_yyyymmddThhmmss_detail_<DistributionType>
-  const fileName = `${getYearMonth(start)}_AUDIUS_${formatDateISO(date)}`
+  // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
+  // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of posting
+  const fileName = `Audius_Usage_${getYearMonthShorthand(start)}_${formatDateISO(date)}`
 
   const uploads = s3s.map((s3config) =>
     publishToS3(logger, s3config, csv, fileName)
