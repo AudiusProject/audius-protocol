@@ -84,9 +84,7 @@ def create_comment(params: ManageEntityParameters):
     entity_id = metadata.get("entity_id")
     entity_type = metadata.get("entity_type", EntityType.TRACK.value)
     entity_user_id = existing_records[EntityType.TRACK.value][entity_id].owner_id
-    mentions = (
-        set(metadata.get("mentions")) if metadata.get("mentions") is not None else set()
-    )
+    mentions = set(metadata.get("mentions") or [])
     is_owner_mentioned = entity_user_id in mentions
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = (
@@ -94,7 +92,7 @@ def create_comment(params: ManageEntityParameters):
         if parent_comment_id
         else None
     )
-    parent_comment_user_id = parent_comment is not None and parent_comment.user_id
+    parent_comment_user_id = parent_comment.user_id if parent_comment else None
     is_reply = parent_comment_id is not None
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
@@ -117,11 +115,11 @@ def create_comment(params: ManageEntityParameters):
     comment_id = params.entity_id
     comment_record = Comment(
         comment_id=comment_id,
-        user_id=params.user_id,
-        text=params.metadata["body"],
-        entity_type=params.metadata.get("entity_type", EntityType.TRACK.value),
-        entity_id=params.metadata["entity_id"],
-        track_timestamp_s=params.metadata["track_timestamp_s"],
+        user_id=user_id,
+        text=metadata["body"],
+        entity_type=entity_type,
+        entity_id=entity_id,
+        track_timestamp_s=metadata["track_timestamp_s"],
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -135,16 +133,16 @@ def create_comment(params: ManageEntityParameters):
     if not is_reply and not is_owner_mentioned and not track_owner_notifications_off:
         comment_notification = Notification(
             blocknumber=params.block_number,
-            user_ids=[
-                existing_records[EntityType.TRACK.value][
-                    metadata.get("entity_id")
-                ].owner_id
-            ],
+            user_ids=[entity_user_id],
             timestamp=params.block_datetime,
             type="comment",
-            specifier=str(params.user_id),
-            group_id=f"comment:{metadata.get('entity_id')}:type:{metadata.get('entity_type')}",
-            data=params.metadata,
+            specifier=str(user_id),
+            group_id=f"comment:{entity_id}:type:{entity_type}",
+            data={
+                "type": entity_type,
+                "entity_id": entity_id,
+                "comment_user_id": user_id,
+            },
         )
 
         safe_add_notification(params, comment_notification)
@@ -208,9 +206,6 @@ def create_comment(params: ManageEntityParameters):
             (parent_comment_id, comment_id), comment_thread, EntityType.COMMENT_THREAD
         )
 
-        parent_comment = existing_records[EntityType.COMMENT.value][parent_comment_id]
-        parent_comment_user_id = parent_comment.user_id
-
         parent_comment_owner_notifications_off = params.session.query(
             params.session.query(CommentNotificationSetting)
             .filter(
@@ -230,12 +225,12 @@ def create_comment(params: ManageEntityParameters):
         ).scalar()
 
         if (
-            user_id != parent_comment.user_id
+            user_id != parent_comment_user_id
             and not parent_comment_owner_notifications_off
         ):
             thread_notification = Notification(
                 blocknumber=params.block_number,
-                user_ids=[parent_comment.user_id],
+                user_ids=[parent_comment_user_id],
                 timestamp=params.block_datetime,
                 type="comment_thread",
                 specifier=str(user_id),
@@ -271,18 +266,13 @@ def update_comment(params: ManageEntityParameters):
     existing_records = params.existing_records
     metadata = params.metadata
     comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    existing_comment = existing_records[EntityType.COMMENT.value][comment_id]
     user_id = params.user_id
-    entity_id = params.metadata.get("entity_id")
-    entity_type = params.metadata.get("entity_type", EntityType.TRACK.value)
-    entity_user_id = params.existing_records[EntityType.TRACK.value][entity_id].owner_id
+    entity_id = metadata.get("entity_id")
+    entity_type = metadata.get("entity_type", EntityType.TRACK.value)
+    entity_user_id = existing_records[EntityType.TRACK.value][entity_id].owner_id
 
-    comment_reports = (
-        params.session.query(CommentReport)
-        .filter(CommentReport.comment_id == comment_id)
-        .all()
-    )
-
+    comment_reports = params.session.query(CommentReport).filter(CommentReport.comment_id == comment_id).all()
     reporting_user_ids = [report.user_id for report in comment_reports]
 
     is_comment_shadowbanned = (
@@ -294,16 +284,10 @@ def update_comment(params: ManageEntityParameters):
         or False
     )
 
-    mentions = (
-        set(metadata.get("mentions")) if metadata.get("mentions") is not None else set()
-    )
+    mentions = set(metadata.get("mentions") or [])
     parent_comment_id = metadata.get("parent_comment_id")
-    parent_comment = (
-        existing_records[EntityType.COMMENT.value][parent_comment_id]
-        if parent_comment_id
-        else None
-    )
-    parent_comment_user_id = parent_comment is not None and parent_comment.user_id
+    parent_comment = existing_records[EntityType.COMMENT.value].get(parent_comment_id)
+    parent_comment_user_id = parent_comment.user_id if parent_comment else None
 
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
@@ -331,23 +315,21 @@ def update_comment(params: ManageEntityParameters):
         params.block_datetime,
     )
     edited_comment.is_edited = True
-    edited_comment.text = params.metadata["body"]
+    edited_comment.text = metadata["body"]
 
     params.add_record(comment_id, edited_comment, EntityType.COMMENT)
 
     if mentions:
-        mention_mutes = (
-            params.session.query(MutedUser)
-            .filter(MutedUser.muted_user_id == user_id, MutedUser.user_id.in_(mentions))
-            .all()
-        )
+        mention_mutes = params.session.query(MutedUser).filter(
+            MutedUser.muted_user_id == user_id, 
+            MutedUser.user_id.in_(mentions)
+        ).all()
         existing_mentions = get_existing_mentions_for_comment(params, comment_id)
         existing_mention_ids = set(existing_mentions.keys())
 
         # Delete mentions that are not in the new mentions list
         for mention_user_id in existing_mention_ids - mentions:
             existing_mention = existing_mentions[mention_user_id]
-
             if existing_mention and not existing_mention.is_delete:
                 deleted_mention = copy_record(
                     existing_mention,
@@ -357,7 +339,6 @@ def update_comment(params: ManageEntityParameters):
                     params.block_datetime,
                 )
                 deleted_mention.is_delete = True
-
                 params.add_record(
                     (comment_id, mention_user_id),
                     deleted_mention,
@@ -367,7 +348,6 @@ def update_comment(params: ManageEntityParameters):
         # Add new mentions or reactivate deleted mentions
         for mention_user_id in mentions:
             existing_mention = existing_mentions.get(mention_user_id)
-
             if existing_mention:
                 if existing_mention.is_delete:
                     reactivated_mention = copy_record(
@@ -394,16 +374,13 @@ def update_comment(params: ManageEntityParameters):
                     updated_at=params.block_datetime,
                     is_delete=False,
                 )
-
                 params.add_record(
                     (comment_id, mention_user_id),
                     new_mention,
                     EntityType.COMMENT_MENTION,
                 )
 
-                track_owner_mention_mute = (
-                    mention_user_id == entity_user_id and track_owner_notifications_off
-                )
+                track_owner_mention_mute = mention_user_id == entity_user_id and track_owner_notifications_off
                 if (
                     mention_user_id != user_id
                     and mention_user_id != parent_comment_user_id
@@ -428,7 +405,6 @@ def update_comment(params: ManageEntityParameters):
                         },
                     )
                     safe_add_notification(params, mention_notification)
-
 
 def delete_comment(params: ManageEntityParameters):
     validate_signer(params)
