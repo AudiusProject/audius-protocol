@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { PropsWithChildren } from 'react'
 import React, {
   createContext,
   useCallback,
@@ -26,9 +26,8 @@ const CommentDrawerContext = createContext<
 /**
  * Provider resposible for managing the state of the comment drawer
  */
-export const CommentDrawerProvider: React.FC<{ children: ReactNode }> = ({
-  children
-}) => {
+export const CommentDrawerProvider = (props: PropsWithChildren) => {
+  const { children } = props
   const [isOpen, setIsOpen] = useState(false)
   const [drawerData, setDrawerData] = useState<CommentDrawerData>()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
