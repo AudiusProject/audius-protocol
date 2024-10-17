@@ -206,6 +206,7 @@ track_full = ns.clone(
         "download_conditions": NestedOneOf(
             access_gate, allow_null=True, description="How to unlock the track download"
         ),
+        "pinned_comment_id": fields.Integer(allow_null=True),
     },
 )
 

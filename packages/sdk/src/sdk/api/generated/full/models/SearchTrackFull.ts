@@ -519,6 +519,12 @@ export interface SearchTrackFull {
      * @memberof SearchTrackFull
      */
     downloadConditions?: AccessGate;
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchTrackFull
+     */
+    pinnedCommentId?: number;
 }
 
 /**
@@ -643,6 +649,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
         'isDownloadGated': json['is_download_gated'],
         'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
+        'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
     };
 }
 
@@ -727,6 +734,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'stream_conditions': AccessGateToJSON(value.streamConditions),
         'is_download_gated': value.isDownloadGated,
         'download_conditions': AccessGateToJSON(value.downloadConditions),
+        'pinned_comment_id': value.pinnedCommentId,
     };
 }
 
