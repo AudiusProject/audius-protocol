@@ -12,7 +12,10 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_report import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    CommentReport,
+)
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
@@ -1138,6 +1141,114 @@ def test_mute_user_notifications(app, mocker):
                         "_userId": 3,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "", "data": {json.dumps(mention_comment_metadata)}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, mute_user_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        notifications = session.query(Notification).all()
+
+        assert len(notifications) == 0
+
+
+def test_reported_comment_notifications(app, mocker):
+    """
+    A few tests around user reports and notifications
+    - When a user reports a comment, they do not receive notifications for that comment
+    - When the track owner reports a comment, no one receives any notifications for that comment
+    - When enough users report a comment, no one receives any notifications for that comment
+    """
+
+    mute_user_entities = {
+        **entities,
+        "comments": [
+            {"comment_id": 1, "owner_id": 2},
+            {"comment_id": 2, "owner_id": 4},
+            {"comment_id": 3, "owner_id": 3},
+        ],
+        "comment_reports": [
+            {
+                "comment_id": 1,
+                "user_id": 3,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+            },
+            {
+                "comment_id": 3,
+                "user_id": 4,
+            },
+        ],
+        "aggregate_user": [
+            {"user_id": 4, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD},
+        ],
+        "users": [*entities["users"], {"user_id": 4, "wallet": "user4wallet"}],
+    }
+
+    comment_1_edit_metadata = {
+        **comment_metadata,
+        "body": "@user-3",
+        "mentions": [3],
+    }
+
+    comment_2_edit_metadata = {
+        **comment_metadata,
+        "body": "@user-1 @user-3, @user-4",
+        "mentions": [1, 2, 3],
+    }
+
+    comment_3_edit_metadata = {
+        **comment_metadata,
+        "body": "@user-1 @user-2 @user-3",
+        "mentions": [1, 2, 4],
+    }
+
+    tx_receipts = {
+        "EditComment1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(comment_1_edit_metadata)}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "EditComment2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 4,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(comment_2_edit_metadata)}}}',
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
+        "EditComment3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(comment_3_edit_metadata)}}}',
                         "_signer": "user3wallet",
                     }
                 )

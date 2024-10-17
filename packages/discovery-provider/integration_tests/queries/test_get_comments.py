@@ -2,11 +2,8 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_comments import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    get_comment_replies,
-    get_track_comments,
-)
+from src.models.comments.comment_report import COMMENT_REPORT_KARMA_THRESHOLD
+from src.queries.get_comments import get_comment_replies, get_track_comments
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 

@@ -1,12 +1,18 @@
+from sqlalchemy import func
+
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_report import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    CommentReport,
+)
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
+from src.models.users.aggregate_user import AggregateUser
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -267,6 +273,23 @@ def update_comment(params: ManageEntityParameters):
     entity_type = params.metadata.get("entity_type", EntityType.TRACK.value)
     entity_user_id = params.existing_records[EntityType.TRACK.value][entity_id].owner_id
 
+    comment_reports = (
+        params.session.query(CommentReport)
+        .filter(CommentReport.comment_id == comment_id)
+        .all()
+    )
+
+    reporting_user_ids = [report.user_id for report in comment_reports]
+
+    is_comment_shadowbanned = (
+        params.session.query(
+            func.sum(AggregateUser.follower_count) >= COMMENT_REPORT_KARMA_THRESHOLD
+        )
+        .filter(AggregateUser.user_id.in_(reporting_user_ids))
+        .scalar()
+        or False
+    )
+
     mentions = (
         set(metadata.get("mentions")) if metadata.get("mentions") is not None else set()
     )
@@ -382,6 +405,9 @@ def update_comment(params: ManageEntityParameters):
                     and mention_user_id != parent_comment_user_id
                     and mention_user_id not in mention_mutes
                     and not track_owner_mention_mute
+                    and not is_comment_shadowbanned
+                    and entity_user_id not in reporting_user_ids
+                    and mention_user_id not in reporting_user_ids
                 ):
                     mention_notification = Notification(
                         blocknumber=params.block_number,
