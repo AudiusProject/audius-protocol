@@ -69,12 +69,13 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string, mentions?: ID[]) => void
+  onSubmit?: (commentMessage: string, mentions?: ID[]) => void
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   TextInputComponent?: typeof RNTextInput
+  autoFocus?: boolean
 }
 
 export const CommentForm = (props: CommentFormProps) => {
@@ -82,9 +83,10 @@ export const CommentForm = (props: CommentFormProps) => {
     isLoading,
     setAutocompleteHandler,
     onAutocompleteChange,
-    onSubmit,
+    onSubmit = () => {},
     initialValue,
-    TextInputComponent
+    TextInputComponent,
+    autoFocus
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
@@ -127,6 +129,12 @@ export const CommentForm = (props: CommentFormProps) => {
       ref.current?.focus()
     }
   }, [editingComment])
+
+  useEffect(() => {
+    if (autoFocus) {
+      ref.current?.focus()
+    }
+  }, [autoFocus])
 
   const handleLayout = useCallback(() => {
     if (

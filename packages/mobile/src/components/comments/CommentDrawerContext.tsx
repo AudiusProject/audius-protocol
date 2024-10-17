@@ -54,8 +54,7 @@ export const CommentDrawerProvider = (props: PropsWithChildren) => {
       {children}
       {drawerData ? (
         <CommentDrawer
-          entityId={drawerData!.entityId}
-          navigation={drawerData!.navigation}
+          {...drawerData}
           bottomSheetModalRef={bottomSheetModalRef}
           handleClose={close}
         />

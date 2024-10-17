@@ -23,10 +23,16 @@ type CommentDrawerFormProps = {
   commentListRef: RefObject<BottomSheetFlatListMethods>
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+  autoFocus?: boolean
 }
 
 export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
-  const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
+  const {
+    commentListRef,
+    onAutocompleteChange,
+    setAutocompleteHandler,
+    autoFocus
+  } = props
   const insets = useSafeAreaInsets()
   const { entityId, replyingAndEditingState, setReplyingAndEditingState } =
     useCurrentCommentSection()
@@ -69,6 +75,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
         onAutocompleteChange={onAutocompleteChange}
         setAutocompleteHandler={setAutocompleteHandler}
         TextInputComponent={BottomSheetTextInput as any}
+        autoFocus={autoFocus}
       />
     </Box>
   )
