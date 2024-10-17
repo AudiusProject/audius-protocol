@@ -10,7 +10,6 @@ import {
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
 
-import { useCommentDrawer } from './CommentDrawerContext'
 import { TimestampLink } from './TimestampLink'
 
 const MAX_LINES = 3
