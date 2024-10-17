@@ -1,5 +1,17 @@
 # @audius/sdk
 
+## 7.0.0
+
+### Major Changes
+
+- db3f11a: BREAKING CHANGE: Removes legacy SDK ('libs') from this package.
+
+### Patch Changes
+
+- 3f7424e: Improvements to blast upgrade flow
+- 41b62a5: fix concurrency issue with addRequestSignatureMiddleware
+- 3ad4d63: Chat permissions accepts permit_list
+
 ## 4.2.0
 
 ### Minor Changes
