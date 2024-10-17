@@ -9,7 +9,7 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ReplyComment } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
   ButtonVariant,
@@ -66,6 +66,7 @@ type CommentActionBarProps = {
   onClickReply: () => void
   onClickDelete: () => void
   hideReactCount?: boolean
+  parentCommentId?: ID
 }
 export const CommentActionBar = ({
   comment,
@@ -73,7 +74,8 @@ export const CommentActionBar = ({
   onClickEdit,
   onClickReply,
   onClickDelete,
-  hideReactCount
+  hideReactCount,
+  parentCommentId
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
   const { currentUserId, isEntityOwner, entityId, currentSort, track } =
@@ -138,15 +140,14 @@ export const CommentActionBar = ({
   }, [comment.userId, currentSort, entityId, muteUser, toast])
 
   const handleFlagComment = useCallback(() => {
-    reportComment(commentId)
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndHidden)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleFlagAndRemoveComment = useCallback(() => {
-    reportComment(commentId)
-    // TODO: remove comment
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndRemoved)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
     if (isMobile) {
@@ -161,7 +162,6 @@ export const CommentActionBar = ({
   }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   // Confirmation Modal state
-
   const confirmationModals: {
     [k in ConfirmationAction]: ConfirmationModalState
   } = useMemo(

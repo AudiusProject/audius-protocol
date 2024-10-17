@@ -113,10 +113,11 @@ export const usePinComment = () => {
 export const useReportComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: reportComment, ...rest } = useTqReportComment()
-  const wrappedHandler = (commentId: ID) => {
+  const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
       reportComment({
         commentId,
+        parentCommentId,
         userId: currentUserId,
         trackId: entityId,
         currentSort

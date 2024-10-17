@@ -14,12 +14,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  useGetCurrentUserId,
-  useGetTrackById,
-  useGetCommentsByTrackId,
-  QUERY_KEYS
-} from '~/api'
+import { useGetTrackById, useGetCommentsByTrackId, QUERY_KEYS } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
   ModalSource,
@@ -28,6 +23,7 @@ import {
   ReplyComment,
   UserTrackMetadata
 } from '~/models'
+import { getUserId } from '~/store/account/selectors'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
@@ -100,7 +96,7 @@ export function CommentSectionProvider<NavigationProp>(
     setCurrentSort(sortMethod)
   }
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const currentUserId = useSelector(getUserId)
   const {
     data: commentIds = [],
     status,

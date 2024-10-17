@@ -47,7 +47,7 @@ def get_replies(
     session,
     parent_comment_id,
     current_user_id,
-    # artist id could already have been queried for the track
+    # note: artist id already exists when used via get_track_comments - no need to requery for it
     artist_id=None,
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
@@ -58,10 +58,34 @@ def get_replies(
         )
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+        .outerjoin(
+            MutedUser,
+            and_(
+                MutedUser.muted_user_id == Comment.user_id,
+                MutedUser.user_id == current_user_id,
+            ),
+        )
+        .outerjoin(
+            CommentReport,
+            and_(
+                Comment.comment_id == CommentReport.comment_id,
+                CommentReport.user_id == current_user_id,
+            ),
+        )
         .group_by(Comment.comment_id)
         .filter(
             CommentThread.parent_comment_id == parent_comment_id,
             Comment.is_delete == False,
+            or_(
+                MutedUser.muted_user_id == None,
+                MutedUser.is_delete == True,
+            ),  # Exclude muted users' comments
+            or_(
+                CommentReport.comment_id == None,
+                current_user_id == None,
+                CommentReport.user_id != current_user_id,
+                CommentReport.is_delete == True,
+            ),
         )
         .order_by(asc(Comment.created_at))
         .offset(offset)
@@ -96,20 +120,20 @@ def get_replies(
     ]
 
 
-def get_reply_count(session, parent_comment_id):
-    reply_count = (
-        session.query(func.count(CommentThread.comment_id)).filter(
-            CommentThread.parent_comment_id == parent_comment_id,
-        )
-    ).first()
-    return reply_count[0]
-
-
-def get_comment_replies(args, comment_id, current_user_id=None):
+# This method is only used by the API endpoint to get paginated replies directly /comments/<comment_id>/replies
+# NOT used by the get_track_comments
+def get_paginated_replies(args, comment_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        replies = get_replies(session, comment_id, current_user_id, offset, limit)
+        replies = get_replies(
+            session,
+            comment_id,
+            current_user_id,
+            artist_id=None,
+            offset=offset,
+            limit=limit,
+        )
 
     return replies
 
