@@ -40,7 +40,7 @@ describe('Challenge Reward Notification', () => {
     ])
     await createChallengeReward(processor.discoveryDB, [
       {
-        challenge_id: 'p',
+        challenge_id: 'profile-completion',
         user_id: 1,
         specifier: '1',
         amount: '100000000',
@@ -69,7 +69,7 @@ describe('Challenge Reward Notification', () => {
         title: `✅️ Complete your Profile`,
         body: `You’ve earned 1 $AUDIO for completing this challenge!`,
         data: {
-          id: 'timestamp:1589373:group_id:challenge_reward:1:challenge:p:specifier:1',
+          id: 'timestamp:1589373:group_id:challenge_reward:1:challenge:profile-completion:specifier:1',
           type: 'ChallengeReward'
         }
       }
@@ -82,7 +82,7 @@ describe('Challenge Reward Notification', () => {
     const data: ChallengeRewardNotification = {
       amount: 100000000,
       specifier: '1=>2',
-      challenge_id: 'r'
+      challenge_id: 'referrals'
     }
 
     const notifications: AppEmailNotification[] = [
@@ -90,7 +90,7 @@ describe('Challenge Reward Notification', () => {
         type: 'challenge_reward',
         timestamp: new Date(),
         specifier: '1',
-        group_id: 'challenge_reward:2:challenge:r:specifier:1=>2',
+        group_id: 'challenge_reward:2:challenge:referrals:specifier:1=>2',
         data,
         user_ids: [1],
         receiver_user_id: 1

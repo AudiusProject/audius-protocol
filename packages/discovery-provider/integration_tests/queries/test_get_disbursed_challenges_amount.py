@@ -15,32 +15,32 @@ def test_get_disbursed_challenges_amount(app):
     entities = {
         "challenge_disbursements": [
             {
-                "challenge_id": "p",
+                "challenge_id": "profile-completion",
                 "specifier": "1",
                 "user_id": 1,
                 "amount": "500000000",
             },
             {
-                "challenge_id": "p",
+                "challenge_id": "profile-completion",
                 "specifier": "2",
                 "user_id": 2,
                 "amount": "1000000000",
             },
             {
-                "challenge_id": "p",
+                "challenge_id": "profile-completion",
                 "specifier": "3",
                 "user_id": 3,
                 "amount": "2000000000",
                 "created_at": datetime.now() - timedelta(days=8),
             },
             {
-                "challenge_id": "l",
+                "challenge_id": "listen-streak",
                 "specifier": "1",
                 "user_id": 1,
                 "amount": "400000000",
             },
             {
-                "challenge_id": "l",
+                "challenge_id": "listen-streak",
                 "specifier": "2",
                 "user_id": 2,
                 "amount": "1200000000",
@@ -50,7 +50,7 @@ def test_get_disbursed_challenges_amount(app):
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
         amount_disbursed = get_disbursed_challenges_amount(
-            session, "p", datetime.now() - timedelta(days=7)
+            session, "profile-completion", datetime.now() - timedelta(days=7)
         )
         assert amount_disbursed == 15
 
@@ -62,7 +62,7 @@ def test_get_disbursed_challenges_amount_invalid(app):
     entities = {
         "challenge_disbursements": [
             {
-                "challenge_id": "p",
+                "challenge_id": "profile-completion",
                 "specifier": "1",
                 "user_id": 1,
                 "amount": "500000000",

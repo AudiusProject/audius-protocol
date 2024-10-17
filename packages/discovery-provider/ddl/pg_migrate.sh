@@ -128,7 +128,6 @@ test_dir() {
 migrate() {
     create_migrations_table
 
-    migrate_dir "utils"
     migrate_dir "migrations"
     migrate_dir "functions"
 

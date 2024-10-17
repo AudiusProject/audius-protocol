@@ -4,11 +4,10 @@ from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.users.user import User
-from src.utils.helpers import encode_int_id
 
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
-    return f"{encode_int_id(user_id)}:{encode_int_id(extra['track_id'])}"
+    return f"{user_id}=>{extra['track_id']}"
 
 
 def does_user_exist_with_verification_status(

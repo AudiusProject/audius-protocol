@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
@@ -15,7 +15,7 @@ import type {
   BottomSheetFlatListMethods,
   BottomSheetFooterProps
 } from '@gorhom/bottom-sheet'
-import BottomSheet, {
+import {
   BottomSheetModal,
   BottomSheetFlatList,
   BottomSheetBackdrop,
@@ -183,7 +183,6 @@ const CommentDrawerContent = (props: {
       }
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
-      keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
