@@ -1,5 +1,7 @@
 BEGIN;
 
+ALTER TABLE user_challenges DROP CONSTRAINT user_challenges_challenge_id_fkey;
+
 UPDATE challenges SET id = 'p' WHERE id = 'profile-completion';
 UPDATE challenges SET id = 'l' WHERE id = 'listen-streak';
 UPDATE challenges SET id = 'u' WHERE id = 'track-upload';
@@ -50,6 +52,9 @@ UPDATE challenge_disbursements
         ':' || 
         id_encode(CAST(split_part(specifier, '=>', 2) AS INTEGER))
     WHERE specifier ~ '^\d+=>\d+$';
+
+ALTER TABLE user_challenges
+    ADD CONSTRAINT user_challenges_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES challenges(id);
 
 COMMIT;
 
