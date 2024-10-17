@@ -272,7 +272,11 @@ def update_comment(params: ManageEntityParameters):
     entity_type = metadata.get("entity_type", EntityType.TRACK.value)
     entity_user_id = existing_records[EntityType.TRACK.value][entity_id].owner_id
 
-    comment_reports = params.session.query(CommentReport).filter(CommentReport.comment_id == comment_id).all()
+    comment_reports = (
+        params.session.query(CommentReport)
+        .filter(CommentReport.comment_id == comment_id)
+        .all()
+    )
     reporting_user_ids = [report.user_id for report in comment_reports]
 
     is_comment_shadowbanned = (
@@ -320,10 +324,11 @@ def update_comment(params: ManageEntityParameters):
     params.add_record(comment_id, edited_comment, EntityType.COMMENT)
 
     if mentions:
-        mention_mutes = params.session.query(MutedUser).filter(
-            MutedUser.muted_user_id == user_id, 
-            MutedUser.user_id.in_(mentions)
-        ).all()
+        mention_mutes = (
+            params.session.query(MutedUser)
+            .filter(MutedUser.muted_user_id == user_id, MutedUser.user_id.in_(mentions))
+            .all()
+        )
         existing_mentions = get_existing_mentions_for_comment(params, comment_id)
         existing_mention_ids = set(existing_mentions.keys())
 
@@ -380,7 +385,9 @@ def update_comment(params: ManageEntityParameters):
                     EntityType.COMMENT_MENTION,
                 )
 
-                track_owner_mention_mute = mention_user_id == entity_user_id and track_owner_notifications_off
+                track_owner_mention_mute = (
+                    mention_user_id == entity_user_id and track_owner_notifications_off
+                )
                 if (
                     mention_user_id != user_id
                     and mention_user_id != parent_comment_user_id
@@ -405,6 +412,7 @@ def update_comment(params: ManageEntityParameters):
                         },
                     )
                     safe_add_notification(params, mention_notification)
+
 
 def delete_comment(params: ManageEntityParameters):
     validate_signer(params)
