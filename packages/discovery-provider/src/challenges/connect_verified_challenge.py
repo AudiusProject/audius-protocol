@@ -29,5 +29,5 @@ class ConnectVerifiedChallengeUpdater(ChallengeUpdater):
 
 
 connect_verified_challenge_manager = ChallengeManager(
-    "v", ConnectVerifiedChallengeUpdater()
+    "connect-verified", ConnectVerifiedChallengeUpdater()
 )

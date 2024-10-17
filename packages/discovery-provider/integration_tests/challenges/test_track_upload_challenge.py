@@ -42,7 +42,7 @@ def test_track_upload_challenge(app):
         txhash="xyz",
         owner_id=1,
         track_id=1,
-        route_id="7eP5n",
+        route_id="1",
         track_segments=[],
         is_unlisted=False,
         is_current=True,
@@ -133,7 +133,7 @@ def test_track_upload_challenge(app):
         )
 
         # set challenge as active for purposes of test
-        session.query(Challenge).filter(Challenge.id == "u").update(
+        session.query(Challenge).filter(Challenge.id == "track-upload").update(
             {"active": True, "starting_block": 30000000}
         )
 
@@ -149,7 +149,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenges = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )
 
         # We should not have registered a count for this event
@@ -161,7 +161,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
 
         # We should have completed a single step (one track upload)
@@ -176,7 +176,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
 
         # Ensure stem is not counted
@@ -191,7 +191,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
 
         # We should have completed the challenge
@@ -207,7 +207,7 @@ def test_track_upload_challenge(app):
         bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
 
         # The challenge should still be completed

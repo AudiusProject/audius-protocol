@@ -42,7 +42,7 @@ def test_mobile_install_challenge(app):
         bus = ChallengeEventBus(redis_conn)
 
         # set challenge as active for purposes of test
-        session.query(Challenge).filter(Challenge.id == "m").update(
+        session.query(Challenge).filter(Challenge.id == "mobile-install").update(
             {"active": True, "starting_block": BLOCK_NUMBER}
         )
         bus.register_listener(

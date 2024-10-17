@@ -1,6 +1,6 @@
 [
   {
-    "id": "p",
+    "id": "profile-completion",
     "type": "numeric",
     "amount": 1,
     "active": true,
@@ -10,7 +10,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "l",
+    "id": "listen-streak",
     "type": "numeric",
     "active": true,
     "step_count": 7,
@@ -19,7 +19,7 @@
     "weekly_pool": 25000
   },
   {
-    "id": "u",
+    "id": "track-upload",
     "type": "numeric",
     "active": true,
     "step_count": 3,
@@ -29,7 +29,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "r",
+    "id": "referrals",
     "type": "aggregate",
     "active": true,
     "step_count": 5,
@@ -39,7 +39,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "rv",
+    "id": "ref-v",
     "type": "aggregate",
     "active": true,
     "step_count": 5000,
@@ -49,7 +49,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "rd",
+    "id": "referred",
     "type": "boolean",
     "active": true,
     "starting_block": 0,
@@ -58,7 +58,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "v",
+    "id": "connect-verified",
     "type": "boolean",
     "active": true,
     "starting_block": 0,
@@ -66,7 +66,7 @@
     "weekly_pool": 25000
   },
   {
-    "id": "m",
+    "id": "mobile-install",
     "type": "boolean",
     "active": true,
     "starting_block": 0,
@@ -99,7 +99,7 @@
     "weekly_pool": 500
   },
   {
-    "id": "ft",
+    "id": "send-first-tip",
     "type": "boolean",
     "amount": 2,
     "active": true,
@@ -108,7 +108,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "fp",
+    "id": "first-playlist",
     "type": "boolean",
     "amount": 2,
     "active": true,

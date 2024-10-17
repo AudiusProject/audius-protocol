@@ -506,14 +506,14 @@ def setup_verified_test(session):
 
     challenges = [
         Challenge(
-            id="r",
+            id="referrals",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
             step_count=5,
         ),
         Challenge(
-            id="rv",
+            id="ref-v",
             type=ChallengeType.aggregate,
             active=True,
             amount="1",
@@ -545,7 +545,7 @@ def test_nonverified_referrals_invisible_to_verified_user(app):
 
             non_verified = get_challenges(1, False, session, bus)
             assert len(non_verified) == 1
-            assert non_verified[0]["challenge_id"] == "r"
+            assert non_verified[0]["challenge_id"] == "referrals"
 
 
 def test_verified_referrals_invisible_to_nonverified_user(app):
@@ -556,7 +556,7 @@ def test_verified_referrals_invisible_to_nonverified_user(app):
 
             verified = get_challenges(2, False, session, bus)
             assert len(verified) == 1
-            assert verified[0]["challenge_id"] == "rv"
+            assert verified[0]["challenge_id"] == "ref-v"
 
 
 # Testing getting listen streak challenges with override
@@ -593,7 +593,7 @@ def setup_listen_streak_challenge(session):
 
     challenges = [
         Challenge(
-            id="l",
+            id="listen-streak",
             type=ChallengeType.numeric,
             active=True,
             amount="1",
@@ -603,7 +603,7 @@ def setup_listen_streak_challenge(session):
 
     user_challenges = [
         UserChallenge(
-            challenge_id="l",
+            challenge_id="listen-streak",
             user_id=1,
             specifier="1",
             is_complete=False,
@@ -612,7 +612,7 @@ def setup_listen_streak_challenge(session):
             completed_at=datetime.now(),
         ),
         UserChallenge(
-            challenge_id="l",
+            challenge_id="listen-streak",
             user_id=2,
             specifier="2",
             is_complete=False,
@@ -662,7 +662,7 @@ def test_get_challenges_with_no_override_step_count(app):
 
             challenges = get_challenges(1, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "l"
+            assert challenges[0]["challenge_id"] == "listen-streak"
             assert challenges[0]["current_step_count"] == 5
 
 
@@ -674,5 +674,5 @@ def test_get_challenges_with_override_step_count(app):
 
             challenges = get_challenges(2, False, session, bus)
             assert len(challenges) == 1
-            assert challenges[0]["challenge_id"] == "l"
+            assert challenges[0]["challenge_id"] == "listen-streak"
             assert challenges[0]["current_step_count"] == 0
