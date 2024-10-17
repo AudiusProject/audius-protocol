@@ -607,7 +607,12 @@ export const GiantTrackTile = ({
         >
           <TrackMetadataList trackId={trackId} />
           {description ? (
-            <UserGeneratedText tag='h3' size='s' className={styles.description}>
+            <UserGeneratedText
+              tag='h3'
+              size='s'
+              lineHeight='multi'
+              css={(theme) => ({ paddingTop: theme.spacing.m })}
+            >
               {description}
             </UserGeneratedText>
           ) : null}

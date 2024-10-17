@@ -26,7 +26,7 @@ export const CommentText = (props: CommentTextProps) => {
   const {
     track: { duration },
     navigation,
-    setIsDrawerOpen
+    closeDrawer
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -49,9 +49,7 @@ export const CommentText = (props: CommentTextProps) => {
         internalLinksOnly
         navigation={navigation}
         linkProps={{
-          onPress: () => {
-            setIsDrawerOpen?.(false)
-          }
+          onPress: closeDrawer
         }}
         suffix={
           isEdited ? (

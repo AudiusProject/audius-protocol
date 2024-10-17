@@ -3,7 +3,7 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_REPORT_KARMA_THRESHOLD
-from src.queries.get_comments import get_comment_replies, get_track_comments
+from src.queries.get_comments import get_paginated_replies, get_track_comments
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -150,7 +150,7 @@ def test_get_comments_replies(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        comments = get_comment_replies(
+        comments = get_paginated_replies(
             {"limit": 2, "offset": 2, "sort_method": "newest"}, 10
         )
         for comment in comments:

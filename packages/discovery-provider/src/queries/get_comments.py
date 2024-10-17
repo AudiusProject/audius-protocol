@@ -49,7 +49,7 @@ def get_replies(
     session,
     parent_comment_id,
     current_user_id,
-    # artist id could already have been queried for the track
+    # note: artist id already exists when used via get_track_comments - no need to requery for it
     artist_id=None,
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
@@ -60,10 +60,34 @@ def get_replies(
         )
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+        .outerjoin(
+            MutedUser,
+            and_(
+                MutedUser.muted_user_id == Comment.user_id,
+                MutedUser.user_id == current_user_id,
+            ),
+        )
+        .outerjoin(
+            CommentReport,
+            and_(
+                Comment.comment_id == CommentReport.comment_id,
+                CommentReport.user_id == current_user_id,
+            ),
+        )
         .group_by(Comment.comment_id)
         .filter(
             CommentThread.parent_comment_id == parent_comment_id,
             Comment.is_delete == False,
+            or_(
+                MutedUser.muted_user_id == None,
+                MutedUser.is_delete == True,
+            ),  # Exclude muted users' comments
+            or_(
+                CommentReport.comment_id == None,
+                current_user_id == None,
+                CommentReport.user_id != current_user_id,
+                CommentReport.is_delete == True,
+            ),
         )
         .order_by(asc(Comment.created_at))
         .offset(offset)
@@ -98,20 +122,20 @@ def get_replies(
     ]
 
 
-def get_reply_count(session, parent_comment_id):
-    reply_count = (
-        session.query(func.count(CommentThread.comment_id)).filter(
-            CommentThread.parent_comment_id == parent_comment_id,
-        )
-    ).first()
-    return reply_count[0]
-
-
-def get_comment_replies(args, comment_id, current_user_id=None):
+# This method is only used by the API endpoint to get paginated replies directly /comments/<comment_id>/replies
+# NOT used by the get_track_comments
+def get_paginated_replies(args, comment_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(args)
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        replies = get_replies(session, comment_id, current_user_id, offset, limit)
+        replies = get_replies(
+            session,
+            comment_id,
+            current_user_id,
+            artist_id=None,
+            offset=offset,
+            limit=limit,
+        )
 
     return replies
 
@@ -120,14 +144,6 @@ def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(
         args, default_limit=COMMENT_THREADS_LIMIT
     )
-    # default to top sort
-    sort_method = args.get("sort_method", "top")
-    if sort_method == "top":
-        sort_method_order_by = desc(func.count(CommentReaction.comment_id))
-    elif sort_method == "newest":
-        sort_method_order_by = desc(Comment.created_at)
-    elif sort_method == "timestamp":
-        sort_method_order_by = asc(Comment.track_timestamp_s).nullslast()
 
     track_comments = []
     db = get_db_read_replica()
@@ -136,6 +152,27 @@ def get_track_comments(args, track_id, current_user_id=None):
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
+        react_count_subquery = (
+            session.query(
+                CommentReaction.comment_id,
+                func.count(CommentReaction.comment_id).label("react_count"),
+            )
+            .filter(CommentReaction.is_delete == False)
+            .group_by(CommentReaction.comment_id)
+            .subquery()
+        )
+
+        # default to top sort
+        sort_method = args.get("sort_method", "top")
+        if sort_method == "top":
+            sort_method_order_by = desc(
+                func.coalesce(react_count_subquery.c.react_count, 0)
+            )  # Ordering by reaction count in descending order
+        elif sort_method == "newest":
+            sort_method_order_by = desc(Comment.created_at)
+        elif sort_method == "timestamp":
+            sort_method_order_by = asc(Comment.track_timestamp_s).nullslast()
+
         track = session.query(Track).filter(Track.track_id == track_id).first()
         artist_id = track.owner_id
         pinned_comment_id = track.pinned_comment_id
@@ -143,8 +180,9 @@ def get_track_comments(args, track_id, current_user_id=None):
         track_comments = (
             session.query(
                 Comment,
-                func.count(CommentReaction.comment_id).label("react_count"),
-                func.count(ReplyCountAlias.comment_id).label("reply_count"),
+                func.coalesce(react_count_subquery.c.react_count, 0).label(
+                    "react_count"
+                ),
                 CommentNotificationSetting.is_muted,
             )
             .outerjoin(
@@ -160,7 +198,8 @@ def get_track_comments(args, track_id, current_user_id=None):
                 AggregateUser.user_id == CommentReport.user_id,
             )
             .outerjoin(
-                CommentReaction, Comment.comment_id == CommentReaction.comment_id
+                react_count_subquery,
+                Comment.comment_id == react_count_subquery.c.comment_id,
             )
             .outerjoin(
                 MutedUser,
@@ -178,7 +217,11 @@ def get_track_comments(args, track_id, current_user_id=None):
                 (Comment.comment_id == CommentNotificationSetting.entity_id)
                 & (CommentNotificationSetting.entity_type == "Comment"),
             )
-            .group_by(Comment.comment_id, CommentNotificationSetting.is_muted)
+            .group_by(
+                Comment.comment_id,
+                react_count_subquery.c.react_count,
+                CommentNotificationSetting.is_muted,
+            )
             .filter(
                 Comment.entity_id == track_id,
                 Comment.entity_type == "Track",
@@ -217,40 +260,49 @@ def get_track_comments(args, track_id, current_user_id=None):
             )
             .offset(offset)
             .limit(limit)
-            .all()
         )
 
-        return [
-            {
-                "id": encode_int_id(track_comment.comment_id),
-                "user_id": (
-                    encode_int_id(track_comment.user_id)
-                    if not track_comment.is_delete
-                    else None
-                ),
-                "message": (
-                    track_comment.text if not track_comment.is_delete else "[Removed]"
-                ),
-                "is_edited": track_comment.is_edited,
-                "track_timestamp_s": track_comment.track_timestamp_s,
-                "react_count": react_count,
-                "reply_count": reply_count,
-                "is_current_user_reacted": get_is_reacted(
-                    session, current_user_id, track_comment.comment_id
-                ),
-                "is_artist_reacted": get_is_reacted(
-                    session, artist_id, track_comment.comment_id
-                ),
-                "replies": get_replies(
-                    session, track_comment.comment_id, current_user_id, artist_id
-                ),
-                "created_at": str(track_comment.created_at),
-                "updated_at": str(track_comment.updated_at),
-                "is_tombstone": track_comment.is_delete and reply_count > 0,
-                "is_muted": is_muted if is_muted is not None else False,
-            }
-            for [track_comment, react_count, reply_count, is_muted] in track_comments
-        ]
+        track_comment_res = []
+        for [track_comment, react_count, is_muted] in track_comments.all():
+            replies = get_replies(
+                session,
+                track_comment.comment_id,
+                current_user_id,
+                artist_id,
+                limit=None,
+            )
+            reply_count = len(replies)
+            track_comment_res.append(
+                {
+                    "id": encode_int_id(track_comment.comment_id),
+                    "user_id": (
+                        encode_int_id(track_comment.user_id)
+                        if not track_comment.is_delete
+                        else None
+                    ),
+                    "message": (
+                        track_comment.text
+                        if not track_comment.is_delete
+                        else "[Removed]"
+                    ),
+                    "is_edited": track_comment.is_edited,
+                    "track_timestamp_s": track_comment.track_timestamp_s,
+                    "react_count": react_count,
+                    "reply_count": reply_count,
+                    "is_current_user_reacted": get_is_reacted(
+                        session, current_user_id, track_comment.comment_id
+                    ),
+                    "is_artist_reacted": get_is_reacted(
+                        session, artist_id, track_comment.comment_id
+                    ),
+                    "replies": replies[:3],
+                    "created_at": str(track_comment.created_at),
+                    "updated_at": str(track_comment.updated_at),
+                    "is_tombstone": track_comment.is_delete and reply_count > 0,
+                    "is_muted": is_muted if is_muted is not None else False,
+                }
+            )
+        return track_comment_res
 
 
 def get_muted_users(current_user_id):

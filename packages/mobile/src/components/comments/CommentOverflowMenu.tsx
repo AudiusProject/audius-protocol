@@ -187,21 +187,21 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   }, [currentSort, entityId, muteUser, toast, userId])
 
   const handleFlagComment = useCallback(() => {
-    reportComment(id)
+    reportComment(id, parentCommentId)
     toast({
       content: messages.toasts.flaggedAndHidden,
       type: 'info'
     })
-  }, [reportComment, id, toast])
+  }, [reportComment, id, parentCommentId, toast])
 
   const handleFlagAndRemoveComment = useCallback(() => {
-    reportComment(id)
+    reportComment(id, parentCommentId)
     // TODO: remove comment
     toast({
       content: messages.toasts.flaggedAndRemoved,
       type: 'info'
     })
-  }, [reportComment, id, toast])
+  }, [reportComment, id, parentCommentId, toast])
 
   const handlePinComment = useCallback(() => {
     pinComment(id, !isPinned)

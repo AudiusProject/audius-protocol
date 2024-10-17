@@ -66,7 +66,7 @@ const CommentSectionContent = () => {
     return (
       <Flex direction='row' gap='s' alignItems='center'>
         <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
-        <Flex gap='s'>
+        <Flex gap='s' direction='column'>
           <Skeleton h={20} w={240} />
           <Skeleton h={20} w={160} />
         </Flex>

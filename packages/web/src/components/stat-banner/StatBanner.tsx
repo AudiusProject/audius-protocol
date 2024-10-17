@@ -1,8 +1,9 @@
 import { useRef } from 'react'
 
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
+import { ID, statusIsNotFinalized } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { chatSelectors } from '@audius/common/store'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -14,15 +15,19 @@ import {
   PopupMenu,
   Button,
   FollowButton,
-  Flex
+  Flex,
+  Skeleton
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 
 import styles from './StatBanner.module.css'
+
+const { getChatPermissionsStatus } = chatSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1066,
@@ -186,6 +191,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
+  const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
   const shareButton = (
     <Button
@@ -248,13 +254,17 @@ export const StatBanner = (props: StatsBannerProps) => {
                 onMute={onMute}
               />
               {onMessage && !isManagedAccount ? (
-                <Button
-                  variant='secondary'
-                  size='small'
-                  aria-label={messages.message}
-                  iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
-                  onClick={onMessage}
-                />
+                statusIsNotFinalized(chatPermissionStatus) ? (
+                  <Skeleton w={40} h={32} css={{ flexShrink: 0 }} />
+                ) : (
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    aria-label={messages.message}
+                    iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
+                    onClick={onMessage}
+                  />
+                )
               ) : null}
             </>
           ) : (

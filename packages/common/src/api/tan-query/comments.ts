@@ -91,6 +91,7 @@ export const useGetCommentsByTrackId = ({
         // TODO: why is this toString instead of encode
         userId: userId?.toString() ?? undefined
       })
+
       const commentList = transformAndCleanList(
         commentsRes.data,
         commentFromSDK
@@ -142,16 +143,19 @@ export const useGetCommentById = (commentId: ID) => {
 
 type GetRepliesArgs = {
   commentId: ID
+  currentUserId?: Nullable<ID>
   enabled?: boolean
   pageSize?: number
 }
 export const useGetCommentRepliesById = ({
   commentId,
   enabled,
+  currentUserId,
   pageSize = 3
 }: GetRepliesArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery(
     [QUERY_KEYS.comment, commentId, QUERY_KEYS.commentReplies],
@@ -159,14 +163,15 @@ export const useGetCommentRepliesById = ({
       enabled: !!enabled,
       getNextPageParam: (lastPage: ReplyComment[], pages) => {
         if (lastPage?.length < pageSize) return undefined
-        return (pages.length ?? 0) * pageSize
+        return (pages.length ?? pageSize) * pageSize + startingLimit
       },
       queryFn: async ({
-        pageParam: currentPage = 1
+        pageParam: currentPage = startingLimit
       }): Promise<ReplyComment[]> => {
         const sdk = await audiusSdk()
         const commentsRes = await sdk.comments.getCommentReplies({
           commentId: encodeHashId(commentId),
+          userId: currentUserId?.toString(),
           limit: pageSize,
           offset: currentPage
         })
@@ -196,7 +201,8 @@ export const useGetCommentRepliesById = ({
         })
         toast({ content: messages.loadError('replies') })
       },
-      staleTime: Infinity
+      staleTime: Infinity,
+      cacheTime: 1
     }
   )
   return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
@@ -478,8 +484,9 @@ export const useDeleteComment = () => {
             ({
               ...prev,
               replies: (prev?.replies ?? []).filter(
-                (reply) => reply.id !== commentId
-              )
+                (reply: ReplyComment) => reply.id !== commentId
+              ),
+              replyCount: (prev?.replyCount ?? 0) - 1
             } as Comment)
         )
       }
@@ -497,7 +504,7 @@ export const useDeleteComment = () => {
         }
       )
       // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, 1))
+      dispatch(incrementTrackCommentCount(trackId, -1))
     },
     onSuccess: (_res, { commentId }) => {
       // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
@@ -606,6 +613,7 @@ export const useEditComment = () => {
 
 type ReportCommentArgs = {
   commentId: ID
+  parentCommentId?: ID
   userId: ID
   trackId: ID
   currentSort: CommentSortMethod
@@ -619,20 +627,37 @@ export const useReportComment = () => {
       const sdk = await audiusSdk()
       await sdk.comments.reportComment(userId, commentId)
     },
-    onMutate: ({ trackId, commentId, currentSort }) => {
-      // Optimistic update - filter out the comment
-      queryClient.setQueryData<InfiniteData<ID[]>>(
-        [QUERY_KEYS.trackCommentList, trackId, currentSort],
-        (prevData) => {
-          if (!prevData) return
-          const newState = cloneDeep(prevData)
-          // Filter out our reported comment
-          newState.pages = newState.pages.map((page) =>
-            page.filter((id) => id !== commentId)
-          )
-          return newState
-        }
-      )
+    onMutate: ({ trackId, commentId, currentSort, parentCommentId }) => {
+      // Optimistic update - filter out the comment from either the top list or the parent comment's replies
+      if (parentCommentId) {
+        queryClient.setQueryData<Comment>(
+          [QUERY_KEYS.comment, parentCommentId],
+          (prevData: Comment | undefined) => {
+            if (!prevData) return
+            return {
+              ...prevData,
+              replies: prevData.replies?.filter(
+                (reply: ReplyComment) => reply.id !== commentId
+              ),
+              replyCount: prevData.replyCount - 1
+            } as Comment
+          }
+        )
+      } else {
+        queryClient.setQueryData<InfiniteData<ID[]>>(
+          [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          (prevData) => {
+            if (!prevData) return
+            const newState = cloneDeep(prevData)
+            // Filter out our reported comment
+            newState.pages = newState.pages.map((page) =>
+              page.filter((id) => id !== commentId)
+            )
+            return newState
+          }
+        )
+      }
+
       queryClient.resetQueries([QUERY_KEYS.comment, commentId])
     },
     onError: (error: Error, args) => {
@@ -684,12 +709,35 @@ export const useMuteUser = () => {
             // Filter out any comments by the muted user
             newState.pages = newState.pages.map((page) =>
               page.filter((id) => {
-                const comment = queryClient.getQueryData<
-                  CommentOrReply | undefined
+                const rootComment = queryClient.getQueryData<
+                  Comment | undefined
                 >([QUERY_KEYS.comment, id])
-                // If the comment is by the muted user, remove it
-                if (comment?.userId === mutedUserId) {
-                  queryClient.resetQueries([QUERY_KEYS.comment, comment.id])
+                if (!rootComment) return false
+                // Check for any replies by our muted user first
+                if (
+                  rootComment.replies &&
+                  (rootComment.replies.length ?? 0) > 0
+                ) {
+                  // Keep track of count
+                  const prevReplyCount = rootComment.replies.length
+                  // Filter out replies by the muted user
+                  rootComment.replies = rootComment.replies.filter((reply) => {
+                    if (reply.userId === mutedUserId) {
+                      queryClient.resetQueries([QUERY_KEYS.comment, reply.id])
+                      return false
+                    }
+                    return true
+                  })
+                  // Subtract how many replies were removed from total reply count
+                  // NOTE: remember that not all replies by the user may be showing due to pagination
+                  rootComment.replyCount =
+                    rootComment.replyCount -
+                    (prevReplyCount - rootComment.replies.length)
+                }
+
+                // Finally if the root comment is by the muted user, remove it
+                if (rootComment?.userId === mutedUserId) {
+                  queryClient.resetQueries([QUERY_KEYS.comment, rootComment.id])
                   return false
                 }
                 return true

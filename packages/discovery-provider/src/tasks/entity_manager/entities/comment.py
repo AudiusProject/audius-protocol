@@ -71,6 +71,10 @@ def validate_comment_tx(params: ManageEntityParameters):
                 f"comment_thread {(parent_comment_id, comment_id)} already exists"
             )
 
+    mentions = params.metadata.get("mentions")
+    if mentions and not all(isinstance(i, int) for i in mentions):
+        raise IndexingValidationError(f"Mentions {mentions} must be a list of numbers")
+
 
 def create_comment(params: ManageEntityParameters):
     validate_comment_tx(params)

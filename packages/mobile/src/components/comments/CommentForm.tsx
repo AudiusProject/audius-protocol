@@ -23,6 +23,8 @@ type CommentFormHelperTextProps = {
   replyingToUserHandle?: string
 }
 
+const replyInitialMessage = (handle: string) => `@${handle} `
+
 const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
   const { replyingToUserHandle } = props
   const { replyingAndEditingState, setReplyingAndEditingState } =
@@ -60,6 +62,7 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
         icon={IconClose}
         onPress={handlePressClear}
         color='default'
+        hitSlop={10}
       />
     </Flex>
   )
@@ -89,6 +92,7 @@ export const CommentForm = (props: CommentFormProps) => {
     useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
+  const adjustedCursorPosition = useRef(false)
 
   const replyingToUserId = Number(replyingToComment?.userId)
   const { data: replyingToUser } = useGetUserById(
@@ -109,7 +113,7 @@ export const CommentForm = (props: CommentFormProps) => {
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
-      setInitialMessage(`@${replyingToUser.handle} `)
+      setInitialMessage(replyInitialMessage(replyingToUser.handle))
       ref.current?.focus()
     }
   }, [replyingToComment, replyingToUser])
@@ -123,6 +127,19 @@ export const CommentForm = (props: CommentFormProps) => {
       ref.current?.focus()
     }
   }, [editingComment])
+
+  const handleLayout = useCallback(() => {
+    if (
+      (replyingToComment || editingComment) &&
+      ref.current &&
+      !adjustedCursorPosition.current
+    ) {
+      // Set the cursor position (required for android)
+      const initialMessageLength = initialMessage?.length ?? 0
+      ref.current.setSelection(initialMessageLength, initialMessageLength)
+      adjustedCursorPosition.current = true
+    }
+  }, [editingComment, initialMessage?.length, replyingToComment])
 
   const placeholder = commentIds?.length
     ? messages.addComment
@@ -157,6 +174,7 @@ export const CommentForm = (props: CommentFormProps) => {
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
+            onLayout={handleLayout}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,
