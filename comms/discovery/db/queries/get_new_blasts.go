@@ -36,7 +36,7 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 			select created_at as t from chat_blocked_users where blocker_user_id = $1
 			union
 			select to_timestamp(0)
-		)
+		) as timestamp_subquery
 	),
 	all_new as (
 		select *
