@@ -10,7 +10,8 @@ import {
   setupTest,
   resetTests,
   createComments,
-  createCommentMentions
+  createCommentMentions,
+  insertNotifications
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -48,6 +49,22 @@ describe('Comment Mention Notification', () => {
     await createCommentMentions(processor.discoveryDB, [
       { comment_id: 1, user_id: 2 }
     ])
+    await insertNotifications(processor.discoveryDB, [
+      {
+        blocknumber: 1,
+        user_ids: [2],
+        timestamp: new Date(1589373217),
+        type: 'comment_mention',
+        specifier: '2',
+        group_id: 'comment_mention:1:type:Track',
+        data: {
+          type: 'Track',
+          entity_id: 1,
+          entity_user_id: 1,
+          comment_user_id: 1
+        }
+      }
+    ])
     await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
@@ -66,7 +83,7 @@ describe('Comment Mention Notification', () => {
         title: 'New Mention',
         body: "user_1 tagged you in a comment on user_1's track track_title_1",
         data: {
-          id: 'timestamp:1589373217:group_id:comment_mention:1:type:Track',
+          id: 'timestamp:1589373:group_id:comment_mention:1:type:Track',
           type: 'CommentMention',
           userIds: [1]
         }

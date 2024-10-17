@@ -7,7 +7,10 @@ from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import CommentReport
+from src.models.comments.comment_report import (
+    COMMENT_REPORT_KARMA_THRESHOLD,
+    CommentReport,
+)
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
@@ -24,7 +27,6 @@ redis = redis_connection.get_redis()
 
 COMMENT_THREADS_LIMIT = 5
 COMMENT_REPLIES_LIMIT = 3
-COMMENT_REPORT_KARMA_THRESHOLD = 1_720_000
 
 
 # Returns whether a comment has been reacted to by a particular user
