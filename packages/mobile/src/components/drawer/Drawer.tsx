@@ -1,12 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import {
-  useLayoutEffect,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import type {
   GestureResponderEvent,
@@ -427,11 +420,11 @@ export const Drawer: DrawerComponent = ({
   )
 
   // If keyboard was visible when a drawer opens, hide it.
-  useLayoutEffect(() => {
-    if (dismissKeyboardOnOpen && Keyboard.isVisible()) {
+  useEffect(() => {
+    if (isOpen && dismissKeyboardOnOpen && Keyboard.isVisible()) {
       Keyboard.dismiss()
     }
-  })
+  }, [isOpen, dismissKeyboardOnOpen])
 
   useEffect(() => {
     if (isOpen) {
