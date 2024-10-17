@@ -6,7 +6,6 @@ import {
   useUpdateTrackCommentNotificationSetting
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
 import { useToggle } from 'react-use'
 
@@ -26,16 +25,21 @@ import { ActionDrawerWithoutRedux } from '../action-drawer'
 import { CommentSortBar } from './CommentSortBar'
 
 type CommentDrawerHeaderProps = {
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>
   minimal?: boolean
 }
 
 export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
-  const { bottomSheetModalRef, minimal = false } = props
+  const { minimal = false } = props
   const { toast } = useToast()
 
-  const { commentCount, currentUserId, artistId, entityId, reset } =
-    useCurrentCommentSection()
+  const {
+    commentCount,
+    currentUserId,
+    artistId,
+    entityId,
+    reset,
+    closeDrawer
+  } = useCurrentCommentSection()
   const isOwner = currentUserId === artistId
   const isMuted = useGetTrackCommentNotificationSetting(entityId)
 
@@ -55,10 +59,6 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
   }
 
   const showCommentSortBar = commentCount > 1
-
-  const handlePressClose = () => {
-    bottomSheetModalRef.current?.dismiss()
-  }
 
   return (
     <>
@@ -85,9 +85,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           </Flex>
           <IconButton
             icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
-            onPress={
-              isOwner ? toggleNotificationActionDrawer : handlePressClose
-            }
+            onPress={isOwner ? toggleNotificationActionDrawer : closeDrawer}
             color='subdued'
             size='m'
           />

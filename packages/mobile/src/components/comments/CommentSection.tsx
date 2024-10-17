@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback } from 'react'
 
 import {
   CommentSectionProvider,
@@ -17,26 +17,27 @@ import {
   PlainButton,
   Text
 } from '@audius/harmony-native'
-import { useDrawer } from 'app/hooks/useDrawer'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
 import Skeleton from '../skeleton'
 
 import { CommentBlock } from './CommentBlock'
-import { CommentDrawer } from './CommentDrawer'
+import { useCommentDrawer } from './CommentDrawerContext'
 import { CommentForm } from './CommentForm'
 
-const CommentSectionHeader = () => {
+type CommentSectionHeaderProps = {
+  openCommentDrawer: () => void
+}
+const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
+  const { openCommentDrawer } = props
   const {
-    entityId,
     commentSectionLoading: isLoading,
     commentIds,
     commentCount
   } = useCurrentCommentSection()
-  const { onOpen: openDrawer } = useDrawer('Comment')
-
   const handlePressViewAll = () => {
-    openDrawer({ entityId })
+    openCommentDrawer()
   }
 
   const isShowingComments = !isLoading && commentIds?.length
@@ -118,32 +119,28 @@ export const CommentSection = (props: CommentSectionProps) => {
   const { params } = useRoute<'Track'>()
   const { showComments } = params ?? {}
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const navigation = useNavigation()
+  const { open } = useCommentDrawer()
+
+  const openCommentDrawer = useCallback(() => {
+    open({ entityId, navigation })
+  }, [open, entityId, navigation])
 
   useEffectOnce(() => {
     if (showComments) {
-      setIsDrawerOpen(true)
+      openCommentDrawer()
     }
   })
-
-  const handlePress = () => {
-    setIsDrawerOpen(true)
-  }
 
   return (
     <CommentSectionProvider entityId={entityId}>
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-        <CommentSectionHeader />
+        <CommentSectionHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l'>
-          <TouchableOpacity onPress={handlePress}>
+          <TouchableOpacity onPress={openCommentDrawer}>
             <CommentSectionContent />
           </TouchableOpacity>
         </Paper>
-        <CommentDrawer
-          entityId={entityId}
-          isOpen={isDrawerOpen}
-          setIsOpen={setIsDrawerOpen}
-        />
       </Flex>
     </CommentSectionProvider>
   )

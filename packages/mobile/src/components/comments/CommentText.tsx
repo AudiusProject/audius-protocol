@@ -10,6 +10,7 @@ import {
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
 
+import { useCommentDrawer } from './CommentDrawerContext'
 import { TimestampLink } from './TimestampLink'
 
 const MAX_LINES = 3
@@ -26,7 +27,7 @@ export const CommentText = (props: CommentTextProps) => {
   const {
     track: { duration },
     navigation,
-    setIsDrawerOpen
+    closeDrawer
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -49,9 +50,7 @@ export const CommentText = (props: CommentTextProps) => {
         internalLinksOnly
         navigation={navigation}
         linkProps={{
-          onPress: () => {
-            setIsDrawerOpen?.(false)
-          }
+          onPress: closeDrawer
         }}
         suffix={
           isEdited ? (

@@ -15,13 +15,14 @@ import type {
   BottomSheetFlatListMethods,
   BottomSheetFooterProps
 } from '@gorhom/bottom-sheet'
-import {
+import BottomSheet, {
+  BottomSheetModal,
   BottomSheetFlatList,
   BottomSheetBackdrop,
-  BottomSheetFooter,
-  BottomSheetModal
+  BottomSheetFooter
 } from '@gorhom/bottom-sheet'
-import { useNavigation } from '@react-navigation/native'
+import type { ParamListBase } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -196,18 +197,21 @@ const CommentDrawerContent = (props: {
 
 const BORDER_RADIUS = 40
 
-type CommentDrawerPropsType = {
+export type CommentDrawerData = {
   entityId: number
-  isOpen: boolean
-  setIsOpen: (isOpen: boolean) => void
+  navigation: NativeStackNavigationProp<ParamListBase>
 }
 
-export const CommentDrawer = (props: CommentDrawerPropsType) => {
-  const { entityId, isOpen, setIsOpen } = props
+type CommentDrawerProps = {
+  bottomSheetModalRef: React.RefObject<BottomSheetModal>
+  handleClose: () => void
+} & CommentDrawerData
+
+export const CommentDrawer = (props: CommentDrawerProps) => {
+  const { entityId, navigation, bottomSheetModalRef, handleClose } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const commentListRef = useRef<BottomSheetFlatListMethods>(null)
-  const navigation = useNavigation()
 
   const [onAutocomplete, setOnAutocomplete] = useState<
     (user: UserMetadata) => void
@@ -228,20 +232,6 @@ export const CommentDrawer = (props: CommentDrawerPropsType) => {
     setAcText(text)
     setAutoCompleteActive(active)
   }, [])
-
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-
-  useEffect(() => {
-    if (isOpen) {
-      bottomSheetModalRef.current?.present()
-    } else {
-      bottomSheetModalRef.current?.dismiss()
-    }
-  }, [isOpen])
-
-  const handleClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
 
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
@@ -272,54 +262,48 @@ export const CommentDrawer = (props: CommentDrawerPropsType) => {
   )
 
   return (
-    <>
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        snapPoints={['66%', '100%']}
-        topInset={insets.top}
-        style={{
-          borderTopRightRadius: BORDER_RADIUS,
-          borderTopLeftRadius: BORDER_RADIUS,
-          overflow: 'hidden'
-        }}
-        backgroundStyle={{ backgroundColor: color.background.white }}
-        handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
-        gestureEventsHandlersHook={useGestureEventsHandlers}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop
-            {...props}
-            appearsOnIndex={0}
-            disappearsOnIndex={-1}
-            pressBehavior='close'
-          />
-        )}
-        footerComponent={renderFooterComponent}
-        onDismiss={handleClose}
-        android_keyboardInputMode='adjustResize'
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      snapPoints={['66%', '100%']}
+      topInset={insets.top}
+      style={{
+        borderTopRightRadius: BORDER_RADIUS,
+        borderTopLeftRadius: BORDER_RADIUS,
+        overflow: 'hidden'
+      }}
+      backgroundStyle={{ backgroundColor: color.background.white }}
+      handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
+      gestureEventsHandlersHook={useGestureEventsHandlers}
+      backdropComponent={(props) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior='close'
+        />
+      )}
+      footerComponent={renderFooterComponent}
+      onDismiss={handleClose}
+      android_keyboardInputMode='adjustResize'
+    >
+      <CommentSectionProvider
+        entityId={entityId}
+        replyingAndEditingState={replyingAndEditingState}
+        setReplyingAndEditingState={setReplyingAndEditingState}
+        navigation={navigation}
+        closeDrawer={handleClose}
       >
-        <CommentSectionProvider
-          entityId={entityId}
-          replyingAndEditingState={replyingAndEditingState}
-          setReplyingAndEditingState={setReplyingAndEditingState}
-          navigation={navigation}
-          isDrawerOpen={isOpen}
-          setIsDrawerOpen={setIsOpen}
-        >
-          <CommentDrawerHeader
-            minimal={autoCompleteActive}
-            bottomSheetModalRef={bottomSheetModalRef}
+        <CommentDrawerHeader minimal={autoCompleteActive} />
+        <Divider orientation='horizontal' />
+        {autoCompleteActive ? (
+          <CommentDrawerAutocompleteContent
+            query={acText}
+            onSelect={onAutocomplete}
           />
-          <Divider orientation='horizontal' />
-          {autoCompleteActive ? (
-            <CommentDrawerAutocompleteContent
-              query={acText}
-              onSelect={onAutocomplete}
-            />
-          ) : (
-            <CommentDrawerContent commentListRef={commentListRef} />
-          )}
-        </CommentSectionProvider>
-      </BottomSheetModal>
-    </>
+        ) : (
+          <CommentDrawerContent commentListRef={commentListRef} />
+        )}
+      </CommentSectionProvider>
+    </BottomSheetModal>
   )
 }

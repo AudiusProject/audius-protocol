@@ -16,6 +16,7 @@ import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
 
+import { CommentDrawerProvider } from 'app/components/comments/CommentDrawerContext'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
@@ -93,15 +94,17 @@ const App = () => {
                           <ErrorBoundary>
                             <NavigationContainer>
                               <BottomSheetModalProvider>
-                                <Toasts />
-                                <Airplay />
-                                <RootScreen />
-                                <Drawers />
-                                <Modals />
-                                <OAuthWebView />
-                                <NotificationReminder />
-                                <RateCtaReminder />
-                                <PortalHost name='ChatReactionsPortal' />
+                                <CommentDrawerProvider>
+                                  <Toasts />
+                                  <Airplay />
+                                  <RootScreen />
+                                  <Drawers />
+                                  <Modals />
+                                  <OAuthWebView />
+                                  <NotificationReminder />
+                                  <RateCtaReminder />
+                                  <PortalHost name='ChatReactionsPortal' />
+                                </CommentDrawerProvider>
                               </BottomSheetModalProvider>
                               <PortalHost name='DrawerPortal' />
                             </NavigationContainer>
