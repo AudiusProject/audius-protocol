@@ -147,7 +147,8 @@ export const userTrackMetadataFromSDK = (
     rights_controller: input.rightsController
       ? (snakecaseKeys(input.rightsController) as RightsController)
       : null,
-    save_count: input.favoriteCount
+    save_count: input.favoriteCount,
+    pinned_comment_id: input.pinnedCommentId ?? null
   }
 
   return newTrack

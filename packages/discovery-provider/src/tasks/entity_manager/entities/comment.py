@@ -328,7 +328,7 @@ def pin_comment(params: ManageEntityParameters):
 
 
 def unpin_comment(params: ManageEntityParameters):
-    validate_pin_tx(params, True)
+    validate_pin_tx(params, False)
     track_id = params.metadata["entity_id"]
     existing_track = params.existing_records[EntityType.TRACK.value][track_id]
 
