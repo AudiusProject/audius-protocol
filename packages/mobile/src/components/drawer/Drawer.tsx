@@ -1,5 +1,12 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  useLayoutEffect,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import type {
   GestureResponderEvent,
@@ -9,6 +16,7 @@ import type {
   ViewStyle
 } from 'react-native'
 import {
+  Keyboard,
   Animated,
   PanResponder,
   Platform,
@@ -158,6 +166,10 @@ export type DrawerProps = {
    */
   initialOffsetPosition?: number
   /**
+   * Dismiss the keyboard when this drawer opens. Defaults to `false`
+   */
+  dismissKeyboardOnOpen?: boolean
+  /**
    * Whether or not the drawer should close to the initial offset. i.e.
    * has it been opened to the offset once?
    */
@@ -280,7 +292,8 @@ export const Drawer: DrawerComponent = ({
   onPanResponderMove,
   onPanResponderRelease,
   translationAnim: providedTranslationAnim,
-  disableSafeAreaView
+  disableSafeAreaView,
+  dismissKeyboardOnOpen = false
 }: DrawerProps) => {
   const styles = useStyles()
   const insets = useSafeAreaInsets()
@@ -412,6 +425,13 @@ export const Drawer: DrawerComponent = ({
       drawerHeight
     ]
   )
+
+  // If keyboard was visible when a drawer opens, hide it.
+  useLayoutEffect(() => {
+    if (dismissKeyboardOnOpen && Keyboard.isVisible()) {
+      Keyboard.dismiss()
+    }
+  })
 
   useEffect(() => {
     if (isOpen) {
