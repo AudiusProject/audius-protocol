@@ -686,6 +686,9 @@ def download_track(params: ManageEntityParameters):
         parent_track_id=parent_track_id,
         track_id=track_id,
         user_id=params.user_id,
+        city=params.metadata.get("city"),
+        region=params.metadata.get("region"),
+        country=params.metadata.get("country"),
     )
     session.add(record)
 

@@ -41,6 +41,7 @@ from src.tasks.metadata import (
     comment_metadata_format,
     playlist_metadata_format,
     track_comment_notification_setting_format,
+    track_download_metadata_format,
     track_metadata_format,
     user_metadata_format,
 )
@@ -348,6 +349,8 @@ def get_metadata_type_and_format(entity_type, action=None):
         metadata_type = "track"
         if action == Action.MUTE or action == Action.UNMUTE:
             metadata_format = track_comment_notification_setting_format
+        elif action == Action.DOWNLOAD:
+            metadata_format = track_download_metadata_format
         else:
             metadata_format = track_metadata_format
     elif entity_type == EntityType.USER:

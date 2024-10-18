@@ -1,0 +1,34 @@
+import { LoggerService } from '../services'
+
+const ipApi = 'https://ipapi.co/8.8.8.8/json/'
+
+type Location = {
+  city: string
+  region: string
+  country: string
+}
+
+/**
+ * Helper to get location. Intended for client-side use only from unique
+ * requesters.
+ * @param logger
+ * @returns { city, region, country}
+ */
+export const getLocation = async ({
+  logger
+}: { logger?: LoggerService } = {}): Promise<Location | null> => {
+  try {
+    const res = await fetch(ipApi)
+    const { city, region, country_name } = await res.json()
+    return {
+      city,
+      region,
+      // country from res is returned as ISO 2-alpha code and we want
+      // full english name.
+      country: country_name
+    }
+  } catch (e) {
+    logger?.error(e)
+    return null
+  }
+}
