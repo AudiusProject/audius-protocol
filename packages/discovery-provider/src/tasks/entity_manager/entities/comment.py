@@ -236,11 +236,10 @@ def create_comment(params: ManageEntityParameters):
                 specifier=str(user_id),
                 group_id=f"comment_thread:{parent_comment_id}",
                 data={
-                    "comment_id": comment_id,
-                    "parent_comment_id": parent_comment_id,
+                    "type": entity_type,
                     "entity_id": entity_id,
-                    "entity_type": entity_type,
-                    "user_id": user_id,
+                    "entity_user_id": entity_user_id,
+                    "comment_user_id": user_id,
                 },
             )
             safe_add_notification(params, thread_notification)

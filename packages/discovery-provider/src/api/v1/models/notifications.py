@@ -815,8 +815,8 @@ comment_notification_action_data = ns.model(
     "comment_notification_action_data",
     {
         "type": fields.String(required=True, enum=["Track", "Playlist", "Album"]),
-        "user_id": fields.String(required=True),
         "entity_id": fields.String(required=True),
+        "comment_user_id": fields.String(required=True),
     },
 )
 comment_notification_action = ns.clone(

@@ -451,7 +451,7 @@ class AnnouncementNotification(TypedDict):
 class CommentNotification(TypedDict):
     type: str
     entity_id: int
-    user_id: int
+    comment_user_id: int
 
 
 class CommentThreadNotification(TypedDict):
