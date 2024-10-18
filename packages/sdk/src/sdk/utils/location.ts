@@ -1,6 +1,6 @@
 import { LoggerService } from '../services'
 
-const ipApi = 'https://ipapi.co/8.8.8.8/json/'
+const ipApi = 'https://ipapi.co/json/'
 
 type Location = {
   city: string
