@@ -27,7 +27,7 @@ type UserLinkProps = Omit<TextLinkProps<ParamList>, 'to' | 'children'> & {
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, badgeSize = 's', ...other } = props
+  const { userId, badgeSize = 's', style, ...other } = props
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
   const { motion } = useTheme()
@@ -48,7 +48,12 @@ export const UserLink = (props: UserLinkProps) => {
         animatedPressed.value = withTiming(0, motion.press)
       }}
     >
-      <AnimatedFlex row gap='xs' alignItems='center' style={animatedStyle}>
+      <AnimatedFlex
+        row
+        gap='xs'
+        alignItems='center'
+        style={[animatedStyle, style]}
+      >
         <TextLink
           to={{ screen: 'Profile', params: { id: userId } }}
           numberOfLines={1}
