@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -90,8 +90,13 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const { currentUserId, commentIds, entityId, replyingAndEditingState } =
-    useCurrentCommentSection()
+  const {
+    currentUserId,
+    commentIds,
+    entityId,
+    replyingAndEditingState,
+    commentSectionLoading
+  } = useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
   const adjustedCursorPosition = useRef(false)
@@ -132,7 +137,8 @@ export const CommentForm = (props: CommentFormProps) => {
 
   useEffect(() => {
     if (autoFocus) {
-      ref.current?.focus()
+      // setTimeout is required to focus the input on android
+      setTimeout(() => ref.current?.focus(), 0)
     }
   }, [autoFocus])
 
@@ -149,9 +155,12 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment, initialMessage?.length, replyingToComment])
 
-  const placeholder = commentIds?.length
-    ? messages.addComment
-    : messages.firstComment
+  const placeholder = useMemo(() => {
+    if (commentSectionLoading) {
+      return ''
+    }
+    return commentIds?.length ? messages.addComment : messages.firstComment
+  }, [commentSectionLoading, commentIds])
 
   const showHelperText = editingComment || replyingToComment
 
