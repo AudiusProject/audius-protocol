@@ -57,9 +57,10 @@ const ComposerText = ({
 
 const createTextSections = (text: string) => {
   const splitText = splitOnNewline(text)
-  return splitText.map((t) => (
-    // eslint-disable-next-line react/jsx-key
-    <ComposerText color='default'>{t}</ComposerText>
+  return splitText.map((t, index) => (
+    <ComposerText key={`${t}-${index}`} color='default'>
+      {t}
+    </ComposerText>
   ))
 }
 
@@ -267,9 +268,12 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleSubmit = useCallback(() => {
     submittedRef.current = true
     changeOpIdRef.current++
-    const userIds =
-      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
-    onSubmit?.(restoreLinks(value), linkEntities, userIds)
+    const mentionIds =
+      getUserMentions(value)?.map((match) => {
+        const handle = match.text.slice(1) // remove the @
+        return userIdMap[handle]
+      }) ?? []
+    onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
     submittedRef.current = false
   }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
@@ -438,7 +442,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
         } else {
           // User Mention or Link match
           renderedTextSections.push(
-            <ComposerText color='accent'>{text}</ComposerText>
+            <ComposerText key={`${text}-${index}`} color='accent'>
+              {text}
+            </ComposerText>
           )
         }
 
