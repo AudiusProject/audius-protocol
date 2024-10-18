@@ -199,6 +199,8 @@ track_metadata_format: TrackMetadata = {
     "comments_disabled": False,
 }
 
+track_download_metadata_format = {"city": None, "region": None, "country": None}
+
 # Required format for user metadata retrieved from the content system
 user_metadata_format = {
     "profile_picture": None,

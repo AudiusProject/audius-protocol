@@ -296,8 +296,8 @@ export type USDCWithdrawalNotification = {
 
 export type CommentNotification = {
   type: EntityType
-  user_id: number
   entity_id: number
+  comment_user_id: number
 }
 
 export type CommentThreadNotification = {
