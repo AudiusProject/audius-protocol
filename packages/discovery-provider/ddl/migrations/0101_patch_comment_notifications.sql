@@ -1,6 +1,6 @@
 -- Update notifications where type = 'comment'
 -- Rename 'user_id' to 'comment_user_id' in the data JSON field
-UPDATE notifications
+UPDATE notification
 SET data = CASE
     WHEN data ? 'user_id' AND NOT data ? 'comment_user_id' THEN
         jsonb_set(
