@@ -87,7 +87,12 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center'>
-            <UserLink size='s' userId={userId} strength='strong' />
+            <UserLink
+              size='s'
+              userId={userId}
+              strength='strong'
+              onPress={closeDrawer}
+            />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
