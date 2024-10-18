@@ -15,7 +15,6 @@ import type { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
-  Box,
   Divider,
   Flex,
   IconHeart,
