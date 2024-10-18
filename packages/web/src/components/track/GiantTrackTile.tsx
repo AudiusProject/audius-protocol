@@ -31,7 +31,8 @@ import {
   IconShare,
   IconRocket,
   Button,
-  MusicBadge
+  MusicBadge,
+  Paper
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
@@ -444,7 +445,7 @@ export const GiantTrackTile = ({
   }
 
   return (
-    <Flex className={styles.giantTrackTile}>
+    <Paper className={styles.giantTrackTile}>
       <Tile
         dogEar={dogEarType}
         size='large'
@@ -627,6 +628,6 @@ export const GiantTrackTile = ({
           ) : null}
         </Flex>
       </Tile>
-    </Flex>
+    </Paper>
   )
 }
