@@ -100,7 +100,11 @@ export const CollectionCard = (props: CollectionCardProps) => {
         <Text variant='title' textAlign='center' numberOfLines={1}>
           {playlist_name}
         </Text>
-        <UserLink userId={playlist_owner_id} textAlign='center' />
+        <UserLink
+          userId={playlist_owner_id}
+          textAlign='center'
+          style={{ justifyContent: 'center' }}
+        />
       </Flex>
       <Divider orientation='horizontal' />
       <Flex
