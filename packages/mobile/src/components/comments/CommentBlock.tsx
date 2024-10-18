@@ -5,7 +5,7 @@ import { useCurrentCommentSection } from '@audius/common/context'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
-import { Link, useLinkProps, useLinkTo } from '@react-navigation/native'
+import { useLinkProps } from '@react-navigation/native'
 import { TouchableOpacity } from 'react-native'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
