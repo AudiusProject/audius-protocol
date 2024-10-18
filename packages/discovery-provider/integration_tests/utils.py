@@ -216,6 +216,21 @@ def populate_mock_db(db, entities, block_offset=None):
                 session.add(block)
                 session.flush()
 
+        for i, aggregate_user_meta in enumerate(aggregate_user):
+            user = AggregateUser(
+                user_id=aggregate_user_meta.get("user_id", i),
+                track_count=aggregate_user_meta.get("track_count", 0),
+                playlist_count=aggregate_user_meta.get("playlist_count", 0),
+                album_count=aggregate_user_meta.get("album_count", 0),
+                follower_count=aggregate_user_meta.get("follower_count", 0),
+                following_count=aggregate_user_meta.get("following_count", 0),
+                repost_count=aggregate_user_meta.get("repost_count", 0),
+                track_save_count=aggregate_user_meta.get("track_save_count", 0),
+                dominant_genre=aggregate_user_meta.get("dominant_genre", None),
+                dominant_genre_count=aggregate_user_meta.get("dominant_genre_count", 0),
+            )
+            session.add(user)
+
         for i, track_meta in enumerate(tracks):
             track_id = track_meta.get("track_id", i)
 
@@ -514,21 +529,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 count=aggregate_monthly_play_meta.get("count", 0),
             )
             session.add(aggregate_monthly_play)
-
-        for i, aggregate_user_meta in enumerate(aggregate_user):
-            user = AggregateUser(
-                user_id=aggregate_user_meta.get("user_id", i),
-                track_count=aggregate_user_meta.get("track_count", 0),
-                playlist_count=aggregate_user_meta.get("playlist_count", 0),
-                album_count=aggregate_user_meta.get("album_count", 0),
-                follower_count=aggregate_user_meta.get("follower_count", 0),
-                following_count=aggregate_user_meta.get("following_count", 0),
-                repost_count=aggregate_user_meta.get("repost_count", 0),
-                track_save_count=aggregate_user_meta.get("track_save_count", 0),
-                dominant_genre=aggregate_user_meta.get("dominant_genre", None),
-                dominant_genre_count=aggregate_user_meta.get("dominant_genre_count", 0),
-            )
-            session.add(user)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = UserListeningHistory(

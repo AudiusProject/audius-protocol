@@ -66,7 +66,11 @@ def setup_test(app, mocker, entities, tx_receipts):
         autospec=True,
     )
 
-    populate_mock_db(db, entities)
+    if isinstance(entities, list):
+        for entity_set in entities:
+            populate_mock_db(db, entity_set)
+    else:
+        populate_mock_db(db, entities)
 
     def index_transaction(session):
         return entity_manager_update(
@@ -1166,6 +1170,13 @@ def test_reported_comment_notifications(app, mocker):
     - When enough users report a comment, no one receives any notifications for that comment
     """
 
+    # This needs to be set before user4 to prevent sql errors
+    initial_entities = {
+        "aggregate_user": [
+            {"user_id": 4, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD},
+        ]
+    }
+
     mute_user_entities = {
         **entities,
         "comments": [
@@ -1186,9 +1197,6 @@ def test_reported_comment_notifications(app, mocker):
                 "comment_id": 3,
                 "user_id": 4,
             },
-        ],
-        "aggregate_user": [
-            {"user_id": 4, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD},
         ],
         "users": [*entities["users"], {"user_id": 4, "wallet": "user4wallet"}],
     }
@@ -1256,7 +1264,9 @@ def test_reported_comment_notifications(app, mocker):
         ],
     }
 
-    db, index_transaction = setup_test(app, mocker, mute_user_entities, tx_receipts)
+    db, index_transaction = setup_test(
+        app, mocker, [initial_entities, mute_user_entities], tx_receipts
+    )
 
     with db.scoped_session() as session:
         index_transaction(session)
