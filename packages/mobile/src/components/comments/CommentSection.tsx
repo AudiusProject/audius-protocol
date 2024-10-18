@@ -69,7 +69,7 @@ const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
 }
 
 type CommentSectionContentProps = {
-  openCommentDrawer: (autoFocus?: boolean) => void
+  openCommentDrawer: (args?: { autoFocusInput?: boolean }) => void
 }
 
 const CommentSectionContent = (props: CommentSectionContentProps) => {
@@ -85,7 +85,7 @@ const CommentSectionContent = (props: CommentSectionContentProps) => {
   }, [openCommentDrawer])
 
   const handleFormPress = useCallback(() => {
-    openCommentDrawer(true)
+    openCommentDrawer({ autoFocusInput: true })
   }, [openCommentDrawer])
 
   // Loading state
@@ -140,7 +140,8 @@ export const CommentSection = (props: CommentSectionProps) => {
   const { open } = useCommentDrawer()
 
   const openCommentDrawer = useCallback(
-    (autoFocusInput?: boolean) => {
+    (args: { autoFocusInput?: boolean } = {}) => {
+      const { autoFocusInput } = args
       open({ entityId, navigation, autoFocusInput })
     },
     [open, entityId, navigation]
