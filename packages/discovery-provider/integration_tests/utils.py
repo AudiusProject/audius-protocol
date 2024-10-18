@@ -12,6 +12,7 @@ from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.cid_data import CIDData
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
+from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -134,6 +135,7 @@ def populate_mock_db(db, entities, block_offset=None):
         comment_notification_settings = entities.get(
             "comment_notification_settings", []
         )
+        muted_users = entities.get("muted_users", [])
         playlists = entities.get("playlists", [])
         playlist_tracks = entities.get("playlist_tracks", [])
         users = entities.get("users", [])
@@ -185,6 +187,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(comment_threads),
             len(comment_mentions),
             len(comment_notification_settings),
+            len(muted_users),
             len(users),
             len(developer_apps),
             len(grants),
@@ -212,6 +215,21 @@ def populate_mock_db(db, entities, block_offset=None):
                 )
                 session.add(block)
                 session.flush()
+
+        for i, aggregate_user_meta in enumerate(aggregate_user):
+            user = AggregateUser(
+                user_id=aggregate_user_meta.get("user_id", i),
+                track_count=aggregate_user_meta.get("track_count", 0),
+                playlist_count=aggregate_user_meta.get("playlist_count", 0),
+                album_count=aggregate_user_meta.get("album_count", 0),
+                follower_count=aggregate_user_meta.get("follower_count", 0),
+                following_count=aggregate_user_meta.get("following_count", 0),
+                repost_count=aggregate_user_meta.get("repost_count", 0),
+                track_save_count=aggregate_user_meta.get("track_save_count", 0),
+                dominant_genre=aggregate_user_meta.get("dominant_genre", None),
+                dominant_genre_count=aggregate_user_meta.get("dominant_genre_count", 0),
+            )
+            session.add(user)
 
         for i, track_meta in enumerate(tracks):
             track_id = track_meta.get("track_id", i)
@@ -511,21 +529,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 count=aggregate_monthly_play_meta.get("count", 0),
             )
             session.add(aggregate_monthly_play)
-
-        for i, aggregate_user_meta in enumerate(aggregate_user):
-            user = AggregateUser(
-                user_id=aggregate_user_meta.get("user_id", i),
-                track_count=aggregate_user_meta.get("track_count", 0),
-                playlist_count=aggregate_user_meta.get("playlist_count", 0),
-                album_count=aggregate_user_meta.get("album_count", 0),
-                follower_count=aggregate_user_meta.get("follower_count", 0),
-                following_count=aggregate_user_meta.get("following_count", 0),
-                repost_count=aggregate_user_meta.get("repost_count", 0),
-                track_save_count=aggregate_user_meta.get("track_save_count", 0),
-                dominant_genre=aggregate_user_meta.get("dominant_genre", None),
-                dominant_genre_count=aggregate_user_meta.get("dominant_genre_count", 0),
-            )
-            session.add(user)
 
         for i, user_listening_history_meta in enumerate(user_listening_history):
             user_listening_history = UserListeningHistory(
@@ -879,5 +882,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(comment_mention_record)
+        for i, muted_user in enumerate(muted_users):
+            muted_user_record = MutedUser(
+                user_id=muted_user.get("user_id", i),
+                muted_user_id=muted_user.get("muted_user_id", i),
+                is_delete=muted_user.get("is_delete", False),
+                created_at=muted_user.get("created_at", datetime.now()),
+                updated_at=muted_user.get("updated_at", datetime.now()),
+                txhash=muted_user.get("txhash", str(i + block_offset)),
+                blockhash=muted_user.get("blockhash", str(i + block_offset)),
+                blocknumber=i + block_offset,
+            )
+            session.add(muted_user_record)
 
         session.commit()
