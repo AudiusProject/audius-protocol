@@ -10,7 +10,6 @@ from sqlalchemy.orm.session import Session
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.utils.helpers import encode_int_id
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ class ChallengeUpdater(ABC):
 
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
         """Optional method to provide a custom specifier for a challenge, given a user_id"""
-        return encode_int_id(user_id)
+        return str(user_id)
 
     def should_create_new_challenge(
         self, session: Session, event: str, user_id: int, extra: Dict

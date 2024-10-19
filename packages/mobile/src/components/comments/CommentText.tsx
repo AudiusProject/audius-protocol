@@ -6,6 +6,7 @@ import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
+import { useToggle } from 'react-use'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
@@ -22,11 +23,11 @@ export type CommentTextProps = {
 export const CommentText = (props: CommentTextProps) => {
   const { children, isEdited } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
     track: { duration },
     navigation,
-    setIsDrawerOpen
+    closeDrawer
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -49,9 +50,7 @@ export const CommentText = (props: CommentTextProps) => {
         internalLinksOnly
         navigation={navigation}
         linkProps={{
-          onPress: () => {
-            setIsDrawerOpen?.(false)
-          }
+          onPress: closeDrawer
         }}
         suffix={
           isEdited ? (
@@ -86,11 +85,7 @@ export const CommentText = (props: CommentTextProps) => {
       </UserGeneratedText>
 
       {isOverflowing ? (
-        <TextLink
-          size='s'
-          variant='visible'
-          onPress={() => setIsExpanded((val) => !val)}
-        >
+        <TextLink size='s' variant='visible' onPress={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>
       ) : null}

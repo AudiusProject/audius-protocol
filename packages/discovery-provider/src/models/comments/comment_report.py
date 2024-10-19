@@ -11,6 +11,8 @@ from sqlalchemy import (
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
+COMMENT_REPORT_KARMA_THRESHOLD = 1_720_000
+
 
 class CommentReport(Base, RepresentableMixin):
     __tablename__ = "comment_reports"

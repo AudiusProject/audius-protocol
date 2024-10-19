@@ -238,6 +238,12 @@ export interface TrackFull {
      */
     playlistsContainingTrack?: Array<number>;
     /**
+     * 
+     * @type {number}
+     * @memberof TrackFull
+     */
+    pinnedCommentId?: number;
+    /**
      * Describes what access the given user has
      * @type {Access}
      * @memberof TrackFull
@@ -598,6 +604,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
+        'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
         'access': AccessFromJSON(json['access']),
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
@@ -682,6 +689,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_streamable': value.isStreamable,
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
+        'pinned_comment_id': value.pinnedCommentId,
         'access': AccessToJSON(value.access),
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,

@@ -25,5 +25,5 @@ export type ComposerInputProps = {
   TextInputComponent?: typeof TextInput
 } & Pick<
   TextInputProps,
-  'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id'
+  'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id' | 'onLayout'
 >

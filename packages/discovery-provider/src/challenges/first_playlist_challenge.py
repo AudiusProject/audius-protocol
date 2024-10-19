@@ -25,5 +25,5 @@ class FirstPlaylistChallengeUpdater(ChallengeUpdater):
 
 
 first_playlist_challenge_manager = ChallengeManager(
-    "fp", FirstPlaylistChallengeUpdater()
+    "first-playlist", FirstPlaylistChallengeUpdater()
 )

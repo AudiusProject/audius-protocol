@@ -7,7 +7,7 @@ exports.default =
   exports.getTrackLink =
   exports.getEntity =
   exports.getUsers =
-    void 0
+  void 0
 
 const _react = _interopRequireDefault(require('react'))
 
@@ -124,70 +124,70 @@ function _arrayWithHoles(arr) {
 }
 
 const challengeRewardsConfig = {
-  rd: {
+  referred: {
     title: 'Invite your Friends',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
       null
     )
   },
-  r: {
+  referrals: {
     title: 'Invite your Friends',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
       null
     )
   },
-  rv: {
+  'ref-v': {
     title: 'Invite your Fans',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.IncomingEnvelopeIcon,
       null
     )
   },
-  v: {
+  'connect-verified': {
     title: 'Link Verified Accounts',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.WhiteHeavyCheckMarkIcon,
       null
     )
   },
-  l: {
+  'listen-streak': {
     title: 'Listening Streak: 7 Days',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.HeadphoneIcon,
       null
     )
   },
-  m: {
+  'mobile-install': {
     title: 'Get the Audius Mobile App',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MobilePhoneWithArrowIcon,
       null
     )
   },
-  p: {
+  'profile-completion': {
     title: 'Complete Your Profile',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.WhiteHeavyCheckMarkIcon,
       null
     )
   },
-  u: {
+  'track-upload': {
     title: 'Upload 3 Tracks',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MultipleMusicalNotesIcon,
       null
     )
   },
-  ft: {
+  'send-first-tip': {
     title: 'Send Your First Tip',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.MoneyMouthFaceIcon,
       null
     )
   },
-  fp: {
+  'first-playlist': {
     title: 'Create a Playlist',
     icon: /* #__PURE__ */ _react.default.createElement(
       _Icons.TrebleClefIcon,
@@ -307,411 +307,411 @@ const getEntity = function getEntity(entity) {
 exports.getEntity = getEntity
 const notificationMap =
   ((_notificationMap = {}),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Favorite.base,
-    function (notification) {
-      const user = getUsers(notification.users)
-      const entity = getEntity(notification.entity)
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        user,
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' favorited your '
-        }),
-        entity
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Repost.base,
-    function (notification) {
-      const user = getUsers(notification.users)
-      const entity = getEntity(notification.entity)
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        user,
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' reposted your '
-        }),
-        entity
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Follow,
-    function (notification) {
-      const user = getUsers(notification.users)
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        user,
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' followed you'
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Announcement,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(BodyText, {
-        className: 'notificationText',
-        text: notification.text
-      })
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Milestone,
-    function (notification) {
-      if (notification.entity) {
-        const entity = notification.entity.type.toLowerCase()
-        const highlight = notification.entity.name
-        const count = notification.value
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Favorite.base,
+      function (notification) {
+        const user = getUsers(notification.users)
+        const entity = getEntity(notification.entity)
         return /* #__PURE__ */ _react.default.createElement(
           'span',
           {
             className: 'notificationText'
           },
-          /* #__PURE__ */ _react.default.createElement(BodyText, {
-            text: 'Your '.concat(entity, ' ')
+          user,
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' favorited your '
           }),
-          /* #__PURE__ */ _react.default.createElement(HighlightText, {
-            text: highlight
+          entity
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Repost.base,
+      function (notification) {
+        const user = getUsers(notification.users)
+        const entity = getEntity(notification.entity)
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
+          user,
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' reposted your '
           }),
-          /* #__PURE__ */ _react.default.createElement(BodyText, {
-            text: ' has reached over '
-              .concat(count.toLocaleString(), ' ')
-              .concat(notification.achievement, 's')
+          entity
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Follow,
+      function (notification) {
+        const user = getUsers(notification.users)
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
+          user,
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' followed you'
           })
         )
-      } else {
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Announcement,
+      function (notification) {
         return /* #__PURE__ */ _react.default.createElement(BodyText, {
           className: 'notificationText',
-          text: 'You have reached over '.concat(
-            notification.value,
-            ' Followers '
-          )
+          text: notification.text
         })
       }
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.TrendingTrack,
-    function (notification) {
-      const highlight = notification.entity.title
-      const rank = notification.rank
-      const rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank)
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: 'Your Track '
-        }),
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: highlight
-        }),
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' is '
-            .concat(rank)
-            .concat(rankSuffix, ' on Trending Right Now! \uD83C\uDF7E')
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.UserSubscription,
-    function (notification) {
-      const _notification$users = _slicedToArray(notification.users, 1)
-      const user = _notification$users[0]
-
-      if (
-        notification.entity.type === _constants.notificationTypes.Track &&
-        !isNaN(notification.entity.count) &&
-        notification.entity.count > 1
-      ) {
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Milestone,
+      function (notification) {
+        if (notification.entity) {
+          const entity = notification.entity.type.toLowerCase()
+          const highlight = notification.entity.name
+          const count = notification.value
+          return /* #__PURE__ */ _react.default.createElement(
+            'span',
+            {
+              className: 'notificationText'
+            },
+          /* #__PURE__ */ _react.default.createElement(BodyText, {
+              text: 'Your '.concat(entity, ' ')
+            }),
+          /* #__PURE__ */ _react.default.createElement(HighlightText, {
+              text: highlight
+            }),
+          /* #__PURE__ */ _react.default.createElement(BodyText, {
+              text: ' has reached over '
+                .concat(count.toLocaleString(), ' ')
+                .concat(notification.achievement, 's')
+            })
+          )
+        } else {
+          return /* #__PURE__ */ _react.default.createElement(BodyText, {
+            className: 'notificationText',
+            text: 'You have reached over '.concat(
+              notification.value,
+              ' Followers '
+            )
+          })
+        }
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.TrendingTrack,
+      function (notification) {
+        const highlight = notification.entity.title
+        const rank = notification.rank
+        const rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank)
         return /* #__PURE__ */ _react.default.createElement(
           'span',
           {
             className: 'notificationText'
           },
-          /* #__PURE__ */ _react.default.createElement(HighlightText, {
-            text: user.name
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: 'Your Track '
           }),
-          /* #__PURE__ */ _react.default.createElement(BodyText, {
-            text: ' released '
-              .concat(notification.entity.count, ' new ')
-              .concat(notification.entity.type)
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: highlight
+          }),
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' is '
+              .concat(rank)
+              .concat(rankSuffix, ' on Trending Right Now! \uD83C\uDF7E')
           })
         )
       }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.UserSubscription,
+      function (notification) {
+        const _notification$users = _slicedToArray(notification.users, 1)
+        const user = _notification$users[0]
 
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: user.name
-        }),
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' released a new '
-            .concat(notification.entity.type, ' ')
-            .concat(notification.entity.name)
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.RemixCreate,
-    function (notification) {
-      const remixUser = notification.remixUser
-      const remixTrack = notification.remixTrack
-      const parentTrackUser = notification.parentTrackUser
-      const parentTrack = notification.parentTrack
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: remixTrack.title
-        }),
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' by '
-        }),
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: remixUser.name
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.RemixCosign,
-    function (notification) {
-      const parentTrackUser = notification.parentTrackUser
-      const parentTracks = notification.parentTracks
-      const parentTrack = parentTracks.find(function (t) {
-        return t.owner_id === parentTrackUser.user_id
-      })
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: parentTrackUser.name
-        }),
-        /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' Co-signed your Remix of '
-        }),
-        /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: parentTrack.title
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.ChallengeReward,
-    function (notification) {
-      const rewardAmount = notification.rewardAmount
-      const _challengeRewardsConf =
-        challengeRewardsConfig[notification.challengeId]
-      const title = _challengeRewardsConf.title
-      const icon = _challengeRewardsConf.icon
-      let bodyText
+        if (
+          notification.entity.type === _constants.notificationTypes.Track &&
+          !isNaN(notification.entity.count) &&
+          notification.entity.count > 1
+        ) {
+          return /* #__PURE__ */ _react.default.createElement(
+            'span',
+            {
+              className: 'notificationText'
+            },
+          /* #__PURE__ */ _react.default.createElement(HighlightText, {
+              text: user.name
+            }),
+          /* #__PURE__ */ _react.default.createElement(BodyText, {
+              text: ' released '
+                .concat(notification.entity.count, ' new ')
+                .concat(notification.entity.type)
+            })
+          )
+        }
 
-      if (notification.challengeId === 'rd') {
-        bodyText = 'You\u2019ve received '.concat(
-          rewardAmount,
-          ' $AUDIO for being referred! Invite your friends to join to earn more!'
-        )
-      } else {
-        bodyText = 'You\u2019ve earned '.concat(
-          rewardAmount,
-          ' $AUDIO for completing this challenge!'
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: user.name
+          }),
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' released a new '
+              .concat(notification.entity.type, ' ')
+              .concat(notification.entity.name)
+          })
         )
       }
-
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
-        /* #__PURE__ */ _react.default.createElement(
-          'table',
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.RemixCreate,
+      function (notification) {
+        const remixUser = notification.remixUser
+        const remixTrack = notification.remixTrack
+        const parentTrackUser = notification.parentTrackUser
+        const parentTrack = notification.parentTrack
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
           {
-            cellspacing: '0',
-            cellpadding: '0',
-            style: {
-              marginBottom: '4px'
-            }
+            className: 'notificationText'
           },
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: remixTrack.title
+          }),
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' by '
+          }),
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: remixUser.name
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.RemixCosign,
+      function (notification) {
+        const parentTrackUser = notification.parentTrackUser
+        const parentTracks = notification.parentTracks
+        const parentTrack = parentTracks.find(function (t) {
+          return t.owner_id === parentTrackUser.user_id
+        })
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: parentTrackUser.name
+          }),
+        /* #__PURE__ */ _react.default.createElement(BodyText, {
+            text: ' Co-signed your Remix of '
+          }),
+        /* #__PURE__ */ _react.default.createElement(HighlightText, {
+            text: parentTrack.title
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.ChallengeReward,
+      function (notification) {
+        const rewardAmount = notification.rewardAmount
+        const _challengeRewardsConf =
+          challengeRewardsConfig[notification.challengeId]
+        const title = _challengeRewardsConf.title
+        const icon = _challengeRewardsConf.icon
+        let bodyText
+
+        if (notification.challengeId === 'referred') {
+          bodyText = 'You\u2019ve received '.concat(
+            rewardAmount,
+            ' $AUDIO for being referred! Invite your friends to join to earn more!'
+          )
+        } else {
+          bodyText = 'You\u2019ve earned '.concat(
+            rewardAmount,
+            ' $AUDIO for completing this challenge!'
+          )
+        }
+
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
+        /* #__PURE__ */ _react.default.createElement(
+            'table',
+            {
+              cellspacing: '0',
+              cellpadding: '0',
+              style: {
+                marginBottom: '4px'
+              }
+            },
           /* #__PURE__ */ _react.default.createElement(
-            'tr',
-            null,
+              'tr',
+              null,
             /* #__PURE__ */ _react.default.createElement('td', null, icon),
             /* #__PURE__ */ _react.default.createElement(
-              'td',
-              null,
+                'td',
+                null,
               /* #__PURE__ */ _react.default.createElement(HighlightText, {
-                text: title
-              })
+                  text: title
+                })
+              )
             )
-          )
-        ),
+          ),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: bodyText
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.AddTrackToPlaylist,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
+            text: bodyText
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.AddTrackToPlaylist,
+      function (notification) {
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: notification.playlistOwner.name
-        }),
+            text: notification.playlistOwner.name
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' added your track '
-        }),
+            text: ' added your track '
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: notification.track.title
-        }),
+            text: notification.track.title
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' to their playlist '
-        }),
+            text: ' to their playlist '
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: notification.playlist.playlist_name
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.Reaction,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
+            text: notification.playlist.playlist_name
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.Reaction,
+      function (notification) {
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: (0, _utils.capitalize)(notification.reactingUser.name)
-        }),
+            text: (0, _utils.capitalize)(notification.reactingUser.name)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' reacted to your tip of '
-        }),
+            text: ' reacted to your tip of '
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: notification.amount
-        }),
+            text: notification.amount
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' $AUDIO'
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.SupporterRankUp,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
+            text: ' $AUDIO'
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.SupporterRankUp,
+      function (notification) {
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: (0, _utils.capitalize)(notification.sendingUser.name)
-        }),
+            text: (0, _utils.capitalize)(notification.sendingUser.name)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' became your '
-        }),
+            text: ' became your '
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: '#'.concat(notification.rank)
-        }),
+            text: '#'.concat(notification.rank)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' Top Supporter!'
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.SupportingRankUp,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
+            text: ' Top Supporter!'
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.SupportingRankUp,
+      function (notification) {
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: "You're now "
-        }),
+            text: "You're now "
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: (0, _utils.capitalize)(notification.receivingUser.name)
-        }),
+            text: (0, _utils.capitalize)(notification.receivingUser.name)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: "'s "
-        }),
+            text: "'s "
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: '#'.concat(notification.rank)
-        }),
+            text: '#'.concat(notification.rank)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' Top Supporter!'
-        })
-      )
-    }
-  ),
-  _defineProperty(
-    _notificationMap,
-    _constants.notificationTypes.TipReceive,
-    function (notification) {
-      return /* #__PURE__ */ _react.default.createElement(
-        'span',
-        {
-          className: 'notificationText'
-        },
+            text: ' Top Supporter!'
+          })
+        )
+      }
+    ),
+    _defineProperty(
+      _notificationMap,
+      _constants.notificationTypes.TipReceive,
+      function (notification) {
+        return /* #__PURE__ */ _react.default.createElement(
+          'span',
+          {
+            className: 'notificationText'
+          },
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: (0, _utils.capitalize)(notification.sendingUser.name)
-        }),
+            text: (0, _utils.capitalize)(notification.sendingUser.name)
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' sent you a tip of '
-        }),
+            text: ' sent you a tip of '
+          }),
         /* #__PURE__ */ _react.default.createElement(HighlightText, {
-          text: notification.amount
-        }),
+            text: notification.amount
+          }),
         /* #__PURE__ */ _react.default.createElement(BodyText, {
-          text: ' $AUDIO'
-        })
-      )
-    }
-  ),
-  _notificationMap)
+            text: ' $AUDIO'
+          })
+        )
+      }
+    ),
+    _notificationMap)
 
 const getMessage = function getMessage(notification) {
   const getNotificationMessage = notificationMap[notification.type]

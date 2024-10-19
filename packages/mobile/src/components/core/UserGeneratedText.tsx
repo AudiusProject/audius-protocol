@@ -164,6 +164,8 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     matchers,
     internalLinksOnly,
     navigation,
+    onTextLayout,
+    numberOfLines,
     ...other
   } = props
 
@@ -292,7 +294,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
       >
-        <Text>
+        <Text onTextLayout={onTextLayout} numberOfLines={numberOfLines}>
           <Autolink
             renderLink={
               allowPointerEventsToPassThrough ? renderHiddenLink : renderLink

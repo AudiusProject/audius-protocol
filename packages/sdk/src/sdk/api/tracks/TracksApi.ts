@@ -19,6 +19,7 @@ import type { LoggerService } from '../../services/Logger'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import type { StorageService } from '../../services/Storage'
 import { encodeHashId } from '../../utils/hashId'
+import { getLocation } from '../../utils/location'
 import { parseParams } from '../../utils/parseParams'
 import { prepareSplits } from '../../utils/preparePaymentSplits'
 import { retry3 } from '../../utils/retry'
@@ -405,12 +406,23 @@ export class TracksApi extends GeneratedTracksApi {
       'downloadTrack',
       RecordTrackDownloadSchema
     )(params)
+    const location = await getLocation({ logger: this.logger })
     return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DOWNLOAD,
       auth: this.auth,
+      metadata: location
+        ? JSON.stringify({
+            cid: '',
+            data: {
+              city: location.city,
+              region: location.region,
+              country: location.country
+            }
+          })
+        : undefined,
       ...advancedOptions
     })
   }

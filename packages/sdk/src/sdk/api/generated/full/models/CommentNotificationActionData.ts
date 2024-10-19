@@ -31,13 +31,13 @@ export interface CommentNotificationActionData {
      * @type {string}
      * @memberof CommentNotificationActionData
      */
-    userId: string;
+    entityId: string;
     /**
      * 
      * @type {string}
      * @memberof CommentNotificationActionData
      */
-    entityId: string;
+    commentUserId: string;
 }
 
 
@@ -58,8 +58,8 @@ export type CommentNotificationActionDataTypeEnum = typeof CommentNotificationAc
 export function instanceOfCommentNotificationActionData(value: object): value is CommentNotificationActionData {
     let isInstance = true;
     isInstance = isInstance && "type" in value && value["type"] !== undefined;
-    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
+    isInstance = isInstance && "commentUserId" in value && value["commentUserId"] !== undefined;
 
     return isInstance;
 }
@@ -75,8 +75,8 @@ export function CommentNotificationActionDataFromJSONTyped(json: any, ignoreDisc
     return {
         
         'type': json['type'],
-        'userId': json['user_id'],
         'entityId': json['entity_id'],
+        'commentUserId': json['comment_user_id'],
     };
 }
 
@@ -90,8 +90,8 @@ export function CommentNotificationActionDataToJSON(value?: CommentNotificationA
     return {
         
         'type': value.type,
-        'user_id': value.userId,
         'entity_id': value.entityId,
+        'comment_user_id': value.commentUserId,
     };
 }
 
