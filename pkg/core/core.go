@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/chain"
@@ -281,7 +282,9 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.TxIndex.TableAttributes = "core_attributes"
 
 	// db and state config
-	cometConfig.Consensus.CreateEmptyBlocks = false
+	cometConfig.Consensus.TimeoutCommit = 1 * time.Second
+	cometConfig.Consensus.CreateEmptyBlocksInterval = 1 * time.Second
+	cometConfig.Consensus.CreateEmptyBlocks = true
 
 	// mempool
 	cometConfig.Mempool.Recheck = true
