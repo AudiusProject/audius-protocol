@@ -82,7 +82,7 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited}>{message}</CommentText>
+        <CommentText isEdited={isEdited && !isTombstone}>{message}</CommentText>
         {!hideActions ? (
           <CommentActionBar
             comment={comment}
