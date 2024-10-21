@@ -85,22 +85,6 @@ jobs:
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc
       notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-uptime
-      context: [Vercel, dockerhub]
-      service: uptime
-      notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-ddex-processor
-      context: [GCP, dockerhub, slack-secrets]
-      service: ddex-processor
-      notify_slack_on_failure: true
-  - release-governance-trigger:
-      type: approval
-  - release-governance:
-      context: [Vercel, governance, slack-secrets]
-      requires:
-        - release-governance-trigger
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
@@ -119,8 +103,6 @@ jobs:
         - push-pedalboard-mri
         - push-comms
         - push-trpc
-        - push-uptime
-        - push-ddex-processor
 
   - deploy-foundation-nodes-trigger:
       requires:
@@ -138,10 +120,7 @@ jobs:
       context: github
       requires:
         - release-audius-docker-compose-trigger
-
-  - release-discord-trigger:
-      type: approval
   - release-discord:
       context: discord
       requires:
-        - release-discord-trigger
+        - release-audius-docker-compose-trigger

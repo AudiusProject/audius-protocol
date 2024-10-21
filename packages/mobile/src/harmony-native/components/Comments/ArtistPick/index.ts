@@ -1,1 +1,0 @@
-export { ArtistPick } from './ArtistPick'

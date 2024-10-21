@@ -37,7 +37,10 @@ export const TrackCommentsPage = () => {
   return (
     <MobilePageContainer
       title={messages.title}
-      css={(theme) => ({ backgroundColor: theme.color.background.white })}
+      css={(theme) => ({
+        backgroundColor: theme.color.background.white,
+        height: '100%'
+      })}
     >
       {comments_disabled ? (
         <Flex p='2xl' justifyContent='center'>

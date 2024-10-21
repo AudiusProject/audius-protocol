@@ -15,7 +15,7 @@
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
-    "@audius/sdk": "*",
+    "@audius/sdk-legacy": "*",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
@@ -47,6 +47,6 @@
     "nodemon": "^2.0.15",
     "supertest": "^6.1.3",
     "tsconfig": "*",
-    "typescript": "^4.5.3"
+    "typescript": "5.0.4"
   }
 }

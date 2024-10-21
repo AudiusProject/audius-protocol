@@ -2,8 +2,8 @@ services:
   core:
     container_name: core
     build:
-      context: ${PROJECT_ROOT}/core
-      dockerfile: ./infra/Dockerfile
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
       target: final
       args:
         git_sha: '${GIT_COMMIT}'

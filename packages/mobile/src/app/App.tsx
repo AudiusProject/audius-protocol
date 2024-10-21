@@ -1,6 +1,10 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
+import {
+  QueryClientProvider,
+  QueryClient as TanQueryClient
+} from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
@@ -12,6 +16,7 @@ import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
 
+import { CommentDrawerProvider } from 'app/components/comments/CommentDrawerContext'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
@@ -40,6 +45,8 @@ import { AudiusTrpcProvider } from './TrpcProvider'
 Sentry.init({
   dsn: env.SENTRY_DSN
 })
+
+const tanQueryClient = new TanQueryClient()
 
 const Airplay = Platform.select({
   ios: () => require('../components/audio/Airplay').default,
@@ -78,32 +85,36 @@ const App = () => {
         <Provider store={store}>
           <AudiusTrpcProvider>
             <AudiusQueryProvider>
-              <PersistGate loading={null} persistor={persistor}>
-                <ThemeProvider>
-                  <WalletConnectProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <PortalProvider>
-                        <ErrorBoundary>
-                          <NavigationContainer>
-                            <BottomSheetModalProvider>
-                              <Toasts />
-                              <Airplay />
-                              <RootScreen />
-                              <Drawers />
-                              <Modals />
-                              <OAuthWebView />
-                              <NotificationReminder />
-                              <RateCtaReminder />
-                              <PortalHost name='ChatReactionsPortal' />
+              <QueryClientProvider client={tanQueryClient}>
+                <PersistGate loading={null} persistor={persistor}>
+                  <ThemeProvider>
+                    <WalletConnectProvider>
+                      <GestureHandlerRootView style={{ flex: 1 }}>
+                        <PortalProvider>
+                          <ErrorBoundary>
+                            <NavigationContainer>
+                              <BottomSheetModalProvider>
+                                <CommentDrawerProvider>
+                                  <Toasts />
+                                  <Airplay />
+                                  <RootScreen />
+                                  <Drawers />
+                                  <Modals />
+                                  <OAuthWebView />
+                                  <NotificationReminder />
+                                  <RateCtaReminder />
+                                  <PortalHost name='ChatReactionsPortal' />
+                                </CommentDrawerProvider>
+                              </BottomSheetModalProvider>
                               <PortalHost name='DrawerPortal' />
-                            </BottomSheetModalProvider>
-                          </NavigationContainer>
-                        </ErrorBoundary>
-                      </PortalProvider>
-                    </GestureHandlerRootView>
-                  </WalletConnectProvider>
-                </ThemeProvider>
-              </PersistGate>
+                            </NavigationContainer>
+                          </ErrorBoundary>
+                        </PortalProvider>
+                      </GestureHandlerRootView>
+                    </WalletConnectProvider>
+                  </ThemeProvider>
+                </PersistGate>
+              </QueryClientProvider>
             </AudiusQueryProvider>
           </AudiusTrpcProvider>
         </Provider>

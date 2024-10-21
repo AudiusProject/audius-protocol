@@ -34,6 +34,8 @@ web-init:
           - packages/common/node_modules
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/sdk/node_modules
+          - packages/sdk/dist
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 
@@ -283,7 +285,7 @@ web-deploy-sentry-sourcemaps:
 web-dist-mac-staging:
   working_directory: ~/audius-protocol
   # run on macos so dmg can be created and signed.
-  resource_class: macos.m1.medium.gen1
+  resource_class: macos.m1.large.gen1
   macos:
     xcode: '15.2.0'
   steps:

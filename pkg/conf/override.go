@@ -2,6 +2,8 @@ package conf
 
 import "strings"
 
+const remoteConfigPlaceholder = "remoteConfigFile"
+
 /** Mappings of toml config to override .env for each node type. */
 
 func (config *NodeConfig) ToOverrideEnv(host string, nc NetworkConfig) map[string]string {
@@ -53,7 +55,12 @@ func (config *NodeConfig) ToOverrideEnv(host string, nc NetworkConfig) map[strin
 
 	// Everything else we don't yet capture in audius-d models
 	for k, v := range config.OverrideConfig {
-		overrideEnv[k] = v
+		if v == remoteConfigPlaceholder {
+			// This error message will be overwritten during orchestration if the config value is found.
+			overrideEnv[k] = "ERROR: REMOTE CONFIG NOT SET"
+		} else {
+			overrideEnv[k] = v
+		}
 	}
 
 	// register plugins and pass their configs into

@@ -26,6 +26,20 @@ BEGIN
     RETURN TRUE;
   END IF;
 
+  -- existing chat takes priority over permissions
+  SELECT COUNT(*) > 0 INTO can_message
+  FROM chat_member member_a
+  JOIN chat_member member_b USING (chat_id)
+  JOIN chat_message USING (chat_id)
+  WHERE member_a.user_id = from_user_id
+    AND member_b.user_id = to_user_id
+    AND (member_b.cleared_history_at IS NULL OR chat_message.created_at > member_b.cleared_history_at)
+  ;
+
+  IF can_message THEN
+    RETURN TRUE;
+  END IF;
+
 
   -- check permissions in turn:
   FOR permission_row IN select * from chat_permissions WHERE user_id = to_user_id AND allowed = TRUE
@@ -57,7 +71,7 @@ BEGIN
       WHEN 'tippees' THEN
         IF EXISTS (
           SELECT 1
-          FROM aggregate_user_tips tip
+          FROM user_tips tip
           WHERE receiver_user_id = from_user_id
           AND sender_user_id = to_user_id
         ) THEN
@@ -67,7 +81,7 @@ BEGIN
       WHEN 'tippers' THEN
         IF EXISTS (
           SELECT 1
-          FROM aggregate_user_tips tip
+          FROM user_tips tip
           WHERE receiver_user_id = to_user_id
           AND sender_user_id = from_user_id
         ) THEN

@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk/dist/libs'
+import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 
 import { ID } from '../../models'
 import { encodeHashId } from '../../utils/hashIds'
@@ -25,7 +25,6 @@ enum PathType {
 }
 
 const ROOT_ENDPOINT_MAP = {
-  feed: `/feed`,
   healthCheck: '/health_check',
   blockConfirmation: '/block_confirmation'
 }
@@ -33,21 +32,6 @@ const ROOT_ENDPOINT_MAP = {
 export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
 }
-
-export type AssociatedWalletsResponse = {
-  wallets: string[]
-  sol_wallets: string[]
-}
-
-export type GetSocialFeedArgs = QueryParams & {
-  filter: string
-  with_users?: boolean
-  tracks_only?: boolean
-  followee_user_ids?: ID[]
-  current_user_id?: ID
-}
-
-type GetSocialFeedResponse = {}
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -135,43 +119,6 @@ export class AudiusAPIClient {
       PathType.RootPath
     )
     if (!response) return {}
-    return response.data
-  }
-
-  async getSocialFeed({
-    offset,
-    limit,
-    with_users,
-    filter,
-    tracks_only,
-    followee_user_ids,
-    current_user_id
-  }: GetSocialFeedArgs) {
-    this._assertInitialized()
-    const headers = current_user_id
-      ? {
-          'X-User-ID': current_user_id.toString()
-        }
-      : undefined
-    const response = await this._getResponse<
-      APIResponse<GetSocialFeedResponse>
-    >(
-      ROOT_ENDPOINT_MAP.feed,
-      {
-        offset,
-        limit,
-        with_users,
-        filter,
-        tracks_only,
-        followee_user_id: followee_user_ids
-          ? followee_user_ids.map((id) => id.toString())
-          : undefined
-      },
-      true,
-      PathType.RootPath,
-      headers
-    )
-    if (!response) return null
     return response.data
   }
 

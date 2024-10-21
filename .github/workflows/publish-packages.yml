@@ -26,6 +26,7 @@ jobs:
               - 'packages/fixed-decimal/**'
               - 'packages/harmony/**'
               - 'packages/libs/**'
+              - 'packages/sdk/**'
               - 'packages/sp-actions/**'
               - 'packages/spl/**'
 

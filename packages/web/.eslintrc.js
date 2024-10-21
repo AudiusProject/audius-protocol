@@ -42,6 +42,11 @@ module.exports = {
           {
             group: ['react-spring*'],
             message: 'Please use @react-spring/web instead'
+          },
+          {
+            group: ['@audius/sdk/dist*'],
+            message:
+              'Do not import from the SDK dist folder. If needed, update SDK to export the item you wish to use.'
           }
         ]
       }

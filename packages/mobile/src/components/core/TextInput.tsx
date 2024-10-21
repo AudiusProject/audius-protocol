@@ -1,5 +1,12 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
+import {
+  useMemo,
+  useState,
+  useRef,
+  forwardRef,
+  useCallback,
+  useEffect
+} from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -122,6 +129,7 @@ export type TextInputProps = RNTextInputProps & {
   hideInputAccessory?: boolean
   hideKeyboard?: boolean
   error?: boolean
+  TextInputComponent?: typeof RNTextInput
 }
 
 export type TextInputRef = RNTextInput
@@ -153,6 +161,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       hideInputAccessory: hideInputAccessoryProp,
       autoCorrect = false,
       error,
+      TextInputComponent = RNTextInput,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
@@ -165,7 +174,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     )
 
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
-    const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
+    const borderFocusAnimation = useMemo(
+      () => new Animated.Value(isFocused ? 1 : 0),
+      [isFocused]
+    )
     const iconProps = { ...styles.icon, ...iconProp }
 
     const hideInputAccessory =
@@ -200,13 +212,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 1,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 1,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -232,7 +241,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         Animated.parallel(animations).start()
       },
-      [onFocus, isLabelActive, hideKeyboard]
+      [onFocus, hideKeyboard, borderFocusAnimation, isLabelActive]
     )
 
     const handleBlur = useCallback(
@@ -242,13 +251,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 0,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 0,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -273,7 +279,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
         }
         Animated.parallel(animations).start()
       },
-      [onBlur, isFocused, value, startAdornment]
+      [onBlur, borderFocusAnimation, isFocused, value, startAdornment]
     )
 
     const handlePressRoot = useCallback(() => {
@@ -302,7 +308,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             {
               borderColor: error
                 ? accentRed
-                : borderFocusAnimation.current.interpolate({
+                : borderFocusAnimation.interpolate({
                     inputRange: [0, 1],
                     outputRange: [
                       convertHexToRGBA(neutralLight7),
@@ -343,7 +349,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
           {startAdornment ? (
             <View style={styles.startAdornment}>{startAdornment}</View>
           ) : null}
-          <RNTextInput
+          <TextInputComponent
             ref={mergeRefs([innerInputRef, ref])}
             style={[styles.input, stylesProp?.input]}
             accessibilityLabel={Platform.OS === 'ios' ? label : undefined}

@@ -7,7 +7,7 @@ const iconStyle = {
 }
 
 const InstagramLink = () => (
-  <a href="https://www.instagram.com/audiusmusic/">
+  <a href="https://www.instagram.com/audius/">
     <img
       src="https://download.audius.co/static-resources/email/iconInsta.png"
       alt="instagram"

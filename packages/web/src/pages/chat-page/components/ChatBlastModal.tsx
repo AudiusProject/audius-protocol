@@ -1,9 +1,14 @@
 import { useGetCurrentUser } from '@audius/common/api'
 import {
+  useFirstAvailableBlastAudience,
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { useChatBlastModal, chatActions } from '@audius/common/src/store'
+import {
+  useChatBlastModal,
+  chatActions,
+  useCreateChatModal
+} from '@audius/common/src/store'
 import {
   Flex,
   IconTowerBroadcast,
@@ -59,7 +64,7 @@ type PurchasableContentOption = {
 }
 
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -67,9 +72,12 @@ type ChatBlastFormValues = {
 export const ChatBlastModal = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose } = useChatBlastModal()
+  const { onOpen: openCreateChatModal, data: createChatModalData } =
+    useCreateChatModal()
 
+  const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -86,11 +94,16 @@ export const ChatBlastModal = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })
     )
+  }
+
+  const handleCancel = () => {
+    onClose()
+    openCreateChatModal(createChatModalData)
   }
 
   return (
@@ -98,8 +111,9 @@ export const ChatBlastModal = () => {
       <Formik<ChatBlastFormValues>
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize
       >
-        {({ submitForm }) => (
+        {({ submitForm, isSubmitting }) => (
           <>
             <ModalHeader>
               <ModalTitle
@@ -116,7 +130,7 @@ export const ChatBlastModal = () => {
                   variant='secondary'
                   iconLeft={IconCaretLeft}
                   css={{ flexGrow: 1 }}
-                  onClick={onClose}
+                  onClick={handleCancel}
                 >
                   {messages.back}
                 </Button>
@@ -125,6 +139,8 @@ export const ChatBlastModal = () => {
                   type='submit'
                   css={{ flexGrow: 1 }}
                   onClick={submitForm}
+                  // Empty default audience means there are no users in any audience
+                  disabled={!!isSubmitting || !defaultAudience}
                 >
                   {messages.continue}
                 </Button>
@@ -158,12 +174,13 @@ const LabelWithCount = (props: {
   isSelected: boolean
 }) => {
   const { label, count, isSelected } = props
+
   return (
     <Flex gap='xs'>
       <Text variant='title' size='l'>
         {label}
       </Text>
-      {isSelected && count !== undefined ? (
+      {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
           ({count})
         </Text>
@@ -186,7 +203,7 @@ const FollowersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.FOLLOWERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.followers.label}
           count={user?.follower_count}
@@ -214,7 +231,7 @@ const TipSupportersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.TIPPERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.supporters.label}
           count={user?.supporter_count ?? 0}
@@ -254,7 +271,7 @@ const PastPurchasersMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.CUSTOMERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.purchasers.label}
           count={purchasersCount}
@@ -298,7 +315,7 @@ const RemixCreatorsMessageField = () => {
       }}
     >
       <Radio value={ChatBlastAudience.REMIXERS} disabled={isDisabled} />
-      <Flex direction='column' gap='xs'>
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
           label={messages.remixCreators.label}
           count={remixersCount ?? 0}

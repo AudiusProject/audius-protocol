@@ -1,5 +1,10 @@
 import { ReactNode } from 'react'
 
+import {
+  QueryClientProvider,
+  QueryClient as TanQueryClient
+} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ConnectedRouter } from 'connected-react-router'
 import { CompatRouter } from 'react-router-dom-v5-compat'
 import { LastLocationProvider } from 'react-router-last-location'
@@ -20,6 +25,8 @@ import { ReduxProvider } from './ReduxProvider'
 import { SvgGradientProvider } from './SvgGradientProvider'
 import { ThemeProvider } from './ThemeProvider'
 import { TrpcProvider } from './TrpcProvider'
+
+const tanQueryClient = new TanQueryClient()
 
 type AppContextProps = {
   children: ReactNode
@@ -44,25 +51,28 @@ export const AppProviders = ({ children }: AppContextProps) => {
           <LastLocationProvider>
             <TrpcProvider>
               <AudiusQueryProvider>
-                <AppContextProvider>
-                  <ThemeProvider>
-                    <NavProvider>
-                      <ScrollProvider>
-                        <RouterContextProvider>
-                          <MainContentContextProvider>
-                            <SvgGradientProvider>
-                              <HeaderContextProvider>
-                                <ToastContextProvider>
-                                  {children}
-                                </ToastContextProvider>
-                              </HeaderContextProvider>
-                            </SvgGradientProvider>
-                          </MainContentContextProvider>
-                        </RouterContextProvider>
-                      </ScrollProvider>
-                    </NavProvider>
-                  </ThemeProvider>
-                </AppContextProvider>
+                <QueryClientProvider client={tanQueryClient}>
+                  <ReactQueryDevtools initialIsOpen={false} />
+                  <AppContextProvider>
+                    <ThemeProvider>
+                      <NavProvider>
+                        <ScrollProvider>
+                          <RouterContextProvider>
+                            <MainContentContextProvider>
+                              <SvgGradientProvider>
+                                <HeaderContextProvider>
+                                  <ToastContextProvider>
+                                    {children}
+                                  </ToastContextProvider>
+                                </HeaderContextProvider>
+                              </SvgGradientProvider>
+                            </MainContentContextProvider>
+                          </RouterContextProvider>
+                        </ScrollProvider>
+                      </NavProvider>
+                    </ThemeProvider>
+                  </AppContextProvider>
+                </QueryClientProvider>
               </AudiusQueryProvider>
             </TrpcProvider>
           </LastLocationProvider>

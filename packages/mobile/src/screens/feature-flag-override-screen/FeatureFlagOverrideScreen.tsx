@@ -127,6 +127,7 @@ const FeatureFlagScreen = () => {
       <FlatList
         ListHeaderComponent={
           <FilterInput
+            autoFocus
             placeholder={messages.filterPlaceholder}
             onChangeText={setFilter}
           />

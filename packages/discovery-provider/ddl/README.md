@@ -20,6 +20,15 @@ To get a `psql` prompt after tests (to explore schema, or experiment) add `psql`
 bash local-test.sh psql
 ```
 
+#### Re-run a sql file in the prompt
+
+If you ran `psql` to get a prompt you can re-interpret files after you change them:
+
+```
+\i /sql/functions/chat_allowed.sql
+\i /sql/tests/chat_allowed_test.sql
+```
+
 ## Example usage
 
 ```

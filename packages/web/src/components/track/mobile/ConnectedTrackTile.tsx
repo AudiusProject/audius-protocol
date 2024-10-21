@@ -25,10 +25,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { Genre, route } from '@audius/common/utils'
+import { Box, IconButton, IconKebabHorizontal } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import Menu from 'components/menu/Menu'
+import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackTileProps } from 'components/track/types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
@@ -144,6 +147,7 @@ const ConnectedTrackTile = ({
     getUserWithFallback(user)
 
   const isOwner = user_id === currentUserId
+  const isArtistPick = showArtistPick && artist_pick_track_id === track_id
 
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -189,6 +193,60 @@ const ConnectedTrackTile = ({
       setFavoriteTrackId(trackId)
       goToRoute(FAVORITING_USERS_ROUTE)
     }
+
+  const makeGoToCommentsPage = (_: ID) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation()
+    goToRoute(track?.permalink + '?showComments=true')
+  }
+
+  // We wanted to use mobile track tile on desktop, which means shimming in the desktop overflow
+  // menu whenever isMobile is false.
+  const renderOverflowMenu = () => {
+    const menu: Omit<TrackMenuProps, 'children'> = {
+      extraMenuItems: [],
+      handle,
+      includeAddToPlaylist: !is_unlisted || isOwner,
+      includeAddToAlbum: isOwner && !ddexApp,
+      includeArtistPick: isOwner,
+      includeEdit: isOwner,
+      ddexApp: track?.ddex_app,
+      includeEmbed: !(is_unlisted || isStreamGated),
+      includeFavorite: hasStreamAccess,
+      includeRepost: hasStreamAccess,
+      includeShare: true,
+      includeTrackPage: true,
+      isArtistPick,
+      isDeleted: is_delete || user?.is_deactivated,
+      isFavorited: has_current_user_saved,
+      isOwner,
+      isReposted: has_current_user_reposted,
+      isUnlisted: is_unlisted,
+      trackId: track_id,
+      trackTitle: title,
+      genre: genre as Genre,
+      trackPermalink: permalink,
+      type: 'track'
+    }
+
+    return (
+      <Menu menu={menu}>
+        {(ref, triggerPopup) => (
+          <Box mb={-8}>
+            <IconButton
+              ref={ref}
+              icon={IconKebabHorizontal}
+              onClick={(e) => {
+                e.stopPropagation()
+                triggerPopup()
+              }}
+              aria-label='More'
+              color='subdued'
+            />
+          </Box>
+        )}
+      </Menu>
+    )
+  }
 
   const onClickOverflow = (trackId: ID) => {
     const isLongFormContent =
@@ -255,7 +313,7 @@ const ConnectedTrackTile = ({
       fieldVisibility={field_visibility}
       coSign={_co_sign}
       // Artist Pick
-      isArtistPick={showArtistPick && artist_pick_track_id === track_id}
+      isArtistPick={isArtistPick}
       // Artist
       artistHandle={handle}
       artistName={name}
@@ -271,9 +329,11 @@ const ConnectedTrackTile = ({
       toggleSave={toggleSave}
       onShare={onShare}
       onClickOverflow={onClickOverflow}
+      renderOverflow={renderOverflowMenu}
       toggleRepost={toggleRepost}
       makeGoToRepostsPage={makeGoToRepostsPage}
       makeGoToFavoritesPage={makeGoToFavoritesPage}
+      makeGoToCommentsPage={makeGoToCommentsPage}
       goToRoute={goToRoute}
       isOwner={isOwner}
       darkMode={darkMode}

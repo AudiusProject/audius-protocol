@@ -57,6 +57,13 @@ module.exports = {
             message:
               'Use @audius/harmony-native instead. If needing to access an @audius/harmony export, reference it directly with @audius/harmony/src/..'
           }
+        ],
+        patterns: [
+          {
+            group: ['@audius/sdk/dist*'],
+            message:
+              'Do not import from the SDK dist folder. If needed, update SDK to export the item you wish to use.'
+          }
         ]
       }
     ]

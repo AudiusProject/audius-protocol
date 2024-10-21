@@ -16,14 +16,14 @@ import {
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import { IconError, IconPlus } from '@audius/harmony'
+import { Flex, IconError, IconPlus } from '@audius/harmony'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { reactionMap } from 'components/notification/Notification/components/Reaction'
-import { UserGeneratedText } from 'components/user-generated-text'
+import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGeneratedTextV2'
 
 import ChatTail from '../../../assets/img/ChatTail.svg'
 
@@ -210,18 +210,19 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             />
           ) : null}
           {!hideMessage ? (
-            <UserGeneratedText
-              lineHeight='multi'
-              className={styles.text}
-              color={isAuthor ? 'staticWhite' : 'default'}
-              textAlign='left'
-              linkProps={{
-                variant: isAuthor ? 'inverted' : 'visible',
-                showUnderline: true
-              }}
-            >
-              {message.message}
-            </UserGeneratedText>
+            <Flex className={styles.textWrapper}>
+              <UserGeneratedTextV2
+                className={styles.text}
+                color={isAuthor ? 'staticWhite' : 'default'}
+                textAlign='left'
+                linkProps={{
+                  variant: isAuthor ? 'inverted' : 'visible',
+                  showUnderline: true
+                }}
+              >
+                {message.message}
+              </UserGeneratedTextV2>
+            </Flex>
           ) : null}
         </div>
         {renderReactions()}

@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.100",
+  "version": "1.5.104",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -120,7 +120,7 @@
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
     "moment": "2.24.0",
-    "react-native-svg": "13.14.0",
+    "react-native-svg": "15.7.1",
     "redux": "4.1.1",
     "webpack": "5.88.2"
   },

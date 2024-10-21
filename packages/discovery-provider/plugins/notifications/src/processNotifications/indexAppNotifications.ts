@@ -30,6 +30,8 @@ import {
 import { Timer } from '../utils/timer'
 import { getRedisConnection } from '../utils/redisConnection'
 import { RequiresRetry } from '../types/notifications'
+import { CommentThread } from './mappers/commentThread'
+import { CommentMention } from './mappers/commentMention'
 
 const NOTIFICATION_RETRY_QUEUE_REDIS_KEY = 'notification_retry'
 
@@ -49,6 +51,8 @@ export type NotificationProcessor =
   | TipReceive
   | TipSend
   | Comment
+  | CommentThread
+  | CommentMention
 
 export const notificationTypeMapping = {
   follow: MappingVariable.PushFollow,
@@ -82,7 +86,9 @@ export const notificationTypeMapping = {
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction,
   reward_in_cooldown: MappingVariable.PushRewardInCooldown,
-  comment: MappingVariable.PushComment
+  comment: MappingVariable.PushComment,
+  comment_thread: MappingVariable.PushCommentThread,
+  comment_mention: MappingVariable.PushCommentMention
 }
 
 export class AppNotificationsProcessor {

@@ -1,5 +1,31 @@
 # @audius/sdk
 
+## 6.0.1
+
+### Patch Changes
+
+- 969fd1f: add title to remixed tracks return
+- Updated dependencies [0a2fe3d]
+  - @audius/fixed-decimal@0.1.1
+
+## 6.0.0
+
+### Major Changes
+
+- e28b82b: Fixed bug where RewardsProgram only handled 3 total attestations in the account.
+  Changed IDs and specifiers for rewards claiming to be shorter so they can fit in a single Solana transaction.
+
+  To update: Update usages of `decodeAttestationsAccountData` to include `maxAttestations`, which should be `minVotes + 1` from `rewardManagerStateData`.
+
+### Patch Changes
+
+- 9b58792: Breaking change to <user-id>/tracks/remixed endpoint. Patch bump because it's unused
+- 9694ea4: Fix purchase flows with external wallets
+- 6ee5f42: Fix for claiming rewards when all attestations were already submitted
+- 0c3f791: Support cloudflare worker deployments
+- Updated dependencies [e28b82b]
+  - @audius/spl@2.0.0
+
 ## 5.1.0
 
 ### Minor Changes

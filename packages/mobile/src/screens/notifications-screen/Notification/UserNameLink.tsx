@@ -8,10 +8,11 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 type UserNameLinkProps = TextProps & {
   user: UserType
+  isOwner?: boolean
 }
 
 export const UserNameLink = (props: UserNameLinkProps) => {
-  const { user, ...other } = props
+  const { user, isOwner, ...other } = props
   const navigation = useNavigation()
 
   const onPress = useCallback(() => {
@@ -30,6 +31,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
       {...other}
     >
       {user.name}
+      {isOwner ? "'s" : null}
     </Text>
   )
 }

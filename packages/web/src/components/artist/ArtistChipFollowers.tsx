@@ -16,10 +16,12 @@ const messages = {
 type ArtistChipFollowersProps = {
   userId: ID
   followerCount: number
+  showFollowsYou: boolean
 }
 export const ArtistChipFollowers = ({
   userId,
-  followerCount
+  followerCount,
+  showFollowsYou
 }: ArtistChipFollowersProps) => {
   const darkMode = isDarkMode()
   return (
@@ -33,11 +35,13 @@ export const ArtistChipFollowers = ({
             : `${messages.followers}`}
         </span>
       </div>
-      <FollowsYouBadge
-        userId={userId}
-        variant='list'
-        className={cn(styles.followsYou, { [styles.darkMode]: darkMode })}
-      />
+      {showFollowsYou ? (
+        <FollowsYouBadge
+          userId={userId}
+          variant='list'
+          className={cn(styles.followsYou, { [styles.darkMode]: darkMode })}
+        />
+      ) : null}
     </div>
   )
 }

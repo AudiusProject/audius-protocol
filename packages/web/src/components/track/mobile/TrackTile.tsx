@@ -1,4 +1,4 @@
-import { useCallback, useEffect, MouseEvent } from 'react'
+import { useCallback, useEffect, MouseEvent, ReactNode } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -65,6 +65,7 @@ type ExtraProps = {
   onShare: (trackId: ID) => void
   makeGoToRepostsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   makeGoToFavoritesPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
+  makeGoToCommentsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
   isMatrix: boolean
@@ -73,6 +74,7 @@ type ExtraProps = {
   hasPreview?: boolean
   hasStreamAccess: boolean
   trackId?: number
+  renderOverflow?: () => ReactNode
 }
 
 type CombinedProps = TrackTileProps & ExtraProps
@@ -208,7 +210,8 @@ const TrackTile = (props: CombinedProps) => {
     containerClassName,
     hasPreview = false,
     title,
-    source
+    source,
+    renderOverflow
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -470,12 +473,17 @@ const TrackTile = (props: CombinedProps) => {
                       props.isUnlisted ||
                       props.commentsDisabled
                   })}
+                  onClick={
+                    props.commentCount && !isReadonly
+                      ? props.makeGoToCommentsPage(id)
+                      : undefined
+                  }
                 >
                   <IconMessage
                     className={styles.favoriteButton}
                     color='subdued'
                   />
-                  {formatCount(props.saveCount)}
+                  {formatCount(props.commentCount)}
                 </div>
               </>
             )}
@@ -509,6 +517,7 @@ const TrackTile = (props: CombinedProps) => {
             toggleSave={onToggleSave}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
+            renderOverflow={renderOverflow}
             onClickGatedUnlockPill={onClickPill}
             isOwner={isOwner}
             readonly={isReadonly}

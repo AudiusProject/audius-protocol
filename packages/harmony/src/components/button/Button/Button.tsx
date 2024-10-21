@@ -210,7 +210,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const iconCss =
-      size === 'small'
+      size === 'small' || size === 'xs'
         ? smallIconStyles
         : size === 'large'
         ? largeIconStyles

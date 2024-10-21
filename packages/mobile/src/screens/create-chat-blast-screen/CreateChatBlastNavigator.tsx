@@ -1,3 +1,4 @@
+import { useFirstAvailableBlastAudience } from '@audius/common/hooks'
 import { chatActions } from '@audius/common/store'
 import { ChatBlastAudience } from '@audius/sdk'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -20,7 +21,7 @@ type PurchasableContentOption = {
   contentType: 'track' | 'album'
 }
 type ChatBlastFormValues = {
-  target_audience: ChatBlastAudience
+  target_audience: ChatBlastAudience | null
   purchased_content_metadata?: PurchasableContentOption
   remixed_track_id?: number
 }
@@ -28,8 +29,9 @@ type ChatBlastFormValues = {
 export const CreateChatBlastNavigator = () => {
   const dispatch = useDispatch()
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
+  const defaultAudience = useFirstAvailableBlastAudience()
   const initialValues: ChatBlastFormValues = {
-    target_audience: ChatBlastAudience.FOLLOWERS,
+    target_audience: defaultAudience,
     purchased_content_metadata: undefined,
     remixed_track_id: undefined
   }
@@ -45,7 +47,7 @@ export const CreateChatBlastNavigator = () => {
         : values.purchased_content_metadata?.contentType
     dispatch(
       createChatBlast({
-        audience: values.target_audience,
+        audience: values.target_audience ?? ChatBlastAudience.FOLLOWERS,
         audienceContentId,
         audienceContentType
       })
@@ -53,7 +55,11 @@ export const CreateChatBlastNavigator = () => {
   }
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      enableReinitialize
+    >
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Group screenOptions={screenOptions}>
           <Stack.Screen

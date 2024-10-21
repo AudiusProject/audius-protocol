@@ -1,4 +1,3 @@
-
 -- do a pg_notify
 -- n.b. pg_notify has 8kb limit, so for large rows (user, track, playlist) send a known subset of fields (id)
 -- for save, repost, aggregate* - the size will never exceed 8kb so it is ok to send the whole row

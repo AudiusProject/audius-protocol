@@ -9,7 +9,7 @@ class CommentThread(Base, RepresentableMixin):
 
     comment_id = Column(Integer)
     parent_comment_id = Column(Integer)
-    PrimaryKeyConstraint(comment_id, parent_comment_id)
+    PrimaryKeyConstraint(parent_comment_id, comment_id)
 
     def get_attributes_dict(self):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}

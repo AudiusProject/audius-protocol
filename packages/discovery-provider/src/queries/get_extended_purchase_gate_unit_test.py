@@ -20,8 +20,10 @@ def test_calculate_split_amounts_validate(caplog):
         {"user_id": 8, "percentage": 50.0000},
         {"user_id": 9, "percentage": 4.00000},
     ]
-    res_splits = calculate_split_amounts(price, og_splits)
-    split_map_by_user = {split["user_id"]: split for split in res_splits}
+    res_splits = calculate_split_amounts(price, og_splits, network_take_rate=0)
+    split_map_by_user = {
+        split["user_id"]: split for split in res_splits if "user_id" in split
+    }
     assert split_map_by_user[1]["amount"] == 1
     assert split_map_by_user[2]["amount"] == 10000
     assert split_map_by_user[3]["amount"] == 100000
@@ -44,8 +46,10 @@ def test_calculate_split_amounts_validate(caplog):
         {"user_id": 8, "percentage": 50.00000},
         {"user_id": 9, "percentage": 4.00000},
     ]
-    res_splits = calculate_split_amounts(price, og_splits)
-    split_map_by_user = {split["user_id"]: split for split in res_splits}
+    res_splits = calculate_split_amounts(price, og_splits, network_take_rate=0)
+    split_map_by_user = {
+        split["user_id"]: split for split in res_splits if "user_id" in split
+    }
     assert split_map_by_user[1]["amount"] == 2
     assert split_map_by_user[2]["amount"] == 19700
     assert split_map_by_user[3]["amount"] == 197000
@@ -61,8 +65,11 @@ def test_calculate_split_amounts_validate(caplog):
         {"user_id": 1, "percentage": 33.3333},
         {"user_id": 2, "percentage": 66.6667},
     ]
-    res_splits = calculate_split_amounts(price, og_splits)
-    split_map_by_user = {split["user_id"]: split for split in res_splits}
+    res_splits = calculate_split_amounts(price, og_splits, network_take_rate=0)
+
+    split_map_by_user = {
+        split["user_id"]: split for split in res_splits if "user_id" in split
+    }
     assert split_map_by_user[1]["amount"] == 333333
     assert split_map_by_user[2]["amount"] == 666667
 
@@ -72,8 +79,11 @@ def test_calculate_split_amounts_validate(caplog):
         {"user_id": 2, "percentage": 33.33333},
         {"user_id": 3, "percentage": 33.33333},
     ]
-    res_splits = calculate_split_amounts(price, og_splits)
-    split_map_by_user = {split["user_id"]: split for split in res_splits}
+    res_splits = calculate_split_amounts(price, og_splits, network_take_rate=0)
+
+    split_map_by_user = {
+        split["user_id"]: split for split in res_splits if "user_id" in split
+    }
     assert split_map_by_user[1]["amount"] == 673334
     assert split_map_by_user[2]["amount"] == 673333
     assert split_map_by_user[3]["amount"] == 673333

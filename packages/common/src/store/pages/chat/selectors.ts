@@ -47,7 +47,11 @@ export const getBlockees = (state: CommonState) => state.pages.chat.blockees
 
 export const getBlockers = (state: CommonState) => state.pages.chat.blockers
 
-const getChatPermissions = (state: CommonState) => state.pages.chat.permissions
+export const getChatPermissions = (state: CommonState) =>
+  state.pages.chat.permissions
+
+export const getChatPermissionsStatus = (state: CommonState) =>
+  state.pages.chat.permissionsStatus
 
 // Gets a chat and its optimistic read status
 export const getChat = createSelector(
@@ -307,8 +311,12 @@ export const getCanCreateChat = createSelector(
         action = ChatPermissionAction.WAIT
       } else if (blockees.includes(user.user_id)) {
         action = ChatPermissionAction.UNBLOCK
-      } else if (userPermissions.permits === ChatPermission.TIPPERS) {
+      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
         action = ChatPermissionAction.TIP
+      } else if (
+        userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)
+      ) {
+        action = ChatPermissionAction.FOLLOW
       } else {
         action = ChatPermissionAction.NONE
       }

@@ -1,8 +1,8 @@
+import type { StorageNodeSelectorService } from '@audius/sdk'
 import retry from 'async-retry'
 import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 
-import type { StorageNodeSelectorService } from '../../sdk'
 import {
   GatedConditions,
   Nullable,

@@ -38,13 +38,16 @@ from src.api.v1.helpers import (
     trending_parser,
     trending_parser_paginated,
 )
-from src.api.v1.models.comments import base_comment_model
+from src.api.v1.models.comments import (
+    base_comment_model,
+    comment_notification_setting_model,
+)
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
-from src.queries.get_comments import get_track_comments
+from src.queries.get_comments import get_track_comments, get_track_notification_setting
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -501,6 +504,38 @@ class TrackComments(Resource):
         decoded_id = decode_with_abort(track_id, ns)
         current_user_id = args.get("user_id")
         track_comments = get_track_comments(args, decoded_id, current_user_id)
+        return success_response(track_comments)
+
+
+track_comment_notification_setting_response = make_response(
+    "track_comment_notification_response",
+    ns,
+    fields.Nested(comment_notification_setting_model),
+)
+
+
+@ns.route("/<string:track_id>/comment_notification_setting")
+class TrackCommentNotificationSetting(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comment Notification Setting""",
+        description="""Get the comment notification setting for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(track_comment_notification_setting_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_comments_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, ns)
+
+        current_user_id = get_current_user_id(args)
+        track_comments = get_track_notification_setting(decoded_id, current_user_id)
         return success_response(track_comments)
 
 
@@ -1876,14 +1911,6 @@ access_info_response = make_response(
     "access_info_response", ns, fields.Nested(track_access_info)
 )
 
-access_info_parser = current_user_parser.copy()
-access_info_parser.add_argument(
-    "include_network_cut",
-    required=False,
-    type=inputs.boolean,
-    description="Whether to include the staking system as a recipient",
-)
-
 
 @ns.route("/<string:track_id>/access-info")
 class GetTrackAccessInfo(Resource):
@@ -1893,11 +1920,10 @@ class GetTrackAccessInfo(Resource):
         description="Gets the information necessary to access the track and what access the given user has.",
         params={"track_id": "A Track ID"},
     )
-    @ns.expect(access_info_parser)
+    @ns.expect(current_user_parser)
     @ns.marshal_with(access_info_response)
     def get(self, track_id: str):
-        args = access_info_parser.parse_args()
-        include_network_cut = args.get("include_network_cut")
+        args = current_user_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
         get_track_args: GetTrackArgs = {
@@ -1911,11 +1937,9 @@ class GetTrackAccessInfo(Resource):
         if not tracks:
             abort_not_found(track_id, ns)
         raw = tracks[0]
-        stream_conditions = get_extended_purchase_gate(
-            gate=raw["stream_conditions"], include_network_cut=include_network_cut
-        )
+        stream_conditions = get_extended_purchase_gate(gate=raw["stream_conditions"])
         download_conditions = get_extended_purchase_gate(
-            gate=raw["download_conditions"], include_network_cut=include_network_cut
+            gate=raw["download_conditions"]
         )
         track = extend_track(raw)
         track["stream_conditions"] = stream_conditions

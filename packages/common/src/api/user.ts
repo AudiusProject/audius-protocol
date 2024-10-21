@@ -3,7 +3,7 @@ import { full } from '@audius/sdk'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { ID, Kind, OptionalId, StringUSDC } from '~/models'
+import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -328,15 +328,16 @@ const userApi = createApi({
     getRemixedTracks: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
         const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getUserTracksRemixed({
+        const { data = [] } = await sdk.users.getUserTracksRemixed({
           id: Id.parse(userId)
         })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
+
+        return data.map((item) => ({
+          ...item,
+          trackId: HashId.parse(item.trackId)
+        }))
       },
-      options: {
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
+      options: {}
     },
     getSalesAggegrate: {
       fetch: async ({ userId }: { userId: ID }, { audiusSdk }) => {
@@ -344,9 +345,22 @@ const userApi = createApi({
         const { data } = await sdk.users.getSalesAggregate({
           id: Id.parse(userId)
         })
+
         return data
       },
       options: {}
+    },
+    getMutedUsers: {
+      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
+        const encodedUserId = encodeHashId(userId) as string
+        const sdk = await audiusSdk()
+        const { data: users } = await sdk.full.users.getMutedUsers({
+          id: encodedUserId
+        })
+        return userMetadataListFromSDK(users)
+      },
+
+      options: { kind: Kind.USERS, schemaKey: 'users' }
     }
   }
 })
@@ -365,7 +379,8 @@ export const {
   useGetPurchasers,
   useGetPurchasersCount,
   useGetRemixedTracks,
-  useGetSalesAggegrate
+  useGetSalesAggegrate,
+  useGetMutedUsers
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch

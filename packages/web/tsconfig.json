@@ -41,5 +41,5 @@
       "~/*": ["../../common/src/*"],
     }
   },
-  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts"],
+  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts", "../common/src/context/comments/tanQueryClient.tsx"],
 }

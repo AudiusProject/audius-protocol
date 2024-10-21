@@ -54,12 +54,16 @@
   border-bottom: 1px solid var(--harmony-s-400);
 }
 
-.text {
+.textWrapper {
+  background-color: var(--bubble-color);
   padding: var(--harmony-unit-4);
+  text-align: left;
+}
+
+.text {
   white-space: pre-wrap;
   word-break: break-word;
   user-select: text;
-  background-color: var(--bubble-color);
 }
 
 .meta {

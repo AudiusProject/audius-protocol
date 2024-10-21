@@ -296,8 +296,22 @@ export type USDCWithdrawalNotification = {
 
 export type CommentNotification = {
   type: EntityType
-  user_id: number
   entity_id: number
+  comment_user_id: number
+}
+
+export type CommentThreadNotification = {
+  type: EntityType
+  entity_id: number
+  entity_user_id: number
+  comment_user_id: number
+}
+
+export type CommentMentionNotification = {
+  type: EntityType
+  entity_id: number
+  entity_user_id: number
+  comment_user_id: number
 }
 
 export type NotificationData =
@@ -332,7 +346,8 @@ export type NotificationData =
   | TrendingUndergroundNotification
   | TrendingPlaylistNotification
   | CommentNotification
-
+  | CommentThreadNotification
+  | CommentMentionNotification
 export class RequiresRetry extends Error {
   constructor(message: string) {
     super(message)

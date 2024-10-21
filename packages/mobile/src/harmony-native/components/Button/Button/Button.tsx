@@ -1,16 +1,15 @@
-import { useState } from 'react'
-
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle, ViewStyle } from 'react-native'
 import {
   interpolateColor,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
 
-import type { IconColors } from '@audius/harmony-native'
 import type { IconProps } from 'app/harmony-native/icons'
+import { animatedPropAdapter } from 'app/utils/animation'
 
 import { useTheme } from '../../../foundations/theme'
 import { BaseButton } from '../BaseButton/BaseButton'
@@ -89,7 +88,7 @@ export const Button = (props: ButtonProps) => {
     default: {
       background: primaryOverrideColor ?? themeColors.primary.primary,
       text: themeColors.text.staticWhite,
-      icon: 'staticWhite',
+      icon: themeColors.icon.staticWhite,
       border: primaryOverrideColor ?? themeColors.primary.primary
     },
     press: {
@@ -97,7 +96,7 @@ export const Button = (props: ButtonProps) => {
         .darken(0.2)
         .hex(),
       text: themeColors.text.staticWhite,
-      icon: 'staticWhite',
+      icon: themeColors.icon.staticWhite,
       border: new Color(primaryOverrideColor ?? themeColors.primary.primary)
         .darken(0.2)
         .hex()
@@ -117,7 +116,7 @@ export const Button = (props: ButtonProps) => {
     default: {
       background: 'transparent',
       text: themeColors.text.default,
-      icon: 'default',
+      icon: themeColors.icon.default,
       border: themeColors.border.strong
     },
     press: {
@@ -125,7 +124,7 @@ export const Button = (props: ButtonProps) => {
         .darken(0.2)
         .hex(),
       text: themeColors.text.staticWhite,
-      icon: 'staticWhite',
+      icon: themeColors.icon.staticWhite,
       border: new Color(primaryOverrideColor ?? themeColors.primary.primary)
         .darken(0.2)
         .hex()
@@ -149,13 +148,13 @@ export const Button = (props: ButtonProps) => {
     default: {
       background: type === 'dark' ? '#32334d99' : '#ffffffd9',
       text: themeColors.text.default,
-      icon: 'default',
+      icon: themeColors.icon.default,
       border: themeColors.border.default
     },
     press: {
       background: themeColors.background.surface2,
       text: themeColors.text.default,
-      icon: 'default',
+      icon: themeColors.icon.default,
       border: themeColors.border.strong
     }
   }
@@ -173,13 +172,13 @@ export const Button = (props: ButtonProps) => {
     default: {
       background: 'transparent',
       text: themeColors.text.danger,
-      icon: 'danger',
+      icon: themeColors.icon.danger,
       border: themeColors.special.red
     },
     press: {
       background: themeColors.special.red,
       text: themeColors.text.staticWhite,
-      icon: 'staticWhite',
+      icon: themeColors.icon.staticWhite,
       border: themeColors.special.red
     }
   }
@@ -244,6 +243,21 @@ export const Button = (props: ButtonProps) => {
     }
   }, [variant])
 
+  const animatedIconProps = useAnimatedProps(
+    () => ({
+      fill:
+        isDisabled && variant === 'secondary'
+          ? themeColors.icon.staticWhite
+          : interpolateColor(
+              pressed.value,
+              [0, 1],
+              [dynamicStyles.default.icon, dynamicStyles.press.icon]
+            )
+    }),
+    [variant, isDisabled],
+    animatedPropAdapter
+  )
+
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
@@ -255,27 +269,8 @@ export const Button = (props: ButtonProps) => {
 
   const loaderSize = size === 'small' ? 16 : 20
 
-  const [isPressing, setIsPressing] = useState(false)
-
-  const handlePressIn = () => {
-    setIsPressing(true)
-  }
-  const handlePressOut = () => {
-    setIsPressing(false)
-  }
-
-  const iconColor =
-    isDisabled && variant === 'secondary'
-      ? 'staticWhite'
-      : isPressing && !isDisabled
-      ? dynamicStyles.press.icon
-      : dynamicStyles.default.icon
-
   return (
     <BaseButton
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onLongPress={handlePressOut}
       disabled={isDisabled}
       style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}
@@ -287,7 +282,7 @@ export const Button = (props: ButtonProps) => {
           color: textColor
         },
         icon: {
-          color: iconColor as IconColors,
+          animatedProps: animatedIconProps,
           size: iconSize
         },
         loader: {

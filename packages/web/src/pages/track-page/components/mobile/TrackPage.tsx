@@ -8,7 +8,8 @@ import {
   OverflowAction,
   QueueItem
 } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
+import { Link } from 'react-router-dom-v5-compat'
 
 import { CommentSection } from 'components/comments/CommentSection'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -20,8 +21,10 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import SectionButton from 'components/section-button/SectionButton'
 import { getTrackDefaults } from 'pages/track-page/utils'
+import { trackRemixesPage } from 'utils/route'
+
+import { TrackRemixes } from '../TrackRemixes'
 
 import Remixes from './Remixes'
 import TrackPageHeader from './TrackHeader'
@@ -124,9 +127,11 @@ const TrackPage = ({
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useGatedContentAccess(heroTrack)
 
-  const { isEnabled: isCommentingEnabled } = useFeatureFlag(
+  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const isCommentingEnabled =
+    commentsFlagEnabled && !heroTrack?.comments_disabled
 
   const loading = !heroTrack || isFetchingNFTAccess
 
@@ -144,6 +149,10 @@ const TrackPage = ({
   }
 
   const defaults = getTrackDefaults(heroTrack)
+  const { fieldVisibility, remixTrackIds, permalink } = defaults
+
+  const hasRemixes =
+    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   const renderOriginalTrackTitle = () => (
     <Text textAlign='left' variant='title'>
@@ -212,19 +221,18 @@ const TrackPage = ({
           goToFavoritesPage={goToFavoritesPage}
           goToRepostsPage={goToRepostsPage}
         />
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
-            <Remixes
-              trackIds={defaults.remixTrackIds}
-              goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
-            />
-          )}
+        {hasRemixes && !commentsFlagEnabled ? (
+          <Remixes
+            trackIds={defaults.remixTrackIds!}
+            goToAllRemixes={goToAllRemixesPage}
+            count={defaults.remixesCount}
+          />
+        ) : null}
         {isCommentingEnabled ? (
           <CommentSection entityId={defaults.trackId} />
         ) : null}
         <Flex column gap='l'>
+          {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
           {hasValidRemixParent
             ? renderOriginalTrackTitle()
             : renderMoreByTitle()}
@@ -233,14 +241,16 @@ const TrackPage = ({
             // Styles for leading element (original track if remix).
             leadingElementId={defaults.remixParentTrackId}
             leadingElementDelineator={
-              <div>
-                <SectionButton
-                  isMobile
-                  text={messages.viewOtherRemixes}
-                  onClick={goToParentRemixesPage}
-                />
+              <Flex direction='column' gap='xl'>
+                <Box alignSelf='flex-start'>
+                  <Button size='xs' iconRight={IconArrowRight} asChild>
+                    <Link to={trackRemixesPage(permalink)}>
+                      {messages.viewOtherRemixes}
+                    </Link>
+                  </Button>
+                </Box>
                 {renderMoreByTitle()}
-              </div>
+              </Flex>
             }
             showLeadingElementArtistPick={false}
             // Don't render the first tile in the lineup.

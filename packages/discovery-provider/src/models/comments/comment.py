@@ -17,7 +17,6 @@ class Comment(Base, RepresentableMixin):
     updated_at = Column(DateTime, nullable=False)
     is_delete = Column(Boolean, default=False)
     is_visible = Column(Boolean, default=True)
-    is_pinned = Column(Boolean, default=False)
     is_edited = Column(Boolean, default=False)
     txhash = Column(Text, nullable=False)
     blockhash = Column(Text, nullable=False)

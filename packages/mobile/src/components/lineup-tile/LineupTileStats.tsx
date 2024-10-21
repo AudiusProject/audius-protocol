@@ -141,7 +141,7 @@ export const LineupTileStats = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
-  const hasEngagement = Boolean(repostCount || saveCount)
+  const hasEngagement = Boolean(repostCount || saveCount || commentCount)
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
   const handlePressFavorites = useCallback(() => {
@@ -153,6 +153,11 @@ export const LineupTileStats = ({
     dispatch(setRepost(id, repostType))
     navigation.push('Reposts', { id, repostType })
   }, [dispatch, id, navigation, repostType])
+
+  const handlePressComments = useCallback(() => {
+    dispatch(setFavorite(id, favoriteType))
+    navigation.push('Track', { id, showComments: true })
+  }, [dispatch, id, navigation, favoriteType])
 
   const downloadStatusIndicator = isCollection ? (
     <CollectionDownloadStatusIndicator size='s' collectionId={id} />
@@ -268,7 +273,8 @@ export const LineupTileStats = ({
                     styles.statItem,
                     !commentCount ? styles.disabledStatItem : null
                   ]}
-                  disabled
+                  disabled={!commentCount || isReadonly}
+                  onPress={handlePressComments}
                 >
                   <IconMessage color='subdued' size='s' />
                   <Text style={trackTileStyles.statText}>

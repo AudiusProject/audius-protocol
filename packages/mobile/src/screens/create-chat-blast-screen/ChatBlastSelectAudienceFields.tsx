@@ -64,9 +64,7 @@ const LabelWithCount = (props: {
   return (
     <Text>
       {label}
-      {isSelected && count !== undefined ? (
-        <Text color='subdued'> ({count})</Text>
-      ) : null}
+      {isSelected && count ? <Text color='subdued'> ({count})</Text> : null}
     </Text>
   )
 }
@@ -75,6 +73,7 @@ const FollowersMessageField = () => {
   const { data: user } = useGetCurrentUser({})
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.FOLLOWERS
+
   const isDisabled = user?.follower_count === 0
 
   return (

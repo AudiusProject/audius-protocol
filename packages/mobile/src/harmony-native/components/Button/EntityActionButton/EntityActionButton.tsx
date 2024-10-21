@@ -1,22 +1,24 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle } from 'react-native'
 import {
   interpolateColor,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
 
 import { useTheme } from '@audius/harmony-native'
+import { animatedPropAdapter } from 'app/utils/animation'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 
 import type { EntityActionButtonProps } from './types'
 
 export const EntityActionButton = (props: EntityActionButtonProps) => {
-  const { onPress, isActive, icon, style, ...other } = props
+  const { onPress, isActive, style, ...other } = props
   const { color, spacing, cornerRadius, typography } = useTheme()
   const pressed = useSharedValue(0)
 
@@ -43,13 +45,13 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
     default: {
       background: color.background.white,
       text: active ? color.primary.primary : color.text.default,
-      icon: 'staticWhite',
+      icon: active ? color.icon.active : color.icon.default,
       borderColor: active ? color.primary.primary : color.border.strong
     },
     press: {
       background: new Color(color.primary.primary).darken(0.2).hex(),
       text: color.text.staticWhite,
-      icon: 'staticWhite',
+      icon: color.icon.staticWhite,
       borderColor: new Color(color.primary.primary).darken(0.2).hex()
     }
   }
@@ -86,36 +88,27 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
     }
   }, [active])
 
-  const [isPressing, setIsPressing] = useState(false)
-
-  const handlePressIn = () => {
-    setIsPressing(true)
-  }
-  const handlePressOut = () => {
-    setIsPressing(false)
-  }
-
-  const iconColor = useMemo(() => {
-    return isPressing ? 'staticWhite' : active ? 'active' : 'default'
-  }, [isPressing, active])
+  const animatedIconProps = useAnimatedProps(
+    () => {
+      return {
+        fill: interpolateColor(
+          pressed.value,
+          [0, 1],
+          [dynamicStyles.default.icon, dynamicStyles.press.icon]
+        )
+      }
+    },
+    [active],
+    animatedPropAdapter
+  )
 
   return (
     <BaseButton
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onLongPress={handlePressOut}
       onPress={handlePress}
-      innerProps={{
-        icon: {
-          ...icon,
-          color: iconColor
-        }
-      }}
+      innerProps={{ icon: { animatedProps: animatedIconProps } }}
       style={[animatedButtonStyles, buttonStyles, style]}
       sharedValue={pressed}
-      styles={{
-        text: [textStyles, animatedTextStyles]
-      }}
+      styles={{ text: [textStyles, animatedTextStyles] }}
       {...other}
     />
   )

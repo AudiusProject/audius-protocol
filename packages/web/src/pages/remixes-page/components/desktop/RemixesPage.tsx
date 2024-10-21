@@ -4,7 +4,7 @@ import { IconRemix as IconRemixes } from '@audius/harmony'
 import cn from 'classnames'
 
 import Header from 'components/header/desktop/Header'
-import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullTrackRemixesPage } from 'utils/route'
@@ -26,7 +26,7 @@ export type RemixesPageProps = {
   count: number | null
   originalTrack: Track | null
   user: User | null
-  getLineupProps: () => LineupWithoutTile
+  getLineupProps: () => LineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
 }

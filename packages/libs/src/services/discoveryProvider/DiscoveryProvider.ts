@@ -1,3 +1,10 @@
+import type {
+  DiscoveryNodeSelector,
+  Genre,
+  Middleware,
+  Mood
+} from '@audius/sdk'
+import { FetchError, ResponseError } from '@audius/sdk'
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -10,14 +17,6 @@ import fetch from 'cross-fetch'
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
 
-import {
-  DiscoveryNodeSelector,
-  FetchError,
-  Genre,
-  Middleware,
-  Mood,
-  ResponseError
-} from '../../sdk'
 import { CurrentUser } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
@@ -1206,7 +1205,7 @@ export class DiscoveryProvider {
    * @return encoded ID
    */
   async getUnclaimedId(
-    type: 'users' | 'playlists' | 'tracks'
+    type: Parameters<typeof Requests.getUnclaimedId>[0]
   ): Promise<null | undefined | string> {
     const req = Requests.getUnclaimedId(type)
     return await this._makeRequest(req)

@@ -40,8 +40,7 @@ export const Text = forwardRef(
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {
-      fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
-    Arial, sans-serif`,
+      fontFamily: typography.font,
       position: 'relative',
       boxSizing: 'border-box',
       ...(color &&
@@ -69,7 +68,11 @@ export const Text = forwardRef(
           ],
         // @ts-ignore
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
-        ...('css' in variantConfig && variantConfig.css)
+        ...('css' in variantConfig && variantConfig.css),
+        ...(lineHeight === 'multi' && {
+          wordBreak: 'break-word',
+          hyphens: 'auto'
+        })
       }),
       ...(shadow && {
         textShadow: typography.shadow[shadow]
@@ -85,8 +88,8 @@ export const Text = forwardRef(
         overflow: 'hidden',
         display: '-webkit-box',
         lineClamp: `${maxLines}`,
-        '-webkit-line-clamp': `${maxLines}`,
-        '-webkit-box-orient': 'vertical'
+        WebkitLineClamp: `${maxLines}`,
+        WebkitBoxOrient: 'vertical'
       })
     }
 

@@ -49,86 +49,37 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	var results []ChatBlastResult
 
 	fanOutSql := `
-	WITH blast AS (
-		SELECT * FROM chat_blast WHERE blast_id = $1
-	),
-	aud as (
-		-- follower_audience
-		SELECT blast_id, follower_user_id AS to_user_id
-		FROM follows
-		JOIN blast
-			ON blast.audience = 'follower_audience'
-			AND follows.followee_user_id = blast.from_user_id
-			AND follows.is_delete = false
-			AND follows.created_at < blast.created_at
-
-		UNION
-
-		-- tipper_audience
-		SELECT blast_id, sender_user_id AS to_user_id
-		FROM user_tips tip
-		JOIN blast
-			ON blast.audience = 'tipper_audience'
-			AND receiver_user_id = blast.from_user_id
-			AND tip.created_at < blast.created_at
-
-		UNION
-
-		-- remixer_audience
-		SELECT blast_id, t.owner_id AS to_user_id
-		FROM tracks t
-		JOIN remixes ON remixes.child_track_id = t.track_id
-		JOIN tracks og ON remixes.parent_track_id = og.track_id
-		JOIN blast
-			ON blast.audience = 'remixer_audience'
-			AND og.owner_id = blast.from_user_id
-			AND (
-				blast.audience_content_id IS NULL
-				OR (
-					blast.audience_content_type = 'track'
-					AND blast.audience_content_id = og.track_id
-				)
-			)
-
-		UNION
-
-		-- customer_audience
-		SELECT blast_id, buyer_user_id AS to_user_id
-		FROM usdc_purchases p
-		JOIN blast
-			ON blast.audience = 'customer_audience'
-			AND p.seller_user_id = blast.from_user_id
-			AND (
-				blast.audience_content_id IS NULL
-				OR (
-					blast.audience_content_type = p.content_type::text
-					AND blast.audience_content_id = p.content_id
-				)
-			)
-	),
-	targ AS (
+	WITH targ AS (
 		SELECT
 			blast_id,
 			from_user_id,
 			to_user_id,
-		member_b.chat_id
-		FROM blast
-		JOIN aud USING (blast_id)
+			member_b.chat_id
+		FROM chat_blast
+		JOIN chat_blast_audience(chat_blast.blast_id) USING (blast_id)
 		LEFT JOIN chat_member member_a on from_user_id = member_a.user_id
 		LEFT JOIN chat_member member_b on to_user_id = member_b.user_id and member_b.chat_id = member_a.chat_id
-		WHERE member_b.chat_id IS NOT NULL
+		WHERE blast_id = $1
+		AND member_b.chat_id IS NOT NULL
+		AND chat_allowed(from_user_id, to_user_id)
 	),
 	insert_message AS (
 		INSERT INTO chat_message
 			(message_id, chat_id, user_id, created_at, blast_id)
 		SELECT
-			blast_id || targ.chat_id,
+			blast_id || targ.chat_id, -- this ordering needs to match Misc.BlastMessageID
 			targ.chat_id,
 			targ.from_user_id,
 			$2,
 			blast_id
 		FROM targ
 		ON conflict do nothing
+	),
+	update_unread_count AS (
+    UPDATE chat_member
+    SET unread_count = unread_count + 1
+    WHERE chat_id IN (SELECT chat_id FROM targ)
+		AND user_id IN (SELECT to_user_id FROM targ)
 	)
 	SELECT chat_id FROM targ;
 	`
@@ -141,7 +92,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 	// Formulate chat rpc messages for recipients who have an existing chat with sender
 	var outgoingMessages []OutgoingChatMessage
 	for _, result := range results {
-		messageID := params.BlastID + result.ChatID
+		messageID := misc.BlastMessageID(params.BlastID, result.ChatID)
 
 		isPlaintext := true
 		outgoingMessages = append(outgoingMessages, OutgoingChatMessage{

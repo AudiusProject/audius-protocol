@@ -22,7 +22,7 @@ func TestChatBlast(t *testing.T) {
 	t4 := time.Now().Add(time.Second * -60).UTC()
 	t5 := time.Now().Add(time.Second * -50).UTC()
 	t6 := time.Now().Add(time.Second * -40).UTC()
-	t7 := time.Now().Add(time.Second * -30).UTC()
+	// t7 := time.Now().Add(time.Second * -30).UTC()
 
 	trackContentType := schema.AudienceContentType("track")
 
@@ -60,6 +60,15 @@ func TestChatBlast(t *testing.T) {
 		(103, 69, true, false, $1, ''),
 		(104, 69, true, false, $1, '')
 	`, t0)
+	assert.NoError(t, err)
+
+	// Blaster (user 69) closes inbox
+	// But recipients should still be able to upgrade.
+	err = chatSetPermissions(tx, 69, schema.None, nil, nil, t0)
+	assert.NoError(t, err)
+
+	// Other user (104) closes inbox
+	err = chatSetPermissions(tx, 104, schema.None, nil, nil, t0)
 	assert.NoError(t, err)
 
 	// ----------------- some threads already exist -------------
@@ -211,8 +220,19 @@ func TestChatBlast(t *testing.T) {
 		assert.Len(t, blasts, 1)
 	}
 
+	// user 104 has zero blasts (inbox closed)
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 104,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 0)
+	}
+
 	// user 999 does not
 	{
+		assertChatCreateAllowed(t, tx, 999, 69, false)
+
 		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
 			UserID: 999,
 		})
@@ -222,6 +242,9 @@ func TestChatBlast(t *testing.T) {
 
 	// user 101 upgrades it to a real DM
 	{
+
+		assertChatCreateAllowed(t, tx, 101, 69, true)
+
 		err = chatCreate(tx, 101, t3, schema.ChatCreateRPCParams{
 			ChatID: chatId_101_69,
 			Invites: []schema.PurpleInvite{
@@ -298,6 +321,11 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ----------------- a second message ------------------------
+
+	// Other user (104) re-opens inbox
+	err = chatSetPermissions(tx, 104, schema.All, nil, nil, t3)
+	assert.NoError(t, err)
+
 	_, err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
@@ -376,6 +404,35 @@ func TestChatBlast(t *testing.T) {
 		}
 	}
 
+	// user 104 should have just 1 blast
+	// since 104 opened inbox after first blast
+	{
+		blasts, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 104,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, blasts, 1)
+
+		// 104 does upgrade
+		chatId_104_69 := misc.ChatID(104, 69)
+
+		err = chatCreate(tx, 104, t6, schema.ChatCreateRPCParams{
+			ChatID: chatId_104_69,
+			Invites: []schema.PurpleInvite{
+				{UserID: misc.MustEncodeHashID(104), InviteCode: "earlier"},
+				{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+			},
+		})
+		assert.NoError(t, err)
+
+		// 104 convo seeded with 1 message
+
+		messages := mustGetMessagesAndReactions(104, chatId_104_69)
+		assert.Len(t, messages, 1)
+		messages = mustGetMessagesAndReactions(69, chatId_104_69)
+		assert.Len(t, messages, 1)
+	}
+
 	// ------ sender can get blasts in a given thread ----------
 	{
 		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
@@ -398,6 +455,11 @@ func TestChatBlast(t *testing.T) {
 	}
 
 	// ------- bi-directional blasting works with upgrade --------
+
+	// 69 re-opens inbox
+	err = chatSetPermissions(tx, 69, schema.All, nil, nil, t1)
+	assert.NoError(t, err)
+
 	// 68 sends a blast
 	chatId_68_69 := misc.ChatID(68, 69)
 
@@ -409,7 +471,7 @@ func TestChatBlast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// one side does upgrade
-	err = chatCreate(tx, 69, t7, schema.ChatCreateRPCParams{
+	err = chatCreate(tx, 69, t5, schema.ChatCreateRPCParams{
 		ChatID: chatId_68_69,
 		Invites: []schema.PurpleInvite{
 			{UserID: misc.MustEncodeHashID(68), InviteCode: "earlier"},
@@ -437,7 +499,7 @@ func TestChatBlast(t *testing.T) {
 	insert into user_tips
 		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
 	values
-		(1, '', 201, 69, 2, $1, $1)
+		(1, 'd', 201, 69, 2, $1, $1)
 	`, t0)
 	assert.NoError(t, err)
 

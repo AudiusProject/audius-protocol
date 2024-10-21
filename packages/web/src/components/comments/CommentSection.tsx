@@ -10,15 +10,20 @@ import { CommentSectionMobile } from './CommentSectionMobile'
 type CommentSectionProps = {
   entityId: ID
   entityType?: EntityType.TRACK
+  commentSectionRef?: React.RefObject<HTMLDivElement>
 }
 
 export const CommentSection = (props: CommentSectionProps) => {
-  const { entityId, entityType } = props
+  const { entityId, entityType, commentSectionRef } = props
   const isMobile = useIsMobile()
 
   return (
     <CommentSectionProvider entityId={entityId} entityType={entityType}>
-      {isMobile ? <CommentSectionMobile /> : <CommentSectionDesktop />}
+      {isMobile ? (
+        <CommentSectionMobile />
+      ) : (
+        <CommentSectionDesktop commentSectionRef={commentSectionRef!} />
+      )}
     </CommentSectionProvider>
   )
 }

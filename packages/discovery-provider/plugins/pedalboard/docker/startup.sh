@@ -5,6 +5,11 @@
 # Get the replica number from the host name
 export replica=$(nslookup $(hostname -i) | sed -n "s/^.*audius-protocol-[A-z\-]*\([0-9]\)\+.*$/\1/p")
 
+# If non-replicated, default to 1 (for eg verified-notifications)
+if [ -z "$replica" ]; then
+  replica=1
+fi
+
 # Get the relevant environment variables for that host
 if [[ "$audius_db_url" == "" ]]; then
     export audius_db_url="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"

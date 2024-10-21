@@ -2,15 +2,15 @@ import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
+import { hedgehogInstance } from './hedgehog'
 
 export const auth = {
   sign: async (data: string | Uint8Array) => {
-    await waitForLibsInit()
+    await hedgehogInstance.waitUntilReady()
     return await secp.sign(
       keccak_256(data),
       // @ts-ignore private key is private
-      window.audiusLibs.hedgehog?.getWallet()?.privateKey,
+      hedgehogInstance.getWallet()?.privateKey,
       {
         recovered: true,
         der: false
@@ -19,12 +19,12 @@ export const auth = {
   },
   signTransaction: async (data: any) => {
     const { signTypedData } = await import('@metamask/eth-sig-util')
+    await hedgehogInstance.waitUntilReady()
 
-    await waitForLibsInit()
-    return await signTypedData({
+    return signTypedData({
       privateKey: Buffer.from(
         // @ts-ignore private key is private
-        window.audiusLibs.hedgehog?.getWallet()?.privateKey,
+        hedgehogInstance.getWallet()?.privateKey,
         'hex'
       ),
       data: data as any,
@@ -32,17 +32,17 @@ export const auth = {
     })
   },
   getSharedSecret: async (publicKey: string | Uint8Array) => {
-    await waitForLibsInit()
+    await hedgehogInstance.waitUntilReady()
     return secp.getSharedSecret(
       // @ts-ignore private key is private
-      window.audiusLibs.hedgehog?.getWallet()?.privateKey,
+      hedgehogInstance.getWallet()?.privateKey,
       publicKey,
       true
     )
   },
   getAddress: async () => {
-    await waitForLibsInit()
-    return window.audiusLibs?.hedgehog?.wallet?.getAddressString() ?? ''
+    await hedgehogInstance.waitUntilReady()
+    return hedgehogInstance.wallet?.getAddressString() ?? ''
   },
   hashAndSign: async (_data: string) => {
     return 'Not implemented'

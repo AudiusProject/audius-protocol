@@ -57,9 +57,6 @@ export const PriceAndAudienceScreen = () => {
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
 
   const initialStreamConditions = initialValues?.stream_conditions ?? null
   const initialAvailability = useMemo(() => {
@@ -98,7 +95,7 @@ export const PriceAndAudienceScreen = () => {
     isScheduledRelease
   })
 
-  const disableUsdcGate = disableUsdcGateOption || !isUsdcUploadEnabled
+  const disableUsdcGate = disableUsdcGateOption
 
   const [availability, setAvailability] =
     useState<StreamTrackAvailabilityType>(initialAvailability)

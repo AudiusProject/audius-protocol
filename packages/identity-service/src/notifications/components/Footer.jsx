@@ -7,7 +7,7 @@ const iconStyle = {
 }
 
 const InstagramLink = () => (
-  <a href='https://www.instagram.com/audiusmusic/'>
+  <a href='https://www.instagram.com/audius/'>
     <img
       src='https://download.audius.co/static-resources/email/iconInsta.png'
       alt='instagram'
@@ -43,8 +43,7 @@ const MadeWithLove = () => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     Made with <span style={{ color: '#7E1BCC' }}>♥︎</span> in SF & LA
   </div>
 )
@@ -56,8 +55,7 @@ const AllRightsReserved = ({ copyrightYear }) => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     &copy; {copyrightYear} Audius, Inc. All Rights Reserved.
   </div>
 )
@@ -69,14 +67,12 @@ const Unsubscribe = () => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     {'Tired of seeing these emails? '}
     <a
       href='https://audius.co/settings'
       class='utilityLink'
-      style={{ textDecorationColor: '#858199' }}
-    >
+      style={{ textDecorationColor: '#858199' }}>
       <span style={{ color: '#858199' }}>
         {'Update your notification preferences'}
       </span>
@@ -91,14 +87,12 @@ const Footer = (props) => {
       border='0'
       cellpadding='0'
       cellspacing='0'
-      style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}
-    >
+      style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}>
       <tr>
         <td
           valign='center'
           id='socialBar'
-          style={{ textAlign: 'center', padding: '25px 0px 20px' }}
-        >
+          style={{ textAlign: 'center', padding: '25px 0px 20px' }}>
           <InstagramLink />
           <TwitterLink />
           <DiscordLink />
@@ -107,8 +101,11 @@ const Footer = (props) => {
       <tr>
         <td
           valign='center'
-          style={{ textAlign: 'center', padding: '0px 0px 8px', margin: '0px' }}
-        >
+          style={{
+            textAlign: 'center',
+            padding: '0px 0px 8px',
+            margin: '0px'
+          }}>
           <MadeWithLove />
         </td>
       </tr>
@@ -120,8 +117,7 @@ const Footer = (props) => {
             height: 'auto',
             padding: '0px 0px 12px',
             margin: '0px'
-          }}
-        >
+          }}>
           <AllRightsReserved copyrightYear={props.copyrightYear} />
         </td>
       </tr>

@@ -1,3 +1,5 @@
+import { merge } from 'lodash'
+
 import { Cache } from '~/models/Cache'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
@@ -13,10 +15,14 @@ import {
 import { Entry } from '../types'
 
 import {
+  INCREMENT_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
   SET_STREAM_URLS,
+  SET_PINNED_COMMENT_ID,
+  incrementTrackCommentCount,
   setPermalink,
-  setStreamUrls
+  setStreamUrls,
+  setPinnedCommentId
 } from './actions'
 import { TracksCacheState } from './types'
 
@@ -94,6 +100,36 @@ const actionsMap = {
       ...state,
       streamUrls: { ...state.streamUrls, ...streamUrls }
     }
+  },
+  [INCREMENT_TRACK_COMMENT_COUNT](
+    state: TracksCacheState,
+    action: ReturnType<typeof incrementTrackCommentCount>
+  ): TracksCacheState {
+    const { trackId, commentCountIncrement } = action
+
+    return merge(state, {
+      entries: {
+        [trackId]: {
+          metadata: {
+            comment_count:
+              (state.entries[trackId].metadata.comment_count || 0) +
+              commentCountIncrement
+          }
+        }
+      }
+    })
+  },
+  [SET_PINNED_COMMENT_ID](
+    state: TracksCacheState,
+    action: ReturnType<typeof setPinnedCommentId>
+  ): TracksCacheState {
+    const { trackId, commentId } = action
+
+    return merge(state, {
+      entries: {
+        [trackId]: { metadata: { pinned_comment_id: commentId } }
+      }
+    })
   }
 }
 

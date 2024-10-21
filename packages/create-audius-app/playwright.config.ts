@@ -1,11 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
-import fs from 'fs'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: `./tests/e2e/${process.env.EXAMPLE}`,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -27,7 +26,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run start-examples',
+    command: `EXAMPLE=$EXAMPLE npm run start-example`,
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',

@@ -6,41 +6,44 @@ UPGRADE_TYPE ?= patch
 ABI_DIR := pkg/register/ABIs
 SRC := $(shell find pkg cmd -type f -name '*.go') go.mod go.sum
 
-VERSION_LDFLAG := -X main.Version=$(shell git rev-parse HEAD)
-# Intentionally kept separate to allow dynamic versioning
-#LDFLAGS := ""
+bin/audiusd-native: $(SRC)
+	@echo "Building audiusd for local platform and architecture..."
+	@bash scripts/build-audiusd.sh $@
+
+bin/audiusd-x86_64-linux: $(SRC)
+	@echo "Building x86 audiusd for linux..."
+	@bash scripts/build-audiusd.sh $@ amd64 linux
 
 bin/audius-ctl-native: $(SRC)
 	@echo "Building audius-ctl for local platform and architecture..."
-	CGO_ENABLED=0 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-native ./cmd/audius-ctl
+	@bash scripts/build-audius-ctl.sh $@
 
-bin/audius-ctl-arm64: $(SRC)
-	@echo "Building arm audius-ctl..."
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-arm64 ./cmd/audius-ctl
+bin/audius-ctl-arm64-linux: $(SRC)
+	@echo "Building arm audius-ctl for linux..."
+	@bash scripts/build-audius-ctl.sh $@ arm64 linux
 
-bin/audius-ctl-x86_64: $(SRC)
-	@echo "Building x86 audius-ctl..."
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-x86_64 ./cmd/audius-ctl
+bin/audius-ctl-x86_64-linux: $(SRC)
+	@echo "Building x86 audius-ctl for linux..."
+	@bash scripts/build-audius-ctl.sh $@ amd64 linux
 
-bin/audius-ctl-arm64-macos: $(SRC)
+bin/audius-ctl-arm64-darwin: $(SRC)
 	@echo "Building macos arm audius-ctl..."
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-arm64-macos ./cmd/audius-ctl
+	@bash scripts/build-audius-ctl.sh $@ arm64 darwin
 
-bin/audius-ctl-x86_64-macos: $(SRC)
-	@echo "Building macos x86_64 audius-ctl..."
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-x86_64-macos ./cmd/audius-ctl
+bin/audius-ctl-x86_64-darwin: $(SRC)
+	@echo "Building macos x86 audius-ctl..."
+	@bash scripts/build-audius-ctl.sh $@ amd64 darwin
 
 # Experimental statusbar feature
-bin/audius-ctl-arm64-macos-experimental: $(SRC)
+bin/audius-ctl-arm64-darwin-experimental: $(SRC)
 	@echo "Building macos arm audius-ctl..."
-	GOOS=darwin GOARCH=arm64 go build -tags osx -ldflags "$(VERSION_LDFLAG) $(LDFLAGS)" -o bin/audius-ctl-arm64-macos ./cmd/audius-ctl
+	@GOOS=darwin GOARCH=arm64 go build -tags osx -ldflags -X main.Version="$(shell git rev-parse HEAD)" -o bin/audius-ctl-arm64-darwin-experimental ./cmd/audius-ctl
 
 .PHONY: release-audius-ctl audius-ctl-production-build
 release-audius-ctl:
 	bash scripts/release-audius-ctl.sh
 
-audius-ctl-production-build: VERSION_LDFLAG := -X main.Version=$(shell bash scripts/get-new-audius-ctl-version.sh $(UPGRADE_TYPE))
-audius-ctl-production-build: clean regen-abis bin/audius-ctl-arm64 bin/audius-ctl-x86_64 bin/audius-ctl-arm64-macos bin/audius-ctl-x86_64-macos
+audius-ctl-production-build: clean regen-abis bin/audius-ctl-arm64-linux bin/audius-ctl-x86_64-linux bin/audius-ctl-arm64-darwin bin/audius-ctl-x86_64-darwin
 
 .PHONY: regen-abis
 regen-abis:
@@ -59,11 +62,20 @@ build-push-docker:
 
 .PHONY: install uninstall
 install:
-	bash scripts/install-audius-ctl.sh
+	@bash scripts/install-audius-ctl.sh local
 
 uninstall:
-	bash scripts/uninstall-audius-ctl.sh
+	@bash scripts/uninstall-audius-ctl.sh
 
 .PHONY: clean
 clean:
 	rm -f bin/*
+
+.PHONY: mediorum-dev
+mediorum-dev:
+	@if [ "$$(docker ps -q -f name=postgres)" ]; then \
+		echo "container 'postgres' is already running"; \
+	else \
+		docker run --rm --name postgres -v $$(pwd)/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d -e POSTGRES_PASSWORD=example -p 5454:5432 -d postgres; \
+	fi
+	go run cmd/mediorum/main.go

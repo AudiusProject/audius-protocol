@@ -9,22 +9,22 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import LineupProvider, { LineupProviderProps } from './LineupProvider'
 import { LineupVariant } from './types'
 
-export type LineupWithoutTile = Omit<
+export type LineupProps = Omit<
   LineupProviderProps,
   'trackTile' | 'skeletonTile' | 'playlistTile'
 >
-type LineupProps = LineupWithoutTile & { useSmallTiles?: boolean }
 
 /** A lineup renders a LineupProvider, injecting different tiles
  * depending on the client state.
  */
 const Lineup = (props: LineupProps) => {
-  const { useSmallTiles } = props
+  const { variant } = props
   const isMobile = useIsMobile()
   const trackTile =
-    isMobile || useSmallTiles ? MobileTrackTile : DesktopTrackTile
-  const playlistTile =
-    isMobile || useSmallTiles ? MobilePlaylistTile : DesktopPlaylistTile
+    isMobile || variant === LineupVariant.SECTION
+      ? MobileTrackTile
+      : DesktopTrackTile
+  const playlistTile = isMobile ? MobilePlaylistTile : DesktopPlaylistTile
 
   return (
     <LineupProvider

@@ -24,6 +24,8 @@ export const Scrubber = ({
   elapsedSeconds,
   totalSeconds,
   playbackRate,
+  getAudioPosition,
+  getTotalTime,
   onScrub,
   onScrubRelease,
   includeExpandedTargets,
@@ -80,6 +82,8 @@ export const Scrubber = ({
         totalSeconds={totalSeconds}
         playbackRate={playbackRate}
         onScrub={onHandleScrub}
+        getAudioPosition={getAudioPosition}
+        getTotalTime={getTotalTime}
         onScrubRelease={onHandleScrubRelease}
         includeExpandedTargets={includeExpandedTargets}
         style={style}

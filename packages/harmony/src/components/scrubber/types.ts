@@ -56,6 +56,16 @@ export type ScrubberProps = {
    */
   onScrubRelease?: (seconds: number) => void
 
+  /** Callback to fetch the current playback position in seconds. Typically wired
+   * up to the audio player's `getPosition` method.
+   */
+  getAudioPosition: () => number
+
+  /** Callback to get the duration of the current media. Typically wired up to the
+   * audio player's `getDuration` method.
+   */
+  getTotalTime: () => number
+
   /**
    * Individually exposed styling options.
    */

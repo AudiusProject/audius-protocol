@@ -127,6 +127,7 @@ export const FeatureFlagOverrideModal = () => {
             </Box>
           ) : null}
           <TextInput
+            autoFocus
             label={messages.filterPlaceholder}
             onChange={(e) => setFilter(e.target.value)}
             value={filter}

@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  gh: circleci/github-cli@2.3.0
+  gh: circleci/github-cli@2.4.0
   slack: circleci/slack@4.12.0
   aws-cli: circleci/aws-cli@3.1.5
   ruby: circleci/ruby@1.2.0
@@ -62,21 +62,6 @@ parameters:
     type: boolean
     default: false
   run-protocol-dashboard-workflow:
-    type: boolean
-    default: false
-  run-ddex-e2e-workflow:
-    type: boolean
-    default: false
-  run-ddex-webapp-workflow:
-    type: boolean
-    default: false
-  run-ddex-workflow:
-    type: boolean
-    default: false
-  run-ddex-publisher-workflow:
-    type: boolean
-    default: false
-  run-ddex-stage-workflow:
     type: boolean
     default: false
   run-create-audius-app-workflow:

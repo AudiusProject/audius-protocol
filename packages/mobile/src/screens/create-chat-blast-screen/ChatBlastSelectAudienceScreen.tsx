@@ -1,3 +1,4 @@
+import { useFirstAvailableBlastAudience } from '@audius/common/hooks'
 import { useFormikContext } from 'formik'
 
 import { Button, Flex, IconTowerBroadcast } from '@audius/harmony-native'
@@ -14,6 +15,8 @@ const messages = {
 
 export const ChatBlastSelectAudienceScreen = () => {
   const { submitForm, isSubmitting } = useFormikContext()
+  const defaultAudience = useFirstAvailableBlastAudience()
+
   return (
     <FormScreen
       title={messages.title}
@@ -24,13 +27,14 @@ export const ChatBlastSelectAudienceScreen = () => {
           variant='primary'
           fullWidth
           onPress={submitForm}
-          disabled={!!isSubmitting}
+          // Empty default audience means there are no users in any audience
+          disabled={!!isSubmitting || !defaultAudience}
         >
           {messages.continue}
         </Button>
       }
     >
-      <Flex gap='l' h='100%'>
+      <Flex gap='l'>
         <HeaderShadow />
         <ChatBlastSelectAudienceFields />
       </Flex>

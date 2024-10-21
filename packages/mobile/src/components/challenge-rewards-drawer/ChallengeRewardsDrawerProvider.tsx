@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { ChallengeName } from '@audius/common/models'
 import { IntKeys, StringKeys } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -141,11 +142,14 @@ export const ChallengeRewardsDrawerProvider = () => {
     switch (modalType) {
       case 'referrals':
       case 'ref-v':
+      case ChallengeName.Referrals:
+      case ChallengeName.ReferralsVerified:
         contents = (
           <ReferralRewardContents isVerified={!!config.isVerifiedChallenge} />
         )
         break
       case 'track-upload':
+      case ChallengeName.TrackUpload:
         contents = config?.buttonInfo && (
           <Button
             iconRight={config.buttonInfo.iconRight}
@@ -159,6 +163,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         )
         break
       case 'profile-completion':
+      case ChallengeName.ProfileCompletion:
         contents = (
           <ProfileCompletionChecks
             isComplete={hasChallengeCompleted}

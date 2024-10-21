@@ -199,6 +199,8 @@ track_metadata_format: TrackMetadata = {
     "comments_disabled": False,
 }
 
+track_download_metadata_format = {"city": None, "region": None, "country": None}
+
 # Required format for user metadata retrieved from the content system
 user_metadata_format = {
     "profile_picture": None,
@@ -235,6 +237,7 @@ comment_metadata_format = {
     "entity_id": None,
     "entity_type": None,
     "parent_comment_id": None,
+    "mentions": None,
     "track_timestamp_s": None,
 }
 
@@ -318,4 +321,12 @@ immutable_user_fields = immutable_fields | {
     "wallet",
     "is_available",
     "is_verified",
+}
+
+track_comment_notification_setting_format = {
+    "is_muted": None,
+}
+
+comment_notification_setting_format = {
+    "is_muted": None,
 }

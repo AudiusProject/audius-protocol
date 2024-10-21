@@ -9,8 +9,9 @@ export type ComposerInputProps = {
   entityId?: ID
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
-  onSubmit?: (value: string, linkEntities: LinkEntity[]) => void
+  onSubmit?: (value: string, linkEntities: LinkEntity[], mentions: ID[]) => void
   presetMessage?: string
+  presetUserMentionIds?: ID[]
   isLoading?: boolean
 } & Pick<
   TextAreaV2Props,
@@ -21,4 +22,5 @@ export type ComposerInputProps = {
   | 'disabled'
   | 'readOnly'
   | 'id'
+  | 'autoFocus'
 >

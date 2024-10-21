@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   stemCategoryFriendlyNames,
   isContentFollowGated,
@@ -12,7 +12,6 @@ import {
   USDCPurchaseConditions,
   StemCategory
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconReceive, IconCart } from '@audius/harmony'
@@ -68,9 +67,6 @@ type StemsAndDownloadsFieldProps = {
 
 export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
   const { isUpload, closeMenuCallback } = props
-  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES_UPLOAD
-  )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
@@ -273,7 +269,6 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
-          isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })
       )}

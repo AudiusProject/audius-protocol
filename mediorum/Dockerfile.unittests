@@ -1,8 +1,0 @@
-FROM golang:alpine
-
-RUN apk add ffmpeg
-
-WORKDIR /app
-
-COPY . .
-CMD go test ./... -count 1 -timeout 60s

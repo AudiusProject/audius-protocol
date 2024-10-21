@@ -1,0 +1,22 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "module": "ES2022",
+    "lib": ["ES2022", "dom"],
+    "target": "ES2022",
+    "checkJs": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "isolatedModules": false,
+    "typeRoots": ["./node_modules/@types"],
+    "exactOptionalPropertyTypes": false,
+    "declaration": true,
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "exclude": ["dist", "src/sdk/examples"],
+  "include": ["src/**/*"]
+}

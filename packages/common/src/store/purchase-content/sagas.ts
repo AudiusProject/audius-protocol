@@ -474,7 +474,6 @@ function* purchaseAlbumWithCoinflow(args: {
     extraAmount: args.extraAmount,
     albumId: encodeHashId(albumId),
     userId: encodeHashId(userId),
-    wallet: wallet.publicKey,
     includeNetworkCut
   }
 
@@ -673,11 +672,10 @@ function* doStartPurchaseContentFlow({
         tokenAccount: userBank
       }
     )
-    if (!tokenAccountInfo) {
-      throw new Error('Failed to fetch USDC token account info')
-    }
 
-    const { amount: initialBalance } = tokenAccountInfo
+    // In the case where there is no amount, the token account was probably
+    // just created. Just use 0 for initial balance.
+    const { amount: initialBalance } = tokenAccountInfo ?? { amount: 0 }
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
@@ -917,6 +915,11 @@ function* purchaseWithAnything({
     const sdk = yield* call(audiusSdk)
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const isNetworkCutEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.NETWORK_CUT_ENABLED
+    )
 
     // Get the USDC user bank
     const usdcUserBank = yield* call(getUSDCUserBank)
@@ -1092,7 +1095,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         trackId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {
@@ -1109,7 +1113,8 @@ function* purchaseWithAnything({
         userId: encodeHashId(purchaserUserId),
         albumId: encodeHashId(contentId),
         price: price / 100.0,
-        extraAmount: extraAmount ? extraAmount / 100.0 : undefined
+        extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+        includeNetworkCut: isNetworkCutEnabled
       })
       message.instructions.push(routeInstruction, memoInstruction)
       if (locationMemoInstruction) {

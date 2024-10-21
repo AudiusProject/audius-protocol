@@ -40,7 +40,9 @@ export enum NotificationType {
   USDCPurchaseBuyer = 'USDCPurchaseBuyer',
   RequestManager = 'RequestManager',
   ApproveManagerRequest = 'ApproveManagerRequest',
-  Comment = 'Comment'
+  Comment = 'Comment',
+  CommentThread = 'CommentThread',
+  CommentMention = 'CommentMention'
 }
 
 export enum PushNotificationType {
@@ -84,7 +86,10 @@ export enum PushNotificationType {
   Message = 'Message',
   MessageReaction = 'MessageReaction',
   RequestManager = 'RequestManager',
-  ApproveManagerRequest = 'ApproveManagerRequest'
+  ApproveManagerRequest = 'ApproveManagerRequest',
+  Comment = 'Comment',
+  CommentThread = 'CommentThread',
+  CommentMention = 'CommentMention'
 }
 
 export enum Entity {
@@ -656,6 +661,22 @@ export type CommentNotification = BaseNotification & {
   entityType: Entity.Playlist | Entity.Album | Entity.Track
 }
 
+export type CommentThreadNotification = BaseNotification & {
+  type: NotificationType.CommentThread
+  entityId: ID
+  entityUserId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type CommentMentionNotification = BaseNotification & {
+  type: NotificationType.CommentMention
+  entityId: ID
+  entityUserId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
 export type Notification =
   | AnnouncementNotification
   | UserSubscriptionNotification
@@ -687,6 +708,8 @@ export type Notification =
   | RequestManagerNotification
   | ApproveManagerRequestNotification
   | CommentNotification
+  | CommentThreadNotification
+  | CommentMentionNotification
 
 export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string

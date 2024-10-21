@@ -85,7 +85,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		values
 			($1, $2, $3, $4, $5)
 		on conflict do nothing
-		`, params.ChatID+blast.BlastID, params.ChatID, blast.FromUserID, blast.CreatedAt, blast.BlastID)
+		`, misc.BlastMessageID(blast.BlastID, params.ChatID), params.ChatID, blast.FromUserID, blast.CreatedAt, blast.BlastID)
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 }
 
 func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.Time) error {
-	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
+	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0, is_hidden = true where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
 	return err
 }
 
@@ -132,32 +132,28 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 
 	// set chat_member.is_hidden to false
 	// if there are any non-blast messages, reactions,
-	// or any blasts from the other party
+	// or any blasts from the other party after cleared_history_at
 	_, err = tx.Exec(`
 	UPDATE chat_member member
 	SET is_hidden = NOT EXISTS(
-	    SELECT * FROM (
-        -- Check for chat messages
-        SELECT msg.message_id
-        FROM chat_message msg
-        LEFT JOIN chat_blast b USING (blast_id)
-        LEFT JOIN chat_message_reactions r ON r.message_id = msg.message_id
-        WHERE msg.chat_id = member.chat_id
-        AND (
-            msg.blast_id IS NULL OR
-            b.from_user_id != member.user_id OR
-            r.user_id != member.user_id
-        )
 
-        UNION
+		-- Check for chat messages
+		SELECT msg.message_id
+		FROM chat_message msg
+		LEFT JOIN chat_blast b USING (blast_id)
+		WHERE msg.chat_id = member.chat_id
+		AND (cleared_history_at IS NULL OR msg.created_at > cleared_history_at)
+		AND (msg.blast_id IS NULL OR b.from_user_id != member.user_id)
 
-        -- Check for chat message reactions
-        SELECT r.message_id
-        FROM chat_message_reactions r
-        LEFT JOIN chat_message msg ON r.message_id = msg.message_id
-        WHERE msg.chat_id = member.chat_id
-        AND r.user_id != member.user_id
-    ) combined
+		UNION
+
+		-- Check for chat message reactions
+		SELECT r.message_id
+		FROM chat_message_reactions r
+		LEFT JOIN chat_message msg ON r.message_id = msg.message_id
+		WHERE msg.chat_id = member.chat_id
+		AND r.user_id != member.user_id
+		AND (cleared_history_at IS NULL OR (r.created_at > cleared_history_at AND msg.created_at > cleared_history_at))
 	)
 	WHERE member.chat_id = $1
 	`, chatId)
@@ -221,10 +217,38 @@ func chatReadMessages(tx *sqlx.Tx, userId int32, chatId string, readTimestamp ti
 	return err
 }
 
-func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission, allow *bool, messageTimestamp time.Time) error {
+var permissions = []schema.ChatPermission{
+	schema.Followees,
+	schema.Followers,
+	schema.Tippees,
+	schema.Tippers,
+	schema.Verified,
+}
+
+// Helper function to check if a permit is in the permitList
+func isInPermitList(permit schema.ChatPermission, permitList []schema.ChatPermission) bool {
+	for _, p := range permitList {
+		if p == permit {
+			return true
+		}
+	}
+	return false
+}
+
+func updatePermissions(tx *sqlx.Tx, userId int32, permit schema.ChatPermission, permitAllowed bool, messageTimestamp time.Time) error {
+	_, err := tx.Exec(`
+    insert into chat_permissions (user_id, permits, allowed, updated_at)
+    values ($1, $2, $3, $4)
+    on conflict (user_id, permits)
+    do update set allowed = $3 where chat_permissions.updated_at < $4
+    `, userId, permit, permitAllowed, messageTimestamp)
+	return err
+}
+
+func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission, permitList []schema.ChatPermission, allow *bool, messageTimestamp time.Time) error {
 
 	// if "all" or "none" or is singular permission style (allow == nil) delete any old rows
-	if allow == nil || permits == schema.All || permits == schema.None {
+	if allow == nil || permits == schema.All || permits == schema.None || isInPermitList(schema.All, permitList) || isInPermitList(schema.None, permitList) {
 		_, err := tx.Exec(`
 			delete from chat_permissions where user_id = $1 and updated_at < $2
 		`, userId, messageTimestamp)
@@ -243,14 +267,24 @@ func chatSetPermissions(tx *sqlx.Tx, userId int32, permits schema.ChatPermission
 		return err
 	}
 
+	// Special case for "all" and "none" - no other rows should be inserted
+	if isInPermitList(schema.All, permitList) {
+		err := updatePermissions(tx, userId, schema.All, true, messageTimestamp)
+		return err
+	} else if isInPermitList(schema.None, permitList) {
+		err := updatePermissions(tx, userId, schema.None, true, messageTimestamp)
+		return err
+	}
+
 	// new: multiple (checkbox) permission style
-	_, err := tx.Exec(`
-	insert into chat_permissions (user_id, permits, allow, updated_at)
-	values ($1, $2, $3, $4)
-	on conflict (user_id, permits)
-	do update set allow = $3 where updated_at < $4
-	`, userId, permits, *allow, messageTimestamp)
-	return err
+	for _, permit := range permissions {
+		permitAllowed := isInPermitList(permit, permitList)
+		err := updatePermissions(tx, userId, permit, permitAllowed, messageTimestamp)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func chatBlock(tx *sqlx.Tx, userId int32, blockeeUserId int32, messageTimestamp time.Time) error {
