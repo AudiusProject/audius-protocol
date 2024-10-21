@@ -519,7 +519,7 @@ export const useDeleteComment = () => {
             (prevCommentData) => {
               const newCommentData = cloneDeep(prevCommentData)
               if (!newCommentData) return
-              // Filter out the comment from itsz current page
+              // Filter out the comment from its current page
               newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
                 page.filter((id: ID) => id !== commentId)
               )
