@@ -1256,11 +1256,22 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         for comment_id in comment_ids:
             or_queries.append(or_(CommentMention.comment_id == comment_id))
 
-        comment_mentions = session.query(CommentMention).filter(or_(*or_queries)).all()
+        comment_mentions = (
+            session.query(
+                CommentMention,
+                literal_column(f"row_to_json({CommentMention.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
 
         existing_entities[EntityType.COMMENT_MENTION] = {
             (comment_mention.comment_id, comment_mention.user_id): comment_mention
-            for comment_mention in comment_mentions
+            for comment_mention, _ in comment_mentions
+        }
+        existing_entities_in_json[EntityType.COMMENT_MENTION] = {
+            (comment_json["comment_id"], comment_json["user_id"]): comment_json
+            for _, comment_json in comment_mentions
         }
 
     if entities_to_fetch[EntityType.MUTED_USER.value]:
