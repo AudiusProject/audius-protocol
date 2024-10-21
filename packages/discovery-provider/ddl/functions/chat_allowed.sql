@@ -71,7 +71,7 @@ BEGIN
       WHEN 'tippees' THEN
         IF EXISTS (
           SELECT 1
-          FROM aggregate_user_tips tip
+          FROM user_tips tip
           WHERE receiver_user_id = from_user_id
           AND sender_user_id = to_user_id
         ) THEN
@@ -81,7 +81,7 @@ BEGIN
       WHEN 'tippers' THEN
         IF EXISTS (
           SELECT 1
-          FROM aggregate_user_tips tip
+          FROM user_tips tip
           WHERE receiver_user_id = to_user_id
           AND sender_user_id = from_user_id
         ) THEN

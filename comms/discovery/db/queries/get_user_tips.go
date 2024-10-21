@@ -11,7 +11,7 @@ const bulkGetTipReceivers = `
 select
   sender_user_id,
 	receiver_user_id
-from aggregate_user_tips
+from user_tips
 where
 	sender_user_id = :SenderUserID
   and receiver_user_id in (:ReceiverUserIDs)

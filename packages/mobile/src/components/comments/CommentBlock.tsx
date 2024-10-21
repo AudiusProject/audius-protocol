@@ -86,7 +86,7 @@ export const CommentBlockInternal = (
           </Flex>
         ) : null}
         {!isTombstone ? (
-          <Flex direction='row' gap='s' alignItems='center'>
+          <Flex direction='row' gap='s' alignItems='center' w='65%'>
             <UserLink
               size='s'
               userId={userId}
