@@ -680,7 +680,7 @@ def download_track(params: ManageEntityParameters):
 
     session = params.session
 
-    has_metadata = params.metadata and isinstance(params.metadata, dict)
+    has_metadata = isinstance(params.metadata, dict)
     record = TrackDownload(
         txhash=params.txhash,
         blocknumber=params.block_number,
