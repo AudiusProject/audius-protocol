@@ -112,6 +112,10 @@ def setup_test_without_mock(app, tx_receipts):
 
 
 def test_comment(app, mocker):
+    """
+    Tests that a user can post a comment and the track owner receives a notification.
+    Track owner does not receive a notification if they are the comment author.
+    """
     tx_receipts = {
         "CreateComment": [
             {
@@ -127,6 +131,20 @@ def test_comment(app, mocker):
                 )
             },
         ],
+        "CreateComment2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
@@ -135,7 +153,7 @@ def test_comment(app, mocker):
         index_transaction(session)
 
         comments: List[Comment] = session.query(Comment).all()
-        assert len(comments) == 1
+        assert len(comments) == 2
 
         comment_notifications = session.query(Notification).all()
         assert len(comment_notifications) == 1
@@ -145,6 +163,10 @@ def test_comment(app, mocker):
 
 
 def test_comment_reply(app, mocker):
+    """
+    Tests that a user can reply to a comment and the parent comment author receives a notification.
+    Parent comment author does not receive a notification if they are the reply author.
+    """
     reply_entities = {
         **entities,
         "comments": [{"comment_id": 1, "user_id": 2, "entity_id": 1}],
@@ -156,7 +178,7 @@ def test_comment_reply(app, mocker):
     }
 
     tx_receipts = {
-        "CreateComment": [
+        "CommentReply": [
             {
                 "args": AttributeDict(
                     {
@@ -170,6 +192,20 @@ def test_comment_reply(app, mocker):
                 )
             },
         ],
+        "CommentReply2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(reply_comment_metadata)}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
     }
 
     db, index_transaction = setup_test(app, mocker, reply_entities, tx_receipts)
@@ -177,9 +213,9 @@ def test_comment_reply(app, mocker):
     with db.scoped_session() as session:
         index_transaction(session)
 
-        assert len(session.query(Comment).all()) == 2
+        assert len(session.query(Comment).all()) == 3
         comment_thread = session.query(CommentThread).all()
-        assert len(comment_thread) == 1
+        assert len(comment_thread) == 2
         assert comment_thread[0].comment_id == 2
         assert comment_thread[0].parent_comment_id == 1
 
