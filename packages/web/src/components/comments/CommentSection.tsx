@@ -56,7 +56,7 @@ type CommentSectionInnerProps = {
 
 /**
  * This component is responsible for
- * - Render header & containers
+ * - Rendering header & containers
  * - Mapping through the root comments array
  * - Infinite scrolling pagination
  */
