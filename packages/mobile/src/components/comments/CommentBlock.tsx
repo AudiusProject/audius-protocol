@@ -19,7 +19,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  hideActions?: boolean
+  isPreview?: boolean
 }
 
 export const CommentBlockInternal = (
@@ -27,7 +27,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, hideActions, parentCommentId } = props
+  const { comment, isPreview, parentCommentId } = props
   const { artistId, track } = useCurrentCommentSection()
   const {
     id: commentId,
@@ -82,8 +82,10 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited}>{message}</CommentText>
-        {!hideActions ? (
+        <CommentText isEdited={isEdited} isPreview={isPreview}>
+          {message}
+        </CommentText>
+        {!isPreview ? (
           <CommentActionBar
             comment={comment}
             isDisabled={isTombstone}

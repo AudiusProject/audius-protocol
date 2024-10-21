@@ -18,10 +18,11 @@ export type CommentTextProps = {
   children: string
   isEdited?: boolean
   onUserMentionsChange?: (userIds: ID[]) => void
+  isPreview?: boolean
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited, onUserMentionsChange } = props
+  const { children, isEdited, onUserMentionsChange, isPreview } = props
   const textRef = useRef<HTMLElement>()
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
@@ -79,7 +80,7 @@ export const CommentText = (props: CommentTextProps) => {
         {children}
       </UserGeneratedTextV2>
 
-      {isOverflowing ? (
+      {isOverflowing && !isPreview ? (
         <TextLink variant='visible' onClick={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>

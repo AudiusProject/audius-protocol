@@ -114,7 +114,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         justifyContent={!isCommentingEnabled ? 'center' : 'left'}
       >
         <IconRemix color='default' />
-        <Text variant='title' size={isDesktop ? 'l' : 'm'}>
+        <Text variant='title' size='l'>
           {messages.remixes}
         </Text>
       </Flex>

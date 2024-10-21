@@ -51,7 +51,7 @@ const CommentPreviewHeader = (props: CommentPreviewHeaderProps) => {
       alignItems='center'
     >
       <Flex row gap='s'>
-        <IconMessage />
+        <IconMessage color='default' />
         <Text variant='title' size='l'>
           Comments
           {isShowingComments ? (
@@ -125,7 +125,7 @@ const CommentPreviewContent = (props: CommentPreviewContentProps) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <CommentBlock commentId={commentIds[0]} hideActions />
+      <CommentBlock commentId={commentIds[0]} isPreview />
     </TouchableOpacity>
   )
 }

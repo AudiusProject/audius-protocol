@@ -155,7 +155,7 @@ const TrackPage = ({
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   const renderOriginalTrackTitle = () => (
-    <Text textAlign='left' variant='title'>
+    <Text variant='title' size='l' textAlign='left'>
       {messages.originalTrack}
     </Text>
   )
@@ -163,7 +163,7 @@ const TrackPage = ({
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <Text variant='title' textAlign='left'>
+      <Text variant='title' size='l' textAlign='left'>
         {messages.moreBy} {user?.name}
       </Text>
     ) : null

@@ -27,7 +27,7 @@ const { getUser } = cacheUsersSelectors
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  hideActions?: boolean
+  isPreview?: boolean
 }
 
 const CommentBlockInternal = (
@@ -35,7 +35,7 @@ const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, parentCommentId, hideActions } = props
+  const { comment, parentCommentId, isPreview } = props
   const { track, artistId } = useCurrentCommentSection()
 
   const {
@@ -126,11 +126,12 @@ const CommentBlockInternal = (
           <CommentText
             isEdited={isEdited}
             onUserMentionsChange={handleUserMentionsChange}
+            isPreview={isPreview}
           >
             {message}
           </CommentText>
         )}
-        {hideActions ? null : (
+        {isPreview ? null : (
           <CommentActionBar
             comment={comment}
             onClickReply={() => setShowReplyInput((prev) => !prev)}

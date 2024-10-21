@@ -18,10 +18,11 @@ const MAX_LINES = 3
 export type CommentTextProps = {
   children: string
   isEdited?: boolean
+  isPreview?: boolean
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited } = props
+  const { children, isEdited, isPreview } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
@@ -81,8 +82,8 @@ export const CommentText = (props: CommentTextProps) => {
         {children}
       </UserGeneratedText>
 
-      {isOverflowing ? (
-        <TextLink size='regular' variant='visible' onPress={toggleIsExpanded}>
+      {isOverflowing && !isPreview ? (
+        <TextLink variant='visible' onPress={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>
       ) : null}

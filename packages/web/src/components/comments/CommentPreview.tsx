@@ -92,7 +92,7 @@ const CommentPreviewContent = () => {
     )
   }
 
-  return <CommentBlock commentId={commentIds[0]} hideActions />
+  return <CommentBlock commentId={commentIds[0]} isPreview />
 }
 
 type CommentPreviewProps = {

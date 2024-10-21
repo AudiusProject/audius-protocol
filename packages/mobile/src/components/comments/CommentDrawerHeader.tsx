@@ -70,7 +70,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
           alignItems='center'
         >
           <Flex direction='row' gap='m' alignItems='center'>
-            <Text variant='body' size={minimal ? 'l' : 'm'}>
+            <Text variant='title' size={minimal ? 'l' : 'm'} strength='weak'>
               {messages.title}
               <Text color='subdued'>&nbsp;({commentCount})</Text>
             </Text>

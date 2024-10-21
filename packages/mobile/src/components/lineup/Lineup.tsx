@@ -545,6 +545,7 @@ export const Lineup = ({
       <SectionList
         {...listProps}
         {...pullToRefreshProps}
+        contentContainerStyle={{ gap: 12 }}
         ref={ref}
         onScroll={handleScroll}
         ListHeaderComponent={

@@ -53,8 +53,8 @@ export const CommentBadge = ({
   const Icon = iconMap[badgeType]
 
   return (
-    <Flex gap='xs'>
-      <Icon color='accent' size='xs' />
+    <Flex gap='xs' alignItems='center'>
+      <Icon color='accent' size='2xs' />
       <Text color='accent' variant='body' size='s'>
         {messages[badgeType]}
       </Text>
