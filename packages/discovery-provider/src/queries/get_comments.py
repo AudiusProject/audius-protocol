@@ -56,8 +56,8 @@ def get_replies(
 ):
     muted_by_karma = (
         session.query(MutedUser.user_id)
-        .join(MutedUser.user_id == AggregateUser.user_id)
-        .filter(AggregateUser.follower_count > 4000)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD)
         .subquery()
     )
 
@@ -75,6 +75,7 @@ def get_replies(
                     MutedUser.user_id == current_user_id,
                     MutedUser.user_id.in_(muted_by_karma),
                 ),
+                current_user_id != Comment.user_id,
             ),
         )
         .outerjoin(
@@ -173,8 +174,8 @@ def get_track_comments(args, track_id, current_user_id=None):
         )
         muted_by_karma = (
             session.query(MutedUser.user_id)
-            .join(MutedUser.user_id == AggregateUser.user_id)
-            .filter(AggregateUser.follower_count > 4000)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD)
             .subquery()
         )
 
@@ -225,6 +226,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                         MutedUser.user_id == current_user_id,
                         MutedUser.user_id.in_(muted_by_karma),
                     ),
+                    current_user_id != Comment.user_id,  # show comment to comment owner
                 ),
             )
             .outerjoin(

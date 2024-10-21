@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -11,7 +13,7 @@ from sqlalchemy import (
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
-COMMENT_REPORT_KARMA_THRESHOLD = 1_720_000
+COMMENT_REPORT_KARMA_THRESHOLD = os.getenv("comment_report_karma_threshold")
 
 
 class CommentReport(Base, RepresentableMixin):
