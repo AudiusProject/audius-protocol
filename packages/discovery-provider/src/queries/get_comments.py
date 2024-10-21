@@ -54,6 +54,13 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
+    muted_by_karma = (
+        session.query(MutedUser.user_id)
+        .join(MutedUser.user_id == AggregateUser.user_id)
+        .filter(AggregateUser.follower_count > 4000)
+        .subquery()
+    )
+
     replies = (
         session.query(
             Comment, func.count(CommentReaction.comment_id).label("react_count")
@@ -64,7 +71,10 @@ def get_replies(
             MutedUser,
             and_(
                 MutedUser.muted_user_id == Comment.user_id,
-                MutedUser.user_id == current_user_id,
+                or_(
+                    MutedUser.user_id == current_user_id,
+                    MutedUser.user_id.in_(muted_by_karma),
+                ),
             ),
         )
         .outerjoin(
@@ -161,6 +171,12 @@ def get_track_comments(args, track_id, current_user_id=None):
             .group_by(CommentReaction.comment_id)
             .subquery()
         )
+        muted_by_karma = (
+            session.query(MutedUser.user_id)
+            .join(MutedUser.user_id == AggregateUser.user_id)
+            .filter(AggregateUser.follower_count > 4000)
+            .subquery()
+        )
 
         # default to top sort
         sort_method = args.get("sort_method", "top")
@@ -205,7 +221,10 @@ def get_track_comments(args, track_id, current_user_id=None):
                 MutedUser,
                 and_(
                     MutedUser.muted_user_id == Comment.user_id,
-                    MutedUser.user_id == current_user_id,
+                    or_(
+                        MutedUser.user_id == current_user_id,
+                        MutedUser.user_id.in_(muted_by_karma),
+                    ),
                 ),
             )
             .outerjoin(
