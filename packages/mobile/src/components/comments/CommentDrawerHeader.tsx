@@ -70,10 +70,10 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
 
   return (
     <>
-      <Flex p='l' gap='m'>
-        <TouchableWithoutFeedback onPress={dismissKeyboard}>
-          <View>
-            <View pointerEvents={keyboardShown ? 'none' : undefined}>
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <View>
+          <View pointerEvents={keyboardShown ? 'none' : undefined}>
+            <Flex p='l' gap='m'>
               <Flex
                 direction='row'
                 w='100%'
@@ -104,10 +104,10 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
                 />
               </Flex>
               {showCommentSortBar && !minimal ? <CommentSortBar /> : null}
-            </View>
+            </Flex>
           </View>
-        </TouchableWithoutFeedback>
-      </Flex>
+        </View>
+      </TouchableWithoutFeedback>
       {isOwner ? (
         <Portal hostName='DrawerPortal'>
           <ActionDrawerWithoutRedux
