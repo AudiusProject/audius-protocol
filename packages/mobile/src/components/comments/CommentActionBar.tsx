@@ -7,7 +7,7 @@ import {
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 
-import { Flex, PlainButton, Text } from '@audius/harmony-native'
+import { Box, Flex, PlainButton, Text } from '@audius/harmony-native'
 
 import { FavoriteButton } from '../favorite-button'
 
@@ -49,11 +49,14 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
             wrapperStyle={{ height: 20, width: 20 }}
             isDisabled={isDisabled}
           />
-          {!hideReactCount ? (
+          {!hideReactCount && reactCount > 0 ? (
             <Text color='default' size='s'>
               {reactCount}
             </Text>
-          ) : null}
+          ) : (
+            // Placeholder box to offset where the number would be
+            <Box w='8px' />
+          )}
         </Flex>
         <PlainButton
           variant='subdued'

@@ -12,6 +12,7 @@ import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
+  Box,
   ButtonVariant,
   Flex,
   Hint,
@@ -306,12 +307,15 @@ export const CommentActionBar = ({
           onClick={handleReact}
           disabled={isDisabled}
         />
-        {!hideReactCount ? (
+        {!hideReactCount && reactCount > 0 ? (
           <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
             {' '}
             {reactCount}
           </Text>
-        ) : null}
+        ) : (
+          // Placeholder box to offset where the number would be
+          <Box w='8px' />
+        )}
       </Flex>
       <TextLink
         variant='subdued'
