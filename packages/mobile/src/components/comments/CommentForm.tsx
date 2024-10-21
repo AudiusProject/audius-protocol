@@ -167,10 +167,12 @@ export const CommentForm = (props: CommentFormProps) => {
   return (
     <Flex direction='row' gap='m' alignItems='center'>
       {currentUserId ? (
-        <ProfilePicture
-          userId={currentUserId}
-          style={{ width: 40, height: 40, flexShrink: 0 }}
-        />
+        <Flex alignSelf='flex-start' pt='unit1' alignItems='center'>
+          <ProfilePicture
+            userId={currentUserId}
+            style={{ width: 40, height: 40, flexShrink: 0 }}
+          />
+        </Flex>
       ) : null}
       <Flex flex={1}>
         {showHelperText ? (
@@ -192,6 +194,7 @@ export const CommentForm = (props: CommentFormProps) => {
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
+            maxLength={400}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

@@ -120,7 +120,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     styles: propStyles,
     TextInputComponent,
     displayCancelAccessory = false,
-    onLayout
+    onLayout,
+    maxLength = 10000
   } = props
   const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
@@ -507,7 +508,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID={
           displayCancelAccessory ? 'cancelButtonAccessoryView' : 'none'
         }
-        maxLength={10000}
+        maxLength={maxLength}
         autoCorrect
         TextInputComponent={TextInputComponent}
       />

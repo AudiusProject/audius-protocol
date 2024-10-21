@@ -23,12 +23,14 @@ import {
   Animated,
   TextInput as RNTextInput,
   View,
-  Pressable
+  Pressable,
+  Text
 } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
-import { IconCloseAlt } from '@audius/harmony-native'
+import type { TextColors } from '@audius/harmony-native'
+import { Flex, Text as HarmonyText, IconCloseAlt } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -99,6 +101,11 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   doneButton: {
     marginRight: spacing(4),
     marginVertical: spacing(3)
+  },
+  maxLength: {
+    color: palette.neutralLight4,
+    fontSize: typography.fontSize.small,
+    marginLeft: spacing(2)
   }
 }))
 
@@ -130,6 +137,17 @@ export type TextInputProps = RNTextInputProps & {
   hideKeyboard?: boolean
   error?: boolean
   TextInputComponent?: typeof RNTextInput
+  maxLength?: number
+  /**
+   * 0-1 number representating a percentage threshold to show the max character text. Default is 0.7 (70%)
+   * @default 0.7
+   */
+  showMaxLengthThreshold?: number
+  /**
+   * 0-1 number representating a percentage threshold to turn the character limit text orange. Default is 0.9 (90%)
+   * @default 0.9
+   */
+  maxLengthWarningThreshold?: number
 }
 
 export type TextInputRef = RNTextInput
@@ -162,6 +180,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       autoCorrect = false,
       error,
       TextInputComponent = RNTextInput,
+      maxLength,
+      showMaxLengthThreshold = 0.7,
+      maxLengthWarningThreshold = 0.9,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
@@ -183,6 +204,25 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const hideInputAccessory =
       (hideInputAccessoryProp ?? returnKeyType === 'search') ||
       Platform.OS === 'android'
+
+    const characterCount = value !== undefined ? `${value}`.length : 0
+
+    // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
+    let maxLengthTextColor: TextColors = 'default'
+    if (maxLength && characterCount > maxLength) {
+      maxLengthTextColor = 'danger'
+    } else if (
+      maxLength &&
+      characterCount >= maxLengthWarningThreshold * maxLength
+    ) {
+      maxLengthTextColor = 'warning'
+    }
+
+    // Show the maxlength text whenever we hit a certain threshold (default 70%) + the input is focused
+    const shouldShowMaxLengthText =
+      isFocused &&
+      maxLength &&
+      characterCount >= showMaxLengthThreshold * maxLength
 
     // Trigger label animation on mount if value is prefilled
     useEffect(() => {
@@ -369,38 +409,53 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             inputAccessoryViewID={
               hideInputAccessory ? undefined : inputAccessoryViewID
             }
+            maxLength={maxLength}
             {...other}
           />
-          {clearable && value ? (
-            <Animated.View style={[{ transform: [{ scale }] }]}>
-              <TouchableWithoutFeedback
-                onPress={handlePressIcon}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                hitSlop={{
-                  top: spacing(2),
-                  bottom: spacing(2),
-                  left: spacing(2),
-                  right: spacing(2)
-                }}
-              >
-                <IconCloseAlt
+          <Flex
+            gap='s'
+            justifyContent='flex-end'
+            alignItems='flex-end'
+            alignSelf='stretch'
+          >
+            {clearable && value ? (
+              <Animated.View style={[{ transform: [{ scale }] }]}>
+                <TouchableWithoutFeedback
+                  onPress={handlePressIcon}
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  hitSlop={{
+                    top: spacing(2),
+                    bottom: spacing(2),
+                    left: spacing(2),
+                    right: spacing(2)
+                  }}
+                >
+                  <IconCloseAlt
+                    fill={iconProps.fill}
+                    height={iconProps.height}
+                    width={iconProps.width}
+                  />
+                </TouchableWithoutFeedback>
+              </Animated.View>
+            ) : Icon ? (
+              <Flex pv='xs'>
+                <Icon
                   fill={iconProps.fill}
                   height={iconProps.height}
                   width={iconProps.width}
                 />
-              </TouchableWithoutFeedback>
-            </Animated.View>
-          ) : Icon ? (
-            <Icon
-              fill={iconProps.fill}
-              height={iconProps.height}
-              width={iconProps.width}
-            />
-          ) : null}
-          {endAdornment ? (
-            <View style={styles.endAdornment}>{endAdornment}</View>
-          ) : null}
+              </Flex>
+            ) : null}
+            {endAdornment ? (
+              <View style={styles.endAdornment}>{endAdornment}</View>
+            ) : null}
+            {shouldShowMaxLengthText ? (
+              <HarmonyText variant='body' size='xs' color={maxLengthTextColor}>
+                {characterCount}/{maxLength}
+              </HarmonyText>
+            ) : null}
+          </Flex>
         </Animated.View>
         {hideInputAccessory ? null : (
           <InputAccessoryView nativeID={inputAccessoryViewID}>
