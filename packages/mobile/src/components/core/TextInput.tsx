@@ -23,8 +23,7 @@ import {
   Animated,
   TextInput as RNTextInput,
   View,
-  Pressable,
-  Text
+  Pressable
 } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
@@ -101,11 +100,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   doneButton: {
     marginRight: spacing(4),
     marginVertical: spacing(3)
-  },
-  maxLength: {
-    color: palette.neutralLight4,
-    fontSize: typography.fontSize.small,
-    marginLeft: spacing(2)
   }
 }))
 
