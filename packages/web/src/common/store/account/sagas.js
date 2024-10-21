@@ -169,7 +169,6 @@ function* onSignedIn({ payload: { account } }) {
 
 export function* fetchAccountAsync({ isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
 
   yield put(accountActions.fetchAccountRequested())
@@ -177,6 +176,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   // TODO-NOW: Need to pull this from hedgehog instead (what about MM)
   const libs = yield call(audiusBackendInstance.getAudiusLibsTyped)
   const wallet = libs.web3Manager?.getWalletAddress()
+  const sdk = yield* getSDK()
 
   if (!wallet) {
     yield put(
