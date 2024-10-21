@@ -330,6 +330,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
+            "src.tasks.index_core_blocks",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -544,6 +545,7 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
+    celery.send_task("index_core_blocks")
     celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")

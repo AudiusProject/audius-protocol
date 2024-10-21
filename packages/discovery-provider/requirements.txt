@@ -72,6 +72,11 @@ solders==0.18.1
 # Anchor support
 anchorpy==0.17.2
 
+# Core support
+grpcio==1.57.0
+grpcio-tools==1.57.0
+protobuf==4.24.0
+
 # Test
 pytest-mock==3.6.1
 requests-mock==1.11.0

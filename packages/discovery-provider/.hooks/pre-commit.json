@@ -2,19 +2,19 @@
   "steps": [
     {
       "name": "Sort imports",
-      "command": "isort --diff --check ."
+      "command": "isort --diff --check --skip ./src/tasks/core/gen --skip ./plugins ."
     },
     {
       "name": "Flake8",
-      "command": "flake8 ."
+      "command": "flake8 --exclude=./src/tasks/core/gen,./plugins ."
     },
     {
       "name": "Format",
-      "command": "black --diff --check ."
+      "command": "black --diff --check --exclude ./src/tasks/core/gen ."
     },
     {
       "name": "Typecheck",
-      "command": "mypy ."
+      "command": "mypy --exclude ./src/tasks/core/gen ."
     }
   ]
 }
