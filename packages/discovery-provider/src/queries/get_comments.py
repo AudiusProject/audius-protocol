@@ -55,9 +55,11 @@ def get_replies(
     limit=COMMENT_REPLIES_LIMIT,
 ):
     muted_by_karma = (
-        session.query(MutedUser.user_id)
+        session.query(MutedUser.muted_user_id)
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-        .filter(AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD)
+        .filter(MutedUser.is_delete == False)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
         .subquery()
     )
 
@@ -73,7 +75,7 @@ def get_replies(
                 MutedUser.muted_user_id == Comment.user_id,
                 or_(
                     MutedUser.user_id == current_user_id,
-                    MutedUser.user_id.in_(muted_by_karma),
+                    MutedUser.muted_user_id.in_(muted_by_karma),
                 ),
                 current_user_id != Comment.user_id,
             ),
@@ -173,9 +175,13 @@ def get_track_comments(args, track_id, current_user_id=None):
             .subquery()
         )
         muted_by_karma = (
-            session.query(MutedUser.user_id)
+            session.query(MutedUser.muted_user_id)
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-            .filter(AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD)
+            .filter(MutedUser.is_delete == False)
+            .group_by(MutedUser.muted_user_id)
+            .having(
+                func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD
+            )
             .subquery()
         )
 
@@ -224,7 +230,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == Comment.user_id,
                     or_(
                         MutedUser.user_id == current_user_id,
-                        MutedUser.user_id.in_(muted_by_karma),
+                        MutedUser.muted_user_id.in_(muted_by_karma),
                     ),
                     current_user_id != Comment.user_id,  # show comment to comment owner
                 ),

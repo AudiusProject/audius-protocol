@@ -94,6 +94,17 @@ def create_comment(params: ManageEntityParameters):
     )
     parent_comment_user_id = parent_comment.user_id if parent_comment else None
     is_reply = parent_comment_id is not None
+
+    is_muted_by_karma = (
+        params.session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.muted_user_id == entity_user_id)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
+        .scalar()
+        is not None
+    )
+
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
         .filter(
@@ -104,13 +115,9 @@ def create_comment(params: ManageEntityParameters):
         )
         .exists()
         | params.session.query(MutedUser)
-        .join(AggregateUser, AggregateUser.user_id == MutedUser.user_id)
         .filter(
             MutedUser.muted_user_id == user_id,
-            or_(
-                MutedUser.user_id == entity_user_id,
-                AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD,
-            ),
+            MutedUser.user_id == entity_user_id,
             MutedUser.is_delete == False,
         )
         .exists()
@@ -134,7 +141,12 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
-    if not is_reply and not is_owner_mentioned and not track_owner_notifications_off:
+    if (
+        not is_reply
+        and not is_owner_mentioned
+        and not track_owner_notifications_off
+        and not is_muted_by_karma
+    ):
         comment_notification = Notification(
             blocknumber=params.block_number,
             user_ids=[entity_user_id],
@@ -154,14 +166,7 @@ def create_comment(params: ManageEntityParameters):
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)
-            .join(AggregateUser, AggregateUser.user_id == MutedUser.user_id)
-            .filter(
-                or_(
-                    MutedUser.muted_user_id == user_id,
-                    AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD,
-                ),
-                MutedUser.user_id.in_(mentions),
-            )
+            .filter(MutedUser.muted_user_id == user_id, MutedUser.user_id.in_(mentions))
             .all()
         )
 
@@ -182,8 +187,8 @@ def create_comment(params: ManageEntityParameters):
                 EntityType.COMMENT_MENTION,
             )
 
-            track_owner_mention_mute = (
-                mention == entity_user_id and track_owner_notifications_off
+            track_owner_mention_mute = mention == entity_user_id and (
+                track_owner_notifications_off or is_muted_by_karma
             )
 
             if (
@@ -227,12 +232,8 @@ def create_comment(params: ManageEntityParameters):
             )
             .exists()
             | params.session.query(MutedUser)
-            .join(AggregateUser, AggregateUser.user_id == MutedUser.user_id)
             .filter(
-                or_(
-                    MutedUser.muted_user_id == user_id,
-                    AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD,
-                ),
+                MutedUser.muted_user_id == user_id,
                 MutedUser.user_id == parent_comment_user_id,
                 MutedUser.is_delete == False,
             )
@@ -307,6 +308,16 @@ def update_comment(params: ManageEntityParameters):
     parent_comment = existing_records[EntityType.COMMENT.value].get(parent_comment_id)
     parent_comment_user_id = parent_comment.user_id if parent_comment else None
 
+    is_muted_by_karma = (
+        params.session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.muted_user_id == entity_user_id)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
+        .scalar()
+        is not None
+    )
+
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
         .filter(
@@ -317,12 +328,8 @@ def update_comment(params: ManageEntityParameters):
         )
         .exists()
         | params.session.query(MutedUser)
-        .join(AggregateUser, AggregateUser.user_id == MutedUser.user_id)
         .filter(
-            or_(
-                MutedUser.muted_user_id == user_id,
-                AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD,
-            ),
+            MutedUser.muted_user_id == user_id,
             MutedUser.user_id == entity_user_id,
             MutedUser.is_delete == False,
         )
@@ -344,14 +351,7 @@ def update_comment(params: ManageEntityParameters):
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)
-            .join(AggregateUser, AggregateUser.user_id == MutedUser.user_id)
-            .filter(
-                or_(
-                    MutedUser.muted_user_id == user_id,
-                    AggregateUser.follower_count > COMMENT_REPORT_KARMA_THRESHOLD,
-                ),
-                MutedUser.user_id.in_(mentions),
-            )
+            .filter(MutedUser.muted_user_id == user_id, MutedUser.user_id.in_(mentions))
             .all()
         )
         existing_mentions = get_existing_mentions_for_comment(params, comment_id)
@@ -410,8 +410,8 @@ def update_comment(params: ManageEntityParameters):
                     EntityType.COMMENT_MENTION,
                 )
 
-                track_owner_mention_mute = (
-                    mention_user_id == entity_user_id and track_owner_notifications_off
+                track_owner_mention_mute = mention_user_id == entity_user_id and (
+                    track_owner_notifications_off or is_muted_by_karma
                 )
                 if (
                     mention_user_id != user_id
