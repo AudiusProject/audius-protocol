@@ -684,15 +684,16 @@ def download_track(params: ManageEntityParameters):
 
     session = params.session
 
+    has_metadata = isinstance(params.metadata, dict)
     record = TrackDownload(
         txhash=params.txhash,
         blocknumber=params.block_number,
         parent_track_id=parent_track_id,
         track_id=track_id,
         user_id=params.user_id,
-        city=params.metadata.get("city"),
-        region=params.metadata.get("region"),
-        country=params.metadata.get("country"),
+        city=params.metadata.get("city") if has_metadata else None,
+        region=params.metadata.get("region") if has_metadata else None,
+        country=params.metadata.get("country") if has_metadata else None,
     )
     session.add(record)
 
