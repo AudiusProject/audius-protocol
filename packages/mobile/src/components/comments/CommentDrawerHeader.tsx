@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -7,6 +7,8 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Portal } from '@gorhom/portal'
+import { useKeyboard } from '@react-native-community/hooks'
+import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import {
@@ -60,37 +62,51 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
 
   const showCommentSortBar = commentCount > 1
 
+  const dismissKeyboard = useCallback(() => {
+    Keyboard.dismiss()
+  }, [])
+
+  const { keyboardShown } = useKeyboard()
+
   return (
     <>
       <Flex p='l' gap='m'>
-        <Flex
-          direction='row'
-          w='100%'
-          justifyContent='space-between'
-          alignItems='center'
-        >
-          <Flex direction='row' gap='m' alignItems='center'>
-            <Text variant='body' size={minimal ? 'l' : 'm'}>
-              {messages.title}
-              <Text color='subdued'>&nbsp;({commentCount})</Text>
-            </Text>
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <View>
+            <View pointerEvents={keyboardShown ? 'none' : undefined}>
+              <Flex
+                direction='row'
+                w='100%'
+                justifyContent='space-between'
+                alignItems='center'
+              >
+                <Flex direction='row' gap='m' alignItems='center'>
+                  <Text variant='body' size={minimal ? 'l' : 'm'}>
+                    {messages.title}
+                    <Text color='subdued'>&nbsp;({commentCount})</Text>
+                  </Text>
 
-            <PlainButton
-              iconLeft={IconRefresh}
-              variant='subdued'
-              onPress={() => reset(true)}
-            >
-              {messages.newComments}
-            </PlainButton>
-          </Flex>
-          <IconButton
-            icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
-            onPress={isOwner ? toggleNotificationActionDrawer : closeDrawer}
-            color='subdued'
-            size='m'
-          />
-        </Flex>
-        {showCommentSortBar && !minimal ? <CommentSortBar /> : null}
+                  <PlainButton
+                    iconLeft={IconRefresh}
+                    variant='subdued'
+                    onPress={() => reset(true)}
+                  >
+                    {messages.newComments}
+                  </PlainButton>
+                </Flex>
+                <IconButton
+                  icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
+                  onPress={
+                    isOwner ? toggleNotificationActionDrawer : closeDrawer
+                  }
+                  color='subdued'
+                  size='m'
+                />
+              </Flex>
+              {showCommentSortBar && !minimal ? <CommentSortBar /> : null}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Flex>
       {isOwner ? (
         <Portal hostName='DrawerPortal'>
