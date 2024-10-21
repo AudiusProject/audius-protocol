@@ -43,7 +43,6 @@ export const CommentText = (props: CommentTextProps) => {
     <Flex alignItems='flex-start' gap='xs'>
       <UserGeneratedText
         variant='body'
-        size='s'
         lineHeight='multi'
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
@@ -55,10 +54,8 @@ export const CommentText = (props: CommentTextProps) => {
         suffix={
           isEdited ? (
             <>
-              <Text size='s'>&nbsp;</Text>
-              <Text color='subdued' size='xs'>
-                ({messages.edited})
-              </Text>
+              <Text>&nbsp;</Text>
+              <Text color='subdued'>({messages.edited})</Text>
             </>
           ) : null
         }
@@ -75,7 +72,7 @@ export const CommentText = (props: CommentTextProps) => {
               return showLink ? (
                 <TimestampLink timestampSeconds={timestampSeconds} />
               ) : (
-                <Text size='s'>{text}</Text>
+                <Text>{text}</Text>
               )
             }
           }
@@ -85,7 +82,7 @@ export const CommentText = (props: CommentTextProps) => {
       </UserGeneratedText>
 
       {isOverflowing ? (
-        <TextLink size='s' variant='visible' onPress={toggleIsExpanded}>
+        <TextLink size='regular' variant='visible' onPress={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>
       ) : null}

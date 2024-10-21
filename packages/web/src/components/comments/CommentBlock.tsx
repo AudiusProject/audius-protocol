@@ -89,16 +89,16 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={userId} popover />
+            <UserLink userId={userId} popover size='l' strength='strong' />
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
                 <>
-                  <Text color='subdued' size='xs'>
+                  <Text color='subdued' size='s'>
                     •
                   </Text>
 
-                  <TimestampLink size='xs' timestampSeconds={trackTimestampS} />
+                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>

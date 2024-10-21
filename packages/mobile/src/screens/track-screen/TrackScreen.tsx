@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
-import { CommentSection } from 'app/components/comments/CommentSection'
+import { CommentPreview } from 'app/components/comments/CommentSection'
 import {
   Screen,
   ScreenContent,
@@ -145,7 +145,7 @@ export const TrackScreen = () => {
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
-                    <CommentSection entityId={track_id} />
+                    <CommentPreview entityId={track_id} />
                   </Flex>
                 ) : null}
 

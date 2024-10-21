@@ -8,6 +8,7 @@ import {
   timestampRegex
 } from '@audius/common/utils'
 import { Flex, Text, TextLink } from '@audius/harmony'
+import { useToggle } from 'react-use'
 
 import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGeneratedTextV2'
 
@@ -23,7 +24,7 @@ export const CommentText = (props: CommentTextProps) => {
   const { children, isEdited, onUserMentionsChange } = props
   const textRef = useRef<HTMLElement>()
   const [isOverflowing, setIsOverflowing] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
     track: { duration }
   } = useCurrentCommentSection()
@@ -46,21 +47,13 @@ export const CommentText = (props: CommentTextProps) => {
   return (
     <Flex direction='column' alignItems='flex-start' gap='xs'>
       <UserGeneratedTextV2
-        size='s'
-        variant='body'
-        color='default'
         ref={textRef}
         onUserIdsChange={handleUserIdsChange}
         internalLinksOnly
         maxLines={isExpanded ? undefined : 3}
         css={{ textAlign: 'left', wordBreak: 'break-word' }}
         suffix={
-          isEdited ? (
-            <Text color='subdued' size='s'>
-              {' '}
-              ({messages.edited})
-            </Text>
-          ) : null
+          isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null
         }
         matchers={[
           {
@@ -87,11 +80,7 @@ export const CommentText = (props: CommentTextProps) => {
       </UserGeneratedTextV2>
 
       {isOverflowing ? (
-        <TextLink
-          size='s'
-          variant='visible'
-          onClick={() => setIsExpanded((val) => !val)}
-        >
+        <TextLink variant='visible' onClick={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>
       ) : null}

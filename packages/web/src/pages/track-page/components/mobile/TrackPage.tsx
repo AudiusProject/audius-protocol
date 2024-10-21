@@ -11,7 +11,7 @@ import {
 import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
 
-import { CommentSection } from 'components/comments/CommentSection'
+import { CommentPreview } from 'components/comments/CommentPreview'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -229,7 +229,7 @@ const TrackPage = ({
           />
         ) : null}
         {isCommentingEnabled ? (
-          <CommentSection entityId={defaults.trackId} />
+          <CommentPreview entityId={defaults.trackId} />
         ) : null}
         <Flex column gap='l'>
           {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}

@@ -90,7 +90,7 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const { currentUserId, commentIds, entityId, replyingAndEditingState } =
+  const { currentUserId, entityId, replyingAndEditingState } =
     useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
@@ -149,10 +149,6 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment, initialMessage?.length, replyingToComment])
 
-  const placeholder = commentIds?.length
-    ? messages.addComment
-    : messages.firstComment
-
   const showHelperText = editingComment || replyingToComment
 
   return (
@@ -178,7 +174,7 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={placeholder}
+            placeholder={messages.addComment}
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}

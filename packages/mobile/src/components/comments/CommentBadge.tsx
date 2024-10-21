@@ -27,20 +27,6 @@ const messages: Record<BadgeType, string> = {
   tipSupporter: 'Tip Supporter'
 }
 
-const Badge = ({ type }: { type: BadgeType | null }) => {
-  if (type === null) return null
-
-  const Icon = iconMap[type]
-  return (
-    <Flex direction='row' gap='xs'>
-      <Icon color='accent' size='xs' />
-      <Text color='accent' variant='body' size='xs'>
-        {messages[type]}
-      </Text>
-    </Flex>
-  )
-}
-
 type CommentBadgeProps = {
   isArtist: boolean
   commentUserId: ID
@@ -62,5 +48,16 @@ export const CommentBadge = ({
     : isTipSupporter
     ? 'tipSupporter'
     : null
-  return <Badge type={badgeType} />
+  if (badgeType === null) return null
+
+  const Icon = iconMap[badgeType]
+
+  return (
+    <Flex direction='row' gap='xs'>
+      <Icon color='accent' size='xs' />
+      <Text color='accent' variant='body' size='s'>
+        {messages[badgeType]}
+      </Text>
+    </Flex>
+  )
 }

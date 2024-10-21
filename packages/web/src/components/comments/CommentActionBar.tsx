@@ -307,16 +307,12 @@ export const CommentActionBar = ({
           disabled={isDisabled}
         />
         {!hideReactCount ? (
-          <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
-            {' '}
-            {reactCount}
-          </Text>
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
         ) : null}
       </Flex>
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
-        size='s'
         disabled={isDisabled || isTombstone}
       >
         {messages.reply}
