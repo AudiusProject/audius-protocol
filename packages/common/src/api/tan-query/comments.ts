@@ -504,13 +504,13 @@ export const useDeleteComment = () => {
           queryClient.setQueryData<Comment>(
             [QUERY_KEYS.comment, commentId],
             (prevCommentData) =>
-              // TODO: fix type
               ({
                 ...prevCommentData,
                 isTombstone: true,
                 userId: undefined,
-                message: '[deleted]'
-              } as Comment)
+                message: '[Removed]'
+                // Intentionally undoing the userId
+              } as Comment & { userId?: undefined })
           )
         } else {
           // If not a reply & has no replies, remove from the sort list
