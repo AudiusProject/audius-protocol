@@ -66,7 +66,7 @@ export const CommentBlockInternal = (
           </Flex>
         ) : null}
         {!isTombstone ? (
-          <Flex direction='row' gap='s' alignItems='center'>
+          <Flex direction='row' gap='s' alignItems='center' w='65%'>
             <UserLink size='s' userId={userId} strength='strong' />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
