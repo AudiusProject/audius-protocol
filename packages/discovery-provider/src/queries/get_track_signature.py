@@ -116,7 +116,6 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
-        is_stream_gated=is_stream_gated,
         stream_conditions=track["stream_conditions"],
         owner_id=track["owner_id"],
     )
@@ -203,7 +202,6 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
-        is_download_gated=is_download_gated,
         download_conditions=track["download_conditions"],
         owner_id=track["owner_id"],
     )

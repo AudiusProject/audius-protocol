@@ -48,7 +48,7 @@ def get_unpopulated_tracks(
         tracks_query = tracks_query.filter(Track.is_delete == False)
 
     if exclude_gated:
-        tracks_query = tracks_query.filter(Track.is_stream_gated == False)
+        tracks_query = tracks_query.filter(Track.stream_conditions is None)
 
     tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
