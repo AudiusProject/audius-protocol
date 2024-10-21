@@ -439,13 +439,11 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                 </TouchableWithoutFeedback>
               </Animated.View>
             ) : Icon ? (
-              <Flex pv='xs'>
-                <Icon
-                  fill={iconProps.fill}
-                  height={iconProps.height}
-                  width={iconProps.width}
-                />
-              </Flex>
+              <Icon
+                fill={iconProps.fill}
+                height={iconProps.height}
+                width={iconProps.width}
+              />
             ) : null}
             {endAdornment ? (
               <View style={styles.endAdornment}>{endAdornment}</View>

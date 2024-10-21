@@ -29,7 +29,7 @@ import type {
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { IconSend, mergeRefs } from '@audius/harmony-native'
+import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -385,15 +385,17 @@ export const ComposerInput = forwardRef(function ComposerInput(
       hitSlop={spacing(2)}
       style={styles.submit}
     >
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <IconSend
-          width={styles.icon.width}
-          height={styles.icon.height}
-          fill={hasLength ? primary : neutralLight7}
-        />
-      )}
+      <Flex pv='xs'>
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <IconSend
+            width={styles.icon.width}
+            height={styles.icon.height}
+            fill={hasLength ? primary : neutralLight7}
+          />
+        )}
+      </Flex>
     </TouchableOpacity>
   )
 
