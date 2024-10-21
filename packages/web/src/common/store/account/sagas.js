@@ -174,6 +174,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   yield put(accountActions.fetchAccountRequested())
 
+  // TODO-NOW: Need to pull this from hedgehog instead (what about MM)
   const libs = yield call(audiusBackendInstance.getAudiusLibsTyped)
   const wallet = libs.web3Manager?.getWalletAddress()
 
@@ -223,7 +224,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     yield call(cacheAccount, account.user)
     yield put(signedIn({ account, isSignUp }))
   } catch (e) {
-    if (isResponseError(e) && e.response.status === 404) {
+    if (isResponseError(e) && [401, 404].includes(e.response.status)) {
       yield put(
         fetchAccountFailed({
           reason: 'ACCOUNT_NOT_FOUND'

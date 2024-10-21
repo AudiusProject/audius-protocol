@@ -9,7 +9,7 @@ import {
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
-import { encodeHashId } from '~/utils'
+import { encodeHashId, isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
@@ -49,14 +49,22 @@ const userApi = createApi({
   endpoints: {
     getUserAccount: {
       fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
-        const { data } = await (
-          await audiusSdk()
-        ).full.users.getUserAccount({ wallet })
-        if (!data) {
-          console.warn('Missing user from account response')
-          return null
+        try {
+          const { data } = await (
+            await audiusSdk()
+          ).full.users.getUserAccount({ wallet })
+          if (!data) {
+            console.warn('Missing user from account response')
+            return null
+          }
+          return accountFromSDK(data)
+        } catch (e) {
+          // Account doesn't exist, don't bubble up an error, just return null
+          if (isResponseError(e) && [401, 404].includes(e.response.status)) {
+            return null
+          }
+          throw e
         }
-        return accountFromSDK(data)
       },
       options: {
         schemaKey: 'accountUser'
