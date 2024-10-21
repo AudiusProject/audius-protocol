@@ -1,4 +1,4 @@
-from sqlalchemy import func, or_
+from sqlalchemy import func
 
 from src.exceptions import IndexingValidationError
 from src.models.comments.comment import Comment
@@ -187,8 +187,8 @@ def create_comment(params: ManageEntityParameters):
                 EntityType.COMMENT_MENTION,
             )
 
-            track_owner_mention_mute = mention == entity_user_id and (
-                track_owner_notifications_off or is_muted_by_karma
+            track_owner_mention_mute = (
+                mention == entity_user_id and track_owner_notifications_off
             )
 
             if (
@@ -196,6 +196,7 @@ def create_comment(params: ManageEntityParameters):
                 and mention != parent_comment_user_id
                 and mention not in mention_mutes
                 and not track_owner_mention_mute
+                and not is_muted_by_karma
             ):
                 mention_notification = Notification(
                     blocknumber=params.block_number,
@@ -240,9 +241,22 @@ def create_comment(params: ManageEntityParameters):
             .exists()
         ).scalar()
 
+        is_muted_by_karma = (
+            params.session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.muted_user_id == entity_user_id)
+            .group_by(MutedUser.muted_user_id)
+            .having(
+                func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD
+            )
+            .scalar()
+            is not None
+        )
+
         if (
             user_id != parent_comment_user_id
             and not parent_comment_owner_notifications_off
+            and not is_muted_by_karma
         ):
             thread_notification = Notification(
                 blocknumber=params.block_number,
@@ -410,8 +424,8 @@ def update_comment(params: ManageEntityParameters):
                     EntityType.COMMENT_MENTION,
                 )
 
-                track_owner_mention_mute = mention_user_id == entity_user_id and (
-                    track_owner_notifications_off or is_muted_by_karma
+                track_owner_mention_mute = (
+                    mention_user_id == entity_user_id and track_owner_notifications_off
                 )
                 if (
                     mention_user_id != user_id
@@ -421,6 +435,7 @@ def update_comment(params: ManageEntityParameters):
                     and not is_comment_shadowbanned
                     and entity_user_id not in reporting_user_ids
                     and mention_user_id not in reporting_user_ids
+                    and not is_muted_by_karma
                 ):
                     mention_notification = Notification(
                         blocknumber=params.block_number,
