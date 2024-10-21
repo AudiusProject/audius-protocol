@@ -56,15 +56,14 @@ export const udr = async (
     `
     select
       coalesce(t1.client_catalog_id, t2.client_catalog_id) as "client_catalog_id",
-      coalesce(t1."Streams - Subscription Offerings", 0) as "Streams - Subscription Offerings",
-      coalesce(t2."Downloads - Subscription Offerings", 0) as "Downloads - Subscription Offerings",
-      coalesce(t1."Streams - Downloads / Monetized Content Offering", 0) as "Streams - Downloads / Monetized Content Offering",
-      coalesce(t2."Downloads - Downloads / Monetized Content Offering", 0) as "Downloads - Downloads / Monetized Content Offering",
+      'Downloads / Monetized Content' as "Offering",
+      coalesce(t1."Streams", 0) as "Streams",
+      coalesce(t2."Downloads", 0) as "Downloads",
       country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')) as "Territory"
     from (
       select
         "play_item_id" as "client_catalog_id",
-        sum("count") as "Streams - Downloads / Monetized Content Offering",
+        sum("count") as "Streams",
         0 as "Streams - Subscription Offerings",
         "country" as "Territory"
       from
@@ -77,9 +76,9 @@ export const udr = async (
     full outer join (
       select
         "parent_track_id" as "client_catalog_id",
-        count(*) as "Downloads - Downloads / Monetized Content Offering",
+        count(*) as "Downloads",
         0 as "Downloads - Subscription Offerings",
-        '' as "Territory"
+        "country" as "Territory"
       from
         "track_downloads"
       where
