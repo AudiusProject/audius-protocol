@@ -128,33 +128,33 @@ web-distribute:
           nvm install 18.7.0
           nvm alias default 18.7.0
 
-      - create_concatenated_patch_file:
-          filename: combined-patch-file.txt
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
 
-      - restore_cache:
-          keys:
-            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}{{ if eq parameters.os "mac" }}-mac{{ end }}
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}{{ if eq parameters.os "mac" }}-mac{{ end }}
 
-      - run:
-          name: Install dependencies
-          # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
-          command: |
-            [[ ! -d node_modules ]] || CI=true npm run postinstall
-            [[ -d node_modules ]] || CI=true npm ci
+    - run:
+        name: Install dependencies
+        # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
+        command: |
+          [[ ! -d node_modules ]] || CI=true npm run postinstall
+          [[ -d node_modules ]] || CI=true npm ci
 
-      - when:
-          condition: << eq parameters.os "mac" >>
-          steps:
-            - save_cache:
-                key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-mac
-                paths:
-                  - ./node_modules
-                  - ./packages/web/node_modules
-                  - ./packages/harmony/node_modules
-                  - ./packages/common/node_modules
-                  - ./packages/libs/node_modules
-                  - ./packages/sdk/node_modules
-                  - ./packages/trpc-server/node_modules
+    - when:
+        condition: << eq parameters.os "mac" >>
+        steps:
+          - save_cache:
+              key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-mac
+              paths:
+                - ./node_modules
+                - ./packages/web/node_modules
+                - ./packages/harmony/node_modules
+                - ./packages/common/node_modules
+                - ./packages/libs/node_modules
+                - ./packages/sdk/node_modules
+                - ./packages/trpc-server/node_modules
     - when:
         condition: << parameters.install-license >>
         steps:
