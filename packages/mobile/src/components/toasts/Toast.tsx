@@ -71,6 +71,8 @@ export const Toast = (props: ToastProps) => {
   const dispatch = useDispatch()
 
   const handleDismiss = useCallback(() => {
+    // Hack alert: For some reason, dismissing toasts on Android breaks the toast
+    // system. It should be okay to let toasts persist on android for now.
     if (Platform.OS === 'ios') {
       dispatch(dismissToast({ key }))
     }
