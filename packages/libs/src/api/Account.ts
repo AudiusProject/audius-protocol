@@ -80,19 +80,15 @@ export class Account extends Base {
     }
 
     phase = phases.FIND_USER
-    // TODO-NOW: Need to remove this fetch, it should be done outside of here
-    const userAccount = await this.discoveryProvider.getUserAccount(
-      this.web3Manager.getWalletAddress()
-    )
-    // TODO-NOW: Update call sites for login() to be aware of the returned user
-    // And also need to figure out what to do about setting the creatorNode endpoint below
-    if (userAccount) {
+    const walletAddress = this.web3Manager.getWalletAddress()
+
+    if (walletAddress && walletAddress.length > 0) {
       const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
         1,
-        userAccount.wallet
+        walletAddress
       )
       await this.creatorNode.setEndpoint(randomNodes[0]!)
-      return { user: userAccount, error: false, phase }
+      return { wallet: walletAddress, error: false, phase }
     }
     return { error: 'No user found', phase }
   }

@@ -1,4 +1,4 @@
-import { accountFromSDK } from '@audius/common/adapters'
+import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,
@@ -13,10 +13,8 @@ import {
   profilePageActions,
   chatActions,
   solanaSelectors,
-  getContext,
-  getSDK
+  getContext
 } from '@audius/common/store'
-import { isResponseError } from '@audius/common/utils'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
@@ -104,7 +102,10 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
   if (account && account.handle) {
-    // TODO-NOW: Use audius-query fetch functions for these.
+    // TODO-NOW:
+    // 1. We need to read possible wallet override from localStorage
+    // 2. We need to fetch the web3 user account. That can be done through audius-query, or we can
+    //    manually call SDK here if that's too complicated. Would mean two requests, though.
     const libs = yield call(audiusBackendInstance.getAudiusLibs)
     const web3User = yield call([libs.Account, libs.Account.getWeb3User])
 
@@ -176,7 +177,6 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   // TODO-NOW: Need to pull this from hedgehog instead (what about MM)
   const libs = yield call(audiusBackendInstance.getAudiusLibsTyped)
   const wallet = libs.web3Manager?.getWalletAddress()
-  const sdk = yield* getSDK()
 
   if (!wallet) {
     yield put(
@@ -187,53 +187,37 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     return
   }
 
-  try {
-    const { data } = yield call(
-      [sdk.full.users, sdk.full.users.getUserAccount],
-      { wallet }
+  const account = yield call(userApiFetchSaga.getUserAccount, {
+    wallet
+  })
+
+  if (!account || !account.user) {
+    yield put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_NOT_FOUND'
+      })
     )
-
-    if (!data || !data.user) {
-      yield put(
-        fetchAccountFailed({
-          reason: 'ACCOUNT_NOT_FOUND'
-        })
-      )
-      return
-    }
-    // TODO-NOW: get user bank and user images (copy from backend)
-    // TODO-NOW: audius-query fetching
-    const account = accountFromSDK(data)
-    if (account.user.is_deactivated) {
-      yield put(accountActions.resetAccount())
-      yield put(
-        fetchAccountFailed({
-          reason: 'ACCOUNT_DEACTIVATED'
-        })
-      )
-      return
-    }
-
-    // Set the userId in the remoteConfigInstance
-    remoteConfigInstance.setUserId(account.user_id)
-
-    yield call(recordIPIfNotRecent, account.handle)
-
-    // Cache the account and put the signedIn action. We're done.
-    // TODO-NOW: How hard would it be to use the separated fields here?
-    yield call(cacheAccount, account.user)
-    yield put(signedIn({ account, isSignUp }))
-  } catch (e) {
-    if (isResponseError(e) && [401, 404].includes(e.response.status)) {
-      yield put(
-        fetchAccountFailed({
-          reason: 'ACCOUNT_NOT_FOUND'
-        })
-      )
-      return
-    }
-    throw e
+    return
   }
+
+  if (account.user.is_deactivated) {
+    yield put(accountActions.resetAccount())
+    yield put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_DEACTIVATED'
+      })
+    )
+    return
+  }
+
+  // Set the userId in the remoteConfigInstance
+  remoteConfigInstance.setUserId(account.user_id)
+
+  yield call(recordIPIfNotRecent, account.handle)
+
+  // Cache the account and put the signedIn action. We're done.
+  yield call(cacheAccount, account.user)
+  yield put(signedIn({ account, isSignUp }))
 }
 
 export function* fetchLocalAccountAsync() {

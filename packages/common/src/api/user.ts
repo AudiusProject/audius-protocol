@@ -57,6 +57,7 @@ const userApi = createApi({
             console.warn('Missing user from account response')
             return null
           }
+          // TODO-NOW: get user bank and user images (copy from backend)
           return accountFromSDK(data)
         } catch (e) {
           // Account doesn't exist, don't bubble up an error, just return null
@@ -392,5 +393,6 @@ export const {
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
+export const userApiFetchSaga = userApi.fetchSaga
 export const userApiActions = userApi.actions
 export const userApiUtils = userApi.util

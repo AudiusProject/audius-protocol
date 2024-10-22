@@ -2,6 +2,7 @@ import {
   userMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
+import { userApiFetchSaga } from '@audius/common/api'
 import {
   Name,
   FavoriteSource,
@@ -10,7 +11,8 @@ import {
   UserMetadata,
   ErrorLevel,
   InstagramUser,
-  TikTokUser
+  TikTokUser,
+  AccountUserMetadata
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -798,97 +800,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       visitorId ?? fpResponse?.visitorId,
       otp ?? signOn.otp.value
     )
-    if (
-      !signInResponse.error &&
-      signInResponse.user &&
-      signInResponse.user.name
-    ) {
-      // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-      yield* call(refreshHedgehogWallet)
-      yield* put(accountActions.fetchAccount())
-      yield* put(signOnActions.signInSucceeded())
-      const route = yield* select(getRouteOnCompletion)
 
-      // NOTE: Wait on the account success before recording the signin event so that the user account is
-      // populated in the store
-      const { failure } = yield* race({
-        success: take(accountActions.fetchAccountSucceeded.type),
-        failure: take(accountActions.fetchAccountFailed)
-      })
-      if (failure) {
-        yield* put(
-          signOnActions.signInFailed(
-            "Couldn't get account",
-            failure.payload.reason,
-            failure.payload.reason === 'ACCOUNT_DEACTIVATED'
-          )
-        )
-        const trackEvent = make(Name.SIGN_IN_FINISH, {
-          status: 'fetch account failed'
-        })
-        yield* put(trackEvent)
-        return
-      }
-
-      // Apply retroactive referral
-      if (!signInResponse.user?.events?.referrer && signOn.referrer) {
-        yield* fork(audiusBackendInstance.updateCreator, {
-          ...signInResponse.user,
-          events: { referrer: signOn.referrer }
-        })
-      }
-
-      yield* put(pushRoute(route || FEED_PAGE))
-
-      const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
-      yield* put(trackEvent)
-
-      yield* put(signOnActions.resetSignOn())
-
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (!isNativeMobile) {
-        // Reset the sign on in the background after page load as to relieve the UI loading
-        yield* delay(1000)
-      }
-      if (isNativeMobile) {
-        yield* put(requestPushNotificationPermissions())
-      } else {
-        setHasRequestedBrowserPermission()
-        yield* put(accountActions.showPushNotificationConfirmation())
-        if (signInResponse.user.handle === 'fbtest') {
-          yield put(pushRoute('/fb/share'))
-        }
-      }
-    } else if (
-      !signInResponse.error &&
-      signInResponse.user &&
-      !signInResponse.user.name
-    ) {
-      // Go to sign up flow because the account is incomplete
-      yield* put(
-        signOnActions.openSignOn(false, Pages.PROFILE, {
-          accountAlreadyExisted: true,
-          handle: {
-            value: signInResponse.user.handle,
-            status: 'disabled'
-          }
-        })
-      )
-      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
-
-      const trackEvent = make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
-        handle: signInResponse.handle
-      })
-      yield* put(trackEvent)
-    } else if (signInResponse.error && signInResponse.phase === 'FIND_USER') {
-      // Go to sign up flow because the account is incomplete
-      yield* put(
-        signOnActions.openSignOn(false, Pages.PROFILE, {
-          accountAlreadyExisted: true
-        })
-      )
-      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
-    } else {
+    // Login failed entirely (no wallet returned)
+    if (signInResponse.error || !signInResponse.wallet) {
       yield* put(
         signOnActions.signInFailed(
           signInResponse.error,
@@ -900,6 +814,108 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
         status: 'invalid credentials'
       })
       yield* put(trackEvent)
+      return
+    }
+
+    // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
+    yield* call(refreshHedgehogWallet)
+    const account: AccountUserMetadata | null = yield* call(
+      userApiFetchSaga.getUserAccount,
+      {
+        wallet: signInResponse.wallet
+      }
+    )
+
+    // Login succeeded but we found no account for the user (incomplete signup)
+    if (!account) {
+      yield* put(
+        signOnActions.openSignOn(false, Pages.PROFILE, {
+          accountAlreadyExisted: true
+        })
+      )
+      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
+      return
+    }
+
+    const { user } = account
+
+    // Loging succeeded and we found a user, but it's missing name, likely
+    // due to incomplete signup
+    if (!user.name) {
+      yield* put(
+        signOnActions.openSignOn(false, Pages.PROFILE, {
+          accountAlreadyExisted: true,
+          handle: {
+            value: user.handle,
+            status: 'disabled'
+          }
+        })
+      )
+      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
+
+      yield* put(
+        make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
+          handle: user.handle
+        })
+      )
+      return
+    }
+
+    // Now that we have verified the user is valid, run the account fetch flow,
+    // which will pull cached account data from call above.
+    yield* put(accountActions.fetchAccount())
+    yield* put(signOnActions.signInSucceeded())
+    const route = yield* select(getRouteOnCompletion)
+
+    // NOTE: Wait on the account success before recording the signin event so that the user account is
+    // populated in the store
+    const { failure } = yield* race({
+      success: take(accountActions.fetchAccountSucceeded.type),
+      failure: take(accountActions.fetchAccountFailed)
+    })
+    if (failure) {
+      yield* put(
+        signOnActions.signInFailed(
+          "Couldn't get account",
+          failure.payload.reason,
+          failure.payload.reason === 'ACCOUNT_DEACTIVATED'
+        )
+      )
+      const trackEvent = make(Name.SIGN_IN_FINISH, {
+        status: 'fetch account failed'
+      })
+      yield* put(trackEvent)
+      return
+    }
+
+    // Apply retroactive referral
+    if (!user.events?.referrer && signOn.referrer) {
+      yield* fork(audiusBackendInstance.updateCreator, {
+        ...user,
+        events: { referrer: signOn.referrer }
+      })
+    }
+
+    yield* put(pushRoute(route || FEED_PAGE))
+
+    const trackEvent = make(Name.SIGN_IN_FINISH, { status: 'success' })
+    yield* put(trackEvent)
+
+    yield* put(signOnActions.resetSignOn())
+
+    const isNativeMobile = yield* getContext('isNativeMobile')
+    if (!isNativeMobile) {
+      // Reset the sign on in the background after page load as to relieve the UI loading
+      yield* delay(1000)
+    }
+    if (isNativeMobile) {
+      yield* put(requestPushNotificationPermissions())
+    } else {
+      setHasRequestedBrowserPermission()
+      yield* put(accountActions.showPushNotificationConfirmation())
+      if (user.handle === 'fbtest') {
+        yield put(pushRoute('/fb/share'))
+      }
     }
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')

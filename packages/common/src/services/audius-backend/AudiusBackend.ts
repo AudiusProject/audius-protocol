@@ -45,7 +45,8 @@ import {
   User,
   UserMetadata,
   UserCollection,
-  WidthSizes
+  WidthSizes,
+  ComputedUserProperties
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -1021,7 +1022,7 @@ export const audiusBackend = ({
    * @returns Object The associated wallets mapping of address to nested signature
    */
   // TODO(C-2719)
-  async function fetchUserAssociatedWallets(user: User) {
+  async function fetchUserAssociatedWallets(user: UserMetadata) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
       const metadata = await fetchCID(cid, /* asUrl */ false)
@@ -1033,7 +1034,14 @@ export const audiusBackend = ({
     return null
   }
 
-  async function updateCreator(metadata: User, _id?: ID) {
+  async function updateCreator(
+    metadata: UserMetadata &
+      Pick<
+        ComputedUserProperties,
+        'updatedProfilePicture' | 'updatedCoverPhoto'
+      >,
+    _id?: ID
+  ) {
     let newMetadata = { ...metadata }
     const associatedWallets = await fetchUserAssociatedWallets(metadata)
     newMetadata.associated_wallets =
