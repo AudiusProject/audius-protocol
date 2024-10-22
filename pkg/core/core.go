@@ -8,7 +8,6 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/chain"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -219,20 +218,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// create default comet config
 	cometConfig := cconfig.DefaultConfig()
 	cometConfig.SetRoot(cometRootDir)
-
-	// get derived comet key
-	delegatePrivateKey := envConfig.DelegatePrivateKey
-	key, err := accounts.EthToCometKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating key %v", err)
-	}
-	envConfig.CometKey = key
-
-	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating eth key %v", err)
-	}
-	envConfig.EthereumKey = ethKey
 
 	// get paths to priv validator and state file
 	privValKeyFile := cometConfig.PrivValidatorKeyFile()

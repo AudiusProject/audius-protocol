@@ -2,12 +2,14 @@ package chain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -70,6 +72,14 @@ func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_
 
 	if onChainEndpoint != eventEndpoint {
 		return fmt.Errorf("endpoints don't match: %s %s", onChainEndpoint, eventEndpoint)
+	}
+
+	qtx := core.getDb()
+	err := qtx.GetRegisteredNodeByEthAddress(eventOwnerWallet)
+	if err == nil {
+		return fmt.Errorf("already registered")
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("failed to check db for registration status: %v", err)
 	}
 
 	return nil
