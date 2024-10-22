@@ -53,7 +53,7 @@ def get_playlist_tracks(session, args):
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
-                    Track.stream_conditions is None,
+                    Track.stream_conditions.is_(None),
                     Track.track_id.in_(list(track_ids_set)),
                 )
                 .all()
