@@ -5,10 +5,7 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
@@ -96,6 +93,17 @@ def create_comment(params: ManageEntityParameters):
     )
     parent_comment_user_id = parent_comment.user_id if parent_comment else None
     is_reply = parent_comment_id is not None
+
+    is_muted_by_karma = (
+        params.session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.muted_user_id == user_id)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .scalar()
+        is not None
+    )
+
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
         .filter(
@@ -136,6 +144,7 @@ def create_comment(params: ManageEntityParameters):
         not is_reply
         and not is_owner_mentioned
         and not track_owner_notifications_off
+        and not is_muted_by_karma
         and user_id != entity_user_id
     ):
         comment_notification = Notification(
@@ -186,6 +195,7 @@ def create_comment(params: ManageEntityParameters):
                 and mention != parent_comment_user_id
                 and mention not in mention_mutes
                 and not track_owner_mention_mute
+                and not is_muted_by_karma
             ):
                 mention_notification = Notification(
                     blocknumber=params.block_number,
@@ -230,9 +240,20 @@ def create_comment(params: ManageEntityParameters):
             .exists()
         ).scalar()
 
+        is_muted_by_karma = (
+            params.session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.muted_user_id == user_id)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .scalar()
+            is not None
+        )
+
         if (
             user_id != parent_comment_user_id
             and not parent_comment_owner_notifications_off
+            and not is_muted_by_karma
         ):
             thread_notification = Notification(
                 blocknumber=params.block_number,
@@ -286,7 +307,7 @@ def update_comment(params: ManageEntityParameters):
 
     is_comment_shadowbanned = (
         params.session.query(
-            func.sum(AggregateUser.follower_count) >= COMMENT_REPORT_KARMA_THRESHOLD
+            func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD
         )
         .filter(AggregateUser.user_id.in_(reporting_user_ids))
         .scalar()
@@ -299,6 +320,15 @@ def update_comment(params: ManageEntityParameters):
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = existing_records[EntityType.COMMENT.value].get(parent_comment_id)
     parent_comment_user_id = parent_comment.user_id if parent_comment else None
+
+    is_muted_by_karma = (
+        params.session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.muted_user_id == user_id)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .scalar()
+    ) is not None
 
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
@@ -403,6 +433,7 @@ def update_comment(params: ManageEntityParameters):
                     and not is_comment_shadowbanned
                     and entity_user_id not in reporting_user_ids
                     and mention_user_id not in reporting_user_ids
+                    and not is_muted_by_karma
                 ):
                     mention_notification = Notification(
                         blocknumber=params.block_number,

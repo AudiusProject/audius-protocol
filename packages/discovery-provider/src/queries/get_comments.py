@@ -8,10 +8,7 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
@@ -55,6 +52,15 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
+    muted_by_karma = (
+        session.query(MutedUser.muted_user_id)
+        .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+        .filter(MutedUser.is_delete == False)
+        .group_by(MutedUser.muted_user_id)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .subquery()
+    )
+
     mentioned_users = (
         session.query(
             CommentMention.comment_id,
@@ -91,7 +97,11 @@ def get_replies(
             MutedUser,
             and_(
                 MutedUser.muted_user_id == Comment.user_id,
-                MutedUser.user_id == current_user_id,
+                or_(
+                    MutedUser.user_id == current_user_id,
+                    MutedUser.muted_user_id.in_(muted_by_karma),
+                ),
+                current_user_id != Comment.user_id,
             ),
         )
         .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
@@ -202,6 +212,14 @@ def get_track_comments(args, track_id, current_user_id=None):
             .group_by(CommentReaction.comment_id)
             .subquery()
         )
+        muted_by_karma = (
+            session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.is_delete == False)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .subquery()
+        )
 
         # default to top sort
         sort_method = args.get("sort_method", "top")
@@ -260,7 +278,11 @@ def get_track_comments(args, track_id, current_user_id=None):
                 MutedUser,
                 and_(
                     MutedUser.muted_user_id == Comment.user_id,
-                    MutedUser.user_id == current_user_id,
+                    or_(
+                        MutedUser.user_id == current_user_id,
+                        MutedUser.muted_user_id.in_(muted_by_karma),
+                    ),
+                    current_user_id != Comment.user_id,  # show comment to comment owner
                 ),
             )
             .outerjoin(
@@ -304,7 +326,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             # Ensure that the combined follower count of all users who reported the comment is below the threshold.
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_REPORT_KARMA_THRESHOLD,
+                <= COMMENT_KARMA_THRESHOLD,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
