@@ -81,7 +81,9 @@ def create_comment(params: ManageEntityParameters):
     entity_id = metadata.get("entity_id")
     entity_type = metadata.get("entity_type", EntityType.TRACK.value)
     entity_user_id = existing_records[EntityType.TRACK.value][entity_id].owner_id
-    mentions = set(metadata.get("mentions") or [])
+    mentions = set(
+        list(metadata.get("mentions") or [])[:10]
+    )  # Only persist the first 10 mentions
     is_owner_mentioned = entity_user_id in mentions
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = (
@@ -143,6 +145,7 @@ def create_comment(params: ManageEntityParameters):
         and not is_owner_mentioned
         and not track_owner_notifications_off
         and not is_muted_by_karma
+        and user_id != entity_user_id
     ):
         comment_notification = Notification(
             blocknumber=params.block_number,
@@ -159,7 +162,6 @@ def create_comment(params: ManageEntityParameters):
         )
 
         safe_add_notification(params, comment_notification)
-
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)
@@ -312,7 +314,9 @@ def update_comment(params: ManageEntityParameters):
         or False
     )
 
-    mentions = set(metadata.get("mentions") or [])
+    mentions = set(
+        list(metadata.get("mentions") or [])[:10]
+    )  # Only persist the first 10 mentions
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = existing_records[EntityType.COMMENT.value].get(parent_comment_id)
     parent_comment_user_id = parent_comment.user_id if parent_comment else None

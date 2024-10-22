@@ -23,7 +23,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  hideActions?: boolean
+  isPreview?: boolean
 }
 
 export const CommentBlockInternal = (
@@ -31,7 +31,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, hideActions, parentCommentId } = props
+  const { comment, isPreview, parentCommentId } = props
   const { artistId, track, closeDrawer } = useCurrentCommentSection()
   const {
     id: commentId,
@@ -87,28 +87,25 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center' w='65%'>
-            <UserLink
-              size='s'
-              userId={userId}
-              strength='strong'
-              onPress={closeDrawer}
-            />
+            <UserLink userId={userId} strength='strong' onPress={closeDrawer} />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
                 <>
-                  <Text color='subdued' size='xs'>
+                  <Text color='subdued' size='s'>
                     •
                   </Text>
 
-                  <TimestampLink timestampSeconds={trackTimestampS} size='xs' />
+                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited}>{message}</CommentText>
-        {!hideActions ? (
+        <CommentText isEdited={isEdited && !isTombstone} isPreview={isPreview}>
+          {message}
+        </CommentText>
+        {!isPreview ? (
           <CommentActionBar
             comment={comment}
             isDisabled={isTombstone}

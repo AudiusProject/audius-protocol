@@ -12,6 +12,7 @@ import { useEffectOnce } from 'react-use'
 import {
   Flex,
   IconCaretRight,
+  IconMessage,
   Paper,
   PlainButton,
   Text
@@ -25,11 +26,11 @@ import { CommentBlock } from './CommentBlock'
 import { useCommentDrawer } from './CommentDrawerContext'
 import { CommentForm } from './CommentForm'
 
-type CommentSectionHeaderProps = {
+type CommentPreviewHeaderProps = {
   openCommentDrawer: () => void
 }
 
-const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
+const CommentPreviewHeader = (props: CommentPreviewHeaderProps) => {
   const { openCommentDrawer } = props
   const {
     commentSectionLoading: isLoading,
@@ -49,12 +50,15 @@ const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
       justifyContent='space-between'
       alignItems='center'
     >
-      <Text variant='title' size='m'>
-        Comments
-        {isShowingComments ? (
-          <Text color='subdued'>&nbsp;({commentCount})</Text>
-        ) : null}
-      </Text>
+      <Flex row gap='s'>
+        <IconMessage color='default' />
+        <Text variant='title' size='l'>
+          Comments
+          {isShowingComments ? (
+            <Text color='subdued'>&nbsp;({commentCount})</Text>
+          ) : null}
+        </Text>
+      </Flex>
       {isShowingComments ? (
         <PlainButton
           onPress={handlePressViewAll}
@@ -68,11 +72,11 @@ const CommentSectionHeader = (props: CommentSectionHeaderProps) => {
   )
 }
 
-type CommentSectionContentProps = {
+type CommentPreviewContentProps = {
   openCommentDrawer: (args?: { autoFocusInput?: boolean }) => void
 }
 
-const CommentSectionContent = (props: CommentSectionContentProps) => {
+const CommentPreviewContent = (props: CommentPreviewContentProps) => {
   const { openCommentDrawer } = props
   const {
     commentSectionLoading: isLoading,
@@ -121,16 +125,16 @@ const CommentSectionContent = (props: CommentSectionContentProps) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <CommentBlock commentId={commentIds[0]} hideActions />
+      <CommentBlock commentId={commentIds[0]} isPreview />
     </TouchableOpacity>
   )
 }
 
-type CommentSectionProps = {
+type CommentPreviewProps = {
   entityId: ID
 }
 
-export const CommentSection = (props: CommentSectionProps) => {
+export const CommentPreview = (props: CommentPreviewProps) => {
   const { entityId } = props
 
   const { params } = useRoute<'Track'>()
@@ -156,9 +160,9 @@ export const CommentSection = (props: CommentSectionProps) => {
   return (
     <CommentSectionProvider entityId={entityId}>
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-        <CommentSectionHeader openCommentDrawer={openCommentDrawer} />
+        <CommentPreviewHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l'>
-          <CommentSectionContent openCommentDrawer={openCommentDrawer} />
+          <CommentPreviewContent openCommentDrawer={openCommentDrawer} />
         </Paper>
       </Flex>
     </CommentSectionProvider>

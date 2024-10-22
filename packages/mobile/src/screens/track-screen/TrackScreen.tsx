@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
-import { CommentSection } from 'app/components/comments/CommentSection'
+import { CommentPreview } from 'app/components/comments/CommentPreview'
 import {
   Screen,
   ScreenContent,
@@ -116,13 +116,13 @@ export const TrackScreen = () => {
     field_visibility?.remixes && _remixes && _remixes.length > 0
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
-    <Text variant='title' size='m'>
+    <Text variant='title' size='l'>
       {`${messages.moreBy} ${user?.name}`}
     </Text>
   ) : null
 
   const originalTrackTitle = (
-    <Text variant='title' size='m'>
+    <Text variant='title' size='l'>
       {messages.originalTrack}
     </Text>
   )
@@ -145,7 +145,7 @@ export const TrackScreen = () => {
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
-                    <CommentSection entityId={track_id} />
+                    <CommentPreview entityId={track_id} />
                   </Flex>
                 ) : null}
 

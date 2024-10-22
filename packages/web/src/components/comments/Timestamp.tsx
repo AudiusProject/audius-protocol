@@ -9,7 +9,7 @@ export const Timestamp = ({ time }: TimestampProps) => {
   const text = getLargestTimeUnitText(time)
 
   return (
-    <Text variant='body' size='xs' color='subdued'>
+    <Text variant='body' size='s' color='subdued'>
       {text}
     </Text>
   )

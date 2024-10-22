@@ -110,6 +110,10 @@ def setup_test_without_mock(app, tx_receipts):
 
 
 def test_comment(app, mocker):
+    """
+    Tests that a user can post a comment and the track owner receives a notification.
+    Track owner does not receive a notification if they are the comment author.
+    """
     tx_receipts = {
         "CreateComment": [
             {
@@ -125,6 +129,20 @@ def test_comment(app, mocker):
                 )
             },
         ],
+        "CreateComment2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
@@ -133,7 +151,7 @@ def test_comment(app, mocker):
         index_transaction(session)
 
         comments: List[Comment] = session.query(Comment).all()
-        assert len(comments) == 1
+        assert len(comments) == 2
 
         comment_notifications = session.query(Notification).all()
         assert len(comment_notifications) == 1
@@ -143,6 +161,10 @@ def test_comment(app, mocker):
 
 
 def test_comment_reply(app, mocker):
+    """
+    Tests that a user can reply to a comment and the parent comment author receives a notification.
+    Parent comment author does not receive a notification if they are the reply author.
+    """
     reply_entities = {
         **entities,
         "comments": [{"comment_id": 1, "user_id": 2, "entity_id": 1}],
@@ -154,7 +176,7 @@ def test_comment_reply(app, mocker):
     }
 
     tx_receipts = {
-        "CreateComment": [
+        "CommentReply": [
             {
                 "args": AttributeDict(
                     {
@@ -168,6 +190,20 @@ def test_comment_reply(app, mocker):
                 )
             },
         ],
+        "CommentReply2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(reply_comment_metadata)}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
     }
 
     db, index_transaction = setup_test(app, mocker, reply_entities, tx_receipts)
@@ -175,9 +211,9 @@ def test_comment_reply(app, mocker):
     with db.scoped_session() as session:
         index_transaction(session)
 
-        assert len(session.query(Comment).all()) == 2
+        assert len(session.query(Comment).all()) == 3
         comment_thread = session.query(CommentThread).all()
-        assert len(comment_thread) == 1
+        assert len(comment_thread) == 2
         assert comment_thread[0].comment_id == 2
         assert comment_thread[0].parent_comment_id == 1
 
@@ -244,6 +280,74 @@ def test_comment_mention(app, mocker):
         assert len(comment_mention_notifications) == 2
         assert comment_mention_notifications[0].user_ids == [1]
         assert comment_mention_notifications[1].user_ids == [2]
+
+        # Assert track owner does not receive comment notification
+        comment_notifications = (
+            session.query(Notification).filter(Notification.type == "comment").all()
+        )
+        assert len(comment_notifications) == 0
+
+
+def test_comment_mention_limit(app, mocker):
+    """
+    Test that only the first 10 mentions are saved and notified
+    """
+
+    mention_limit_entities = {
+        **entities,
+        "users": [{"user_id": i, "wallet": f"user{i}wallet"} for i in range(1, 13)],
+    }
+
+    mention_comment_metadata = {
+        **comment_metadata,
+        "body": "@user-1 @user-2 @user-3 @user-4 @user-5 @user-6 @user-7 @user-8 @user-9 @user-10 @user-11 @user-12 comment text",
+        "mentions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    }
+
+    tx_receipts = {
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(mention_comment_metadata)}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, mention_limit_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        assert len(session.query(Comment).all()) == 1
+        assert len(session.query(CommentMention).all()) == 10
+
+        # Assert only the first 10 mentions receive notifications
+        comment_mention_notifications = (
+            session.query(Notification)
+            .filter(Notification.type == "comment_mention")
+            .order_by(Notification.user_ids)
+            .all()
+        )
+        assert len(comment_mention_notifications) == 9  # Excluding track owner (user 1)
+        assert [n.user_ids[0] for n in comment_mention_notifications] == [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+        ]
 
         # Assert track owner does not receive comment notification
         comment_notifications = (
@@ -423,6 +527,102 @@ def test_edit_comment(app, mocker):
         assert mention_notifications[1].user_ids == [3]
         # TODO ideally we can prevent this if it's in the same block
         assert mention_notifications[2].user_ids == [4]
+
+
+def test_edit_comment_mention_limit(app, mocker):
+    """
+    Test that editing a comment only persists and notifies the first 10 mentions
+    """
+
+    initial_comment_metadata = {
+        **comment_metadata,
+        "body": "Initial comment text",
+        "mentions": [],
+    }
+
+    edit_comment_metadata = {
+        **comment_metadata,
+        "body": "@user-1 @user-2 @user-3 @user-4 @user-5 @user-6 @user-7 @user-8 @user-9 @user-10 @user-11 @user-12 edited comment text",
+        "mentions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    }
+
+    edit_comment_entities = {
+        **entities,
+        "comments": [{"comment_id": 1, "user_id": 3, "entity_id": 1}],
+        "users": [{"user_id": i, "wallet": f"user{i}wallet"} for i in range(1, 13)],
+    }
+
+    tx_receipts = {
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(initial_comment_metadata)}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(edit_comment_metadata)}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, edit_comment_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        comments = session.query(Comment).all()
+        assert len(comments) == 1
+        assert (
+            comments[0].text
+            == "@user-1 @user-2 @user-3 @user-4 @user-5 @user-6 @user-7 @user-8 @user-9 @user-10 @user-11 @user-12 edited comment text"
+        )
+        assert comments[0].is_edited == True
+
+        comment_mentions = session.query(CommentMention).all()
+        assert len(comment_mentions) == 10
+
+        mention_notifications = (
+            session.query(Notification)
+            .filter(Notification.type == "comment_mention")
+            .order_by(Notification.user_ids)
+            .all()
+        )
+        assert len(mention_notifications) == 9  # Excluding track owner (user 1)
+        assert [n.user_ids[0] for n in mention_notifications] == [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+        ]
+
+        # Assert track owner does not receive comment notification
+        comment_notifications = (
+            session.query(Notification).filter(Notification.type == "comment").all()
+        )
+        assert len(comment_notifications) == 0
 
 
 def test_pin_comment(app, mocker):

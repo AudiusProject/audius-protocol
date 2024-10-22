@@ -45,10 +45,8 @@ export const CommentForm = ({
   hideAvatar = false,
   autoFocus
 }: CommentFormProps) => {
-  const { currentUserId, entityId, entityType, commentIds } =
-    useCurrentCommentSection()
+  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
-  const isFirstComment = commentIds.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
@@ -111,11 +109,7 @@ export const CommentForm = ({
         ) : null}
         <ComposerInput
           autoFocus={autoFocus}
-          placeholder={
-            isFirstComment && isMobile
-              ? messages.firstComment
-              : messages.addComment
-          }
+          placeholder={messages.addComment}
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
