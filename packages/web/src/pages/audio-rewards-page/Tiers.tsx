@@ -121,17 +121,15 @@ export const TierLevel = ({ tier }: { tier: AudioTiers }) => {
   return <div className={styles.tierLevel}>{messages.tierLevel(minAudio)}</div>
 }
 
-const TierBox = ({
-  tier,
-  message
-}: {
-  tier?: AudioTiers
-  message?: string
-}) => {
+const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
   return (
     <Flex direction='column' alignItems='center' gap='s' mb='s'>
       <Flex>
-        {tier ? audioTierMapSvg[tier] : <Flex h={BADGE_SIZE} w={BADGE_SIZE} />}
+        {tier !== 'none' ? (
+          audioTierMapSvg[tier as AudioTiers]
+        ) : (
+          <Flex h={BADGE_SIZE} w={BADGE_SIZE} />
+        )}
       </Flex>
       <Text
         variant='title'
@@ -140,7 +138,7 @@ const TierBox = ({
         textTransform='capitalize'
         css={{
           minHeight: '1.5em',
-          ...(tier && {
+          ...(tier !== 'none' && {
             '-webkit-text-fill-color': 'transparent',
             '-webkit-background-clip': 'text',
             backgroundImage:
@@ -156,7 +154,7 @@ const TierBox = ({
           })
         }}
       >
-        {tier ?? message}
+        {tier !== 'none' ? tier : message}
       </Text>
     </Flex>
   )
@@ -242,13 +240,14 @@ const TierColumn = ({
   tier,
   current
 }: {
-  tier: AudioTiers | null
+  tier: BadgeTier
   current?: boolean
 }) => {
   const dispatch = useDispatch()
   const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
 
-  const tierFeatures = tier ? tierFeatureMap[tier] : tierFeatureMap.none
+  const tierFeatures =
+    tier !== 'none' ? tierFeatureMap[tier] : tierFeatureMap.none
 
   return (
     <Flex
@@ -279,7 +278,7 @@ const TierColumn = ({
       )}
       <TierBox
         tier={tier as AudioTiers}
-        message={tier === null ? messages.noTier : undefined}
+        message={tier === 'none' ? messages.noTier : undefined}
       />
       {(
         Object.keys(messages.features) as Array<keyof typeof messages.features>
@@ -323,7 +322,7 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
   return (
     <Flex w='100%' justifyContent='space-between' p='xl'>
       <Flex direction='column' flex='1 1 300px'>
-        <TierBox />
+        <TierBox tier='none' />
         {Object.values(messages.features).map((feature) => (
           <Flex
             key={feature}
@@ -347,14 +346,13 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
           </Flex>
         ))}
       </Flex>
-      {[null, 'bronze', 'silver', 'gold', 'platinum'].map((displayTier) => (
-        <Flex key={displayTier ?? 'none'} direction='column' flex='1 1 200px'>
-          <TierColumn
-            tier={displayTier as AudioTiers | null}
-            current={displayTier === tier}
-          />
-        </Flex>
-      ))}
+      {(['none', 'bronze', 'silver', 'gold', 'platinum'] as BadgeTier[]).map(
+        (displayTier) => (
+          <Flex key={displayTier} direction='column' flex='1 1 200px'>
+            <TierColumn tier={displayTier} current={displayTier === tier} />
+          </Flex>
+        )
+      )}
     </Flex>
   )
 }
