@@ -5,6 +5,7 @@ from sqlalchemy.orm import aliased
 
 from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
+from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import (
@@ -45,6 +46,7 @@ def get_is_reacted(session, user_id, comment_id):
     return not is_react.is_delete if is_react else False
 
 
+# TODO: Add mentions subquery
 def get_replies(
     session,
     parent_comment_id,
@@ -54,12 +56,35 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
+    mentioned_users_subquery = (
+        session.query(
+            CommentMention.comment_id,
+            CommentMention.user_id,
+            User.handle.label("handle"),
+        )
+        .join(User, CommentMention.user_id == User.user_id)
+        .subquery()
+    )
+
     replies = (
         session.query(
-            Comment, func.count(CommentReaction.comment_id).label("react_count")
+            Comment,
+            func.count(CommentReaction.comment_id).label("react_count"),
+            func.array_agg(
+                func.json_build_object(
+                    "user_id",
+                    mentioned_users_subquery.c.user_id,
+                    "handle",
+                    mentioned_users_subquery.c.handle,
+                )
+            ).label("mentions"),
         )
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
+        .outerjoin(
+            mentioned_users_subquery,
+            Comment.comment_id == mentioned_users_subquery.c.comment_id,
+        )
         .outerjoin(
             MutedUser,
             and_(
@@ -108,6 +133,7 @@ def get_replies(
             "id": encode_int_id(reply.comment_id),
             "user_id": encode_int_id(reply.user_id),
             "message": reply.text,
+            "mentions": [item for item in mentions if item["user_id"] is not None],
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
             "is_current_user_reacted": get_is_reacted(
@@ -118,7 +144,7 @@ def get_replies(
             "created_at": str(reply.created_at),
             "updated_at": str(reply.updated_at) if reply.updated_at else None,
         }
-        for [reply, react_count] in replies
+        for [reply, react_count, mentions] in replies
     ]
 
 
@@ -152,6 +178,16 @@ def get_track_comments(args, track_id, current_user_id=None):
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
+        mentioned_users_subquery = (
+            session.query(
+                CommentMention.comment_id,
+                CommentMention.user_id,
+                User.handle.label("handle"),
+            )
+            .join(User, CommentMention.user_id == User.user_id)
+            .subquery()
+        )
+
         react_count_subquery = (
             session.query(
                 CommentReaction.comment_id,
@@ -184,6 +220,14 @@ def get_track_comments(args, track_id, current_user_id=None):
                     "react_count"
                 ),
                 CommentNotificationSetting.is_muted,
+                func.array_agg(
+                    func.json_build_object(
+                        "user_id",
+                        mentioned_users_subquery.c.user_id,
+                        "handle",
+                        mentioned_users_subquery.c.handle,
+                    )
+                ).label("mentions"),
             )
             .outerjoin(
                 CommentThreadAlias,
@@ -196,6 +240,10 @@ def get_track_comments(args, track_id, current_user_id=None):
             .outerjoin(
                 AggregateUser,
                 AggregateUser.user_id == CommentReport.user_id,
+            )
+            .outerjoin(
+                mentioned_users_subquery,
+                Comment.comment_id == mentioned_users_subquery.c.comment_id,
             )
             .outerjoin(
                 react_count_subquery,
@@ -263,7 +311,7 @@ def get_track_comments(args, track_id, current_user_id=None):
         )
 
         track_comment_res = []
-        for [track_comment, react_count, is_muted] in track_comments.all():
+        for [track_comment, react_count, is_muted, mentions] in track_comments.all():
             replies = get_replies(
                 session,
                 track_comment.comment_id,
@@ -280,6 +328,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                         if not track_comment.is_delete
                         else None
                     ),
+                    "mentions": [
+                        item for item in mentions if item["user_id"] is not None
+                    ],
                     "message": (
                         track_comment.text
                         if not track_comment.is_delete

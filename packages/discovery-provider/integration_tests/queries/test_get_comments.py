@@ -319,3 +319,45 @@ def test_get_reported_comments(app):
 
         comments = get_track_comments({}, 1, 4)
         assert len(comments) == 0
+
+
+def test_get_comments_mentions(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 202,
+                "entity_id": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 202,
+                "entity_id": 1,
+            },
+        ],
+        "comment_mentions": [
+            {"comment_id": 1, "user_id": 101},
+            {"comment_id": 1, "user_id": 202},
+            {"comment_id": 1, "user_id": 321},
+        ],
+        "users": [
+            {"user_id": 101, "handle": "dylan"},
+            {"user_id": 202, "handle": "kj"},
+            {"user_id": 321, "handle": "jd"},
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+
+        assert len(comments) == 2
+        assert len(comments[0]["mentions"]) == 0
+        assert len(comments[1]["mentions"]) == 3
+        assert comments[1]["mentions"] == [
+            {"user_id": 101, "handle": "dylan"},
+            {"user_id": 202, "handle": "kj"},
+            {"user_id": 321, "handle": "jd"},
+        ]
