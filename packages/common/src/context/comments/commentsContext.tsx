@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useState
 } from 'react'
 
@@ -18,7 +19,8 @@ import {
   useGetTrackById,
   useGetCommentsByTrackId,
   QUERY_KEYS,
-  useTrackCommentCount
+  useTrackCommentCount,
+  resetPreviousCommentCount
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
@@ -99,6 +101,7 @@ export function CommentSectionProvider<NavigationProp>(
     CommentSortMethod.Top
   )
   const handleSetCurrentSort = (sortMethod: CommentSortMethod) => {
+    resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     setCurrentSort(sortMethod)
   }
@@ -120,6 +123,8 @@ export function CommentSectionProvider<NavigationProp>(
   const queryClient = useQueryClient()
   // hard refreshes all data
   const resetComments = () => {
+    // Reset our comment count since we're reloading comments again - aka can hide the "new comments" button
+    resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.commentReplies] })
@@ -130,10 +135,13 @@ export function CommentSectionProvider<NavigationProp>(
 
   console.log({ commentCountData })
 
-  const hasNewComments =
-    commentCountData?.previousValue !== undefined &&
-    commentCountData?.currentValue !== undefined &&
-    commentCountData?.previousValue < commentCountData?.currentValue
+  const hasNewComments = useMemo(
+    () =>
+      commentCountData?.previousValue !== undefined &&
+      commentCountData?.currentValue !== undefined &&
+      commentCountData?.previousValue < commentCountData?.currentValue,
+    [commentCountData]
+  )
 
   const dispatch = useDispatch()
 

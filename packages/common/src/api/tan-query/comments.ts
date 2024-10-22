@@ -75,8 +75,6 @@ export const useGetCommentsByTrackId = ({
     },
     queryKey: [QUERY_KEYS.trackCommentList, trackId, sortMethod],
     queryFn: async ({ pageParam: currentPage = 0 }): Promise<ID[]> => {
-      // Reset our comment count since we're reloading comments again - aka can hide the "new comments" button
-      resetPreviousCommentCount(queryClient, trackId)
       const sdk = await audiusSdk()
       const commentsRes = await sdk.tracks.trackComments({
         trackId: encodeHashId(trackId),
@@ -196,7 +194,9 @@ export const useTrackCommentCount = (
         trackId
       ])
       return {
-        previousValue: previousData?.currentValue ?? res?.data,
+        // If we've loaded previous data before, keep using the same previousValue - this will get intentionally cleared out when we load in more comments
+        // Otherwise if there is no previous data its a first load and we set our previousValue baseline to the current value
+        previousValue: previousData?.previousValue ?? res?.data,
         currentValue: res?.data
       }
     },
