@@ -225,10 +225,6 @@ const SendInputBody = ({
     return <ErrorLabel text={addressErrorMap[addressError]} />
   }
 
-  const placeholderAddress = messages.addressSolPlaceholder
-
-  const destinationText = messages.destinationSPL
-
   return (
     <ModalBodyWrapper>
       <Flex direction='column' gap='xl' pv='xl' alignItems='center'>
@@ -253,8 +249,8 @@ const SendInputBody = ({
         />
         {renderBalanceError()}
         <TextInput
-          label={destinationText}
-          placeholder={placeholderAddress}
+          label={messages.destinationSPL}
+          placeholder={messages.addressSolPlaceholder}
           value={destinationAddress}
           onChange={handleChangeAddress}
         />
