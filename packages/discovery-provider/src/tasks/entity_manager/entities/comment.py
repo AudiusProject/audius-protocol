@@ -84,7 +84,9 @@ def create_comment(params: ManageEntityParameters):
     entity_id = metadata.get("entity_id")
     entity_type = metadata.get("entity_type", EntityType.TRACK.value)
     entity_user_id = existing_records[EntityType.TRACK.value][entity_id].owner_id
-    mentions = set(metadata.get("mentions") or [])
+    mentions = set(
+        list(metadata.get("mentions") or [])[:10]
+    )  # Only persist the first 10 mentions
     is_owner_mentioned = entity_user_id in mentions
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = (
@@ -291,7 +293,9 @@ def update_comment(params: ManageEntityParameters):
         or False
     )
 
-    mentions = set(metadata.get("mentions") or [])
+    mentions = set(
+        list(metadata.get("mentions") or [])[:10]
+    )  # Only persist the first 10 mentions
     parent_comment_id = metadata.get("parent_comment_id")
     parent_comment = existing_records[EntityType.COMMENT.value].get(parent_comment_id)
     parent_comment_user_id = parent_comment.user_id if parent_comment else None
