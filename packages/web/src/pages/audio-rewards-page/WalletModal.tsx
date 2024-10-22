@@ -1,7 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
 import { Chain, StringWei, BNWei, WalletAddress } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   tokenDashboardPageSelectors,
@@ -23,7 +22,6 @@ import { useDispatch } from 'react-redux'
 
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useSelector } from 'utils/reducer'
 
 import styles from './WalletModal.module.css'
@@ -50,7 +48,6 @@ const { confirmSend, inputSendData, setModalVisibility } =
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
-  receive: 'Receive $AUDIO',
   receiveSPL: 'Receive SPL $AUDIO',
   send: 'Send $AUDIO',
   confirmSend: 'Send $AUDIO',
@@ -85,13 +82,8 @@ const titlesMap = {
   },
   RECEIVE: {
     KEY_DISPLAY: () => {
-      const useSolSPLAudio = getFeatureEnabled(
-        FeatureFlags.ENABLE_SPL_AUDIO
-      ) as boolean
       return (
-        <TitleWrapper
-          label={useSolSPLAudio ? messages.receiveSPL : messages.receive}
-        >
+        <TitleWrapper label={messages.receiveSPL}>
           <IconReceive className={styles.receiveWrapper} />
         </TitleWrapper>
       )
@@ -174,11 +166,8 @@ const ModalContent = ({
     useSelector(getAccountBalance) ?? stringWeiToBN('0' as StringWei)
   const account = useSelector(getAccountUser)
   const amountPendingTransfer = useSelector(getSendData)
-  const useSolSPLAudio = getFeatureEnabled(
-    FeatureFlags.ENABLE_SPL_AUDIO
-  ) as boolean
 
-  if (!modalState || !account || (useSolSPLAudio && !account.userBank)) {
+  if (!modalState || !account || !account.userBank) {
     return null
   }
 
