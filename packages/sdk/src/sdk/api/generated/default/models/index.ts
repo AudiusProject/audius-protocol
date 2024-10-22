@@ -66,6 +66,7 @@ export * from './Track';
 export * from './TrackAccessInfo';
 export * from './TrackActivity';
 export * from './TrackArtwork';
+export * from './TrackCommentCountResponse';
 export * from './TrackCommentNotificationResponse';
 export * from './TrackCommentsResponse';
 export * from './TrackElement';

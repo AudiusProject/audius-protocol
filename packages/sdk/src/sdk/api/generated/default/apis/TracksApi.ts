@@ -20,6 +20,7 @@ import type {
   StemsResponse,
   StreamUrlResponse,
   TopListener,
+  TrackCommentCountResponse,
   TrackCommentNotificationResponse,
   TrackCommentsResponse,
   TrackInspect,
@@ -36,6 +37,8 @@ import {
     StreamUrlResponseToJSON,
     TopListenerFromJSON,
     TopListenerToJSON,
+    TrackCommentCountResponseFromJSON,
+    TrackCommentCountResponseToJSON,
     TrackCommentNotificationResponseFromJSON,
     TrackCommentNotificationResponseToJSON,
     TrackCommentsResponseFromJSON,
@@ -125,6 +128,13 @@ export interface StreamTrackRequest {
     apiKey?: string;
     skipCheck?: boolean;
     noRedirect?: boolean;
+}
+
+export interface TrackCommentCountRequest {
+    trackId: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface TrackCommentNotificationSettingRequest {
@@ -620,6 +630,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreamUrlResponse> {
         const response = await this.streamTrackRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the comment count for a track
+     */
+    async trackCommentCountRaw(params: TrackCommentCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackCommentCountResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling trackCommentCount.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/comment_count`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackCommentCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the comment count for a track
+     */
+    async trackCommentCount(params: TrackCommentCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentCountResponse> {
+        const response = await this.trackCommentCountRaw(params, initOverrides);
         return await response.value();
     }
 
