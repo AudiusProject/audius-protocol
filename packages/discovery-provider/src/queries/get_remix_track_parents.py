@@ -52,7 +52,7 @@ def get_remix_track_parents(args):
                 session.query(Track)
                 .filter(Track.track_id == track_id)
                 .filter(Track.is_current == True)
-                .filter(Track.stream_conditions is None)
+                .filter(Track.stream_conditions.is_(None))
             ).one_or_none()
             if not track:
                 return [], []
