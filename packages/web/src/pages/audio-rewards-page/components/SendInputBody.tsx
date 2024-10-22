@@ -9,11 +9,7 @@ import {
   WalletAddress,
   SolanaWalletAddress
 } from '@audius/common/models'
-import {
-  IntKeys,
-  FeatureFlags,
-  MIN_TRANSFERRABLE_WEI
-} from '@audius/common/services'
+import { IntKeys, MIN_TRANSFERRABLE_WEI } from '@audius/common/services'
 import {
   weiToAudio,
   stringWeiToBN,
@@ -30,7 +26,6 @@ import {
   TokenAmountInput
 } from '@audius/harmony'
 
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
@@ -103,11 +98,6 @@ type SendInputBodyProps = {
   solWallet: WalletAddress
 }
 
-const isValidEthDestination = (wallet: WalletAddress) => {
-  const libs = window.audiusLibs
-  return libs.web3Manager?.web3?.utils.isAddress(wallet)
-}
-
 const isValidSolDestination = (wallet: SolanaWalletAddress) => {
   const solanaweb3 = window.audiusLibs.solanaWeb3Manager?.solanaWeb3
   if (!solanaweb3) {
@@ -130,18 +120,6 @@ const validateSolWallet = (
   if (!wallet) return 'EMPTY'
   if (!isValidSolDestination(wallet)) return 'INVALID_SPL_ADDRESS'
   if (wallet.toLowerCase() === ownSolWallet.toLowerCase()) {
-    return 'SEND_TO_SELF'
-  }
-  return null
-}
-
-const validateEthWallet = (
-  wallet: Nullable<WalletAddress>,
-  ownEthWallet: WalletAddress
-): Nullable<AddressError> => {
-  if (!wallet) return 'EMPTY'
-  if (!isValidEthDestination(wallet)) return 'MALFORMED'
-  if (wallet.toLowerCase() === ownEthWallet.toLowerCase()) {
     return 'SEND_TO_SELF'
   }
   return null
@@ -214,9 +192,6 @@ const SendInputBody = ({
     [addressError, setAddressError, setDestinationAddress]
   )
 
-  const useSolSPLAudio = getFeatureEnabled(
-    FeatureFlags.ENABLE_SPL_AUDIO
-  ) as boolean
   const minAudioSendAmount = getRemoteVar(
     IntKeys.MIN_AUDIO_SEND_AMOUNT
   ) as number
@@ -228,22 +203,14 @@ const SendInputBody = ({
       minAudioSendAmount
     )
     let walletError: Nullable<AddressError> = null
-    if (useSolSPLAudio) {
-      walletError = validateSolWallet(
-        destinationAddress as SolanaWalletAddress,
-        solWallet
-      )
-    } else {
-      walletError = validateEthWallet(destinationAddress, wallet)
-    }
+    walletError = validateSolWallet(
+      destinationAddress as SolanaWalletAddress,
+      solWallet
+    )
     setBalanceError(balanceError)
     setAddressError(walletError)
     if (balanceError || walletError) return
-    onSend(
-      amountToSendBNWei,
-      destinationAddress,
-      useSolSPLAudio ? Chain.Sol : Chain.Eth
-    )
+    onSend(amountToSendBNWei, destinationAddress, Chain.Sol)
   }
 
   const renderBalanceError = () => {
@@ -260,13 +227,9 @@ const SendInputBody = ({
     return <ErrorLabel text={addressErrorMap[addressError]} />
   }
 
-  const placeholderAddress = useSolSPLAudio
-    ? messages.addressSolPlaceholder
-    : messages.addressEthPlaceholder
+  const placeholderAddress = messages.addressSolPlaceholder
 
-  const destinationText = useSolSPLAudio
-    ? messages.destinationSPL
-    : messages.destination
+  const destinationText = messages.destinationSPL
 
   return (
     <ModalBodyWrapper>
