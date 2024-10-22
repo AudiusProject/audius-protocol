@@ -531,8 +531,7 @@ export const notificationFromSDK = (
           entityId = HashId.parse(data.entityId)
           // @ts-ignore
           entityType = data.type
-          // @ts-ignore TODO: remove this when comments goes live.
-          return HashId.parse(data.commentUserId ?? data.userId)
+          return HashId.parse(data.commentUserId)
         })
         .filter(removeNullable)
       return {

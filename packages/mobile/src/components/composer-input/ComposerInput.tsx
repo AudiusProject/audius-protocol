@@ -21,12 +21,7 @@ import {
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
-import {
-  InputAccessoryView,
-  Platform,
-  TouchableOpacity,
-  View
-} from 'react-native'
+import { Platform, TouchableOpacity, View } from 'react-native'
 import type { TextInput as RnTextInput } from 'react-native'
 import type {
   NativeSyntheticEvent,
@@ -34,7 +29,7 @@ import type {
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { Flex, IconSend, PlainButton, mergeRefs } from '@audius/harmony-native'
+import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -125,7 +120,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     styles: propStyles,
     TextInputComponent,
     displayCancelAccessory = false,
-    onLayout
+    onLayout,
+    maxLength = 10000
   } = props
   const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
@@ -389,15 +385,17 @@ export const ComposerInput = forwardRef(function ComposerInput(
       hitSlop={spacing(2)}
       style={styles.submit}
     >
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <IconSend
-          width={styles.icon.width}
-          height={styles.icon.height}
-          fill={hasLength ? primary : neutralLight7}
-        />
-      )}
+      <Flex pv='xs'>
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <IconSend
+            width={styles.icon.width}
+            height={styles.icon.height}
+            fill={hasLength ? primary : neutralLight7}
+          />
+        )}
+      </Flex>
     </TouchableOpacity>
   )
 
@@ -490,28 +488,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     ]
   )
 
-  const handleCancelButtonPress = useCallback(() => {
-    internalRef.current?.blur()
-    setValue('')
-  }, [internalRef])
-
   return (
     <>
-      {Platform.OS === 'ios' && displayCancelAccessory ? (
-        <InputAccessoryView nativeID='cancelButtonAccessoryView'>
-          <Flex
-            backgroundColor='white'
-            direction='row'
-            justifyContent='flex-end'
-            ph='l'
-            pb='m'
-          >
-            <PlainButton hitSlop={16} onPress={handleCancelButtonPress}>
-              {messages.cancelLabel}
-            </PlainButton>
-          </Flex>
-        </InputAccessoryView>
-      ) : null}
       <TextInput
         ref={mergeRefs([ref, internalRef])}
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
@@ -532,7 +510,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID={
           displayCancelAccessory ? 'cancelButtonAccessoryView' : 'none'
         }
-        maxLength={10000}
+        maxLength={maxLength}
         autoCorrect
         TextInputComponent={TextInputComponent}
       />

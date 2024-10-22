@@ -124,7 +124,7 @@ const CommentBlockInternal = (
           </Flex>
         ) : (
           <CommentText
-            isEdited={isEdited}
+            isEdited={isEdited && !isTombstone}
             onUserMentionsChange={handleUserMentionsChange}
             isPreview={isPreview}
           >

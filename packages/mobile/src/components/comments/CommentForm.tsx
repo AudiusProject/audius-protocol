@@ -90,8 +90,12 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const { currentUserId, entityId, replyingAndEditingState } =
-    useCurrentCommentSection()
+  const {
+    currentUserId,
+    entityId,
+    replyingAndEditingState,
+    commentSectionLoading
+  } = useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
   const adjustedCursorPosition = useRef(false)
@@ -132,7 +136,8 @@ export const CommentForm = (props: CommentFormProps) => {
 
   useEffect(() => {
     if (autoFocus) {
-      ref.current?.focus()
+      // setTimeout is required to focus the input on android
+      setTimeout(() => ref.current?.focus(), 0)
     }
   }, [autoFocus])
 
@@ -154,10 +159,12 @@ export const CommentForm = (props: CommentFormProps) => {
   return (
     <Flex direction='row' gap='m' alignItems='center'>
       {currentUserId ? (
-        <ProfilePicture
-          userId={currentUserId}
-          style={{ width: 40, height: 40, flexShrink: 0 }}
-        />
+        <Flex alignSelf='flex-start' pt='unit1' alignItems='center'>
+          <ProfilePicture
+            userId={currentUserId}
+            style={{ width: 40, height: 40, flexShrink: 0 }}
+          />
+        </Flex>
       ) : null}
       <Flex flex={1}>
         {showHelperText ? (
@@ -174,11 +181,12 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={messages.addComment}
+            placeholder={commentSectionLoading ? '' : messages.addComment}
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
+            maxLength={400}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,
