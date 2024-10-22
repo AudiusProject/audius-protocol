@@ -67,13 +67,7 @@ def get_replies(
                 MutedUser.user_id == current_user_id,
             ),
         )
-        .outerjoin(
-            CommentReport,
-            and_(
-                Comment.comment_id == CommentReport.comment_id,
-                CommentReport.user_id == current_user_id,
-            ),
-        )
+        .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
         .group_by(Comment.comment_id)
         .filter(
             CommentThread.parent_comment_id == parent_comment_id,
@@ -86,6 +80,7 @@ def get_replies(
                 CommentReport.comment_id == None,
                 current_user_id == None,
                 CommentReport.user_id != current_user_id,
+                CommentReport.user_id != artist_id,
                 CommentReport.is_delete == True,
             ),
         )
@@ -231,6 +226,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     CommentReport.comment_id == None,
                     current_user_id == None,
                     CommentReport.user_id != current_user_id,
+                    CommentReport.user_id != artist_id,
                 ),
                 or_(
                     CommentReport.comment_id == None,
