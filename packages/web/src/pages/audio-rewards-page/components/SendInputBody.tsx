@@ -40,7 +40,6 @@ const messages = {
   warningSubtitle: 'If you send $AUDIO to the wrong address it will be lost.',
   warningSubtitle2:
     'WARNING: $AUDIO sent will not count towards badges, tiers, and unlocked features!',
-  addressEthPlaceholder: '0xC7EF9651259197aA26544Af724441a46e491c12c',
   addressSolPlaceholder: '9qU2A32k4bL6sbohrah2MiZZRfemH92hyZTY7jKc5GR8',
   sendAudio: 'SEND $AUDIO',
   insufficientBalance: 'Account does not have enough $AUDIO',
@@ -52,7 +51,6 @@ const messages = {
   addressIsSelf: 'You cannot send $AUDIO to your own wallet!',
   validSPLAddress: 'Please enter a valid Solana (SPL) wallet address',
   sendAmountLabel: 'Amount to send',
-  destination: 'Destination Address',
   destinationSPL: 'Destination Address (Solana SPL)'
 }
 

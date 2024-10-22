@@ -48,7 +48,6 @@ const { confirmSend, inputSendData, setModalVisibility } =
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
-  receive: 'Receive $AUDIO',
   receiveSPL: 'Receive SPL $AUDIO',
   send: 'Send $AUDIO',
   confirmSend: 'Send $AUDIO',
