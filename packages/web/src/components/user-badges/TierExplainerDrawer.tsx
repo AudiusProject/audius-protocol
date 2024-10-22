@@ -1,17 +1,36 @@
-import { useCallback } from 'react'
+import { ReactElement, useCallback } from 'react'
+
+import { BadgeTier } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import {
+  IconTokenBronze,
+  IconTokenGold,
+  IconTokenPlatinum,
+  IconTokenSilver
+} from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
 import { useProfileTier } from 'hooks/wallet'
-import {
-  audioTierMapSvg,
-  TierLevel,
-  TierNumber
-} from 'pages/audio-rewards-page/Tiers'
+import { TierLevel, TierNumber } from 'pages/audio-rewards-page/Tiers'
 
 import { BadgeTierText } from './ProfilePageBadge'
 import styles from './TierExplainerDrawer.module.css'
 import { messages } from './TierExplainerModal'
+
+const BADGE_SIZE = 108
+
+type AudioTiers = Exclude<BadgeTier, 'none'>
+
+// Mapping for large icons
+const audioTierMapSvg: {
+  [tier in AudioTiers]: Nullable<ReactElement>
+} = {
+  bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
+  silver: <IconTokenSilver width={BADGE_SIZE} height={BADGE_SIZE} />,
+  gold: <IconTokenGold width={BADGE_SIZE} height={BADGE_SIZE} />,
+  platinum: <IconTokenPlatinum width={BADGE_SIZE} height={BADGE_SIZE} />
+}
 
 const TierExplainerDrawer = () => {
   const [isOpen, setIsOpen] = useModalState('TiersExplainer')

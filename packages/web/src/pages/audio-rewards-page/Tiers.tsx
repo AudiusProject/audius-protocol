@@ -11,20 +11,19 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
-  IconArrowRight as IconArrow,
   IconTokenBronze,
   IconTokenGold,
   IconTokenPlatinum,
   IconTokenSilver,
   IconDiscord,
   Button,
-  Box
+  Text,
+  Flex,
+  IconValidationCheck,
+  IconRefresh
 } from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
 
@@ -35,26 +34,37 @@ const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: '$AUDIO VIP TIERS',
-  subtitle1: `Unlock $AUDIO VIP Tiers by simply holding more $AUDIO!`,
-  subtitle2: `Advancing to a new tier will earn your profile a badge, visible throughout the app, and unlock various new features as they are released.`,
-  unlocks: 'UNLOCKS',
-  badgeType: (badge: string) => `${badge} Badge`,
-  badgeRole: (badge: string) => `${badge} Discord Role`,
-  moreSoon: 'More Coming Soon!',
-  updateRole: 'Update Role',
-  tierNumber: (tier: number) => `TIER ${tier}`,
+  subtitle:
+    'Hold $AUDIO in your wallet to unlock VIP Tiers and earn access to exclusive features and more!',
+  noTier: 'No tier',
   currentTier: 'CURRENT TIER',
+  tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+`,
+  updateRole: 'Update Role',
+  features: {
+    balance: '$AUDIO Balance',
+    hqStreaming: 'HQ Streaming',
+    unlimitedUploads: 'Unlimited Uploads',
+    uploadOnMobile: 'Upload On Mobile',
+    offlineListening: 'Offline Listening',
+    gatedContent: 'Gated Content',
+    directMessaging: 'Direct Messaging',
+    messageBlasts: 'Message Blasts',
+    flairBadges: 'Flair Badges',
+    customDiscordRole: 'Custom Discord Role',
+    nftGallery: 'NFT Collectibles Gallery',
+    customThemes: 'Custom App Themes'
+  },
   learnMore: 'Learn more',
   launchDiscord: 'Launch the VIP Discord',
-  tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`,
-  matrixMode: 'Matrix Mode'
+  tierNumber: (tier: number) => `TIER ${tier}`
 }
+
+const BADGE_SIZE = 24
 
 type AudioTiers = Exclude<BadgeTier, 'none'>
 
 // Tiers as they are listed here, in order
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
-const BADGE_SIZE = 108
 
 // Mapping for large icons
 export const audioTierMapSvg: {
@@ -111,98 +121,241 @@ export const TierLevel = ({ tier }: { tier: AudioTiers }) => {
   return <div className={styles.tierLevel}>{messages.tierLevel(minAudio)}</div>
 }
 
-type TierProps = {
-  isActive?: boolean
-  tier: AudioTiers
-  isCompact?: boolean
-  onClickDiscord?: () => void
+const TierBox = ({
+  tier,
+  message
+}: {
+  tier?: AudioTiers
+  message?: string
+}) => {
+  return (
+    <Flex direction='column' alignItems='center' gap='s' mb='s'>
+      <Flex>
+        {tier ? audioTierMapSvg[tier] : <Flex h={BADGE_SIZE} w={BADGE_SIZE} />}
+      </Flex>
+      <Text
+        variant='title'
+        size='m'
+        color='default'
+        textTransform='capitalize'
+        css={{
+          minHeight: '1.5em',
+          ...(tier && {
+            '-webkit-text-fill-color': 'transparent',
+            '-webkit-background-clip': 'text',
+            backgroundImage:
+              tier === 'bronze'
+                ? 'linear-gradient(to right, rgba(141, 48, 8, 0.5), rgb(182, 97, 11))'
+                : tier === 'silver'
+                ? 'linear-gradient(to right, rgba(179, 182, 185, 0.5), rgb(189, 189, 189))'
+                : tier === 'gold'
+                ? 'linear-gradient(to right, rgb(236, 173, 11), rgb(236, 173, 11))'
+                : tier === 'platinum'
+                ? 'linear-gradient(to right, rgb(179, 236, 249), rgb(87, 194, 215))'
+                : 'inherit'
+          })
+        }}
+      >
+        {tier ?? message}
+      </Text>
+    </Flex>
+  )
 }
 
-/** Shows info about a tier - badge, level, tier # */
-export const Tier = ({
+const tierFeatureMap: Record<
+  AudioTiers | 'none',
+  Record<keyof typeof messages.features, boolean>
+> = {
+  none: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    messageBlasts: false,
+    flairBadges: false,
+    customDiscordRole: false,
+    nftGallery: false,
+    customThemes: false
+  },
+  bronze: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    nftGallery: false,
+    customThemes: false
+  },
+  silver: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    nftGallery: true,
+    customThemes: false
+  },
+  gold: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    nftGallery: true,
+    customThemes: true
+  },
+  platinum: {
+    balance: true,
+    hqStreaming: true,
+    unlimitedUploads: true,
+    uploadOnMobile: true,
+    offlineListening: true,
+    gatedContent: true,
+    directMessaging: true,
+    messageBlasts: true,
+    flairBadges: true,
+    customDiscordRole: true,
+    nftGallery: true,
+    customThemes: true
+  }
+}
+
+const TierColumn = ({
   tier,
-  isActive = false,
-  isCompact = false,
-  onClickDiscord = () => {}
-}: TierProps) => {
-  const badgeImage = audioTierMapSvg[tier]
+  current
+}: {
+  tier: AudioTiers | null
+  current?: boolean
+}) => {
+  const dispatch = useDispatch()
+  const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
+
+  const tierFeatures = tier ? tierFeatureMap[tier] : tierFeatureMap.none
 
   return (
-    <div
-      className={cn(styles.tierContainerWrapper, {
-        [styles.tierContainerActive]: isActive,
-        [styles.compact]: isCompact
-      })}
+    <Flex
+      direction='column'
+      border={current ? 'strong' : undefined}
+      borderRadius={current ? 'm' : undefined}
+      shadow={current ? 'mid' : undefined}
+      css={{
+        overflow: 'hidden',
+        minWidth: '120px',
+        '@media (max-width: 1100px)': {
+          display: current ? 'flex' : 'none'
+        }
+      }}
+      mt={current ? '-49px' : undefined} // Move current tier up to align columns
     >
-      {isActive && (
-        <div className={styles.currentTier}>
-          {messages.currentTier}
-          <div className={styles.arrowWrapper}>
-            <IconArrow />
-          </div>
-        </div>
+      {current && (
+        <Flex
+          justifyContent='center'
+          pv='m'
+          mb='m'
+          css={{ background: 'var(--harmony-gradient)' }}
+        >
+          <Text variant='label' size='s' color='staticWhite'>
+            {messages.currentTier}
+          </Text>
+        </Flex>
       )}
-      <div
-        className={cn(
-          styles.tierContainer,
-          {
-            [styles.tierContainerActive]: isActive
-          },
-          {
-            [styles.compact]: isCompact
-          }
-        )}
-      >
-        <TierNumber tier={tier} />
-        <BadgeTierText
-          tier={tier}
-          fontSize={28}
-          className={styles.badgeTierText}
-        />
-        <TierLevel tier={tier} />
-        <div className={styles.divider} />
-        <div className={styles.imageWrapper}>{badgeImage}</div>
-        {!isCompact && (
-          <>
-            <div className={styles.unlocks}>{messages.unlocks}</div>
-            <div className={styles.tierTextContainer}>
-              <span>
-                <i className='emoji large white-heavy-check-mark' />
-                {messages.badgeType(tier)}
-              </span>
-              <span>
-                <i className='emoji large white-heavy-check-mark' />
-                {messages.badgeRole(tier)}
-              </span>
-              {(tier === 'gold' || tier === 'platinum') && (
-                <span>
-                  <i className='emoji large rabbit' />
-                  <i className='emoji large hole' />
-                  {messages.matrixMode}
-                </span>
-              )}
-              {isActive && (
-                <Box mb='s' w='100%'>
+      <TierBox
+        tier={tier as AudioTiers}
+        message={tier === null ? messages.noTier : undefined}
+      />
+      {(
+        Object.keys(messages.features) as Array<keyof typeof messages.features>
+      ).map((feature) => (
+        <Flex key={feature} pv='m' borderTop='default' justifyContent='center'>
+          <Text>
+            {tierFeatures[feature] ? (
+              <Flex h={24} direction='row' alignItems='center' gap='m'>
+                <IconValidationCheck />
+                {feature === 'customDiscordRole' && current ? (
                   <Button
-                    variant='secondary'
                     size='small'
-                    iconLeft={IconDiscord}
+                    variant='tertiary'
+                    iconLeft={IconRefresh}
                     onClick={onClickDiscord}
-                    fullWidth
-                  >
-                    {messages.updateRole}
-                  </Button>
-                </Box>
-              )}
-              <span className={styles.sparkles}>
-                <i className='emoji large sparkles' />
-                {messages.moreSoon}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+                  />
+                ) : null}
+              </Flex>
+            ) : (
+              <Flex h={24} w={24} alignItems='center' justifyContent='center'>
+                <Flex
+                  h={16}
+                  w={16}
+                  borderRadius='circle'
+                  border='strong'
+                  css={{
+                    borderWidth: 2,
+                    borderColor: 'var(--harmony-neutral)'
+                  }}
+                />
+              </Flex>
+            )}
+          </Text>
+        </Flex>
+      ))}
+    </Flex>
+  )
+}
+
+const TierTable = ({ tier }: { tier: BadgeTier }) => {
+  return (
+    <Flex w='100%' justifyContent='space-between' p='xl'>
+      <Flex direction='column' flex='1 1 300px'>
+        <TierBox />
+        {Object.values(messages.features).map((feature) => (
+          <Flex
+            key={feature}
+            pv='m'
+            borderTop='default'
+            justifyContent='flex-end'
+            pr='xl'
+          >
+            <Text
+              variant='title'
+              size='m'
+              color='default'
+              css={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {feature}
+            </Text>
+          </Flex>
+        ))}
+      </Flex>
+      {[null, 'bronze', 'silver', 'gold', 'platinum'].map((displayTier) => (
+        <Flex key={displayTier ?? 'none'} direction='column' flex='1 1 200px'>
+          <TierColumn
+            tier={displayTier as AudioTiers | null}
+            current={displayTier === tier}
+          />
+        </Flex>
+      ))}
+    </Flex>
   )
 }
 
@@ -227,27 +380,18 @@ const Tiers = () => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
-  const isMobile = useIsMobile()
+  // const isMobile = useIsMobile()
 
   return (
     <div className={styles.container}>
-      <div className={wm(styles.tileContainerWrapper)}></div>
       <div className={wm(styles.titleContainer)}>
         <div className={wm(styles.title)}>{messages.title}</div>
-        <div className={wm(styles.subtitle)}>{messages.subtitle1}</div>
-        <div className={wm(styles.subtitle)}>{messages.subtitle2}</div>
+        <div className={wm(styles.subtitle)}></div>
+        <Text variant='body' size='l' color='default'>
+          {messages.subtitle}
+        </Text>
       </div>
-      <div className={wm(styles.tiersContainer)}>
-        {tiers.map((t) => (
-          <Tier
-            tier={t}
-            isActive={tier === t}
-            key={t}
-            onClickDiscord={onClickDiscord}
-            isCompact={isMobile}
-          />
-        ))}
-      </div>
+      <TierTable tier={tier} />
       <div className={wm(styles.buttonContainer)}>
         <Button variant='secondary' onClick={onClickExplainMore}>
           {messages.learnMore}
