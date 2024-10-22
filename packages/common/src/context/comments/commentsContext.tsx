@@ -14,7 +14,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useGetTrackById, useGetCommentsByTrackId, QUERY_KEYS } from '~/api'
+import {
+  useGetTrackById,
+  useGetCommentsByTrackId,
+  QUERY_KEYS,
+  useTrackCommentCount
+} from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
   ModalSource,
@@ -57,7 +62,7 @@ type CommentSectionContextType<NavigationProp> = {
   currentUserId: Nullable<ID>
   artistId: ID
   isEntityOwner: boolean
-  commentCount: number
+  commentCount: number | undefined
   track: UserTrackMetadata
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
@@ -65,9 +70,11 @@ type CommentSectionContextType<NavigationProp> = {
   currentSort: CommentSortMethod
   isLoadingMorePages: boolean
   hasMorePages: boolean
-  reset: (hard?: boolean) => void
+  resetComments: () => void
   setCurrentSort: (sort: CommentSortMethod) => void
   loadMorePages: () => void
+  hasNewComments: boolean
+  isCommentCountLoading: boolean
 } & CommentSectionProviderProps<NavigationProp>
 
 export const CommentSectionContext = createContext<
@@ -109,13 +116,25 @@ export function CommentSectionProvider<NavigationProp>(
     sortMethod: currentSort,
     userId: currentUserId
   })
+  console.log({ commentIds })
   const queryClient = useQueryClient()
   // hard refreshes all data
-  const reset = () => {
+  const resetComments = () => {
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.commentReplies] })
   }
+
+  const { data: commentCountData, isLoading: isCommentCountLoading } =
+    useTrackCommentCount(entityId, currentUserId, true)
+
+  console.log({ commentCountData })
+
+  const hasNewComments =
+    commentCountData?.previousValue !== undefined &&
+    commentCountData?.currentValue !== undefined &&
+    commentCountData?.previousValue < commentCountData?.currentValue
+
   const dispatch = useDispatch()
 
   const lineup = useSelector(getLineup)
@@ -164,7 +183,7 @@ export function CommentSectionProvider<NavigationProp>(
     return null
   }
 
-  const { owner_id, comment_count: commentCount } = track
+  const { owner_id } = track
 
   return (
     <CommentSectionContext.Provider
@@ -173,13 +192,14 @@ export function CommentSectionProvider<NavigationProp>(
         artistId: owner_id,
         entityId,
         entityType,
-        commentCount,
+        commentCount: commentCountData?.currentValue ?? track.comment_count,
+        isCommentCountLoading,
         commentIds,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages,
         track,
-        reset,
+        resetComments,
         hasMorePages: !!hasNextPage,
         currentSort,
         replyingAndEditingState,
@@ -188,7 +208,8 @@ export function CommentSectionProvider<NavigationProp>(
         playTrack,
         loadMorePages,
         navigation,
-        closeDrawer
+        closeDrawer,
+        hasNewComments
       }}
     >
       {children}

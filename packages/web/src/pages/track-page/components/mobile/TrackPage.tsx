@@ -1,5 +1,6 @@
 import { useEffect, useContext } from 'react'
 
+import { useCachedTrackCommentCount } from '@audius/common/api'
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -151,6 +152,11 @@ const TrackPage = ({
   const defaults = getTrackDefaults(heroTrack)
   const { fieldVisibility, remixTrackIds, permalink } = defaults
 
+  // Check for comment count in tanquery cache first because that value gets polled and updated more often
+  const commentCount =
+    useCachedTrackCommentCount(heroTrack?.track_id, userId)?.data
+      ?.currentValue ?? defaults.commentCount
+
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
@@ -192,7 +198,7 @@ const TrackPage = ({
           description={defaults.description}
           listenCount={defaults.playCount}
           repostCount={defaults.repostCount}
-          commentCount={defaults.commentCount}
+          commentCount={commentCount}
           commentsDisabled={defaults.commentsDisabled}
           duration={defaults.duration}
           releaseDate={defaults.releaseDate}
