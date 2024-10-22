@@ -484,7 +484,10 @@ const slice = createSlice({
       }>
     ) => {
       // triggers saga to get chat if not exists
+
       const { chatId, message, status, isSelfMessage } = action.payload
+
+      console.log('reedxx', action.payload)
 
       // Always update the last message, but don't update
       // last_message_at if it's a blast message sent by current user,

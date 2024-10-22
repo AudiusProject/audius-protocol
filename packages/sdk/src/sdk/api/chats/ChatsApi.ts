@@ -819,6 +819,8 @@ export class ChatsApi
       })
     )
 
+    console.log('upgraded blasts', blasts.data)
+
     for (const blast of blasts.data) {
       const encodedSenderId = encodeHashId(blast.from_user_id)
       if (encodedSenderId) {

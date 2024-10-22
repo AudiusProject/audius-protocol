@@ -668,6 +668,7 @@ function* doFetchChat({ chatId }: { chatId: string }) {
 }
 
 function* doFetchChatIfNecessary(args: { chatId: string }) {
+  console.log('reedxx', 'doFetchChatIfNecessary')
   const { chatId } = args
   const existingChat = yield* select((state) => getChat(state, chatId))
   if (!existingChat) {
