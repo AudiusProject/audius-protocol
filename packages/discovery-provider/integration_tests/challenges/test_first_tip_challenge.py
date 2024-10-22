@@ -65,7 +65,7 @@ def test_first_tip_challenge(app):
         session.flush()
 
         state = send_first_tip_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
 
         assert state.is_complete

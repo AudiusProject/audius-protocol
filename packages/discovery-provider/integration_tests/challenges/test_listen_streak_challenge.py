@@ -100,20 +100,20 @@ def test_listen_streak_challenge(app):
         scope_and_process(lambda: dp(0))
 
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 1 and not state.is_complete
 
         scope_and_process(lambda: dp(1))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 2 and not state.is_complete
 
         # Make sure the step count resets if the user missed a day
         scope_and_process(lambda: dp(3))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 1 and not state.is_complete
 
@@ -124,14 +124,14 @@ def test_listen_streak_challenge(app):
         scope_and_process(lambda: dp(7))
         scope_and_process(lambda: dp(8))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 6 and not state.is_complete
 
         # Make sure that is_complete is set when step count hits 7
         scope_and_process(lambda: dp(9))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 7 and state.is_complete == True
 
@@ -147,9 +147,7 @@ def test_multiple_listens(app):
 
     with db.scoped_session() as session:
         setup_challenges(session)
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
-        )
+        state = listen_streak_challenge_manager.get_user_challenge_state(session, ["1"])
         # make sure empty to start
         assert len(state) == 0
 
@@ -159,12 +157,12 @@ def test_multiple_listens(app):
         scope_and_process = make_scope_and_process(bus, session)
         scope_and_process(lambda: dp(1))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         assert state.current_step_count == 1
         scope_and_process(lambda: (dp(2), dp(3), dp(4), dp(5)))
         state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["7eP5n"]
+            session, ["1"]
         )[0]
         # This will actually "reset" the listen count, because
         # we dedupe multiple play events in a single call to process

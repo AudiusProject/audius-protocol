@@ -9,11 +9,10 @@ from src.challenges.challenge import (
     UserChallenge,
 )
 from src.models.users.user import User
-from src.utils.helpers import encode_int_id
 
 
 def generate_referral_specifier(user_id: int, extra: Dict) -> str:
-    return f"{encode_int_id(user_id)}:{encode_int_id(extra['referred_user_id'])}"
+    return f"{hex(user_id)[2:]}:{hex(extra['referred_user_id'])[2:]}"
 
 
 def does_user_exist_with_verification_status(
