@@ -119,7 +119,6 @@ export function CommentSectionProvider<NavigationProp>(
     sortMethod: currentSort,
     userId: currentUserId
   })
-  console.log({ commentIds })
   const queryClient = useQueryClient()
   // hard refreshes all data
   const resetComments = () => {
@@ -132,8 +131,6 @@ export function CommentSectionProvider<NavigationProp>(
 
   const { data: commentCountData, isLoading: isCommentCountLoading } =
     useTrackCommentCount(entityId, currentUserId, true)
-
-  console.log({ commentCountData })
 
   const hasNewComments = useMemo(
     () =>
