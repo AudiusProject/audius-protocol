@@ -308,10 +308,7 @@ export const CommentActionBar = ({
           disabled={isDisabled}
         />
         {!hideReactCount && reactCount > 0 ? (
-          <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
-            {' '}
-            {reactCount}
-          </Text>
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
         ) : (
           // Placeholder box to offset where the number would be
           <Box w='8px' />
@@ -320,7 +317,6 @@ export const CommentActionBar = ({
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
-        size='s'
         disabled={isDisabled || isTombstone}
       >
         {messages.reply}

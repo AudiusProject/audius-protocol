@@ -130,7 +130,12 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
-    if not is_reply and not is_owner_mentioned and not track_owner_notifications_off:
+    if (
+        not is_reply
+        and not is_owner_mentioned
+        and not track_owner_notifications_off
+        and user_id != entity_user_id
+    ):
         comment_notification = Notification(
             blocknumber=params.block_number,
             user_ids=[entity_user_id],
@@ -146,7 +151,6 @@ def create_comment(params: ManageEntityParameters):
         )
 
         safe_add_notification(params, comment_notification)
-
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)

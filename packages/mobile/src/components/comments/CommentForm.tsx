@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -92,7 +92,6 @@ export const CommentForm = (props: CommentFormProps) => {
   const [initialMessage, setInitialMessage] = useState(initialValue)
   const {
     currentUserId,
-    commentIds,
     entityId,
     replyingAndEditingState,
     commentSectionLoading
@@ -155,13 +154,6 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment, initialMessage?.length, replyingToComment])
 
-  const placeholder = useMemo(() => {
-    if (commentSectionLoading) {
-      return ''
-    }
-    return commentIds?.length ? messages.addComment : messages.firstComment
-  }, [commentSectionLoading, commentIds])
-
   const showHelperText = editingComment || replyingToComment
 
   return (
@@ -189,7 +181,7 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={placeholder}
+            placeholder={commentSectionLoading ? '' : messages.addComment}
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}

@@ -27,7 +27,7 @@ const { getUser } = cacheUsersSelectors
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  hideActions?: boolean
+  isPreview?: boolean
 }
 
 const CommentBlockInternal = (
@@ -35,7 +35,7 @@ const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, parentCommentId, hideActions } = props
+  const { comment, parentCommentId, isPreview } = props
   const { track, artistId } = useCurrentCommentSection()
 
   const {
@@ -89,16 +89,16 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={userId} popover />
+            <UserLink userId={userId} popover size='l' strength='strong' />
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
                 <>
-                  <Text color='subdued' size='xs'>
+                  <Text color='subdued' size='s'>
                     •
                   </Text>
 
-                  <TimestampLink size='xs' timestampSeconds={trackTimestampS} />
+                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>
@@ -126,11 +126,12 @@ const CommentBlockInternal = (
           <CommentText
             isEdited={isEdited && !isTombstone}
             onUserMentionsChange={handleUserMentionsChange}
+            isPreview={isPreview}
           >
             {message}
           </CommentText>
         )}
-        {hideActions ? null : (
+        {isPreview ? null : (
           <CommentActionBar
             comment={comment}
             onClickReply={() => setShowReplyInput((prev) => !prev)}

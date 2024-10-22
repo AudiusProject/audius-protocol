@@ -11,7 +11,7 @@ import {
 import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
 
-import { CommentSection } from 'components/comments/CommentSection'
+import { CommentPreview } from 'components/comments/CommentPreview'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -155,7 +155,7 @@ const TrackPage = ({
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   const renderOriginalTrackTitle = () => (
-    <Text textAlign='left' variant='title'>
+    <Text variant='title' size='l' textAlign='left'>
       {messages.originalTrack}
     </Text>
   )
@@ -163,7 +163,7 @@ const TrackPage = ({
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <Text variant='title' textAlign='left'>
+      <Text variant='title' size='l' textAlign='left'>
         {messages.moreBy} {user?.name}
       </Text>
     ) : null
@@ -229,7 +229,7 @@ const TrackPage = ({
           />
         ) : null}
         {isCommentingEnabled ? (
-          <CommentSection entityId={defaults.trackId} />
+          <CommentPreview entityId={defaults.trackId} />
         ) : null}
         <Flex column gap='l'>
           {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
