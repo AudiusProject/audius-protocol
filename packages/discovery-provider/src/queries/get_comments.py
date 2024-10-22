@@ -337,7 +337,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                 return mention
 
             def filter_mentions(mention):
-                return mention["user_id"] is not None and mention["is_delete"] is not True
+                return (
+                    mention["user_id"] is not None and mention["is_delete"] is not True
+                )
 
             reply_count = len(replies)
             track_comment_res.append(
@@ -348,7 +350,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                         if not track_comment.is_delete
                         else None
                     ),
-                    "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
+                    "mentions": list(
+                        map(remove_delete, filter(filter_mentions, mentions))
+                    ),
                     "message": (
                         track_comment.text
                         if not track_comment.is_delete
