@@ -60,5 +60,5 @@ class CoreBlockIterator:
 
     def ping(self):
         ping_request = protocol_pb2.PingRequest()
-        response = self.stub.Ping(ping_request)
+        response = self.rpc.Ping(ping_request)
         return response
