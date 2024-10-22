@@ -30,15 +30,6 @@ entities = {
         {"user_id": 1, "wallet": "user1wallet"},
         {"user_id": 2, "wallet": "user2wallet"},
         {"user_id": 3, "wallet": "user3wallet"},
-        {"user_id": 4, "wallet": "user4wallet"},
-        {"user_id": 5, "wallet": "user5wallet"},
-        {"user_id": 6, "wallet": "user6wallet"},
-        {"user_id": 7, "wallet": "user7wallet"},
-        {"user_id": 8, "wallet": "user8wallet"},
-        {"user_id": 9, "wallet": "user9wallet"},
-        {"user_id": 10, "wallet": "user10wallet"},
-        {"user_id": 11, "wallet": "user11wallet"},
-        {"user_id": 12, "wallet": "user12wallet"},
     ],
     "tracks": [{"track_id": 1, "owner_id": 1}],
 }
@@ -304,6 +295,11 @@ def test_comment_mention_limit(app, mocker):
     Test that only the first 10 mentions are saved and notified
     """
 
+    mention_limit_entities = {
+        **entities,
+        "users": [{"user_id": i, "wallet": f"user{i}wallet"} for i in range(1, 13)],
+    }
+
     mention_comment_metadata = {
         **comment_metadata,
         "body": "@user-1 @user-2 @user-3 @user-4 @user-5 @user-6 @user-7 @user-8 @user-9 @user-10 @user-11 @user-12 comment text",
@@ -327,7 +323,7 @@ def test_comment_mention_limit(app, mocker):
         ],
     }
 
-    db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
+    db, index_transaction = setup_test(app, mocker, mention_limit_entities, tx_receipts)
 
     with db.scoped_session() as session:
         index_transaction(session)
@@ -555,6 +551,7 @@ def test_edit_comment_mention_limit(app, mocker):
     edit_comment_entities = {
         **entities,
         "comments": [{"comment_id": 1, "user_id": 3, "entity_id": 1}],
+        "users": [{"user_id": i, "wallet": f"user{i}wallet"} for i in range(1, 13)],
     }
 
     tx_receipts = {
