@@ -849,6 +849,7 @@ def populate_mock_db(db, entities, block_offset=None):
             comment_mention_record = CommentMention(
                 comment_id=comment_mentions_meta.get("comment_id", i),
                 user_id=comment_mentions_meta.get("user_id", i),
+                is_delete=comment_mentions_meta.get("is_delete", False),
                 created_at=comment_mentions_meta.get("created_at", datetime.now()),
                 updated_at=comment_mentions_meta.get("updated_at", datetime.now()),
                 txhash=comment_mentions_meta.get("txhash", str(i + block_offset)),

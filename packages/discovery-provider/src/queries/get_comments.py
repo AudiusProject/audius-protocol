@@ -46,7 +46,6 @@ def get_is_reacted(session, user_id, comment_id):
     return not is_react.is_delete if is_react else False
 
 
-# TODO: Add mentions subquery
 def get_replies(
     session,
     parent_comment_id,
@@ -56,11 +55,12 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
-    mentioned_users_subquery = (
+    mentioned_users = (
         session.query(
             CommentMention.comment_id,
             CommentMention.user_id,
-            User.handle.label("handle"),
+            User.handle,
+            CommentMention.is_delete,
         )
         .join(User, CommentMention.user_id == User.user_id)
         .subquery()
@@ -73,17 +73,19 @@ def get_replies(
             func.array_agg(
                 func.json_build_object(
                     "user_id",
-                    mentioned_users_subquery.c.user_id,
+                    mentioned_users.c.user_id,
                     "handle",
-                    mentioned_users_subquery.c.handle,
+                    mentioned_users.c.handle,
+                    "is_delete",
+                    mentioned_users.c.is_delete,
                 )
             ).label("mentions"),
         )
         .join(CommentThread, Comment.comment_id == CommentThread.comment_id)
         .outerjoin(CommentReaction, Comment.comment_id == CommentReaction.comment_id)
         .outerjoin(
-            mentioned_users_subquery,
-            Comment.comment_id == mentioned_users_subquery.c.comment_id,
+            mentioned_users,
+            Comment.comment_id == mentioned_users.c.comment_id,
         )
         .outerjoin(
             MutedUser,
@@ -128,12 +130,19 @@ def get_replies(
             .owner_id
         )
 
+    def remove_delete(mention):
+        del mention["is_delete"]
+        return mention
+
+    def filter_mentions(mention):
+        return mention["user_id"] is not None and mention["is_delete"] is not True
+
     return [
         {
             "id": encode_int_id(reply.comment_id),
             "user_id": encode_int_id(reply.user_id),
             "message": reply.text,
-            "mentions": [item for item in mentions if item["user_id"] is not None],
+            "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
             "track_timestamp_s": reply.track_timestamp_s,
             "react_count": react_count,
             "is_current_user_reacted": get_is_reacted(
@@ -178,11 +187,12 @@ def get_track_comments(args, track_id, current_user_id=None):
     ReplyCountAlias = aliased(CommentThread)
 
     with db.scoped_session() as session:
-        mentioned_users_subquery = (
+        mentioned_users = (
             session.query(
                 CommentMention.comment_id,
                 CommentMention.user_id,
-                User.handle.label("handle"),
+                User.handle,
+                CommentMention.is_delete,
             )
             .join(User, CommentMention.user_id == User.user_id)
             .subquery()
@@ -223,9 +233,11 @@ def get_track_comments(args, track_id, current_user_id=None):
                 func.array_agg(
                     func.json_build_object(
                         "user_id",
-                        mentioned_users_subquery.c.user_id,
+                        mentioned_users.c.user_id,
                         "handle",
-                        mentioned_users_subquery.c.handle,
+                        mentioned_users.c.handle,
+                        "is_delete",
+                        mentioned_users.c.is_delete,
                     )
                 ).label("mentions"),
             )
@@ -242,8 +254,8 @@ def get_track_comments(args, track_id, current_user_id=None):
                 AggregateUser.user_id == CommentReport.user_id,
             )
             .outerjoin(
-                mentioned_users_subquery,
-                Comment.comment_id == mentioned_users_subquery.c.comment_id,
+                mentioned_users,
+                Comment.comment_id == mentioned_users.c.comment_id,
             )
             .outerjoin(
                 react_count_subquery,
@@ -319,6 +331,14 @@ def get_track_comments(args, track_id, current_user_id=None):
                 artist_id,
                 limit=None,
             )
+
+            def remove_delete(mention):
+                del mention["is_delete"]
+                return mention
+
+            def filter_mentions(mention):
+                return mention["user_id"] is not None and mention["is_delete"] is not True
+
             reply_count = len(replies)
             track_comment_res.append(
                 {
@@ -328,9 +348,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                         if not track_comment.is_delete
                         else None
                     ),
-                    "mentions": [
-                        item for item in mentions if item["user_id"] is not None
-                    ],
+                    "mentions": list(map(remove_delete, filter(filter_mentions, mentions))),
                     "message": (
                         track_comment.text
                         if not track_comment.is_delete
