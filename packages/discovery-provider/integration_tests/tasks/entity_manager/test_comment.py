@@ -12,10 +12,7 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
@@ -30,8 +27,9 @@ entities = {
         {"user_id": 1, "wallet": "user1wallet"},
         {"user_id": 2, "wallet": "user2wallet"},
         {"user_id": 3, "wallet": "user3wallet"},
+        {"user_id": 4, "wallet": "user4wallet"},
     ],
-    "tracks": [{"track_id": 1, "owner_id": 1}],
+    "tracks": [{"track_id": 1, "owner_id": 1}, {"track_id": 2, "owner_id": 4}],
 }
 
 comment_metadata = {
@@ -1111,6 +1109,7 @@ def test_mute_user_notifications(app, mocker):
                 "user_id": 1,
             },
         ],
+        "aggregate_user": [{"user_id": 1, "follower_count": 2000000}],
     }
 
     mention_comment_metadata = {
@@ -1118,8 +1117,6 @@ def test_mute_user_notifications(app, mocker):
         "body": "@user-1",
         "mentions": [1],
     }
-
-    print("dyllann", mention_comment_metadata)
 
     tx_receipts = {
         "CreateComment": [
@@ -1131,6 +1128,28 @@ def test_mute_user_notifications(app, mocker):
                         "_userId": 2,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {
+                                    "entity_id": 2,
+                                    "entity_type": "Track",
+                                    "body": "comment text",
+                                    "parent_comment_id": None,
+                                },
+                            }
+                        ),
                         "_signer": "user2wallet",
                     }
                 )
@@ -1173,7 +1192,7 @@ def test_reported_comment_notifications(app, mocker):
     # This needs to be set before user4 to prevent sql errors
     initial_entities = {
         "aggregate_user": [
-            {"user_id": 4, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD},
+            {"user_id": 4, "follower_count": COMMENT_KARMA_THRESHOLD},
         ]
     }
 

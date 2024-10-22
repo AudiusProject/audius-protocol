@@ -7,10 +7,7 @@ from src.api.v1.helpers import format_limit, format_offset
 from src.models.comments.comment import Comment
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
@@ -59,7 +56,7 @@ def get_replies(
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.is_delete == False)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
         .subquery()
     )
 
@@ -179,9 +176,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.is_delete == False)
             .group_by(MutedUser.muted_user_id)
-            .having(
-                func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD
-            )
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
             .subquery()
         )
 
@@ -275,7 +270,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             # Ensure that the combined follower count of all users who reported the comment is below the threshold.
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_REPORT_KARMA_THRESHOLD,
+                <= COMMENT_KARMA_THRESHOLD,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween

@@ -5,10 +5,7 @@ from src.models.comments.comment import Comment
 from src.models.comments.comment_mention import CommentMention
 from src.models.comments.comment_notification_setting import CommentNotificationSetting
 from src.models.comments.comment_reaction import CommentReaction
-from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
@@ -98,9 +95,9 @@ def create_comment(params: ManageEntityParameters):
     is_muted_by_karma = (
         params.session.query(MutedUser.muted_user_id)
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-        .filter(MutedUser.muted_user_id == entity_user_id)
+        .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
         .scalar()
         is not None
     )
@@ -244,11 +241,9 @@ def create_comment(params: ManageEntityParameters):
         is_muted_by_karma = (
             params.session.query(MutedUser.muted_user_id)
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-            .filter(MutedUser.muted_user_id == entity_user_id)
+            .filter(MutedUser.muted_user_id == user_id)
             .group_by(MutedUser.muted_user_id)
-            .having(
-                func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD
-            )
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
             .scalar()
             is not None
         )
@@ -310,7 +305,7 @@ def update_comment(params: ManageEntityParameters):
 
     is_comment_shadowbanned = (
         params.session.query(
-            func.sum(AggregateUser.follower_count) >= COMMENT_REPORT_KARMA_THRESHOLD
+            func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD
         )
         .filter(AggregateUser.user_id.in_(reporting_user_ids))
         .scalar()
@@ -325,12 +320,11 @@ def update_comment(params: ManageEntityParameters):
     is_muted_by_karma = (
         params.session.query(MutedUser.muted_user_id)
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
-        .filter(MutedUser.muted_user_id == entity_user_id)
+        .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_REPORT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
         .scalar()
-        is not None
-    )
+    ) is not None
 
     track_owner_notifications_off = params.session.query(
         params.session.query(CommentNotificationSetting)
