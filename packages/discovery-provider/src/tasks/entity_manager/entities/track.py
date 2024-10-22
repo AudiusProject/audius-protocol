@@ -91,12 +91,8 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    is_stream_gated = track_metadata.get(
-        "is_stream_gated", False
-    ) and track_metadata.get("stream_conditions", None)
-    is_download_gated = track_metadata.get(
-        "is_download_gated", False
-    ) and track_metadata.get("download_conditions", None)
+    is_stream_gated = track_metadata.get("stream_conditions", None)
+    is_download_gated = track_metadata.get("download_conditions", None)
     if is_stream_gated or is_download_gated:
         conditions = (
             track_metadata["stream_conditions"]
