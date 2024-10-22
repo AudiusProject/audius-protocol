@@ -331,16 +331,7 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
             justifyContent='flex-end'
             pr='xl'
           >
-            <Text
-              variant='title'
-              size='m'
-              color='default'
-              css={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}
-            >
+            <Text variant='title' size='m' color='default' ellipses>
               {feature}
             </Text>
           </Flex>
@@ -377,8 +368,6 @@ const Tiers = () => {
   }, [showConfetti, dispatch])
 
   const wm = useWithMobileStyle(styles.mobile)
-
-  // const isMobile = useIsMobile()
 
   return (
     <div className={styles.container}>
