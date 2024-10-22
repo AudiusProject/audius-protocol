@@ -14,8 +14,8 @@ import (
 	_ "embed"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
-	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/registrar"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"golang.org/x/exp/slices"
