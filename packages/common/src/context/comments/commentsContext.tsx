@@ -125,6 +125,11 @@ export function CommentSectionProvider<NavigationProp>(
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
+  const handleCloseDrawer = useCallback(() => {
+    closeDrawer?.()
+    setReplyingAndEditingState?.(undefined)
+  }, [closeDrawer, setReplyingAndEditingState])
+
   const playTrack = useCallback(
     (timestampSeconds?: number) => {
       const uid = lineup?.entries?.[0]?.uid
@@ -188,7 +193,7 @@ export function CommentSectionProvider<NavigationProp>(
         playTrack,
         loadMorePages,
         navigation,
-        closeDrawer
+        closeDrawer: handleCloseDrawer
       }}
     >
       {children}

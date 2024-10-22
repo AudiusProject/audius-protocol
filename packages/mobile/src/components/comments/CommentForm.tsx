@@ -114,15 +114,20 @@ export const CommentForm = (props: CommentFormProps) => {
     setMessageId((id) => ++id)
   }
 
+  const focusInput = useCallback(() => {
+    // setTimeout is required to focus the input on android
+    setTimeout(() => ref.current?.focus())
+  }, [ref])
+
   /**
    * Populate and focus input when replying to a comment
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
       setInitialMessage(replyInitialMessage(replyingToUser.handle))
-      ref.current?.focus()
+      focusInput()
     }
-  }, [replyingToComment, replyingToUser])
+  }, [replyingToComment, replyingToUser, focusInput])
 
   /**
    * Populate and focus input when editing a comment
@@ -130,16 +135,15 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (editingComment) {
       setInitialMessage(editingComment.message)
-      ref.current?.focus()
+      focusInput()
     }
-  }, [editingComment])
+  }, [editingComment, focusInput])
 
   useEffect(() => {
     if (autoFocus) {
-      // setTimeout is required to focus the input on android
-      setTimeout(() => ref.current?.focus(), 0)
+      focusInput()
     }
-  }, [autoFocus])
+  }, [autoFocus, focusInput])
 
   const handleLayout = useCallback(() => {
     if (
