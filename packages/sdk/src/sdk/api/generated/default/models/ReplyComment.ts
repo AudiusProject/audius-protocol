@@ -50,7 +50,7 @@ export interface ReplyComment {
      * @type {Array<CommentMention>}
      * @memberof ReplyComment
      */
-    mentions: Array<CommentMention>;
+    mentions?: Array<CommentMention>;
     /**
      * 
      * @type {number}
@@ -103,7 +103,6 @@ export function instanceOfReplyComment(value: object): value is ReplyComment {
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
-    isInstance = isInstance && "mentions" in value && value["mentions"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "isEdited" in value && value["isEdited"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
@@ -124,7 +123,7 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'id': json['id'],
         'userId': json['user_id'],
         'message': json['message'],
-        'mentions': ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
+        'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
         'isEdited': json['is_edited'],
@@ -147,7 +146,7 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
-        'mentions': ((value.mentions as Array<any>).map(CommentMentionToJSON)),
+        'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
         'is_edited': value.isEdited,
