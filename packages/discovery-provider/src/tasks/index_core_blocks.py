@@ -9,9 +9,28 @@ logger = logging.getLogger(__name__)
 block_iterator: Optional[CoreBlockIterator] = None
 
 
+def index_core_plays():
+    return
+
+
+def index_core_manage_entities():
+    return
+
+
+def index_core_transactions(txs):
+    for tx in txs:
+        if tx.HasField("plays"):
+            logger.info("index_core_blocks.py | got plays tx")
+        elif tx.HasField("manage_entity"):
+            logger.info("index_core_blocks.py | got manage entity tx")
+        elif tx.HasField("sla_rollup"):
+            logger.info("index_core_blocks.py | got sla rollup tx")
+        else:
+            logger.warning("got unimplemented tx")
+
+
 @celery.task(name="index_core_blocks", bind=True)
 def index_core_blocks(self):
-    logger.info("index_core_blocks.py | starting index core blocks")
     global block_iterator
 
     redis = index_core_blocks.redis
@@ -24,11 +43,27 @@ def index_core_blocks(self):
         return
 
     try:
-        logger.info("index_core_blocks.py | indexing core blocks")
         if not block_iterator:
             block_iterator = CoreBlockIterator(db=db)
 
-        block_iterator.next_block()
+        block = block_iterator.next_block()
+
+        block_hash = block.blockhash
+        chainid = block.chainid
+        proposer = block.proposer
+        height = block.height
+        transactions = block.transactions
+
+        if height < 0:
+            return
+
+        logger.info(
+            f"index_core_blocks.py | saw block {height} from {proposer} on chain {chainid} {block_hash}"
+        )
+
+        # create db session here?
+        index_core_transactions(txs=transactions)
+        block_iterator.commit_block(block_num=height)
 
     except Exception as e:
         logger.error(
