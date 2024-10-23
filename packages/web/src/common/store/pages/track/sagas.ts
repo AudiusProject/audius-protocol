@@ -4,7 +4,6 @@ import { StringKeys } from '@audius/common/services'
 import {
   cacheTracksActions as trackCacheActions,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   trackPageLineupActions,
   trackPageActions,
   getContext,
@@ -23,15 +22,12 @@ import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { trackRemixesPage } from '../../../../utils/route'
-
 import tracksSagas from './lineups/sagas'
 const { getIsReachable } = reachabilitySelectors
 const { tracksActions } = trackPageLineupActions
 const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
   trackPageSelectors
 const { getTrack: getCachedTrack } = cacheTracksSelectors
-const { getUsers } = cacheUsersSelectors
 const { NOT_FOUND_PAGE } = route
 
 export const TRENDING_BADGE_LIMIT = 10
@@ -261,38 +257,12 @@ function* watchTrackPageMakePublic() {
   )
 }
 
-function* watchGoToRemixesOfParentPage() {
-  yield* takeEvery(
-    trackPageActions.GO_TO_REMIXES_OF_PARENT_PAGE,
-    function* (
-      action: ReturnType<typeof trackPageActions.goToRemixesOfParentPage>
-    ) {
-      const { parentTrackId } = action
-      if (parentTrackId) {
-        const parentTrack: Track = (yield* call(retrieveTracks, {
-          trackIds: [parentTrackId]
-        }))[0]
-        if (parentTrack) {
-          const parentTrackUser = (yield* select(getUsers, {
-            ids: [parentTrack.owner_id]
-          }))[parentTrack.owner_id]
-          if (parentTrackUser) {
-            const route = trackRemixesPage(parentTrack.permalink)
-            yield* put(pushRoute(route))
-          }
-        }
-      }
-    }
-  )
-}
-
 export default function sagas() {
   return [
     ...tracksSagas(),
     watchFetchTrack,
     watchRefetchLineup,
     watchFetchTrackBadge,
-    watchTrackPageMakePublic,
-    watchGoToRemixesOfParentPage
+    watchTrackPageMakePublic
   ]
 }

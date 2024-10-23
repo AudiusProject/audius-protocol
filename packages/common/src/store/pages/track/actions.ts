@@ -71,11 +71,6 @@ export type FetchTrackFailedAction = {
   type: typeof FETCH_TRACK_FAILED
 }
 
-export type GoToRemixesOfParentPageAction = {
-  type: typeof GO_TO_REMIXES_OF_PARENT_PAGE
-  parentTrackId: ID
-}
-
 export type RefetchLineupAction = {
   type: typeof REFETCH_LINEUP
 }
@@ -91,7 +86,6 @@ export type TrackPageAction =
   | FetchTrackAction
   | FetchTrackSucceededAction
   | FetchTrackFailedAction
-  | GoToRemixesOfParentPageAction
   | RefetchLineupAction
 
 export const getTrackRanks = (trackId: ID): GetTrackRanksAction => ({
@@ -148,13 +142,6 @@ export const fetchTrackFailed = (
   _trackId: ID | string
 ): FetchTrackFailedAction => ({
   type: FETCH_TRACK_FAILED
-})
-
-export const goToRemixesOfParentPage = (
-  parentTrackId: ID
-): GoToRemixesOfParentPageAction => ({
-  type: GO_TO_REMIXES_OF_PARENT_PAGE,
-  parentTrackId
 })
 
 /**
