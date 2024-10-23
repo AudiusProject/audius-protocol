@@ -246,7 +246,8 @@ export const usePostComment = () => {
         trackId,
         parentCommentId,
         trackTimestampS,
-        currentSort
+        currentSort,
+        mentions
       } = args
       const isReply = parentCommentId !== undefined
       // This executes before the mutationFn is called, and the reference to comment is the same in both
@@ -259,6 +260,7 @@ export const usePostComment = () => {
         id: newId,
         userId,
         message: body,
+        mentions,
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
