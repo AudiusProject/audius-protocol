@@ -11,6 +11,7 @@ import { Divider, Flex, LoadingSpinner, Paper, Skeleton } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { CommentForm } from './CommentForm'
@@ -81,6 +82,7 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
+  const { history } = useHistoryContext()
 
   // Scroll to the comment section if the showComments query param is present
   useEffect(() => {
@@ -90,14 +92,16 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
       !commentSectionLoading &&
       commentSectionRef.current
     ) {
-      commentSectionRef.current.scrollIntoView()
+      history.replace({ search: '' })
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
       setHasScrolledIntoView(true)
     }
   }, [
     commentSectionLoading,
     showComments,
     hasScrolledIntoView,
-    commentSectionRef
+    commentSectionRef,
+    history
   ])
 
   if (commentSectionLoading) {
