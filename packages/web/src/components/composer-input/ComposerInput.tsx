@@ -253,7 +253,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }
       setIsUserAutocompleteActive(false)
     },
-    [getAutocompleteRange, userMentions]
+    [getAutocompleteRange, userMentions, maxMentions, mentionCount]
   )
 
   const handleChange = useCallback(
