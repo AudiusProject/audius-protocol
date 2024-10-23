@@ -237,20 +237,11 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       if (!user) return
-      if (maxMentions && mentionCount >= maxMentions) {
-        setIsAutocompleteActive(false)
-        return
-      }
 
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
       if (!userMentions.includes(mentionText)) {
-        if (mentionCount >= maxMentions) {
-          // Don't add the mention if the max has been reached
-          setIsAutocompleteActive(false)
-          return
-        }
         setUserMentions((mentions) => [...mentions, mentionText])
         setUserIdMap((map) => {
           map[mentionText] = user.user_id
@@ -267,7 +258,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
       })
       setIsAutocompleteActive(false)
     },
-    [getAutocompleteRange, userMentions, maxMentions, mentionCount]
+    [getAutocompleteRange, userMentions]
   )
 
   useEffect(() => {

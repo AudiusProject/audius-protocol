@@ -120,7 +120,7 @@ export const CommentForm = ({
           onClick={handleClickInput}
           messageId={messageId}
           maxLength={400}
-          maxMentions={1}
+          maxMentions={10}
           onSubmit={(value: string, _, mentions) => {
             handleSubmit({ commentMessage: value, mentions })
           }}

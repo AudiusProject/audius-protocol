@@ -72,7 +72,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     presetMessage,
     presetUserMentionIds = [],
     maxLength = 400,
-    maxMentions,
+    maxMentions = Infinity,
     placeholder,
     isLoading,
     entityId,
@@ -218,10 +218,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
-      if (maxMentions && mentionCount >= maxMentions) {
-        return
-      }
-
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
       let textLength = mentionText.length
@@ -253,7 +249,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }
       setIsUserAutocompleteActive(false)
     },
-    [getAutocompleteRange, userMentions, maxMentions, mentionCount]
+    [getAutocompleteRange, userMentions]
   )
 
   const handleChange = useCallback(
@@ -335,9 +331,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        if (maxMentions && mentionCount >= maxMentions) {
-          setIsUserAutocompleteActive(false)
-        } else {
+        if (mentionCount < maxMentions) {
           setAutocompleteAtIndex(cursorPosition)
           setIsUserAutocompleteActive(true)
         }
