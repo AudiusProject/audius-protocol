@@ -266,6 +266,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
+    if (ref.current) {
+      ref.current.blur()
+    }
     submittedRef.current = true
     changeOpIdRef.current++
     const mentionIds =
