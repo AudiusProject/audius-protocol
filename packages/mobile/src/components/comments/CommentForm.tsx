@@ -185,9 +185,8 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={commentSectionLoading ? '' : messages.addComment}
+            placeholder={messages.addComment}
             onSubmit={handleSubmit}
-            displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
             maxLength={400}

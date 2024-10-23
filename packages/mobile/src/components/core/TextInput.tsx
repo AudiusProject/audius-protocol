@@ -142,6 +142,7 @@ export type TextInputProps = RNTextInputProps & {
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
+  children?: ReactNode
 }
 
 export type TextInputRef = RNTextInput
