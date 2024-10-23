@@ -2,7 +2,7 @@ from sqlalchemy import and_, func, or_
 
 from src.models.comments.comment import Comment
 from src.models.comments.comment_report import (
-    COMMENT_REPORT_KARMA_THRESHOLD,
+    COMMENT_KARMA_THRESHOLD,
     CommentReport,
 )
 from src.models.moderation.muted_user import MutedUser
@@ -58,7 +58,7 @@ def get_track_comment_count(track_id, current_user_id, db_session=None):
             # this mainly applies to comments the Audius account reported
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_REPORT_KARMA_THRESHOLD,
+                <= COMMENT_KARMA_THRESHOLD,
             )
             .scalar()
         )
