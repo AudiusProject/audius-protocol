@@ -16,7 +16,6 @@ export const TimestampLink = (props: TimestampLinkProps) => {
     <TextLink
       onPress={() => playTrack(timestampSeconds)}
       variant='visible'
-      size='s'
       {...other}
     >
       {formatCommentTrackTimestamp(timestampSeconds)}

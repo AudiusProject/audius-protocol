@@ -246,7 +246,8 @@ export const usePostComment = () => {
         trackId,
         parentCommentId,
         trackTimestampS,
-        currentSort
+        currentSort,
+        mentions
       } = args
       const isReply = parentCommentId !== undefined
       // This executes before the mutationFn is called, and the reference to comment is the same in both
@@ -259,6 +260,7 @@ export const usePostComment = () => {
         id: newId,
         userId,
         message: body,
+        mentions,
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
@@ -476,6 +478,8 @@ export const useDeleteComment = () => {
       return await sdk.comments.deleteComment(commentData)
     },
     onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
+      // Undo comment count change
+      dispatch(incrementTrackCommentCount(trackId, -1))
       // If reply, filter it from the parent's list of replies
       if (parentCommentId) {
         queryClient.setQueryData<Comment>(
@@ -489,30 +493,50 @@ export const useDeleteComment = () => {
               replyCount: (prev?.replyCount ?? 0) - 1
             } as Comment)
         )
-      }
-      // If not a reply, remove from the sort list
-      queryClient.setQueryData<InfiniteData<ID[]>>(
-        [QUERY_KEYS.trackCommentList, trackId, currentSort],
-        (prevCommentData) => {
-          const newCommentData = cloneDeep(prevCommentData)
-          if (!newCommentData) return
-          // Filter out the comment from itsz current page
-          newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
-            page.filter((id: ID) => id !== commentId)
+      } else {
+        const existingCommentData = queryClient.getQueryData<
+          CommentOrReply | undefined
+        >([QUERY_KEYS.comment, commentId])
+        const hasReplies =
+          existingCommentData &&
+          'replies' in existingCommentData &&
+          (existingCommentData?.replies?.length ?? 0) > 0
+
+        if (hasReplies) {
+          queryClient.setQueryData<Comment>(
+            [QUERY_KEYS.comment, commentId],
+            (prevCommentData) =>
+              ({
+                ...prevCommentData,
+                isTombstone: true,
+                userId: undefined,
+                message: '[Removed]'
+                // Intentionally undoing the userId
+              } as Comment & { userId?: undefined })
           )
-          return newCommentData
+        } else {
+          // If not a reply & has no replies, remove from the sort list
+          queryClient.setQueryData<InfiniteData<ID[]>>(
+            [QUERY_KEYS.trackCommentList, trackId, currentSort],
+            (prevCommentData) => {
+              const newCommentData = cloneDeep(prevCommentData)
+              if (!newCommentData) return
+              // Filter out the comment from its current page
+              newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
+                page.filter((id: ID) => id !== commentId)
+              )
+              return newCommentData
+            }
+          )
+          // Remove the individual comment
+          queryClient.removeQueries({
+            queryKey: [QUERY_KEYS.comment, commentId],
+            exact: true
+          })
         }
-      )
-      // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, -1))
+      }
     },
-    onSuccess: (_res, { commentId }) => {
-      // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
-      queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.comment, commentId],
-        exact: true
-      })
-    },
+
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
       reportToSentry({

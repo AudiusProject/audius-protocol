@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.models.comments.comment_report import COMMENT_REPORT_KARMA_THRESHOLD
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
 from src.queries.get_comments import get_paginated_replies, get_track_comments
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
@@ -308,7 +308,7 @@ def test_get_reported_comments(app):
         ],
         "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
         "aggregate_user": [
-            {"user_id": 3, "follower_count": COMMENT_REPORT_KARMA_THRESHOLD + 1}
+            {"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD + 1}
         ],
         "tracks": [{"track_id": 1, "owner_id": 1}],
     }
@@ -319,3 +319,45 @@ def test_get_reported_comments(app):
 
         comments = get_track_comments({}, 1, 4)
         assert len(comments) == 0
+
+
+def test_get_comment_mentions(app):
+    entities = {
+        "tracks": [{"track_id": 1, "owner_id": 101}],
+        "users": [
+            {"user_id": 101, "handle": "dylan"},
+            {"user_id": 202, "handle": "kj"},
+            {"user_id": 321, "handle": "jd"},
+        ],
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 202,
+                "entity_id": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 202,
+                "entity_id": 1,
+            },
+        ],
+        "comment_mentions": [
+            {"comment_id": 1, "user_id": 101},
+            {"comment_id": 1, "user_id": 202, "is_delete": True},
+            {"comment_id": 1, "user_id": 321},
+            {"comment_id": 2, "user_id": 321, "is_delete": True},
+        ],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+        comments = get_track_comments({"sort_method": "newest"}, 1)
+
+        assert len(comments) == 2
+        assert len(comments[0]["mentions"]) == 0
+        assert len(comments[1]["mentions"]) == 2
+        assert comments[1]["mentions"] == [
+            {"user_id": 101, "handle": "dylan"},
+            {"user_id": 321, "handle": "jd"},
+        ]

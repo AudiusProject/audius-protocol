@@ -29,7 +29,10 @@ const initialValues: SelectGenresValue = { genres: [] }
 /* Memoized SelectablePill to fix a performance issue.
  * The code below is arranged so that the pills don't need to re-render,
  * And the memoization here is just forcing it to never re-render. */
-const MemoSelectablePill = memo(SelectablePill, () => true)
+const MemoSelectablePill = memo(
+  SelectablePill,
+  (prevProps, nextProps) => prevProps.isSelected === nextProps.isSelected
+)
 
 const SelectGenresFieldArray = () => {
   // Storing values as state alongside Formik purely because setState provides access to the previous values
@@ -76,6 +79,7 @@ const SelectGenresFieldArray = () => {
             onPress={() => {
               handlePress(genre.value)
             }}
+            isSelected={formValues.includes(genre.value)}
             key={genre.value}
           />
         ))}

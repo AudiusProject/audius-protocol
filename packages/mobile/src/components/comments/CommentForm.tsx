@@ -90,8 +90,12 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const { currentUserId, commentIds, entityId, replyingAndEditingState } =
-    useCurrentCommentSection()
+  const {
+    currentUserId,
+    entityId,
+    replyingAndEditingState,
+    commentSectionLoading
+  } = useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
   const adjustedCursorPosition = useRef(false)
@@ -110,15 +114,20 @@ export const CommentForm = (props: CommentFormProps) => {
     setMessageId((id) => ++id)
   }
 
+  const focusInput = useCallback(() => {
+    // setTimeout is required to focus the input on android
+    setTimeout(() => ref.current?.focus())
+  }, [ref])
+
   /**
    * Populate and focus input when replying to a comment
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
       setInitialMessage(replyInitialMessage(replyingToUser.handle))
-      ref.current?.focus()
+      focusInput()
     }
-  }, [replyingToComment, replyingToUser])
+  }, [replyingToComment, replyingToUser, focusInput])
 
   /**
    * Populate and focus input when editing a comment
@@ -126,15 +135,15 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (editingComment) {
       setInitialMessage(editingComment.message)
-      ref.current?.focus()
+      focusInput()
     }
-  }, [editingComment])
+  }, [editingComment, focusInput])
 
   useEffect(() => {
     if (autoFocus) {
-      ref.current?.focus()
+      focusInput()
     }
-  }, [autoFocus])
+  }, [autoFocus, focusInput])
 
   const handleLayout = useCallback(() => {
     if (
@@ -149,19 +158,17 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment, initialMessage?.length, replyingToComment])
 
-  const placeholder = commentIds?.length
-    ? messages.addComment
-    : messages.firstComment
-
   const showHelperText = editingComment || replyingToComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
       {currentUserId ? (
-        <ProfilePicture
-          userId={currentUserId}
-          style={{ width: 40, height: 40, flexShrink: 0 }}
-        />
+        <Flex alignSelf='flex-start' pt='unit1' alignItems='center'>
+          <ProfilePicture
+            userId={currentUserId}
+            style={{ width: 40, height: 40, flexShrink: 0 }}
+          />
+        </Flex>
       ) : null}
       <Flex flex={1}>
         {showHelperText ? (
@@ -178,11 +185,12 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={placeholder}
+            placeholder={commentSectionLoading ? '' : messages.addComment}
             onSubmit={handleSubmit}
             displayCancelAccessory={!showHelperText}
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
+            maxLength={400}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

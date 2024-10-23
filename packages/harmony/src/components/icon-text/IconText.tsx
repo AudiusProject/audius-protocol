@@ -11,7 +11,7 @@ export const IconText = ({
   icons = []
 }: IconTextProps) => {
   const separator = (
-    <Text variant='body' color='default' css={{ fontSize: 8 }}>
+    <Text variant='body' color='default' css={{ fontSize: 8, lineHeight: 20 }}>
       •
     </Text>
   )
@@ -24,7 +24,7 @@ export const IconText = ({
           <Icon size='2xs' color={iconColor} />
         </Fragment>
       ))}
-      <Text variant='body' size='xs' color={color}>
+      <Text size='s' color={color}>
         {children}
       </Text>
     </Flex>
