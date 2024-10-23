@@ -1,10 +1,7 @@
 from sqlalchemy import and_, func, or_
 
 from src.models.comments.comment import Comment
-from src.models.comments.comment_report import (
-    COMMENT_KARMA_THRESHOLD,
-    CommentReport,
-)
+from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentReport
 from src.models.moderation.muted_user import MutedUser
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
