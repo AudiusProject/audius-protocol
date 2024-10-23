@@ -1312,7 +1312,7 @@ def test_mute_user_notifications(app, mocker):
             },
             {
                 "muted_user_id": 3,
-                "user_id": 1,
+                "user_id": 2,
             },
         ],
         "aggregate_user": [{"user_id": 1, "follower_count": 2000000}],
@@ -1338,28 +1338,6 @@ def test_mute_user_notifications(app, mocker):
                     }
                 )
             },
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 2,
-                        "_entityType": "Comment",
-                        "_userId": 2,
-                        "_action": "Create",
-                        "_metadata": json.dumps(
-                            {
-                                "cid": "",
-                                "data": {
-                                    "entity_id": 2,
-                                    "entity_type": "Track",
-                                    "body": "comment text",
-                                    "parent_comment_id": None,
-                                },
-                            }
-                        ),
-                        "_signer": "user2wallet",
-                    }
-                )
-            },
         ],
         "CommentMention": [
             {
@@ -1373,6 +1351,68 @@ def test_mute_user_notifications(app, mocker):
                         "_signer": "user3wallet",
                     }
                 )
+            },
+        ],
+        "CommentThread": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {
+                                    "entity_id": 1,
+                                    "entity_type": "Track",
+                                    "body": "reply text",
+                                    "parent_comment_id": 1,
+                                },
+                            }
+                        ),
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CommentReaction1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "React",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {"entity_id": 1, "entity_type": "Track"},
+                            }
+                        ),
+                        "_signer": "user3wallet",
+                    }
+                ),
+            },
+        ],
+        "CommentReaction2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "React",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {"entity_id": 1, "entity_type": "Track"},
+                            }
+                        ),
+                        "_signer": "user2wallet",
+                    }
+                ),
             },
         ],
     }

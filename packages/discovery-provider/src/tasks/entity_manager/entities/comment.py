@@ -516,7 +516,38 @@ def react_comment(params: ManageEntityParameters):
             comment_id
         ].user_id
 
-        if user_id != comment_user_id:
+        comment_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == EntityType.COMMENT.value,
+                CommentNotificationSetting.entity_id == comment_id,
+                CommentNotificationSetting.user_id == comment_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == comment_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        is_muted_by_karma = (
+            params.session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.muted_user_id == user_id)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .scalar()
+        ) is not None
+
+        if (
+            user_id != comment_user_id
+            and not comment_owner_notifications_off
+            and not is_muted_by_karma
+        ):
             comment_reaction_notification = Notification(
                 blocknumber=params.block_number,
                 user_ids=[comment_user_id],
