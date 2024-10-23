@@ -264,7 +264,7 @@ export const usePostComment = () => {
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
-        replyCount: !isReply ? 0 : undefined,
+        replyCount: 0,
         replies: undefined,
         createdAt: new Date().toISOString(),
         updatedAt: undefined
