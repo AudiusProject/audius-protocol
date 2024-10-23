@@ -130,10 +130,14 @@ web-distribute:
 
     - create_concatenated_patch_file:
         filename: combined-patch-file.txt
+    
+    - run:
+        name: Remove Node Modules from previous builds
+        command: rm -rf node_modules && rm -rf packages/*/node_modules
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}{{ if eq parameters.os "mac" }}-mac{{ end }}
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ parameters.os }}
 
     - run:
         name: Install dependencies
@@ -142,19 +146,16 @@ web-distribute:
           [[ ! -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm run postinstall
           [[ -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm ci
 
-    - when:
-        condition: \<< eq parameters.os "mac" >>
-        steps:
-          - save_cache:
-              key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-mac
-              paths:
-                - ./node_modules
-                - ./packages/web/node_modules
-                - ./packages/harmony/node_modules
-                - ./packages/common/node_modules
-                - ./packages/libs/node_modules
-                - ./packages/sdk/node_modules
-                - ./packages/trpc-server/node_modules
+    - save_cache:
+        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ parameters.os }}
+        paths:
+          - ./node_modules
+          - ./packages/web/node_modules
+          - ./packages/harmony/node_modules
+          - ./packages/common/node_modules
+          - ./packages/libs/node_modules
+          - ./packages/sdk/node_modules
+          - ./packages/trpc-server/node_modules
     - when:
         condition: << parameters.install-license >>
         steps:
