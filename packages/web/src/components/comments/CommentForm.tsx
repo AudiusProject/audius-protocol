@@ -33,6 +33,7 @@ type CommentFormProps = {
   parentCommentId?: ID
   isEdit?: boolean
   autoFocus?: boolean
+  disabled?: boolean
 }
 
 export const CommentForm = ({
@@ -43,7 +44,8 @@ export const CommentForm = ({
   parentCommentId,
   isEdit,
   hideAvatar = false,
-  autoFocus
+  autoFocus,
+  disabled = false
 }: CommentFormProps) => {
   const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
@@ -121,6 +123,7 @@ export const CommentForm = ({
           onSubmit={(value: string, _, mentions) => {
             handleSubmit({ commentMessage: value, mentions })
           }}
+          disabled={disabled}
         />
       </Flex>
       <DownloadMobileAppDrawer

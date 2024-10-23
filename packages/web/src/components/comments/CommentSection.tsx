@@ -16,20 +16,14 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
+import {
+  CommentBlockSkeleton,
+  CommentBlockSkeletons,
+  SortBarSkeletons
+} from './CommentSkeletons'
 import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
-
-const CommentSkeletons = () => {
-  return (
-    <>
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-    </>
-  )
-}
 
 const FullCommentSkeletons = () => (
   <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
@@ -46,7 +40,8 @@ const FullCommentSkeletons = () => (
         <Skeleton w='100%' h='60px' />
       </Flex>
       <Divider color='default' orientation='horizontal' />
-      <CommentSkeletons />
+
+      <CommentBlockSkeletons />
     </Paper>
   </Flex>
 )
@@ -84,6 +79,14 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
 
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
+
+  useEffect(() => {
+    if (!commentSectionLoading && isFirstLoad) {
+      setIsFirstLoad(false)
+    }
+  }, [commentSectionLoading, isFirstLoad])
+
   // Scroll to the comment section if the showComments query param is present
   useEffect(() => {
     if (
@@ -104,7 +107,7 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
     history
   ])
 
-  if (commentSectionLoading) {
+  if (commentSectionLoading && isFirstLoad) {
     return <FullCommentSkeletons />
   }
 
@@ -121,14 +124,18 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
         {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm />
+              <CommentForm disabled={commentSectionLoading} />
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
-          {showCommentSortBar ? <CommentSortBar /> : null}
+          {commentSectionLoading ? (
+            <SortBarSkeletons />
+          ) : showCommentSortBar ? (
+            <CommentSortBar />
+          ) : null}
           <InfiniteScroll
             hasMore={hasMorePages}
             loadMore={loadMorePages}
@@ -137,15 +144,21 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
             threshold={-250}
           >
             <Flex direction='column' gap='xl' pt='m'>
-              {commentIds.length === 0 ? <NoComments /> : null}
-              {commentIds.map((id) => (
-                <CommentThread commentId={id} key={id} />
-              ))}
-              {isLoadingMorePages ? (
-                <Flex justifyContent='center' mt='l'>
-                  <LoadingSpinner css={{ width: 20, height: 20 }} />
-                </Flex>
-              ) : null}
+              {commentSectionLoading ? (
+                <CommentBlockSkeletons />
+              ) : (
+                <>
+                  {commentIds.length === 0 ? <NoComments /> : null}
+                  {commentIds.map((id) => (
+                    <CommentThread commentId={id} key={id} />
+                  ))}
+                  {isLoadingMorePages ? (
+                    <Flex justifyContent='center' mt='l'>
+                      <LoadingSpinner css={{ width: 20, height: 20 }} />
+                    </Flex>
+                  ) : null}
+                </>
+              )}
             </Flex>
           </InfiniteScroll>
         </Flex>
