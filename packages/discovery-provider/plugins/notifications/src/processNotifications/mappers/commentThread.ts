@@ -145,7 +145,9 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
-                type: 'CommentThread'
+                type: 'CommentThread',
+                entityType: this.entityType,
+                entityId: this.entityId
               }
             }
           )
