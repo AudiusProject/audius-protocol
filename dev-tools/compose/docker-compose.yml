@@ -135,14 +135,6 @@ services:
       service: identity-service
     <<: *common
 
-  # Healthz
-
-  healthz:
-    extends:
-      file: docker-compose.healthz.yml
-      service: healthz
-    <<: *common
-
   # Protocol dashboard
 
   dashboard:

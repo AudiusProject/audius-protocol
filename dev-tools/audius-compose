@@ -500,7 +500,6 @@ def up(
             "--profile=discovery",
             "--profile=comms",
             "--profile=chain",
-            "--profile=healthz",
             *(
                 ["--file=" + str(AAO_DIR / "audius-compose.yml")]
                 if anti_abuse_oracle
