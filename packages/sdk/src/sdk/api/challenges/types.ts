@@ -59,7 +59,7 @@ const ReferralSpecifier = z.object({
   referredUserId: HashId
 })
 
-const AudiuMatchSpecifier = z.object({
+const AudioMatchSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
   challengeId: z.enum([
     ChallengeId.AUDIO_MATCHING_BUYER,
@@ -74,7 +74,7 @@ const AudiuMatchSpecifier = z.object({
 export const GenerateSpecifierSchema = z.union([
   DefaultSpecifier,
   ReferralSpecifier,
-  AudiuMatchSpecifier
+  AudioMatchSpecifier
 ])
 
 export type GenerateSpecifierRequest = z.input<typeof GenerateSpecifierSchema>
