@@ -139,8 +139,8 @@ web-distribute:
         name: Install dependencies
         # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
         command: |
-          [[ ! -d node_modules ]] || CI=true npm run postinstall
-          [[ -d node_modules ]] || CI=true npm ci
+          [[ ! -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm run postinstall
+          [[ -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm ci
 
     - when:
         condition: \<< eq parameters.os "mac" >>
