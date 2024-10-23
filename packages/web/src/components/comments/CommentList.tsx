@@ -11,10 +11,7 @@ export const CommentList = () => {
   return (
     <Flex p='l' as='ul' column gap='xl' w='100%' backgroundColor='white'>
       {commentSectionLoading ? (
-        <>
-          <CommentBlockSkeletons />
-          <CommentBlockSkeletons />
-        </>
+        <CommentBlockSkeletons />
       ) : (
         <>
           {commentIds.length === 0 ? <NoComments /> : null}
