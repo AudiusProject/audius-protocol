@@ -372,7 +372,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
       hitSlop={spacing(2)}
       style={styles.submit}
     >
-      <Flex pb='xs'>
+      <Flex pv='xs'>
         {isLoading ? (
           <LoadingSpinner />
         ) : (
