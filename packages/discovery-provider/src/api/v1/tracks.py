@@ -47,11 +47,7 @@ from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
 )
-from src.queries.get_comments import (
-    get_track_comments,
-    get_track_notification_setting,
-)
-from src.queries.get_track_comment_count import get_track_comment_count
+from src.queries.get_comments import get_track_comments, get_track_notification_setting
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -74,6 +70,7 @@ from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_top_listeners_for_track import get_top_listeners_for_track
 from src.queries.get_track_access_info import get_track_access_info
+from src.queries.get_track_comment_count import get_track_comment_count
 from src.queries.get_track_signature import (
     get_track_download_signature,
     get_track_stream_signature,

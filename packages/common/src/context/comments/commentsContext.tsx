@@ -132,13 +132,10 @@ export function CommentSectionProvider<NavigationProp>(
   const { data: commentCountData, isLoading: isCommentCountLoading } =
     useTrackCommentCount(entityId, currentUserId, true)
 
-  const hasNewComments = useMemo(
-    () =>
-      commentCountData?.previousValue !== undefined &&
-      commentCountData?.currentValue !== undefined &&
-      commentCountData?.previousValue < commentCountData?.currentValue,
-    [commentCountData]
-  )
+  const hasNewComments = () =>
+    commentCountData?.previousValue !== undefined &&
+    commentCountData?.currentValue !== undefined &&
+    commentCountData?.previousValue < commentCountData?.currentValue
 
   const dispatch = useDispatch()
 
