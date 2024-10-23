@@ -21,6 +21,13 @@ export const CommentBlockSkeleton = () => {
   )
 }
 
+export const CommentFormSkeleton = () => (
+  <Flex gap='s' w='100%' h='60px' alignItems='center' justifyContent='center'>
+    <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
+    <Skeleton w='100%' h='60px' />
+  </Flex>
+)
+
 export const CommentBlockSkeletons = () => {
   return (
     <>

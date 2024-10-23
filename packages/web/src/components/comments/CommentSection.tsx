@@ -7,7 +7,7 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Divider, Flex, LoadingSpinner, Paper, Skeleton } from '@audius/harmony'
+import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
@@ -17,34 +17,13 @@ import { useMainContentRef } from 'pages/MainContentContext'
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
 import {
-  CommentBlockSkeleton,
   CommentBlockSkeletons,
+  CommentFormSkeleton,
   SortBarSkeletons
 } from './CommentSkeletons'
 import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
-
-const FullCommentSkeletons = () => (
-  <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-    <CommentHeader isLoading />
-    <Paper p='xl' w='100%' direction='column' gap='xl'>
-      <Flex
-        gap='s'
-        w='100%'
-        h='60px'
-        alignItems='center'
-        justifyContent='center'
-      >
-        <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-        <Skeleton w='100%' h='60px' />
-      </Flex>
-      <Divider color='default' orientation='horizontal' />
-
-      <CommentBlockSkeletons />
-    </Paper>
-  </Flex>
-)
 
 type CommentSectionInnerProps = {
   commentSectionRef: React.RefObject<HTMLDivElement>
@@ -107,10 +86,6 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
     history
   ])
 
-  if (commentSectionLoading && isFirstLoad) {
-    return <FullCommentSkeletons />
-  }
-
   return (
     <Flex
       gap='l'
@@ -124,7 +99,11 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
         {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm disabled={commentSectionLoading} />
+              {commentSectionLoading && isFirstLoad ? (
+                <CommentFormSkeleton />
+              ) : (
+                <CommentForm disabled={commentSectionLoading} />
+              )}
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
