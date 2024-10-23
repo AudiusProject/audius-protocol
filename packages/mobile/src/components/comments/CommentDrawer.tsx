@@ -25,6 +25,7 @@ import type { ParamListBase } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -239,23 +240,27 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     setAutoCompleteActive(active)
   }, [])
 
+  const gesture = Gesture.Pan()
+
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-        <Divider orientation='horizontal' />
-        <CommentSectionProvider
-          entityId={entityId}
-          replyingAndEditingState={replyingAndEditingState}
-          setReplyingAndEditingState={setReplyingAndEditingState}
-        >
-          <CommentDrawerForm
-            commentListRef={commentListRef}
-            onAutocompleteChange={onAutoCompleteChange}
-            setAutocompleteHandler={setAutocompleteHandler}
-            autoFocus={autoFocusInput}
-          />
-        </CommentSectionProvider>
-      </BottomSheetFooter>
+      <GestureDetector gesture={gesture}>
+        <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+          <Divider orientation='horizontal' />
+          <CommentSectionProvider
+            entityId={entityId}
+            replyingAndEditingState={replyingAndEditingState}
+            setReplyingAndEditingState={setReplyingAndEditingState}
+          >
+            <CommentDrawerForm
+              commentListRef={commentListRef}
+              onAutocompleteChange={onAutoCompleteChange}
+              setAutocompleteHandler={setAutocompleteHandler}
+              autoFocus={autoFocusInput}
+            />
+          </CommentSectionProvider>
+        </BottomSheetFooter>
+      </GestureDetector>
     ),
     // intentionally excluding insets.bottom because it causes a rerender
     // when the keyboard is opened on android, causing the keyboard to close

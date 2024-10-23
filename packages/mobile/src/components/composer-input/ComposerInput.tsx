@@ -21,7 +21,7 @@ import {
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
-import { Platform, TouchableOpacity, View } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import type { TextInput as RnTextInput } from 'react-native'
 import type {
   NativeSyntheticEvent,
@@ -44,6 +44,7 @@ import type { ComposerInputProps } from './types'
 const BACKSPACE_KEY = 'Backspace'
 const AT_KEY = '@'
 const SPACE_KEY = ' '
+const ENTER_KEY = 'Enter'
 
 const messages = {
   sendMessage: 'Send Message',
@@ -55,7 +56,7 @@ const createTextSections = (text: string) => {
   const splitText = splitOnNewline(text)
   return splitText.map((t) => (
     // eslint-disable-next-line react/jsx-key
-    <Text>{`${t === '\n' ? '\n\n' : t}`}</Text>
+    <Text allowNewline>{t}</Text>
   ))
 }
 
@@ -74,23 +75,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     lineHeight: spacing(6),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 0
-  },
-  overlayTextContainer: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    right: spacing(10),
-    left: 0,
-    zIndex: 0,
-    paddingLeft: spacing(4) + 1,
-    paddingVertical: spacing(3) - 1
-  },
-  overlayText: {
-    fontSize: typography.fontSize.medium,
-    lineHeight: spacing(6),
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: palette.neutral,
     paddingTop: 0
   },
   submit: {
@@ -119,7 +103,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
     entityId,
     styles: propStyles,
     TextInputComponent,
-    displayCancelAccessory = false,
     onLayout,
     maxLength = 10000
   } = props
@@ -325,6 +308,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
           setIsAutocompleteActive(false)
         }
 
+        if (key === ENTER_KEY) {
+          setIsAutocompleteActive(false)
+        }
+
         if (key === BACKSPACE_KEY) {
           const deletedChar = value[cursorPosition - 1]
           if (deletedChar === AT_KEY) {
@@ -506,24 +493,17 @@ export const ComposerInput = forwardRef(function ComposerInput(
         onSelectionChange={handleSelectionChange}
         onLayout={onLayout}
         multiline
-        value={value}
-        inputAccessoryViewID={
-          displayCancelAccessory ? 'cancelButtonAccessoryView' : 'none'
-        }
+        inputAccessoryViewID='none'
         maxLength={maxLength}
         autoCorrect
         TextInputComponent={TextInputComponent}
-      />
-      {isTextHighlighted ? (
-        <View
-          style={[
-            styles.overlayTextContainer,
-            Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-          ]}
-        >
-          <Text style={styles.overlayText}>{renderDisplayText(value)}</Text>
-        </View>
-      ) : null}
+      >
+        {isTextHighlighted ? (
+          <Text allowNewline>{renderDisplayText(value)}</Text>
+        ) : (
+          <Text allowNewline>{value}</Text>
+        )}
+      </TextInput>
     </>
   )
 })
