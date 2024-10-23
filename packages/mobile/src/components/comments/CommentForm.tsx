@@ -90,12 +90,8 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const {
-    currentUserId,
-    entityId,
-    replyingAndEditingState,
-    commentSectionLoading
-  } = useCurrentCommentSection()
+  const { currentUserId, entityId, replyingAndEditingState } =
+    useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
   const adjustedCursorPosition = useRef(false)
