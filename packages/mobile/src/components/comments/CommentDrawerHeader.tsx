@@ -59,7 +59,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
     })
   }
 
-  const showCommentSortBar = commentCount > 1
+  const showCommentSortBar = commentCount !== undefined && commentCount > 1
 
   return (
     <>

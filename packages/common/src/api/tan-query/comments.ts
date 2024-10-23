@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import {
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
@@ -14,6 +16,7 @@ import {
 } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { usePrevious } from 'react-use'
 import { Dispatch } from 'redux'
 
 import {
@@ -207,7 +210,7 @@ export const useTrackCommentCount = (
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
-  return useQuery([QUERY_KEYS.trackCommentCount, trackId], {
+  const queryData = useQuery([QUERY_KEYS.trackCommentCount, trackId], {
     enabled: !!trackId,
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -215,11 +218,6 @@ export const useTrackCommentCount = (
         trackId: encodeHashId(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
         userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
       })
-      if (res?.data) {
-        // Keep the legacy cache in sync with tanquery here - since we update the comment count here more often than the legacy cache
-        // We want to keep these values in sync
-        dispatch(setTrackCommentCount(trackId as ID, res?.data))
-      }
       const previousData = queryClient.getQueryData<TrackCommentCount>([
         QUERY_KEYS.trackCommentCount,
         trackId
@@ -235,6 +233,22 @@ export const useTrackCommentCount = (
     refetchIntervalInBackground: false,
     cacheTime: 1 // this data is only used when on the page in comments, we want to make sure it gets fetched fresh every time we load comments
   })
+
+  // Track changes in the current value and update legacy cache when changed
+  const currentCountValue = queryData?.data?.currentValue
+  const previousCurrentCount = usePrevious(currentCountValue) // note: this is different from data.previousValue
+  useEffect(() => {
+    if (
+      previousCurrentCount !== undefined &&
+      currentCountValue !== undefined &&
+      previousCurrentCount !== currentCountValue
+    ) {
+      // This keeps the legacy cache in sync with tanquery here - since we update the comment count here more often than the legacy cache
+      // We want to keep these values in sync
+      dispatch(setTrackCommentCount(trackId as ID, currentCountValue))
+    }
+  }, [currentCountValue, dispatch, previousCurrentCount, trackId])
+  return queryData
 }
 
 type GetRepliesArgs = {
