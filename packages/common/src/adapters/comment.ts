@@ -13,14 +13,14 @@ export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
   const decodedId = decodeHashId(id)
   const decodedUserId = decodeHashId(userId)
 
-  if (!decodedId || !decodedUserId) {
+  if (!decodedId) {
     return undefined
   }
 
   return {
     ...rest,
     id: decodedId,
-    userId: decodedUserId,
+    userId: decodedUserId ?? userId, // Note:
     replies: transformAndCleanList(replies, replyCommentFromSDK)
   }
 }
