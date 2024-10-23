@@ -1,8 +1,4 @@
-import {
-  useCachedTrackCommentCount,
-  useGetCurrentUserId,
-  useGetTrackById
-} from '@audius/common/api'
+import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -44,10 +40,7 @@ export const TrackStats = (props: TrackStatsProps) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const comment_count =
-    useCachedTrackCommentCount(trackId, currentUserId)?.data?.currentValue ??
-    track?.comment_count ??
-    0
+  const comment_count = track?.comment_count ?? 0
 
   if (!track) return null
 

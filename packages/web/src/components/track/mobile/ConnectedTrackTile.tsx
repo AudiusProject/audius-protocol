@@ -1,6 +1,5 @@
 import { memo, MouseEvent } from 'react'
 
-import { useCachedTrackCommentCount } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -124,6 +123,7 @@ const ConnectedTrackTile = ({
     title,
     genre,
     permalink,
+    comment_count,
     repost_count,
     save_count,
     comments_disabled,
@@ -145,11 +145,6 @@ const ConnectedTrackTile = ({
 
   const { artist_pick_track_id, user_id, handle, name, is_verified } =
     getUserWithFallback(user)
-
-  // Check for comment count in tanquery cache first because that value gets polled and updated more often
-  const comment_count =
-    useCachedTrackCommentCount(track_id, currentUserId)?.data?.currentValue ??
-    trackWithFallback.comment_count
 
   const isOwner = user_id === currentUserId
   const isArtistPick = showArtistPick && artist_pick_track_id === track_id
