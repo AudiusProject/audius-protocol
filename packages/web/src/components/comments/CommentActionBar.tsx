@@ -83,7 +83,7 @@ export const CommentActionBar = ({
     useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
-  const isParentComment = 'replyCount' in comment
+  const isParentComment = parentCommentId === undefined
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
