@@ -490,6 +490,9 @@ def react_comment(params: ManageEntityParameters):
     validate_comment_reaction_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
+    metadata = params.metadata
+    entity_id = metadata.get("entity_id")
+    entity_type = metadata.get("entity_type", EntityType.TRACK.value)
 
     comment_reaction_record = CommentReaction(
         comment_id=comment_id,
@@ -504,6 +507,33 @@ def react_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), comment_reaction_record, EntityType.COMMENT_REACTION
     )
+
+    if entity_id:
+        entity_user_id = params.existing_records[EntityType.TRACK.value][
+            entity_id
+        ].owner_id
+        comment_user_id = params.existing_records[EntityType.COMMENT.value][
+            comment_id
+        ].user_id
+
+        if user_id != comment_user_id:
+            comment_reaction_notification = Notification(
+                blocknumber=params.block_number,
+                user_ids=[comment_user_id],
+                timestamp=params.block_datetime,
+                type="comment_reaction",
+                specifier=str(user_id),
+                group_id=f"comment_reaction:{comment_id}",
+                data={
+                    "type": entity_type,
+                    "entity_id": entity_id,
+                    "entity_user_id": entity_user_id,
+                    "comment_id": comment_id,
+                    "reacter_user_id": user_id,
+                },
+            )
+
+            safe_add_notification(params, comment_reaction_notification)
 
 
 def unreact_comment(params: ManageEntityParameters):

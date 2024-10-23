@@ -23,6 +23,13 @@ type PinCommentMetadata = {
   isPin: boolean
 }
 
+type ReactCommentMetadata = {
+  userId: number
+  commentId: number
+  isLiked: boolean
+  trackId: number
+}
+
 type CommentNotificationOptions = OverrideProperties<
   Omit<ManageEntityOptions, 'metadata' | 'auth'>,
   { action: Action.MUTE | Action.UNMUTE }
@@ -94,13 +101,17 @@ export class CommentsApi extends GeneratedCommentsApi {
     return response
   }
 
-  async reactComment(userId: number, entityId: number, isLiked: boolean) {
+  async reactComment(metadata: ReactCommentMetadata) {
+    const { userId, commentId, isLiked, trackId } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
-      entityId,
+      entityId: commentId,
       action: isLiked ? Action.REACT : Action.UNREACT,
-      metadata: '',
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys({ entityId: trackId, entityType: EntityType.TRACK })
+      }),
       auth: this.auth
     })
     return response
