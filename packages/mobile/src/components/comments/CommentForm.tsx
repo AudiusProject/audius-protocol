@@ -186,6 +186,7 @@ export const CommentForm = (props: CommentFormProps) => {
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
             maxLength={400}
+            maxMentions={10}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

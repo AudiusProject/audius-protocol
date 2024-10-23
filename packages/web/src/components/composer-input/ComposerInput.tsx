@@ -72,6 +72,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     presetMessage,
     presetUserMentionIds = [],
     maxLength = 400,
+    maxMentions = Infinity,
     placeholder,
     isLoading,
     entityId,
@@ -211,6 +212,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ]
   }, [autocompleteAtIndex, isUserAutocompleteActive, value])
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
@@ -274,6 +279,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
       }) ?? []
     onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
     submittedRef.current = false
+    setUserMentions([])
+    setUserIdMap({})
   }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
@@ -324,8 +331,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        setAutocompleteAtIndex(cursorPosition)
-        setIsUserAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompleteAtIndex(cursorPosition)
+          setIsUserAutocompleteActive(true)
+        }
       }
 
       // Delete any matched values with a single backspace
@@ -351,7 +360,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
       handleAutocomplete,
       onSubmit,
       handleSubmit,
-      handleBackspace
+      handleBackspace,
+      maxMentions,
+      mentionCount
     ]
   )
 

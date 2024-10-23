@@ -22,6 +22,7 @@ export type ComposerInputProps = {
     input: TextStyle
   }>
   TextInputComponent?: typeof TextInput
+  maxMentions?: number
 } & Pick<
   TextInputProps,
   'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id' | 'onLayout'

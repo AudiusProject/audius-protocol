@@ -104,7 +104,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     styles: propStyles,
     TextInputComponent,
     onLayout,
-    maxLength = 10000
+    maxLength = 10000,
+    maxMentions = Infinity
   } = props
   const { data: currentUserId } = useGetCurrentUserId({})
   const [value, setValue] = useState(presetMessage ?? '')
@@ -229,9 +230,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
     [userMentions]
   )
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       if (!user) return
+
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
@@ -334,8 +340,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
       // Start user autocomplete
       if (key === AT_KEY && onAutocompleteChange) {
-        setAutocompletePosition(cursorPosition ?? 0)
-        setIsAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompletePosition(cursorPosition ?? 0)
+          setIsAutocompleteActive(true)
+        }
       }
 
       if (key === BACKSPACE_KEY && !!cursorPosition) {
@@ -362,7 +370,9 @@ export const ComposerInput = forwardRef(function ComposerInput(
       isAutocompleteActive,
       onAutocompleteChange,
       selectionRef,
-      value
+      value,
+      mentionCount,
+      maxMentions
     ]
   )
 
