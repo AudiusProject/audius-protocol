@@ -53,35 +53,28 @@ const DefaultSpecifier = z.object({
 const ReferralSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
   challengeId: z.enum([ChallengeId.REFERRALS, ChallengeId.VERIFIED_REFERRALS]),
-  /** The user ID of the user that was referred. */
-  referredUserId: HashId,
   /** The user ID of the user completing the challenge. */
-  userId: HashId
+  userId: HashId,
+  /** The user ID of the user that was referred. */
+  referredUserId: HashId
 })
 
-const TrackSellerSpecifier = z.object({
+const AudiuMatchSpecifier = z.object({
   /** The challenge identifier. As in, the challenge "name." */
-  challengeId: z.enum([ChallengeId.AUDIO_MATCHING_BUYER]),
-  /** The user ID of the owner of the track purchased. */
-  sellerUserId: HashId,
-  /** The track ID that was purchased. */
-  trackId: HashId
-})
-
-const TrackBuyerSpecifier = z.object({
-  /** The challenge identifier. As in, the challenge "name." */
-  challengeId: z.enum([ChallengeId.AUDIO_MATCHING_SELLER]),
-  /** The user ID of the user that bought the track. */
-  buyerUserId: HashId,
-  /** The track ID that was purchased. */
-  trackId: HashId
+  challengeId: z.enum([
+    ChallengeId.AUDIO_MATCHING_BUYER,
+    ChallengeId.AUDIO_MATCHING_SELLER
+  ]),
+  /** The user ID of the user completing the challenge. */
+  userId: HashId,
+  /** The content ID that was purchased. */
+  contentId: HashId
 })
 
 export const GenerateSpecifierSchema = z.union([
   DefaultSpecifier,
   ReferralSpecifier,
-  TrackSellerSpecifier,
-  TrackBuyerSpecifier
+  AudiuMatchSpecifier
 ])
 
 export type GenerateSpecifierRequest = z.input<typeof GenerateSpecifierSchema>
