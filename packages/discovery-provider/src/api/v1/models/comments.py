@@ -16,7 +16,7 @@ reply_comment_model = ns.model(
         "message": fields.String(required=True),
         "mentions": fields.List(
             fields.Nested(comment_mention),
-            required=True,
+            required=False,
         ),
         "track_timestamp_s": fields.Integer(required=False),
         "react_count": fields.Integer(required=True),
@@ -38,7 +38,7 @@ base_comment_model = ns.model(
         "message": fields.String(required=True),
         "mentions": fields.List(
             fields.Nested(comment_mention),
-            required=True,
+            required=False,
         ),
         "track_timestamp_s": fields.Integer(required=False),
         "react_count": fields.Integer(required=True),

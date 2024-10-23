@@ -56,7 +56,7 @@ export interface Comment {
      * @type {Array<CommentMention>}
      * @memberof Comment
      */
-    mentions: Array<CommentMention>;
+    mentions?: Array<CommentMention>;
     /**
      * 
      * @type {number}
@@ -133,7 +133,6 @@ export function instanceOfComment(value: object): value is Comment {
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
-    isInstance = isInstance && "mentions" in value && value["mentions"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "replyCount" in value && value["replyCount"] !== undefined;
     isInstance = isInstance && "isEdited" in value && value["isEdited"] !== undefined;
@@ -155,7 +154,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'id': json['id'],
         'userId': json['user_id'],
         'message': json['message'],
-        'mentions': ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
+        'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
         'replyCount': json['reply_count'],
@@ -182,7 +181,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
-        'mentions': ((value.mentions as Array<any>).map(CommentMentionToJSON)),
+        'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
         'reply_count': value.replyCount,
