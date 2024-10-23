@@ -92,14 +92,14 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
                   </Text>
 
                   {hasNewComments ? (
-              <PlainButton
-                iconLeft={IconRefresh}
-                variant='subdued'
-                onPress={resetComments}
-              >
-                {messages.newComments}
-              </PlainButton>
-            ) : null}
+                    <PlainButton
+                      iconLeft={IconRefresh}
+                      variant='subdued'
+                      onPress={resetComments}
+                    >
+                      {messages.newComments}
+                    </PlainButton>
+                  ) : null}
                 </Flex>
                 <IconButton
                   icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
