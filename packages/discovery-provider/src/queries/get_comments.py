@@ -311,10 +311,6 @@ def get_track_comments(args, track_id, current_user_id=None):
                     CommentReport.user_id != artist_id,
                 ),
                 or_(
-                    CommentReport.comment_id == None,
-                    CommentReport.comment_id != artist_id,
-                ),
-                or_(
                     MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments

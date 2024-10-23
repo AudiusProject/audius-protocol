@@ -36,10 +36,11 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
 
   const {
     commentCount,
+    hasNewComments,
     currentUserId,
     artistId,
     entityId,
-    reset,
+    resetComments,
     closeDrawer
   } = useCurrentCommentSection()
   const isOwner = currentUserId === artistId
@@ -60,7 +61,7 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
     })
   }
 
-  const showCommentSortBar = commentCount > 1
+  const showCommentSortBar = commentCount !== undefined && commentCount > 1
 
   const dismissKeyboard = useCallback(() => {
     Keyboard.dismiss()
@@ -90,13 +91,15 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
                     <Text color='subdued'>&nbsp;({commentCount})</Text>
                   </Text>
 
-                  <PlainButton
-                    iconLeft={IconRefresh}
-                    variant='subdued'
-                    onPress={() => reset(true)}
-                  >
-                    {messages.newComments}
-                  </PlainButton>
+                  {hasNewComments ? (
+                    <PlainButton
+                      iconLeft={IconRefresh}
+                      variant='subdued'
+                      onPress={resetComments}
+                    >
+                      {messages.newComments}
+                    </PlainButton>
+                  ) : null}
                 </Flex>
                 <IconButton
                   icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
