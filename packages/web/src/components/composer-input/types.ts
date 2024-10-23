@@ -13,6 +13,7 @@ export type ComposerInputProps = {
   presetMessage?: string
   presetUserMentionIds?: ID[]
   isLoading?: boolean
+  maxMentions?: number
 } & Pick<
   TextAreaV2Props,
   | 'name'

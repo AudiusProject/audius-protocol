@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { trackPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -13,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
-import { CommentSection } from 'app/components/comments/CommentSection'
+import { CommentPreview } from 'app/components/comments/CommentPreview'
 import {
   Screen,
   ScreenContent,
@@ -34,7 +35,7 @@ const { getIsReachable } = reachabilitySelectors
 const messages = {
   moreBy: 'More By',
   originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  ...trackPageMessages
 }
 
 const MAX_RELATED_TRACKS_TO_DISPLAY = 6
@@ -116,13 +117,13 @@ export const TrackScreen = () => {
     field_visibility?.remixes && _remixes && _remixes.length > 0
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
-    <Text variant='title' size='m'>
+    <Text variant='title' size='l'>
       {`${messages.moreBy} ${user?.name}`}
     </Text>
   ) : null
 
   const originalTrackTitle = (
-    <Text variant='title' size='m'>
+    <Text variant='title' size='l'>
       {messages.originalTrack}
     </Text>
   )
@@ -145,7 +146,7 @@ export const TrackScreen = () => {
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
-                    <CommentSection entityId={track_id} />
+                    <CommentPreview entityId={track_id} />
                   </Flex>
                 ) : null}
 

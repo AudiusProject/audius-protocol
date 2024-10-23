@@ -512,7 +512,7 @@ func TestGetPermissions(t *testing.T) {
 	db.Conn.MustExec("truncate table users cascade")
 	db.Conn.MustExec("truncate table chat_permissions cascade")
 	db.Conn.MustExec("truncate table follows cascade")
-	db.Conn.MustExec("truncate table aggregate_user_tips cascade")
+	db.Conn.MustExec("truncate table user_tips cascade")
 
 	tx := db.Conn.MustBegin()
 
@@ -545,10 +545,20 @@ func TestGetPermissions(t *testing.T) {
 	tx.MustExec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
 
 	// user 2 has tipped user 3
-	tx.MustExec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user2Id, user3Id)
+	tx.MustExec(`
+	insert into user_tips
+		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
+	values
+		(1, 'a', $1, $2, 100, now(), now())
+	`, user2Id, user3Id)
 
 	// user 1 has tipped user 7
-	tx.MustExec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user1Id, user7Id)
+	tx.MustExec(`
+	insert into user_tips
+		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
+	values
+		(1, 'b', $1, $2, 100, now(), now())
+	`, user1Id, user7Id)
 
 	// Set permissions:
 	// - user 1: implicit all

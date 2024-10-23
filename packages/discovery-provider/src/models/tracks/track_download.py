@@ -17,3 +17,6 @@ class TrackDownload(Base, RepresentableMixin):
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
+    city = Column(String)
+    region = Column(String)
+    country = Column(String)

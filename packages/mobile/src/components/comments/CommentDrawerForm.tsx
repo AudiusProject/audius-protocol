@@ -12,7 +12,6 @@ import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
 import { Box } from '@audius/harmony-native'
@@ -23,11 +22,16 @@ type CommentDrawerFormProps = {
   commentListRef: RefObject<BottomSheetFlatListMethods>
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+  autoFocus?: boolean
 }
 
 export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
-  const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
-  const insets = useSafeAreaInsets()
+  const {
+    commentListRef,
+    onAutocompleteChange,
+    setAutocompleteHandler,
+    autoFocus
+  } = props
   const { entityId, replyingAndEditingState, setReplyingAndEditingState } =
     useCurrentCommentSection()
   const { replyingToComment, replyingToCommentId, editingComment } =
@@ -63,12 +67,13 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   }
 
   return (
-    <Box p='l' pb={insets.bottom} backgroundColor='white'>
+    <Box p='l' backgroundColor='white'>
       <CommentForm
         onSubmit={handlePostComment}
         onAutocompleteChange={onAutocompleteChange}
         setAutocompleteHandler={setAutocompleteHandler}
         TextInputComponent={BottomSheetTextInput as any}
+        autoFocus={autoFocus}
       />
     </Box>
   )

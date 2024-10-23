@@ -22,7 +22,7 @@ func TestChatBlast(t *testing.T) {
 	t4 := time.Now().Add(time.Second * -60).UTC()
 	t5 := time.Now().Add(time.Second * -50).UTC()
 	t6 := time.Now().Add(time.Second * -40).UTC()
-	t7 := time.Now().Add(time.Second * -30).UTC()
+	// t7 := time.Now().Add(time.Second * -30).UTC()
 
 	trackContentType := schema.AudienceContentType("track")
 
@@ -457,7 +457,7 @@ func TestChatBlast(t *testing.T) {
 	// ------- bi-directional blasting works with upgrade --------
 
 	// 69 re-opens inbox
-	err = chatSetPermissions(tx, 69, schema.All, nil, nil, t0)
+	err = chatSetPermissions(tx, 69, schema.All, nil, nil, t1)
 	assert.NoError(t, err)
 
 	// 68 sends a blast
@@ -471,7 +471,7 @@ func TestChatBlast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// one side does upgrade
-	err = chatCreate(tx, 69, t7, schema.ChatCreateRPCParams{
+	err = chatCreate(tx, 69, t5, schema.ChatCreateRPCParams{
 		ChatID: chatId_68_69,
 		Invites: []schema.PurpleInvite{
 			{UserID: misc.MustEncodeHashID(68), InviteCode: "earlier"},
@@ -499,7 +499,7 @@ func TestChatBlast(t *testing.T) {
 	insert into user_tips
 		(slot, signature, sender_user_id, receiver_user_id, amount, created_at, updated_at)
 	values
-		(1, '', 201, 69, 2, $1, $1)
+		(1, 'd', 201, 69, 2, $1, $1)
 	`, t0)
 	assert.NoError(t, err)
 

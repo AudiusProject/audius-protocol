@@ -57,9 +57,10 @@ const ComposerText = ({
 
 const createTextSections = (text: string) => {
   const splitText = splitOnNewline(text)
-  return splitText.map((t) => (
-    // eslint-disable-next-line react/jsx-key
-    <ComposerText color='default'>{t}</ComposerText>
+  return splitText.map((t, index) => (
+    <ComposerText key={`${t}-${index}`} color='default'>
+      {t}
+    </ComposerText>
   ))
 }
 
@@ -71,6 +72,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     presetMessage,
     presetUserMentionIds = [],
     maxLength = 400,
+    maxMentions = Infinity,
     placeholder,
     isLoading,
     entityId,
@@ -110,7 +112,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       ])
       setUserIdMap((map) => {
         presetMentionUsers.forEach((user) => {
-          map[user.handle] = user.user_id
+          map[`@${user.handle}`] = user.user_id
         })
         return map
       })
@@ -210,6 +212,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ]
   }, [autocompleteAtIndex, isUserAutocompleteActive, value])
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
@@ -267,10 +273,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const handleSubmit = useCallback(() => {
     submittedRef.current = true
     changeOpIdRef.current++
-    const userIds =
-      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
-    onSubmit?.(restoreLinks(value), linkEntities, userIds)
+    const mentionIds =
+      getUserMentions(value)?.map((match) => {
+        return userIdMap[match.text]
+      }) ?? []
+    onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
     submittedRef.current = false
+    setUserMentions([])
+    setUserIdMap({})
   }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
@@ -321,8 +331,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        setAutocompleteAtIndex(cursorPosition)
-        setIsUserAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompleteAtIndex(cursorPosition)
+          setIsUserAutocompleteActive(true)
+        }
       }
 
       // Delete any matched values with a single backspace
@@ -348,7 +360,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
       handleAutocomplete,
       onSubmit,
       handleSubmit,
-      handleBackspace
+      handleBackspace,
+      maxMentions,
+      mentionCount
     ]
   )
 
@@ -438,7 +452,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
         } else {
           // User Mention or Link match
           renderedTextSections.push(
-            <ComposerText color='accent'>{text}</ComposerText>
+            <ComposerText key={`${text}-${index}`} color='accent'>
+              {text}
+            </ComposerText>
           )
         }
 

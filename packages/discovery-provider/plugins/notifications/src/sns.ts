@@ -7,7 +7,6 @@ import {
 } from '@aws-sdk/client-sns'
 import { logger } from './logger'
 import { DeviceType } from './processNotifications/mappers/userNotificationSettings'
-import { Knex } from 'knex'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -27,6 +26,7 @@ export const publish = async (params: PublishCommandInput) => {
     logger.warn(
       `Error publishing push notification for awsARN ${params.TargetArn}: ${err.stack}`
     )
+    throw err.Error
   }
 }
 
@@ -145,11 +145,7 @@ export const sendPushNotification = async (
       })
     }
   } catch (e) {
-    if (
-      e &&
-      e.code &&
-      (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
-    ) {
+    if (e?.Code === 'EndpointDisabled' || e?.Code === 'InvalidParameter') {
       return { endpointDisabled: true, arn: device.targetARN }
     }
   }

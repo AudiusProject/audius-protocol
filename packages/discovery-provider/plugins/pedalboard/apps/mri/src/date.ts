@@ -43,3 +43,13 @@ export const getYearMonth = (date: Date): string => {
   const month = padToTwoDigits(date.getMonth() + 1)
   return `${year}${month}`
 }
+
+/**
+ * Gets YYMM from a given date
+ * @returns string date
+ */
+export const getYearMonthShorthand = (date: Date): string => {
+  const year = date.getFullYear().toString().slice(2)
+  const month = padToTwoDigits(date.getMonth() + 1)
+  return `${year}${month}`
+}

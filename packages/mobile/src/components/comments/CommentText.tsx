@@ -6,6 +6,7 @@ import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
+import { useToggle } from 'react-use'
 
 import { Flex, Text, TextLink } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
@@ -17,16 +18,17 @@ const MAX_LINES = 3
 export type CommentTextProps = {
   children: string
   isEdited?: boolean
+  isPreview?: boolean
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited } = props
+  const { children, isEdited, isPreview } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
     track: { duration },
     navigation,
-    setIsDrawerOpen
+    closeDrawer
   } = useCurrentCommentSection()
 
   const onTextLayout = useCallback(
@@ -42,24 +44,19 @@ export const CommentText = (props: CommentTextProps) => {
     <Flex alignItems='flex-start' gap='xs'>
       <UserGeneratedText
         variant='body'
-        size='s'
         lineHeight='multi'
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
         internalLinksOnly
         navigation={navigation}
         linkProps={{
-          onPress: () => {
-            setIsDrawerOpen?.(false)
-          }
+          onPress: closeDrawer
         }}
         suffix={
           isEdited ? (
             <>
-              <Text size='s'>&nbsp;</Text>
-              <Text color='subdued' size='xs'>
-                ({messages.edited})
-              </Text>
+              <Text>&nbsp;</Text>
+              <Text color='subdued'>({messages.edited})</Text>
             </>
           ) : null
         }
@@ -76,7 +73,7 @@ export const CommentText = (props: CommentTextProps) => {
               return showLink ? (
                 <TimestampLink timestampSeconds={timestampSeconds} />
               ) : (
-                <Text size='s'>{text}</Text>
+                <Text>{text}</Text>
               )
             }
           }
@@ -85,12 +82,8 @@ export const CommentText = (props: CommentTextProps) => {
         {children}
       </UserGeneratedText>
 
-      {isOverflowing ? (
-        <TextLink
-          size='s'
-          variant='visible'
-          onPress={() => setIsExpanded((val) => !val)}
-        >
+      {isOverflowing && !isPreview ? (
+        <TextLink variant='visible' onPress={toggleIsExpanded}>
           {isExpanded ? messages.seeLess : messages.seeMore}
         </TextLink>
       ) : null}

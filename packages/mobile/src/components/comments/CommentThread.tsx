@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 
@@ -11,6 +12,8 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony-native'
+
+import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
 import { CommentBlock } from './CommentBlock'
 
@@ -27,20 +30,19 @@ export const CommentThread = (props: CommentThreadProps) => {
     [parentCommentId: number]: boolean
   }>({})
 
+  const { currentUserId } = useCurrentCommentSection()
   const toggleReplies = (commentId: ID) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, hasNextPage } =
+  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
     useGetCommentRepliesById({
       commentId,
+      currentUserId,
       enabled: hasRequestedMore
     })
-
-  const hasMoreReplies =
-    (rootComment?.replies?.length ?? 0) >= 3 && hasNextPage !== false // note: hasNextPage is undefined when inactive - have to explicitly check for false
 
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {
@@ -57,6 +59,8 @@ export const CommentThread = (props: CommentThreadProps) => {
   const { replyCount } = rootComment
 
   const replies = rootComment.replies ?? []
+
+  const hasMoreReplies = replyCount >= 3 && replies.length < replyCount // note: hasNextPage is undefined when inactive - have to explicitly check for false
 
   return (
     <>
@@ -90,11 +94,20 @@ export const CommentThread = (props: CommentThreadProps) => {
               ))}
             </Flex>
 
-            {hasMoreReplies ? (
-              <PlainButton onPress={handleLoadMoreReplies} variant='subdued'>
-                {messages.showMoreReplies}
-              </PlainButton>
-            ) : null}
+            <Flex direction='row' gap='s' alignItems='center'>
+              {hasMoreReplies ? (
+                <PlainButton
+                  onPress={handleLoadMoreReplies}
+                  variant='subdued'
+                  disabled={isFetchingReplies}
+                >
+                  {messages.showMoreReplies}
+                </PlainButton>
+              ) : null}
+              {isFetchingReplies ? (
+                <LoadingSpinner style={{ width: 20, height: 20 }} />
+              ) : null}
+            </Flex>
           </>
         )}
       </Flex>

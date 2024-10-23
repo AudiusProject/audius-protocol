@@ -1,8 +1,12 @@
+import { useCallback } from 'react'
+
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import type { Comment, ID, ReplyComment } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
+import { useLinkProps } from '@react-navigation/native'
+import { TouchableOpacity } from 'react-native'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
 
@@ -19,7 +23,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  hideActions?: boolean
+  isPreview?: boolean
 }
 
 export const CommentBlockInternal = (
@@ -27,8 +31,8 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, hideActions, parentCommentId } = props
-  const { artistId, track } = useCurrentCommentSection()
+  const { comment, isPreview, parentCommentId } = props
+  const { artistId, track, closeDrawer } = useCurrentCommentSection()
   const {
     id: commentId,
     message,
@@ -42,6 +46,17 @@ export const CommentBlockInternal = (
   const isPinned = track.pinned_comment_id === commentId
 
   useGetUserById({ id: userId })
+  const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
+    to: {
+      screen: 'Profile',
+      params: { id: userId }
+    }
+  })
+
+  const handlePressProfilePic = useCallback(() => {
+    closeDrawer?.()
+    onPressProfilePic()
+  }, [closeDrawer, onPressProfilePic])
 
   const isCommentByArtist = userId === artistId
 
@@ -52,10 +67,15 @@ export const CommentBlockInternal = (
       gap='s'
       style={css({ opacity: isTombstone ? 0.5 : 1 })}
     >
-      <ProfilePicture
-        style={{ width: 32, height: 32, flexShrink: 0 }}
-        userId={userId}
-      />
+      <TouchableOpacity
+        {...profilePicLinkProps}
+        onPress={handlePressProfilePic}
+      >
+        <ProfilePicture
+          style={{ width: 32, height: 32, flexShrink: 0 }}
+          userId={userId}
+        />
+      </TouchableOpacity>
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
           <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
@@ -66,24 +86,31 @@ export const CommentBlockInternal = (
           </Flex>
         ) : null}
         {!isTombstone ? (
-          <Flex direction='row' gap='s' alignItems='center'>
-            <UserLink size='s' userId={userId} strength='strong' />
+          <Flex direction='row' gap='s' alignItems='center' w='65%'>
+            <UserLink
+              userId={userId}
+              strength='strong'
+              onPress={closeDrawer}
+              lineHeight='single'
+            />
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
                 <>
-                  <Text color='subdued' size='xs'>
+                  <Text color='subdued' size='s'>
                     •
                   </Text>
 
-                  <TimestampLink timestampSeconds={trackTimestampS} size='xs' />
+                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
                 </>
               ) : null}
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited}>{message}</CommentText>
-        {!hideActions ? (
+        <CommentText isEdited={isEdited && !isTombstone} isPreview={isPreview}>
+          {message}
+        </CommentText>
+        {!isPreview ? (
           <CommentActionBar
             comment={comment}
             isDisabled={isTombstone}

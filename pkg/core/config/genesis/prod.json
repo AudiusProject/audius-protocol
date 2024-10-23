@@ -65,6 +65,42 @@
       },
       "power": "10",
       "name": "foundation-creator-3"
+    },
+    {
+      "address": "BC6662EB1CFF8C214FDD2147CEF52CE6ABC0B441",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "GZuTdtj3w7oe/aoUgxekkrblRdvx/lY+t5dbn8kWEGc="
+      },
+      "power": "10",
+      "name": "cn0.mainnet.audiusindex.org"
+    },
+    {
+      "address": "2C47B1ABA8E89CAEE91AC00C856B551A3035ACAD",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "WlkiT37NtNDozO7BbXySp0U2h30C3CFVwgUqFsYuTyo="
+      },
+      "power": "10",
+      "name": "cn1.mainnet.audiusindex.org"
+    },
+    {
+      "address": "3AFB27BAB2CC0CEA09FC65A9C33FFA8592A2EAF1",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "dxHAdxtrfv0qZIbkCtgSF+LKRI6pRlkeI/DqQM5Wgb0="
+      },
+      "power": "10",
+      "name": "dn1.monophonic.digital"
+    },
+    {
+      "address": "D494895A1AF5760D68566E4FEBF6D98DE62CD575",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "AEHT8oCDyODTu3iczFD+gLv7OX1zifYEbCEWj2gZjFo="
+      },
+      "power": "10",
+      "name": "dn2.monophonic.digital"
     }
   ],
   "app_hash": ""

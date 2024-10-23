@@ -678,7 +678,7 @@ def extend_comment(action: NotificationAction):
         "data": {
             "type": data["type"],
             "entity_id": encode_int_id(data["entity_id"]),
-            "user_id": encode_int_id(data["user_id"]),
+            "comment_user_id": encode_int_id(data["comment_user_id"]),
         },
     }
 

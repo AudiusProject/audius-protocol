@@ -69,7 +69,9 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
     <Flex>
       <Flex row alignItems='center' gap='s'>
         <IconRemix color='default' />
-        <Text variant='title'>{messages.remixes}</Text>
+        <Text variant='title' size='l'>
+          {messages.remixes}
+        </Text>
       </Flex>
       <Lineup
         lineup={remixesLineup}

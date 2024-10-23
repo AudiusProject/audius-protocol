@@ -56,7 +56,12 @@ project.ext.envConfigFiles = [
     releasecandidaterelease: ".env.prod"
 ]
 
-apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+def sentryGradleFile = file("../../../../node_modules/@sentry/react-native/sentry.gradle")
+if (!sentryGradleFile.exists()) {
+    sentryGradleFile = file("../../node_modules/@sentry/react-native/sentry.gradle")
+}
+
+apply from: sentryGradleFile
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -113,7 +118,7 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.446"
+        versionName "1.1.448"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
@@ -204,6 +209,8 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+
 
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

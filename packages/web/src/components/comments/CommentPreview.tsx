@@ -1,11 +1,16 @@
 import { useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
-import { useCurrentCommentSection } from '@audius/common/context'
+import {
+  CommentSectionProvider,
+  useCurrentCommentSection
+} from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { ID } from '@audius/common/models'
 import {
   Flex,
   IconCaretRight,
+  IconMessage,
   Paper,
   PlainButton,
   Skeleton,
@@ -21,7 +26,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
 
-const CommentSectionHeader = () => {
+const CommentPreviewHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
@@ -39,12 +44,15 @@ const CommentSectionHeader = () => {
       justifyContent='space-between'
       alignItems='center'
     >
-      <Text variant='title' size='m'>
-        Comments
-        {isShowingComments ? (
-          <Text color='subdued'>&nbsp;({commentIds.length})</Text>
-        ) : null}
-      </Text>
+      <Flex gap='s'>
+        <IconMessage />
+        <Text variant='title' size='l'>
+          Comments
+          {isShowingComments ? (
+            <Text color='subdued'>&nbsp;({commentIds.length})</Text>
+          ) : null}
+        </Text>
+      </Flex>
       {isShowingComments ? (
         <PlainButton iconRight={IconCaretRight} variant='subdued' asChild>
           <Link to={`${track?.permalink}/comments`}>{messages.viewAll}</Link>
@@ -54,7 +62,7 @@ const CommentSectionHeader = () => {
   )
 }
 
-const CommentSectionContent = () => {
+const CommentPreviewContent = () => {
   const {
     currentUserId,
     commentSectionLoading: isLoading,
@@ -66,7 +74,7 @@ const CommentSectionContent = () => {
     return (
       <Flex direction='row' gap='s' alignItems='center'>
         <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
-        <Flex gap='s'>
+        <Flex gap='s' direction='column'>
           <Skeleton h={20} w={240} />
           <Skeleton h={20} w={160} />
         </Flex>
@@ -84,12 +92,17 @@ const CommentSectionContent = () => {
     )
   }
 
-  return <CommentBlock commentId={commentIds[0]} hideActions />
+  return <CommentBlock commentId={commentIds[0]} isPreview />
 }
 
-export const CommentSectionMobile = () => {
+type CommentPreviewProps = {
+  entityId: ID
+}
+
+export const CommentPreview = (props: CommentPreviewProps) => {
+  const { entityId } = props
   const dispatch = useDispatch()
-  const { track } = useCurrentCommentSection()
+  const { data: track } = useGetTrackById({ id: entityId })
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
   const { history } = useHistoryContext()
@@ -103,11 +116,13 @@ export const CommentSectionMobile = () => {
   }, [showComments, track, dispatch, searchParams, history])
 
   return (
-    <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
-      <CommentSectionHeader />
-      <Paper w='100%' direction='column' gap='s' p='l'>
-        <CommentSectionContent />
-      </Paper>
-    </Flex>
+    <CommentSectionProvider entityId={entityId}>
+      <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
+        <CommentPreviewHeader />
+        <Paper w='100%' direction='column' gap='s' p='l'>
+          <CommentPreviewContent />
+        </Paper>
+      </Flex>
+    </CommentSectionProvider>
   )
 }

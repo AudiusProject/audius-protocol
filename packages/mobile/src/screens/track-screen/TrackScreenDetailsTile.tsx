@@ -68,6 +68,7 @@ import {
   type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
+import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
@@ -80,7 +81,6 @@ import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
@@ -222,7 +222,7 @@ export const TrackScreenDetailsTile = ({
     { trackId },
     { enabled: !!trackId }
   )
-  const { onOpen: openDrawer } = useDrawer('Comment')
+  const { open: openCommentDrawer } = useCommentDrawer()
 
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -362,8 +362,8 @@ export const TrackScreenDetailsTile = ({
   }, [dispatch, trackId, navigation])
 
   const handlePressComments = useCallback(() => {
-    openDrawer({ entityId: trackId })
-  }, [openDrawer, trackId])
+    openCommentDrawer({ entityId: trackId, navigation })
+  }, [openCommentDrawer, trackId, navigation])
 
   const handlePressSave = () => {
     if (!isOwner) {

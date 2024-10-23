@@ -15,7 +15,6 @@ export type ComposerInputProps = {
   onSubmit?: (value: string, mentionIds: ID[]) => void
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
-  displayCancelAccessory?: boolean
   presetMessage?: string
   isLoading?: boolean
   styles?: StylesProp<{
@@ -23,7 +22,8 @@ export type ComposerInputProps = {
     input: TextStyle
   }>
   TextInputComponent?: typeof TextInput
+  maxMentions?: number
 } & Pick<
   TextInputProps,
-  'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id'
+  'maxLength' | 'placeholder' | 'onPressIn' | 'readOnly' | 'id' | 'onLayout'
 >
