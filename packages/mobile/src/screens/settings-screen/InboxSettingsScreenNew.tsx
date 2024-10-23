@@ -1,13 +1,15 @@
 import { useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
+import { statusIsNotFinalized } from '@audius/common/models'
 import type { InboxSettingsFormValues } from '@audius/common/store'
 import { transformPermitListToMap } from '@audius/common/utils'
 import { ChatPermission } from '@audius/sdk'
 import { Formik } from 'formik'
 
 import { Button, Flex, IconMessage } from '@audius/harmony-native'
-import { HeaderShadow, ScreenContent } from 'app/components/core'
+import { HeaderShadow, ScreenContent, Screen } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 
 import { FormScreen } from '../form-screen'
 
@@ -19,8 +21,12 @@ const messages = {
 }
 
 export const InboxSettingsScreenNew = () => {
-  const { permissions, doFetchPermissions, savePermissions } =
-    useSetInboxPermissions()
+  const {
+    permissions,
+    doFetchPermissions,
+    savePermissions,
+    permissionsStatus
+  } = useSetInboxPermissions()
 
   const initialValues = useMemo(() => {
     return transformPermitListToMap(
@@ -31,6 +37,18 @@ export const InboxSettingsScreenNew = () => {
   useEffect(() => {
     doFetchPermissions()
   }, [doFetchPermissions])
+
+  if (statusIsNotFinalized(permissionsStatus)) {
+    return (
+      <Screen title={messages.title} icon={IconMessage}>
+        <ScreenContent>
+          <Flex flex={1} justifyContent='center' alignItems='center'>
+            <LoadingSpinner style={{ width: 48, height: 48 }} />
+          </Flex>
+        </ScreenContent>
+      </Screen>
+    )
+  }
 
   return (
     <Formik<InboxSettingsFormValues>
