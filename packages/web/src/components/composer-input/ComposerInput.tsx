@@ -111,7 +111,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       ])
       setUserIdMap((map) => {
         presetMentionUsers.forEach((user) => {
-          map[user.handle] = user.user_id
+          map[`@${user.handle}`] = user.user_id
         })
         return map
       })
@@ -270,8 +270,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     changeOpIdRef.current++
     const mentionIds =
       getUserMentions(value)?.map((match) => {
-        const handle = match.text.slice(1) // remove the @
-        return userIdMap[handle]
+        return userIdMap[match.text]
       }) ?? []
     onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
     submittedRef.current = false
