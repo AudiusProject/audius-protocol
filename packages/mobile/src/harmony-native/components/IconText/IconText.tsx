@@ -13,7 +13,7 @@ export const IconText = ({
     <Text
       variant='body'
       color='default'
-      style={{ fontSize: 8, lineHeight: 16 }}
+      style={{ fontSize: 8, lineHeight: 20 }}
     >
       •
     </Text>
@@ -27,7 +27,7 @@ export const IconText = ({
           <Icon size='2xs' color={iconColor} />
         </Fragment>
       ))}
-      <Text variant='body' size='xs' color={color}>
+      <Text size='s' color={color}>
         {children}
       </Text>
     </Flex>

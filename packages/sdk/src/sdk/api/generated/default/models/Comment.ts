@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { CommentMention } from './CommentMention';
+import {
+    CommentMentionFromJSON,
+    CommentMentionFromJSONTyped,
+    CommentMentionToJSON,
+} from './CommentMention';
 import type { ReplyComment } from './ReplyComment';
 import {
     ReplyCommentFromJSON,
@@ -45,6 +51,12 @@ export interface Comment {
      * @memberof Comment
      */
     message: string;
+    /**
+     * 
+     * @type {Array<CommentMention>}
+     * @memberof Comment
+     */
+    mentions?: Array<CommentMention>;
     /**
      * 
      * @type {number}
@@ -142,6 +154,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'id': json['id'],
         'userId': json['user_id'],
         'message': json['message'],
+        'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
         'replyCount': json['reply_count'],
@@ -168,6 +181,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
+        'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
         'reply_count': value.replyCount,

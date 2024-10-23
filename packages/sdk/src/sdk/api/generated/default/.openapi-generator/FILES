@@ -19,6 +19,7 @@ models/BlobInfo.ts
 models/ChallengeResponse.ts
 models/CollectionActivity.ts
 models/Comment.ts
+models/CommentMention.ts
 models/CommentNotificationSetting.ts
 models/CommentResponse.ts
 models/ConnectedWallets.ts

@@ -9,6 +9,7 @@ export * from './BlobInfo';
 export * from './ChallengeResponse';
 export * from './CollectionActivity';
 export * from './Comment';
+export * from './CommentMention';
 export * from './CommentNotificationSetting';
 export * from './CommentResponse';
 export * from './ConnectedWallets';

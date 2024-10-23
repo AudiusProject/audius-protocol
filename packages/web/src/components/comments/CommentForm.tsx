@@ -33,6 +33,7 @@ type CommentFormProps = {
   parentCommentId?: ID
   isEdit?: boolean
   autoFocus?: boolean
+  disabled?: boolean
 }
 
 export const CommentForm = ({
@@ -43,12 +44,11 @@ export const CommentForm = ({
   parentCommentId,
   isEdit,
   hideAvatar = false,
-  autoFocus
+  autoFocus,
+  disabled = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, entityType, commentIds } =
-    useCurrentCommentSection()
+  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
-  const isFirstComment = commentIds.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
@@ -111,11 +111,7 @@ export const CommentForm = ({
         ) : null}
         <ComposerInput
           autoFocus={autoFocus}
-          placeholder={
-            isFirstComment && isMobile
-              ? messages.firstComment
-              : messages.addComment
-          }
+          placeholder={messages.addComment}
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
@@ -127,6 +123,7 @@ export const CommentForm = ({
           onSubmit={(value: string, _, mentions) => {
             handleSubmit({ commentMessage: value, mentions })
           }}
+          disabled={disabled}
         />
       </Flex>
       <DownloadMobileAppDrawer

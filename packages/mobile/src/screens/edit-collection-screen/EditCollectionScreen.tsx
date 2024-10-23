@@ -47,12 +47,11 @@ export const EditCollectionScreen = () => {
 
   if (!playlist) return null
 
-  const { tracks: tracksIgnored, ...restPlaylist } = playlist
-
   const initialValues: EditCollectionValues = {
-    entityType: restPlaylist.is_album ? 'album' : 'playlist',
-    ...restPlaylist,
-    description: restPlaylist.description ?? '',
+    entityType: playlist.is_album ? 'album' : 'playlist',
+    ...playlist,
+    tracks: [],
+    description: playlist.description ?? '',
     artwork: {
       url:
         trackImage && isImageUriSource(trackImage.source)

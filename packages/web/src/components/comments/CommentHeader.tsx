@@ -10,6 +10,7 @@ import {
   Flex,
   IconButton,
   IconKebabHorizontal,
+  IconMessage,
   IconRefresh,
   PlainButton,
   PopupMenu,
@@ -62,6 +63,7 @@ export const CommentHeader = (props: CommentHeaderProps) => {
   return (
     <Flex justifyContent='space-between' w='100%'>
       <Flex alignItems='center' gap='s'>
+        <IconMessage color='default' />
         <Text variant='title' size='l'>
           Comments (
           {commentCount !== undefined && !isCommentCountLoading
