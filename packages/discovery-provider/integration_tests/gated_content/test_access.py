@@ -199,7 +199,6 @@ for playlist in playlists:
             txhash=str(0),
             playlist_id=playlist.get("playlist_id", 0),
             playlist_owner_id=playlist.get("playlist_owner_id", 1),
-            is_stream_gated=playlist.get("is_stream_gated", False),
             stream_conditions=playlist.get("stream_conditions", None),
             is_current=True,
             is_delete=False,

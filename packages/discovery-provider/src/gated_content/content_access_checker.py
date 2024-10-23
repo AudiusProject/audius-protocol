@@ -334,7 +334,7 @@ class ContentAccessChecker:
         return {
             album["playlist_id"]: {  # type: ignore
                 "content_type": "album",
-                "is_stream_gated": album["is_stream_gated"],  # type: ignore
+                "is_stream_gated": album["stream_conditions"] is not None,  # type: ignore
                 "stream_conditions": album["stream_conditions"],  # type: ignore
                 "content_owner_id": album["playlist_owner_id"],  # type: ignore
             }
