@@ -137,7 +137,7 @@ web-distribute:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ parameters.os }}
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Parameters.os }}
 
     - run:
         name: Install dependencies
@@ -147,7 +147,7 @@ web-distribute:
           [[ -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm ci
 
     - save_cache:
-        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ parameters.os }}
+        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Parameters.os }}
         paths:
           - ./node_modules
           - ./packages/web/node_modules
@@ -164,6 +164,7 @@ web-distribute:
               command: npm run install-dmg-license -w @audius/web
     - run:
         name: distribute
+        no_output_timeout: 30m
         command: |
           cd packages/web
           npm run dist:<< parameters.build-type >>
