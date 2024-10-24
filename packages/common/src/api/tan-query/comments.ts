@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import {
+  CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType
@@ -331,7 +332,7 @@ type PostCommentArgs = {
   currentSort: CommentSortMethod
   parentCommentId?: ID
   trackTimestampS?: number
-  mentions?: any
+  mentions?: CommentMention[]
   newId?: ID
 }
 
@@ -345,6 +346,7 @@ export const usePostComment = () => {
       const sdk = await audiusSdk()
       return await sdk.comments.postComment({
         ...args,
+        mentions: args.mentions?.map((mention) => mention.userId) ?? [],
         entityId: args.trackId,
         commentId: args.newId
       })
@@ -674,7 +676,7 @@ type EditCommentArgs = {
   commentId: ID
   userId: ID
   newMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
   trackId: ID
   currentSort: CommentSortMethod
   entityType?: EntityType
@@ -696,7 +698,7 @@ export const useEditComment = () => {
         userId,
         entityId: commentId,
         entityType,
-        mentions
+        mentions: mentions?.map((mention) => mention.userId) ?? []
       }
       const sdk = await audiusSdk()
       await sdk.comments.editComment(commentData)
