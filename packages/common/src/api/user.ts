@@ -65,8 +65,8 @@ const userApi = createApi({
           }
 
           const account = accountFromSDK(data)
-          // If we got a valid account, populate user bank and artwork fields as
-          // those are currently expected on the account user.
+          // If we got a valid account, populate user bank since that's
+          // expected to exist on "account" users
           if (account) {
             const userBank =
               await sdk.services.claimableTokensClient.deriveUserBank({
