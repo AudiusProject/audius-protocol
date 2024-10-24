@@ -53,6 +53,14 @@ stem_parent = ns.model(
     },
 )
 
+cover_attribution = ns.model(
+    "cover_attribution",
+    {
+        "original_song_title": fields.String,
+        "original_song_artist": fields.String,
+    },
+)
+
 field_visibility = ns.model(
     "field_visibility",
     {
@@ -208,6 +216,7 @@ track_full = ns.clone(
             access_gate, allow_null=True, description="How to unlock the track download"
         ),
         "pinned_comment_id": fields.Integer(allow_null=True),
+        "cover_attribution": fields.Nested(cover_attribution, allow_null=True),
     },
 )
 

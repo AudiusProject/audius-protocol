@@ -119,6 +119,7 @@ class Track(Base, RepresentableMixin):
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())
     parental_warning_type = Column(String)
+    cover_attribution = Column(JSONB())
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"

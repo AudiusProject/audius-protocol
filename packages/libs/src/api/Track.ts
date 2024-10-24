@@ -660,6 +660,7 @@ export class Track extends Base {
       audio_analysis_error_count,
       comments_disabled,
       comment_count,
+      cover_attribution,
       field_visibility,
       ...other
     } = trackMetadata
@@ -722,7 +723,8 @@ export class Track extends Base {
       audio_analysis_error_count,
       comments_disabled,
       comment_count,
-      field_visibility
+      field_visibility,
+      cover_attribution
     }
   }
 }

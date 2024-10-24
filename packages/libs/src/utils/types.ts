@@ -145,6 +145,11 @@ export type GatedConditions = {
   tip_user_id?: number
 } & USDCPurchaseConditions
 
+export type CoverAttribution = {
+  original_song_title?: string
+  original_song_artist?: string
+}
+
 export type TrackMetadata = {
   blocknumber: number
   activity_timestamp?: string
@@ -210,6 +215,7 @@ export type TrackMetadata = {
   stem_of?: {
     parent_track_id: ID
   }
+  cover_attribution?: Nullable<CoverAttribution>
 
   // Added fields
   dateListened?: string
