@@ -152,7 +152,7 @@ def create_comment(params: ManageEntityParameters):
             user_ids=[entity_user_id],
             timestamp=params.block_datetime,
             type="comment",
-            specifier=str(entity_id),
+            specifier=str(comment_id),
             group_id=f"comment:{entity_id}:type:{entity_type}",
             data={
                 "type": entity_type,
