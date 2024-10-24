@@ -14,19 +14,17 @@ const isDev = config.env === 'dev'
 
 type UsageDetailReporting = {
   client_catalog_id: number
-  'Streams - Downloads / Monetized Content Offering': number
-  'Streams - Subscription Offerings': number
-  'Downloads - Downloads / Monetized Content Offering': number
-  'Downloads - Subscription Offerings': number
+  'Offering': 'Downloads / Monetized Content' | 'Subscription'
+  'Streams': number
+  'Downloads': number
   Territory: string
 }
 
 const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'client_catalog_id',
-  'Streams - Subscription Offerings',
-  'Downloads - Subscription Offerings',
-  'Streams - Downloads / Monetized Content Offering',
-  'Downloads - Downloads / Monetized Content Offering',
+  'Offering',
+  'Streams',
+  'Downloads',
   'Territory'
 ]
 
@@ -59,12 +57,11 @@ export const udr = async (
       'Downloads / Monetized Content' as "Offering",
       coalesce(t1."Streams", 0) as "Streams",
       coalesce(t2."Downloads", 0) as "Downloads",
-      country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')) as "Territory"
+      coalesce(nullif(country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')), ''), 'WW') as "Territory"
     from (
       select
         "play_item_id" as "client_catalog_id",
         sum("count") as "Streams",
-        0 as "Streams - Subscription Offerings",
         "country" as "Territory"
       from
         "aggregate_monthly_plays"
@@ -77,14 +74,13 @@ export const udr = async (
       select
         "parent_track_id" as "client_catalog_id",
         count(*) as "Downloads",
-        0 as "Downloads - Subscription Offerings",
         "country" as "Territory"
       from
         "track_downloads"
       where
         "created_at" >= :start and
         "created_at" < :end
-      group by "parent_track_id"
+      group by "country", "parent_track_id"
     ) t2
     on t1.client_catalog_id = t2.client_catalog_id and (t1."Territory" = t2."Territory" or t2."Territory" = '')
     `,
