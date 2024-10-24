@@ -666,12 +666,12 @@ def test_pin_comment(app, mocker):
 def test_comment_reaction(app, mocker):
     """
     Tests comment reactions are saved to db and notifications are created
-    Tests that reactions on your own comments are ignored
+    Tests that reacting to you own comment does not create a notification
     """
 
     reaction_entities = {
         **entities,
-        "comments": [{"comment_id": 1, "owner_id": 2}],
+        "comments": [{"comment_id": 1, "user_id": 2}],
     }
 
     tx_receipts = {
@@ -1321,10 +1321,11 @@ def test_mute_user_notifications(app, mocker):
     mention_comment_metadata = {
         **comment_metadata,
         "body": "@user-1",
-        "mentions": [1],
+        "mentions": [2],
     }
 
     tx_receipts = {
+        # This should be muted because user1 muted user2
         "CreateComment": [
             {
                 "args": AttributeDict(
@@ -1339,20 +1340,22 @@ def test_mute_user_notifications(app, mocker):
                 )
             },
         ],
+        # This should be muted because user1 muted user2, which mutes user2 for user3 since user1 has lots of karma
         "CommentMention": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 2,
                         "_entityType": "Comment",
-                        "_userId": 3,
+                        "_userId": 2,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "", "data": {json.dumps(mention_comment_metadata)}}}',
-                        "_signer": "user3wallet",
+                        "_signer": "user2wallet",
                     }
                 )
             },
         ],
+        # This should be muted because user2 muted user3
         "CommentThread": [
             {
                 "args": AttributeDict(
@@ -1377,6 +1380,7 @@ def test_mute_user_notifications(app, mocker):
                 )
             },
         ],
+        # This should be muted because user2 muted user3
         "CommentReaction1": [
             {
                 "args": AttributeDict(
@@ -1396,6 +1400,7 @@ def test_mute_user_notifications(app, mocker):
                 ),
             },
         ],
+        # This should be muted because user1 muted user2 and user1 has high karma
         "CommentReaction2": [
             {
                 "args": AttributeDict(
@@ -1445,9 +1450,9 @@ def test_reported_comment_notifications(app, mocker):
     mute_user_entities = {
         **entities,
         "comments": [
-            {"comment_id": 1, "owner_id": 2},
-            {"comment_id": 2, "owner_id": 4},
-            {"comment_id": 3, "owner_id": 3},
+            {"comment_id": 1, "user_id": 2},
+            {"comment_id": 2, "user_id": 4},
+            {"comment_id": 3, "user_id": 3},
         ],
         "comment_reports": [
             {
