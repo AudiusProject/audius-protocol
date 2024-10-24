@@ -444,9 +444,14 @@ export const useReactToComment = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
-    mutationFn: async ({ userId, commentId, isLiked }: ReactToCommentArgs) => {
+    mutationFn: async ({
+      userId,
+      commentId,
+      isLiked,
+      trackId
+    }: ReactToCommentArgs) => {
       const sdk = await audiusSdk()
-      await sdk.comments.reactComment(userId, commentId, isLiked)
+      await sdk.comments.reactComment({ userId, commentId, isLiked, trackId })
     },
     mutationKey: ['reactToComment'],
     onMutate: async ({

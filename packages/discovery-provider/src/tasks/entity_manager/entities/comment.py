@@ -99,7 +99,7 @@ def create_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
         is not None
     )
@@ -245,7 +245,7 @@ def create_comment(params: ManageEntityParameters):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.muted_user_id == user_id)
             .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
             .scalar()
             is not None
         )
@@ -326,7 +326,7 @@ def update_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
     ) is not None
 
@@ -490,6 +490,9 @@ def react_comment(params: ManageEntityParameters):
     validate_comment_reaction_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
+    metadata = params.metadata
+    entity_id = metadata.get("entity_id")
+    entity_type = metadata.get("entity_type", EntityType.TRACK.value)
 
     comment_reaction_record = CommentReaction(
         comment_id=comment_id,
@@ -504,6 +507,87 @@ def react_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), comment_reaction_record, EntityType.COMMENT_REACTION
     )
+
+    if entity_id:
+        entity_user_id = params.existing_records[EntityType.TRACK.value][
+            entity_id
+        ].owner_id
+        comment_user_id = params.existing_records[EntityType.COMMENT.value][
+            comment_id
+        ].user_id
+
+        comment_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == EntityType.COMMENT.value,
+                CommentNotificationSetting.entity_id == comment_id,
+                CommentNotificationSetting.user_id == comment_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == comment_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        is_muted_by_karma = (
+            params.session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.muted_user_id == user_id)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .scalar()
+        ) is not None
+
+        track_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == "Track",
+                CommentNotificationSetting.entity_id == entity_id,
+                CommentNotificationSetting.user_id == entity_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == entity_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        track_owner_mention_mute = (
+            comment_user_id == entity_user_id and track_owner_notifications_off
+        )
+
+        if (
+            user_id != comment_user_id
+            and not comment_owner_notifications_off
+            and not is_muted_by_karma
+            and not track_owner_mention_mute
+        ):
+            comment_reaction_notification = Notification(
+                blocknumber=params.block_number,
+                user_ids=[comment_user_id],
+                timestamp=params.block_datetime,
+                type="comment_reaction",
+                specifier=str(user_id),
+                group_id=f"comment_reaction:{comment_id}",
+                data={
+                    "type": entity_type,
+                    "entity_id": entity_id,
+                    "entity_user_id": entity_user_id,
+                    "comment_id": comment_id,
+                    "reacter_user_id": user_id,
+                },
+            )
+
+            safe_add_notification(params, comment_reaction_notification)
 
 
 def unreact_comment(params: ManageEntityParameters):

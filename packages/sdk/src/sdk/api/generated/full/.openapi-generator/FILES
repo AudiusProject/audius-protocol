@@ -37,6 +37,9 @@ models/CommentMentionNotificationActionData.ts
 models/CommentNotification.ts
 models/CommentNotificationAction.ts
 models/CommentNotificationActionData.ts
+models/CommentReactionNotification.ts
+models/CommentReactionNotificationAction.ts
+models/CommentReactionNotificationActionData.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts

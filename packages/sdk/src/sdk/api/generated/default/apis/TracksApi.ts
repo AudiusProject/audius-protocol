@@ -132,8 +132,6 @@ export interface StreamTrackRequest {
 
 export interface TrackCommentCountRequest {
     trackId: string;
-    offset?: number;
-    limit?: number;
     userId?: string;
 }
 
@@ -643,14 +641,6 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;

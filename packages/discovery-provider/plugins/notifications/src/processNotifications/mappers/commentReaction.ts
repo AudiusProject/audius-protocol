@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import {
   AppEmailNotification,
-  CommentThreadNotification
+  CommentReactionNotification
 } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
@@ -16,20 +16,20 @@ import {
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
-type CommentThreadNotificationRow = Omit<NotificationRow, 'data'> & {
-  data: CommentThreadNotification
+type CommentReactionNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: CommentReactionNotification
 }
-export class CommentThread extends BaseNotification<CommentThreadNotificationRow> {
+export class CommentReaction extends BaseNotification<CommentReactionNotificationRow> {
   receiverUserId: number
   entityId: number
   entityType: EntityType
   entityUserId: number
-  commenterUserId: number
+  reacterUserId: number
 
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: CommentThreadNotificationRow
+    notification: CommentReactionNotificationRow
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
@@ -37,7 +37,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     this.entityId = this.notification.data.entity_id
     this.entityType = this.notification.data.type.toLowerCase() as EntityType
     this.entityUserId = this.notification.data.entity_user_id
-    this.commenterUserId = this.notification.data.comment_user_id
+    this.reacterUserId = this.notification.data.reacter_user_id
   }
 
   async processNotification({
@@ -70,7 +70,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
       .where('is_current', true)
       .whereIn('user_id', [
         this.receiverUserId,
-        this.commenterUserId,
+        this.reacterUserId,
         this.entityUserId
       ])
       .then((rows) =>
@@ -87,13 +87,11 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     // Get the user's notification setting from identity service
     const userNotificationSettings = await buildUserNotificationSettings(
       this.identityDB,
-      [this.receiverUserId, this.commenterUserId]
+      [this.receiverUserId, this.reacterUserId]
     )
 
-    const title = 'New Reply'
-    const body = `${
-      users[this.commenterUserId]?.name
-    } replied to your comment on ${
+    const title = 'New Reaction'
+    const body = `${users[this.reacterUserId]?.name} liked your comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
         : `${users[this.entityUserId]?.name}'s`
@@ -115,7 +113,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
 
     if (
       userNotificationSettings.shouldSendPushNotification({
-        initiatorUserId: this.commenterUserId,
+        initiatorUserId: this.reacterUserId,
         receiverUserId: this.receiverUserId
       }) &&
       userNotificationSettings.isNotificationTypeEnabled(
@@ -145,10 +143,11 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
               body,
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
-                userIds: [this.commenterUserId],
-                type: 'CommentThread',
+                userIds: [this.reacterUserId],
+                type: 'CommentReaction',
                 entityType: this.entityType,
-                entityId: this.entityId
+                entityId: this.entityId,
+                entityUserId: this.entityUserId
               }
             }
           )
@@ -160,7 +159,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     if (
       isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.commenterUserId,
+        initiatorUserId: this.reacterUserId,
         receiverUserId: this.receiverUserId,
         frequency: 'live'
       })
@@ -189,7 +188,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     return {
       users: new Set([
         this.receiverUserId,
-        this.commenterUserId,
+        this.reacterUserId,
         this.entityUserId
       ]),
       tracks
@@ -198,11 +197,11 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
 
   formatEmailProps(
     resources: Resources,
-    additionalGroupNotifications: CommentThread[] = []
+    additionalGroupNotifications: CommentReaction[] = []
   ) {
-    const user = resources.users[this.commenterUserId]
+    const user = resources.users[this.reacterUserId]
     const additionalUsers = additionalGroupNotifications.map(
-      (comment) => resources.users[comment.commenterUserId]
+      (reaction) => resources.users[reaction.reacterUserId]
     )
     let entity
     if (this.entityType === EntityType.Track) {
