@@ -43,6 +43,7 @@ export const CommentBlockInternal = (
   const {
     id: commentId,
     message,
+    mentions = [],
     trackTimestampS,
     createdAt,
     userId,
@@ -135,6 +136,7 @@ export const CommentBlockInternal = (
           isEdited={isEdited && !isTombstone}
           isPreview={isPreview}
           commentId={commentId}
+          mentions={mentions}
         >
           {message}
         </CommentText>

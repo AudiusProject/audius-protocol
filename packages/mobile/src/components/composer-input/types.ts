@@ -1,6 +1,6 @@
 import type { LinkEntity } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
-import type { EntityType } from '@audius/sdk'
+import type { CommentMention, EntityType } from '@audius/sdk'
 import type { TextInput, TextStyle, ViewStyle } from 'react-native'
 
 import type { StylesProp } from 'app/styles'
@@ -12,14 +12,15 @@ export type ComposerInputProps = {
   entityId?: ID
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
-  onSubmit?: (value: string, mentionIds: ID[]) => void
   onFocus?: () => void
   onAddMention?: (mentionUserId: ID) => void
   onAddTimestamp?: (timestamp: number) => void
   onAddLink?: (entityId: ID, kind: 'track' | 'collection' | 'user') => void
+  onSubmit?: (value: string, mentions: CommentMention[]) => void
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   presetMessage?: string
+  presetUserMentions?: CommentMention[]
   isLoading?: boolean
   styles?: StylesProp<{
     container: ViewStyle

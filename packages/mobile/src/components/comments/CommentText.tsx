@@ -7,6 +7,7 @@ import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
+import type { CommentMention } from '@audius/sdk'
 import type { GestureResponderEvent } from 'react-native'
 import { useToggle } from 'react-use'
 
@@ -21,13 +22,14 @@ const MAX_LINES = 3
 
 export type CommentTextProps = {
   children: string
+  mentions: CommentMention[]
   isEdited?: boolean
   isPreview?: boolean
   commentId: ID
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited, isPreview, commentId } = props
+  const { children, isEdited, isPreview, mentions, commentId } = props
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
@@ -88,6 +90,7 @@ export const CommentText = (props: CommentTextProps) => {
       <UserGeneratedText
         variant='body'
         lineHeight='multi'
+        mentions={mentions}
         onTextLayout={onTextLayout}
         numberOfLines={isOverflowing && !isExpanded ? MAX_LINES : undefined}
         internalLinksOnly

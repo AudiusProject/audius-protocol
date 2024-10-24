@@ -10,7 +10,7 @@ import {
   setupTest,
   resetTests,
   createComments,
-  createCommentThreads,
+  createCommentReactions,
   insertNotifications
 } from '../../utils/populateDB'
 
@@ -19,7 +19,7 @@ import { renderEmail } from '../../email/notifications/renderEmail'
 import { commenttype } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
-describe('Comment Thread Notification', () => {
+describe('Comment Reaction Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest
@@ -35,7 +35,7 @@ describe('Comment Thread Notification', () => {
     await resetTests(processor)
   })
 
-  test('Process push notification for comment thread on your track', async () => {
+  test.only('Process push notification for reaction on your comment, on your track', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 1, owner_id: 1 }])
     await createComments(processor.discoveryDB, [
@@ -44,18 +44,12 @@ describe('Comment Thread Notification', () => {
         user_id: 1,
         entity_id: 1,
         entity_type: commenttype.track
-      },
-      {
-        comment_id: 2,
-        user_id: 2,
-        entity_id: 1,
-        entity_type: commenttype.track
       }
     ])
-    await createCommentThreads(processor.discoveryDB, [
+    await createCommentReactions(processor.discoveryDB, [
       {
-        comment_id: 2,
-        parent_comment_id: 1
+        comment_id: 1,
+        user_id: 2
       }
     ])
     await insertNotifications(processor.discoveryDB, [
@@ -63,14 +57,16 @@ describe('Comment Thread Notification', () => {
         blocknumber: 1,
         user_ids: [1],
         timestamp: new Date(1589373217),
-        type: 'comment_thread',
+        type: 'comment_reaction',
         specifier: '2',
-        group_id: 'comment_thread:1',
+        group_id: 'comment_reaction:1',
         data: {
           type: 'Track',
           entity_id: 1,
           entity_user_id: 1,
-          comment_user_id: 2
+          comment_id: 1,
+          comment_user_id: 1,
+          reacter_user_id: 2
         }
       }
     ])
@@ -87,20 +83,21 @@ describe('Comment Thread Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'New Reply',
-        body: 'user_2 replied to your comment on your track track_title_1',
+        title: 'New Reaction',
+        body: 'user_2 liked your comment on your track track_title_1',
         data: {
-          id: 'timestamp:1589373:group_id:comment_thread:1',
-          type: 'CommentThread',
+          id: 'timestamp:1589373:group_id:comment_reaction:1',
+          type: 'CommentReaction',
           entityType: 'track',
           entityId: 1,
+          entityUserId: 1,
           userIds: [2]
         }
       }
     )
   })
 
-  test('Process push notification for comment thread on others track', async () => {
+  test.only('Process push notification for comment reaction on others track', async () => {
     await createUsers(processor.discoveryDB, [
       { user_id: 1 },
       { user_id: 2 },
@@ -113,18 +110,12 @@ describe('Comment Thread Notification', () => {
         user_id: 1,
         entity_id: 1,
         entity_type: commenttype.track
-      },
-      {
-        comment_id: 2,
-        user_id: 2,
-        entity_id: 1,
-        entity_type: commenttype.track
       }
     ])
-    await createCommentThreads(processor.discoveryDB, [
+    await createCommentReactions(processor.discoveryDB, [
       {
-        comment_id: 2,
-        parent_comment_id: 1
+        comment_id: 1,
+        user_id: 2
       }
     ])
     await insertNotifications(processor.discoveryDB, [
@@ -132,14 +123,14 @@ describe('Comment Thread Notification', () => {
         blocknumber: 1,
         user_ids: [1],
         timestamp: new Date(1589373217),
-        type: 'comment_thread',
+        type: 'comment_reaction',
         specifier: '2',
-        group_id: 'comment_thread:1',
+        group_id: 'comment_reaction:1',
         data: {
           type: 'Track',
           entity_id: 1,
           entity_user_id: 3,
-          comment_user_id: 2
+          reacter_user_id: 2
         }
       }
     ])
@@ -159,20 +150,21 @@ describe('Comment Thread Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'New Reply',
-        body: "user_2 replied to your comment on user_3's track track_title_1",
+        title: 'New Reaction',
+        body: "user_2 liked your comment on user_3's track track_title_1",
         data: {
-          id: 'timestamp:1589373:group_id:comment_thread:1',
-          type: 'CommentThread',
+          id: 'timestamp:1589373:group_id:comment_reaction:1',
+          type: 'CommentReaction',
           entityType: 'track',
           entityId: 1,
+          entityUserId: 3,
           userIds: [2]
         }
       }
     )
   })
 
-  test('Render a single email', async () => {
+  test.only('Render a single email', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 1, owner_id: 1 }])
     await createComments(processor.discoveryDB, [
@@ -181,32 +173,27 @@ describe('Comment Thread Notification', () => {
         user_id: 1,
         entity_id: 1,
         entity_type: commenttype.track
-      },
-      {
-        comment_id: 2,
-        user_id: 2,
-        entity_id: 1,
-        entity_type: commenttype.track
       }
     ])
 
-    await createCommentThreads(processor.discoveryDB, [
-      { comment_id: 2, parent_comment_id: 1 }
+    await createCommentReactions(processor.discoveryDB, [
+      { comment_id: 1, user_id: 2 }
     ])
 
     await new Promise((resolve) => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [
       {
-        type: 'comment_thread',
+        type: 'comment_reaction',
         timestamp: new Date(),
         specifier: '2',
-        group_id: 'comment_thread:1',
+        group_id: 'comment_reaction:1',
         data: {
           type: EntityType.Track,
           entity_id: 1,
           entity_user_id: 1,
-          comment_user_id: 2
+          comment_id: 1,
+          reacter_user_id: 2
         },
         user_ids: [1],
         receiver_user_id: 1
@@ -223,7 +210,7 @@ describe('Comment Thread Notification', () => {
     expect(notifHtml).toMatchSnapshot()
   })
 
-  test('Render a multi comment email', async () => {
+  test.only('Render a multi comment email', async () => {
     await createUsers(processor.discoveryDB, [
       { user_id: 1 },
       { user_id: 2 },
@@ -260,24 +247,24 @@ describe('Comment Thread Notification', () => {
       }
     ])
 
-    await createCommentThreads(processor.discoveryDB, [
-      { comment_id: 2, parent_comment_id: 1 },
-      { comment_id: 3, parent_comment_id: 1 },
-      { comment_id: 4, parent_comment_id: 1 }
+    await createCommentReactions(processor.discoveryDB, [
+      { comment_id: 2, user_id: 2 },
+      { comment_id: 3, user_id: 3 },
+      { comment_id: 4, user_id: 4 }
     ])
 
     const notifications: AppEmailNotification[] = Array.from(
       new Array(3),
       (_, num) => ({
-        type: 'comment_thread',
+        type: 'comment_reaction',
         timestamp: new Date(),
-        specifier: (num + 2).toString(),
-        group_id: 'comment_thread:1',
+        specifier: (num + 3).toString(),
+        group_id: 'comment_reaction:1',
         data: {
           type: EntityType.Track,
-          comment_user_id: num + 3,
           entity_id: 1,
-          entity_user_id: 1
+          entity_user_id: 1,
+          reacter_user_id: num + 3
         },
         user_ids: [1],
         receiver_user_id: 1

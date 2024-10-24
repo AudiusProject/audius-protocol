@@ -8,23 +8,18 @@ import {
   useState
 } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetUserByHandle,
-  useGetTrackById
-} from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
   decodeHashId,
   getDurationFromTimestampMatch,
-  handleRegex,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
 import { isEqual } from 'lodash'
-import { Platform, TouchableOpacity } from 'react-native'
 import type { TextInput as RnTextInput } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
@@ -108,6 +103,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     messageId,
     placeholder,
     presetMessage,
+    presetUserMentions = [],
     entityId,
     styles: propStyles,
     TextInputComponent,
@@ -115,17 +111,21 @@ export const ComposerInput = forwardRef(function ComposerInput(
     maxLength = 10000,
     maxMentions = Infinity
   } = props
-  const { data: currentUserId } = useGetCurrentUserId({})
+
   const [value, setValue] = useState(presetMessage ?? '')
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
-  const [presetUserMention, setPresetUserMention] = useState('')
-  const { data: replyUser } = useGetUserByHandle({
-    handle: presetUserMention.slice(1), // slice to remove the @
-    currentUserId
-  })
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      return {
+        ...acc,
+        [`@${mention.handle}`]: mention.userId
+      }
+    }, {})
+  )
   const selectionRef = useRef<TextInputSelectionChangeEventData['selection']>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
@@ -133,6 +133,16 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+
+  useEffect(() => {
+    setUserMentions(presetUserMentions.map((mention) => `@${mention.handle}`))
+    setUserIdMap(
+      presetUserMentions.reduce((acc, mention) => {
+        acc[`@${mention.handle}`] = mention.userId
+        return acc
+      }, {})
+    )
+  }, [presetUserMentions])
 
   const getAutocompleteRange = useCallback(() => {
     if (!isAutocompleteActive) return null
@@ -189,23 +199,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
-        if (handleRegex.test(editedValue.trimEnd())) {
-          setPresetUserMention(editedValue.trimEnd())
-        }
       }
     }
     fn()
   }, [presetMessage, resolveLinks])
-
-  useEffect(() => {
-    if (replyUser && !userMentions.includes(presetUserMention)) {
-      setUserMentions((mentions) => [...mentions, presetUserMention])
-      setUserIdMap((map) => {
-        map[presetUserMention] = replyUser.user_id
-        return map
-      })
-    }
-  }, [presetUserMention, replyUser, userMentions])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
@@ -299,9 +296,15 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    const userIds =
-      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
-    onSubmit?.(restoreLinks(value), userIds)
+    const mentions =
+      getUserMentions(value)?.map((match) => {
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
+      }) ?? []
+
+    onSubmit?.(restoreLinks(value), mentions)
   }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
 
   const handleKeyDown = useCallback(

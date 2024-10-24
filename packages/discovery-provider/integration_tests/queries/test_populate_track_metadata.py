@@ -47,6 +47,11 @@ def test_populate_track_metadata(app):
             {"follower_user_id": 1, "followee_user_id": 2},
             {"follower_user_id": 1, "followee_user_id": 3},
         ],
+        "comments": [
+            {"comment_id": 1, "user_id": 1, "entity_id": 1, "entity_type": "Track"},
+            {"comment_id": 2, "user_id": 3, "entity_id": 1, "entity_type": "Track"},
+            {"comment_id": 3, "user_id": 3, "entity_id": 2, "entity_type": "Track"},
+        ],
     }
 
     populate_mock_db(db, test_entities)
@@ -81,16 +86,19 @@ def test_populate_track_metadata(app):
         assert tracks[0][response_name_constants.repost_count] == 2
         assert tracks[0][response_name_constants.save_count] == 2
         assert tracks[0][response_name_constants.play_count] == 0
+        assert tracks[0][response_name_constants.comment_count] == 2
 
         assert tracks[1]["track_id"] == 2
         assert tracks[1][response_name_constants.repost_count] == 1
         assert tracks[1][response_name_constants.save_count] == 0
         assert tracks[1][response_name_constants.play_count] == 0
+        assert tracks[1][response_name_constants.comment_count] == 1
 
         assert tracks[2]["track_id"] == 3
         assert tracks[2][response_name_constants.repost_count] == 0
         assert tracks[2][response_name_constants.save_count] == 2
         assert tracks[2][response_name_constants.play_count] == 0
+        assert tracks[2][response_name_constants.comment_count] == 0
 
         curr_track_ids = [1, 2, 3]
         curr_tracks = [
