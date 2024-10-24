@@ -703,7 +703,7 @@ export const useEditComment = () => {
       const sdk = await audiusSdk()
       await sdk.comments.editComment(commentData)
     },
-    onMutate: ({ commentId, newMessage }) => {
+    onMutate: ({ commentId, newMessage, mentions }) => {
       const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
         QUERY_KEYS.comment,
         commentId
@@ -714,7 +714,8 @@ export const useEditComment = () => {
           ({
             ...prevData,
             isEdited: true,
-            message: newMessage
+            message: newMessage,
+            mentions
           } as CommentOrReply)
       )
       return { prevComment }
@@ -740,7 +741,8 @@ export const useEditComment = () => {
               ...prevData,
               // NOTE: intentionally only reverting the pieces we changed in case another mutation happened in between this mutation start->error
               isEdited: prevComment?.isEdited,
-              message: prevComment?.message
+              message: prevComment?.message,
+              mentions: prevComment?.mentions
             } as CommentOrReply)
         )
       }

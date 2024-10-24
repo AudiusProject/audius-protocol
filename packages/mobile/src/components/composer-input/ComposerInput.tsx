@@ -112,8 +112,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
   const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
     presetUserMentions.reduce((acc, mention) => {
-      acc[`@${mention.handle}`] = mention.userId
-      return acc
+      return {
+        ...acc,
+        [`@${mention.handle}`]: mention.userId
+      }
     }, {})
   )
   const selectionRef = useRef<TextInputSelectionChangeEventData['selection']>()
