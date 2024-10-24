@@ -163,7 +163,6 @@ export const UserMentionAutocompleteText = (
       <Menu anchorRef={anchorRef} isVisible={isOpen} onClose={handleClose}>
         <MenuContent
           scrollRef={scrollRef}
-          maxHeight={300}
           width={180}
           aria-label='User Mention results'
         >
