@@ -514,12 +514,6 @@ def populate_track_metadata(
             )
             track["cover_art_cids"] = cover_cids
 
-        # comment_count = get_track_comment_count(track_id, current_user_id, session)
-
-        # track[response_name_constants.comment_count] = (
-        #     comment_count if comment_count else 0
-        # )
-
         if track_has_aggregates:
             aggregate_track = track.get("aggregate_track")
             track[response_name_constants.repost_count] = (

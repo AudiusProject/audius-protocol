@@ -311,6 +311,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                         CommentReport.user_id != current_user_id,
                         CommentReport.user_id != artist_id,
                     ),
+                    CommentReport.is_delete == True,
                 ),
                 or_(
                     MutedUser.muted_user_id == None,

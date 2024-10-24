@@ -53,6 +53,7 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
                         CommentReport.user_id != current_user_id,
                         CommentReport.user_id != track.c.owner_id,
                     ),
+                    CommentReport.is_delete == True,
                 ),
                 or_(
                     MutedUser.muted_user_id == None,
