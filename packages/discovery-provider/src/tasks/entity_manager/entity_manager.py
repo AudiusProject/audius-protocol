@@ -564,6 +564,177 @@ entity_types_to_fetch = set(
 )
 
 
+def fetch_entities(
+    entities_to_fetch: Dict[EntityType, Set],
+    entity_id,
+    entity_type,
+    action,
+    user_id,
+    metadata,
+    signer,
+):
+    if entity_type in entity_types_to_fetch:
+        entities_to_fetch[entity_type].add(entity_id)
+    if entity_type == EntityType.USER:
+        entities_to_fetch[EntityType.USER_EVENT].add(user_id)
+        entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+        if action == Action.MUTE or action == Action.UNMUTE:
+            entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
+            entities_to_fetch[EntityType.USER].add(entity_id)
+
+    if entity_type == EntityType.TRACK:
+        entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
+        if action == Action.MUTE or action == Action.UNMUTE:
+            entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                (user_id, entity_id, entity_type)
+            )
+    if entity_type == EntityType.PLAYLIST:
+        entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
+    if entity_type == EntityType.COMMENT:
+        if (
+            action == Action.CREATE
+            or action == Action.UPDATE
+            or action == Action.PIN
+            or action == Action.UNPIN
+        ):
+            try:
+                json_metadata = json.loads(metadata)
+            except Exception as e:
+                logger.error(
+                    f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                )
+                # skip invalid metadata
+                return
+            track_id = json_metadata.get("data", {}).get("entity_id")
+            parent_comment_id = json_metadata.get("data", {}).get("parent_comment_id")
+            entities_to_fetch[EntityType.TRACK].add(track_id)
+            entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                (user_id, entity_id, entity_type)
+            )
+            if parent_comment_id:
+                entities_to_fetch[EntityType.COMMENT].add(parent_comment_id)
+                entities_to_fetch[EntityType.COMMENT_THREAD].add(
+                    (parent_comment_id, entity_id)
+                )
+        if action == Action.UPDATE:
+            entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
+        elif action == Action.REACT or action == Action.UNREACT:
+            entities_to_fetch[EntityType.COMMENT_REACTION].add((user_id, entity_id))
+        elif action == Action.REPORT:
+            entities_to_fetch[EntityType.COMMENT_REPORT].add((user_id, entity_id))
+        elif action == Action.MUTE or action == Action.UNMUTE:
+            entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
+                (user_id, entity_id, entity_type)
+            )
+
+    if entity_type == EntityType.NOTIFICATION and action == Action.VIEW_PLAYLIST:
+        entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
+        entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
+    if user_id:
+        entities_to_fetch[EntityType.USER].add(user_id)
+    if signer:
+        entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
+        entities_to_fetch[EntityType.DEVELOPER_APP].add(signer.lower())
+        entities_to_fetch[EntityType.USER_WALLET].add(signer.lower())
+    if entity_type == EntityType.DEVELOPER_APP:
+        try:
+            json_metadata = json.loads(metadata)
+        except Exception as e:
+            logger.error(
+                f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+            )
+            # skip invalid metadata
+            return
+
+        raw_address = json_metadata.get("address", None)
+        if raw_address:
+            entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
+        else:
+            try:
+                address_from_signature = get_address_from_signature(
+                    json_metadata.get("app_signature", {})
+                )
+                entities_to_fetch[EntityType.DEVELOPER_APP].add(address_from_signature)
+                if action == Action.CREATE:
+                    entities_to_fetch[EntityType.USER_WALLET].add(
+                        address_from_signature
+                    )
+            except:
+                logger.error(
+                    "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
+                )
+    if entity_type == EntityType.GRANT:
+        try:
+            json_metadata = json.loads(metadata)
+        except Exception as e:
+            logger.error(
+                f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+            )
+            # skip invalid metadata
+            return
+
+        raw_grantee_address = json_metadata.get("grantee_address", None)
+        if raw_grantee_address:
+            entities_to_fetch[EntityType.GRANT].add(
+                (raw_grantee_address.lower(), user_id)
+            )
+            entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_grantee_address.lower())
+            entities_to_fetch[EntityType.USER_WALLET].add(raw_grantee_address.lower())
+            if action == Action.DELETE and signer:
+                entities_to_fetch[EntityType.GRANT].add(
+                    (signer.lower(), raw_grantee_address.lower())
+                )
+                entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
+        raw_grantor_user_id = json_metadata.get("grantor_user_id", None)
+        if raw_grantor_user_id and signer:
+            entities_to_fetch[EntityType.GRANT].add((user_id, raw_grantor_user_id))
+            entities_to_fetch[EntityType.GRANT].add(
+                (signer.lower(), raw_grantor_user_id)
+            )
+    if entity_type == EntityType.DASHBOARD_WALLET_USER:
+        try:
+            json_metadata = json.loads(metadata)
+        except Exception as e:
+            logger.error(
+                f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+            )
+            # skip invalid metadata
+            return
+
+        raw_wallet = json_metadata.get("wallet", None)
+        if raw_wallet:
+            entities_to_fetch[EntityType.DASHBOARD_WALLET_USER].add(raw_wallet.lower())
+        else:
+            logger.error(
+                "tasks | entity_manager.py | Missing wallet in metadata required for create dashboard wallet user tx"
+            )
+
+    # Query social operations as needed
+    if action in action_to_record_types.keys():
+        record_types = action_to_record_types[action]
+        for record_type in record_types:
+            entity_key = get_record_key(user_id, entity_type, entity_id)
+            entities_to_fetch[record_type].add(entity_key)
+
+    if expect_cid_metadata_json(metadata, action, entity_type):
+        try:
+            json_metadata, _ = parse_metadata(metadata, action, entity_type)
+        except Exception:
+            # skip invalid metadata
+            return
+
+        # Add playlist track ids in entities to fetch
+        # to prevent playlists from including gated tracks
+        tracks = json_metadata.get("playlist_contents", {}).get("track_ids", [])
+        for track in tracks:
+            entities_to_fetch[EntityType.TRACK].add(track["track"])
+
+        if entity_type == EntityType.TRACK:
+            user_id = json_metadata.get("ai_attribution_user_id")
+            if user_id:
+                entities_to_fetch[EntityType.USER].add(user_id)
+
+
 def collect_entities_to_fetch(update_task, entity_manager_txs):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
@@ -577,188 +748,15 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             metadata = helpers.get_tx_arg(event, "_metadata")
             signer = helpers.get_tx_arg(event, "_signer")
 
-            if entity_type in entity_types_to_fetch:
-                entities_to_fetch[entity_type].add(entity_id)
-            if entity_type == EntityType.USER:
-                entities_to_fetch[EntityType.USER_EVENT].add(user_id)
-                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
-                if action == Action.MUTE or action == Action.UNMUTE:
-                    entities_to_fetch[EntityType.MUTED_USER].add((user_id, entity_id))
-                    entities_to_fetch[EntityType.USER].add(entity_id)
-
-            if entity_type == EntityType.TRACK:
-                entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
-                if action == Action.MUTE or action == Action.UNMUTE:
-                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
-                        (user_id, entity_id, entity_type)
-                    )
-            if entity_type == EntityType.PLAYLIST:
-                entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
-            if entity_type == EntityType.COMMENT:
-                if (
-                    action == Action.CREATE
-                    or action == Action.UPDATE
-                    or action == Action.PIN
-                    or action == Action.UNPIN
-                ):
-                    try:
-                        json_metadata = json.loads(metadata)
-                    except Exception as e:
-                        logger.error(
-                            f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
-                        )
-                        # skip invalid metadata
-                        continue
-                    track_id = json_metadata.get("data", {}).get("entity_id")
-                    parent_comment_id = json_metadata.get("data", {}).get(
-                        "parent_comment_id"
-                    )
-                    entities_to_fetch[EntityType.TRACK].add(track_id)
-                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
-                        (user_id, entity_id, entity_type)
-                    )
-                    if parent_comment_id:
-                        entities_to_fetch[EntityType.COMMENT].add(parent_comment_id)
-                        entities_to_fetch[EntityType.COMMENT_THREAD].add(
-                            (parent_comment_id, entity_id)
-                        )
-                if action == Action.UPDATE:
-                    entities_to_fetch[EntityType.COMMENT_MENTION].add(entity_id)
-                elif action == Action.REACT or action == Action.UNREACT:
-                    entities_to_fetch[EntityType.COMMENT_REACTION].add(
-                        (user_id, entity_id)
-                    )
-                elif action == Action.REPORT:
-                    entities_to_fetch[EntityType.COMMENT_REPORT].add(
-                        (user_id, entity_id)
-                    )
-                elif action == Action.MUTE or action == Action.UNMUTE:
-                    entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
-                        (user_id, entity_id, entity_type)
-                    )
-
-            if (
-                entity_type == EntityType.NOTIFICATION
-                and action == Action.VIEW_PLAYLIST
-            ):
-                entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
-                entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
-            if user_id:
-                entities_to_fetch[EntityType.USER].add(user_id)
-            if signer:
-                entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
-                entities_to_fetch[EntityType.DEVELOPER_APP].add(signer.lower())
-                entities_to_fetch[EntityType.USER_WALLET].add(signer.lower())
-            if entity_type == EntityType.DEVELOPER_APP:
-                try:
-                    json_metadata = json.loads(metadata)
-                except Exception as e:
-                    logger.error(
-                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
-                    )
-                    # skip invalid metadata
-                    continue
-
-                raw_address = json_metadata.get("address", None)
-                if raw_address:
-                    entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
-                else:
-                    try:
-                        address_from_signature = get_address_from_signature(
-                            json_metadata.get("app_signature", {})
-                        )
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            address_from_signature
-                        )
-                        if action == Action.CREATE:
-                            entities_to_fetch[EntityType.USER_WALLET].add(
-                                address_from_signature
-                            )
-                    except:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
-                        )
-            if entity_type == EntityType.GRANT:
-                try:
-                    json_metadata = json.loads(metadata)
-                except Exception as e:
-                    logger.error(
-                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
-                    )
-                    # skip invalid metadata
-                    continue
-
-                raw_grantee_address = json_metadata.get("grantee_address", None)
-                if raw_grantee_address:
-                    entities_to_fetch[EntityType.GRANT].add(
-                        (raw_grantee_address.lower(), user_id)
-                    )
-                    entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                        raw_grantee_address.lower()
-                    )
-                    entities_to_fetch[EntityType.USER_WALLET].add(
-                        raw_grantee_address.lower()
-                    )
-                    if action == Action.DELETE and signer:
-                        entities_to_fetch[EntityType.GRANT].add(
-                            (signer.lower(), raw_grantee_address.lower())
-                        )
-                        entities_to_fetch[EntityType.GRANT].add(
-                            (signer.lower(), user_id)
-                        )
-                raw_grantor_user_id = json_metadata.get("grantor_user_id", None)
-                if raw_grantor_user_id and signer:
-                    entities_to_fetch[EntityType.GRANT].add(
-                        (user_id, raw_grantor_user_id)
-                    )
-                    entities_to_fetch[EntityType.GRANT].add(
-                        (signer.lower(), raw_grantor_user_id)
-                    )
-            if entity_type == EntityType.DASHBOARD_WALLET_USER:
-                try:
-                    json_metadata = json.loads(metadata)
-                except Exception as e:
-                    logger.error(
-                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
-                    )
-                    # skip invalid metadata
-                    continue
-
-                raw_wallet = json_metadata.get("wallet", None)
-                if raw_wallet:
-                    entities_to_fetch[EntityType.DASHBOARD_WALLET_USER].add(
-                        raw_wallet.lower()
-                    )
-                else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing wallet in metadata required for create dashboard wallet user tx"
-                    )
-
-            # Query social operations as needed
-            if action in action_to_record_types.keys():
-                record_types = action_to_record_types[action]
-                for record_type in record_types:
-                    entity_key = get_record_key(user_id, entity_type, entity_id)
-                    entities_to_fetch[record_type].add(entity_key)
-
-            if expect_cid_metadata_json(metadata, action, entity_type):
-                try:
-                    json_metadata, _ = parse_metadata(metadata, action, entity_type)
-                except Exception:
-                    # skip invalid metadata
-                    continue
-
-                # Add playlist track ids in entities to fetch
-                # to prevent playlists from including gated tracks
-                tracks = json_metadata.get("playlist_contents", {}).get("track_ids", [])
-                for track in tracks:
-                    entities_to_fetch[EntityType.TRACK].add(track["track"])
-
-                if entity_type == EntityType.TRACK:
-                    user_id = json_metadata.get("ai_attribution_user_id")
-                    if user_id:
-                        entities_to_fetch[EntityType.USER].add(user_id)
-
+            fetch_entities(
+                entities_to_fetch=entities_to_fetch,
+                entity_id=entity_id,
+                entity_type=entity_type,
+                action=action,
+                user_id=user_id,
+                metadata=metadata,
+                signer=signer,
+            )
     return entities_to_fetch
 
 

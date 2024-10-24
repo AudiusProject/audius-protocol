@@ -1,7 +1,10 @@
 import logging
 
 import grpc
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 
+from src.models.core.core_blocks_indexing import CoreBlocksIndexing
 from src.tasks.core.gen import protocol_pb2, protocol_pb2_grpc
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
@@ -11,7 +14,19 @@ logger = logging.getLogger(__name__)
 environment = shared_config["discprov"]["env"]
 
 
-class CoreBlockIterator:
+class SingletonMeta(type):
+    """A thread-safe implementation of Singleton."""
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class CoreBlockIterator(metaclass=SingletonMeta):
     """Iterates core blocks using the db to track state."""
     db: SessionManager
     endpoint: str
@@ -45,34 +60,43 @@ class CoreBlockIterator:
             return "core:50051"
         return "core-discovery-1:50051"
 
-    def next_block(self):
-        """Reads the latest block + 1 from the database.
+    def next_block(self, db: SessionManager):
+        """Reads the latest block from the database.
         Queries the core node via grpc for the next block.
         If that block is found, returns. Otherwise returns None.
         Does not commit the read block to the database."""
+        session = db.scoped_session()
+        latest_indexed_block = (
+            session.query(CoreBlocksIndexing)
+            .filter(CoreBlocksIndexing.chain_id == self.chain_id)
+            .order_by(desc(CoreBlocksIndexing.height))
+            .first()
+        )
 
-        block = self._get_block(self.current_block)
+        current_block = 1
+        if latest_indexed_block:
+            current_block = latest_indexed_block.height
+
+        block = self._get_block(current_block)
+
+        if block.height < 0:
+            return None
+
         return block
 
-        # read block from db
-
-        # if block exists, call grpc
-
-        # if block exists and exists in core, return block
-        # else return None
-
-        # if block not exists in db, start at block 1
-        # if block exists, return block
-        # if block 1 not exist, return None
-
-        return
-
-    def commit_block(self, block_num: int):
+    def commit_block(
+        self,
+        session: Session,
+        blockhash: str,
+        parenthash: str,
+        chain_id: str,
+        height: int,
+    ):
         """Commits a read block to the data"""
-        self.current_block = block_num + 1
-        # insert new row into core_block_indexed table
-        # block_num, chain_id, time
-        return
+        new_block = CoreBlocksIndexing(
+            blockhash=blockhash, parenthash=parenthash, chain_id=chain_id, height=height
+        )
+        session.add(new_block)
 
     def _get_block(self, height: int):
         block_request = protocol_pb2.GetBlockRequest(height=height)
