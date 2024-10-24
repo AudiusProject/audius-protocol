@@ -10,7 +10,8 @@ import {
   setupTest,
   resetTests,
   createComments,
-  createCommentThreads
+  createCommentThreads,
+  insertNotifications
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -57,27 +58,42 @@ describe('Comment Thread Notification', () => {
         parent_comment_id: 1
       }
     ])
+    await insertNotifications(processor.discoveryDB, [
+      {
+        blocknumber: 1,
+        user_ids: [1],
+        timestamp: new Date(1589373217),
+        type: 'comment_thread',
+        specifier: '2',
+        group_id: 'comment_thread:1',
+        data: {
+          type: 'Track',
+          entity_id: 1,
+          entity_user_id: 1,
+          comment_user_id: 2
+        }
+      }
+    ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(2)
-    // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
 
-    expect(sendPushNotificationSpy).toHaveBeenNthCalledWith(
-      2,
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',
         targetARN: 'arn:1',
-        badgeCount: 2
+        badgeCount: 1
       },
       {
         title: 'New Reply',
         body: 'user_2 replied to your comment on your track track_title_1',
         data: {
-          id: 'timestamp:1589373217:group_id:comment_thread:1',
+          id: 'timestamp:1589373:group_id:comment_thread:1',
           type: 'CommentThread',
+          entityType: 'track',
+          entityId: 1,
           userIds: [2]
         }
       }
@@ -111,11 +127,28 @@ describe('Comment Thread Notification', () => {
         parent_comment_id: 1
       }
     ])
+    await insertNotifications(processor.discoveryDB, [
+      {
+        blocknumber: 1,
+        user_ids: [1],
+        timestamp: new Date(1589373217),
+        type: 'comment_thread',
+        specifier: '2',
+        group_id: 'comment_thread:1',
+        data: {
+          type: 'Track',
+          entity_id: 1,
+          entity_user_id: 3,
+          comment_user_id: 2
+        }
+      }
+    ])
+
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(3)
+    expect(pending?.appNotifications).toHaveLength(1)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
 
@@ -129,8 +162,10 @@ describe('Comment Thread Notification', () => {
         title: 'New Reply',
         body: "user_2 replied to your comment on user_3's track track_title_1",
         data: {
-          id: 'timestamp:1589373217:group_id:comment_thread:1',
+          id: 'timestamp:1589373:group_id:comment_thread:1',
           type: 'CommentThread',
+          entityType: 'track',
+          entityId: 1,
           userIds: [2]
         }
       }
@@ -236,7 +271,7 @@ describe('Comment Thread Notification', () => {
       (_, num) => ({
         type: 'comment_thread',
         timestamp: new Date(),
-        specifier: (num + 3).toString(),
+        specifier: (num + 2).toString(),
         group_id: 'comment_thread:1',
         data: {
           type: EntityType.Track,

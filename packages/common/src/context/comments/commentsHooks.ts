@@ -1,6 +1,7 @@
 import {
   EntityManagerAction,
-  TrackCommentsSortMethodEnum as CommentSortMethod
+  TrackCommentsSortMethodEnum as CommentSortMethod,
+  CommentMention
 } from '@audius/sdk'
 
 import { ID } from '~/models/Identifiers'
@@ -30,7 +31,7 @@ export const usePostComment = () => {
     message: string,
     parentCommentId?: ID,
     trackTimestampS?: number,
-    mentions?: ID[]
+    mentions?: CommentMention[]
   ) => {
     if (currentUserId) {
       postComment({
@@ -75,7 +76,7 @@ export const useEditComment = () => {
   const wrappedHandler = async (
     commentId: ID,
     newMessage: string,
-    mentions?: ID[]
+    mentions?: CommentMention[]
   ) => {
     if (currentUserId) {
       editComment({
@@ -113,10 +114,11 @@ export const usePinComment = () => {
 export const useReportComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: reportComment, ...rest } = useTqReportComment()
-  const wrappedHandler = (commentId: ID) => {
+  const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
       reportComment({
         commentId,
+        parentCommentId,
         userId: currentUserId,
         trackId: entityId,
         currentSort

@@ -40,12 +40,13 @@ export const TrackStats = (props: TrackStatsProps) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
+  const comment_count = track?.comment_count ?? 0
+
   if (!track) return null
 
   const {
     repost_count,
     save_count,
-    comment_count,
     comments_disabled,
     play_count,
     is_stream_gated,

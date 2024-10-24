@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 
@@ -9,7 +11,7 @@ export const IconText = ({
   icons = []
 }: IconTextProps) => {
   const separator = (
-    <Text variant='body' color='default' css={{ fontSize: 8 }}>
+    <Text variant='body' color='default' css={{ fontSize: 8, lineHeight: 20 }}>
       •
     </Text>
   )
@@ -17,12 +19,12 @@ export const IconText = ({
   return (
     <Flex h='l' gap='xs' alignItems='center'>
       {icons.map(({ icon: Icon, color: iconColor = 'default' }, index) => (
-        <>
+        <Fragment key={`icon${index}`}>
           {index > 0 ? separator : null}
-          <Icon key={`icon${index}`} size='2xs' color={iconColor} />
-        </>
+          <Icon size='2xs' color={iconColor} />
+        </Fragment>
       ))}
-      <Text variant='body' size='xs' color={color}>
+      <Text size='s' color={color}>
         {children}
       </Text>
     </Flex>

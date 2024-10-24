@@ -521,6 +521,7 @@ export const PremiumContentPurchaseDrawer = () => {
       onClosed={handleClosed}
       isGestureSupported={false}
       isFullscreen
+      dismissKeyboardOnOpen
     >
       {isLoading ? (
         <View style={styles.spinnerContainer}>

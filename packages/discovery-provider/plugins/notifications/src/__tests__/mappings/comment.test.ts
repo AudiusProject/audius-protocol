@@ -9,7 +9,8 @@ import {
   createTracks,
   setupTest,
   resetTests,
-  createComments
+  createComments,
+  insertNotifications
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -38,9 +39,25 @@ describe('Comment Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createComments(processor.discoveryDB, [
       {
+        comment_id: 1,
         user_id: 2,
         entity_id: 10,
         entity_type: commenttype.track
+      }
+    ])
+    await insertNotifications(processor.discoveryDB, [
+      {
+        blocknumber: 1,
+        user_ids: [1],
+        timestamp: new Date(1589373217),
+        type: 'comment',
+        specifier: '2',
+        group_id: 'comment:10:type:Track',
+        data: {
+          type: 'Track',
+          entity_id: 10,
+          comment_user_id: 2
+        }
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -61,9 +78,11 @@ describe('Comment Notification', () => {
         title: 'New Comment',
         body: 'user_2 commented on your track track_title_10',
         data: {
-          id: 'timestamp:1589373217:group_id:comment:10:type:Track',
+          id: 'timestamp:1589373:group_id:comment:10:type:Track',
           type: 'Comment',
-          userIds: [2]
+          userIds: [2],
+          entityType: 'track',
+          entityId: 10
         }
       }
     )
@@ -90,7 +109,7 @@ describe('Comment Notification', () => {
         group_id: 'comment:10:type:track',
         data: {
           type: EntityType.Track,
-          user_id: 2,
+          comment_user_id: 2,
           entity_id: 10
         },
         user_ids: [1],
@@ -134,7 +153,7 @@ describe('Comment Notification', () => {
         group_id: 'comment:10:type:track',
         data: {
           type: EntityType.Track,
-          user_id: num + 2,
+          comment_user_id: num + 2,
           entity_id: 10
         },
         user_ids: [1],

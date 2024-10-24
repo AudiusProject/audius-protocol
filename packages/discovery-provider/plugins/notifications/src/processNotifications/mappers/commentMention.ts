@@ -145,7 +145,9 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
-                type: 'CommentMention'
+                type: 'CommentMention',
+                entityType: this.entityType,
+                entityId: this.entityId
               }
             }
           )

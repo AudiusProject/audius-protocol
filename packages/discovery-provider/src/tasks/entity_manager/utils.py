@@ -41,6 +41,7 @@ from src.tasks.metadata import (
     comment_metadata_format,
     playlist_metadata_format,
     track_comment_notification_setting_format,
+    track_download_metadata_format,
     track_metadata_format,
     user_metadata_format,
 )
@@ -200,6 +201,7 @@ class EntitiesToFetchDict(TypedDict):
     UserWallet: Set[str]
     Comment: Set[int]
     CommentReaction: Set[Tuple]
+    CommentThread: Set[Tuple]
     CommentMention: Set[Tuple]
     CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
@@ -348,6 +350,8 @@ def get_metadata_type_and_format(entity_type, action=None):
         metadata_type = "track"
         if action == Action.MUTE or action == Action.UNMUTE:
             metadata_format = track_comment_notification_setting_format
+        elif action == Action.DOWNLOAD:
+            metadata_format = track_download_metadata_format
         else:
             metadata_format = track_metadata_format
     elif entity_type == EntityType.USER:
@@ -608,3 +612,18 @@ def convert_legacy_purchase_access_gate(owner_id: int, access_gate: dict):
                 {"user_id": owner_id, "percentage": 100.0}
             ]
     return access_gate
+
+
+def safe_add_notification(params: ManageEntityParameters, notification: Notification):
+    group_id = notification.group_id
+    specifier = notification.specifier
+    notification_type = notification.type
+
+    existing_notification = (
+        params.session.query(Notification)
+        .filter_by(type=notification_type, group_id=group_id, specifier=specifier)
+        .first()
+    )
+
+    if existing_notification is None:
+        params.session.add(notification)

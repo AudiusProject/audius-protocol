@@ -371,10 +371,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x9708Fb04DeA029212126255B311a21F1F884cCB4"
       },
       {
-        "endpoint": "https://usermetadata.audius.co",
-        "delegateOwnerWallet": "0xD7E6Fe145874E6c2648F012379699c694b183A2c"
-      },
-      {
         "endpoint": "https://audius-content-9.figment.io",
         "delegateOwnerWallet": "0x7c34c9709ed69513D55dF2020e799DA44fC52E6e"
       },
@@ -385,10 +381,6 @@ export const productionConfig: SdkServicesConfig = {
       {
         "endpoint": "https://audius-content-11.figment.io",
         "delegateOwnerWallet": "0xC9721F892BcC8822eb34237E875BE93904f11073"
-      },
-      {
-        "endpoint": "https://audius.prod.capturealpha.io",
-        "delegateOwnerWallet": "0x0A5AEA27A7fB95b51056Df6AaD7fe7E9116eC9B4"
       },
       {
         "endpoint": "https://content.grassfed.network",

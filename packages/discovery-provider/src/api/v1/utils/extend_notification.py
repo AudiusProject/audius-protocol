@@ -9,6 +9,7 @@ from src.queries.get_notifications import (
     ClaimableRewardNotification,
     CommentMentionNotification,
     CommentNotification,
+    CommentReactionNotification,
     CommentThreadNotification,
     CosignRemixNotification,
     CreatePlaylistNotification,
@@ -678,7 +679,7 @@ def extend_comment(action: NotificationAction):
         "data": {
             "type": data["type"],
             "entity_id": encode_int_id(data["entity_id"]),
-            "user_id": encode_int_id(data["user_id"]),
+            "comment_user_id": encode_int_id(data["comment_user_id"]),
         },
     }
 
@@ -721,6 +722,25 @@ def extend_comment_mention(action: NotificationAction):
     }
 
 
+def extend_comment_reaction(action: NotificationAction):
+    data: CommentReactionNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "type": data["type"],
+            "entity_id": encode_int_id(data["entity_id"]),
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "reacter_user_id": encode_int_id(data["reacter_user_id"]),
+        },
+    }
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -754,4 +774,5 @@ notification_action_handler = {
     "comment": extend_comment,
     "comment_thread": extend_comment_thread,
     "comment_mention": extend_comment_mention,
+    "comment_reaction": extend_comment_reaction,
 }

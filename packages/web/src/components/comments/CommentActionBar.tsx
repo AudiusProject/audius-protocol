@@ -9,9 +9,10 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ReplyComment } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
+  Box,
   ButtonVariant,
   Flex,
   Hint,
@@ -66,6 +67,7 @@ type CommentActionBarProps = {
   onClickReply: () => void
   onClickDelete: () => void
   hideReactCount?: boolean
+  parentCommentId?: ID
 }
 export const CommentActionBar = ({
   comment,
@@ -73,14 +75,15 @@ export const CommentActionBar = ({
   onClickEdit,
   onClickReply,
   onClickDelete,
-  hideReactCount
+  hideReactCount,
+  parentCommentId
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
   const { currentUserId, isEntityOwner, entityId, currentSort, track } =
     useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
   const isMuted = 'isMuted' in comment ? comment.isMuted : false
-  const isParentComment = 'replyCount' in comment
+  const isParentComment = parentCommentId === undefined
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
@@ -138,15 +141,14 @@ export const CommentActionBar = ({
   }, [comment.userId, currentSort, entityId, muteUser, toast])
 
   const handleFlagComment = useCallback(() => {
-    reportComment(commentId)
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndHidden)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleFlagAndRemoveComment = useCallback(() => {
-    reportComment(commentId)
-    // TODO: remove comment
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndRemoved)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
     if (isMobile) {
@@ -161,7 +163,6 @@ export const CommentActionBar = ({
   }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   // Confirmation Modal state
-
   const confirmationModals: {
     [k in ConfirmationAction]: ConfirmationModalState
   } = useMemo(
@@ -306,17 +307,16 @@ export const CommentActionBar = ({
           onClick={handleReact}
           disabled={isDisabled}
         />
-        {!hideReactCount ? (
-          <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
-            {' '}
-            {reactCount}
-          </Text>
-        ) : null}
+        {!hideReactCount && reactCount > 0 ? (
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        ) : (
+          // Placeholder box to offset where the number would be
+          <Box w='8px' />
+        )}
       </Flex>
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
-        size='s'
         disabled={isDisabled || isTombstone}
       >
         {messages.reply}

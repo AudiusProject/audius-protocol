@@ -189,6 +189,12 @@ export interface Track {
      * @memberof Track
      */
     playlistsContainingTrack?: Array<number>;
+    /**
+     * 
+     * @type {number}
+     * @memberof Track
+     */
+    pinnedCommentId?: number;
 }
 
 /**
@@ -248,6 +254,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
+        'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
     };
 }
 
@@ -285,6 +292,7 @@ export function TrackToJSON(value?: Track | null): any {
         'is_streamable': value.isStreamable,
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
+        'pinned_comment_id': value.pinnedCommentId,
     };
 }
 

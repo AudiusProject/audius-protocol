@@ -66,7 +66,11 @@ export const Text = forwardRef(
           ],
         // @ts-ignore
         fontWeight: theme.typography.weight[variantConfig.fontWeight[strength]],
-        ...('css' in variantConfig && variantConfig.css)
+        ...('css' in variantConfig && variantConfig.css),
+        ...(lineHeight === 'multi' && {
+          wordBreak: 'break-word',
+          hyphens: 'auto'
+        })
       }),
       ...(shadow && {
         textShadow: theme.typography.shadow[shadow]

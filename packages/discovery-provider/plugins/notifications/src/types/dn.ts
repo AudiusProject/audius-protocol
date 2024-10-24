@@ -659,6 +659,7 @@ export interface TrackRow {
   musical_key?: string | null
   is_custom_musical_key?: boolean | null
   audio_analysis_error_count?: number
+  pinned_comment_id?: number | null
 }
 export interface TrendingParamRow {
   genre?: string | null
@@ -837,7 +838,6 @@ export interface CommentRow {
   text: string
   is_delete: boolean
   is_visible: boolean
-  is_pinned: boolean
   is_edited: boolean
   txhash?: string
 }
@@ -852,6 +852,17 @@ export interface CommentMentionRow {
   user_id: number
   created_at?: Date
   updated_at?: Date
+  is_delete: boolean
+  txhash: string
+  blockhash: string
+  blocknumber: number
+}
+
+export type CommentReactionRow = {
+  comment_id: number
+  user_id: number
+  created_at: Date
+  updated_at: Date
   is_delete: boolean
   txhash: string
   blockhash: string
