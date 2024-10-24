@@ -26,7 +26,7 @@ from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
-from src.queries.get_track_comment_count import get_track_comment_count
+from src.queries.get_track_comment_count import get_tracks_comment_counts
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
@@ -399,6 +399,7 @@ def get_track_play_count_dict(session, track_ids):
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
+
     if not track_has_aggregates:
         # build dict of track id --> repost count
         counts = (
@@ -495,6 +496,8 @@ def populate_track_metadata(
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
+    comment_counts = get_tracks_comment_counts(track_ids, current_user_id, session)
+
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.
     # if no current user (guest), populate access based on track stream/download conditions
@@ -511,11 +514,11 @@ def populate_track_metadata(
             )
             track["cover_art_cids"] = cover_cids
 
-        comment_count = get_track_comment_count(track_id, current_user_id, session)
+        # comment_count = get_track_comment_count(track_id, current_user_id, session)
 
-        track[response_name_constants.comment_count] = (
-            comment_count if comment_count else 0
-        )
+        # track[response_name_constants.comment_count] = (
+        #     comment_count if comment_count else 0
+        # )
 
         if track_has_aggregates:
             aggregate_track = track.get("aggregate_track")
@@ -539,6 +542,7 @@ def populate_track_metadata(
             ).get(response_name_constants.save_count, 0)
             track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
+        track[response_name_constants.comment_count] = comment_counts.get(track_id, 0)
         track[
             response_name_constants.followee_reposts
         ] = followee_track_repost_dict.get(track_id, [])

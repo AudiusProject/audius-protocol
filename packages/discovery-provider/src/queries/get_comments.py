@@ -57,7 +57,7 @@ def get_replies(
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.is_delete == False)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .subquery()
     )
 
@@ -115,9 +115,10 @@ def get_replies(
             ),  # Exclude muted users' comments
             or_(
                 CommentReport.comment_id == None,
-                current_user_id == None,
-                CommentReport.user_id != current_user_id,
-                CommentReport.user_id != artist_id,
+                and_(
+                    CommentReport.user_id != current_user_id,
+                    CommentReport.user_id != artist_id,
+                ),
                 CommentReport.is_delete == True,
             ),
         )
@@ -217,7 +218,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.is_delete == False)
             .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
             .subquery()
         )
 
@@ -306,9 +307,10 @@ def get_track_comments(args, track_id, current_user_id=None):
                 == None,  # Check if parent_comment_id is null
                 or_(
                     CommentReport.comment_id == None,
-                    current_user_id == None,
-                    CommentReport.user_id != current_user_id,
-                    CommentReport.user_id != artist_id,
+                    and_(
+                        CommentReport.user_id != current_user_id,
+                        CommentReport.user_id != artist_id,
+                    ),
                 ),
                 or_(
                     MutedUser.muted_user_id == None,

@@ -429,3 +429,40 @@ def test_get_ai_attributed_tracks(app):
         assert len(tracks) == 2
         assert tracks[0]["track_id"] == 12
         assert tracks[1]["track_id"] == 3
+
+
+def test_get_track_comment_count(app):
+    """Test getting tracks with comment counts"""
+
+    with app.app_context():
+        db = get_db()
+
+    # Populate the database with test data
+    populate_mock_db(
+        db,
+        {
+            "tracks": [
+                {"track_id": 1, "title": "Track with no comments", "owner_id": 1},
+                {"track_id": 2, "title": "Track with two comments", "owner_id": 1},
+            ],
+            "comments": [
+                {"comment_id": 1, "user_id": 2, "entity_id": 2, "entity_type": "Track"},
+                {"comment_id": 2, "user_id": 3, "entity_id": 2, "entity_type": "Track"},
+            ],
+        },
+    )
+
+    with db.scoped_session() as session:
+        tracks = _get_tracks(
+            session, {"user_id": 1, "offset": 0, "limit": 10, "sort": "date"}
+        )
+
+        assert len(tracks) == 2
+
+        # Check track with no comments
+        assert tracks[0]["track_id"] == 2
+        assert tracks[0]["comment_count"] == 2
+
+        # Check track with two comments
+        assert tracks[1]["track_id"] == 1
+        assert tracks[1]["comment_count"] == 0

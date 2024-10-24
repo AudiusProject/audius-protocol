@@ -8,61 +8,76 @@ from src.models.users.aggregate_user import AggregateUser
 from src.utils.db_session import get_db_read_replica
 
 
-def get_track_comment_count(track_id, current_user_id, db_session=None):
-    db = get_db_read_replica()
+def get_tracks_comment_counts(track_ids, current_user_id, db_session=None):
+    def _get_counts(session):
+        track = (
+            session.query(Track.track_id, Track.owner_id)
+            .filter(Track.track_id.in_(track_ids))
+            .subquery()
+        )
 
-    def _get_count(session):
-        track = session.query(Track).filter(Track.track_id == track_id).first()
-        artist_id = track.owner_id
-        track_comment_count = (
-            session.query(func.count(Comment.comment_id))
-            .outerjoin(
-                CommentReport,
-                Comment.comment_id == CommentReport.comment_id,
+        muted_by_karma = (
+            session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.is_delete == False)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
+            .subquery()
+        )
+
+        counts = (
+            session.query(
+                Comment.entity_id.label("track_id"),
+                func.count(Comment.comment_id).label("comment_count"),
             )
-            .outerjoin(
-                AggregateUser,
-                AggregateUser.user_id == CommentReport.user_id,
-            )
+            .outerjoin(track, Comment.entity_id == track.c.track_id)
+            .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == CommentReport.user_id)
             .outerjoin(
                 MutedUser,
                 and_(
-                    MutedUser.muted_user_id
-                    == Comment.user_id,  # match muted users up to their comments
-                    MutedUser.user_id
-                    == current_user_id,  # compare who did the muting to our current user
+                    MutedUser.muted_user_id == Comment.user_id,
+                    or_(
+                        MutedUser.user_id == current_user_id,
+                        MutedUser.muted_user_id.in_(muted_by_karma),
+                    ),
+                    current_user_id != Comment.user_id,  # show comment to comment owner
                 ),
             )
             .filter(
-                Comment.entity_id == track_id,
+                Comment.entity_id.in_(track_ids),
                 Comment.entity_type == "Track",
-                # Exclude comments that the current user reported
                 or_(
                     CommentReport.comment_id == None,
-                    current_user_id == None,
-                    CommentReport.user_id != current_user_id,
-                    CommentReport.user_id != artist_id,
+                    and_(
+                        CommentReport.user_id != current_user_id,
+                        CommentReport.user_id != track.c.owner_id,
+                    ),
                 ),
                 or_(
                     MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
                 ),
-                # Exclude deleted comments
                 Comment.is_delete == False,
             )
             .group_by(Comment.entity_id)
-            # Exclude comments that the combined karma of all users who reported the comment is above the threshold
-            # this mainly applies to comments the Audius account reported
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_KARMA_THRESHOLD,
+                <= COMMENT_KARMA_THRESHOLD
             )
-            .scalar()
+            .all()
         )
-        return track_comment_count or 0
+
+        return {count.track_id: count.comment_count for count in counts}
 
     if db_session:
-        return _get_count(db_session)
+        return _get_counts(db_session)
     else:
+        db = get_db_read_replica()
         with db.scoped_session() as scoped_session:
-            return _get_count(scoped_session)
+            return _get_counts(scoped_session)
+
+
+def get_track_comment_count(track_id, current_user_id, db_session=None):
+    counts = get_tracks_comment_counts([track_id], current_user_id, db_session)
+    return counts.get(track_id, 0)

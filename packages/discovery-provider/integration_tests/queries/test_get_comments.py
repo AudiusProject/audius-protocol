@@ -307,9 +307,7 @@ def test_get_reported_comments(app):
             {"comment_id": 2, "user_id": 3},
         ],
         "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
-        "aggregate_user": [
-            {"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD + 1}
-        ],
+        "aggregate_user": [{"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD}],
         "tracks": [{"track_id": 1, "owner_id": 1}],
     }
 
