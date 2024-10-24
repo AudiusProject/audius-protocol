@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useGetCurrentUser, useGetCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { ID, statusIsNotFinalized } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
