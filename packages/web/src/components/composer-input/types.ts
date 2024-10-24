@@ -15,7 +15,7 @@ export type ComposerInputProps = {
     mentions: CommentMention[]
   ) => void
   presetMessage?: string
-  presetUserMentionIds?: ID[]
+  presetUserMentions?: CommentMention[]
   isLoading?: boolean
   maxMentions?: number
 } & Pick<

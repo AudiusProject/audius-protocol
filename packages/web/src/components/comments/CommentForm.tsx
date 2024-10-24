@@ -28,7 +28,7 @@ type CommentFormValues = {
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
-  initialUserMentionIds?: ID[]
+  initialUserMentions?: CommentMention[]
   hideAvatar?: boolean
   commentId?: ID
   parentCommentId?: ID
@@ -40,7 +40,7 @@ type CommentFormProps = {
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  initialUserMentionIds = [],
+  initialUserMentions = [],
   commentId,
   parentCommentId,
   isEdit,
@@ -119,7 +119,7 @@ export const CommentForm = ({
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
-          presetUserMentionIds={initialUserMentionIds}
+          presetUserMentions={initialUserMentions}
           readOnly={isMobile}
           onClick={handleClickInput}
           messageId={messageId}

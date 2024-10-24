@@ -107,7 +107,7 @@ const CommentBlockInternal = (
               onSubmit={() => setShowEditInput(false)}
               commentId={commentId}
               initialValue={message}
-              initialUserMentionIds={mentions.map((mention) => mention.userId)}
+              initialUserMentions={mentions}
               isEdit
               hideAvatar
             />
@@ -145,7 +145,9 @@ const CommentBlockInternal = (
               autoFocus
               parentCommentId={parentCommentId ?? comment.id}
               initialValue={`@${userHandle} `}
-              initialUserMentionIds={[userId]}
+              initialUserMentions={
+                userHandle ? [{ userId, handle: userHandle }] : []
+              }
               onSubmit={() => setShowReplyInput(false)}
             />
             <PlainButton

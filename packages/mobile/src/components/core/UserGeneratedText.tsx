@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetUserByHandle } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
@@ -8,10 +8,12 @@ import {
   formatCollectionName,
   formatTrackName,
   formatUserName,
+  handleRegex,
   isAudiusUrl,
   restrictedHandles,
   squashNewLines
 } from '@audius/common/utils'
+import type { CommentMention } from '@audius/sdk'
 import { ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
 import type { NavigationProp } from '@react-navigation/native'
@@ -28,8 +30,8 @@ import Autolink from 'react-native-autolink'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
+import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -54,6 +56,7 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
     // Pass touches through text elements
     allowPointerEventsToPassThrough?: boolean
     linkProps?: Partial<TextLinkProps>
+    mentions?: CommentMention[]
 
     // If true, only linkify Audius URLs
     internalLinksOnly?: boolean
@@ -160,6 +163,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     style,
     children,
     linkProps,
+    mentions,
     suffix,
     matchers,
     internalLinksOnly,
@@ -177,6 +181,16 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   >({})
   const [linkContainerLayout, setLinkContainerLayout] =
     useState<LayoutRectangle>()
+
+  const mentionRegex = useMemo(() => {
+    const nullRegex = /(?!)/
+    if (!mentions) return nullRegex
+
+    const regexString = [...mentions.map((mention) => `@${mention.handle}`)]
+      .sort((a, b) => b.length - a.length)
+      .join('|')
+    return regexString.length ? new RegExp(regexString, 'g') : nullRegex
+  }, [mentions])
 
   useEffect(() => {
     if (allowPointerEventsToPassThrough) {
@@ -306,10 +320,19 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             text={squashNewLines(children) as string}
             matchers={[
               // Handle matcher e.g. @handle
-              {
-                pattern: /@[a-zA-Z0-9_.]+/,
-                renderLink: renderHandleLink
-              },
+              ...(mentions
+                ? [
+                    {
+                      pattern: mentionRegex,
+                      renderLink: renderHandleLink
+                    }
+                  ]
+                : [
+                    {
+                      pattern: handleRegex,
+                      renderLink: renderHandleLink
+                    }
+                  ]),
               // URL match
               // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
               {
