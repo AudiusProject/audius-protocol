@@ -20,7 +20,7 @@ export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
   return {
     ...rest,
     id: decodedId,
-    userId: decodedUserId ?? userId, // Note:
+    userId: decodedUserId ?? userId, // Note: comments can have no user id when they're a tombstone state
     replies: transformAndCleanList(replies, replyCommentFromSDK)
   }
 }
