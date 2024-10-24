@@ -124,6 +124,7 @@ export const accountFromSDK = (
     return undefined
   }
   return {
+    // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
       playlists: transformAndCleanList(

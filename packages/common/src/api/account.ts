@@ -32,12 +32,13 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
+    // TODO-NOW: These are going to double-request the same user and store it under a different key.
+    // Would be helpful to consolidate
     getCurrentUser: {
       async fetch(_, context) {
-        const { audiusBackend } = context
-        const libs = await audiusBackend.getAudiusLibsTyped()
-        // TODO-NOW: Needs to be the override wallet address if specified
-        const wallet = libs.web3Manager?.getWalletAddress()
+        const { accountWalletAddress: wallet } =
+          await context.getWalletAddresses()
+
         if (!wallet) {
           console.warn('No wallet found for current user')
           return null
@@ -53,10 +54,8 @@ const accountApi = createApi({
     },
     getCurrentWeb3User: {
       async fetch(_, context) {
-        const { audiusBackend } = context
-        const libs = await audiusBackend.getAudiusLibsTyped()
+        const { web3WalletAddress: wallet } = await context.getWalletAddresses()
 
-        const wallet = libs.web3Manager?.getWalletAddress()
         if (!wallet) {
           console.warn('No wallet found for current user')
           return null
@@ -283,3 +282,4 @@ export const {
 } = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer
+export const accountApiFetchSaga = accountApi.fetchSaga

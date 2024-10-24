@@ -724,30 +724,6 @@ export const audiusBackend = ({
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  // async function getAccount() {
-  //   await waitForLibsInit()
-  //   try {
-  //     // TODO: Non-v1
-  //     const account = audiusLibs.Account.getCurrentUser()
-  //     if (!account) return null
-
-  //     try {
-  //       const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
-  //       account.userBank = userBank.toString()
-  //       return getUserImages(account)
-  //     } catch (e) {
-  //       // Failed to fetch solana user bank account for user
-  //       // in any case
-  //       console.error(e)
-  //       return getUserImages(account)
-  //     }
-  //   } catch (e) {
-  //     console.error(e)
-  //     // No account
-  //     return null
-  //   }
-  // }
-
   type SearchTagsArgs = {
     query: string
     userTagCount?: number

@@ -1,4 +1,4 @@
-import { userApiFetchSaga } from '@audius/common/api'
+import { accountApiFetchSaga, userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,
@@ -101,13 +101,9 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
+
   if (account && account.handle) {
-    // TODO-NOW:
-    // 1. We need to read possible wallet override from localStorage
-    // 2. We need to fetch the web3 user account. That can be done through audius-query, or we can
-    //    manually call SDK here if that's too complicated. Would mean two requests, though.
-    const libs = yield call(audiusBackendInstance.getAudiusLibs)
-    const web3User = yield call([libs.Account, libs.Account.getWeb3User])
+    const web3User = yield call(accountApiFetchSaga.getCurrentWeb3User)
 
     let solanaWallet
     let managerUserId
@@ -169,14 +165,12 @@ function* onSignedIn({ payload: { account } }) {
 }
 
 export function* fetchAccountAsync({ isSignUp = false }) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
+  const getWalletAddresses = yield getContext('getWalletAddresses')
 
   yield put(accountActions.fetchAccountRequested())
 
-  // TODO-NOW: Need to pull this from hedgehog instead (what about MM)
-  const libs = yield call(audiusBackendInstance.getAudiusLibsTyped)
-  const wallet = libs.web3Manager?.getWalletAddress()
+  const { accountWalletAddress: wallet } = yield call(getWalletAddresses)
 
   if (!wallet) {
     yield put(
@@ -217,7 +211,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   // Cache the account and put the signedIn action. We're done.
   yield call(cacheAccount, account.user)
-  yield put(signedIn({ account, isSignUp }))
+  yield put(signedIn({ account: account.user, isSignUp }))
 }
 
 export function* fetchLocalAccountAsync() {
@@ -427,7 +421,7 @@ function* watchResetAccount() {
     const audiusBackendInstance = yield getContext('audiusBackendInstance')
     const localStorage = yield getContext('localStorage')
     const libs = yield call(audiusBackendInstance.getAudiusLibs)
-    yield call([libs.userStateManager, 'clearUser'])
+    yield call([libs, 'clearCurrentUser'])
     yield call([localStorage, 'clearAudiusAccount'])
     yield call([localStorage, 'clearAudiusAccountUser'])
   })

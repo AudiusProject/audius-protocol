@@ -3,7 +3,14 @@ import { full } from '@audius/sdk'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
+import {
+  HashId,
+  ID,
+  Kind,
+  OptionalId,
+  SolanaWalletAddress,
+  StringUSDC
+} from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -50,15 +57,25 @@ const userApi = createApi({
     getUserAccount: {
       fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
         try {
-          const { data } = await (
-            await audiusSdk()
-          ).full.users.getUserAccount({ wallet })
+          const sdk = await audiusSdk()
+          const { data } = await sdk.full.users.getUserAccount({ wallet })
           if (!data) {
             console.warn('Missing user from account response')
             return null
           }
-          // TODO-NOW: get user bank and user images (copy from backend)
-          return accountFromSDK(data)
+
+          const account = accountFromSDK(data)
+          // If we got a valid account, populate user bank and artwork fields as
+          // those are currently expected on the account user.
+          if (account) {
+            const userBank =
+              await sdk.services.claimableTokensClient.deriveUserBank({
+                ethWallet: wallet,
+                mint: 'wAUDIO'
+              })
+            account.user.userBank = userBank.toString() as SolanaWalletAddress
+          }
+          return account
         } catch (e) {
           // Account doesn't exist, don't bubble up an error, just return null
           if (isResponseError(e) && [401, 404].includes(e.response.status)) {
