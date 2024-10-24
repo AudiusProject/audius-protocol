@@ -99,7 +99,7 @@ def create_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
         is not None
     )
@@ -169,10 +169,10 @@ def create_comment(params: ManageEntityParameters):
             .all()
         )
 
-        for mention in mentions:
+        for mention_user_id in mentions:
             comment_mention = CommentMention(
                 comment_id=comment_id,
-                user_id=mention,
+                user_id=mention_user_id,
                 txhash=params.txhash,
                 blockhash=params.event_blockhash,
                 blocknumber=params.block_number,
@@ -181,28 +181,28 @@ def create_comment(params: ManageEntityParameters):
                 is_delete=False,
             )
             params.add_record(
-                (comment_id, mention),
+                (comment_id, mention_user_id),
                 comment_mention,
                 EntityType.COMMENT_MENTION,
             )
 
             track_owner_mention_mute = (
-                mention == entity_user_id and track_owner_notifications_off
+                mention_user_id == entity_user_id and track_owner_notifications_off
             )
 
             if (
-                mention != user_id
-                and mention != parent_comment_user_id
-                and mention not in mention_mutes
+                mention_user_id != user_id
+                and mention_user_id != parent_comment_user_id
+                and mention_user_id not in mention_mutes
                 and not track_owner_mention_mute
                 and not is_muted_by_karma
             ):
                 mention_notification = Notification(
                     blocknumber=params.block_number,
-                    user_ids=[mention],
+                    user_ids=[mention_user_id],
                     timestamp=params.block_datetime,
                     type="comment_mention",
-                    specifier=str(mention),
+                    specifier=str(mention_user_id),
                     group_id=f"comment_mention:{entity_id}:type:{entity_type}",
                     data={
                         "type": entity_type,
@@ -245,7 +245,7 @@ def create_comment(params: ManageEntityParameters):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.muted_user_id == user_id)
             .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
             .scalar()
             is not None
         )
@@ -326,7 +326,7 @@ def update_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
     ) is not None
 
