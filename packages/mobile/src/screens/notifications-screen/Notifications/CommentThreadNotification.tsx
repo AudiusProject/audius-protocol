@@ -25,7 +25,8 @@ const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
   replied: ' replied to your comment on',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentThreadNotificationProps = {
@@ -54,6 +55,8 @@ export const CommentThreadNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
+  const isOwnerReply =
+    entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
@@ -70,7 +73,13 @@ export const CommentThreadNotification = (
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.replied}{' '}
-        {isOwner ? messages.your : <UserNameLink user={entity.user} isOwner />}{' '}
+        {isOwner ? (
+          messages.your
+        ) : isOwnerReply ? (
+          messages.their
+        ) : (
+          <UserNameLink user={entity.user} isOwner />
+        )}{' '}
         {entityType.toLowerCase()} <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>

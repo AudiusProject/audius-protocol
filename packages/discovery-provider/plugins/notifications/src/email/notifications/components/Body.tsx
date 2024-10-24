@@ -192,6 +192,8 @@ const snippetMap = {
     return `${user.name} replied to your comment on ${
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
+        : notification.entityUser.user_id === user.user_id
+        ? 'their'
         : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
@@ -200,6 +202,8 @@ const snippetMap = {
     return `${user.name} tagged you in a comment on ${
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
+        : notification.entityUser.user_id === user.user_id
+        ? 'their'
         : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
