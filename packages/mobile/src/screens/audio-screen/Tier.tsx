@@ -145,6 +145,7 @@ export const Tier = (props: TierProps) => {
             </Text>
             <Unlock images={[Checkmark]}>{title} Badge</Unlock>
             <Unlock images={[Checkmark]}>{title} Discord Role</Unlock>
+            <Unlock images={[Checkmark]}>Message Blasts</Unlock>
             {isCurrentTier ? (
               <Button
                 variant='secondary'
