@@ -161,7 +161,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
         text: isMuted
           ? messages.menuActions.unmuteThread
           : messages.menuActions.muteThread,
-        callback: () => handleMuteNotifs
+        callback: handleMuteNotifs
       },
     isCommentOwner && {
       text: messages.menuActions.edit,

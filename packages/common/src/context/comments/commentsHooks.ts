@@ -220,8 +220,8 @@ export const useMuteUser = () => {
       track(
         make({
           eventName: isMuted
-            ? Name.COMMENTS_MUTE_USER
-            : Name.COMMENTS_UNMUTE_USER,
+            ? Name.COMMENTS_UNMUTE_USER
+            : Name.COMMENTS_MUTE_USER,
           userId: mutedUserId
         })
       )

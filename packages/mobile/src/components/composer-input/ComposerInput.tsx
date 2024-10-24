@@ -22,6 +22,7 @@ import {
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
+import { isEqual } from 'lodash'
 import { Platform, TouchableOpacity } from 'react-native'
 import type { TextInput as RnTextInput } from 'react-native'
 import type {
@@ -29,6 +30,7 @@ import type {
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
+import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
@@ -165,6 +167,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+  const prevLinkEntities = usePrevious(linkEntities)
 
   const timestamps = useMemo(() => {
     if (!track || !track.access.stream) return []
@@ -179,6 +182,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         link: ''
       }))
   }, [track, value])
+  const prevTimestamps = usePrevious(timestamps)
 
   useEffect(() => {
     const fn = async () => {
@@ -489,22 +493,22 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   useEffect(() => {
-    if (linkEntities.length) {
+    if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
       const { type, data } = linkEntities[linkEntities.length - 1]
       const id = decodeHashId(data.id)
       if (id) {
         onAddLink?.(id, type)
       }
     }
-  }, [linkEntities, onAddLink])
+  }, [linkEntities, onAddLink, prevLinkEntities])
 
   useEffect(() => {
-    if (timestamps.length) {
+    if (timestamps.length && !isEqual(timestamps, prevTimestamps)) {
       onAddTimestamp?.(
         parseCommentTrackTimestamp(timestamps[timestamps.length - 1].text)
       )
     }
-  }, [onAddTimestamp, timestamps])
+  }, [onAddTimestamp, timestamps, prevTimestamps])
 
   return (
     <>

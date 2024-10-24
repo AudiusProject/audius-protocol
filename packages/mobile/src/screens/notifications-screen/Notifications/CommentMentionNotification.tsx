@@ -2,12 +2,14 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import type { CommentMentionNotification as CommentMentionNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { make, track } from 'app/services/analytics'
 
 import {
   NotificationHeader,
@@ -57,6 +59,13 @@ export const CommentMentionNotification = (
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
+
+    track(
+      make({
+        eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+        commentId: notification.entityId
+      })
+    )
   }, [navigation, notification])
 
   if (!users || !firstUser || !entity || !entity.user) return null

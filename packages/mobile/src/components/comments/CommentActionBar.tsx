@@ -36,15 +36,6 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
   const handleCommentReact = useCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
-
-    track(
-      make({
-        eventName: !reactionState
-          ? Name.COMMENTS_LIKE_COMMENT
-          : Name.COMMENTS_UNLIKE_COMMENT,
-        commentId
-      })
-    )
   }, [commentId, reactToComment, reactionState])
 
   const handleReply = useCallback(() => {
