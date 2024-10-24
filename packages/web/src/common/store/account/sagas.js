@@ -154,7 +154,6 @@ function* onSignedIn({ payload: { account } }) {
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.
   yield put(
-    // TODO-NOW: Does this need to update?
     fetchProfile(account.handle, account.user_id, false, false, false, true)
   )
 

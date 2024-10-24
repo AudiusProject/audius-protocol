@@ -21,7 +21,6 @@ export class Notifications extends Base {
   /**
    * Submit a user's view of notification event
    */
-  // TODO-NOW: Update callers to pass required config object and userId
   async viewNotification({
     logger = console,
     userId

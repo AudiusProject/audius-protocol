@@ -103,18 +103,6 @@ type DiscoveryNodeChallenge = {
   disbursed_amount: number
 }
 
-// TODO-NOW: Move this logic to common
-// const getUserWalletOverride = async (localStorage?: LocalStorage) => {
-//   try {
-//     const userIdOverride = await localStorage?.getItem(
-//       DISCOVERY_PROVIDER_USER_WALLET_OVERRIDE
-//     )
-//     return userIdOverride == null ? undefined : userIdOverride
-//   } catch {
-//     return undefined
-//   }
-// }
-
 export type DiscoveryRelayBody = {
   contractRegistryKey?: string | null
   contractAddress?: string | null
@@ -240,44 +228,6 @@ export class DiscoveryProvider {
       const endpoint = await this.serviceSelector.select()
       this.setEndpoint(endpoint)
     }
-
-    // TODO-NOW: Make sure this is duplicated in sagas and then remove
-    // if (
-    //   this.discoveryProviderEndpoint &&
-    //   this.web3Manager &&
-    //   this.web3Manager.web3
-    // ) {
-    //   const walletOverride = this.enableUserWalletOverride
-    //     ? await getUserWalletOverride(this.localStorage)
-    //     : undefined
-
-    //   const web3AccountPromise = this.getUserAccount(
-    //     this.web3Manager.getWalletAddress()
-    //   )
-
-    //   if (walletOverride) {
-    //     const overrideAccountPromise = this.getUserAccount(walletOverride)
-    //     const [web3User, currentUser] = await Promise.all([
-    //       web3AccountPromise,
-    //       overrideAccountPromise
-    //     ])
-
-    //     if (web3User) {
-    //       this.userStateManager.setWeb3User(web3User)
-    //     }
-    //     if (currentUser) {
-    //       await this.userStateManager.setCurrentUser(currentUser)
-    //     }
-    //   } else {
-    //     const currentUser = await web3AccountPromise
-    //     if (currentUser) {
-    //       if (this.enableUserWalletOverride) {
-    //         this.userStateManager.setWeb3User(cloneDeep(currentUser))
-    //       }
-    //       await this.userStateManager.setCurrentUser(currentUser)
-    //     }
-    //   }
-    // }
   }
 
   setEndpoint(endpoint: string) {

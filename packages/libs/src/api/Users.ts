@@ -319,7 +319,8 @@ export class Users extends Base {
       newMetadata.is_storage_v2 = true
       newMetadata.wallet = this.web3Manager.getWalletAddress()
       newMetadata.user_id = userId
-      // TODO-NOW: Make sure this is returned and used by calling location
+      // TODO-NOW: Make sure the logic below holds true for whatever user is in the
+      // cache. It _should_ be as we fetch the profile right aferwards...
       // this.userStateManager.setCurrentUser({
       //   ...newMetadata,
       //   // Initialize counts to be 0. We don't want to write this data to backends ever really
@@ -358,9 +359,6 @@ export class Users extends Base {
         userId,
         manageEntityResponse.txReceipt.blockNumber
       )
-      // Update libs instance with new user metadata object
-      // TODO-NOW: Don't need this, but make sure user updated in calling location
-      // this.userStateManager.setCurrentUser({ ...newMetadata })
 
       return {
         newMetadata,
@@ -405,8 +403,7 @@ export class Users extends Base {
           manageEntityResponse.txReceipt.blockNumber
         )
         // Update libs instance with new user metadata object
-        // TODO-NOW: Don't need this, but make sure user is updated in calling location
-        // this.userStateManager.setCurrentUser({ ...newMetadata })
+        // TODO-NOW: Make sure calling locations refresh the user data
       } catch (e) {
         const errorMsg = `repairEntityManagerUserV2() error: ${e}`
         if (e instanceof Error) {
@@ -513,7 +510,8 @@ export class Users extends Base {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
 
-    // TODO-NOW: require passing of oldMetadata?
+    // TODO-NOW: Check that a current user is set? Or maybe have the calling
+    // location verify that a user exists before calling this
     // const oldMetadata = this.userStateManager.getCurrentUser()
     // if (!oldMetadata) {
     //   throw new Error('No current user.')
@@ -538,8 +536,8 @@ export class Users extends Base {
         )
       const blockNumber = txReceipt.blockNumber
 
-      // Update libs instance with new user metadata object
-      // TODO-NOW: If needed, return this and make sure calling location is using it
+      // TODO-NOW: Find callers of updateMetadataV2 and make sure they are
+      // updating user info in cache
       // this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
       return {
         blockHash: txReceipt.blockHash,
