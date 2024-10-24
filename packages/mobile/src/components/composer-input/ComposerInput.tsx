@@ -23,6 +23,7 @@ import type {
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
+import { ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
@@ -98,7 +99,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     presetUserMentions = [],
     entityId,
     styles: propStyles,
-    TextInputComponent,
+    TextInputComponent = ReactNativeGestureHandlerTextInput,
     onLayout,
     maxLength = 10000,
     maxMentions = Infinity
