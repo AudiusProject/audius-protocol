@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import {
+  CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType
@@ -331,7 +332,7 @@ type PostCommentArgs = {
   currentSort: CommentSortMethod
   parentCommentId?: ID
   trackTimestampS?: number
-  mentions?: any
+  mentions?: CommentMention[]
   newId?: ID
 }
 
@@ -345,6 +346,7 @@ export const usePostComment = () => {
       const sdk = await audiusSdk()
       return await sdk.comments.postComment({
         ...args,
+        mentions: args.mentions?.map((mention) => mention.userId) ?? [],
         entityId: args.trackId,
         commentId: args.newId
       })
@@ -679,7 +681,7 @@ type EditCommentArgs = {
   commentId: ID
   userId: ID
   newMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
   trackId: ID
   currentSort: CommentSortMethod
   entityType?: EntityType
@@ -703,12 +705,12 @@ export const useEditComment = () => {
         entityId: commentId,
         trackId,
         entityType,
-        mentions
+        mentions: mentions?.map((mention) => mention.userId) ?? []
       }
       const sdk = await audiusSdk()
       await sdk.comments.editComment(commentData)
     },
-    onMutate: ({ commentId, newMessage }) => {
+    onMutate: ({ commentId, newMessage, mentions }) => {
       const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
         QUERY_KEYS.comment,
         commentId
@@ -719,7 +721,8 @@ export const useEditComment = () => {
           ({
             ...prevData,
             isEdited: true,
-            message: newMessage
+            message: newMessage,
+            mentions
           } as CommentOrReply)
       )
       return { prevComment }
@@ -745,7 +748,8 @@ export const useEditComment = () => {
               ...prevData,
               // NOTE: intentionally only reverting the pieces we changed in case another mutation happened in between this mutation start->error
               isEdited: prevComment?.isEdited,
-              message: prevComment?.message
+              message: prevComment?.message,
+              mentions: prevComment?.mentions
             } as CommentOrReply)
         )
       }

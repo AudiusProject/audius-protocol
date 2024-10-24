@@ -36,6 +36,7 @@ export const CommentBlockInternal = (
   const {
     id: commentId,
     message,
+    mentions = [],
     trackTimestampS,
     createdAt,
     userId,
@@ -107,7 +108,11 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited && !isTombstone} isPreview={isPreview}>
+        <CommentText
+          isEdited={isEdited && !isTombstone}
+          isPreview={isPreview}
+          mentions={mentions}
+        >
           {message}
         </CommentText>
         {!isPreview ? (

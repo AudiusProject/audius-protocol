@@ -9,6 +9,7 @@ import { commentsMessages as messages } from '@audius/common/messages'
 import { ID, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
+import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -21,13 +22,13 @@ import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
 }
 
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
-  initialUserMentionIds?: ID[]
+  initialUserMentions?: CommentMention[]
   hideAvatar?: boolean
   commentId?: ID
   parentCommentId?: ID
@@ -39,7 +40,7 @@ type CommentFormProps = {
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  initialUserMentionIds = [],
+  initialUserMentions = [],
   commentId,
   parentCommentId,
   isEdit,
@@ -56,7 +57,7 @@ export const CommentForm = ({
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer
       ? Math.floor(audioPlayer.getPosition())
       : undefined
@@ -66,7 +67,10 @@ export const CommentForm = ({
     postComment(message, parentCommentId, trackTimestampS, mentions)
   }
 
-  const handleCommentEdit = (commentMessage: string, mentions?: ID[]) => {
+  const handleCommentEdit = (
+    commentMessage: string,
+    mentions?: CommentMention[]
+  ) => {
     if (commentId) {
       editComment(commentId, commentMessage, mentions)
     }
@@ -115,7 +119,7 @@ export const CommentForm = ({
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
-          presetUserMentionIds={initialUserMentionIds}
+          presetUserMentions={initialUserMentions}
           readOnly={isMobile}
           onClick={handleClickInput}
           messageId={messageId}

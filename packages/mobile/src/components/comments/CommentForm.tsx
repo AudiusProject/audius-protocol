@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
+import type { CommentMention } from '@audius/sdk'
 import type { TextInput as RNTextInput } from 'react-native'
 
 import {
@@ -69,7 +70,7 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
 }
 
 type CommentFormProps = {
-  onSubmit?: (commentMessage: string, mentions?: ID[]) => void
+  onSubmit?: (commentMessage: string, mentions?: CommentMention[]) => void
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
@@ -90,6 +91,7 @@ export const CommentForm = (props: CommentFormProps) => {
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
+  const [initialMentions, setInitialMentions] = useState<CommentMention[]>([])
   const { currentUserId, entityId, replyingAndEditingState } =
     useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
@@ -104,9 +106,8 @@ export const CommentForm = (props: CommentFormProps) => {
     { disabled: !replyingToComment }
   )
 
-  // TODO: Add mentions back here
-  const handleSubmit = (message: string) => {
-    onSubmit(message)
+  const handleSubmit = (message: string, mentions?: CommentMention[]) => {
+    onSubmit(message, mentions)
     setMessageId((id) => ++id)
   }
 
@@ -121,6 +122,12 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
       setInitialMessage(replyInitialMessage(replyingToUser.handle))
+      setInitialMentions([
+        {
+          handle: replyingToUser.handle,
+          userId: replyingToUser.user_id
+        }
+      ])
       focusInput()
     }
   }, [replyingToComment, replyingToUser, focusInput])
@@ -131,6 +138,7 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (editingComment) {
       setInitialMessage(editingComment.message)
+      setInitialMentions(editingComment.mentions ?? [])
       focusInput()
     }
   }, [editingComment, focusInput])
@@ -181,6 +189,7 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
+            presetUserMentions={initialMentions}
             placeholder={messages.addComment}
             onSubmit={handleSubmit}
             TextInputComponent={TextInputComponent}
