@@ -59,6 +59,7 @@ COMMENT_ID_OFFSET = 4_000_000
 CHARACTER_LIMIT_USER_BIO = 256
 CHARACTER_LIMIT_DESCRIPTION = 1000
 PLAYLIST_TRACK_LIMIT = 5000
+COMMENT_BODY_LIMIT = 400
 
 
 class Action(str, Enum):
@@ -389,7 +390,6 @@ def parse_metadata(metadata: str, action: str, entity_type: str):
         return metadata, None
     try:
         data = sanitize_json(json.loads(metadata))
-
         if "cid" not in data.keys() or "data" not in data.keys():
             raise IndexingValidationError("required keys missing in metadata")
 
