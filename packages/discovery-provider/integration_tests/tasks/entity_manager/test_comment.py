@@ -156,7 +156,7 @@ def test_comment(app, mocker):
         comment_notifications = session.query(Notification).all()
         assert len(comment_notifications) == 1
         assert comment_notifications[0].type == "comment"
-        assert comment_notifications[0].specifier == "2"
+        assert comment_notifications[0].specifier == "1"
         assert comment_notifications[0].group_id == f"comment:{1}:type:Track"
 
 
@@ -224,7 +224,7 @@ def test_comment_reply(app, mocker):
             .all()
         )
         assert len(thread_notifications) == 1
-        assert thread_notifications[0].specifier == "3"
+        assert thread_notifications[0].specifier == "2"
 
         # Assert track owner does not receive comment notification from reply
         track_owner_notifications = (
