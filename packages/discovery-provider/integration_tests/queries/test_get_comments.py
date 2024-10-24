@@ -290,9 +290,7 @@ def test_get_reported_comments(app):
     "Test that we do not receive comments that have been reported by artist or high-karma user"
 
     initial_entities = {
-        "aggregate_user": [
-            {"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD + 1}
-        ]
+        "aggregate_user": [{"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD}],
     }
 
     entities = {
