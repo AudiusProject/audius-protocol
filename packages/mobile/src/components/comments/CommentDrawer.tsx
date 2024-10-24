@@ -1,13 +1,14 @@
 import type { RefObject } from 'react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
+import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { Comment, ReplyComment, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -15,13 +16,16 @@ import type {
   BottomSheetFooterProps
 } from '@gorhom/bottom-sheet'
 import {
+  BottomSheetModal,
   BottomSheetFlatList,
   BottomSheetBackdrop,
-  BottomSheetFooter,
-  BottomSheetModal
+  BottomSheetFooter
 } from '@gorhom/bottom-sheet'
+import type { ParamListBase } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -29,7 +33,6 @@ import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
-import { useDrawer } from 'app/hooks/useDrawer'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
 import { CommentDrawerHeader } from './CommentDrawerHeader'
@@ -181,7 +184,6 @@ const CommentDrawerContent = (props: {
       }
       enableFooterMarginAdjustment
       scrollEventsHandlersHook={useScrollEventsHandlers}
-      keyboardShouldPersistTaps='handled'
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
@@ -195,7 +197,25 @@ const CommentDrawerContent = (props: {
 
 const BORDER_RADIUS = 40
 
-export const CommentDrawer = () => {
+export type CommentDrawerData = {
+  entityId: number
+  navigation: NativeStackNavigationProp<ParamListBase>
+  autoFocusInput?: boolean
+}
+
+type CommentDrawerProps = {
+  bottomSheetModalRef: React.RefObject<BottomSheetModal>
+  handleClose: () => void
+} & CommentDrawerData
+
+export const CommentDrawer = (props: CommentDrawerProps) => {
+  const {
+    entityId,
+    navigation,
+    bottomSheetModalRef,
+    handleClose,
+    autoFocusInput
+  } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
   const commentListRef = useRef<BottomSheetFlatListMethods>(null)
@@ -205,10 +225,8 @@ export const CommentDrawer = () => {
   >(() => {})
   const [autoCompleteActive, setAutoCompleteActive] = useState(false)
   const [acText, setAcText] = useState('')
-  const [replyingToComment, setReplyingToComment] = useState<
-    Comment | ReplyComment
-  >()
-  const [editingComment, setEditingComment] = useState<Comment | ReplyComment>()
+  const [replyingAndEditingState, setReplyingAndEditingState] =
+    useState<ReplyingAndEditingState>()
 
   const setAutocompleteHandler = useCallback(
     (autocompleteHandler: (user: UserMetadata) => void) => {
@@ -222,49 +240,36 @@ export const CommentDrawer = () => {
     setAutoCompleteActive(active)
   }, [])
 
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const {
-    data: { entityId },
-    isOpen,
-    onClosed
-  } = useDrawer('Comment')
-
-  useEffect(() => {
-    if (isOpen) {
-      bottomSheetModalRef.current?.present()
-    }
-  }, [isOpen])
-
-  const handleClose = useCallback(() => {
-    onClosed()
-  }, [onClosed])
+  const gesture = Gesture.Pan()
 
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-        <Divider orientation='horizontal' />
-        <CommentSectionProvider
-          entityId={entityId}
-          replyingToComment={replyingToComment}
-          setReplyingToComment={setReplyingToComment}
-          editingComment={editingComment}
-          setEditingComment={setEditingComment}
-        >
-          <CommentDrawerForm
-            commentListRef={commentListRef}
-            onAutocompleteChange={onAutoCompleteChange}
-            setAutocompleteHandler={setAutocompleteHandler}
-          />
-        </CommentSectionProvider>
-      </BottomSheetFooter>
+      <GestureDetector gesture={gesture}>
+        <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+          <Divider orientation='horizontal' />
+          <CommentSectionProvider
+            entityId={entityId}
+            replyingAndEditingState={replyingAndEditingState}
+            setReplyingAndEditingState={setReplyingAndEditingState}
+          >
+            <CommentDrawerForm
+              commentListRef={commentListRef}
+              onAutocompleteChange={onAutoCompleteChange}
+              setAutocompleteHandler={setAutocompleteHandler}
+              autoFocus={autoFocusInput}
+            />
+          </CommentSectionProvider>
+        </BottomSheetFooter>
+      </GestureDetector>
     ),
+    // intentionally excluding insets.bottom because it causes a rerender
+    // when the keyboard is opened on android, causing the keyboard to close
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      editingComment,
       entityId,
-      insets.bottom,
       onAutoCompleteChange,
-      replyingToComment,
-      setAutocompleteHandler
+      setAutocompleteHandler,
+      replyingAndEditingState
     ]
   )
 
@@ -292,18 +297,16 @@ export const CommentDrawer = () => {
         )}
         footerComponent={renderFooterComponent}
         onDismiss={handleClose}
+        android_keyboardInputMode='adjustResize'
       >
         <CommentSectionProvider
           entityId={entityId}
-          replyingToComment={replyingToComment}
-          setReplyingToComment={setReplyingToComment}
-          editingComment={editingComment}
-          setEditingComment={setEditingComment}
+          replyingAndEditingState={replyingAndEditingState}
+          setReplyingAndEditingState={setReplyingAndEditingState}
+          navigation={navigation}
+          closeDrawer={handleClose}
         >
-          <CommentDrawerHeader
-            minimal={autoCompleteActive}
-            bottomSheetModalRef={bottomSheetModalRef}
-          />
+          <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />
           {autoCompleteActive ? (
             <CommentDrawerAutocompleteContent

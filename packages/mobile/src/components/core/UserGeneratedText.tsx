@@ -1,29 +1,39 @@
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useGetUserByHandle } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import {
+  decodeHashId,
   formatCollectionName,
   formatTrackName,
   formatUserName,
+  handleRegex,
   isAudiusUrl,
   restrictedHandles,
   squashNewLines
 } from '@audius/common/utils'
+import type { CommentMention } from '@audius/sdk'
 import { ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
+import type { NavigationProp } from '@react-navigation/native'
+import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { Match } from 'autolinker/dist/es2015'
 import { View } from 'react-native'
-import type { LayoutRectangle, Text as TextRef } from 'react-native'
+import type {
+  GestureResponderEvent,
+  LayoutRectangle,
+  Text as TextRef
+} from 'react-native'
 import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { Text } from '@audius/harmony-native'
+import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 const { getUserId } = accountSelectors
@@ -46,17 +56,31 @@ export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
     // Pass touches through text elements
     allowPointerEventsToPassThrough?: boolean
     linkProps?: Partial<TextLinkProps>
+    mentions?: CommentMention[]
 
     // If true, only linkify Audius URLs
     internalLinksOnly?: boolean
 
     // Suffix to append after the text. Used for "edited" text in comments
     suffix?: ReactNode
+
+    navigation?: NavigationProp<ReactNavigation.RootParamList>
   }
 
-const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
+const Link = ({
+  children,
+  url,
+  navigation: navigationProp,
+  ...other
+}: TextLinkProps & {
+  url: string
+  navigation?: NavigationProp<ReactNavigation.RootParamList>
+}) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
+  const [to, setTo] = useState<To<any> | undefined>(undefined)
   const shouldUnfurl = isAudiusUrl(url)
+  const currentNavigation = useNavigation()
+  const navigation = navigationProp ?? currentNavigation
 
   useAsync(async () => {
     if (shouldUnfurl && !unfurledContent) {
@@ -65,26 +89,52 @@ const Link = ({ children, url, ...other }: TextLinkProps & { url: string }) => {
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
+          setTo({ screen: 'Track', params: { id: decodeHashId(res.data.id) } })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+          setTo({
+            screen: 'Collection',
+            params: { id: decodeHashId(res.data[0].id) }
+          })
         } else if (instanceOfUserResponse(res)) {
           setUnfurledContent(formatUserName({ user: res.data }))
+          setTo({
+            screen: 'Profile',
+            params: { id: decodeHashId(res.data.id) }
+          })
         }
       }
     }
   }, [url, shouldUnfurl, unfurledContent, setUnfurledContent])
 
-  return (
-    <TextLink {...other} url={url}>
-      {unfurledContent ?? url}
-    </TextLink>
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      if (to) {
+        if ('push' in navigation) {
+          // @ts-ignore
+          navigation.push(to.screen, to.params)
+        } else {
+          // @ts-ignore
+          navigation.navigate(to.screen, to.params)
+        }
+        other.onPress?.(e)
+      }
+    },
+    [to, other, navigation]
   )
+
+  const linkProps = {
+    ...other,
+    ...(to ? { onPress: handlePress } : { url })
+  }
+
+  return <TextLink {...linkProps}>{unfurledContent ?? url}</TextLink>
 }
 
 const HandleLink = ({
   handle,
   ...other
-}: TextLinkProps & { handle: string }) => {
+}: Omit<TextLinkProps, 'to'> & { handle: string }) => {
   const currentUserId = useSelector(getUserId)
 
   const { data: user } = useGetUserByHandle({
@@ -113,9 +163,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
     style,
     children,
     linkProps,
+    mentions,
     suffix,
     matchers,
     internalLinksOnly,
+    navigation,
+    onTextLayout,
+    numberOfLines,
     ...other
   } = props
 
@@ -128,33 +182,45 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   const [linkContainerLayout, setLinkContainerLayout] =
     useState<LayoutRectangle>()
 
+  const mentionRegex = useMemo(() => {
+    const nullRegex = /(?!)/
+    if (!mentions) return nullRegex
+
+    const regexString = [...mentions.map((mention) => `@${mention.handle}`)]
+      .sort((a, b) => b.length - a.length)
+      .join('|')
+    return regexString.length ? new RegExp(regexString, 'g') : nullRegex
+  }, [mentions])
+
   useEffect(() => {
-    let layouts = {}
-    const linkKeys = Object.keys(links)
+    if (allowPointerEventsToPassThrough) {
+      let layouts = {}
+      const linkKeys = Object.keys(links)
 
-    // Measure the layout of each link
-    linkKeys.forEach((key) => {
-      const linkRef = linkRefs[key]
-      if (linkRef) {
-        // Need to use `measureInWindow` instead of `onLayout` or `measure` because
-        // android doesn't return the correct layout for nested text elements
-        linkRef.measureInWindow((x, y, width, height) => {
-          layouts = { ...layouts, [key]: { x, y, width, height } }
+      // Measure the layout of each link
+      linkKeys.forEach((key) => {
+        const linkRef = linkRefs[key]
+        if (linkRef) {
+          // Need to use `measureInWindow` instead of `onLayout` or `measure` because
+          // android doesn't return the correct layout for nested text elements
+          linkRef.measureInWindow((x, y, width, height) => {
+            layouts = { ...layouts, [key]: { x, y, width, height } }
 
-          // If all the links have been measured, update state
-          if (linkKeys.length === Object.keys(layouts).length) {
-            setLinkLayouts(layouts)
-          }
-        })
+            // If all the links have been measured, update state
+            if (linkKeys.length === Object.keys(layouts).length) {
+              setLinkLayouts(layouts)
+            }
+          })
+        }
+      })
+
+      if (linkContainerRef.current) {
+        linkContainerRef.current.measureInWindow((x, y, width, height) =>
+          setLinkContainerLayout({ x, y, width, height })
+        )
       }
-    })
-
-    if (linkContainerRef.current) {
-      linkContainerRef.current.measureInWindow((x, y, width, height) =>
-        setLinkContainerLayout({ x, y, width, height })
-      )
     }
-  }, [links, linkRefs, linkContainerRef])
+  }, [allowPointerEventsToPassThrough, links, linkRefs, linkContainerRef])
 
   // We let Autolink lay out each link invisibly, and capture their position and data
   const renderHiddenLink = useCallback(
@@ -199,6 +265,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
           variant='visible'
           textVariant={other.variant}
           url={url}
+          navigation={navigation}
           {...linkProps}
         />
       ) : (
@@ -241,7 +308,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
         ref={linkContainerRef}
       >
-        <Text>
+        <Text onTextLayout={onTextLayout} numberOfLines={numberOfLines}>
           <Autolink
             renderLink={
               allowPointerEventsToPassThrough ? renderHiddenLink : renderLink
@@ -253,10 +320,19 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             text={squashNewLines(children) as string}
             matchers={[
               // Handle matcher e.g. @handle
-              {
-                pattern: /@[a-zA-Z0-9_.]{1,15}/,
-                renderLink: renderHandleLink
-              },
+              ...(mentions
+                ? [
+                    {
+                      pattern: mentionRegex,
+                      renderLink: renderHandleLink
+                    }
+                  ]
+                : [
+                    {
+                      pattern: handleRegex,
+                      renderLink: renderHandleLink
+                    }
+                  ]),
               // URL match
               // Intentionally not using the default URL matcher to avoid conflict with the handle matcher. See: https://github.com/joshswan/react-native-autolink/issues/78
               {

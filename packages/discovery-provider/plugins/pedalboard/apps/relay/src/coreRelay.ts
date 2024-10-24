@@ -49,6 +49,6 @@ export const coreRelay = async (logger: pino.Logger, requestId: string, request:
       logger.info({ tx: res.getTransaction()?.getManageEntity()?.toObject(), txhash: res.getTxhash() }, "core relay success")
     })
   } catch (e) {
-    logger.error("core relay failure:", error)
+    logger.error("core relay failure:", "error", e)
   }
 }

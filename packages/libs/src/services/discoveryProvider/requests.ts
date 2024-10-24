@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
+import type { Genre, Mood } from '@audius/sdk'
 import type { ResponseType } from 'axios'
 
-import { Genre, Mood } from '../../sdk'
 import type { Nullable } from '../../utils'
 
 export const getUsers = (
@@ -819,7 +819,9 @@ export const getUserReplicaSet = (encodedUserId: string) => {
   }
 }
 
-export const getUnclaimedId = (type: 'users' | 'playlists' | 'tracks') => {
+export const getUnclaimedId = (
+  type: 'users' | 'playlists' | 'tracks' | 'comments'
+) => {
   return {
     endpoint: `/v1/${type}/unclaimed_id`,
     timeout: 5000,

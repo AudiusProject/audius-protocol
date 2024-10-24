@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
-import { User } from '@audius/common/models'
+import { FollowSource, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -9,7 +9,8 @@ import {
   makeChatId,
   ChatPermissionAction,
   tippingActions,
-  useInboxUnavailableModal
+  useInboxUnavailableModal,
+  usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import {
@@ -31,6 +32,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 import { useSelector } from 'utils/reducer'
 
 const { unblockUser, createChat } = chatActions
+const { followUser } = usersSocialActions
 
 const messages = {
   title: 'Inbox Unavailable',
@@ -43,7 +45,15 @@ const messages = {
       {' a tip before you can send them messages.'}
     </>
   ),
+  followRequired: (displayName: ReactNode) => (
+    <>
+      {'You must follow '}
+      {displayName}
+      {' before you can send them messages.'}
+    </>
+  ),
   tipButton: 'Send $AUDIO',
+  follow: 'Follow',
   unblockContent: 'You cannot send messages to users you have blocked.',
   unblockButton: 'Unblock',
   defaultUsername: 'this user'
@@ -77,6 +87,18 @@ const actionToContent = ({
         buttonText: messages.tipButton,
         buttonIcon: IconTipping
       }
+    case ChatPermissionAction.FOLLOW:
+      return {
+        content: messages.followRequired(
+          user ? (
+            <UserNameAndBadges user={user} onNavigateAway={onClose} />
+          ) : (
+            messages.defaultUsername
+          )
+        ),
+        buttonText: messages.follow,
+        buttonIcon: null
+      }
     case ChatPermissionAction.UNBLOCK:
       return {
         content: messages.unblockContent,
@@ -108,6 +130,7 @@ export const InboxUnavailableModal = () => {
   )
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||
+    callToAction === ChatPermissionAction.FOLLOW ||
     callToAction === ChatPermissionAction.UNBLOCK
 
   const handleClick = useCallback(() => {
@@ -140,6 +163,23 @@ export const InboxUnavailableModal = () => {
             })
           ]
         })
+      )
+    } else if (callToAction === ChatPermissionAction.FOLLOW && currentUserId) {
+      const followSuccessActions: Action[] = [
+        chatActions.createChat({
+          userIds: [userId]
+        })
+      ]
+      if (onSuccessAction) {
+        followSuccessActions.push(onSuccessAction)
+      }
+      dispatch(
+        followUser(
+          userId,
+          FollowSource.INBOX_UNAVAILABLE_MODAL,
+          undefined,
+          followSuccessActions
+        )
       )
     } else if (callToAction === ChatPermissionAction.UNBLOCK) {
       dispatch(unblockUser({ userId }))

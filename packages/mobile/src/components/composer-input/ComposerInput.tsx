@@ -10,21 +10,21 @@ import {
 
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
-import type { UserMetadata } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
-import { Platform, TouchableOpacity, View } from 'react-native'
 import type { TextInput as RnTextInput } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
 
-import { IconSend } from '@audius/harmony-native'
+import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
 import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
@@ -39,17 +39,19 @@ import type { ComposerInputProps } from './types'
 const BACKSPACE_KEY = 'Backspace'
 const AT_KEY = '@'
 const SPACE_KEY = ' '
+const ENTER_KEY = 'Enter'
 
 const messages = {
   sendMessage: 'Send Message',
-  sendMessagePlaceholder: 'Start typing...'
+  sendMessagePlaceholder: 'Start typing...',
+  cancelLabel: 'Cancel'
 }
 
 const createTextSections = (text: string) => {
   const splitText = splitOnNewline(text)
   return splitText.map((t) => (
     // eslint-disable-next-line react/jsx-key
-    <Text>{`${t === '\n' ? '\n\n' : t}`}</Text>
+    <Text allowNewline>{t}</Text>
   ))
 }
 
@@ -60,31 +62,14 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     backgroundColor: 'transparent',
     paddingLeft: spacing(4),
     paddingVertical: spacing(2),
-    borderRadius: spacing(1)
+    borderRadius: spacing(1),
+    maxHeight: 240
   },
   composeTextInput: {
     fontSize: typography.fontSize.medium,
     lineHeight: spacing(6),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 0,
-    color: 'transparent'
-  },
-  overlayTextContainer: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    right: spacing(10),
-    left: 0,
-    zIndex: 0,
-    paddingLeft: spacing(4) + 1,
-    paddingVertical: spacing(3) - 1
-  },
-  overlayText: {
-    fontSize: typography.fontSize.medium,
-    lineHeight: spacing(6),
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: palette.neutral,
     paddingTop: 0
   },
   submit: {
@@ -110,21 +95,46 @@ export const ComposerInput = forwardRef(function ComposerInput(
     messageId,
     placeholder,
     presetMessage,
+    presetUserMentions = [],
     entityId,
     styles: propStyles,
-    TextInputComponent
+    TextInputComponent,
+    onLayout,
+    maxLength = 10000,
+    maxMentions = Infinity
   } = props
+
   const [value, setValue] = useState(presetMessage ?? '')
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  // const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
-  const [selection, setSelection] = useState<{ start: number; end: number }>()
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      return {
+        ...acc,
+        [`@${mention.handle}`]: mention.userId
+      }
+    }, {})
+  )
+  const selectionRef = useRef<TextInputSelectionChangeEventData['selection']>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
+  const internalRef = useRef<RnTextInput>(null)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+
+  useEffect(() => {
+    setUserMentions(presetUserMentions.map((mention) => `@${mention.handle}`))
+    setUserIdMap(
+      presetUserMentions.reduce((acc, mention) => {
+        acc[`@${mention.handle}`] = mention.userId
+        return acc
+      }, {})
+    )
+  }, [presetUserMentions])
 
   const getAutocompleteRange = useCallback(() => {
     if (!isAutocompleteActive) return null
@@ -217,21 +227,31 @@ export const ComposerInput = forwardRef(function ComposerInput(
     [userMentions]
   )
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       if (!user) return
+
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
-        // TODO: For notifications later
-        // setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+        setUserIdMap((map) => {
+          map[mentionText] = user.user_id
+          return map
+        })
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       setIsAutocompleteActive(false)
     },
@@ -239,7 +259,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   useEffect(() => {
-    onAutocompleteChange?.(isAutocompleteActive, autocompleteText)
+    onAutocompleteChange?.(isAutocompleteActive, autocompleteText.slice(1))
   }, [onAutocompleteChange, isAutocompleteActive, autocompleteText])
 
   useEffect(() => {
@@ -252,21 +272,31 @@ export const ComposerInput = forwardRef(function ComposerInput(
     async (value: string) => {
       setValue(value)
       const editedValue = await resolveLinks(value)
-      setValue(editedValue)
+      if (value !== editedValue) {
+        setValue(editedValue)
+      }
     },
     [resolveLinks]
   )
 
   const handleSelectionChange = useCallback(
     (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
-      setSelection(e.nativeEvent.selection)
+      selectionRef.current = e.nativeEvent.selection
     },
-    [setSelection]
+    [selectionRef]
   )
 
   const handleSubmit = useCallback(() => {
-    onSubmit?.(restoreLinks(value), linkEntities)
-  }, [linkEntities, onSubmit, restoreLinks, value])
+    const mentions =
+      getUserMentions(value)?.map((match) => {
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
+      }) ?? []
+
+    onSubmit?.(restoreLinks(value), mentions)
+  }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -281,13 +311,17 @@ export const ComposerInput = forwardRef(function ComposerInput(
         lastKeyPressMsRef.current = Date.now()
       }
 
-      if (isAutocompleteActive && selection) {
+      const cursorPosition = selectionRef.current?.start
+      if (isAutocompleteActive && !!cursorPosition) {
         if (key === SPACE_KEY) {
           setIsAutocompleteActive(false)
         }
 
-        if (key === BACKSPACE_KEY && selection) {
-          const cursorPosition = selection.start
+        if (key === ENTER_KEY) {
+          setIsAutocompleteActive(false)
+        }
+
+        if (key === BACKSPACE_KEY) {
           const deletedChar = value[cursorPosition - 1]
           if (deletedChar === AT_KEY) {
             setIsAutocompleteActive(false)
@@ -295,7 +329,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
         }
 
         const autocompleteRange = getAutocompleteRange()
-        const cursorPosition = selection.start
 
         if (
           autocompleteRange &&
@@ -310,14 +343,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
       // Start user autocomplete
       if (key === AT_KEY && onAutocompleteChange) {
-        const cursorPosition = selection?.start ?? 0
-        setAutocompletePosition(cursorPosition)
-        setIsAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompletePosition(cursorPosition ?? 0)
+          setIsAutocompleteActive(true)
+        }
       }
 
-      if (key === BACKSPACE_KEY && selection) {
-        const textBeforeCursor = value.slice(0, selection.start)
-        const cursorPosition = selection.start
+      if (key === BACKSPACE_KEY && !!cursorPosition) {
+        const textBeforeCursor = value.slice(0, cursorPosition)
         const { editValue } = handleBackspace({
           cursorPosition,
           textBeforeCursor
@@ -339,8 +372,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
       handleBackspace,
       isAutocompleteActive,
       onAutocompleteChange,
-      selection,
-      value
+      selectionRef,
+      value,
+      mentionCount,
+      maxMentions
     ]
   )
 
@@ -350,17 +385,27 @@ export const ComposerInput = forwardRef(function ComposerInput(
       hitSlop={spacing(2)}
       style={styles.submit}
     >
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <IconSend
-          width={styles.icon.width}
-          height={styles.icon.height}
-          fill={hasLength ? primary : neutralLight7}
-        />
-      )}
+      <Flex pv='xs'>
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <IconSend
+            width={styles.icon.width}
+            height={styles.icon.height}
+            fill={hasLength ? primary : neutralLight7}
+          />
+        )}
+      </Flex>
     </TouchableOpacity>
   )
+
+  const isTextHighlighted = useMemo(() => {
+    const matches = getMatches(value) ?? []
+    const timestamps = getTimestamps(value)
+    const mentions = getUserMentions(value) ?? []
+    const fullMatches = [...matches, ...mentions, ...timestamps]
+    return Boolean(fullMatches.length || isAutocompleteActive)
+  }, [getMatches, getTimestamps, getUserMentions, isAutocompleteActive, value])
 
   const renderDisplayText = useCallback(
     (value: string) => {
@@ -446,7 +491,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   return (
     <>
       <TextInput
-        ref={ref}
+        ref={mergeRefs([ref, internalRef])}
         placeholder={placeholder ?? messages.sendMessagePlaceholder}
         Icon={renderIcon}
         styles={{
@@ -454,30 +499,24 @@ export const ComposerInput = forwardRef(function ComposerInput(
           input: [
             styles.composeTextInput,
             Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-            // {
-            //   maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80)
-            // }
           ]
         }}
         onChangeText={handleChange}
         onKeyPress={handleKeyDown}
         onSelectionChange={handleSelectionChange}
-        inputAccessoryViewID='none'
+        onLayout={onLayout}
         multiline
-        value={value}
-        maxLength={10000}
+        inputAccessoryViewID='none'
+        maxLength={maxLength}
         autoCorrect
         TextInputComponent={TextInputComponent}
-      />
-      <View
-        style={[
-          styles.overlayTextContainer,
-          Platform.OS === 'ios' ? { paddingBottom: spacing(1.5) } : null
-          // { maxHeight: hasCurrentlyPlayingTrack ? spacing(70) : spacing(80) }
-        ]}
       >
-        <Text style={styles.overlayText}>{renderDisplayText(value)}</Text>
-      </View>
+        {isTextHighlighted ? (
+          <Text allowNewline>{renderDisplayText(value)}</Text>
+        ) : (
+          <Text allowNewline>{value}</Text>
+        )}
+      </TextInput>
     </>
   )
 })

@@ -1,5 +1,12 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useState, useRef, forwardRef, useCallback, useEffect } from 'react'
+import {
+  useMemo,
+  useState,
+  useRef,
+  forwardRef,
+  useCallback,
+  useEffect
+} from 'react'
 
 import { BlurView } from '@react-native-community/blur'
 import type {
@@ -21,7 +28,8 @@ import {
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
-import { IconCloseAlt } from '@audius/harmony-native'
+import type { TextColors } from '@audius/harmony-native'
+import { Flex, Text as HarmonyText, IconCloseAlt } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -123,6 +131,18 @@ export type TextInputProps = RNTextInputProps & {
   hideKeyboard?: boolean
   error?: boolean
   TextInputComponent?: typeof RNTextInput
+  maxLength?: number
+  /**
+   * 0-1 number representating a percentage threshold to show the max character text. Default is 0.7 (70%)
+   * @default 0.7
+   */
+  showMaxLengthThreshold?: number
+  /**
+   * 0-1 number representating a percentage threshold to turn the character limit text orange. Default is 0.9 (90%)
+   * @default 0.9
+   */
+  maxLengthWarningThreshold?: number
+  children?: ReactNode
 }
 
 export type TextInputRef = RNTextInput
@@ -155,6 +175,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       autoCorrect = false,
       error,
       TextInputComponent = RNTextInput,
+      maxLength,
+      showMaxLengthThreshold = 0.7,
+      maxLengthWarningThreshold = 0.9,
       ...other
     } = props
     const { autoFocus, returnKeyType, hideKeyboard } = other
@@ -167,12 +190,34 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     )
 
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
-    const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
+    const borderFocusAnimation = useMemo(
+      () => new Animated.Value(isFocused ? 1 : 0),
+      [isFocused]
+    )
     const iconProps = { ...styles.icon, ...iconProp }
 
     const hideInputAccessory =
       (hideInputAccessoryProp ?? returnKeyType === 'search') ||
       Platform.OS === 'android'
+
+    const characterCount = value !== undefined ? `${value}`.length : 0
+
+    // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
+    let maxLengthTextColor: TextColors = 'default'
+    if (maxLength && characterCount > maxLength) {
+      maxLengthTextColor = 'danger'
+    } else if (
+      maxLength &&
+      characterCount >= maxLengthWarningThreshold * maxLength
+    ) {
+      maxLengthTextColor = 'warning'
+    }
+
+    // Show the maxlength text whenever we hit a certain threshold (default 70%) + the input is focused
+    const shouldShowMaxLengthText =
+      isFocused &&
+      maxLength &&
+      characterCount >= showMaxLengthThreshold * maxLength
 
     // Trigger label animation on mount if value is prefilled
     useEffect(() => {
@@ -202,13 +247,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 1,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 1,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -234,7 +276,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         Animated.parallel(animations).start()
       },
-      [onFocus, isLabelActive, hideKeyboard]
+      [onFocus, hideKeyboard, borderFocusAnimation, isLabelActive]
     )
 
     const handleBlur = useCallback(
@@ -244,13 +286,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         let animations: Animated.CompositeAnimation[] = []
 
-        const borderFocusCompositeAnim = Animated.spring(
-          borderFocusAnimation.current,
-          {
-            toValue: 0,
-            useNativeDriver: false
-          }
-        )
+        const borderFocusCompositeAnim = Animated.spring(borderFocusAnimation, {
+          toValue: 0,
+          useNativeDriver: false
+        })
 
         animations.push(borderFocusCompositeAnim)
 
@@ -275,7 +314,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
         }
         Animated.parallel(animations).start()
       },
-      [onBlur, isFocused, value, startAdornment]
+      [onBlur, borderFocusAnimation, isFocused, value, startAdornment]
     )
 
     const handlePressRoot = useCallback(() => {
@@ -304,7 +343,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             {
               borderColor: error
                 ? accentRed
-                : borderFocusAnimation.current.interpolate({
+                : borderFocusAnimation.interpolate({
                     inputRange: [0, 1],
                     outputRange: [
                       convertHexToRGBA(neutralLight7),
@@ -365,38 +404,51 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             inputAccessoryViewID={
               hideInputAccessory ? undefined : inputAccessoryViewID
             }
+            maxLength={maxLength}
             {...other}
           />
-          {clearable && value ? (
-            <Animated.View style={[{ transform: [{ scale }] }]}>
-              <TouchableWithoutFeedback
-                onPress={handlePressIcon}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                hitSlop={{
-                  top: spacing(2),
-                  bottom: spacing(2),
-                  left: spacing(2),
-                  right: spacing(2)
-                }}
-              >
-                <IconCloseAlt
-                  fill={iconProps.fill}
-                  height={iconProps.height}
-                  width={iconProps.width}
-                />
-              </TouchableWithoutFeedback>
-            </Animated.View>
-          ) : Icon ? (
-            <Icon
-              fill={iconProps.fill}
-              height={iconProps.height}
-              width={iconProps.width}
-            />
-          ) : null}
-          {endAdornment ? (
-            <View style={styles.endAdornment}>{endAdornment}</View>
-          ) : null}
+          <Flex
+            gap='s'
+            justifyContent='flex-end'
+            alignItems='flex-end'
+            alignSelf='stretch'
+          >
+            {clearable && value ? (
+              <Animated.View style={[{ transform: [{ scale }] }]}>
+                <TouchableWithoutFeedback
+                  onPress={handlePressIcon}
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  hitSlop={{
+                    top: spacing(2),
+                    bottom: spacing(2),
+                    left: spacing(2),
+                    right: spacing(2)
+                  }}
+                >
+                  <IconCloseAlt
+                    fill={iconProps.fill}
+                    height={iconProps.height}
+                    width={iconProps.width}
+                  />
+                </TouchableWithoutFeedback>
+              </Animated.View>
+            ) : Icon ? (
+              <Icon
+                fill={iconProps.fill}
+                height={iconProps.height}
+                width={iconProps.width}
+              />
+            ) : null}
+            {endAdornment ? (
+              <View style={styles.endAdornment}>{endAdornment}</View>
+            ) : null}
+            {shouldShowMaxLengthText ? (
+              <HarmonyText variant='body' size='xs' color={maxLengthTextColor}>
+                {characterCount}/{maxLength}
+              </HarmonyText>
+            ) : null}
+          </Flex>
         </Animated.View>
         {hideInputAccessory ? null : (
           <InputAccessoryView nativeID={inputAccessoryViewID}>

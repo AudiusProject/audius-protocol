@@ -9,6 +9,7 @@ import { commentsMessages as messages } from '@audius/common/messages'
 import { ID, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
+import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -21,30 +22,34 @@ import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
 }
 
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
+  initialUserMentions?: CommentMention[]
   hideAvatar?: boolean
   commentId?: ID
   parentCommentId?: ID
   isEdit?: boolean
+  autoFocus?: boolean
+  disabled?: boolean
 }
 
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
+  initialUserMentions = [],
   commentId,
   parentCommentId,
   isEdit,
-  hideAvatar = false
+  hideAvatar = false,
+  autoFocus,
+  disabled = false
 }: CommentFormProps) => {
-  const { currentUserId, entityId, entityType, commentIds } =
-    useCurrentCommentSection()
+  const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
-  const isFirstComment = commentIds.length === 0
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
@@ -52,7 +57,7 @@ export const CommentForm = ({
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer
       ? Math.floor(audioPlayer.getPosition())
       : undefined
@@ -62,7 +67,10 @@ export const CommentForm = ({
     postComment(message, parentCommentId, trackTimestampS, mentions)
   }
 
-  const handleCommentEdit = (commentMessage: string, mentions?: ID[]) => {
+  const handleCommentEdit = (
+    commentMessage: string,
+    mentions?: CommentMention[]
+  ) => {
     if (commentId) {
       editComment(commentId, commentMessage, mentions)
     }
@@ -106,21 +114,21 @@ export const CommentForm = ({
           />
         ) : null}
         <ComposerInput
-          placeholder={
-            isFirstComment && isMobile
-              ? messages.firstComment
-              : messages.addComment
-          }
+          autoFocus={autoFocus}
+          placeholder={messages.addComment}
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
+          presetUserMentions={initialUserMentions}
           readOnly={isMobile}
           onClick={handleClickInput}
           messageId={messageId}
           maxLength={400}
+          maxMentions={10}
           onSubmit={(value: string, _, mentions) => {
             handleSubmit({ commentMessage: value, mentions })
           }}
+          disabled={disabled}
         />
       </Flex>
       <DownloadMobileAppDrawer

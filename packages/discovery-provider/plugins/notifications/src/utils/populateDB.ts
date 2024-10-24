@@ -20,7 +20,10 @@ import {
   UsdcTransactionsHistoryRow,
   UsdcUserBankAccountRow,
   GrantRow,
-  CommentRow
+  CommentRow,
+  CommentThreadRow,
+  CommentMentionRow,
+  CommentReactionRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -723,11 +726,11 @@ export async function insertChatPermission(
     .into('chat_permissions')
 }
 
-type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
+type MobileDevice = Pick<NotificationDeviceTokenRow, 'userId'> &
   Partial<NotificationDeviceTokenRow>
 export async function insertMobileDevices(
   db: Knex,
-  mobileDevices: MoblieDevice[]
+  mobileDevices: MobileDevice[]
 ) {
   const currentTimestamp = new Date(Date.now()).toISOString()
   await db
@@ -821,6 +824,65 @@ export const createComments = async (db: Knex, comments: CreateComment[]) => {
       }))
     )
     .into('comments')
+}
+
+type CreateCommentThread = CommentThreadRow
+
+export const createCommentThreads = async (
+  db: Knex,
+  commentThreads: CreateCommentThread[]
+) => {
+  await db.insert(commentThreads).into('comment_threads')
+}
+
+type CreateCommentMention = Pick<CommentMentionRow, 'comment_id' | 'user_id'> &
+  Partial<CommentMentionRow>
+
+export const createCommentMentions = async (
+  db: Knex,
+  commentMentions: CreateCommentMention[]
+) => {
+  await db
+    .insert(
+      commentMentions.map((mention) => ({
+        comment_id: mention.comment_id,
+        user_id: mention.user_id,
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
+        is_delete: false,
+        txhash: `0x${mention.comment_id}`,
+        blockhash: `0x${mention.comment_id}`,
+        blocknumber: 0,
+        ...mention
+      }))
+    )
+    .into('comment_mentions')
+}
+
+type CreateCommentReaction = Pick<
+  CommentReactionRow,
+  'comment_id' | 'user_id'
+> &
+  Partial<CommentReactionRow>
+
+export const createCommentReactions = async (
+  db: Knex,
+  commentReactions: CreateCommentReaction[]
+) => {
+  await db
+    .insert(
+      commentReactions.map((reaction) => ({
+        comment_id: reaction.comment_id,
+        user_id: reaction.user_id,
+        created_at: reaction.created_at || new Date(Date.now()),
+        updated_at: reaction.updated_at || new Date(Date.now()),
+        is_delete: reaction.is_delete || false,
+        txhash: `0x${reaction.comment_id}`,
+        blockhash: `0x${reaction.comment_id}`,
+        blocknumber: reaction.blocknumber ?? 0
+      }))
+    )
+    .into('comment_reactions')
 }
 
 export type UserWithDevice = {

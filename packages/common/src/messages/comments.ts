@@ -1,12 +1,11 @@
-import { formatCount, pluralize } from '~/utils'
+import { formatCount } from '~/utils'
 
 export const commentsMessages = {
   // Generic messages across the page
   title: 'Comments',
   postComment: 'Post Comment',
   addComment: 'Add a comment',
-  firstComment: 'Be the first to comment!',
-  noComments: 'Nothing here yet',
+  noComments: 'Nothing here yet. Be the first to comment!',
   noCommentsOwner:
     'Get the conversation started! Leave a comment to encourage others to join in.',
   noCommentsDescription: 'Be the first to comment on this track',
@@ -16,7 +15,7 @@ export const commentsMessages = {
   replies: 'Replies',
   replyingTo: (handle: string) => `Replying to @${handle}`,
   showReplies: (replyCount: number) =>
-    `${formatCount(replyCount)} ${pluralize('Reply', replyCount)}`,
+    `${formatCount(replyCount)} ${replyCount > 1 ? 'Replies' : 'Reply'}`,
   hideReplies: 'Hide Replies',
   commentsDisabled: 'Comments are disabled for this track',
   edited: 'edited',
@@ -30,6 +29,7 @@ export const commentsMessages = {
     'You haven’t muted any users. Once you do, they will appear here.',
   seeMore: 'See More',
   seeLess: 'See Less',
+  newComments: 'New Comments!',
 
   // Overflow Menu Actions
   menuActions: {
@@ -38,8 +38,8 @@ export const commentsMessages = {
     flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
-    turnOnNotifications: 'Turn On Notifications',
-    turnOffNotifications: 'Turn Off Notifications',
+    unmuteThread: 'Unmute This Thread',
+    muteThread: 'Mute This Thread',
     edit: 'Edit',
     delete: 'Delete',
     moreActions: 'more actions'
@@ -86,7 +86,7 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     muteUser: {
-      title: 'Mute user',
+      title: 'Mute User',
       body: (userDisplayName: string | undefined) =>
         `Mute ${userDisplayName} from commenting on your tracks?`,
       hint: 'This will not affect their ability to view your profile or interact with your content.',
@@ -94,7 +94,7 @@ export const commentsMessages = {
       cancel: 'Cancel'
     },
     unmuteUser: {
-      title: 'Unmute user',
+      title: 'Unmute User',
       body: (userDisplayName: string | undefined) =>
         `Unmute ${userDisplayName} from commenting on your tracks?`,
       hint: 'You can mute them again from their profile.',

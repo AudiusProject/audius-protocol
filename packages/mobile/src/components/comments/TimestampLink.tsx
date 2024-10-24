@@ -6,7 +6,7 @@ import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 type TimestampLinkProps = {
   timestampSeconds: number
-} & TextLinkProps
+} & Omit<TextLinkProps, 'to'>
 
 export const TimestampLink = (props: TimestampLinkProps) => {
   const { timestampSeconds, ...other } = props
@@ -16,7 +16,6 @@ export const TimestampLink = (props: TimestampLinkProps) => {
     <TextLink
       onPress={() => playTrack(timestampSeconds)}
       variant='visible'
-      size='s'
       {...other}
     >
       {formatCommentTrackTimestamp(timestampSeconds)}

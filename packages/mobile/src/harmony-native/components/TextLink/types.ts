@@ -10,7 +10,7 @@ export type Source = 'profile page' | 'track page' | 'collection page'
 export type InternalLinkToProps<
   ParamList extends ReactNavigation.RootParamList
 > = {
-  to?: To<ParamList>
+  to: To<ParamList>
   action?: NavigationAction
   onPress?: (e: GestureResponderEvent) => void
 }

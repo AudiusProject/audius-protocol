@@ -1,3 +1,5 @@
+import { useCallback, useRef } from 'react'
+
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -10,11 +12,14 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import SectionButton from 'components/section-button/SectionButton'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
+
+import { TrackRemixes } from '../TrackRemixes'
+import { ViewOtherRemixesButton } from '../ViewOtherRemixesButton'
+import { useTrackPageSize } from '../useTrackPageSize'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
@@ -23,8 +28,7 @@ const { tracksActions } = trackPageLineupActions
 
 const messages = {
   moreBy: 'More By',
-  originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  originalTrack: 'Original Track'
 }
 
 export type OwnProps = {
@@ -48,7 +52,6 @@ export type OwnProps = {
     isPreview?: boolean
   }) => void
   goToAllRemixesPage: () => void
-  goToParentRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
@@ -82,7 +85,6 @@ const TrackPage = ({
   trendingBadgeLabel,
   onHeroPlay,
   goToAllRemixesPage,
-  goToParentRemixesPage,
   onHeroShare,
   onHeroRepost,
   onSaveTrack,
@@ -100,6 +102,7 @@ const TrackPage = ({
   play,
   pause
 }: OwnProps) => {
+  const { isDesktop, isMobile } = useTrackPageSize()
   const { entries } = tracks
   const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
@@ -129,7 +132,15 @@ const TrackPage = ({
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
 
+  const commentSectionRef = useRef<HTMLDivElement | null>(null)
+
   const defaults = getTrackDefaults(heroTrack)
+
+  const scrollToCommentSection = useCallback(() => {
+    if (commentSectionRef.current) {
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [commentSectionRef])
 
   const renderGiantTrackTile = () => (
     <GiantTrackTile
@@ -174,6 +185,7 @@ const TrackPage = ({
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}
       coSign={defaults.coSign}
+      scrollToCommentSection={scrollToCommentSection}
       // Actions
       onPlay={onPlay}
       onPreview={onPreview}
@@ -205,6 +217,16 @@ const TrackPage = ({
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
+  const { fieldVisibility, remixTrackIds } = defaults
+
+  const hasRemixes =
+    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
+
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
+
   return (
     <Page
       title={title}
@@ -224,28 +246,22 @@ const TrackPage = ({
       </Box>
       <Flex
         direction='column'
-        css={{
-          display: 'flex',
-          position: 'relative',
-          padding: '200px 16px 60px'
-        }}
+        css={{ position: 'relative', padding: '200px 16px 60px' }}
       >
         {renderGiantTrackTile()}
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
-            <Flex justifyContent='center' mt='3xl' ph='l'>
-              <Remixes
-                trackIds={defaults.remixTrackIds}
-                goToAllRemixes={goToAllRemixesPage}
-                count={defaults.remixesCount}
-              />
-            </Flex>
-          )}
+        {hasRemixes && !commentsFlagEnabled ? (
+          <Flex justifyContent='center' mt='3xl' ph='l'>
+            <Remixes
+              trackIds={defaults.remixTrackIds!}
+              goToAllRemixes={goToAllRemixesPage}
+              count={defaults.remixesCount}
+            />
+          </Flex>
+        ) : null}
         <Flex
           gap='2xl'
           w='100%'
-          direction='row'
+          direction={isDesktop ? 'row' : 'column'}
           mt='3xl'
           mh='auto'
           css={{ maxWidth: 1080 }}
@@ -253,13 +269,18 @@ const TrackPage = ({
         >
           {isCommentingEnabled ? (
             <Flex flex='3'>
-              <CommentSection entityId={defaults.trackId} />
+              <CommentSection
+                entityId={defaults.trackId}
+                commentSectionRef={commentSectionRef}
+              />
             </Flex>
           ) : null}
-          {hasMoreByTracks ? (
+          {hasRemixes || hasMoreByTracks ? (
             <Flex
               direction='column'
-              alignItems={isCommentingEnabled ? 'flex-start' : 'center'}
+              alignItems={
+                isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
+              }
               gap='l'
               flex={1}
               css={{
@@ -267,6 +288,7 @@ const TrackPage = ({
                 maxWidth: isCommentingEnabled ? '100%' : '774px'
               }}
             >
+              {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
               {hasValidRemixParent
                 ? renderOriginalTrackTitle()
                 : renderMoreByTitle()}
@@ -275,11 +297,15 @@ const TrackPage = ({
                 // Styles for leading element (original track if remix).
                 leadingElementId={defaults.remixParentTrackId}
                 leadingElementDelineator={
-                  <Flex gap='3xl' direction='column' alignItems='center'>
-                    <SectionButton
-                      text={messages.viewOtherRemixes}
-                      onClick={goToParentRemixesPage}
-                    />
+                  <Flex gap='3xl' direction='column'>
+                    <Box
+                      alignSelf={isCommentingEnabled ? 'flex-start' : 'center'}
+                    >
+                      <ViewOtherRemixesButton
+                        parentTrackId={defaults.remixParentTrackId!}
+                        size={isCommentingEnabled ? 'xs' : 'small'}
+                      />
+                    </Box>
                     <Flex
                       mb='l'
                       justifyContent={
@@ -306,7 +332,7 @@ const TrackPage = ({
                 count={6}
                 // Managed from the parent rather than allowing the lineup to fetch content itself.
                 selfLoad={false}
-                variant={LineupVariant.CONDENSED}
+                variant={lineupVariant}
                 playingUid={currentQueueItem.uid}
                 playingSource={currentQueueItem.source}
                 playingTrackId={
@@ -317,7 +343,6 @@ const TrackPage = ({
                 playTrack={play}
                 pauseTrack={pause}
                 actions={tracksActions}
-                useSmallTiles={isCommentingEnabled}
               />
             </Flex>
           ) : null}

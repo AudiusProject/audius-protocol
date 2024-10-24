@@ -1,7 +1,9 @@
 import { useRef } from 'react'
 
-import { useIsManagedAccount } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
+import { ID, statusIsNotFinalized } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { chatSelectors } from '@audius/common/store'
 import {
   IconMessageBlock,
   IconMessageUnblock,
@@ -13,15 +15,19 @@ import {
   PopupMenu,
   Button,
   FollowButton,
-  Flex
+  Flex,
+  Skeleton
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 
 import styles from './StatBanner.module.css'
+
+const { getChatPermissionsStatus } = chatSelectors
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1066,
@@ -37,7 +43,9 @@ const messages = {
   save: 'Save Changes',
   message: 'Send Message',
   unblockMessages: 'Unblock Messages',
-  blockMessages: 'Block Messages'
+  blockMessages: 'Block Messages',
+  unmuteComments: 'Unmute Comments',
+  muteComments: 'Mute Comments'
 }
 
 export type ProfileMode = 'visitor' | 'owner' | 'editing'
@@ -62,7 +70,10 @@ type StatsBannerProps = {
   onMessage?: () => void
   onBlock?: () => void
   onUnblock?: () => void
+  onMute?: () => void
+  onUnmute?: () => void
   isBlocked?: boolean
+  isMuted?: boolean
   accountUserId?: number | null
 }
 
@@ -70,16 +81,20 @@ type StatsMenuPopupProps = {
   onShare: () => void
   accountUserId?: ID | null
   isBlocked?: boolean
+  isMuted?: boolean
   onBlock: () => void
   onUnblock: () => void
+  onMute: () => void
 }
 
 const StatsPopupMenu = ({
   onShare,
   accountUserId,
   isBlocked,
+  isMuted,
   onBlock,
-  onUnblock
+  onUnblock,
+  onMute
 }: StatsMenuPopupProps) => {
   const isManagedAccount = useIsManagedAccount()
   const menuItems = [
@@ -101,6 +116,25 @@ const StatsPopupMenu = ({
         : {
             text: messages.blockMessages,
             onClick: onBlock,
+            icon: <IconMessageBlock />
+          }
+    )
+  }
+  const { isEnabled: commentPostFlag = false } = useFeatureFlag(
+    FeatureFlags.COMMENT_POSTING_ENABLED
+  )
+
+  if (accountUserId && commentPostFlag) {
+    menuItems.push(
+      isMuted
+        ? {
+            text: messages.unmuteComments,
+            onClick: onMute,
+            icon: <IconMessageUnblock />
+          }
+        : {
+            text: messages.muteComments,
+            onClick: onMute,
             icon: <IconMessageBlock />
           }
     )
@@ -147,7 +181,9 @@ export const StatBanner = (props: StatsBannerProps) => {
     onMessage,
     onBlock,
     onUnblock,
+    onMute,
     isBlocked,
+    isMuted,
     accountUserId,
     isSubscribed,
     onToggleSubscribe
@@ -155,6 +191,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
+  const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
   const shareButton = (
     <Button
@@ -205,24 +242,29 @@ export const StatBanner = (props: StatsBannerProps) => {
     default:
       buttons = (
         <>
-          {onShare && onUnblock && onBlock ? (
+          {onShare && onUnblock && onBlock && onMute ? (
             <>
               <StatsPopupMenu
                 onShare={onShare}
                 accountUserId={accountUserId}
                 isBlocked={isBlocked}
+                isMuted={isMuted}
                 onBlock={onBlock}
                 onUnblock={onUnblock}
+                onMute={onMute}
               />
               {onMessage && !isManagedAccount ? (
-                <Button
-                  variant='secondary'
-                  size='small'
-                  disabled={!canCreateChat}
-                  aria-label={messages.message}
-                  iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
-                  onClick={onMessage}
-                />
+                statusIsNotFinalized(chatPermissionStatus) ? (
+                  <Skeleton w={40} h={32} css={{ flexShrink: 0 }} />
+                ) : (
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    aria-label={messages.message}
+                    iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
+                    onClick={onMessage}
+                  />
+                )
               ) : null}
             </>
           ) : (

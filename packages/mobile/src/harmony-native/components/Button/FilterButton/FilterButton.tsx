@@ -46,18 +46,10 @@ export const FilterButton = <Value extends string>(
     paddingHorizontal: spacing.m,
     paddingVertical: spacing.s
   }
-  const defaultIconStyles: ReactNativeStyle = {
-    width: spacing.unit4,
-    height: spacing.unit4
-  }
 
   const smallStyles: ReactNativeStyle = {
     paddingHorizontal: spacing.m,
     height: spacing.unit8
-  }
-  const smallIconStyles: ReactNativeStyle = {
-    width: spacing.unit3,
-    height: spacing.unit3
   }
 
   // TODO: Update these are the button styles to use animated styles for the background, border, text, and icon
@@ -101,7 +93,9 @@ export const FilterButton = <Value extends string>(
     ...(variant === 'fillContainer' && !isNil(value) ? fillContainerStyles : {})
   }
 
-  const iconStyles = size === 'small' ? smallIconStyles : defaultIconStyles
+  const iconSize = size === 'small' ? '2xs' : 's'
+  const textColor =
+    !isNil(value) && variant === 'fillContainer' ? 'staticWhite' : 'default'
 
   useEffect(() => {
     if (isOpen) {
@@ -126,10 +120,6 @@ export const FilterButton = <Value extends string>(
     [onPress, options, screen, navigation, filterScreen, label, onChange, value]
   )
 
-  const iconSize = size === 'small' ? 's' : 'm'
-  const textColor =
-    !isNil(value) && variant === 'fillContainer' ? 'staticWhite' : 'default'
-
   const Icon = useMemo(() => {
     return variant === 'fillContainer' && !isNil(value)
       ? (props: IconProps) => (
@@ -151,13 +141,7 @@ export const FilterButton = <Value extends string>(
   return (
     <BaseButton
       style={buttonStyles}
-      styles={{ icon: iconStyles }}
-      innerProps={{
-        icon: {
-          color: 'staticWhite',
-          size: iconSize
-        }
-      }}
+      innerProps={{ icon: { color: 'staticWhite', size: iconSize } }}
       onPress={handlePress}
       iconRight={Icon}
       disabled={disabled}

@@ -1,8 +1,20 @@
+import { useEffect } from 'react'
+
+import { useGetCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
+import {
+  setUsers as setUserListUsers,
+  setVisibility as openUserListModal
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 
 import { USER_LENGTH_LIMIT } from '../utils'
 
@@ -30,6 +42,8 @@ export type UserProfileListProps = {
   disableProfileClick?: boolean
   disablePopover?: boolean
   stopPropagation?: boolean
+  userListType?: UserListType
+  userListEntityType?: UserListEntityType
   profilePictureClassname?: string
 }
 
@@ -40,9 +54,13 @@ export const UserProfilePictureList = ({
   disableProfileClick = false,
   disablePopover = false,
   stopPropagation = false,
+  userListType,
+  userListEntityType,
   profilePictureClassname
 }: UserProfileListProps) => {
+  const dispatch = useDispatch()
   const showUserListModal = totalUserCount > limit
+  const { data: currentUserId } = useGetCurrentUserId({})
   /**
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.
@@ -57,6 +75,36 @@ export const UserProfilePictureList = ({
    */
   const sliceLimit = showUserListModal ? limit - 1 : limit
   const lastUser = users[limit - 1]
+
+  useEffect(() => {
+    if (
+      userListType &&
+      currentUserId &&
+      userListEntityType &&
+      users.length > 0
+    ) {
+      dispatch(
+        setUserListUsers({
+          userListType,
+          id: currentUserId,
+          entityType: userListEntityType
+        })
+      )
+    }
+  }, [
+    userListType,
+    disableProfileClick,
+    dispatch,
+    currentUserId,
+    userListEntityType,
+    users.length
+  ])
+
+  const handleClick = () => {
+    if (userListType && !disableProfileClick) {
+      dispatch(openUserListModal(true))
+    }
+  }
 
   return (
     <div className={styles.root}>
@@ -81,6 +129,7 @@ export const UserProfilePictureList = ({
             className={cn(styles.profilePictureExtraRoot, {
               [styles.disabled]: disableProfileClick
             })}
+            onClick={handleClick}
           >
             <ProfilePicture
               disablePopover

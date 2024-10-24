@@ -12,7 +12,7 @@ import { Button, IconUser } from '@audius/harmony'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import { StatBanner } from 'components/stat-banner/StatBanner'
@@ -71,7 +71,7 @@ export type DeletedPageProps = {
 
   playable: Playable
   user: User | null
-  getLineupProps: () => LineupWithoutTile
+  getLineupProps: () => LineupProps
   goToArtistPage: () => void
 }
 

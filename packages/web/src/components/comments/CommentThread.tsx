@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
+import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import {
@@ -8,6 +9,7 @@ import {
   Flex,
   IconCaretDown,
   IconCaretUp,
+  LoadingSpinner,
   PlainButton
 } from '@audius/harmony'
 
@@ -17,15 +19,14 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const { data: rootCommentData } = useGetCommentById(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
+  const { currentUserId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
-  const { fetchNextPage: loadMoreReplies, hasNextPage } =
+  const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
     useGetCommentRepliesById({
       commentId,
+      currentUserId,
       enabled: hasRequestedMore
     })
-
-  const hasReplies = (rootComment?.replies?.length ?? 0) > 0
-  const hasMoreReplies = hasNextPage && (rootComment?.replies?.length ?? 0) >= 3
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: string]: boolean
@@ -52,6 +53,12 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
 
   const { replyCount } = rootComment
 
+  const hasReplies = replyCount > 0
+
+  const replies = rootComment.replies ?? []
+
+  const hasMoreReplies = replyCount >= 3 && replies.length < replyCount // note: hasNextPage is undefined when inactive - have to explicitly check for false
+
   return (
     <Flex direction='column' as='li'>
       <CommentBlock commentId={rootComment.id} />
@@ -77,7 +84,7 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
               as='ul'
               aria-label={messages.replies}
             >
-              {(rootComment?.replies ?? []).map((reply: ReplyComment) => (
+              {replies.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id} as='li'>
                   <CommentBlock
                     commentId={reply.id}
@@ -93,8 +100,12 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
               onClick={handleLoadMoreReplies}
               variant='subdued'
               css={{ width: 'max-content' }}
+              disabled={isFetchingReplies}
             >
               {messages.showMoreReplies}
+              {isFetchingReplies ? (
+                <LoadingSpinner css={{ width: 20, height: 20 }} />
+              ) : null}
             </PlainButton>
           ) : null}
         </Flex>

@@ -15,7 +15,7 @@ import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
-  IconMessageBlock,
+  IconMessageSlash,
   IconKebabHorizontal,
   IconUser
 } from '@audius/harmony-native'
@@ -34,6 +34,7 @@ const messages = {
   followers: 'Followers',
   ctaNone: 'Cannot Be Messaged',
   ctaTip: 'Send a Tip To Message',
+  ctaFollow: 'Follow to Message',
   ctaBlock: 'Blocked'
 }
 
@@ -134,6 +135,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 const ctaToTextMap: Record<ChatPermissionAction, string> = {
   [ChatPermissionAction.TIP]: messages.ctaTip,
+  [ChatPermissionAction.FOLLOW]: messages.ctaFollow,
   [ChatPermissionAction.UNBLOCK]: messages.ctaBlock,
   [ChatPermissionAction.NONE]: messages.ctaNone,
   [ChatPermissionAction.WAIT]: messages.ctaNone,
@@ -252,7 +254,7 @@ export const ChatUserListItem = ({
                   </>
                 ) : (
                   <View style={styles.ctaContainer}>
-                    <IconMessageBlock
+                    <IconMessageSlash
                       fill={styles.iconBlock.fill}
                       width={styles.iconBlock.width}
                       height={styles.iconBlock.height}

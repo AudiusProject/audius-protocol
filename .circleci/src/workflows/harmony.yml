@@ -20,10 +20,10 @@ jobs:
       filters:
         branches:
           only: /^main$/
-  - harmony-deploy-chromatic:
-      requires:
-        - harmony-init
-      filters:
-        branches:
-          ignore:
-            - /^release.*$/
+  # - harmony-deploy-chromatic:
+  #     requires:
+  #       - harmony-init
+  #     filters:
+  #       branches:
+  #         ignore:
+  #           - /^release.*$/

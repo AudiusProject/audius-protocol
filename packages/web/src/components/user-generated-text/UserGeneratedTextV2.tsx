@@ -3,27 +3,31 @@ import {
   forwardRef,
   ReactNode,
   useCallback,
+  useMemo,
   useState
 } from 'react'
 
-import { useGetUserByHandle } from '@audius/common/api'
+import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
 import { profilePage } from '@audius/common/src/utils/route'
 import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
-  formatUserName
+  formatUserName,
+  handleRegex
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import {
   instanceOfTrackResponse,
   instanceOfPlaylistResponse,
-  instanceOfUserResponse
+  instanceOfUserResponse,
+  CommentMention
 } from '@audius/sdk'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { TextLink, TextLinkProps } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -44,6 +48,7 @@ type UserGeneratedTextV2Props = {
   children: string
   matchers?: Matcher[]
   linkProps?: Partial<TextLinkProps>
+  mentions?: CommentMention[]
 
   // If true, only linkify Audius URLs
   internalLinksOnly?: boolean
@@ -102,18 +107,21 @@ const Link = ({
 const HandleLink = ({
   handle,
   ...other
-}: Omit<TextLinkProps, 'to'> & { handle: string }) => {
+}: Omit<TextLinkProps, 'to'> & {
+  handle: string
+}) => {
   const currentUserId = useSelector(getUserId)
-
   const { data: user } = useGetUserByHandle({
     handle: handle.replace('@', ''),
     currentUserId
   })
 
   return user ? (
-    <TextLink {...other} to={profilePage(user.handle)}>
-      {handle}
-    </TextLink>
+    <ArtistPopover handle={user.handle} component='span'>
+      <TextLink {...other} to={profilePage(user.handle)}>
+        {handle}
+      </TextLink>
+    </ArtistPopover>
   ) : (
     <Text
       {...(omit(other, ['textVariant']) as any)}
@@ -121,6 +129,23 @@ const HandleLink = ({
     >
       {handle}
     </Text>
+  )
+}
+
+const MentionLink = ({
+  handle,
+  ...other
+}: Omit<TextLinkProps, 'to'> & {
+  handle: string
+}) => {
+  const userHandle = handle.replace('@', '')
+
+  return (
+    <ArtistPopover handle={userHandle} component='span'>
+      <TextLink {...other} to={profilePage(userHandle)}>
+        {handle}
+      </TextLink>
+    </ArtistPopover>
   )
 }
 
@@ -135,10 +160,26 @@ export const UserGeneratedTextV2 = forwardRef(function (
     children,
     matchers: matchersProp,
     linkProps,
+    mentions,
     internalLinksOnly,
     suffix,
     ...other
   } = props
+
+  // Fetch the users for artists popovers for mentions
+  useGetUsersByIds({
+    ids: mentions ? mentions.map((mention) => mention.userId) : []
+  })
+
+  const mentionRegex = useMemo(() => {
+    const nullRegex = /(?!)/
+    if (!mentions) return nullRegex
+
+    const regexString = [...mentions.map((mention) => `@${mention.handle}`)]
+      .sort((a, b) => b.length - a.length)
+      .join('|')
+    return regexString.length ? new RegExp(regexString, 'g') : nullRegex
+  }, [mentions])
 
   const renderLink = useCallback(
     (text: string, _: RegExpMatchArray, index: number) => {
@@ -151,6 +192,24 @@ export const UserGeneratedTextV2 = forwardRef(function (
           variant='visible'
           textVariant={other.variant}
           url={text}
+          {...linkProps}
+        />
+      ) : null
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
+  const renderMentionLink = useCallback(
+    (text: string, _: RegExpMatchArray, index: number) => {
+      const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
+      return isHandleUnrestricted ? (
+        <MentionLink
+          key={index}
+          {...(other as any)}
+          variant='visible'
+          textVariant={other.variant}
+          handle={text}
           {...linkProps}
         />
       ) : null
@@ -184,10 +243,19 @@ export const UserGeneratedTextV2 = forwardRef(function (
       renderLink
     },
     // Handle matcher e.g. @handle
-    {
-      pattern: /@[a-zA-Z0-9_.]{1,15}/g,
-      renderLink: renderHandleLink
-    },
+    ...(mentions
+      ? [
+          {
+            pattern: mentionRegex,
+            renderLink: renderMentionLink
+          }
+        ]
+      : [
+          {
+            pattern: handleRegex,
+            renderLink: renderHandleLink
+          }
+        ]),
     ...(matchersProp ?? [])
   ]
 
@@ -244,7 +312,11 @@ export const UserGeneratedTextV2 = forwardRef(function (
   }
 
   return (
-    <Text ref={ref as ForwardedRef<'p'>} {...other}>
+    <Text
+      style={{ whiteSpace: 'pre-wrap' }}
+      ref={ref as ForwardedRef<'p'>}
+      {...other}
+    >
       {parseText(children)}
       {suffix}
     </Text>

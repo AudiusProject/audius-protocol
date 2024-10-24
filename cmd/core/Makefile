@@ -52,7 +52,7 @@ $(GEN_ARTIFACTS): $(GEN_SRCS)
 	)
 	cd ../../pkg/core && go generate ./...
 	cd ../../pkg/core/db && sqlc generate
-	protoc --go_out=../../pkg/core/gen --go-grpc_out=../../pkg/core/gen ../../pkg/core/protocol.proto
+	protoc --go_out=../../pkg/core/gen --go-grpc_out=../../pkg/core/gen --proto_path=../../pkg/core ../../pkg/core/protocol.proto
 	go mod tidy
 
 .PHONY: core-dev

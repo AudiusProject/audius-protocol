@@ -8,7 +8,7 @@ import {
 import {
   Utils as AudiusUtils,
   libs as AudiusLibs
-} from '@audius/sdk/dist/libs.js'
+} from '@audius/sdk-legacy/dist/libs.js'
 import { PublicKey } from '@solana/web3.js'
 
 export const initializeAudiusLibs = async (handle) => {

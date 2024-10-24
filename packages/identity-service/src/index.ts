@@ -5,7 +5,7 @@ import { solanaRouter } from './typed-routes/solana/solanaRelay'
 // Import libs before anything else becaues it takes a very long time to load.
 // Once it's imported once, it'll be in the cache and subsequent imports will be ~instant.
 // This first import is slow but makes it easier to debug timing issues since no other code will be slowed down by importing it.
-const { libs } = require('@audius/sdk/dist/libs')
+const { libs } = require('@audius/sdk-legacy/dist/libs')
 
 const { setupTracing } = require('./tracer')
 setupTracing()

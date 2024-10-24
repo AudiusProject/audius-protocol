@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { FollowSource } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -9,9 +10,11 @@ import {
   makeChatId,
   ChatPermissionAction,
   tippingActions,
-  useInboxUnavailableModal
+  useInboxUnavailableModal,
+  usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
+import type { Action } from '@reduxjs/toolkit'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -23,6 +26,7 @@ import { makeStyles, flexRowCentered } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
 import { UserBadges } from '../user-badges'
+const { followUser } = usersSocialActions
 
 const { unblockUser, createChat } = chatActions
 const { getCanCreateChat } = chatSelectors
@@ -38,11 +42,19 @@ const messages = {
       {' a tip before you can send them messages.'}
     </>
   ),
+  followRequired: (displayName: ReactNode) => (
+    <>
+      {'You must follow '}
+      {displayName}
+      {' before you can send them messages.'}
+    </>
+  ),
   noAction: "You can't send messages to ",
   info: 'This will not affect their ability to view your profile or interact with your content.',
   unblockUser: 'Unblock User',
   learnMore: 'Learn More',
   sendAudio: 'Send $AUDIO',
+  follow: 'Follow',
   cancel: 'Cancel'
 }
 
@@ -157,6 +169,25 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
     onClose()
   }, [onClose, currentUserId, dispatch, navigation, user, presetMessage])
 
+  const handleFollowPress = useCallback(() => {
+    if (userId) {
+      const followSuccessActions: Action[] = [
+        chatActions.createChat({
+          userIds: [userId]
+        })
+      ]
+      dispatch(
+        followUser(
+          userId,
+          FollowSource.INBOX_UNAVAILABLE_MODAL,
+          undefined,
+          followSuccessActions
+        )
+      )
+    }
+    onClose()
+  }, [userId, dispatch, onClose])
+
   switch (callToAction) {
     case ChatPermissionAction.NONE:
       return (
@@ -203,6 +234,30 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
             fullWidth
           >
             {messages.sendAudio}
+          </Button>
+        </>
+      )
+    case ChatPermissionAction.FOLLOW:
+      return (
+        <>
+          <Text style={styles.callToActionText}>
+            {messages.followRequired(
+              user ? (
+                <UserBadges
+                  user={user}
+                  nameStyle={styles.callToActionText}
+                  as={Text}
+                />
+              ) : null
+            )}
+          </Text>
+          <Button
+            key={messages.follow}
+            onPress={handleFollowPress}
+            variant='primary'
+            fullWidth
+          >
+            {messages.follow}
           </Button>
         </>
       )

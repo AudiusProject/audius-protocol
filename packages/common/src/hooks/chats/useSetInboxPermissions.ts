@@ -1,46 +1,31 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
-import type { AudiusSdk } from '@audius/sdk'
-import { ChatPermission } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
-import { Status } from '~/models/Status'
 import { accountSelectors } from '~/store/account'
-import { chatActions, chatSelectors } from '~/store/pages'
+import {
+  chatActions,
+  chatSelectors,
+  InboxSettingsFormValues
+} from '~/store/pages'
+import { transformMapToPermitList } from '~/utils/chatUtils'
 
 const { fetchPermissions } = chatActions
-const { getUserChatPermissions } = chatSelectors
+const { getChatPermissionsStatus, getUserChatPermissions } = chatSelectors
 const { getUserId } = accountSelectors
 
-type useSetInboxPermissionsProps = {
-  audiusSdk: () => Promise<AudiusSdk>
-}
-
-const INBOX_PERMISSIONS_SPINNER_TIMEOUT = 1000
-
-export const useSetInboxPermissions = ({
-  audiusSdk
-}: useSetInboxPermissionsProps) => {
+export const useSetInboxPermissions = () => {
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const dispatch = useDispatch()
+  const permissions = useSelector(getUserChatPermissions)
   const {
     analytics: { track, make }
   } = useAppContext()
-  const permissions = useSelector(getUserChatPermissions)
+  const permissionsStatus = useSelector(getChatPermissionsStatus)
   const userId = useSelector(getUserId)
-  const currentPermission = permissions?.permits
-  const [permissionStatus, setPermissionStatus] = useState<Status>(Status.IDLE)
-  const [showSpinner, setShowSpinner] = useState(false)
-  const [localPermission, setLocalPermission] = useState<ChatPermission>(
-    currentPermission ?? ChatPermission.ALL
-  )
-
-  // Update local permission state when permissions change in store.
-  // Needed for when user closes/reopens settings before backend has updated.
-  useEffect(() => {
-    setLocalPermission(currentPermission ?? ChatPermission.ALL)
-  }, [currentPermission])
 
   const doFetchPermissions = useCallback(() => {
     if (userId) {
@@ -48,67 +33,45 @@ export const useSetInboxPermissions = ({
     }
   }, [dispatch, userId])
 
-  const _savePermissions = useCallback(
-    async (permission: ChatPermission) => {
-      if (permissionStatus !== Status.LOADING) {
-        setPermissionStatus(Status.LOADING)
-        setShowSpinner(false)
-        // Only show the spinner if saving takes a while
-        setTimeout(
-          () => setShowSpinner(true),
-          INBOX_PERMISSIONS_SPINNER_TIMEOUT
+  const savePermissions = useCallback(
+    async (permitMap: InboxSettingsFormValues) => {
+      let permitList
+      try {
+        const sdk = await audiusSdk()
+        permitList = transformMapToPermitList(permitMap)
+        await sdk.chats.permit({ permitList, allow: true })
+        doFetchPermissions()
+        track(
+          make({
+            eventName: Name.CHANGE_INBOX_SETTINGS_SUCCESS,
+            permitList
+          })
         )
-        try {
-          const sdk = await audiusSdk()
-          await sdk.chats.permit({ permit: permission })
-          setPermissionStatus(Status.SUCCESS)
-          track(
-            make({
-              eventName: Name.CHANGE_INBOX_SETTINGS_SUCCESS,
-              permission
-            })
-          )
-        } catch (e) {
-          console.error('Error saving chat permissions:', e)
-          setPermissionStatus(Status.ERROR)
-          track(
-            make({
-              eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE,
-              permission
-            })
-          )
-        }
+      } catch (e) {
+        reportToSentry({
+          name: 'Chats',
+          error: e as Error
+        })
+        track(
+          make({
+            eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE,
+            permitList
+          })
+        )
       }
     },
-    [audiusSdk, track, make, permissionStatus]
-  )
-
-  // Save local permission state to backend. Useful in scenarios where we
-  // want to save permissions on a button press, eg. desktop settings.
-  const savePermissions = useCallback(async () => {
-    await _savePermissions(localPermission)
-  }, [_savePermissions, localPermission])
-
-  // Set local permission state and save to backend. Useful in
-  // scenarios where we want to set and save all at once, eg. mobile
-  // settings screen with radio button options that fire when pressed.
-  const setAndSavePermissions = useCallback(
-    async (permission: ChatPermission) => {
-      setLocalPermission(permission)
-      await _savePermissions(permission)
-    },
-    [_savePermissions]
+    [audiusSdk, doFetchPermissions, track, make, reportToSentry]
   )
 
   return {
     /**
-     * The permission state that is set locally.
+     * The current user's permissions.
      */
-    localPermission,
+    permissions,
     /**
-     * Setter for local permission state.
+     * The current permissions status.
      */
-    setLocalPermission,
+    permissionsStatus,
     /**
      * Fetches the current user's permissions from the backend.
      */
@@ -116,20 +79,6 @@ export const useSetInboxPermissions = ({
     /**
      * Saves the current user's permissions to the backend.
      */
-    savePermissions,
-    /**
-     * Sets local permissions and saves it to the backend.
-     */
-    setAndSavePermissions,
-    /**
-     * The current save permission status.
-     */
-    permissionStatus,
-    /**
-     * Whether or not to show the spinner. Timer sets to
-     * true 1s after saving permissions, use in conjunction
-     * with permissionsStatus.
-     */
-    showSpinner
+    savePermissions
   }
 }

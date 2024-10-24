@@ -10,6 +10,9 @@ from sqlalchemy import (
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
+from src.utils.config import shared_config
+
+COMMENT_KARMA_THRESHOLD = int(shared_config["discprov"]["comment_karma_threshold"])
 
 
 class CommentReport(Base, RepresentableMixin):

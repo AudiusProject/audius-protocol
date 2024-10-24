@@ -6,11 +6,14 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
+import { playerSelectors } from '@audius/common/store'
+import type { CommentMention } from '@audius/sdk'
 import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
+import { useSelector } from 'react-redux'
 
 import { Box } from '@audius/harmony-native'
 
@@ -20,38 +23,49 @@ type CommentDrawerFormProps = {
   commentListRef: RefObject<BottomSheetFlatListMethods>
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
+  autoFocus?: boolean
 }
 
 export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
-  const { commentListRef, onAutocompleteChange, setAutocompleteHandler } = props
   const {
-    editingComment,
-    replyingToComment,
-    setReplyingToComment,
-    setEditingComment
-  } = useCurrentCommentSection()
+    commentListRef,
+    onAutocompleteChange,
+    setAutocompleteHandler,
+    autoFocus
+  } = props
+  const { entityId, replyingAndEditingState, setReplyingAndEditingState } =
+    useCurrentCommentSection()
+  const { replyingToComment, replyingToCommentId, editingComment } =
+    replyingAndEditingState ?? {}
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
+  const playerPosition = useSelector(playerSelectors.getSeek)
+  const playerTrackId = useSelector(playerSelectors.getTrackId)
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
-      return
-    }
+    } else {
+      const trackTimestampS =
+        playerTrackId !== null && playerPosition && playerTrackId === entityId
+          ? Math.floor(playerPosition)
+          : undefined
 
-    postComment(message, replyingToComment?.id)
+      postComment(
+        message,
+        replyingToCommentId ?? replyingToComment?.id,
+        trackTimestampS,
+        mentions
+      )
+    }
 
     // Scroll to top of comments when posting a new comment
     if (!editingComment && !replyingToComment) {
       commentListRef.current?.scrollToOffset({ offset: 0 })
     }
 
-    setReplyingToComment?.(undefined)
-    setEditingComment?.(undefined)
+    setReplyingAndEditingState?.(undefined)
   }
-
-  // TODO:
-  const isLoading = false
 
   return (
     <Box p='l' backgroundColor='white'>
@@ -59,8 +73,8 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
         onSubmit={handlePostComment}
         onAutocompleteChange={onAutocompleteChange}
         setAutocompleteHandler={setAutocompleteHandler}
-        isLoading={isLoading}
         TextInputComponent={BottomSheetTextInput as any}
+        autoFocus={autoFocus}
       />
     </Box>
   )

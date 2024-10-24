@@ -10,10 +10,14 @@ import {
   Flex,
   IconInfo
 } from '@audius/harmony'
-import { ChatBlast } from '@audius/sdk'
+import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import { Tooltip } from 'components/tooltip'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 
 const USER_LIST_LIMIT = 10
 
@@ -36,6 +40,25 @@ export const ChatBlastAudienceDisplay = (
 
   // Add 1 to the limit to ensure we have a bg photo for the overflow count
   const users = useAudienceUsers(chat, USER_LIST_LIMIT + 1)
+
+  const audienceType = chat.audience
+  let userListType
+  switch (audienceType) {
+    case ChatBlastAudience.FOLLOWERS:
+      userListType = UserListType.FOLLOWER
+      break
+    case ChatBlastAudience.TIPPERS:
+      userListType = UserListType.SUPPORTER
+      break
+    case ChatBlastAudience.CUSTOMERS:
+      userListType = UserListType.PURCHASER
+      break
+    case ChatBlastAudience.REMIXERS:
+      userListType = UserListType.REMIXER
+      break
+    default:
+      userListType = UserListType.FOLLOWER
+  }
 
   return (
     <Flex row w='100%' justifyContent='center'>
@@ -64,6 +87,8 @@ export const ChatBlastAudienceDisplay = (
             users={users as User[]}
             totalUserCount={audienceCount ?? 0}
             limit={USER_LIST_LIMIT}
+            userListType={userListType}
+            userListEntityType={UserListEntityType.USER}
           />
         ) : null}
       </Paper>

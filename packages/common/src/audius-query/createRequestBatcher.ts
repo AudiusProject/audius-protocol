@@ -1,3 +1,4 @@
+import type { Timeout } from '@audius/sdk'
 import { omit, keyBy } from 'lodash'
 import objectHash from 'object-hash'
 
@@ -21,7 +22,7 @@ type RequestQueueItem<Args, Data> = {
 
 type RequestGroup = {
   queue: RequestQueueItem<any, any>[]
-  timer: Nullable<NodeJS.Timeout>
+  timer: Nullable<Timeout>
 }
 
 /**

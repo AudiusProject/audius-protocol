@@ -8,9 +8,9 @@ import {
   OverflowAction,
   QueueItem
 } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 
-import { CommentSection } from 'components/comments/CommentSection'
+import { CommentPreview } from 'components/comments/CommentPreview'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -20,8 +20,10 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import SectionButton from 'components/section-button/SectionButton'
 import { getTrackDefaults } from 'pages/track-page/utils'
+
+import { TrackRemixes } from '../TrackRemixes'
+import { ViewOtherRemixesButton } from '../ViewOtherRemixesButton'
 
 import Remixes from './Remixes'
 import TrackPageHeader from './TrackHeader'
@@ -29,8 +31,7 @@ const { tracksActions } = trackPageLineupActions
 
 const messages = {
   moreBy: 'More By',
-  originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  originalTrack: 'Original Track'
 }
 
 export type OwnProps = {
@@ -54,7 +55,6 @@ export type OwnProps = {
   }) => void
   onHeroShare: (trackId: ID) => void
   goToAllRemixesPage: () => void
-  goToParentRemixesPage: () => void
   onHeroRepost: (isReposted: boolean, trackId: number) => void
   onClickMobileOverflow: (
     trackId: ID,
@@ -88,7 +88,6 @@ const TrackPage = ({
   onHeroPlay,
   onHeroShare,
   goToAllRemixesPage,
-  goToParentRemixesPage,
   onSaveTrack,
   onHeroRepost,
   onClickMobileOverflow,
@@ -146,9 +145,13 @@ const TrackPage = ({
   }
 
   const defaults = getTrackDefaults(heroTrack)
+  const { fieldVisibility, remixTrackIds } = defaults
+
+  const hasRemixes =
+    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
 
   const renderOriginalTrackTitle = () => (
-    <Text textAlign='left' variant='title'>
+    <Text variant='title' size='l' textAlign='left'>
       {messages.originalTrack}
     </Text>
   )
@@ -156,7 +159,7 @@ const TrackPage = ({
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <Text variant='title' textAlign='left'>
+      <Text variant='title' size='l' textAlign='left'>
         {messages.moreBy} {user?.name}
       </Text>
     ) : null
@@ -214,19 +217,18 @@ const TrackPage = ({
           goToFavoritesPage={goToFavoritesPage}
           goToRepostsPage={goToRepostsPage}
         />
-        {defaults.fieldVisibility.remixes &&
-          defaults.remixTrackIds &&
-          defaults.remixTrackIds.length > 0 && (
-            <Remixes
-              trackIds={defaults.remixTrackIds}
-              goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
-            />
-          )}
+        {hasRemixes && !commentsFlagEnabled ? (
+          <Remixes
+            trackIds={defaults.remixTrackIds!}
+            goToAllRemixes={goToAllRemixesPage}
+            count={defaults.remixesCount}
+          />
+        ) : null}
         {isCommentingEnabled ? (
-          <CommentSection entityId={defaults.trackId} />
+          <CommentPreview entityId={defaults.trackId} />
         ) : null}
         <Flex column gap='l'>
+          {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
           {hasValidRemixParent
             ? renderOriginalTrackTitle()
             : renderMoreByTitle()}
@@ -235,14 +237,15 @@ const TrackPage = ({
             // Styles for leading element (original track if remix).
             leadingElementId={defaults.remixParentTrackId}
             leadingElementDelineator={
-              <div>
-                <SectionButton
-                  isMobile
-                  text={messages.viewOtherRemixes}
-                  onClick={goToParentRemixesPage}
-                />
+              <Flex direction='column' gap='xl'>
+                <Box alignSelf='flex-start'>
+                  <ViewOtherRemixesButton
+                    size='xs'
+                    parentTrackId={defaults.remixParentTrackId!}
+                  />
+                </Box>
                 {renderMoreByTitle()}
-              </div>
+              </Flex>
             }
             showLeadingElementArtistPick={false}
             // Don't render the first tile in the lineup.

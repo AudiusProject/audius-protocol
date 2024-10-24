@@ -22,5 +22,9 @@ identity-init:
           - node_modules
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/sdk/node_modules
+          - packages/sdk/dist
           - packages/spl/dist
           - packages/spl/node_modules
+          - packages/eth/dist
+          - packages/eth/node_modules

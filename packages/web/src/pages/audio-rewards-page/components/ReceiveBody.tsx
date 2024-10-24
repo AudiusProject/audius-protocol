@@ -1,13 +1,11 @@
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Button, IconSolana as LogoSol } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { ModalBodyWrapper } from '../WalletModal'
 
@@ -49,9 +47,6 @@ const useLocalStorageClickedReceiveUnderstand = (): [boolean, () => void] => {
 }
 
 const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
-  const useSolSPLAudio = getFeatureEnabled(
-    FeatureFlags.ENABLE_SPL_AUDIO
-  ) as boolean
   const [hasClickedUnderstand, onClickUnderstand] =
     useLocalStorageClickedReceiveUnderstand()
 
@@ -60,19 +55,6 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
     audiusBackendInstance,
     mint: 'audio'
   })
-
-  const renderReceiveEth = () => {
-    return (
-      <>
-        <div className={styles.warning}>{messages.warning}</div>
-        <div className={styles.description}>
-          <div>{messages.warning2}</div>
-          <div>{messages.warning3}</div>
-        </div>
-        <ClickableAddress address={wallet} />
-      </>
-    )
-  }
 
   const renderSolAudioHeader = () => {
     return (
@@ -111,12 +93,8 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
   }
 
   return (
-    <ModalBodyWrapper
-      className={cn(styles.container, {
-        [styles.solContainer]: useSolSPLAudio
-      })}
-    >
-      {useSolSPLAudio ? renderReceiveSol() : renderReceiveEth()}
+    <ModalBodyWrapper className={cn(styles.container, styles.solContainer)}>
+      {renderReceiveSol()}
     </ModalBodyWrapper>
   )
 }

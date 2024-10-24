@@ -10,6 +10,9 @@ import {
   Flex,
   IconButton,
   IconKebabHorizontal,
+  IconMessage,
+  IconRefresh,
+  PlainButton,
   PopupMenu,
   PopupMenuItem,
   Text
@@ -25,7 +28,15 @@ type CommentHeaderProps = {
 export const CommentHeader = (props: CommentHeaderProps) => {
   const { isLoading } = props
   const { toast } = useContext(ToastContext)
-  const { isEntityOwner, commentCount, entityId } = useCurrentCommentSection()
+  const {
+    isEntityOwner,
+    entityId,
+    resetComments,
+    hasNewComments,
+    isCommentCountLoading,
+    commentCount
+  } = useCurrentCommentSection()
+
   const isMuted = useGetTrackCommentNotificationSetting(entityId)
   const [updateTrackCommentNotificationSetting] =
     useUpdateTrackCommentNotificationSetting(entityId)
@@ -51,9 +62,26 @@ export const CommentHeader = (props: CommentHeaderProps) => {
 
   return (
     <Flex justifyContent='space-between' w='100%'>
-      <Text variant='title' size='l'>
-        Comments ({!isLoading ? commentCount : '...'})
-      </Text>
+      <Flex alignItems='center' gap='s'>
+        <IconMessage color='default' />
+        <Text variant='title' size='l'>
+          Comments (
+          {commentCount !== undefined && !isCommentCountLoading
+            ? commentCount
+            : '...'}
+          )
+        </Text>
+
+        {hasNewComments ? (
+          <PlainButton
+            iconLeft={IconRefresh}
+            variant='subdued'
+            onClick={resetComments}
+          >
+            {messages.newComments}
+          </PlainButton>
+        ) : null}
+      </Flex>
       {isEntityOwner && !isLoading ? (
         <PopupMenu
           items={popupMenuItems}

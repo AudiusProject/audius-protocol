@@ -312,7 +312,7 @@ def test_favorites_sort_methods(session):
         args["sort_method"] = k
         track_library = _get_track_library(args, session)
         # ensure same amount of tracks returned
-        print("Testing sort method: ", k)
+
         assert len(track_library) == len(
             v
         ), f"sort method: {k} should return {len(v)} tracks"

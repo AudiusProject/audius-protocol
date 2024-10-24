@@ -55,7 +55,12 @@ func runNode(
 	nconf conf.NetworkConfig,
 	audiusdTag string,
 ) error {
-	dockerClient, err := getDockerClient(host)
+	execHost := host
+	if config.IsLocalhost {
+		execHost = "localhost"
+	}
+
+	dockerClient, err := getDockerClient(execHost)
 	if err != nil {
 		return logger.Error(err)
 	}
@@ -107,7 +112,7 @@ func runNode(
 		},
 	}
 	for _, vol := range internalVolumes[config.Type] {
-		if exists, err := dirExistsOnHost(host, vol); err != nil {
+		if exists, err := dirExistsOnHost(execHost, vol); err != nil {
 			return logger.Error(err)
 		} else if exists { // data is leftover from a migrated host
 			hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
@@ -226,17 +231,20 @@ func runNode(
 	logger.Info("Configuring audius node...")
 
 	if config.Type != conf.Identity {
-		privateKey, err := NormalizedPrivateKey(host, config.PrivateKey)
+		privateKey, err := NormalizedPrivateKey(execHost, config.PrivateKey)
 		if err != nil {
 			return logger.Error(err)
 		}
 		config.PrivateKey = privateKey
 	}
 	override := config.ToOverrideEnv(host, nconf)
+
 	// generate the override.env file locally
 	// WARNING: not thread safe due to constant filename
-	appendRemoteConfig(host, override, config.RemoteConfigFile)
 	localOverridePath := "./override.env"
+	if err := appendRemoteConfig(execHost, override, config.RemoteConfigFile); err != nil {
+		return logger.Error(err)
+	}
 	if err := godotenv.Write(override, localOverridePath); err != nil {
 		return logger.Error(err)
 	}
@@ -416,8 +424,12 @@ func startDevnetDocker() error {
 	return nil
 }
 
-func downDockerNode(host string) error {
-	dockerClient, err := getDockerClient(host)
+func downDockerNode(host string, isLocalhost bool) error {
+	execHost := host
+	if isLocalhost {
+		execHost = "localhost"
+	}
+	dockerClient, err := getDockerClient(execHost)
 	if err != nil {
 		return logger.Error(err)
 	}

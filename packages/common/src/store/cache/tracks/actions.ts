@@ -1,3 +1,5 @@
+import { Nullable } from '~/utils'
+
 import { ID, SquareSizes, TrackMetadata, WidthSizes } from '../../../models'
 export const EDIT_TRACK = 'CACHE/TRACKS/EDIT_TRACK'
 export const EDIT_TRACK_SUCCEEDED = 'CACHE/TRACKS/EDIT_TRACK_SUCCEEDED'
@@ -14,6 +16,9 @@ export const FETCH_STREAM_URLS = 'CACHE/TRACKS/FETCH_STREAM_URLS'
 export const SET_STREAM_URLS = 'CACHE/TRACKS/SET_STREAM_URLS'
 export const INCREMENT_TRACK_COMMENT_COUNT =
   'CACHE/TRACKS/INCREMENT_TRACK_COMMENT_COUNT'
+export const SET_TRACK_COMMENT_COUNT = 'CACHE/TRACKS/SET_TRACK_COMMENT_COUNT'
+
+export const SET_PINNED_COMMENT_ID = 'CACHE/TRACKS/SET_PINNED_COMMENT_ID'
 
 export function editTrack(trackId: ID, formFields: TrackMetadata) {
   return { type: EDIT_TRACK, trackId, formFields }
@@ -64,4 +69,16 @@ export const incrementTrackCommentCount = (
   type: INCREMENT_TRACK_COMMENT_COUNT,
   trackId,
   commentCountIncrement
+})
+
+export const setTrackCommentCount = (trackId: ID, newCommentCount: number) => ({
+  type: SET_TRACK_COMMENT_COUNT,
+  trackId,
+  newCommentCount
+})
+
+export const setPinnedCommentId = (trackId: ID, commentId: Nullable<ID>) => ({
+  type: SET_PINNED_COMMENT_ID,
+  trackId,
+  commentId
 })

@@ -61,6 +61,8 @@ jobs:
           keys:
             - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y build-essential libssl-dev
       - run:
           name: Install dependencies
           # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
@@ -79,6 +81,7 @@ jobs:
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
+            - ./packages/sdk/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
@@ -309,7 +312,6 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -318,14 +320,12 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
-            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -343,8 +343,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true
@@ -374,7 +374,6 @@ workflows:
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/ddex/processor/.* run-ddex-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
@@ -383,14 +382,12 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
-            .circleci/.* run-audiusd-workflow true
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
@@ -407,8 +404,8 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
-            packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-create-audius-app-workflow true
+            packages/sdk/.* run-sdk-workflow true
+            packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             packages/fixed-decimal/.* run-sdk-workflow true
             packages/fixed-decimal/.* run-web-workflow true

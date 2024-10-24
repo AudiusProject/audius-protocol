@@ -39,12 +39,13 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
+  const trackId = track?.track_id
 
   useEffect(() => {
-    if (track) {
+    if (trackId) {
       dispatch(
         remixesPageLineupActions.fetchLineupMetadatas(0, 10, false, {
-          trackId: track.track_id
+          trackId
         })
       )
     }
@@ -52,7 +53,7 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
     return function cleanup() {
       dispatch(remixesPageLineupActions.reset())
     }
-  }, [dispatch, track])
+  }, [dispatch, trackId])
 
   const handlePressGoToAllRemixes = () => {
     navigation.push('TrackRemixes', { id: track.track_id })
@@ -68,7 +69,9 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
     <Flex>
       <Flex row alignItems='center' gap='s'>
         <IconRemix color='default' />
-        <Text variant='title'>{messages.remixes}</Text>
+        <Text variant='title' size='l'>
+          {messages.remixes}
+        </Text>
       </Flex>
       <Lineup
         lineup={remixesLineup}

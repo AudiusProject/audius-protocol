@@ -2,7 +2,7 @@ package pages
 
 import (
 	"fmt"
-	"github.com/AudiusProject/audius-protocol/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/dustin/go-humanize"
 )
 
@@ -22,20 +22,23 @@ templ (p *Pages) OverviewPageHTML(data *OverviewPageView) {
 					for _, block := range data.Blocks {
 						<div class="text-sm">
 							<div class="p-6">
+								// <div>
+								// 	@p.components.Link("/block/%s", block.Hash) {
+								// 		<div>Hash: { block.Hash }</div>
+								// 	}
+								// </div>
+								// <div>
+								// 	@p.components.Link("/node/%s", block.Proposer) {
+								// 		<div>Proposer: { block.Proposer }</div>
+								// 	}
+								// </div>
 								<div>
-									@p.components.Link("/block/%s", block.Hash) {
-										<div>Hash: { block.Hash }</div>
+									@p.components.Link("/block/%d", block.Height) {
+										<div>Height: { fmt.Sprint(block.Height) }</div>
 									}
 								</div>
 								<div>
-									@p.components.Link("/node/%s", block.Proposer) {
-										<div>Proposer: { block.Proposer }</div>
-									}
-								</div>
-								<div>
-									@p.components.Link("/block/%s", block.Height) {
-										<div>Height: { block.Height }</div>
-									}
+									Transactions: { fmt.Sprint(len(block.Txs)) }
 								</div>
 								<div>
 									Age: { humanize.Time(block.Timestamp) }

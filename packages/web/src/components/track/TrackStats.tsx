@@ -28,10 +28,11 @@ const messages = {
 
 type TrackStatsProps = {
   trackId: ID
+  scrollToCommentSection: () => void
 }
 
 export const TrackStats = (props: TrackStatsProps) => {
-  const { trackId } = props
+  const { trackId, scrollToCommentSection } = props
   const { data: track } = useGetTrackById({ id: trackId })
   const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
@@ -39,12 +40,13 @@ export const TrackStats = (props: TrackStatsProps) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
+  const comment_count = track?.comment_count ?? 0
+
   if (!track) return null
 
   const {
     repost_count,
     save_count,
-    comment_count,
     comments_disabled,
     play_count,
     is_stream_gated,
@@ -78,6 +80,10 @@ export const TrackStats = (props: TrackStatsProps) => {
     dispatch(userListActions.setVisibility(true))
   }
 
+  const handleClickComments = () => {
+    scrollToCommentSection()
+  }
+
   return (
     <Flex gap='l' mh={-6}>
       {repost_count === 0 ? null : (
@@ -101,7 +107,12 @@ export const TrackStats = (props: TrackStatsProps) => {
         </PlainButton>
       )}
       {!isCommentsEnabled || comments_disabled || comment_count === 0 ? null : (
-        <PlainButton iconLeft={IconMessage} size='large' variant='subdued'>
+        <PlainButton
+          iconLeft={IconMessage}
+          onClick={handleClickComments}
+          size='large'
+          variant='subdued'
+        >
           {formatCount(comment_count)}{' '}
           {pluralize(messages.comment, comment_count)}
         </PlainButton>

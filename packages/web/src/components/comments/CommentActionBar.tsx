@@ -9,9 +9,10 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ReplyComment } from '@audius/common/models'
+import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
+  Box,
   ButtonVariant,
   Flex,
   Hint,
@@ -66,6 +67,7 @@ type CommentActionBarProps = {
   onClickReply: () => void
   onClickDelete: () => void
   hideReactCount?: boolean
+  parentCommentId?: ID
 }
 export const CommentActionBar = ({
   comment,
@@ -73,15 +75,17 @@ export const CommentActionBar = ({
   onClickEdit,
   onClickReply,
   onClickDelete,
-  hideReactCount
+  hideReactCount,
+  parentCommentId
 }: CommentActionBarProps) => {
   const dispatch = useDispatch()
-  // Comment from props
+  const { currentUserId, isEntityOwner, entityId, currentSort, track } =
+    useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
-  const areNotifsMuted = 'isMuted' in comment ? comment.isMuted : false
-  const isParentComment = 'isPinned' in comment
-  const isTombstone = isParentComment ? comment.isTombstone : false
-  const isPinned = isParentComment ? comment.isPinned : false // pins dont exist on replies
+  const isMuted = 'isMuted' in comment ? comment.isMuted : false
+  const isParentComment = parentCommentId === undefined
+  const isPinned = track.pinned_comment_id === commentId
+  const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
 
   // API actions
   const [reactToComment] = useReactToComment()
@@ -89,11 +93,7 @@ export const CommentActionBar = ({
   const [pinComment] = usePinComment()
   const [muteUser] = useMuteUser()
 
-  // Comment context data
-  const { currentUserId, isEntityOwner, entityId, currentSort } =
-    useCurrentCommentSection()
   const isCommentOwner = Number(comment.userId) === currentUserId
-  const canMuteNotifs = isCommentOwner && isParentComment
 
   // Selectors
   const userDisplayName = useSelector(
@@ -121,13 +121,9 @@ export const CommentActionBar = ({
   }, [onClickDelete])
 
   const handleMuteNotifs = useCallback(() => {
-    handleMuteCommentNotifications(areNotifsMuted ? 'unmute' : 'mute')
-    toast(
-      areNotifsMuted
-        ? messages.toasts.unmutedNotifs
-        : messages.toasts.mutedNotifs
-    )
-  }, [handleMuteCommentNotifications, areNotifsMuted, toast])
+    handleMuteCommentNotifications(isMuted ? 'unmute' : 'mute')
+    toast(isMuted ? messages.toasts.unmutedNotifs : messages.toasts.mutedNotifs)
+  }, [handleMuteCommentNotifications, isMuted, toast])
 
   const handlePin = useCallback(() => {
     pinComment(commentId, !isPinned)
@@ -145,15 +141,14 @@ export const CommentActionBar = ({
   }, [comment.userId, currentSort, entityId, muteUser, toast])
 
   const handleFlagComment = useCallback(() => {
-    reportComment(commentId)
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndHidden)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleFlagAndRemoveComment = useCallback(() => {
-    reportComment(commentId)
-    // TODO: remove comment
+    reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndRemoved)
-  }, [commentId, reportComment, toast])
+  }, [commentId, parentCommentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
     if (isMobile) {
@@ -168,7 +163,6 @@ export const CommentActionBar = ({
   }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
 
   // Confirmation Modal state
-
   const confirmationModals: {
     [k in ConfirmationAction]: ConfirmationModalState
   } = useMemo(
@@ -250,10 +244,13 @@ export const CommentActionBar = ({
   const popupMenuItems = useMemo(
     () =>
       [
-        isEntityOwner && {
-          onClick: () => setCurrentConfirmationModalType('pin'),
-          text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin
-        },
+        isEntityOwner &&
+          isParentComment && {
+            onClick: () => setCurrentConfirmationModalType('pin'),
+            text: isPinned
+              ? messages.menuActions.unpin
+              : messages.menuActions.pin
+          },
         !isEntityOwner &&
           !isCommentOwner && {
             onClick: () => setCurrentConfirmationModalType('flagAndHide'),
@@ -269,6 +266,13 @@ export const CommentActionBar = ({
             onClick: () => setCurrentConfirmationModalType('muteUser'),
             text: messages.menuActions.muteUser
           },
+        isCommentOwner &&
+          isParentComment && {
+            onClick: handleMuteNotifs,
+            text: isMuted
+              ? messages.menuActions.unmuteThread
+              : messages.menuActions.muteThread
+          },
         isCommentOwner && {
           onClick: onClickEdit,
           text: messages.menuActions.edit
@@ -279,22 +283,16 @@ export const CommentActionBar = ({
               !isCommentOwner && isEntityOwner ? 'artistDelete' : 'delete'
             ),
           text: messages.menuActions.delete
-        },
-        canMuteNotifs && {
-          onClick: handleMuteNotifs,
-          text: areNotifsMuted
-            ? messages.menuActions.turnOnNotifications
-            : messages.menuActions.turnOffNotifications
         }
       ].filter(removeNullable),
     [
+      isEntityOwner,
+      isParentComment,
       isPinned,
+      isCommentOwner,
       onClickEdit,
       handleMuteNotifs,
-      areNotifsMuted,
-      isCommentOwner,
-      isEntityOwner,
-      canMuteNotifs
+      isMuted
     ]
   )
 
@@ -309,17 +307,16 @@ export const CommentActionBar = ({
           onClick={handleReact}
           disabled={isDisabled}
         />
-        {!hideReactCount ? (
-          <Text color={isDisabled ? 'subdued' : 'default'} size='s'>
-            {' '}
-            {reactCount}
-          </Text>
-        ) : null}
+        {!hideReactCount && reactCount > 0 ? (
+          <Text color={isDisabled ? 'subdued' : 'default'}> {reactCount}</Text>
+        ) : (
+          // Placeholder box to offset where the number would be
+          <Box w='8px' />
+        )}
       </Flex>
       <TextLink
         variant='subdued'
         onClick={handleClickReply}
-        size='s'
         disabled={isDisabled || isTombstone}
       >
         {messages.reply}

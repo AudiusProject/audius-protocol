@@ -35,7 +35,7 @@ export const useFirstAvailableBlastAudience = () => {
     if (user?.supporter_count) return ChatBlastAudience.TIPPERS
     if (purchasersCount) return ChatBlastAudience.CUSTOMERS
     if (remixersCount) return ChatBlastAudience.REMIXERS
-    return ChatBlastAudience.FOLLOWERS
+    return null
   }, [
     user?.follower_count,
     user?.supporter_count,

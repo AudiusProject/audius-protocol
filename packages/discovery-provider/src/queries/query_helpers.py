@@ -26,6 +26,7 @@ from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
+from src.queries.get_track_comment_count import get_tracks_comment_count
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
@@ -398,6 +399,7 @@ def get_track_play_count_dict(session, track_ids):
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
+
     if not track_has_aggregates:
         # build dict of track id --> repost count
         counts = (
@@ -405,7 +407,6 @@ def populate_track_metadata(
                 AggregateTrack.track_id,
                 AggregateTrack.repost_count,
                 AggregateTrack.save_count,
-                AggregateTrack.comment_count,
             )
             .filter(
                 AggregateTrack.track_id.in_(track_ids),
@@ -417,9 +418,8 @@ def populate_track_metadata(
             track_id: {
                 response_name_constants.repost_count: repost_count,
                 response_name_constants.save_count: save_count,
-                response_name_constants.comment_count: comment_count,
             }
-            for (track_id, repost_count, save_count, comment_count) in counts
+            for (track_id, repost_count, save_count) in counts
         }
 
         play_count_dict = get_track_play_count_dict(session, track_ids)
@@ -496,6 +496,8 @@ def populate_track_metadata(
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
+    comment_counts = get_tracks_comment_count(track_ids, current_user_id, session)
+
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.
     # if no current user (guest), populate access based on track stream/download conditions
@@ -520,9 +522,7 @@ def populate_track_metadata(
             track[response_name_constants.save_count] = (
                 aggregate_track[0].get("save_count", 0) if aggregate_track else 0
             )
-            track[response_name_constants.comment_count] = (
-                aggregate_track[0].get("comment_count", 0) if aggregate_track else 0
-            )
+
             aggregate_play = track.get("aggregate_play")
             track[response_name_constants.play_count] = (
                 aggregate_play[0].get("count", 0) if aggregate_play else 0
@@ -534,11 +534,9 @@ def populate_track_metadata(
             track[response_name_constants.save_count] = count_dict.get(
                 track_id, {}
             ).get(response_name_constants.save_count, 0)
-            track[response_name_constants.comment_count] = count_dict.get(
-                track_id, {}
-            ).get(response_name_constants.comment_count, 0)
             track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
+        track[response_name_constants.comment_count] = comment_counts.get(track_id, 0)
         track[
             response_name_constants.followee_reposts
         ] = followee_track_repost_dict.get(track_id, [])

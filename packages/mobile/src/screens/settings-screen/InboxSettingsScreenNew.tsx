@@ -1,12 +1,15 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { useSetInboxPermissions } from '@audius/common/hooks'
+import { statusIsNotFinalized } from '@audius/common/models'
+import type { InboxSettingsFormValues } from '@audius/common/store'
+import { transformPermitListToMap } from '@audius/common/utils'
 import { ChatPermission } from '@audius/sdk'
 import { Formik } from 'formik'
 
 import { Button, Flex, IconMessage } from '@audius/harmony-native'
-import { HeaderShadow, ScreenContent } from 'app/components/core'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { HeaderShadow, ScreenContent, Screen } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 
 import { FormScreen } from '../form-screen'
 
@@ -17,53 +20,40 @@ const messages = {
   save: 'Save Changes'
 }
 
-type InboxSettingsFormValues = {
-  allowAll: boolean
-  [ChatPermission.FOLLOWEES]: boolean
-  [ChatPermission.TIPPERS]: boolean
-  [ChatPermission.TIPPEES]: boolean
-  [ChatPermission.FOLLOWERS]: boolean
-  [ChatPermission.VERIFIED]: boolean
-}
-
 export const InboxSettingsScreenNew = () => {
-  const { localPermission, doFetchPermissions } = useSetInboxPermissions({
-    audiusSdk
-  })
+  const {
+    permissions,
+    doFetchPermissions,
+    savePermissions,
+    permissionsStatus
+  } = useSetInboxPermissions()
 
-  const allowAll = localPermission === ChatPermission.ALL
-  const initialValues = {
-    allowAll,
-    [ChatPermission.FOLLOWEES]:
-      allowAll || localPermission === ChatPermission.FOLLOWEES,
-    [ChatPermission.TIPPERS]:
-      allowAll || localPermission === ChatPermission.TIPPERS,
-    [ChatPermission.TIPPEES]:
-      allowAll || localPermission === ChatPermission.TIPPEES,
-    [ChatPermission.FOLLOWERS]:
-      allowAll || localPermission === ChatPermission.FOLLOWERS,
-    [ChatPermission.VERIFIED]:
-      allowAll || localPermission === ChatPermission.VERIFIED
-  }
+  const initialValues = useMemo(() => {
+    return transformPermitListToMap(
+      permissions?.permit_list ?? [ChatPermission.ALL]
+    )
+  }, [permissions])
 
   useEffect(() => {
     doFetchPermissions()
   }, [doFetchPermissions])
 
-  const handleSubmit = useCallback((values: typeof initialValues) => {
-    if (values.allowAll) {
-      // submit all permissions
-      alert(JSON.stringify({ allowAll: true }, null, 2))
-    } else {
-      // submit only the sub permissions that are checked
-      alert(JSON.stringify(values, null, 2))
-    }
-  }, [])
+  if (statusIsNotFinalized(permissionsStatus)) {
+    return (
+      <Screen title={messages.title} icon={IconMessage}>
+        <ScreenContent>
+          <Flex flex={1} justifyContent='center' alignItems='center'>
+            <LoadingSpinner style={{ width: 48, height: 48 }} />
+          </Flex>
+        </ScreenContent>
+      </Screen>
+    )
+  }
 
   return (
     <Formik<InboxSettingsFormValues>
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={savePermissions}
     >
       {({ submitForm, isSubmitting }) => (
         <FormScreen

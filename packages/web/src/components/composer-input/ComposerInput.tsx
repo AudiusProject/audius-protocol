@@ -1,4 +1,11 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
@@ -50,9 +57,10 @@ const ComposerText = ({
 
 const createTextSections = (text: string) => {
   const splitText = splitOnNewline(text)
-  return splitText.map((t) => (
-    // eslint-disable-next-line react/jsx-key
-    <ComposerText color='default'>{t}</ComposerText>
+  return splitText.map((t, index) => (
+    <ComposerText key={`${t}-${index}`} color='default'>
+      {t}
+    </ComposerText>
   ))
 }
 
@@ -62,11 +70,14 @@ export const ComposerInput = (props: ComposerInputProps) => {
     onSubmit,
     messageId,
     presetMessage,
+    presetUserMentions = [],
     maxLength = 400,
+    maxMentions = Infinity,
     placeholder,
     isLoading,
     entityId,
     entityType,
+    autoFocus,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -80,8 +91,16 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const firstAutocompleteResult = useRef<UserMetadata | null>(null)
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
+
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      acc[`@${mention.handle}`] = mention.userId
+      return acc
+    }, {})
+  )
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
   // Ref to keep track of the submit state of the input
@@ -110,6 +129,13 @@ export const ComposerInput = (props: ComposerInputProps) => {
     }
     fn()
   }, [presetMessage, resolveLinks])
+
+  useEffect(() => {
+    if (ref.current && autoFocus) {
+      ref.current.focus()
+      ref.current.selectionStart = ref.current.value.length
+    }
+  }, [autoFocus])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
@@ -175,26 +201,39 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ]
   }, [autocompleteAtIndex, isUserAutocompleteActive, value])
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
+      let textLength = mentionText.length
 
       if (!userMentions.includes(mentionText)) {
         setUserMentions((mentions) => [...mentions, mentionText])
-        setUserMentionIds((mentionIds) => [...mentionIds, user.user_id])
+        setUserIdMap((map) => {
+          map[mentionText] = user.user_id
+          return map
+        })
       }
       setValue((value) => {
         const textBeforeMention = value.slice(0, autocompleteRange[0])
         const textAfterMention = value.slice(autocompleteRange[1])
-        return `${textBeforeMention}${mentionText}${textAfterMention}`
+        const fillText =
+          mentionText + (textAfterMention.startsWith(' ') ? '' : ' ')
+
+        textLength = fillText.length
+
+        return `${textBeforeMention}${fillText}${textAfterMention}`
       })
       const textarea = ref.current
       if (textarea) {
         setTimeout(() => {
           textarea.focus()
-          textarea.selectionStart = autocompleteRange[0] + mentionText.length
-          textarea.selectionEnd = autocompleteRange[0] + mentionText.length
+          textarea.selectionStart = autocompleteRange[0] + textLength
+          textarea.selectionEnd = autocompleteRange[0] + textLength
         }, 0)
       }
       setIsUserAutocompleteActive(false)
@@ -221,11 +260,23 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
+    if (ref.current) {
+      ref.current.blur()
+    }
     submittedRef.current = true
     changeOpIdRef.current++
-    onSubmit?.(restoreLinks(value), linkEntities, userMentionIds)
+    const mentions =
+      getUserMentions(value)?.map((match) => {
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
+      }) ?? []
+    onSubmit?.(restoreLinks(value), linkEntities, mentions)
     submittedRef.current = false
-  }, [linkEntities, onSubmit, restoreLinks, userMentionIds, value])
+    setUserMentions([])
+    setUserIdMap({})
+  }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(
@@ -275,8 +326,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        setAutocompleteAtIndex(cursorPosition)
-        setIsUserAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompleteAtIndex(cursorPosition)
+          setIsUserAutocompleteActive(true)
+        }
       }
 
       // Delete any matched values with a single backspace
@@ -302,9 +355,25 @@ export const ComposerInput = (props: ComposerInputProps) => {
       handleAutocomplete,
       onSubmit,
       handleSubmit,
-      handleBackspace
+      handleBackspace,
+      maxMentions,
+      mentionCount
     ]
   )
+
+  const isTextHighlighted = useMemo(() => {
+    const matches = getMatches(value) ?? []
+    const timestamps = getTimestamps(value)
+    const mentions = getUserMentions(value) ?? []
+    const fullMatches = [...matches, ...mentions, ...timestamps]
+    return Boolean(fullMatches.length || isUserAutocompleteActive)
+  }, [
+    getMatches,
+    getTimestamps,
+    getUserMentions,
+    isUserAutocompleteActive,
+    value
+  ])
 
   const renderDisplayText = useCallback(
     (value: string) => {
@@ -378,7 +447,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
         } else {
           // User Mention or Link match
           renderedTextSections.push(
-            <ComposerText color='accent'>{text}</ComposerText>
+            <ComposerText key={`${text}-${index}`} color='accent'>
+              {text}
+            </ComposerText>
           )
         }
 
@@ -426,7 +497,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       showMaxLength={
         !!value && value.length > maxLength * MAX_LENGTH_DISPLAY_PERCENT
       }
-      renderDisplayElement={renderDisplayText}
+      renderDisplayElement={isTextHighlighted ? renderDisplayText : undefined}
       grows
       {...other}
     >

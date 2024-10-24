@@ -74,6 +74,14 @@ test-audiusd-devnet:
         name: Teardown
         command: |
           audius-ctl --debug down -af
+    - run:
+        name: test isLocalhost config
+        command: |
+          audius-ctl config create-context test-localhost -f dev-tools/templates/test-localhost.yaml
+          audius-ctl up --debug
+          audius-ctl restart -f --debug
+          audius-ctl down -f --debug
+          audius-ctl devnet down --debug
 
 test-config-subcommands:
   docker:

@@ -68,6 +68,7 @@ import {
   type ImageProps
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
+import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
@@ -221,6 +222,7 @@ export const TrackScreenDetailsTile = ({
     { trackId },
     { enabled: !!trackId }
   )
+  const { open: openCommentDrawer } = useCommentDrawer()
 
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -358,6 +360,10 @@ export const TrackScreenDetailsTile = ({
     dispatch(setRepost(trackId, RepostType.TRACK))
     navigation.push('Reposts', { id: trackId, repostType: RepostType.TRACK })
   }, [dispatch, trackId, navigation])
+
+  const handlePressComments = useCallback(() => {
+    openCommentDrawer({ entityId: trackId, navigation })
+  }, [openCommentDrawer, trackId, navigation])
 
   const handlePressSave = () => {
     if (!isOwner) {
@@ -636,6 +642,7 @@ export const TrackScreenDetailsTile = ({
           hideCommentCount={shouldHideCommentCount}
           onPressFavorites={handlePressFavorites}
           onPressReposts={handlePressReposts}
+          onPressComments={handlePressComments}
         />
         {description ? (
           <Box w='100%'>

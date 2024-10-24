@@ -28,7 +28,17 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 	// see also: subtly different inverse query exists in chat_blast.go
 	// to fan out messages to existing chat
 	var findNewBlasts = `
-	with all_new as (
+	with
+	last_permission_change as (
+		select max(t) as t from (
+			select updated_at as t from chat_permissions where user_id = $1
+			union
+			select created_at as t from chat_blocked_users where blocker_user_id = $1
+			union
+			select to_timestamp(0)
+		) as timestamp_subquery
+	),
+	all_new as (
 		select *
 		from chat_blast blast
 		where
@@ -85,7 +95,8 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 		)
 	)
 	select * from all_new
-	where chat_allowed(from_user_id, $1)
+	where created_at > (select t from last_permission_change)
+	and chat_allowed(from_user_id, $1)
 	order by created_at
 	`
 

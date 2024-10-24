@@ -1,6 +1,7 @@
 export enum LineupVariant {
   MAIN = 'main',
-  SECTION = 'section',
+  GRID = 'grid',
   CONDENSED = 'condensed',
-  PLAYLIST = 'playlist'
+  PLAYLIST = 'playlist',
+  SECTION = 'section'
 }

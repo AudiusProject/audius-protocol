@@ -80,3 +80,9 @@ from core_tx_stats
 where created_at >= now() - interval '1 day'
 group by hour, tx_type 
 order by hour asc;
+
+-- name: GetBlockTransactions :many
+select * from core_tx_results where block_id = $1 order by created_at desc;
+
+-- name: GetBlock :one
+select * from core_blocks where height = $1;

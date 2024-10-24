@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
+import type { CommentMention } from '@audius/sdk'
 import type { TextInput as RNTextInput } from 'react-native'
 
 import {
@@ -23,20 +24,22 @@ type CommentFormHelperTextProps = {
   replyingToUserHandle?: string
 }
 
+const replyInitialMessage = (handle: string) => `@${handle} `
+
 const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
   const { replyingToUserHandle } = props
-  const { replyingToComment, setReplyingToComment, setEditingComment } =
+  const { replyingAndEditingState, setReplyingAndEditingState } =
     useCurrentCommentSection()
   const { color, spacing } = useTheme()
+  const { replyingToComment } = replyingAndEditingState ?? {}
 
   const text = replyingToComment
     ? messages.replyingTo(replyingToUserHandle ?? '')
     : messages.editing
 
   const handlePressClear = useCallback(() => {
-    setReplyingToComment?.(undefined)
-    setEditingComment?.(undefined)
-  }, [setEditingComment, setReplyingToComment])
+    setReplyingAndEditingState?.(undefined)
+  }, [setReplyingAndEditingState])
 
   return (
     <Flex
@@ -60,18 +63,20 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
         icon={IconClose}
         onPress={handlePressClear}
         color='default'
+        hitSlop={10}
       />
     </Flex>
   )
 }
 
 type CommentFormProps = {
-  onSubmit: (commentMessage: string, mentions?: ID[]) => void
+  onSubmit?: (commentMessage: string, mentions?: CommentMention[]) => void
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   TextInputComponent?: typeof RNTextInput
+  autoFocus?: boolean
 }
 
 export const CommentForm = (props: CommentFormProps) => {
@@ -79,20 +84,19 @@ export const CommentForm = (props: CommentFormProps) => {
     isLoading,
     setAutocompleteHandler,
     onAutocompleteChange,
-    onSubmit,
+    onSubmit = () => {},
     initialValue,
-    TextInputComponent
+    TextInputComponent,
+    autoFocus
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
-  const {
-    currentUserId,
-    commentIds,
-    entityId,
-    replyingToComment,
-    editingComment
-  } = useCurrentCommentSection()
+  const [initialMentions, setInitialMentions] = useState<CommentMention[]>([])
+  const { currentUserId, entityId, replyingAndEditingState } =
+    useCurrentCommentSection()
+  const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
   const ref = useRef<RNTextInput>(null)
+  const adjustedCursorPosition = useRef(false)
 
   const replyingToUserId = Number(replyingToComment?.userId)
   const { data: replyingToUser } = useGetUserById(
@@ -102,21 +106,31 @@ export const CommentForm = (props: CommentFormProps) => {
     { disabled: !replyingToComment }
   )
 
-  // TODO: Add mentions back here
-  const handleSubmit = (message: string) => {
-    onSubmit(message)
+  const handleSubmit = (message: string, mentions?: CommentMention[]) => {
+    onSubmit(message, mentions)
     setMessageId((id) => ++id)
   }
+
+  const focusInput = useCallback(() => {
+    // setTimeout is required to focus the input on android
+    setTimeout(() => ref.current?.focus())
+  }, [ref])
 
   /**
    * Populate and focus input when replying to a comment
    */
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
-      setInitialMessage(`@${replyingToUser.handle} `)
-      ref.current?.focus()
+      setInitialMessage(replyInitialMessage(replyingToUser.handle))
+      setInitialMentions([
+        {
+          handle: replyingToUser.handle,
+          userId: replyingToUser.user_id
+        }
+      ])
+      focusInput()
     }
-  }, [replyingToComment, replyingToUser])
+  }, [replyingToComment, replyingToUser, focusInput])
 
   /**
    * Populate and focus input when editing a comment
@@ -124,23 +138,41 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (editingComment) {
       setInitialMessage(editingComment.message)
-      ref.current?.focus()
+      setInitialMentions(editingComment.mentions ?? [])
+      focusInput()
     }
-  }, [editingComment])
+  }, [editingComment, focusInput])
 
-  const placeholder = commentIds?.length
-    ? messages.addComment
-    : messages.firstComment
+  useEffect(() => {
+    if (autoFocus) {
+      focusInput()
+    }
+  }, [autoFocus, focusInput])
+
+  const handleLayout = useCallback(() => {
+    if (
+      (replyingToComment || editingComment) &&
+      ref.current &&
+      !adjustedCursorPosition.current
+    ) {
+      // Set the cursor position (required for android)
+      const initialMessageLength = initialMessage?.length ?? 0
+      ref.current.setSelection(initialMessageLength, initialMessageLength)
+      adjustedCursorPosition.current = true
+    }
+  }, [editingComment, initialMessage?.length, replyingToComment])
 
   const showHelperText = editingComment || replyingToComment
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
       {currentUserId ? (
-        <ProfilePicture
-          userId={currentUserId}
-          style={{ width: 40, height: 40, flexShrink: 0 }}
-        />
+        <Flex alignSelf='flex-start' pt='unit1' alignItems='center'>
+          <ProfilePicture
+            userId={currentUserId}
+            style={{ width: 40, height: 40, flexShrink: 0 }}
+          />
+        </Flex>
       ) : null}
       <Flex flex={1}>
         {showHelperText ? (
@@ -157,9 +189,13 @@ export const CommentForm = (props: CommentFormProps) => {
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
-            placeholder={placeholder}
+            presetUserMentions={initialMentions}
+            placeholder={messages.addComment}
             onSubmit={handleSubmit}
             TextInputComponent={TextInputComponent}
+            onLayout={handleLayout}
+            maxLength={400}
+            maxMentions={10}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,
