@@ -230,7 +230,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 			"stateFile", privValStateFile)
 		pv = privval.LoadFilePV(privValKeyFile, privValStateFile)
 	} else {
-		pv = privval.NewFilePV(key, privValKeyFile, privValStateFile)
+		pv = privval.NewFilePV(envConfig.CometKey, privValKeyFile, privValStateFile)
 		pv.Save()
 		logger.Info("Generated private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
@@ -245,7 +245,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		logger.Info("Found node key", "path", nodeKeyFile)
 	} else {
 		p2pKey := p2p.NodeKey{
-			PrivKey: key,
+			PrivKey: envConfig.CometKey,
 		}
 		if err := p2pKey.SaveAs(nodeKeyFile); err != nil {
 			return nil, nil, fmt.Errorf("creating node key %v", err)

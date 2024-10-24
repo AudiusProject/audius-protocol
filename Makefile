@@ -10,6 +10,25 @@ GO_SRCS := $(shell find pkg cmd -type f -name '*.go') go.mod go.sum
 
 CORE_SRCS := $(GO_SRCS) $(JS_SRCS) $(EMBED_SRCS)
 
+SQL_SRCS := $(shell find pkg/core/db/sql -type f -name '*.sql') pkg/core/db/sqlc.yaml
+SQL_ARTIFACTS := $(wildcard pkg/core/db/*.sql.go)
+
+PROTO_SRCS := pkg/core/protocol.proto
+PROTO_ARTIFACTS := $(wildcard pkg/core/gen/proto/*.pb.go)
+
+TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
+TEMPL_ARTIFACTS := $(shell find pkg/core/console -type f -name "*_templ.go")
+
+GEN_SRCS := $(SQL_SRCS) $(PROTO_SRCS) $(TEMPL_SRCS)
+GEN_ARTIFACTS :=  $(PROTO_ARTIFACTS) $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS)
+
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
+
+
+#############
+## AUDIUSD ##
+#############
+
 bin/audiusd-native: $(GO_SRCS)
 	@echo "Building audiusd for local platform and architecture..."
 	@bash scripts/build-audiusd.sh $@
@@ -43,19 +62,6 @@ bin/audius-ctl-arm64-darwin-experimental: $(GO_SRCS)
 	@echo "Building macos arm audius-ctl..."
 	@GOOS=darwin GOARCH=arm64 go build -tags osx -ldflags -X main.Version="$(shell git rev-parse HEAD)" -o bin/audius-ctl-arm64-darwin-experimental ./cmd/audius-ctl
 
-bin/core: $(CORE_SRCS)
-	@go build -ldflags "$(VERSION_LDFLAG)" -o bin/core ./main.go
-
-bin/core-amd64: $(CORE_SRCS)
-	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64
-
-.PHONY: core-build-native
-core-build-native: bin/core
-
-.PHONY: core-build-amd64
-core-build-amd64: bin/core-amd64
-
-
 .PHONY: release-audius-ctl audius-ctl-production-build
 release-audius-ctl:
 	bash scripts/release-audius-ctl.sh
@@ -63,7 +69,7 @@ release-audius-ctl:
 audius-ctl-production-build: clean regen-abis bin/audius-ctl-arm64-linux bin/audius-ctl-x86_64-linux bin/audius-ctl-arm64-darwin bin/audius-ctl-x86_64-darwin
 
 .PHONY: regen-abis
-regen-abis:
+regen-abis: $(ABI_ARTIFACTS)
 	@jq '.abi' packages/libs/src/eth-contracts/ABIs/ERC20Detailed.json > $(ABI_DIR)/ERC20Detailed.json
 	@jq '.abi' packages/libs/src/eth-contracts/ABIs/Registry.json > $(ABI_DIR)/Registry.json
 	@jq '.abi' packages/libs/src/eth-contracts/ABIs/ServiceProviderFactory.json > $(ABI_DIR)/ServiceProviderFactory.json
@@ -107,6 +113,32 @@ mediorum-dev:
 ## CORE ##
 ##########
 
+.PHONY: core-build-native
+core-build-native: bin/core
+
+bin/core: $(CORE_SRCS)
+	@go build -ldflags "$(VERSION_LDFLAG)" -o bin/core ./main.go
+
+.PHONY: core-build-amd64
+core-build-amd64: bin/core-amd64
+
+bin/core-amd64: $(CORE_SRCS)
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64
+
+.PHONY: core-gen
+core-gen: $(GEN_ARTIFACTS)
+
+$(GEN_ARTIFACTS): $(GEN_SRCS)
+	@which sqlc templ modd > /dev/null || ( \
+		echo "ERROR: audius core dev tooling not found." \
+		"Run 'make core-deps' to install necessary golang packages." \
+		&& false \
+	)
+	cd pkg/core && go generate ./...
+	cd pkg/core/db && sqlc generate
+	protoc --go_out=pkg/core/gen --go-grpc_out=pkg/core/gen --proto_path=pkg/core pkg/core/protocol.proto
+	go mod tidy
+
 .PHONY: core-deps
 core-deps:
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
@@ -127,7 +159,7 @@ core-dev: core-gen
 
 .PHONY: core-test
 core-test: core-gen
-	go test -v ../../pkg/core/... -timeout 60s
+	go test -v pkg/core/... -timeout 60s
 
 .PHONY: core-sandbox
 core-sandbox: build-amd64

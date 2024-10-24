@@ -15,7 +15,7 @@ import (
 
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_proto.SignedTransaction) error {
+func (core *CoreApplication) isValidRegisterNodeEvent(ctx context.Context, e *gen_proto.SignedTransaction) error {
 	sig := e.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
@@ -75,7 +75,7 @@ func (core *CoreApplication) isValidRegisterNodeEvent(_ context.Context, e *gen_
 	}
 
 	qtx := core.getDb()
-	err := qtx.GetRegisteredNodeByEthAddress(eventOwnerWallet)
+	_, err = qtx.GetRegisteredNodeByEthAddress(ctx, eventOwnerWallet)
 	if err == nil {
 		return fmt.Errorf("already registered")
 	} else if !errors.Is(err, pgx.ErrNoRows) {

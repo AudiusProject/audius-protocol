@@ -153,7 +153,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
 	if err != nil {
-		return nil, nil, fmt.Errorf("creating eth key %v", err)
+		return nil, fmt.Errorf("creating eth key %v", err)
 	}
 	cfg.EthereumKey = ethKey
 
@@ -163,11 +163,11 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	}
 	cfg.WalletAddress = ethAddress
 
-	key, err := accounts.EthToCometKey(envConfig.EthereumKey)
+	key, err := accounts.EthToCometKey(cfg.EthereumKey)
 	if err != nil {
-		return nil, nil, fmt.Errorf("creating key %v", err)
+		return nil, fmt.Errorf("creating key %v", err)
 	}
-	envConfig.CometKey = key
+	cfg.CometKey = key
 
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {
