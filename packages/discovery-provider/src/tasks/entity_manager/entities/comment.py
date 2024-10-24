@@ -543,10 +543,33 @@ def react_comment(params: ManageEntityParameters):
             .scalar()
         ) is not None
 
+        track_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == "Track",
+                CommentNotificationSetting.entity_id == entity_id,
+                CommentNotificationSetting.user_id == entity_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == entity_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        track_owner_mention_mute = (
+            comment_user_id == entity_user_id and track_owner_notifications_off
+        )
+
         if (
             user_id != comment_user_id
             and not comment_owner_notifications_off
             and not is_muted_by_karma
+            and not track_owner_mention_mute
         ):
             comment_reaction_notification = Notification(
                 blocknumber=params.block_number,
