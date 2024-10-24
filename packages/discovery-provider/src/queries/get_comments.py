@@ -324,7 +324,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             # Ensure that the combined follower count of all users who reported the comment is below the threshold.
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_KARMA_THRESHOLD,
+                < COMMENT_KARMA_THRESHOLD,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween

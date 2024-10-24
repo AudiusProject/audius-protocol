@@ -63,7 +63,7 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
             .group_by(Comment.entity_id)
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_KARMA_THRESHOLD
+                < COMMENT_KARMA_THRESHOLD
             )
             .all()
         )
