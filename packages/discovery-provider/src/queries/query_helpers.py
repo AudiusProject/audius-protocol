@@ -26,7 +26,7 @@ from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
-from src.queries.get_track_comment_count import get_tracks_comment_counts
+from src.queries.get_track_comment_count import get_tracks_comment_count
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
@@ -496,7 +496,7 @@ def populate_track_metadata(
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
-    comment_counts = get_tracks_comment_counts(track_ids, current_user_id, session)
+    comment_counts = get_tracks_comment_count(track_ids, current_user_id, session)
 
     # has current user unlocked gated tracks?
     # if so, also populate corresponding signatures.

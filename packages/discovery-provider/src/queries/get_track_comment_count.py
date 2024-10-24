@@ -8,7 +8,7 @@ from src.models.users.aggregate_user import AggregateUser
 from src.utils.db_session import get_db_read_replica
 
 
-def get_tracks_comment_counts(track_ids, current_user_id, db_session=None):
+def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
     def _get_counts(session):
         track = (
             session.query(Track.track_id, Track.owner_id)
@@ -79,5 +79,5 @@ def get_tracks_comment_counts(track_ids, current_user_id, db_session=None):
 
 
 def get_track_comment_count(track_id, current_user_id, db_session=None):
-    counts = get_tracks_comment_counts([track_id], current_user_id, db_session)
+    counts = get_tracks_comment_count([track_id], current_user_id, db_session)
     return counts.get(track_id, 0)
