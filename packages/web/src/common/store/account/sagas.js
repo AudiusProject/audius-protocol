@@ -102,6 +102,15 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
 
+  const libs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  yield call([libs, libs.setCurrentUser], {
+    wallet: account.wallet,
+    userId: account.user_id
+  })
+
   if (account && account.handle) {
     const web3User = yield call(accountApiFetchSaga.getCurrentWeb3User)
 
@@ -159,7 +168,8 @@ function* onSignedIn({ payload: { account } }) {
   if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
     yield call(createUserBankIfNeeded, audiusBackendInstance, {
       recordAnalytics: analytics.track,
-      feePayerOverride
+      feePayerOverride,
+      ethAddress: account.wallet
     })
   }
 }
@@ -167,6 +177,7 @@ function* onSignedIn({ payload: { account } }) {
 export function* fetchAccountAsync({ isSignUp = false }) {
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const getWalletAddresses = yield getContext('getWalletAddresses')
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
@@ -181,11 +192,11 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     return
   }
 
-  const account = yield call(userApiFetchSaga.getUserAccount, {
+  const accountData = yield call(userApiFetchSaga.getUserAccount, {
     wallet
   })
 
-  if (!account || !account.user) {
+  if (!accountData || !accountData.user) {
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -193,8 +204,9 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     )
     return
   }
+  const account = accountData.user
 
-  if (account.user.is_deactivated) {
+  if (account.is_deactivated) {
     yield put(accountActions.resetAccount())
     yield put(
       fetchAccountFailed({
@@ -210,8 +222,19 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   yield call(recordIPIfNotRecent, account.handle)
 
   // Cache the account and put the signedIn action. We're done.
-  yield call(cacheAccount, account.user)
-  yield put(signedIn({ account: account.user, isSignUp }))
+  yield call(cacheAccount, account)
+
+  // Sync current user info to libs
+  const libs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  yield call([libs, libs.setCurrentUser], {
+    wallet,
+    userId: account.user_id
+  })
+
+  yield put(signedIn({ account, isSignUp }))
 }
 
 export function* fetchLocalAccountAsync() {

@@ -81,10 +81,32 @@ export function* setupBackend() {
 
   // Fire-and-forget init fp
   fingerprintClient.init()
+
+  // Check for cached local account so we can use it to initialize backend
+  const fetchLocalAccountResult = yield* race({
+    failure: take(accountActions.fetchAccountFailed),
+    success: take(accountActions.fetchAccountSucceeded)
+  })
+
+  let setupArgs = {}
+  if (fetchLocalAccountResult.success) {
+    const localUser = yield* select(accountSelectors.getAccountUser)
+    if (localUser) {
+      setupArgs = {
+        wallet: localUser.wallet,
+        userId: localUser.user_id,
+        handle: localUser.handle
+      }
+    }
+  }
+
+  // Start remote account fetch while we setup backend
   yield* put(accountActions.fetchAccount())
 
-  // TODO-NOW: If we have local account, pass wallet/userId to args?
-  const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {})
+  const { web3Error, libsError } = yield* call(
+    audiusBackendInstance.setup,
+    setupArgs
+  )
 
   if (libsError) {
     yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
@@ -97,6 +119,8 @@ export function* setupBackend() {
     success: take(accountActions.fetchAccountSucceeded)
   })
 
+  // Fetch account failed (e.g. user not found or not logged in), just return
+  // at this point.
   if (result.failure) {
     yield* put(backendActions.setupBackendFailed())
     return
@@ -108,13 +132,6 @@ export function* setupBackend() {
     yield* put(backendActions.setupBackendFailed())
     return
   }
-
-  const { wallet, user_id } = user
-  const libs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibsTyped
-  ])
-  yield* call([libs, libs.setCurrentUser], { wallet, userId: user_id })
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline

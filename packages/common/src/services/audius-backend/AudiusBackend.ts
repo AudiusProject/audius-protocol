@@ -503,7 +503,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO-NOW: Pass wallet/userId to setup when calling from saga
   async function setup({
     wallet,
     userId,
