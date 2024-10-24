@@ -18,6 +18,7 @@ from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.utils import COMMENT_BODY_LIMIT
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -158,6 +159,116 @@ def test_comment(app, mocker):
         assert comment_notifications[0].type == "comment"
         assert comment_notifications[0].specifier == "2"
         assert comment_notifications[0].group_id == f"comment:{1}:type:Track"
+
+
+def test_invalid_comment(app, mocker):
+    """
+    Tests invalid transactions.
+    """
+    long_comment_metadata_json = json.dumps(
+        {
+            "entity_id": 1,
+            "entity_type": "Track",
+            "body": "comment text" * COMMENT_BODY_LIMIT,
+            "parent_comment_id": None,
+        }
+    )
+    wrong_entity_id_comment_metadata_json = json.dumps(
+        {
+            "entity_id": 10,  # confusing comment ID with track Id
+            "entity_type": "Track",
+            "body": "comment text",
+            "parent_comment_id": None,
+        }
+    )
+
+    tx_receipts = {
+        "CreateComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 10,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateCommentLongText": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 10,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {long_comment_metadata_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateCommentWrongEntityId": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 10,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {wrong_entity_id_comment_metadata_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteCommentWrongUser": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 4,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
+        "PinCommentWrongUser": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "", "data": {comment_json}}}',
+                        "_signer": "user4wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        comments: List[Comment] = (
+            session.query(Comment).filter(Comment.is_delete == False).all()
+        )
+        assert len(comments) == 1
+        assert comments[0].text == comment_metadata["body"]
+        pinned_comments: List[Track] = (
+            session.query(Track).filter(Track.pinned_comment_id != None).all()
+        )
+        assert len(pinned_comments) == 0
 
 
 def test_comment_reply(app, mocker):
