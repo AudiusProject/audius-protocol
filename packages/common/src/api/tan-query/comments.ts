@@ -688,6 +688,7 @@ export const useEditComment = () => {
       commentId,
       userId,
       newMessage,
+      trackId,
       mentions,
       entityType = EntityType.TRACK
     }: EditCommentArgs) => {
@@ -695,6 +696,7 @@ export const useEditComment = () => {
         body: newMessage,
         userId,
         entityId: commentId,
+        trackId,
         entityType,
         mentions
       }

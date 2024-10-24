@@ -16,6 +16,10 @@ import {
 
 import { CommentMetadata } from './types'
 
+type EditCommentMetadata = CommentMetadata & {
+  trackId: number
+}
+
 type PinCommentMetadata = {
   userId: number
   entityId: number
@@ -65,8 +69,8 @@ export class CommentsApi extends GeneratedCommentsApi {
     return encodeHashId(newCommentId)
   }
 
-  async editComment(metadata: CommentMetadata) {
-    const { userId, entityId } = metadata
+  async editComment(metadata: EditCommentMetadata) {
+    const { userId, entityId, trackId } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
@@ -74,7 +78,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(metadata)
+        data: snakecaseKeys({ ...metadata, entityId: trackId })
       }),
       auth: this.auth
     })
