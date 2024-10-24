@@ -1,5 +1,11 @@
 # @audius/harmony
 
+## 0.3.1
+
+### Patch Changes
+
+- ae31aee: Minor fixes to CAA defaults, and fix Harmony text component font
+
 ## 0.3.0
 
 ### Minor Changes
