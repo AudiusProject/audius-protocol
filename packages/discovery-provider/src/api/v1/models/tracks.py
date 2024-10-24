@@ -217,6 +217,10 @@ track_full = ns.clone(
         ),
         "pinned_comment_id": fields.Integer(allow_null=True),
         "cover_attribution": fields.Nested(cover_attribution, allow_null=True),
+        "is_owned_by_user": fields.Boolean(
+            required=True,
+            description="Indicates whether the track is owned by the user for MRI sake",
+        ),
     },
 )
 

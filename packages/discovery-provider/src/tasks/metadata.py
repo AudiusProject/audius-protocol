@@ -118,6 +118,7 @@ class TrackMetadata(TypedDict):
     remix_of: Optional[TrackRemix]
     is_scheduled_release: bool
     is_unlisted: bool
+    is_owned_by_user: bool
     field_visibility: Optional[TrackFieldVisibility]
     stem_of: Optional[TrackStem]
     is_stream_gated: Optional[bool]
@@ -177,6 +178,7 @@ track_metadata_format: TrackMetadata = {
     "remix_of": None,
     "is_scheduled_release": False,
     "is_unlisted": False,
+    "is_owned_by_user": False,
     "field_visibility": None,
     "stem_of": None,
     "is_stream_gated": False,
