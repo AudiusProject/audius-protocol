@@ -62,7 +62,6 @@ export class Users extends Base {
     this.getFollowersForUser = this.getFollowersForUser.bind(this)
     this.getFolloweesForUser = this.getFolloweesForUser.bind(this)
     this.getUserRepostFeed = this.getUserRepostFeed.bind(this)
-    this.getSocialFeed = this.getSocialFeed.bind(this)
     this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
     this.updateSocialVerification = this.updateSocialVerification.bind(this)
     this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
@@ -125,15 +124,19 @@ export class Users extends Base {
    * @example
    * getMutualFollowers(100, 0, 1, 1) - IDs must be valid
    */
-  async getMutualFollowers(limit = 100, offset = 0, followeeUserId: number) {
+  async getMutualFollowers(
+    limit = 100,
+    offset = 0,
+    followeeUserId: number,
+    userId?: number
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    const followerUserId = this.userStateManager.getCurrentUserId()
-    if (followerUserId) {
+    if (userId) {
       return await this.discoveryProvider.getFollowIntersectionUsers(
         limit,
         offset,
         followeeUserId,
-        followerUserId
+        userId
       )
     }
     return []
@@ -190,42 +193,6 @@ export class Users extends Base {
       offset,
       withUsers
     )
-  }
-
-  /**
-   * Return social feed for current user
-   * @param limit - max # of items to return
-   * @param filter - filter by "all", "original", or "repost"
-   * @param offset - offset into list to return from (for pagination)
-   * @returns Array of track and playlist metadata objects
-   * additional metadata fields on track and playlist objects:
-   *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
-   *    used for sorting feed
-   *  {Integer} repost_count - repost count of given track/playlist
-   *  {Integer} save_count - save count of given track/playlist
-   *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
-   *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
-   */
-  async getSocialFeed(
-    filter: string,
-    limit = 100,
-    offset = 0,
-    withUsers = false,
-    tracksOnly = false
-  ) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    const owner = this.userStateManager.getCurrentUser()
-    if (owner) {
-      return await this.discoveryProvider.getSocialFeed(
-        filter,
-        limit,
-        offset,
-        withUsers,
-        tracksOnly
-      )
-    }
-
-    return []
   }
 
   /**
@@ -352,15 +319,17 @@ export class Users extends Base {
       newMetadata.is_storage_v2 = true
       newMetadata.wallet = this.web3Manager.getWalletAddress()
       newMetadata.user_id = userId
-      this.userStateManager.setCurrentUser({
-        ...newMetadata,
-        // Initialize counts to be 0. We don't want to write this data to backends ever really
-        // (hence the cleanUserMetadata above), but we do want to make sure clients
-        // can properly "do math" on these numbers.
-        followee_count: 0,
-        follower_count: 0,
-        repost_count: 0
-      })
+      // TODO-NOW: Make sure the logic below holds true for whatever user is in the
+      // cache. It _should_ be as we fetch the profile right aferwards...
+      // this.userStateManager.setCurrentUser({
+      //   ...newMetadata,
+      //   // Initialize counts to be 0. We don't want to write this data to backends ever really
+      //   // (hence the cleanUserMetadata above), but we do want to make sure clients
+      //   // can properly "do math" on these numbers.
+      //   followee_count: 0,
+      //   follower_count: 0,
+      //   repost_count: 0
+      // })
 
       // Upload images
       if (profilePictureFile) {
@@ -390,8 +359,6 @@ export class Users extends Base {
         userId,
         manageEntityResponse.txReceipt.blockNumber
       )
-      // Update libs instance with new user metadata object
-      this.userStateManager.setCurrentUser({ ...newMetadata })
 
       return {
         newMetadata,
@@ -436,7 +403,7 @@ export class Users extends Base {
           manageEntityResponse.txReceipt.blockNumber
         )
         // Update libs instance with new user metadata object
-        this.userStateManager.setCurrentUser({ ...newMetadata })
+        // TODO-NOW: Make sure calling locations refresh the user data
       } catch (e) {
         const errorMsg = `repairEntityManagerUserV2() error: ${e}`
         if (e instanceof Error) {
@@ -485,13 +452,12 @@ export class Users extends Base {
   /**
    * Adds a user subscription for a given subscriber and user
    */
-  async addUserSubscribe(userId: number) {
+  async addUserSubscribe(subscribeToUserId: number, userId: number) {
     try {
-      const subscriberUserId = this.userStateManager.getCurrentUserId()
       const response = await this.contracts.EntityManagerClient!.manageEntity(
-        subscriberUserId!,
-        EntityManagerClient.EntityType.USER,
         userId,
+        EntityManagerClient.EntityType.USER,
+        subscribeToUserId,
         EntityManagerClient.Action.SUBSCRIBE,
         ''
       )
@@ -509,13 +475,12 @@ export class Users extends Base {
   /**
    * Delete a user subscription for a given subscriber and user
    */
-  async deleteUserSubscribe(userId: number) {
+  async deleteUserSubscribe(subscribedToUserId: number, userId: number) {
     try {
-      const subscriberUserId = this.userStateManager.getCurrentUserId()
       const response = await this.contracts.EntityManagerClient!.manageEntity(
-        subscriberUserId!,
-        EntityManagerClient.EntityType.USER,
         userId,
+        EntityManagerClient.EntityType.USER,
+        subscribedToUserId,
         EntityManagerClient.Action.UNSUBSCRIBE,
         ''
       )
@@ -545,10 +510,12 @@ export class Users extends Base {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
 
-    const oldMetadata = this.userStateManager.getCurrentUser()
-    if (!oldMetadata) {
-      throw new Error('No current user.')
-    }
+    // TODO-NOW: Check that a current user is set? Or maybe have the calling
+    // location verify that a user exists before calling this
+    // const oldMetadata = this.userStateManager.getCurrentUser()
+    // if (!oldMetadata) {
+    //   throw new Error('No current user.')
+    // }
 
     newMetadata = this.cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
@@ -569,8 +536,9 @@ export class Users extends Base {
         )
       const blockNumber = txReceipt.blockNumber
 
-      // Update libs instance with new user metadata object
-      this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+      // TODO-NOW: Find callers of updateMetadataV2 and make sure they are
+      // updating user info in cache
+      // this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
       return {
         blockHash: txReceipt.blockHash,
         blockNumber

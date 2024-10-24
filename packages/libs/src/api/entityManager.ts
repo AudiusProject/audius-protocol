@@ -47,6 +47,23 @@ type PlaylistParam = {
   Handles metadata + file upload etc. for entities such as Playlist/Track/User
 */
 export class EntityManager extends Base {
+  private userId?: number
+
+  setCurrentUserId(userId: number) {
+    this.userId = userId
+  }
+
+  clearCurrentUserId() {
+    delete this.userId
+  }
+
+  getCurrentUserId() {
+    if (!this.userId) {
+      throw new Error('Missing current user ID')
+    }
+    return this.userId
+  }
+
   /**
    * Generate random integer between two known values
    */
@@ -58,14 +75,6 @@ export class EntityManager extends Base {
     }))
 
     return trackIds
-  }
-
-  getCurrentUserId() {
-    const userId: number | null = this.userStateManager.getCurrentUserId()
-    if (!userId) {
-      throw new Error('Missing current user ID')
-    }
-    return userId
   }
 
   getDefaultEntityManagerResponseValues(): EntityManagerResponse {
@@ -119,7 +128,7 @@ export class EntityManager extends Base {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
     try {
-      const userId: number | null = this.userStateManager.getCurrentUserId()
+      const userId = this.getCurrentUserId()
       if (!userId) {
         responseValues.error = 'Missing current user ID'
         return responseValues
@@ -177,7 +186,7 @@ export class EntityManager extends Base {
   async deletePlaylist(playlistId: number): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
-    const userId: number | null = this.userStateManager.getCurrentUserId()
+    const userId = this.getCurrentUserId()
     if (!userId) {
       responseValues.error = 'Missing current user ID'
       return responseValues
@@ -204,7 +213,7 @@ export class EntityManager extends Base {
       this.getDefaultEntityManagerResponseValues()
 
     try {
-      const userId: number | null = this.userStateManager.getCurrentUserId()
+      const userId = this.getCurrentUserId()
 
       if (!playlist || playlist === undefined) {
         responseValues.error = 'Missing current playlist'

@@ -100,6 +100,7 @@ account_full = ns.model(
     "account_full",
     {
         "user": fields.Nested(user_model_full, required=True),
+        # TODO-NOW: Update this model
         "playlists": fields.List(fields.Raw, required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
         "track_save_count": fields.Integer(required=True),

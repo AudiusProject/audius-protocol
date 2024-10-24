@@ -9,6 +9,7 @@ import {
   AudiusBackend,
   Env,
   FeatureFlags,
+  GetWalletAddressesResult,
   RemoteConfigInstance
 } from '~/services/index'
 
@@ -26,6 +27,7 @@ export type AudiusQueryContextType = {
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
   fetch: typeof fetch
+  getWalletAddresses: () => Promise<GetWalletAddressesResult>
   remoteConfigInstance: RemoteConfigInstance
   getFeatureEnabled: (
     flag: FeatureFlags,
@@ -84,6 +86,9 @@ export function* getAudiusQueryContext(): Generator<
     dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
     env: yield* getContext<AudiusQueryContextType['env']>('env'),
     fetch,
+    getWalletAddresses: yield* getContext<
+      AudiusQueryContextType['getWalletAddresses']
+    >('getWalletAddresses'),
     getFeatureEnabled: yield* getContext<
       AudiusQueryContextType['getFeatureEnabled']
     >('getFeatureEnabled'),

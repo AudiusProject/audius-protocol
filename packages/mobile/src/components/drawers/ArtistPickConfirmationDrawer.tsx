@@ -32,7 +32,7 @@ const { setArtistPick, unsetArtistPick } = tracksSocialActions
 export const ArtistPickConfirmationDrawer = () => {
   const { data } = useArtistPickModal()
   const { trackId } = data
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
 
   const dispatch = useDispatch()
 

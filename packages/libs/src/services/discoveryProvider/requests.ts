@@ -262,25 +262,6 @@ export const getFullPlaylist = (
   }
 }
 
-export const getSocialFeed = (
-  filter: string,
-  limit = 100,
-  offset = 0,
-  withUsers = false,
-  tracksOnly = false
-) => {
-  return {
-    endpoint: 'feed',
-    queryParams: {
-      filter,
-      limit,
-      offset,
-      with_users: withUsers,
-      tracks_only: tracksOnly
-    }
-  }
-}
-
 export const getUserRepostFeed = (
   userId: number,
   limit = 100,

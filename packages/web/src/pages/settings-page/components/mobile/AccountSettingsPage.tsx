@@ -150,7 +150,7 @@ const AccountSettingsPage = ({
       debounce(
         async () => {
           try {
-            await audiusBackendInstance.sendRecoveryEmail()
+            await audiusBackendInstance.sendRecoveryEmail(handle)
             toast(messages.emailSent)
             record(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
           } catch (e) {
@@ -160,7 +160,7 @@ const AccountSettingsPage = ({
         2000,
         { leading: true, trailing: false }
       )(),
-    [toast, record]
+    [handle, toast, record]
   )
 
   const goToVerificationPage = useCallback(() => {

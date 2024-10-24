@@ -2,17 +2,48 @@ import { full } from '@audius/sdk'
 
 import {
   PlaylistLibrary,
+  PlaylistLibraryFolder,
+  PlaylistLibraryIdentifier,
   PlaylistLibraryItem,
   PlaylistUpdate
 } from '~/models/PlaylistLibrary'
 import { decodeHashId } from '~/utils'
+
+import { transformAndCleanList } from './utils'
+
+const playlistIdentifierFromSDK = (
+  input: any
+): PlaylistLibraryIdentifier | null => {
+  if (input.type === 'playlist') {
+    const playlist_id = decodeHashId(input.playlist_id)
+    return playlist_id ? { type: 'playlist', playlist_id } : null
+  }
+  return input
+}
+
+const playlistFolderFromSDK = (input: any): PlaylistLibraryFolder => {
+  return {
+    ...input,
+    contents: transformAndCleanList(input.contents, (item: any) => {
+      return item.type === 'folder'
+        ? playlistFolderFromSDK(item)
+        : playlistIdentifierFromSDK(item)
+    })
+  }
+}
+
+const playlistItemFromSDK = (input: any): PlaylistLibraryItem | null => {
+  return input.type === 'folder'
+    ? playlistFolderFromSDK(input)
+    : playlistIdentifierFromSDK(input)
+}
 
 export const playlistLibraryFromSDK = (
   input?: full.PlaylistLibrary
 ): PlaylistLibrary | undefined => {
   if (!input) return undefined
   return {
-    contents: input.contents as PlaylistLibraryItem[]
+    contents: transformAndCleanList(input.contents, playlistItemFromSDK)
   }
 }
 

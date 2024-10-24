@@ -1,3 +1,4 @@
+import { createGetWalletAddresses } from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -65,6 +66,10 @@ export const storeContext: CommonStoreContext = {
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
   hedgehogInstance,
+  getWalletAddresses: createGetWalletAddresses({
+    localStorage,
+    hedgehogInstance
+  }),
   imageUtils: {
     generatePlaylistArtwork
   },
