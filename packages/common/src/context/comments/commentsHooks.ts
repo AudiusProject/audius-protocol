@@ -3,6 +3,7 @@ import {
   TrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
 
+import { Name } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
 
 import {
@@ -18,6 +19,7 @@ import {
   useGetTrackCommentNotificationSetting as useTqGetTrackCommentNotificationSetting,
   useGetCurrentUserId
 } from '../../api'
+import { useAppContext } from '../appContext'
 
 import { useCurrentCommentSection } from './commentsContext'
 
@@ -25,6 +27,9 @@ export const usePostComment = () => {
   const { currentUserId, entityId, entityType, currentSort } =
     useCurrentCommentSection()
   const { mutate: postComment, ...rest } = useTqPostComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   const wrappedHandler = async (
     message: string,
@@ -43,6 +48,14 @@ export const usePostComment = () => {
         mentions,
         currentSort
       })
+      track(
+        make({
+          eventName: Name.COMMENTS_CREATE_COMMENT,
+          trackId: entityId,
+          parentCommentId,
+          timestamp: trackTimestampS
+        })
+      )
     }
   }
 
@@ -53,6 +66,9 @@ export const useReactToComment = () => {
   const { currentUserId, isEntityOwner, currentSort, entityId } =
     useCurrentCommentSection()
   const { mutate: reactToComment, ...response } = useTqReactToComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   const wrappedHandler = async (commentId: ID, isLiked: boolean) => {
     if (currentUserId) {
@@ -64,6 +80,14 @@ export const useReactToComment = () => {
         currentSort,
         trackId: entityId
       })
+      track(
+        make({
+          eventName: isLiked
+            ? Name.COMMENTS_LIKE_COMMENT
+            : Name.COMMENTS_UNLIKE_COMMENT,
+          commentId
+        })
+      )
     }
   }
   return [wrappedHandler, response] as const
@@ -72,6 +96,10 @@ export const useReactToComment = () => {
 export const useEditComment = () => {
   const { currentUserId, currentSort, entityId } = useCurrentCommentSection()
   const { mutate: editComment, ...rest } = useTqEditComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const wrappedHandler = async (
     commentId: ID,
     newMessage: string,
@@ -86,15 +114,29 @@ export const useEditComment = () => {
         trackId: entityId,
         currentSort
       })
+      track(
+        make({
+          eventName: Name.COMMENTS_UPDATE_COMMENT,
+          commentId
+        })
+      )
     }
   }
   return [wrappedHandler, rest] as const
 }
 
 export const usePinComment = () => {
-  const { currentUserId, entityId, currentSort, track } =
-    useCurrentCommentSection()
+  const {
+    currentUserId,
+    entityId,
+    currentSort,
+    track: trackData
+  } = useCurrentCommentSection()
   const { mutate: pinComment, ...rest } = useTqPinComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const wrappedHandler = (commentId: ID, isPinned: boolean) => {
     if (currentUserId) {
       pinComment({
@@ -103,16 +145,30 @@ export const usePinComment = () => {
         trackId: entityId,
         isPinned,
         currentSort,
-        previousPinnedCommentId: track?.pinned_comment_id
+        previousPinnedCommentId: trackData?.pinned_comment_id
       })
+      track(
+        make({
+          eventName: isPinned
+            ? Name.COMMENTS_PIN_COMMENT
+            : Name.COMMENTS_UNPIN_COMMENT,
+          trackId: entityId,
+          commentId
+        })
+      )
     }
   }
   return [wrappedHandler, rest] as const
 }
 
 export const useReportComment = () => {
-  const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
+  const { currentUserId, entityId, currentSort, isEntityOwner } =
+    useCurrentCommentSection()
   const { mutate: reportComment, ...rest } = useTqReportComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
       reportComment({
@@ -122,15 +178,26 @@ export const useReportComment = () => {
         trackId: entityId,
         currentSort
       })
+      track(
+        make({
+          eventName: Name.COMMENTS_REPORT_COMMENT,
+          commentId,
+          commentOwnerId: currentUserId,
+          isRemoved: isEntityOwner
+        })
+      )
     }
   }
   return [wrappedHandler, rest] as const
 }
 
 export const useMuteUser = () => {
-  // NOTE: not pulling from comment context because we reuse this method in the settings page
   const { data: currentUserId } = useGetCurrentUserId({})
   const { mutate: muteUser, ...rest } = useTqMuteUser()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const wrappedHandler = ({
     mutedUserId,
     isMuted,
@@ -150,6 +217,14 @@ export const useMuteUser = () => {
         trackId,
         currentSort
       })
+      track(
+        make({
+          eventName: isMuted
+            ? Name.COMMENTS_MUTE_USER
+            : Name.COMMENTS_UNMUTE_USER,
+          userId: mutedUserId
+        })
+      )
     }
   }
   return [wrappedHandler, rest] as const
@@ -158,6 +233,9 @@ export const useMuteUser = () => {
 export const useDeleteComment = () => {
   const { currentUserId, entityId, currentSort } = useCurrentCommentSection()
   const { mutate: deleteComment, ...rest } = useTqDeleteComment()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   const wrappedHandler = (commentId: ID, parentCommentId?: ID) => {
     if (currentUserId) {
@@ -168,6 +246,12 @@ export const useDeleteComment = () => {
         currentSort,
         parentCommentId
       })
+      track(
+        make({
+          eventName: Name.COMMENTS_DELETE_COMMENT,
+          commentId
+        })
+      )
     }
   }
   return [wrappedHandler, rest] as const
@@ -187,6 +271,10 @@ export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
   const { mutate: updateSetting, ...rest } =
     useTqUpdateTrackCommentNotificationSetting()
 
+  const {
+    analytics: { track, make }
+  } = useAppContext()
+
   const wrappedHandler = (action: 'mute' | 'unmute') => {
     if (currentUserId) {
       updateSetting({
@@ -197,6 +285,15 @@ export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
             ? EntityManagerAction.MUTE
             : EntityManagerAction.UNMUTE
       })
+      track(
+        make({
+          eventName:
+            action === 'mute'
+              ? Name.COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_TRACK
+              : Name.COMMENTS_TURN_ON_NOTIFICATIONS_FOR_TRACK,
+          trackId
+        })
+      )
     }
   }
 
@@ -207,6 +304,9 @@ export const useUpdateCommentNotificationSetting = (commentId: ID) => {
   const { data: currentUserId } = useGetCurrentUserId({})
   const { mutate: updateSetting, ...rest } =
     useTqUpdateCommentNotificationSetting()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
 
   const wrappedHandler = (action: 'mute' | 'unmute') => {
     if (currentUserId) {
@@ -218,6 +318,15 @@ export const useUpdateCommentNotificationSetting = (commentId: ID) => {
             ? EntityManagerAction.MUTE
             : EntityManagerAction.UNMUTE
       })
+      track(
+        make({
+          eventName:
+            action === 'mute'
+              ? Name.COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_COMMENT
+              : Name.COMMENTS_TURN_ON_NOTIFICATIONS_FOR_COMMENT,
+          commentId
+        })
+      )
     }
   }
 

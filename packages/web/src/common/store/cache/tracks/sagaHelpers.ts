@@ -79,4 +79,15 @@ export function* recordEditTrackAnalytics(prevTrack: Track, newTrack: Track) {
       })
     )
   }
+
+  if (
+    prevTrack.comments_disabled !== newTrack.comments_disabled &&
+    newTrack.comments_disabled
+  ) {
+    yield* put(
+      make(Name.COMMENTS_DISABLE_TRACK_COMMENTS, {
+        trackId: newTrack.track_id
+      })
+    )
+  }
 }

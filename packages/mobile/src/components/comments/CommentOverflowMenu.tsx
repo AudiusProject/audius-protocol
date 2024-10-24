@@ -10,7 +10,12 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import {
+  Name,
+  type Comment,
+  type ID,
+  type ReplyComment
+} from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
@@ -18,6 +23,7 @@ import { useSelector } from 'react-redux'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
+import { track as trackEvent, make } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 
 import {
@@ -173,7 +179,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   ].filter(removeNullable)
 
   const handleMuteUser = useCallback(() => {
-    // NOTE:
     muteUser({
       mutedUserId: userId,
       isMuted: false,
@@ -196,7 +201,6 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const handleFlagAndRemoveComment = useCallback(() => {
     reportComment(id, parentCommentId)
-    // TODO: remove comment
     toast({
       content: messages.toasts.flaggedAndRemoved,
       type: 'info'
@@ -222,7 +226,14 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
   const handlePress = useCallback(() => {
     setIsOpen(!isOpen)
     setIsVisible(!isVisible)
-  }, [isOpen, isVisible])
+
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
+        commentId: id
+      })
+    )
+  }, [isOpen, isVisible, id])
 
   return (
     <>

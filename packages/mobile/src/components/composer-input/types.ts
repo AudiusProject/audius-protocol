@@ -13,6 +13,10 @@ export type ComposerInputProps = {
   entityType?: EntityType
   onChange?: (value: string, linkEntities: LinkEntity[]) => void
   onSubmit?: (value: string, mentionIds: ID[]) => void
+  onFocus?: () => void
+  onAddMention?: (mentionUserId: ID) => void
+  onAddTimestamp?: (timestamp: number) => void
+  onAddLink?: (entityId: ID, kind: 'track' | 'collection' | 'user') => void
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   presetMessage?: string

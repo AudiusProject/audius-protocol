@@ -107,7 +107,11 @@ export const CommentBlockInternal = (
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited && !isTombstone} isPreview={isPreview}>
+        <CommentText
+          isEdited={isEdited && !isTombstone}
+          isPreview={isPreview}
+          commentId={commentId}
+        >
           {message}
         </CommentText>
         {!isPreview ? (

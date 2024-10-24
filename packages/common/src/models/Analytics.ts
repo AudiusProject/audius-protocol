@@ -370,7 +370,7 @@ export enum Name {
   // Rewards
   REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Opened',
   REWARDS_CLAIM_ALL_REQUEST = 'Rewards Claim All: Request',
-  REwARDS_CLAIM_ALL_SUCCESS = 'Rewards Claim All: Success',
+  REWARDS_CLAIM_ALL_SUCCESS = 'Rewards Claim All: Success',
   REWARDS_CLAIM_ALL_FAILURE = 'Rewards Claim All: Failure',
   REWARDS_CLAIM_ALL_BLOCKED = 'Rewards Claim All: Blocked',
   REWARDS_CLAIM_REQUEST = 'Rewards Claim: Request',
@@ -525,7 +525,43 @@ export enum Name {
   MANAGER_MODE_ACCEPT_INVITE = 'Manager Mode: Accept Invite',
   MANAGER_MODE_CANCEL_INVITE = 'Manager Mode: Cancel Invite',
   MANAGER_MODE_REJECT_INVITE = 'Manager Mode: Reject Invite',
-  MANAGER_MODE_REMOVE_MANAGER = 'Manager Mode: Remove Manager'
+  MANAGER_MODE_REMOVE_MANAGER = 'Manager Mode: Remove Manager',
+
+  // Comments
+  COMMENTS_CREATE_COMMENT = 'Comments: Create Comment',
+  COMMENTS_UPDATE_COMMENT = 'Comments: Update Comment',
+  COMMENTS_DELETE_COMMENT = 'Comments: Delete Comment',
+  COMMENTS_REPLY_TO_COMMENT = 'Comments: Reply to Comment',
+  COMMENTS_FOCUS_COMMENT_INPUT = 'Comments: Focus Comment Input',
+  COMMENTS_CLICK_REPLY_BUTTON = 'Comments: Click Reply Button',
+  COMMENTS_LIKE_COMMENT = 'Comments: Like Comment',
+  COMMENTS_UNLIKE_COMMENT = 'Comments: Unlike Comment',
+  COMMENTS_REPORT_COMMENT = 'Comments: Report Comment',
+  COMMENTS_ADD_MENTION = 'Comments: Add Mention',
+  COMMENTS_CLICK_MENTION = 'Comments: Click Mention',
+  COMMENTS_ADD_TIMESTAMP = 'Comments: Add Timestamp',
+  COMMENTS_CLICK_TIMESTAMP = 'Comments: Click Timestamp',
+  COMMENTS_ADD_LINK = 'Comments: Add Link',
+  COMMENTS_CLICK_LINK = 'Comments: Click Link',
+  COMMENTS_NOTIFICATION_OPEN = 'Comments: Notification Open',
+  COMMENTS_MUTE_USER = 'Comments: Mute User',
+  COMMENTS_UNMUTE_USER = 'Comments: Unmute User',
+  COMMENTS_PIN_COMMENT = 'Comments: Pin Comment',
+  COMMENTS_UNPIN_COMMENT = 'Comments: Unpin Comment',
+  COMMENTS_LOAD_MORE_COMMENTS = 'Comments: Load More Comments',
+  COMMENTS_LOAD_NEW_COMMENTS = 'Comments: Load New Comments',
+  COMMENTS_SHOW_REPLIES = 'Comments: Show Replies',
+  COMMENTS_LOAD_MORE_REPLIES = 'Comments: Load More Replies',
+  COMMENTS_HIDE_REPLIES = 'Comments: Hide Replies',
+  COMMENTS_APPLY_SORT = 'Comments: Apply Sort',
+  COMMENTS_CLICK_COMMENT_STAT = 'Comments: Click Comment Stat',
+  COMMENTS_OPEN_COMMENT_OVERFLOW_MENU = 'Comments: Open Comment Overflow Menu',
+  COMMENTS_TURN_ON_NOTIFICATIONS_FOR_COMMENT = 'Comments: Turn On Notifications for Comment',
+  COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_COMMENT = 'Comments: Turn Off Notifications for Comment',
+  COMMENTS_OPEN_TRACK_OVERFLOW_MENU = 'Comments: Open Track Overflow Menu',
+  COMMENTS_TURN_ON_NOTIFICATIONS_FOR_TRACK = 'Comments: Turn On Notifications for Track',
+  COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_TRACK = 'Comments: Turn Off Notifications for Track',
+  COMMENTS_DISABLE_TRACK_COMMENTS = 'Comments: Disable Track Comments'
 }
 
 type PageView = {
@@ -1754,7 +1790,7 @@ type RewardsClaimAllRequest = {
   count: number
 }
 type RewardsClaimAllSuccess = {
-  eventName: Name.REwARDS_CLAIM_ALL_SUCCESS
+  eventName: Name.REWARDS_CLAIM_ALL_SUCCESS
   count: number
 }
 type RewardsClaimAllFailure = {
@@ -2491,6 +2527,188 @@ type ManagerModeRemoveManager = {
   managerId: ID
 }
 
+export type CommentsCreateComment = {
+  eventName: Name.COMMENTS_CREATE_COMMENT
+  parentCommentId?: ID
+  timestamp?: number
+  trackId: ID
+}
+
+export type CommentsUpdateComment = {
+  eventName: Name.COMMENTS_UPDATE_COMMENT
+  commentId: ID
+}
+
+export type CommentsDeleteComment = {
+  eventName: Name.COMMENTS_DELETE_COMMENT
+  commentId: ID
+}
+
+export type CommentsFocusCommentInput = {
+  eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT
+  trackId?: ID
+  source: 'comment_input' | 'comment_preview'
+}
+
+export type CommentsClickReplyButton = {
+  eventName: Name.COMMENTS_CLICK_REPLY_BUTTON
+  commentId: ID
+}
+
+export type CommentsLikeComment = {
+  eventName: Name.COMMENTS_LIKE_COMMENT
+  commentId: ID
+}
+
+export type CommentsUnlikeComment = {
+  eventName: Name.COMMENTS_UNLIKE_COMMENT
+  commentId: ID
+}
+
+export type CommentsAddMention = {
+  eventName: Name.COMMENTS_ADD_MENTION
+  userId: ID
+}
+
+export type CommentsClickMention = {
+  eventName: Name.COMMENTS_CLICK_MENTION
+  commentId: ID
+  userId: ID
+}
+
+export type CommentsAddTimestamp = {
+  eventName: Name.COMMENTS_ADD_TIMESTAMP
+  timestamp: number
+}
+
+export type CommentsClickTimestamp = {
+  eventName: Name.COMMENTS_CLICK_TIMESTAMP
+  commentId: ID
+  timestamp: number
+}
+
+export type CommentsAddLink = {
+  eventName: Name.COMMENTS_ADD_LINK
+  entityId?: ID
+  kind: 'track' | 'collection' | 'user' | 'other'
+}
+
+export type CommentsClickLink = {
+  eventName: Name.COMMENTS_CLICK_LINK
+  commentId: ID
+  kind: 'track' | 'collection' | 'user' | 'other'
+  entityId?: ID
+}
+
+export type CommentsNotificationOpen = {
+  eventName: Name.COMMENTS_NOTIFICATION_OPEN
+  commentId: ID
+}
+
+export type CommentsReportComment = {
+  eventName: Name.COMMENTS_REPORT_COMMENT
+  commentId: ID
+  commentOwnerId: ID
+  isRemoved: boolean
+}
+
+export type CommentsMuteUser = {
+  eventName: Name.COMMENTS_MUTE_USER
+  userId: ID
+}
+
+export type CommentsUnmuteUser = {
+  eventName: Name.COMMENTS_UNMUTE_USER
+  userId: ID
+}
+
+export type CommentsPinComment = {
+  eventName: Name.COMMENTS_PIN_COMMENT
+  trackId: ID
+  commentId: ID
+}
+
+export type CommentsUnpinComment = {
+  eventName: Name.COMMENTS_UNPIN_COMMENT
+  trackId: ID
+  commentId: ID
+}
+
+export type CommentsLoadMoreComments = {
+  eventName: Name.COMMENTS_LOAD_MORE_COMMENTS
+  trackId: ID
+  offset: number
+}
+
+export type CommentsLoadNewComments = {
+  eventName: Name.COMMENTS_LOAD_NEW_COMMENTS
+  trackId: ID
+}
+
+export type CommentsShowReplies = {
+  eventName: Name.COMMENTS_SHOW_REPLIES
+  commentId: ID
+  trackId: ID
+}
+
+export type CommentsLoadMoreReplies = {
+  eventName: Name.COMMENTS_LOAD_MORE_REPLIES
+  commentId: ID
+  trackId: ID
+}
+
+export type CommentsHideReplies = {
+  eventName: Name.COMMENTS_HIDE_REPLIES
+  commentId: ID
+  trackId: ID
+}
+
+export type CommentsApplySort = {
+  eventName: Name.COMMENTS_APPLY_SORT
+  sortType: 'top' | 'newest' | 'timestamp'
+}
+
+export type CommentsClickCommentStat = {
+  eventName: Name.COMMENTS_CLICK_COMMENT_STAT
+  trackId: ID
+  source: 'lineup' | 'track_page'
+}
+
+export type CommentsOpenCommentOverflowMenu = {
+  eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU
+  commentId: ID
+}
+
+export type CommentsTurnOnNotificationsForComment = {
+  eventName: Name.COMMENTS_TURN_ON_NOTIFICATIONS_FOR_COMMENT
+  commentId: ID
+}
+
+export type CommentsTurnOffNotificationsForComment = {
+  eventName: Name.COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_COMMENT
+  commentId: ID
+}
+
+export type CommentsOpenTrackOverflowMenu = {
+  eventName: Name.COMMENTS_OPEN_TRACK_OVERFLOW_MENU
+  trackId: ID
+}
+
+export type CommentsTurnOnNotificationsForTrack = {
+  eventName: Name.COMMENTS_TURN_ON_NOTIFICATIONS_FOR_TRACK
+  trackId: ID
+}
+
+export type CommentsTurnOffNotificationsForTrack = {
+  eventName: Name.COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_TRACK
+  trackId: ID
+}
+
+export type CommentsDisableTrackComments = {
+  eventName: Name.COMMENTS_DISABLE_TRACK_COMMENTS
+  trackId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -2819,3 +3037,36 @@ export type AllTrackingEvents =
   | ManagerModeCancelInvite
   | ManagerModeRejectInvite
   | ManagerModeRemoveManager
+  | CommentsCreateComment
+  | CommentsUpdateComment
+  | CommentsDeleteComment
+  | CommentsFocusCommentInput
+  | CommentsClickReplyButton
+  | CommentsLikeComment
+  | CommentsUnlikeComment
+  | CommentsReportComment
+  | CommentsAddMention
+  | CommentsClickMention
+  | CommentsAddTimestamp
+  | CommentsClickTimestamp
+  | CommentsAddLink
+  | CommentsClickLink
+  | CommentsNotificationOpen
+  | CommentsMuteUser
+  | CommentsUnmuteUser
+  | CommentsPinComment
+  | CommentsUnpinComment
+  | CommentsLoadMoreComments
+  | CommentsLoadNewComments
+  | CommentsShowReplies
+  | CommentsLoadMoreReplies
+  | CommentsHideReplies
+  | CommentsApplySort
+  | CommentsClickCommentStat
+  | CommentsOpenCommentOverflowMenu
+  | CommentsTurnOffNotificationsForComment
+  | CommentsTurnOnNotificationsForComment
+  | CommentsOpenTrackOverflowMenu
+  | CommentsTurnOnNotificationsForTrack
+  | CommentsTurnOffNotificationsForTrack
+  | CommentsDisableTrackComments

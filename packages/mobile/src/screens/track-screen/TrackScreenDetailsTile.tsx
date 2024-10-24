@@ -83,7 +83,7 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { make, track as record } from 'app/services/analytics'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DownloadSection } from './DownloadSection'
@@ -139,7 +139,7 @@ type TrackScreenDetailsTileProps = {
 }
 
 const recordPlay = (id, play = true, isPreview = false) => {
-  record(
+  trackEvent(
     make({
       eventName: play ? Name.PLAYBACK_PLAY : Name.PLAYBACK_PAUSE,
       id: String(id),
@@ -363,6 +363,13 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressComments = useCallback(() => {
     openCommentDrawer({ entityId: trackId, navigation })
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId,
+        source: 'track_page'
+      })
+    )
   }, [openCommentDrawer, trackId, navigation])
 
   const handlePressSave = () => {

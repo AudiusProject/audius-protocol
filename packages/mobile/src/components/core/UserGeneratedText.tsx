@@ -110,11 +110,13 @@ const Link = ({
         if ('push' in navigation) {
           // @ts-ignore
           navigation.push(to.screen, to.params)
+          // @ts-ignore
+          other.onPress?.(e, to.screen.toLowerCase(), to.params.id)
         } else {
           // @ts-ignore
           navigation.navigate(to.screen, to.params)
+          other.onPress?.(e, 'other')
         }
-        other.onPress?.(e)
       }
     },
     [to, other, navigation]
@@ -130,6 +132,7 @@ const Link = ({
 
 const HandleLink = ({
   handle,
+  onPress,
   ...other
 }: Omit<TextLinkProps, 'to'> & { handle: string }) => {
   const currentUserId = useSelector(getUserId)
@@ -139,9 +142,17 @@ const HandleLink = ({
     currentUserId
   })
 
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      onPress?.(e, 'mention', user?.user_id)
+    },
+    [onPress, user]
+  )
+
   return user ? (
     <TextLink
       {...other}
+      onPress={handlePress}
       to={{ screen: 'Profile', params: { id: user.user_id } }}
     >
       {handle}

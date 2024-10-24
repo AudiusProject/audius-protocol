@@ -5,9 +5,15 @@ import {
   useReactToComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import {
+  Name,
+  type Comment,
+  type ID,
+  type ReplyComment
+} from '@audius/common/models'
 
 import { Box, Flex, PlainButton, Text } from '@audius/harmony-native'
+import { make, track } from 'app/services/analytics'
 
 import { FavoriteButton } from '../favorite-button'
 
@@ -30,6 +36,15 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
   const handleCommentReact = useCallback(() => {
     setReactionState(!reactionState)
     reactToComment(commentId, !reactionState)
+
+    track(
+      make({
+        eventName: !reactionState
+          ? Name.COMMENTS_LIKE_COMMENT
+          : Name.COMMENTS_UNLIKE_COMMENT,
+        commentId
+      })
+    )
   }, [commentId, reactToComment, reactionState])
 
   const handleReply = useCallback(() => {
@@ -37,7 +52,14 @@ export const CommentActionBar = (props: CommentActionBarProps) => {
       replyingToComment: comment,
       replyingToCommentId: parentCommentId ?? comment.id
     })
-  }, [comment, parentCommentId, setReplyingAndEditingState])
+
+    track(
+      make({
+        eventName: Name.COMMENTS_CLICK_REPLY_BUTTON,
+        commentId
+      })
+    )
+  }, [comment, commentId, parentCommentId, setReplyingAndEditingState])
 
   return (
     <>
