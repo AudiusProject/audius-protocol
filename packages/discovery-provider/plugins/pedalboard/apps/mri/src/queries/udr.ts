@@ -39,8 +39,7 @@ export const udr = async (
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
   const startOfThisMonth = dayjs(date).startOf('month')
-  const endOfLastMonth = startOfThisMonth.subtract(1, 'day')
-  const startOfLastMonth = endOfLastMonth.startOf('month')
+  const startOfLastMonth = startOfThisMonth.subtract(1, 'month')
 
   const start = startOfLastMonth.toDate()
   const end = startOfThisMonth.toDate()
@@ -92,9 +91,10 @@ export const udr = async (
   if (isDev) {
     logger.info(csv)
   }
+  const now = new Date();
   // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
-  // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of posting
-  const fileName = `Audius_Usage_${getYearMonthShorthand(start)}_${formatDateISO(date)}`
+  // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of generation
+  const fileName = `Audius_Usage_${getYearMonthShorthand(start)}_${formatDateISO(now)}`
 
   const uploads = s3s.map((s3config) =>
     publishToS3(logger, s3config, csv, fileName)
