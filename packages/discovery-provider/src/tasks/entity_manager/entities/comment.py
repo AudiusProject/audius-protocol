@@ -152,7 +152,7 @@ def create_comment(params: ManageEntityParameters):
             user_ids=[entity_user_id],
             timestamp=params.block_datetime,
             type="comment",
-            specifier=str(user_id),
+            specifier=str(comment_id),
             group_id=f"comment:{entity_id}:type:{entity_type}",
             data={
                 "type": entity_type,
@@ -203,7 +203,7 @@ def create_comment(params: ManageEntityParameters):
                     timestamp=params.block_datetime,
                     type="comment_mention",
                     specifier=str(mention_user_id),
-                    group_id=f"comment_mention:{entity_id}:type:{entity_type}",
+                    group_id=f"comment_mention:{comment_id}",
                     data={
                         "type": entity_type,
                         "entity_id": entity_id,
@@ -260,7 +260,7 @@ def create_comment(params: ManageEntityParameters):
                 user_ids=[parent_comment_user_id],
                 timestamp=params.block_datetime,
                 type="comment_thread",
-                specifier=str(user_id),
+                specifier=str(comment_id),
                 group_id=f"comment_thread:{parent_comment_id}",
                 data={
                     "type": entity_type,
@@ -441,7 +441,7 @@ def update_comment(params: ManageEntityParameters):
                         timestamp=params.block_datetime,
                         type="comment_mention",
                         specifier=str(mention_user_id),
-                        group_id=f"comment_mention:{entity_id}:type:{entity_type}",
+                        group_id=f"comment_mention:{comment_id}",
                         data={
                             "type": entity_type,
                             "entity_id": entity_id,
