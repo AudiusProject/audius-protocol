@@ -12,10 +12,12 @@ import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
+  decodeHashId,
   getDurationFromTimestampMatch,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
+import { isEqual } from 'lodash'
 import type { TextInput as RnTextInput } from 'react-native'
 import { Platform, TouchableOpacity } from 'react-native'
 import type {
@@ -23,7 +25,8 @@ import type {
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
-import { ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
+import { TextInput as ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
+import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
@@ -31,6 +34,7 @@ import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { parseCommentTrackTimestamp } from 'app/utils/comments'
 import { useThemeColors } from 'app/utils/theme'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
@@ -91,6 +95,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
     onSubmit,
     onChange,
     onAutocompleteChange,
+    onFocus,
+    onAddMention,
+    onAddTimestamp,
+    onAddLink,
     setAutocompleteHandler,
     isLoading,
     messageId,
@@ -99,6 +107,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     presetUserMentions = [],
     entityId,
     styles: propStyles,
+    // Use ReactNativeGestureHandlerTextInput to allow for nesting <Text> inside <TextInput>
     TextInputComponent = ReactNativeGestureHandlerTextInput,
     onLayout,
     maxLength = 10000,
@@ -170,23 +179,22 @@ export const ComposerInput = forwardRef(function ComposerInput(
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+  const prevLinkEntities = usePrevious(linkEntities)
 
-  const getTimestamps = useCallback(
-    (value: string) => {
-      if (!track || !track.access.stream) return []
+  const timestamps = useMemo(() => {
+    if (!track || !track.access.stream) return []
 
-      const { duration } = track
-      return Array.from(value.matchAll(timestampRegex))
-        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
-        .map((match) => ({
-          type: 'timestamp',
-          text: match[0],
-          index: match.index,
-          link: ''
-        }))
-    },
-    [track]
-  )
+    const { duration } = track
+    return Array.from(value.matchAll(timestampRegex))
+      .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+      .map((match) => ({
+        type: 'timestamp',
+        text: match[0],
+        index: match.index,
+        link: ''
+      }))
+  }, [track, value])
+  const prevTimestamps = usePrevious(timestamps)
 
   useEffect(() => {
     const fn = async () => {
@@ -254,9 +262,11 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
         return `${textBeforeMention}${fillText}${textAfterMention}`
       })
+      onAddMention?.(user.user_id)
+
       setIsAutocompleteActive(false)
     },
-    [getAutocompleteRange, userMentions]
+    [getAutocompleteRange, userMentions, onAddMention]
   )
 
   useEffect(() => {
@@ -402,16 +412,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
   const isTextHighlighted = useMemo(() => {
     const matches = getMatches(value) ?? []
-    const timestamps = getTimestamps(value)
     const mentions = getUserMentions(value) ?? []
     const fullMatches = [...matches, ...mentions, ...timestamps]
     return Boolean(fullMatches.length || isAutocompleteActive)
-  }, [getMatches, getTimestamps, getUserMentions, isAutocompleteActive, value])
+  }, [getMatches, timestamps, getUserMentions, isAutocompleteActive, value])
 
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
-      const timestamps = getTimestamps(value)
       const mentions = getUserMentions(value) ?? []
       const fullMatches = [...matches, ...mentions, ...timestamps]
 
@@ -482,12 +490,30 @@ export const ComposerInput = forwardRef(function ComposerInput(
     },
     [
       getMatches,
-      getTimestamps,
+      timestamps,
       getUserMentions,
       isAutocompleteActive,
       getAutocompleteRange
     ]
   )
+
+  useEffect(() => {
+    if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
+      const { type, data } = linkEntities[linkEntities.length - 1]
+      const id = decodeHashId(data.id)
+      if (id) {
+        onAddLink?.(id, type)
+      }
+    }
+  }, [linkEntities, onAddLink, prevLinkEntities])
+
+  useEffect(() => {
+    if (timestamps.length && !isEqual(timestamps, prevTimestamps)) {
+      onAddTimestamp?.(
+        parseCommentTrackTimestamp(timestamps[timestamps.length - 1].text)
+      )
+    }
+  }, [onAddTimestamp, timestamps, prevTimestamps])
 
   return (
     <>
@@ -511,6 +537,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         maxLength={maxLength}
         autoCorrect
         TextInputComponent={TextInputComponent}
+        onFocus={onFocus}
       >
         {isTextHighlighted ? (
           <Text allowNewline>{renderDisplayText(value)}</Text>
