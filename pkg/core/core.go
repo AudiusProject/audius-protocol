@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
@@ -52,7 +54,8 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("db migrations successful")
 
-	pool, err := pgxpool.New(ctx, config.PSQLConn) // Use the passed context for the pool
+	// Use the passed context for the pool
+	pool, err := pgxpool.New(ctx, config.PSQLConn)
 	if err != nil {
 		return fmt.Errorf("couldn't create pgx pool: %v", err)
 	}
@@ -60,6 +63,12 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	// Create an errgroup to manage concurrent tasks with context
 	eg, ctx := errgroup.WithContext(ctx)
+
+	// start pprof server
+	eg.Go(func() error {
+		logger.Info("pprof server starting")
+		return http.ListenAndServe(":6060", nil)
+	})
 
 	e := echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
