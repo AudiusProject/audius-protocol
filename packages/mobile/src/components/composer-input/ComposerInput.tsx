@@ -536,7 +536,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID='none'
         maxLength={maxLength}
         autoCorrect
-        TextInputComponent={TextInputComponent}
+        TextInputComponent={TextInputComponent as any}
         onFocus={onFocus}
       >
         {isTextHighlighted ? (
