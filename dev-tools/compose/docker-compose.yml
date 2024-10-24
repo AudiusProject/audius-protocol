@@ -135,15 +135,6 @@ services:
       service: identity-service
     <<: *common
 
-  # Protocol dashboard
-
-  dashboard:
-    image: audius-protocol-dashboard:${DASHBOARD_ENV_TYPE:-latest}
-    extends:
-      file: docker-compose.protocol-dashboard.${DASHBOARD_ENV_TYPE:-dev}.yml
-      service: dashboard
-    <<: *common
-
   # Discovery
 
   discovery-provider-redis:
