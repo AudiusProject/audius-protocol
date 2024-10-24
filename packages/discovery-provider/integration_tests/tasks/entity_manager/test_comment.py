@@ -663,6 +663,63 @@ def test_pin_comment(app, mocker):
         assert tracks[0].pinned_comment_id == 1
 
 
+def test_comment_reaction(app, mocker):
+    """
+    Tests comment reactions are saved to db and notifications are created
+    Tests that reacting to you own comment does not create a notification
+    """
+
+    reaction_entities = {
+        **entities,
+        "comments": [{"comment_id": 1, "user_id": 2}],
+    }
+
+    tx_receipts = {
+        "CommentReaction1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "React",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CommentReaction2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 2,
+                        "_action": "React",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, reaction_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        all_reactions = session.query(CommentReaction).all()
+        assert len(all_reactions) == 2
+        reaction_notifications = (
+            session.query(Notification)
+            .filter(Notification.type == "comment_reaction")
+            .all()
+        )
+        assert len(reaction_notifications) == 1
+
+
 def test_unpin_comment(app, mocker):
     unpin_entities = {
         **entities,
@@ -1096,57 +1153,6 @@ def test_dupe_comment_create(app, mocker):
         assert len(all_comments) == 1
 
 
-def test_dupe_comment_react(app, mocker):
-    "Tests duplicate comment react txs are ignored"
-
-    entities = {
-        "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-        ],
-        "comments": [{"comment_id": 1}],
-        "tracks": [{"track_id": 1, "owner_id": 1}],
-    }
-
-    tx_receipts = {
-        "CreateCommentReact": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,
-                        "_entityType": "Comment",
-                        "_userId": 1,
-                        "_action": "React",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateCommentReactDupe": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,
-                        "_entityType": "Comment",
-                        "_userId": 1,
-                        "_action": "React",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
-
-    db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
-
-    with db.scoped_session() as session:
-        index_transaction(session)
-
-        all_reactions: List[CommentReaction] = session.query(CommentReaction).all()
-        assert len(all_reactions) == 1
-
-
 def test_mute_track_comment_notifications(app, mocker):
     "Track owner receives no comment, reply, or mention notifications when muted"
 
@@ -1306,7 +1312,7 @@ def test_mute_user_notifications(app, mocker):
             },
             {
                 "muted_user_id": 3,
-                "user_id": 1,
+                "user_id": 2,
             },
         ],
         "aggregate_user": [{"user_id": 1, "follower_count": 2000000}],
@@ -1315,10 +1321,11 @@ def test_mute_user_notifications(app, mocker):
     mention_comment_metadata = {
         **comment_metadata,
         "body": "@user-1",
-        "mentions": [1],
+        "mentions": [2],
     }
 
     tx_receipts = {
+        # This should be muted because user1 muted user2
         "CreateComment": [
             {
                 "args": AttributeDict(
@@ -1332,6 +1339,9 @@ def test_mute_user_notifications(app, mocker):
                     }
                 )
             },
+        ],
+        # This should be muted because user1 muted user2, which mutes user2 for user3 since user1 has lots of karma
+        "CommentMention": [
             {
                 "args": AttributeDict(
                     {
@@ -1339,14 +1349,29 @@ def test_mute_user_notifications(app, mocker):
                         "_entityType": "Comment",
                         "_userId": 2,
                         "_action": "Create",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(mention_comment_metadata)}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        # This should be muted because user2 muted user3
+        "CommentThread": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "Create",
                         "_metadata": json.dumps(
                             {
                                 "cid": "",
                                 "data": {
-                                    "entity_id": 2,
+                                    "entity_id": 1,
                                     "entity_type": "Track",
-                                    "body": "comment text",
-                                    "parent_comment_id": None,
+                                    "body": "reply text",
+                                    "parent_comment_id": 1,
                                 },
                             }
                         ),
@@ -1355,18 +1380,44 @@ def test_mute_user_notifications(app, mocker):
                 )
             },
         ],
-        "CommentMention": [
+        # This should be muted because user2 muted user3
+        "CommentReaction1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 3,
+                        "_action": "React",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {"entity_id": 1, "entity_type": "Track"},
+                            }
+                        ),
+                        "_signer": "user3wallet",
+                    }
+                ),
+            },
+        ],
+        # This should be muted because user1 muted user2 and user1 has high karma
+        "CommentReaction2": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 2,
                         "_entityType": "Comment",
-                        "_userId": 3,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "", "data": {json.dumps(mention_comment_metadata)}}}',
-                        "_signer": "user3wallet",
+                        "_userId": 2,
+                        "_action": "React",
+                        "_metadata": json.dumps(
+                            {
+                                "cid": "",
+                                "data": {"entity_id": 1, "entity_type": "Track"},
+                            }
+                        ),
+                        "_signer": "user2wallet",
                     }
-                )
+                ),
             },
         ],
     }
@@ -1399,9 +1450,9 @@ def test_reported_comment_notifications(app, mocker):
     mute_user_entities = {
         **entities,
         "comments": [
-            {"comment_id": 1, "owner_id": 2},
-            {"comment_id": 2, "owner_id": 4},
-            {"comment_id": 3, "owner_id": 3},
+            {"comment_id": 1, "user_id": 2},
+            {"comment_id": 2, "user_id": 4},
+            {"comment_id": 3, "user_id": 3},
         ],
         "comment_reports": [
             {

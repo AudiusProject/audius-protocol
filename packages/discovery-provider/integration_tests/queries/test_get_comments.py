@@ -299,12 +299,9 @@ def test_get_reported_comments(app):
                 "comment_id": 1,
                 "user_id": 2,
                 "entity_id": 1,
+                "text": "b",
             },
-            {
-                "comment_id": 2,
-                "user_id": 2,
-                "entity_id": 1,
-            },
+            {"comment_id": 2, "user_id": 2, "entity_id": 1, "text": "a"},
         ],
         "comment_reports": [
             {"comment_id": 1, "user_id": 1},
