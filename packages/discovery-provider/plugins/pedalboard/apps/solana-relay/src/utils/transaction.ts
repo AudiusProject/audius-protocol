@@ -108,7 +108,9 @@ export const sendTransactionWithRetries = async ({
   let success = false
   try {
     if (!sendOptions?.skipPreflight) {
-      const simulatedRes = await connection.simulateTransaction(transaction)
+      const simulatedRes = await connection.simulateTransaction(transaction, {
+        replaceRecentBlockhash: true
+      })
       if (simulatedRes.value.err) {
         throw new SendTransactionError({
           action: 'simulate',

@@ -1,10 +1,14 @@
+import { useEffect } from 'react'
+
 import {
+  CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType
 } from '@audius/sdk'
 import {
   InfiniteData,
+  QueryClient,
   useInfiniteQuery,
   useIsMutating,
   useMutation,
@@ -13,6 +17,8 @@ import {
 } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { usePrevious } from 'react-use'
+import { Dispatch } from 'redux'
 
 import {
   commentFromSDK,
@@ -23,7 +29,8 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Comment, ID, ReplyComment } from '~/models'
 import {
   incrementTrackCommentCount,
-  setPinnedCommentId
+  setPinnedCommentId,
+  setTrackCommentCount
 } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { encodeHashId, Nullable } from '~/utils'
@@ -57,7 +64,6 @@ const messages = {
  * QUERIES
  *
  */
-
 type GetCommentsByTrackArgs = {
   trackId: ID
   userId: ID | null
@@ -141,6 +147,111 @@ export const useGetCommentById = (commentId: ID) => {
   })
 }
 
+const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 5 secs
+
+export type TrackCommentCount = {
+  previousValue: number
+  currentValue: number
+}
+
+const setPreviousCommentCount = (
+  queryClient: QueryClient,
+  trackId: ID,
+  // If not provided, we will use the current value to set the previous value (aka reset)
+  updaterFn?: (prevData: TrackCommentCount | undefined) => TrackCommentCount
+) => {
+  queryClient.setQueryData(
+    [QUERY_KEYS.trackCommentCount, trackId],
+    (prevData: TrackCommentCount | undefined) =>
+      updaterFn
+        ? updaterFn(prevData)
+        : ({
+            ...prevData,
+            previousValue: prevData?.currentValue ?? 0
+          } as TrackCommentCount)
+  )
+}
+
+// Quick wrapper around setPreviousCommentCount to pass undefined as  (which will prompt it to just use the current value)
+export const resetPreviousCommentCount = (
+  queryClient: QueryClient,
+  trackId: ID
+) => setPreviousCommentCount(queryClient, trackId)
+
+const addCommentCount = (
+  dispatch: Dispatch,
+  queryClient: QueryClient,
+  trackId: ID
+) => {
+  // Increment the track comment count
+  setPreviousCommentCount(queryClient, trackId, (prevData) => ({
+    previousValue: (prevData?.previousValue ?? 0) + 1,
+    currentValue: (prevData?.currentValue ?? 0) + 1
+  }))
+  dispatch(incrementTrackCommentCount(trackId, 1))
+}
+const subtractCommentCount = (
+  dispatch: Dispatch,
+  queryClient: QueryClient,
+  trackId: ID
+) => {
+  // Increment the track comment count
+  setPreviousCommentCount(queryClient, trackId, (prevData) => ({
+    previousValue: (prevData?.previousValue ?? 0) - 1,
+    currentValue: (prevData?.currentValue ?? 0) - 1
+  }))
+  dispatch(incrementTrackCommentCount(trackId, -1))
+}
+
+export const useTrackCommentCount = (
+  trackId: Nullable<ID> | undefined,
+  userId: Nullable<ID>,
+  shouldPoll = false
+) => {
+  const { audiusSdk } = useAudiusQueryContext()
+  const dispatch = useDispatch()
+  const queryClient = useQueryClient()
+  const queryData = useQuery([QUERY_KEYS.trackCommentCount, trackId], {
+    enabled: !!trackId,
+    queryFn: async () => {
+      const sdk = await audiusSdk()
+      const res = await sdk.tracks.trackCommentCount({
+        trackId: encodeHashId(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
+        userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
+      })
+      const previousData = queryClient.getQueryData<TrackCommentCount>([
+        QUERY_KEYS.trackCommentCount,
+        trackId
+      ])
+      return {
+        // If we've loaded previous data before, keep using the same previousValue
+        // if there is no previous data its a first load so we need to set a baseline
+        previousValue: previousData?.previousValue ?? res?.data,
+        currentValue: res?.data
+      }
+    },
+    refetchInterval: shouldPoll ? COMMENT_COUNT_POLL_INTERVAL : undefined,
+    refetchIntervalInBackground: false,
+    cacheTime: 1 // this data is only used when on the page in comments, we want to make sure it gets fetched fresh every time we load comments
+  })
+
+  // Track changes in the current value and update legacy cache when changed
+  const currentCountValue = queryData?.data?.currentValue
+  const previousCurrentCount = usePrevious(currentCountValue) // note: this is different from data.previousValue
+  useEffect(() => {
+    if (
+      previousCurrentCount !== undefined &&
+      currentCountValue !== undefined &&
+      previousCurrentCount !== currentCountValue
+    ) {
+      // This keeps the legacy cache in sync with tanquery here - since we update the comment count here more often than the legacy cache
+      // We want to keep these values in sync
+      dispatch(setTrackCommentCount(trackId as ID, currentCountValue))
+    }
+  }, [currentCountValue, dispatch, previousCurrentCount, trackId])
+  return queryData
+}
+
 type GetRepliesArgs = {
   commentId: ID
   currentUserId?: Nullable<ID>
@@ -221,20 +332,21 @@ type PostCommentArgs = {
   currentSort: CommentSortMethod
   parentCommentId?: ID
   trackTimestampS?: number
-  mentions?: any
+  mentions?: CommentMention[]
   newId?: ID
 }
 
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (args: PostCommentArgs) => {
       const sdk = await audiusSdk()
       return await sdk.comments.postComment({
         ...args,
+        mentions: args.mentions?.map((mention) => mention.userId) ?? [],
         entityId: args.trackId,
         commentId: args.newId
       })
@@ -246,7 +358,8 @@ export const usePostComment = () => {
         trackId,
         parentCommentId,
         trackTimestampS,
-        currentSort
+        currentSort,
+        mentions
       } = args
       const isReply = parentCommentId !== undefined
       // This executes before the mutationFn is called, and the reference to comment is the same in both
@@ -259,6 +372,7 @@ export const usePostComment = () => {
         id: newId,
         userId,
         message: body,
+        mentions,
         isEdited: false,
         trackTimestampS,
         reactCount: 0,
@@ -294,8 +408,9 @@ export const usePostComment = () => {
       }
       // Update the individual comment cache
       queryClient.setQueryData([QUERY_KEYS.comment, newId], newComment)
-      // Update the track comment count (separate cache)
-      dispatch(incrementTrackCommentCount(trackId, 1))
+
+      // Add to the comment count
+      addCommentCount(dispatch, queryClient, trackId)
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
@@ -305,7 +420,7 @@ export const usePostComment = () => {
         name: 'Comments'
       })
       // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, -1))
+      subtractCommentCount(dispatch, queryClient, trackId)
       // Toast generic error message
       toast({ content: messages.mutationError('posting') })
       // TODO: avoid hard reset here?
@@ -331,9 +446,14 @@ export const useReactToComment = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
-    mutationFn: async ({ userId, commentId, isLiked }: ReactToCommentArgs) => {
+    mutationFn: async ({
+      userId,
+      commentId,
+      isLiked,
+      trackId
+    }: ReactToCommentArgs) => {
       const sdk = await audiusSdk()
-      await sdk.comments.reactComment(userId, commentId, isLiked)
+      await sdk.comments.reactComment({ userId, commentId, isLiked, trackId })
     },
     mutationKey: ['reactToComment'],
     onMutate: async ({
@@ -476,6 +596,8 @@ export const useDeleteComment = () => {
       return await sdk.comments.deleteComment(commentData)
     },
     onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
+      // Subtract from the comment count
+      subtractCommentCount(dispatch, queryClient, trackId)
       // If reply, filter it from the parent's list of replies
       if (parentCommentId) {
         queryClient.setQueryData<Comment>(
@@ -489,30 +611,50 @@ export const useDeleteComment = () => {
               replyCount: (prev?.replyCount ?? 0) - 1
             } as Comment)
         )
-      }
-      // If not a reply, remove from the sort list
-      queryClient.setQueryData<InfiniteData<ID[]>>(
-        [QUERY_KEYS.trackCommentList, trackId, currentSort],
-        (prevCommentData) => {
-          const newCommentData = cloneDeep(prevCommentData)
-          if (!newCommentData) return
-          // Filter out the comment from itsz current page
-          newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
-            page.filter((id: ID) => id !== commentId)
+      } else {
+        const existingCommentData = queryClient.getQueryData<
+          CommentOrReply | undefined
+        >([QUERY_KEYS.comment, commentId])
+        const hasReplies =
+          existingCommentData &&
+          'replies' in existingCommentData &&
+          (existingCommentData?.replies?.length ?? 0) > 0
+
+        if (hasReplies) {
+          queryClient.setQueryData<Comment>(
+            [QUERY_KEYS.comment, commentId],
+            (prevCommentData) =>
+              ({
+                ...prevCommentData,
+                isTombstone: true,
+                userId: undefined,
+                message: '[Removed]'
+                // Intentionally undoing the userId
+              } as Comment & { userId?: undefined })
           )
-          return newCommentData
+        } else {
+          // If not a reply & has no replies, remove from the sort list
+          queryClient.setQueryData<InfiniteData<ID[]>>(
+            [QUERY_KEYS.trackCommentList, trackId, currentSort],
+            (prevCommentData) => {
+              const newCommentData = cloneDeep(prevCommentData)
+              if (!newCommentData) return
+              // Filter out the comment from its current page
+              newCommentData.pages = newCommentData.pages.map((page: ID[]) =>
+                page.filter((id: ID) => id !== commentId)
+              )
+              return newCommentData
+            }
+          )
+          // Remove the individual comment
+          queryClient.removeQueries({
+            queryKey: [QUERY_KEYS.comment, commentId],
+            exact: true
+          })
         }
-      )
-      // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, -1))
+      }
     },
-    onSuccess: (_res, { commentId }) => {
-      // We can safely wait till success to remove the individual comment from the cache because once its out of the sort or reply lists its not rendered anymore
-      queryClient.removeQueries({
-        queryKey: [QUERY_KEYS.comment, commentId],
-        exact: true
-      })
-    },
+
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
       reportToSentry({
@@ -520,8 +662,8 @@ export const useDeleteComment = () => {
         additionalInfo: args,
         name: 'Comments'
       })
-      // Undo comment count change
-      dispatch(incrementTrackCommentCount(trackId, 1))
+      // Undo the comment count change
+      addCommentCount(dispatch, queryClient, trackId)
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('deleting') }))
       // Since this mutation handles sort data, its difficult to undo the optimistic update so we just re-load everything
@@ -539,7 +681,7 @@ type EditCommentArgs = {
   commentId: ID
   userId: ID
   newMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
   trackId: ID
   currentSort: CommentSortMethod
   entityType?: EntityType
@@ -553,6 +695,7 @@ export const useEditComment = () => {
       commentId,
       userId,
       newMessage,
+      trackId,
       mentions,
       entityType = EntityType.TRACK
     }: EditCommentArgs) => {
@@ -560,13 +703,14 @@ export const useEditComment = () => {
         body: newMessage,
         userId,
         entityId: commentId,
+        trackId,
         entityType,
-        mentions
+        mentions: mentions?.map((mention) => mention.userId) ?? []
       }
       const sdk = await audiusSdk()
       await sdk.comments.editComment(commentData)
     },
-    onMutate: ({ commentId, newMessage }) => {
+    onMutate: ({ commentId, newMessage, mentions }) => {
       const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
         QUERY_KEYS.comment,
         commentId
@@ -577,7 +721,8 @@ export const useEditComment = () => {
           ({
             ...prevData,
             isEdited: true,
-            message: newMessage
+            message: newMessage,
+            mentions
           } as CommentOrReply)
       )
       return { prevComment }
@@ -603,7 +748,8 @@ export const useEditComment = () => {
               ...prevData,
               // NOTE: intentionally only reverting the pieces we changed in case another mutation happened in between this mutation start->error
               isEdited: prevComment?.isEdited,
-              message: prevComment?.message
+              message: prevComment?.message,
+              mentions: prevComment?.mentions
             } as CommentOrReply)
         )
       }
@@ -659,6 +805,8 @@ export const useReportComment = () => {
       }
 
       queryClient.resetQueries([QUERY_KEYS.comment, commentId])
+      // Decrease the track comment count
+      subtractCommentCount(dispatch, queryClient, trackId)
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
@@ -669,6 +817,9 @@ export const useReportComment = () => {
       })
       // Generic toast error
       dispatch(toast({ content: messages.mutationError('reporting') }))
+
+      // Undo the track comment count change
+      addCommentCount(dispatch, queryClient, trackId)
 
       // Reload data
       queryClient.resetQueries([
@@ -743,6 +894,8 @@ export const useMuteUser = () => {
                 return true
               })
             )
+            // Rather than track the comment count, we just trigger another query to get the new count (since we poll often anyways)
+            queryClient.resetQueries([QUERY_KEYS.trackCommentCount, trackId])
             return newState
           }
         )
@@ -758,6 +911,8 @@ export const useMuteUser = () => {
       // Generic toast error
       dispatch(toast({ content: messages.muteUserError }))
 
+      // No way to know what comment count should be here, so we just reset the query data
+      queryClient.resetQueries([QUERY_KEYS.trackCommentCount, trackId])
       // Reload data
       queryClient.resetQueries([
         QUERY_KEYS.trackCommentList,

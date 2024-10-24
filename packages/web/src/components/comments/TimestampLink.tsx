@@ -13,7 +13,6 @@ export const TimestampLink = (props: TimestampLinkProps) => {
     <TextLink
       onClick={() => playTrack(timestampSeconds)}
       variant='visible'
-      size='s'
       {...other}
     >
       {formatTrackTimestamp(timestampSeconds)}

@@ -16,6 +16,7 @@ export const FETCH_STREAM_URLS = 'CACHE/TRACKS/FETCH_STREAM_URLS'
 export const SET_STREAM_URLS = 'CACHE/TRACKS/SET_STREAM_URLS'
 export const INCREMENT_TRACK_COMMENT_COUNT =
   'CACHE/TRACKS/INCREMENT_TRACK_COMMENT_COUNT'
+export const SET_TRACK_COMMENT_COUNT = 'CACHE/TRACKS/SET_TRACK_COMMENT_COUNT'
 
 export const SET_PINNED_COMMENT_ID = 'CACHE/TRACKS/SET_PINNED_COMMENT_ID'
 
@@ -68,6 +69,12 @@ export const incrementTrackCommentCount = (
   type: INCREMENT_TRACK_COMMENT_COUNT,
   trackId,
   commentCountIncrement
+})
+
+export const setTrackCommentCount = (trackId: ID, newCommentCount: number) => ({
+  type: SET_TRACK_COMMENT_COUNT,
+  trackId,
+  newCommentCount
 })
 
 export const setPinnedCommentId = (trackId: ID, commentId: Nullable<ID>) => ({

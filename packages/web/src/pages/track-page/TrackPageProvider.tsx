@@ -353,14 +353,6 @@ class TrackPageProvider extends Component<
     this.props.goToRoute(profilePage(handle))
   }
 
-  goToParentRemixesPage = () => {
-    const { goToRemixesOfParentPage, track } = this.props
-    const parentTrackId = getRemixParentTrackId(track)
-    if (parentTrackId) {
-      goToRemixesOfParentPage(parentTrackId)
-    }
-  }
-
   goToAllRemixesPage = () => {
     const { track } = this.props
     if (track) {
@@ -476,7 +468,6 @@ class TrackPageProvider extends Component<
       previewing,
       onHeroPlay: this.onHeroPlay,
       goToAllRemixesPage: this.goToAllRemixesPage,
-      goToParentRemixesPage: this.goToParentRemixesPage,
       onHeroRepost: this.onHeroRepost,
       onHeroShare: this.onHeroShare,
       onSaveTrack: this.onSaveTrack,
@@ -634,8 +625,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
-    goToRemixesOfParentPage: (parentTrackId: ID) =>
-      dispatch(trackPageActions.goToRemixesOfParentPage(parentTrackId)),
     refetchTracksLinup: () => dispatch(trackPageActions.refetchLineup())
   }
 }

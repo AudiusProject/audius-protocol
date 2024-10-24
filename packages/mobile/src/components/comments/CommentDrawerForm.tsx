@@ -6,13 +6,13 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
+import type { CommentMention } from '@audius/sdk'
 import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
 import { Box } from '@audius/harmony-native'
@@ -33,7 +33,6 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
     setAutocompleteHandler,
     autoFocus
   } = props
-  const insets = useSafeAreaInsets()
   const { entityId, replyingAndEditingState, setReplyingAndEditingState } =
     useCurrentCommentSection()
   const { replyingToComment, replyingToCommentId, editingComment } =
@@ -43,7 +42,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   const playerPosition = useSelector(playerSelectors.getSeek)
   const playerTrackId = useSelector(playerSelectors.getTrackId)
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
     } else {
@@ -69,7 +68,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   }
 
   return (
-    <Box p='l' pb={insets.bottom} backgroundColor='white'>
+    <Box p='l' backgroundColor='white'>
       <CommentForm
         onSubmit={handlePostComment}
         onAutocompleteChange={onAutocompleteChange}

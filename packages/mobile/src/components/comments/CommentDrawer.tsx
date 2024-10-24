@@ -25,6 +25,7 @@ import type { ParamListBase } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -239,23 +240,27 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     setAutoCompleteActive(active)
   }, [])
 
+  const gesture = Gesture.Pan()
+
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props}>
-        <Divider orientation='horizontal' />
-        <CommentSectionProvider
-          entityId={entityId}
-          replyingAndEditingState={replyingAndEditingState}
-          setReplyingAndEditingState={setReplyingAndEditingState}
-        >
-          <CommentDrawerForm
-            commentListRef={commentListRef}
-            onAutocompleteChange={onAutoCompleteChange}
-            setAutocompleteHandler={setAutocompleteHandler}
-            autoFocus={autoFocusInput}
-          />
-        </CommentSectionProvider>
-      </BottomSheetFooter>
+      <GestureDetector gesture={gesture}>
+        <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+          <Divider orientation='horizontal' />
+          <CommentSectionProvider
+            entityId={entityId}
+            replyingAndEditingState={replyingAndEditingState}
+            setReplyingAndEditingState={setReplyingAndEditingState}
+          >
+            <CommentDrawerForm
+              commentListRef={commentListRef}
+              onAutocompleteChange={onAutoCompleteChange}
+              setAutocompleteHandler={setAutocompleteHandler}
+              autoFocus={autoFocusInput}
+            />
+          </CommentSectionProvider>
+        </BottomSheetFooter>
+      </GestureDetector>
     ),
     // intentionally excluding insets.bottom because it causes a rerender
     // when the keyboard is opened on android, causing the keyboard to close
@@ -269,48 +274,60 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
   )
 
   return (
-    <BottomSheetModal
-      ref={bottomSheetModalRef}
-      snapPoints={['66%', '100%']}
-      topInset={insets.top}
-      style={{
-        borderTopRightRadius: BORDER_RADIUS,
-        borderTopLeftRadius: BORDER_RADIUS,
-        overflow: 'hidden'
-      }}
-      backgroundStyle={{ backgroundColor: color.background.white }}
-      handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
-      gestureEventsHandlersHook={useGestureEventsHandlers}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior='close'
-        />
-      )}
-      footerComponent={renderFooterComponent}
-      onDismiss={handleClose}
-      android_keyboardInputMode='adjustResize'
-    >
-      <CommentSectionProvider
-        entityId={entityId}
-        replyingAndEditingState={replyingAndEditingState}
-        setReplyingAndEditingState={setReplyingAndEditingState}
-        navigation={navigation}
-        closeDrawer={handleClose}
-      >
-        <CommentDrawerHeader minimal={autoCompleteActive} />
-        <Divider orientation='horizontal' />
-        {autoCompleteActive ? (
-          <CommentDrawerAutocompleteContent
-            query={acText}
-            onSelect={onAutocomplete}
+    <>
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        snapPoints={['66%', '100%']}
+        topInset={insets.top}
+        style={{
+          borderTopRightRadius: BORDER_RADIUS,
+          borderTopLeftRadius: BORDER_RADIUS,
+          overflow: 'hidden'
+        }}
+        backgroundStyle={{ backgroundColor: color.background.white }}
+        handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
+        gestureEventsHandlersHook={useGestureEventsHandlers}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            pressBehavior='close'
           />
-        ) : (
-          <CommentDrawerContent commentListRef={commentListRef} />
         )}
-      </CommentSectionProvider>
-    </BottomSheetModal>
+        footerComponent={renderFooterComponent}
+        onDismiss={handleClose}
+        android_keyboardInputMode='adjustResize'
+      >
+        <CommentSectionProvider
+          entityId={entityId}
+          replyingAndEditingState={replyingAndEditingState}
+          setReplyingAndEditingState={setReplyingAndEditingState}
+          navigation={navigation}
+          closeDrawer={handleClose}
+        >
+          <CommentDrawerHeader minimal={autoCompleteActive} />
+          <Divider orientation='horizontal' />
+          {autoCompleteActive ? (
+            <CommentDrawerAutocompleteContent
+              query={acText}
+              onSelect={onAutocomplete}
+            />
+          ) : (
+            <CommentDrawerContent commentListRef={commentListRef} />
+          )}
+        </CommentSectionProvider>
+      </BottomSheetModal>
+      <Box
+        style={{
+          backgroundColor: color.background.white,
+          position: 'absolute',
+          bottom: 0,
+          width: '100%',
+          zIndex: 5,
+          height: insets.bottom
+        }}
+      />
+    </>
   )
 }

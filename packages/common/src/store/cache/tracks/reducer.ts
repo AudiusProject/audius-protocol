@@ -16,13 +16,15 @@ import { Entry } from '../types'
 
 import {
   INCREMENT_TRACK_COMMENT_COUNT,
+  SET_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
   SET_STREAM_URLS,
   SET_PINNED_COMMENT_ID,
   incrementTrackCommentCount,
   setPermalink,
   setStreamUrls,
-  setPinnedCommentId
+  setPinnedCommentId,
+  setTrackCommentCount
 } from './actions'
 import { TracksCacheState } from './types'
 
@@ -114,6 +116,22 @@ const actionsMap = {
             comment_count:
               (state.entries[trackId].metadata.comment_count || 0) +
               commentCountIncrement
+          }
+        }
+      }
+    })
+  },
+  [SET_TRACK_COMMENT_COUNT](
+    state: TracksCacheState,
+    action: ReturnType<typeof setTrackCommentCount>
+  ): TracksCacheState {
+    const { trackId, newCommentCount } = action
+
+    return merge(state, {
+      entries: {
+        [trackId]: {
+          metadata: {
+            comment_count: newCommentCount
           }
         }
       }

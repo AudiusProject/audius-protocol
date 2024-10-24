@@ -153,7 +153,8 @@ const makeBuildParams = (isProduction) => {
         target: {
           target: 'default',
           arch: 'universal'
-        }
+        },
+        minimumSystemVersion: '12'
       },
       dmg: {
         icon: dmgIcns,
