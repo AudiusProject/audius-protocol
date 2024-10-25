@@ -14,6 +14,9 @@ export type ComposerInputProps = {
     linkEntities: LinkEntity[],
     mentions: CommentMention[]
   ) => void
+  onAddMention?: (mentionUserId: ID) => void
+  onAddTimestamp?: (timestamp: number) => void
+  onAddLink?: (entityId: ID, kind: 'track' | 'collection' | 'user') => void
   presetMessage?: string
   presetUserMentions?: CommentMention[]
   isLoading?: boolean

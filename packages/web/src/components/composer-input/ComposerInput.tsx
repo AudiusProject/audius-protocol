@@ -11,6 +11,7 @@ import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
+  decodeHashId,
   getDurationFromTimestampMatch,
   splitOnNewline,
   timestampRegex
@@ -23,6 +24,8 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType } from '@audius/sdk'
+import { isEqual } from 'lodash'
+import { usePrevious } from 'react-use'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
@@ -78,6 +81,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
     entityId,
     entityType,
     autoFocus,
+    onAddLink,
+    onAddMention,
+    onAddTimestamp,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -119,6 +125,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+
+  const prevLinkEntities = usePrevious(linkEntities)
 
   useEffect(() => {
     const fn = async () => {
@@ -167,22 +175,20 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [userMentions]
   )
 
-  const getTimestamps = useCallback(
-    (value: string) => {
-      if (!track || !track.access.stream) return []
+  const timestamps = useMemo(() => {
+    if (!track || !track.access.stream) return []
 
-      const { duration } = track
-      return Array.from(value.matchAll(timestampRegex))
-        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
-        .map((match) => ({
-          type: 'timestamp',
-          text: match[0],
-          index: match.index,
-          link: ''
-        }))
-    },
-    [track]
-  )
+    const { duration } = track
+    return Array.from(value.matchAll(timestampRegex))
+      .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+      .map((match) => ({
+        type: 'timestamp',
+        text: match[0],
+        index: match.index,
+        link: ''
+      }))
+  }, [track, value])
+  const prevTimestamps = usePrevious(timestamps)
 
   const getAutocompleteRange = useCallback(() => {
     if (!isUserAutocompleteActive) return null
@@ -237,8 +243,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
         }, 0)
       }
       setIsUserAutocompleteActive(false)
+      onAddMention?.(user.user_id)
     },
-    [getAutocompleteRange, userMentions]
+    [getAutocompleteRange, userMentions, onAddMention]
   )
 
   const handleChange = useCallback(
@@ -363,23 +370,15 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const isTextHighlighted = useMemo(() => {
     const matches = getMatches(value) ?? []
-    const timestamps = getTimestamps(value)
     const mentions = getUserMentions(value) ?? []
     const fullMatches = [...matches, ...mentions, ...timestamps]
     return Boolean(fullMatches.length || isUserAutocompleteActive)
-  }, [
-    getMatches,
-    getTimestamps,
-    getUserMentions,
-    isUserAutocompleteActive,
-    value
-  ])
+  }, [getMatches, timestamps, getUserMentions, isUserAutocompleteActive, value])
 
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
       const mentions = getUserMentions(value) ?? []
-      const timestamps = getTimestamps(value)
       const fullMatches = [...matches, ...mentions, ...timestamps]
 
       // If there are no highlightable sections, render text normally
@@ -467,12 +466,30 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [
       getAutocompleteRange,
       getMatches,
-      getTimestamps,
       getUserMentions,
       handleAutocomplete,
-      isUserAutocompleteActive
+      isUserAutocompleteActive,
+      timestamps
     ]
   )
+
+  useEffect(() => {
+    if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
+      const { type, data } = linkEntities[linkEntities.length - 1]
+      const id = decodeHashId(data.id)
+      if (id) {
+        onAddLink?.(id, type)
+      }
+    }
+  }, [linkEntities, onAddLink, prevLinkEntities])
+
+  useEffect(() => {
+    if (timestamps.length && !isEqual(timestamps, prevTimestamps)) {
+      onAddTimestamp?.(
+        parseCommentTrackTimestamp(timestamps[timestamps.length - 1].text)
+      )
+    }
+  }, [onAddTimestamp, timestamps, prevTimestamps])
 
   return (
     <TextAreaV2
@@ -511,4 +528,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       )}
     </TextAreaV2>
   )
+}
+function parseCommentTrackTimestamp(text: string): number {
+  throw new Error('Function not implemented.')
 }
