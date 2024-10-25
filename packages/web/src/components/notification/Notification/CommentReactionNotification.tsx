@@ -50,7 +50,7 @@ export const CommentReactionNotification = (
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
-  const isMultiUser = userIds.length > 0
+  const isMultiUser = userIds.length > 1
 
   const entity = useSelector((state) =>
     getNotificationEntity(state, notification)
@@ -63,7 +63,7 @@ export const CommentReactionNotification = (
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
