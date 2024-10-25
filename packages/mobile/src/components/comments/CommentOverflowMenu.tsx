@@ -174,6 +174,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
   const handleMuteUser = useCallback(() => {
     // NOTE:
+    if (userId === undefined) return
     muteUser({
       mutedUserId: userId,
       isMuted: false,

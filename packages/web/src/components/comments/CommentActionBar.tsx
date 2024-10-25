@@ -131,6 +131,7 @@ export const CommentActionBar = ({
   }, [commentId, isPinned, pinComment, toast])
 
   const handleMute = useCallback(() => {
+    if (comment.userId === undefined) return
     muteUser({
       mutedUserId: comment.userId,
       isMuted: false,

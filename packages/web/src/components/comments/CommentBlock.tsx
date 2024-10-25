@@ -80,7 +80,9 @@ const CommentBlockInternal = (
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          {userId !== undefined ? (
+            <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          ) : null}
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex justifyContent='space-between' w='100%'>
@@ -89,7 +91,9 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={userId} popover size='l' strength='strong' />
+            {userId !== undefined ? (
+              <UserLink userId={userId} popover size='l' strength='strong' />
+            ) : null}
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
@@ -143,7 +147,7 @@ const CommentBlockInternal = (
           />
         )}
 
-        {showReplyInput ? (
+        {showReplyInput && userId !== undefined ? (
           <Flex w='100%' direction='column' gap='s'>
             <CommentForm
               autoFocus
