@@ -130,24 +130,27 @@ web-distribute:
 
     - create_concatenated_patch_file:
         filename: combined-patch-file.txt
-    
+
     - run:
         name: Remove Node Modules from previous builds
         command: rm -rf node_modules && rm -rf packages/*/node_modules
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Parameters.os }}
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ arch }}
 
     - run:
         name: Install dependencies
+        # Running on a new system potentially could take a long time.
+        # Generally should not take an hour though.
+        no_output_timeout: 1h
         # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
         command: |
           [[ ! -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm run postinstall
           [[ -d node_modules ]] || CI=true SKIP_POD_INSTALL=true npm ci
 
     - save_cache:
-        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Parameters.os }}
+        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ arch }}
         paths:
           - ./node_modules
           - ./packages/web/node_modules
@@ -164,7 +167,8 @@ web-distribute:
               command: npm run install-dmg-license -w @audius/web
     - run:
         name: distribute
-        no_output_timeout: 30m
+        # MacoS distribution requires notarizing the application and apple's servers may take a long time
+        no_output_timeout: 1h
         command: |
           cd packages/web
           npm run dist:<< parameters.build-type >>
