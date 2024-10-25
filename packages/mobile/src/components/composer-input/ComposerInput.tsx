@@ -104,7 +104,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
     messageId,
     placeholder,
     presetMessage,
-    presetUserMentions = [],
+    presetUserMentions,
     entityId,
     styles: propStyles,
     // Use ReactNativeGestureHandlerTextInput to allow for nesting <Text> inside <TextInput>
@@ -118,10 +118,10 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
   const [userMentions, setUserMentions] = useState<string[]>(
-    presetUserMentions.map((mention) => `@${mention.handle}`)
+    (presetUserMentions ?? []).map((mention) => `@${mention.handle}`)
   )
   const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
-    presetUserMentions.reduce((acc, mention) => {
+    (presetUserMentions ?? []).reduce((acc, mention) => {
       return {
         ...acc,
         [`@${mention.handle}`]: mention.userId
@@ -137,9 +137,11 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
 
   useEffect(() => {
-    setUserMentions(presetUserMentions.map((mention) => `@${mention.handle}`))
+    setUserMentions(
+      (presetUserMentions ?? []).map((mention) => `@${mention.handle}`)
+    )
     setUserIdMap(
-      presetUserMentions.reduce((acc, mention) => {
+      (presetUserMentions ?? []).reduce((acc, mention) => {
         acc[`@${mention.handle}`] = mention.userId
         return acc
       }, {})
