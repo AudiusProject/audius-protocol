@@ -12,7 +12,6 @@ import { Name, type ID } from '@audius/common/models'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { make, track } from 'app/services/analytics'
-import { EventNames } from 'app/types/analytics'
 
 import type { CommentDrawerData } from './CommentDrawer'
 import { CommentDrawer } from './CommentDrawer'

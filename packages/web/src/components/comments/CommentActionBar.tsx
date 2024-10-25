@@ -328,30 +328,40 @@ export const CommentActionBar = ({
     ]
   )
 
-  const handleClickOverflowMenu = useCallback((triggerPopup: () => void) => {
-    if (isMobile) {
-      toggleIsMobileAppDrawer()
-      trackEvent(
-        make({
-          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
-          trackId: entityId
-        })
-      )
-    } else {
-      if (currentUserId === undefined) {
-        openAuthModal(dispatch)
-      } else {
-        triggerPopup()
-
+  const handleClickOverflowMenu = useCallback(
+    (triggerPopup: () => void) => {
+      if (isMobile) {
+        toggleIsMobileAppDrawer()
         trackEvent(
           make({
-            eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
-            commentId
+            eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+            trackId: entityId
           })
         )
+      } else {
+        if (currentUserId === undefined) {
+          openAuthModal(dispatch)
+        } else {
+          triggerPopup()
+
+          trackEvent(
+            make({
+              eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
+              commentId
+            })
+          )
+        }
       }
-    }
-  }, [])
+    },
+    [
+      commentId,
+      currentUserId,
+      dispatch,
+      entityId,
+      isMobile,
+      toggleIsMobileAppDrawer
+    ]
+  )
 
   return (
     <Flex gap='l' alignItems='center'>

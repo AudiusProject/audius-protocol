@@ -174,8 +174,6 @@ type MobileTrackingEvents =
   | OfflineFilePathMigrationStarted
   | OfflineFilePathMigrationSucceess
   | OfflineFilePathMigrationFailed
-  | CommentsOpenCommentDrawer
-  | CommentsCloseCommentDrawer
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 
