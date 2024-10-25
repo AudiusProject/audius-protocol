@@ -100,6 +100,8 @@ export const CommentHeader = (props: CommentHeaderProps) => {
       {isEntityOwner && !isLoading ? (
         <PopupMenu
           items={popupMenuItems}
+          anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'center', horizontal: 'right' }}
           renderTrigger={(anchorRef, triggerPopup) => (
             <IconButton
               aria-label='Show comment options'

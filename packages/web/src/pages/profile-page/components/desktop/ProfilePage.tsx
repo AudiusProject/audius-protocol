@@ -1,4 +1,4 @@
-import { useCallback, memo, ReactNode } from 'react'
+import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
@@ -33,7 +33,6 @@ import {
   Hint,
   IconQuestionCircle
 } from '@audius/harmony'
-import { useToggle } from 'react-use'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
@@ -618,9 +617,15 @@ const ProfilePage = ({
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!
   })
-  const [isMuted, toggleMuted] = useToggle(
+
+  const isMutedFromRequest =
     mutedUsers?.some((user) => user.user_id === userId) ?? false
-  )
+
+  const [isMutedState, setIsMuted] = useState(isMutedFromRequest)
+
+  useEffect(() => {
+    setIsMuted(isMutedFromRequest)
+  }, [isMutedFromRequest])
 
   return (
     <Page
@@ -698,7 +703,7 @@ const ProfilePage = ({
             canCreateChat={canCreateChat}
             onMessage={onMessage}
             isBlocked={isBlocked}
-            isMuted={isMuted}
+            isMuted={isMutedState}
             accountUserId={accountUserId}
             onBlock={onBlock}
             onUnblock={onUnblock}
@@ -744,7 +749,7 @@ const ProfilePage = ({
             onClose={onCloseMuteUserConfirmationModal}
             isOpen={showMuteUserConfirmationModal}
             messages={
-              isMuted
+              isMutedState
                 ? {
                     header: commentsMessages.popups.unmuteUser.title,
                     description: unMuteUserConfirmationBody,
@@ -760,9 +765,9 @@ const ProfilePage = ({
               if (userId) {
                 muteUser({
                   mutedUserId: userId,
-                  isMuted
+                  isMuted: isMutedState
                 })
-                toggleMuted()
+                setIsMuted(!isMutedState)
               }
             }}
           ></ConfirmationModal>

@@ -47,7 +47,8 @@ export const UserMentionAutocompleteText = (
     category: 'users' as SearchCategory,
     currentUserId,
     limit: 6,
-    offset: 0
+    offset: 0,
+    disableAnalytics: true
   }
 
   const { data, status } = useGetSearchResults(params, {

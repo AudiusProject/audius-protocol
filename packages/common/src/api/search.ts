@@ -31,6 +31,7 @@ type GetSearchArgs = {
   offset?: number
   source?: SearchSource
   sortMethod?: SearchSortMethod
+  disableAnalytics?: boolean
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -60,6 +61,7 @@ const searchApi = createApi({
           limit,
           offset,
           source = 'search results page',
+          disableAnalytics,
           ...filters
         } = args
 
@@ -93,7 +95,7 @@ const searchApi = createApi({
           }
 
           // Fire analytics only for the first page of results
-          if (offset === 0) {
+          if (offset === 0 && !disableAnalytics) {
             analytics.track(
               analytics.make({
                 eventName: Name.SEARCH_SEARCH,
@@ -128,7 +130,7 @@ const searchApi = createApi({
             isPurchaseable: filters.isPremium
           }
           // Fire analytics only for the first page of results
-          if (offset === 0) {
+          if (offset === 0 && !disableAnalytics) {
             analytics.track(
               analytics.make({
                 eventName: Name.SEARCH_SEARCH,

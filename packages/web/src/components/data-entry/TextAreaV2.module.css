@@ -87,6 +87,7 @@
 }
 
 .left {
+  display: flex;
   position: relative;
   width: 100%;
 }
@@ -111,6 +112,7 @@ textarea.transparentTextArea {
   position: relative;
   text-align: left;
   pointer-events: none;
+  overflow-wrap: anywhere;
 }
 
 .displayElementContainer::after {
