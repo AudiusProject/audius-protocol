@@ -9,16 +9,16 @@ type SwitchRowFieldProps = {
   label: string
   description?: string
   style?: ViewStyle
-  isLastItem?: boolean
+  lastItem?: boolean
 }
 
 export const SwitchRowField = (props: SwitchRowFieldProps) => {
-  const { name, label, description, isLastItem } = props
+  const { name, label, description, lastItem } = props
   const [{ value }, , { setValue }] = useField(name)
 
   return (
     <>
-      {!isLastItem ? <Divider /> : null}
+      <Divider />
       <Flex column p='xl' w='100%'>
         <Flex gap='l' row justifyContent='space-between' alignItems='center'>
           <Text variant='title' strength='weak' size='l'>
@@ -28,6 +28,7 @@ export const SwitchRowField = (props: SwitchRowFieldProps) => {
         </Flex>
         {description ? <Text>{description}</Text> : null}
       </Flex>
+      {!lastItem ? <Divider /> : null}
     </>
   )
 }
