@@ -437,6 +437,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
           // Autocomplete highlight
           renderedTextSections.push(
             <UserMentionAutocompleteText
+              key={`${text}-${index}`}
               text={text}
               onConfirm={handleAutocomplete}
               onResultsLoaded={(results) => {
