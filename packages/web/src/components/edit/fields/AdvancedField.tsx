@@ -4,10 +4,10 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { advancedTrackMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  creativeCommons,
-  parseMusicalKey,
   License,
-  isBpmValid
+  creativeCommons,
+  isBpmValid,
+  parseMusicalKey
 } from '@audius/common/utils'
 import {
   Box,
@@ -64,6 +64,8 @@ const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
 const IS_UNLISTED = 'is_unlisted'
 const COMMENTS_DISABLED = 'comments_disabled'
+const COVER_ATTRIBUTION = 'cover_attribution'
+const IS_COVER = 'is_cover'
 
 const allowAttributionValues = [
   { key: false, text: messages.allowAttribution.options.false },
@@ -87,6 +89,11 @@ const derivativeWorksValues = [
 const isrcRegex = /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i
 const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 
+const coverAttributionSchema = z.object({
+  original_song_title: z.optional(z.string()),
+  original_song_artist: z.optional(z.string())
+})
+
 const AdvancedFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
@@ -99,7 +106,9 @@ const AdvancedFormSchema = z
     [COMMERCIAL_USE]: z.optional(z.boolean()),
     [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
     [BPM]: z.optional(z.string().nullable()),
-    [MUSICAL_KEY]: z.optional(z.string().nullable())
+    [MUSICAL_KEY]: z.optional(z.string().nullable()),
+    [COVER_ATTRIBUTION]: z.optional(coverAttributionSchema),
+    [IS_COVER]: z.optional(z.boolean())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
     message: messages.aiGenerated.requiredError,
@@ -151,13 +160,15 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
   const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
   const [{ value: commentsDisabled }, , { setValue: setIsCommentsDisabled }] =
     useTrackField<boolean>(COMMENTS_DISABLED)
+  const [{ value: coverAttribution }, , { setValue: setCoverAttribution }] =
+    useTrackField<SingleTrackEditValues[typeof COVER_ATTRIBUTION]>(
+      COVER_ATTRIBUTION
+    )
 
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
-    if (aiUserId) {
-      set(initialValues, IS_AI_ATTRIBUTED, true)
-    }
+    set(initialValues, IS_AI_ATTRIBUTED, !!aiUserId)
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
     set(initialValues, ALLOWED_API_KEYS, allowedApiKeys)
@@ -168,6 +179,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     set(initialValues, RELEASE_DATE, releaseDate)
     set(initialValues, IS_UNLISTED, isHidden)
     set(initialValues, COMMENTS_DISABLED, commentsDisabled)
+    set(initialValues, COVER_ATTRIBUTION, coverAttribution)
+    set(initialValues, IS_COVER, !!coverAttribution)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -179,7 +192,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     musicalKey,
     releaseDate,
     isHidden,
-    commentsDisabled
+    commentsDisabled,
+    coverAttribution
   ])
 
   const onSubmit = useCallback(
@@ -193,6 +207,18 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         setAllowedApiKeys([env.API_KEY])
       } else {
         setAllowedApiKeys(null)
+      }
+      if (get(values, IS_COVER)) {
+        // If cover attribution is not set, but the toggle is on, set it to an empty object for MRI reporting
+        setCoverAttribution(
+          get(values, COVER_ATTRIBUTION) ??
+            coverAttribution ?? {
+              original_song_artist: '',
+              original_song_title: ''
+            }
+        )
+      } else {
+        setCoverAttribution(null)
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
@@ -225,7 +251,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       commentsDisabled,
       setAiUserId,
       aiUserId,
-      setAllowedApiKeys
+      setAllowedApiKeys,
+      setCoverAttribution,
+      coverAttribution
     ]
   )
 
@@ -343,8 +371,63 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
+  const [{ value: coverAttribution }, , { setValue: setCoverAttribution }] =
+    useField<SingleTrackEditValues[typeof COVER_ATTRIBUTION]>(COVER_ATTRIBUTION)
+
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
+      {!isHidden ? (
+        <>
+          <Flex gap='m' direction='column'>
+            <Text variant='title' size='l' tag='h3'>
+              Release Date
+            </Text>
+            <DatePickerField name={RELEASE_DATE} label={messages.releaseDate} />
+          </Flex>
+          <Divider />
+        </>
+      ) : null}
+      {!isUpload ? (
+        <>
+          <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
+            <Flex direction='column' w='100%'>
+              <Box mb='m'>
+                <Text variant='title' size='l' tag='h3'>
+                  {messages.bpm.header}
+                </Text>
+              </Box>
+
+              <TextField
+                name={BPM}
+                type='number'
+                label={messages.bpm.label}
+                autoComplete='off'
+                {...bpmMaskedInputProps}
+              />
+            </Flex>
+            <Flex direction='column' w='100%'>
+              <Box mb='m'>
+                <Text variant='title' size='l' tag='h3'>
+                  Key
+                </Text>
+              </Box>
+
+              <KeySelectField name={MUSICAL_KEY} />
+            </Flex>
+          </span>
+          <Divider />
+        </>
+      ) : null}
+      {isCommentsEnabled ? (
+        <>
+          <SwitchRowField
+            name={COMMENTS_DISABLED}
+            header={messages.disableComments.header}
+            description={messages.disableComments.description}
+          />
+          <Divider />
+        </>
+      ) : null}
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
         <Text variant='title' size='l' tag='h3'>
           {messages.licenseType}
@@ -450,68 +533,54 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
             />
           </div>
         </span>
-        {!isHidden ? (
-          <>
-            <Divider />
-            <Flex gap='m' direction='column'>
-              <Text variant='title' size='l' tag='h3'>
-                Release Date
-              </Text>
-              <DatePickerField
-                name={RELEASE_DATE}
-                label={messages.releaseDate}
-              />
-            </Flex>
-          </>
-        ) : null}
-        {!isUpload ? (
-          <>
-            <Divider />
-            <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
-              <Flex direction='column' w='100%'>
-                <Box mb='m'>
-                  <Text variant='title' size='l' tag='h3'>
-                    {messages.bpm.header}
-                  </Text>
-                </Box>
-
-                <TextField
-                  name={BPM}
-                  type='number'
-                  label={messages.bpm.label}
-                  autoComplete='off'
-                  {...bpmMaskedInputProps}
-                />
-              </Flex>
-              <Flex direction='column' w='100%'>
-                <Box mb='m'>
-                  <Text variant='title' size='l' tag='h3'>
-                    Key
-                  </Text>
-                </Box>
-
-                <KeySelectField name={MUSICAL_KEY} />
-              </Flex>
-            </span>
-          </>
-        ) : null}
       </div>
       <Divider />
-      {isCommentsEnabled ? (
-        <>
-          <SwitchRowField
-            name={COMMENTS_DISABLED}
-            header={messages.disableComments.header}
-            description={messages.disableComments.description}
-          />
-          <Divider />
-        </>
-      ) : null}
       <SwitchRowField
-        name={BLOCK_THIRD_PARTY_STREAMING}
-        header={messages.apiAllowed.header}
-        description={messages.apiAllowed.description}
-      />
+        name={IS_COVER}
+        header={messages.coverAttribution.toggle.header}
+        description={messages.coverAttribution.toggle.description}
+      >
+        <Box mt='m' p='l' w='100%' borderRadius='m' backgroundColor='surface1'>
+          <Text variant='title' size='m'>
+            {messages.coverAttribution.attribution.header}
+          </Text>
+          <Box mb='m'>
+            <Text variant='body'>
+              {messages.coverAttribution.attribution.description}
+            </Text>
+          </Box>
+          <Flex gap='m'>
+            <TextField
+              name={`${COVER_ATTRIBUTION}.original_song_title`}
+              label={messages.coverAttribution.attribution.originalSongTitle}
+              placeholder={
+                messages.coverAttribution.attribution.originalSongTitle
+              }
+              value={coverAttribution?.original_song_title || ''}
+              onChange={(e) => {
+                setCoverAttribution({
+                  ...coverAttribution,
+                  original_song_title: e.target.value
+                })
+              }}
+            />
+            <TextField
+              name={`${COVER_ATTRIBUTION}.original_song_artist`}
+              label={messages.coverAttribution.attribution.originalSongArtist}
+              placeholder={
+                messages.coverAttribution.attribution.originalSongArtist
+              }
+              value={coverAttribution?.original_song_artist || ''}
+              onChange={(e) => {
+                setCoverAttribution({
+                  ...coverAttribution,
+                  original_song_artist: e.target.value
+                })
+              }}
+            />
+          </Flex>
+        </Box>
+      </SwitchRowField>
       <Divider />
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}
@@ -530,6 +599,11 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
         />
       </SwitchRowField>
       <Divider />
+      <SwitchRowField
+        name={BLOCK_THIRD_PARTY_STREAMING}
+        header={messages.apiAllowed.header}
+        description={messages.apiAllowed.description}
+      />
     </div>
   )
 }

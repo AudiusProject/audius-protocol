@@ -46,6 +46,8 @@ export const IS_UNLISTED = 'is_unlisted'
 export const IS_PRIVATE = 'is_private'
 export const FIELD_VISIBILITY = 'field_visibility'
 export const IS_SCHEDULED_RELEASE = 'is_scheduled_release'
+export const IS_OWNED_BY_USER = 'is_owned_by_user'
+
 // whether Access & Sale or Stems & Downloads last set the stream / download conditions
 export const LAST_GATE_KEEPER = 'last_gate_keeper'
 

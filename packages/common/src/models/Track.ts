@@ -44,6 +44,11 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
+export type CoverAttribution = {
+  original_song_title?: string
+  original_song_artist?: string
+}
+
 // Gated content
 export type EthTokenStandard = 'ERC721' | 'ERC1155'
 
@@ -230,6 +235,7 @@ export type TrackMetadata = {
   orig_filename: Nullable<string>
   is_downloadable: boolean
   is_original_available: boolean
+  is_owned_by_user: boolean
   ddex_app?: Nullable<string>
   ddex_release_ids?: any | null
   artists?: ResourceContributor[] | null
@@ -258,6 +264,7 @@ export type TrackMetadata = {
   remix_of: Nullable<RemixOf>
   preview_cid?: Nullable<CID>
   preview_start_seconds?: Nullable<number>
+  cover_attribution?: Nullable<CoverAttribution>
 
   // Added fields
   dateListened?: string

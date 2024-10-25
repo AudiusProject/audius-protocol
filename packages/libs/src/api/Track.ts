@@ -633,6 +633,7 @@ export class Track extends Base {
       is_unlisted,
       is_scheduled_release,
       is_available,
+      is_owned_by_user,
       is_stream_gated,
       stream_conditions,
       is_download_gated,
@@ -660,6 +661,7 @@ export class Track extends Base {
       audio_analysis_error_count,
       comments_disabled,
       comment_count,
+      cover_attribution,
       field_visibility,
       ...other
     } = trackMetadata
@@ -695,6 +697,7 @@ export class Track extends Base {
       is_unlisted,
       is_scheduled_release,
       is_available,
+      is_owned_by_user,
       is_stream_gated,
       stream_conditions,
       is_download_gated,
@@ -722,7 +725,8 @@ export class Track extends Base {
       audio_analysis_error_count,
       comments_disabled,
       comment_count,
-      field_visibility
+      field_visibility,
+      cover_attribution
     }
   }
 }

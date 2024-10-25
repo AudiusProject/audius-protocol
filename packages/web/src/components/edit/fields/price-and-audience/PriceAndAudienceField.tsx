@@ -58,6 +58,7 @@ import {
   GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
+  IS_OWNED_BY_USER,
   IS_PRIVATE,
   IS_SCHEDULED_RELEASE,
   IS_STREAM_GATED,
@@ -213,6 +214,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
+  const [{ value: isOwnedByUser }, , { setValue: setIsOwnedByUser }] =
+    useTrackField<boolean>(IS_OWNED_BY_USER)
+
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   /**
@@ -246,6 +250,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
+    set(initialValues, IS_OWNED_BY_USER, isOwnedByUser)
 
     let availabilityType = isHiddenPaidScheduledEnabled
       ? StreamTrackAvailabilityType.FREE
@@ -295,7 +300,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     isCollectibleGated,
     isScheduledRelease,
     fieldVisibility,
-    preview
+    preview,
+    isOwnedByUser
   ])
 
   const handleSubmit = useCallback(
@@ -306,6 +312,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       const fieldVisibility = get(values, FIELD_VISIBILITY)
       const streamConditions = get(values, STREAM_CONDITIONS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+      const isOwnedByUser = get(values, IS_OWNED_BY_USER)
 
       setFieldVisibilityValue({
         ...defaultFieldVisibility,
@@ -346,6 +353,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           setIsDownloadGated(true)
           setDownloadConditionsValue(conditions)
           setIsDownloadable(true)
+          setIsOwnedByUser(!!isOwnedByUser)
           const downloadableGateKeeper =
             isDownloadable &&
             lastGateKeeper.downloadable === 'stemsAndDownloads'
@@ -428,7 +436,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setIsDownloadable,
       isHiddenPaidScheduledEnabled,
       isDownloadable,
-      setLastGateKeeper
+      setLastGateKeeper,
+      setIsOwnedByUser
     ]
   )
 
