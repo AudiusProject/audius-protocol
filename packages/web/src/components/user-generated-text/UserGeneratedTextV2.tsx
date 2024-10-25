@@ -20,15 +20,7 @@ import {
   decodeHashId
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
-import {
-  instanceOfTrackResponse,
-  instanceOfPlaylistResponse,
-  instanceOfUserResponse,
-  CommentMention,
-  Track,
-  User,
-  Playlist
-} from '@audius/sdk'
+import { CommentMention, ResolveApi, Track, User, Playlist } from '@audius/sdk'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -38,6 +30,12 @@ import { LinkKind, TextLink, TextLinkProps } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
+
+const {
+  instanceOfTrackResponse,
+  instanceOfPlaylistResponse,
+  instanceOfUserResponse
+} = ResolveApi
 
 const { getUserId } = accountSelectors
 
