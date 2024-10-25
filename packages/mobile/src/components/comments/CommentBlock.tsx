@@ -99,7 +99,9 @@ export const CommentBlockInternal = (
       </TouchableOpacity>
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          {userId !== undefined ? (
+            <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          ) : null}
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex direction='row' justifyContent='space-between' w='100%'>
@@ -108,12 +110,14 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center' w='65%'>
-            <UserLink
-              userId={userId}
-              strength='strong'
-              onPress={closeDrawer}
-              lineHeight='single'
-            />
+            {userId !== undefined ? (
+              <UserLink
+                userId={userId}
+                strength='strong'
+                onPress={closeDrawer}
+                lineHeight='single'
+              />
+            ) : null}
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
