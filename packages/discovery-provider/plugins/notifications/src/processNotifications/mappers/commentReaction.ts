@@ -94,6 +94,8 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
     const body = `${users[this.reacterUserId]?.name} liked your comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
+        : this.entityUserId === this.reacterUserId
+        ? 'their'
         : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
