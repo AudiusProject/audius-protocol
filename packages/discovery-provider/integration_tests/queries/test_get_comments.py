@@ -200,14 +200,6 @@ def test_get_comments_from_muted_user_by_track_owner(app):
                 "track_timestamp_s": 1,
             },
         ],
-        "comment_notification_settings": [
-            {
-                "user_id": 1,
-                "entity_id": 1,
-                "entity_type": "Comment",
-                "is_muted": True,
-            }
-        ],
         "muted_users": [
             {
                 "muted_user_id": 1,
@@ -224,6 +216,12 @@ def test_get_comments_from_muted_user_by_track_owner(app):
         # to a third party user, there should be no comments
         # because the track owner muted the user
         comments = get_track_comments({}, 1, current_user_id=2)
+        assert len(comments) == 0
+        # the muted user should see their own comment
+        comments = get_track_comments({}, 1, current_user_id=1)
+        assert len(comments) == 1
+        # the person who muted the user should not see the comment
+        comments = get_track_comments({}, 1, current_user_id=10)
         assert len(comments) == 0
 
 
@@ -248,14 +246,6 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
             },
         ],
         "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
-        "comment_notification_settings": [
-            {
-                "user_id": 1,
-                "entity_id": 1,
-                "entity_type": "Comment",
-                "is_muted": True,
-            }
-        ],
         "muted_users": [
             {
                 "muted_user_id": 1,
@@ -273,6 +263,16 @@ def test_get_comment_replies_from_muted_user_by_track_owner(app):
         # because the track owner muted the user
         comments = get_paginated_replies(
             {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
+        )
+        assert len(comments) == 0
+        # the muted user should see their own comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
+        )
+        assert len(comments) == 1
+        # the person who muted the user should not see the comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=10
         )
         assert len(comments) == 0
 
