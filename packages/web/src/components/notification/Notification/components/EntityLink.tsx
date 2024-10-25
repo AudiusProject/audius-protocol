@@ -22,7 +22,8 @@ type EntityLinkProps = {
 
 export const useGoToEntity = (
   entity: Nullable<EntityType>,
-  entityType: Entity
+  entityType: Entity,
+  goToComments?: boolean
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
@@ -32,7 +33,10 @@ export const useGoToEntity = (
       if (!entity) return
       event.stopPropagation()
       event.preventDefault()
-      const link = getEntityLink(entity)
+      let link = getEntityLink(entity)
+      if (goToComments) {
+        link = `${link}?showComments=true`
+      }
       dispatch(closeNotificationPanel())
       dispatch(push(link))
       record(
@@ -42,7 +46,7 @@ export const useGoToEntity = (
         })
       )
     },
-    [dispatch, entity, entityType, record]
+    [dispatch, entity, entityType, goToComments, record]
   )
   return handleClick
 }

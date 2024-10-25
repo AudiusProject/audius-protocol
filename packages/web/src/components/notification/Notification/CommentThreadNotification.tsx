@@ -63,7 +63,7 @@ export const CommentThreadNotification = (
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
