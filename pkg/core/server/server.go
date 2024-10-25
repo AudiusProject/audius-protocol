@@ -57,5 +57,8 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
 	e.POST("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
 	e.GET("/debug/pprof/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
-
+	e.GET("/debug/pprof/heap", echo.WrapHandler(pprof.Handler("heap")))
+	e.GET("/debug/pprof/goroutine", echo.WrapHandler(pprof.Handler("goroutine")))
+	e.GET("/debug/pprof/threadcreate", echo.WrapHandler(pprof.Handler("threadcreate")))
+	e.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
 }
