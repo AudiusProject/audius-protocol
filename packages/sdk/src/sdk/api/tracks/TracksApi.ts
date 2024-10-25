@@ -559,13 +559,19 @@ export class TracksApi extends GeneratedTracksApi {
     )(params)
 
     const {
+      // only send the base params to getPurchaseInstructions
+      wallet: ignoredWallet,
+      walletAdapter: ignoredWalletAdapter,
+      ...baseParams
+    } = params
+    const {
       instructions: {
         routeInstruction,
         memoInstruction,
         locationMemoInstruction
       },
       total
-    } = await this.getPurchaseTrackInstructions(params)
+    } = await this.getPurchaseTrackInstructions(baseParams)
 
     let transaction
     const mint = 'USDC'
