@@ -127,6 +127,7 @@ const CommentBlockInternal = (
             isEdited={isEdited && !isTombstone}
             isPreview={isPreview}
             mentions={mentions}
+            commentId={commentId}
           >
             {message}
           </CommentText>

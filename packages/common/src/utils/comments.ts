@@ -1,4 +1,3 @@
-// TODO: do we need hours?
 export const formatCommentTrackTimestamp = (timestamp_s: number) => {
   const hours = Math.floor(timestamp_s / (60 * 60))
   const minutes = Math.floor(timestamp_s / 60)

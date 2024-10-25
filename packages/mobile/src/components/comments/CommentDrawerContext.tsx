@@ -8,11 +8,10 @@ import React, {
   useState
 } from 'react'
 
-import type { ID } from '@audius/common/models'
+import { Name, type ID } from '@audius/common/models'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { make, track } from 'app/services/analytics'
-import { EventNames } from 'app/types/analytics'
 
 import type { CommentDrawerData } from './CommentDrawer'
 import { CommentDrawer } from './CommentDrawer'
@@ -41,7 +40,7 @@ export const CommentDrawerProvider = (props: PropsWithChildren) => {
     setIsOpen(true)
     track(
       make({
-        eventName: EventNames.COMMENTS_OPEN_COMMENT_DRAWER,
+        eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER,
         trackId: props.entityId
       })
     )
@@ -51,7 +50,7 @@ export const CommentDrawerProvider = (props: PropsWithChildren) => {
     setIsOpen(false)
     track(
       make({
-        eventName: EventNames.COMMENTS_CLOSE_COMMENT_DRAWER,
+        eventName: Name.COMMENTS_CLOSE_COMMENT_DRAWER,
         trackId
       })
     )

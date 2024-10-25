@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -6,6 +6,7 @@ import {
   useUpdateTrackCommentNotificationSetting
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import {
   Flex,
   IconButton,
@@ -20,6 +21,7 @@ import {
 import { useTheme } from '@emotion/react'
 
 import { ToastContext } from 'components/toast/ToastContext'
+import { track, make } from 'services/analytics'
 
 type CommentHeaderProps = {
   isLoading?: boolean
@@ -60,6 +62,19 @@ export const CommentHeader = (props: CommentHeaderProps) => {
     }
   ]
 
+  const handleOpenTrackOverflowMenu = useCallback(
+    (triggerPopup: () => void) => {
+      triggerPopup()
+      track(
+        make({
+          eventName: Name.COMMENTS_OPEN_TRACK_OVERFLOW_MENU,
+          trackId: entityId
+        })
+      )
+    },
+    [entityId]
+  )
+
   return (
     <Flex justifyContent='space-between' w='100%'>
       <Flex alignItems='center' gap='s'>
@@ -95,9 +110,7 @@ export const CommentHeader = (props: CommentHeaderProps) => {
                 cursor: 'pointer',
                 transition: motion.hover
               }}
-              onClick={() => {
-                triggerPopup()
-              }}
+              onClick={() => handleOpenTrackOverflowMenu(triggerPopup)}
               className='kebabIcon'
             />
           )}
