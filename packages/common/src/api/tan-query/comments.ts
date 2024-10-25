@@ -240,7 +240,6 @@ export const useTrackCommentCount = (
   const previousCurrentCount = usePrevious(currentCountValue) // note: this is different from data.previousValue
   useEffect(() => {
     if (
-      previousCurrentCount !== undefined &&
       currentCountValue !== undefined &&
       previousCurrentCount !== currentCountValue
     ) {
