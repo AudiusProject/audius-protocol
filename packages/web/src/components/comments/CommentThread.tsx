@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment } from '@audius/common/models'
+import { Comment, ID, Name, ReplyComment } from '@audius/common/models'
 import {
   Box,
   Flex,
@@ -13,13 +13,15 @@ import {
   PlainButton
 } from '@audius/harmony'
 
+import { track, make } from 'services/analytics'
+
 import { CommentBlock } from './CommentBlock'
 
 export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const { data: rootCommentData } = useGetCommentById(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
-  const { currentUserId } = useCurrentCommentSection()
+  const { currentUserId, entityId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
   const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
     useGetCommentRepliesById({
@@ -36,11 +38,29 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
+
+    track(
+      make({
+        eventName: newHiddenReplies[commentId]
+          ? Name.COMMENTS_HIDE_REPLIES
+          : Name.COMMENTS_SHOW_REPLIES,
+        commentId,
+        trackId: entityId
+      })
+    )
   }
 
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {
       loadMoreReplies()
+
+      track(
+        make({
+          eventName: Name.COMMENTS_LOAD_MORE_REPLIES,
+          commentId,
+          trackId: entityId
+        })
+      )
     } else {
       // Since we have
       setHasRequestedMore(true)

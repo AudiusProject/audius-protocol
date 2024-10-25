@@ -124,7 +124,8 @@ export class LineupActions {
     limit: number,
     deleted: number,
     nullCount: number,
-    handle?: string
+    handle?: string,
+    hasMore?: boolean
   ) {
     return {
       type: addPrefix(this.prefix, FETCH_LINEUP_METADATAS_SUCCEEDED),
@@ -133,7 +134,8 @@ export class LineupActions {
       limit,
       deleted,
       nullCount,
-      handle
+      handle,
+      hasMore
     }
   }
 

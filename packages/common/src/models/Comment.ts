@@ -15,5 +15,5 @@ export type ReplyComment = OverrideProperties<
 
 export type Comment = OverrideProperties<
   CommentSDK,
-  { id: ID; userId: ID; replies: Maybe<ReplyComment[]> }
+  { id: ID; userId: ID | undefined; replies: Maybe<ReplyComment[]> }
 >

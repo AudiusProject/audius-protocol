@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -41,7 +42,6 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 }
 
 func (s *Server) registerRoutes(e *echo.Group) {
-
 	e.GET("/genesis.json", s.getGenesisJSON)
 	e.GET("/nodes", s.getRegisteredNodes)
 	e.GET("/nodes/verbose", s.getRegisteredNodes)
@@ -51,4 +51,14 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
 	e.Any("/grpc/*", s.proxyGRPCRequest)
+	e.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
+	e.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
+	e.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
+	e.GET("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+	e.POST("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+	e.GET("/debug/pprof/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
+	e.GET("/debug/pprof/heap", echo.WrapHandler(pprof.Handler("heap")))
+	e.GET("/debug/pprof/goroutine", echo.WrapHandler(pprof.Handler("goroutine")))
+	e.GET("/debug/pprof/threadcreate", echo.WrapHandler(pprof.Handler("threadcreate")))
+	e.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
 }

@@ -13,14 +13,17 @@ export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
   const decodedId = decodeHashId(id)
   const decodedUserId = decodeHashId(userId)
 
-  if (!decodedId || !decodedUserId) {
+  if (!decodedId) {
     return undefined
   }
 
   return {
     ...rest,
     id: decodedId,
-    userId: decodedUserId,
+    userId:
+      userId === undefined || decodedUserId === null
+        ? undefined
+        : decodedUserId, // Note: comments can have no user id when they're a tombstone state (deleted but has replies)
     replies: transformAndCleanList(replies, replyCommentFromSDK)
   }
 }

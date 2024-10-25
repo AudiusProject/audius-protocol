@@ -115,7 +115,7 @@ const CommentPreviewContent = (props: CommentPreviewContentProps) => {
         <TouchableWithoutFeedback onPress={handleFormPress}>
           <View>
             <View pointerEvents='none'>
-              <CommentForm />
+              <CommentForm isPreview />
             </View>
           </View>
         </TouchableWithoutFeedback>

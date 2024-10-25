@@ -1,120 +1,149 @@
+import { Flex } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 
 export const moodMap: Record<Mood, JSX.Element> = {
   Peaceful: (
-    <span>
-      Peaceful <i className='emoji dove-of-peace' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Peaceful <i className='emoji dove-of-peace' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Romantic: (
-    <span>
-      Romantic <i className='emoji heart-with-arrow' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Romantic{' '}
+      <i className='emoji heart-with-arrow' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Sentimental: (
-    <span>
-      Sentimental <i className='emoji crying-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Sentimental{' '}
+      <i className='emoji crying-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Tender: (
-    <span>
-      Tender <i className='emoji relieved-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Tender <i className='emoji relieved-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Easygoing: (
-    <span>
-      Easygoing <i className='emoji slightly-smiling-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Easygoing{' '}
+      <i className='emoji slightly-smiling-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Yearning: (
-    <span>
-      Yearning <i className='emoji eyes' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Yearning <i className='emoji eyes' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Sophisticated: (
-    <span>
-      Sophisticated <i className='emoji face-with-monocle' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Sophisticated{' '}
+      <i className='emoji face-with-monocle' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Sensual: (
-    <span>
-      Sensual <i className='emoji face-throwing-a-kiss' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Sensual{' '}
+      <i className='emoji face-throwing-a-kiss' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Cool: (
-    <span>
-      Cool <i className='emoji smiling-face-with-sunglasses' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Cool{' '}
+      <i
+        className='emoji smiling-face-with-sunglasses'
+        style={{ marginBottom: 0 }}
+      />
+    </Flex>
   ),
   Gritty: (
-    <span>
-      Gritty <i className='emoji pouting-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Gritty <i className='emoji pouting-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Melancholy: (
-    <span>
-      Melancholy <i className='emoji cloud-with-rain' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Melancholy{' '}
+      <i className='emoji cloud-with-rain' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Serious: (
-    <span>
-      Serious <i className='emoji neutral-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Serious <i className='emoji neutral-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Brooding: (
-    <span>
-      Brooding <i className='emoji thinking-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Brooding <i className='emoji thinking-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Fiery: (
-    <span>
-      Fiery <i className='emoji fire' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Fiery <i className='emoji fire' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Defiant: (
-    <span>
-      Defiant <i className='emoji smiling-face-with-horns' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Defiant{' '}
+      <i
+        className='emoji smiling-face-with-horns'
+        style={{ marginBottom: 0 }}
+      />
+    </Flex>
   ),
   Aggressive: (
-    <span>
+    <Flex alignItems='center' gap='xs'>
       Aggressive{' '}
-      <i className='emoji serious-face-with-symbols-covering-mouth' />
-    </span>
+      <i
+        className='emoji serious-Flex-with-symbols-covering-mouth'
+        style={{ marginBottom: 0 }}
+      />
+    </Flex>
   ),
   Rowdy: (
-    <span>
-      Rowdy <i className='emoji face-with-cowboy-hat' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Rowdy{' '}
+      <i className='emoji face-with-cowboy-hat' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Excited: (
-    <span>
-      Excited <i className='emoji party-popper' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Excited <i className='emoji party-popper' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Energizing: (
-    <span>
-      Energizing <i className='emoji grinning-face-with-star-eyes' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Energizing{' '}
+      <i
+        className='emoji grinning-face-with-star-eyes'
+        style={{ marginBottom: 0 }}
+      />
+    </Flex>
   ),
   Empowering: (
-    <span>
-      Empowering <i className='emoji flexed-biceps' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Empowering{' '}
+      <i className='emoji flexed-biceps' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Stirring: (
-    <span>
-      Stirring <i className='emoji astonished-face' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Stirring{' '}
+      <i className='emoji astonished-face' style={{ marginBottom: 0 }} />
+    </Flex>
   ),
   Upbeat: (
-    <span>
-      Upbeat <i className='emoji person-raising-both-hands-in-celebration' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Upbeat{' '}
+      <i
+        className='emoji person-raising-both-hands-in-celebration'
+        style={{ marginBottom: 0 }}
+      />
+    </Flex>
   ),
   Other: (
-    <span>
-      Other <i className='emoji shrug' />
-    </span>
+    <Flex alignItems='center' gap='xs'>
+      Other <i className='emoji shrug' style={{ marginBottom: 0 }} />
+    </Flex>
   )
 }

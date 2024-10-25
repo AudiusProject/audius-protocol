@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import {
+  CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
   EntityType
@@ -239,7 +240,6 @@ export const useTrackCommentCount = (
   const previousCurrentCount = usePrevious(currentCountValue) // note: this is different from data.previousValue
   useEffect(() => {
     if (
-      previousCurrentCount !== undefined &&
       currentCountValue !== undefined &&
       previousCurrentCount !== currentCountValue
     ) {
@@ -331,7 +331,7 @@ type PostCommentArgs = {
   currentSort: CommentSortMethod
   parentCommentId?: ID
   trackTimestampS?: number
-  mentions?: any
+  mentions?: CommentMention[]
   newId?: ID
 }
 
@@ -345,6 +345,7 @@ export const usePostComment = () => {
       const sdk = await audiusSdk()
       return await sdk.comments.postComment({
         ...args,
+        mentions: args.mentions?.map((mention) => mention.userId) ?? [],
         entityId: args.trackId,
         commentId: args.newId
       })
@@ -444,9 +445,14 @@ export const useReactToComment = () => {
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
-    mutationFn: async ({ userId, commentId, isLiked }: ReactToCommentArgs) => {
+    mutationFn: async ({
+      userId,
+      commentId,
+      isLiked,
+      trackId
+    }: ReactToCommentArgs) => {
       const sdk = await audiusSdk()
-      await sdk.comments.reactComment(userId, commentId, isLiked)
+      await sdk.comments.reactComment({ userId, commentId, isLiked, trackId })
     },
     mutationKey: ['reactToComment'],
     onMutate: async ({
@@ -466,7 +472,9 @@ export const useReactToComment = () => {
             ...prevCommentState,
             reactCount:
               (prevCommentState?.reactCount ?? 0) + (isLiked ? 1 : -1),
-            isArtistReacted: isEntityOwner && isLiked,
+            isArtistReacted: isEntityOwner
+              ? isLiked // If the artist is reacting, update the state accordingly
+              : prevCommentState?.isArtistReacted, // otherwise, keep the previous state
             isCurrentUserReacted: isLiked
           } as CommentOrReply)
       )
@@ -674,7 +682,7 @@ type EditCommentArgs = {
   commentId: ID
   userId: ID
   newMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
   trackId: ID
   currentSort: CommentSortMethod
   entityType?: EntityType
@@ -688,6 +696,7 @@ export const useEditComment = () => {
       commentId,
       userId,
       newMessage,
+      trackId,
       mentions,
       entityType = EntityType.TRACK
     }: EditCommentArgs) => {
@@ -695,13 +704,14 @@ export const useEditComment = () => {
         body: newMessage,
         userId,
         entityId: commentId,
+        trackId,
         entityType,
-        mentions
+        mentions: mentions?.map((mention) => mention.userId) ?? []
       }
       const sdk = await audiusSdk()
       await sdk.comments.editComment(commentData)
     },
-    onMutate: ({ commentId, newMessage }) => {
+    onMutate: ({ commentId, newMessage, mentions }) => {
       const prevComment = queryClient.getQueryData<CommentOrReply | undefined>([
         QUERY_KEYS.comment,
         commentId
@@ -712,7 +722,8 @@ export const useEditComment = () => {
           ({
             ...prevData,
             isEdited: true,
-            message: newMessage
+            message: newMessage,
+            mentions
           } as CommentOrReply)
       )
       return { prevComment }
@@ -738,7 +749,8 @@ export const useEditComment = () => {
               ...prevData,
               // NOTE: intentionally only reverting the pieces we changed in case another mutation happened in between this mutation start->error
               isEdited: prevComment?.isEdited,
-              message: prevComment?.message
+              message: prevComment?.message,
+              mentions: prevComment?.mentions
             } as CommentOrReply)
         )
       }

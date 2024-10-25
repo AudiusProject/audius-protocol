@@ -7,11 +7,13 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById, useGetUsersByIds } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
+  decodeHashId,
   getDurationFromTimestampMatch,
+  parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
@@ -23,12 +25,14 @@ import {
   useTheme
 } from '@audius/harmony'
 import { EntityType } from '@audius/sdk'
+import { isEqual } from 'lodash'
+import { usePrevious } from 'react-use'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
-import { AutocompleteText } from './components/AutocompleteText'
+import { UserMentionAutocompleteText } from './components/UserMentionAutocompleteText'
 import { ComposerInputProps } from './types'
 
 const messages = {
@@ -70,7 +74,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
     onSubmit,
     messageId,
     presetMessage,
-    presetUserMentionIds = [],
+    presetUserMentions = [],
     maxLength = 400,
     maxMentions = Infinity,
     placeholder,
@@ -78,6 +82,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
     entityId,
     entityType,
     autoFocus,
+    onAddLink,
+    onAddMention,
+    onAddTimestamp,
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -85,9 +92,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
-  const { data: presetMentionUsers } = useGetUsersByIds({
-    ids: presetUserMentionIds
-  })
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
@@ -95,29 +99,21 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
 
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      acc[`@${mention.handle}`] = mention.userId
+      return acc
+    }, {})
+  )
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
   // Ref to keep track of the submit state of the input
   const submittedRef = useRef(false)
   // Ref to keep track of a unique id for each change
   const changeOpIdRef = useRef(0)
-
-  useEffect(() => {
-    if (presetMentionUsers) {
-      setUserMentions((mentions) => [
-        ...mentions,
-        ...presetMentionUsers.map((user) => `@${user.handle}`)
-      ])
-      setUserIdMap((map) => {
-        presetMentionUsers.forEach((user) => {
-          map[`@${user.handle}`] = user.user_id
-        })
-        return map
-      })
-    }
-  }, [presetMentionUsers])
 
   const {
     linkEntities,
@@ -130,6 +126,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+
+  const prevLinkEntities = usePrevious(linkEntities)
 
   useEffect(() => {
     const fn = async () => {
@@ -178,22 +176,20 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [userMentions]
   )
 
-  const getTimestamps = useCallback(
-    (value: string) => {
-      if (!track || !track.access.stream) return []
+  const timestamps = useMemo(() => {
+    if (!track || !track.access.stream) return []
 
-      const { duration } = track
-      return Array.from(value.matchAll(timestampRegex))
-        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
-        .map((match) => ({
-          type: 'timestamp',
-          text: match[0],
-          index: match.index,
-          link: ''
-        }))
-    },
-    [track]
-  )
+    const { duration } = track
+    return Array.from(value.matchAll(timestampRegex))
+      .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+      .map((match) => ({
+        type: 'timestamp',
+        text: match[0],
+        index: match.index,
+        link: ''
+      }))
+  }, [track, value])
+  const prevTimestamps = usePrevious(timestamps)
 
   const getAutocompleteRange = useCallback(() => {
     if (!isUserAutocompleteActive) return null
@@ -248,8 +244,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
         }, 0)
       }
       setIsUserAutocompleteActive(false)
+      onAddMention?.(user.user_id)
     },
-    [getAutocompleteRange, userMentions]
+    [getAutocompleteRange, userMentions, onAddMention]
   )
 
   const handleChange = useCallback(
@@ -271,13 +268,19 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
+    if (ref.current) {
+      ref.current.blur()
+    }
     submittedRef.current = true
     changeOpIdRef.current++
-    const mentionIds =
+    const mentions =
       getUserMentions(value)?.map((match) => {
-        return userIdMap[match.text]
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
       }) ?? []
-    onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
+    onSubmit?.(restoreLinks(value), linkEntities, mentions)
     submittedRef.current = false
     setUserMentions([])
     setUserIdMap({})
@@ -290,7 +293,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       const cursorPosition = textarea.selectionStart
 
       if (isUserAutocompleteActive) {
-        if (e.key === ENTER_KEY || e.key === TAB_KEY) {
+        if (e.key === TAB_KEY) {
           e.preventDefault()
           if (firstAutocompleteResult.current) {
             handleAutocomplete(firstAutocompleteResult.current)
@@ -368,23 +371,15 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const isTextHighlighted = useMemo(() => {
     const matches = getMatches(value) ?? []
-    const timestamps = getTimestamps(value)
     const mentions = getUserMentions(value) ?? []
     const fullMatches = [...matches, ...mentions, ...timestamps]
     return Boolean(fullMatches.length || isUserAutocompleteActive)
-  }, [
-    getMatches,
-    getTimestamps,
-    getUserMentions,
-    isUserAutocompleteActive,
-    value
-  ])
+  }, [getMatches, timestamps, getUserMentions, isUserAutocompleteActive, value])
 
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
       const mentions = getUserMentions(value) ?? []
-      const timestamps = getTimestamps(value)
       const fullMatches = [...matches, ...mentions, ...timestamps]
 
       // If there are no highlightable sections, render text normally
@@ -441,7 +436,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
         if (type === 'autocomplete') {
           // Autocomplete highlight
           renderedTextSections.push(
-            <AutocompleteText
+            <UserMentionAutocompleteText
+              key={`${text}-${index}`}
               text={text}
               onConfirm={handleAutocomplete}
               onResultsLoaded={(results) => {
@@ -472,12 +468,30 @@ export const ComposerInput = (props: ComposerInputProps) => {
     [
       getAutocompleteRange,
       getMatches,
-      getTimestamps,
       getUserMentions,
       handleAutocomplete,
-      isUserAutocompleteActive
+      isUserAutocompleteActive,
+      timestamps
     ]
   )
+
+  useEffect(() => {
+    if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
+      const { type, data } = linkEntities[linkEntities.length - 1]
+      const id = decodeHashId(data.id)
+      if (id) {
+        onAddLink?.(id, type)
+      }
+    }
+  }, [linkEntities, onAddLink, prevLinkEntities])
+
+  useEffect(() => {
+    if (timestamps.length && !isEqual(timestamps, prevTimestamps)) {
+      onAddTimestamp?.(
+        parseCommentTrackTimestamp(timestamps[timestamps.length - 1].text)
+      )
+    }
+  }, [onAddTimestamp, timestamps, prevTimestamps])
 
   return (
     <TextAreaV2

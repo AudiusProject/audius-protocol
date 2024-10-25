@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, MouseEvent, useRef } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  MouseEvent,
+  useRef,
+  useMemo
+} from 'react'
 
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -6,7 +13,8 @@ import {
   RepostSource,
   FavoriteSource,
   ID,
-  UID
+  UID,
+  Name
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -31,6 +39,7 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
+import { make, track as trackEvent } from 'services/analytics'
 import {
   setUsers,
   setVisibility
@@ -180,6 +189,14 @@ const ConnectedTrackTile = ({
 
   const onClickStatComment = () => {
     goToRoute(permalink + '?showComments=true')
+
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId,
+        source: 'lineup'
+      })
+    )
   }
 
   useEffect(() => {
@@ -259,6 +276,26 @@ const ConnectedTrackTile = ({
     <UserLink userId={user_id} badgeSize='xs' isActive={isActive} popover />
   )
 
+  const followeeRepostsTruncated = useMemo(
+    () => (followee_reposts ?? []).slice(0, 1),
+    [followee_reposts]
+  )
+
+  const followeeSavesTruncated = useMemo(() => {
+    const [firstSave, secondSave] = followee_saves ?? []
+    const [firstRepost] = followee_reposts ?? []
+
+    // If the first followee save is not the same as the first followee repost,
+    // then we should show the first followee save. Otherwise, we should show
+    // the second followee save.
+    if (firstSave && firstSave.user_id !== firstRepost?.user_id) {
+      return [firstSave]
+    } else if (secondSave) {
+      return [secondSave]
+    }
+    return []
+  }, [followee_saves, followee_reposts])
+
   const renderStats = () => {
     const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
     return (
@@ -266,7 +303,7 @@ const ConnectedTrackTile = ({
         <Stats
           hideImage={size === TrackTileSize.SMALL}
           count={repost_count}
-          followeeActions={followee_reposts}
+          followeeActions={followeeRepostsTruncated}
           contentTitle={contentTitle}
           size={statSize}
           onClick={onClickStatRepost}
@@ -275,7 +312,7 @@ const ConnectedTrackTile = ({
         />
         <Stats
           count={save_count}
-          followeeActions={followee_saves}
+          followeeActions={followeeSavesTruncated}
           contentTitle={contentTitle}
           size={statSize}
           onClick={onClickStatFavorite}

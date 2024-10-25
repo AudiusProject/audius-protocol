@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import {
   CommentSectionProvider,
@@ -66,7 +66,14 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
     }
   }, [commentSectionLoading, isFirstLoad])
 
-  // Scroll to the comment section if the showComments query param is present
+  const handleScrollEnd = useCallback(() => {
+    history.replace({ search: '' })
+    // replacing history scrolls to top, so we need to scroll to the comment section
+    commentSectionRef.current?.scrollIntoView()
+    setHasScrolledIntoView(true)
+    mainContentRef.current?.removeEventListener('scrollend', handleScrollEnd)
+  }, [history, mainContentRef, commentSectionRef])
+
   useEffect(() => {
     if (
       showComments &&
@@ -74,16 +81,23 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
       !commentSectionLoading &&
       commentSectionRef.current
     ) {
-      history.replace({ search: '' })
+      const mainContent = mainContentRef.current
+      mainContent?.addEventListener('scrollend', handleScrollEnd)
+
       commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
-      setHasScrolledIntoView(true)
+
+      return () => {
+        mainContent?.removeEventListener('scrollend', handleScrollEnd)
+      }
     }
   }, [
     commentSectionLoading,
     showComments,
     hasScrolledIntoView,
     commentSectionRef,
-    history
+    history,
+    handleScrollEnd,
+    mainContentRef
   ])
 
   return (

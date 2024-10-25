@@ -469,7 +469,7 @@ function* claimAllChallengeRewardsAsync(
     yield* put(claimAllChallengeRewardsSucceeded())
     yield* call(
       track,
-      make({ eventName: Name.REwARDS_CLAIM_ALL_SUCCESS, count: claims.length })
+      make({ eventName: Name.REWARDS_CLAIM_ALL_SUCCESS, count: claims.length })
     )
   }
 }

@@ -27,7 +27,8 @@ import {
   ID,
   Comment,
   ReplyComment,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Name
 } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
@@ -36,6 +37,8 @@ import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
 import { Nullable } from '~/utils'
+
+import { useAppContext } from '../appContext'
 
 type CommentSectionProviderProps<NavigationProp> = {
   entityId: ID
@@ -95,6 +98,9 @@ export function CommentSectionProvider<NavigationProp>(
     closeDrawer
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
+  const {
+    analytics: { make, track: trackEvent }
+  } = useAppContext()
 
   const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
     CommentSortMethod.Top
@@ -103,6 +109,12 @@ export function CommentSectionProvider<NavigationProp>(
     resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     setCurrentSort(sortMethod)
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_APPLY_SORT,
+        sortType: sortMethod
+      })
+    )
   }
 
   const currentUserId = useSelector(getUserId)
@@ -120,13 +132,13 @@ export function CommentSectionProvider<NavigationProp>(
   })
   const queryClient = useQueryClient()
   // hard refreshes all data
-  const resetComments = () => {
+  const resetComments = useCallback(() => {
     // Reset our comment count since we're reloading comments again - aka can hide the "new comments" button
     resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.commentReplies] })
-  }
+  }, [queryClient, entityId])
 
   const { data: commentCountData, isLoading: isCommentCountLoading } =
     useTrackCommentCount(entityId, currentUserId, true)
@@ -144,6 +156,24 @@ export function CommentSectionProvider<NavigationProp>(
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+
+  const handleLoadMorePages = useCallback(() => {
+    loadMorePages()
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_LOAD_MORE_COMMENTS,
+        trackId: entityId,
+        offset: commentIds.length
+      })
+    )
+  }, [commentIds.length, entityId, loadMorePages, make, trackEvent])
+
+  const handleResetComments = useCallback(() => {
+    resetComments()
+    trackEvent(
+      make({ eventName: Name.COMMENTS_LOAD_NEW_COMMENTS, trackId: entityId })
+    )
+  }, [entityId, make, resetComments, trackEvent])
 
   const handleCloseDrawer = useCallback(() => {
     closeDrawer?.()
@@ -205,14 +235,14 @@ export function CommentSectionProvider<NavigationProp>(
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages,
         track,
-        resetComments,
+        resetComments: handleResetComments,
         hasMorePages: !!hasNextPage,
         currentSort,
         replyingAndEditingState,
         setReplyingAndEditingState,
         setCurrentSort: handleSetCurrentSort,
         playTrack,
-        loadMorePages,
+        loadMorePages: handleLoadMorePages,
         navigation,
         closeDrawer: handleCloseDrawer,
         hasNewComments
