@@ -91,16 +91,12 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    is_stream_gated = track_metadata.get(
-        "is_stream_gated", False
-    ) and track_metadata.get("stream_conditions", None)
-    is_download_gated = track_metadata.get(
-        "is_download_gated", False
-    ) and track_metadata.get("download_conditions", None)
-    if is_stream_gated or is_download_gated:
+    stream_conditions = track_metadata.get("stream_conditions", None)
+    download_conditions = track_metadata.get("download_conditions", None)
+    if stream_conditions or download_conditions:
         conditions = (
             track_metadata["stream_conditions"]
-            if is_stream_gated
+            if stream_conditions
             else track_metadata["download_conditions"]
         )
         # Convert legacy conditions to new array format with user IDs
@@ -116,7 +112,7 @@ def update_track_price_history(
             new_record.splits = []
             new_record.access = (
                 PurchaseAccessType.stream
-                if is_stream_gated
+                if stream_conditions
                 else PurchaseAccessType.download
             )
             if "price" in usdc_purchase:
@@ -757,33 +753,26 @@ def validate_access_conditions(params: ManageEntityParameters):
     track_metadata = params.metadata
 
     stem_of = track_metadata.get("stem_of")
-    is_stream_gated = track_metadata.get("is_stream_gated")
     stream_conditions = track_metadata.get("stream_conditions", {}) or {}
-    is_download_gated = track_metadata.get("is_download_gated")
     download_conditions = track_metadata.get("download_conditions", {}) or {}
 
     # if stem track, must not be have stream/download conditions
     # stem tracks must rely on their parent track's access conditions
     # otherwise the access checker may e.g. look for a purchase
     # on the stem track instead of the parent track
-    if stem_of and (is_stream_gated or is_download_gated):
+    if stem_of and (stream_conditions or download_conditions):
         raise IndexingValidationError(
             f"Track {params.entity_id} is a stem track but has stream/download conditions"
         )
 
-    if is_stream_gated:
-        # if stream gated, must have stream conditions
-        if not stream_conditions:
-            raise IndexingValidationError(
-                f"Track {params.entity_id} is stream gated but has no stream conditions"
-            )
+    if stream_conditions:
         # must be gated on a single condition
         if len(stream_conditions) != 1:
             raise IndexingValidationError(
                 f"Track {params.entity_id} has an invalid number of stream conditions"
             )
         # if stream gated, must be download gated
-        if not is_download_gated:
+        if not download_conditions:
             raise IndexingValidationError(
                 f"Track {params.entity_id} is stream gated but not download gated"
             )
@@ -792,12 +781,7 @@ def validate_access_conditions(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {params.entity_id} stream conditions do not match download conditions"
             )
-    elif is_download_gated:
-        # if download gated, must have download conditions
-        if not download_conditions:
-            raise IndexingValidationError(
-                f"Track {params.entity_id} is download gated but has no download conditions"
-            )
+    elif download_conditions:
         # must be gated on a single condition
         if len(download_conditions) != 1:
             raise IndexingValidationError(

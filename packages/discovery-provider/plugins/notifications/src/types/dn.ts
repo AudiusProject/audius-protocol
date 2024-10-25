@@ -622,7 +622,6 @@ export interface TrackRow {
   is_current: boolean
   is_delete: boolean
   is_playlist_upload?: boolean
-  is_stream_gated?: boolean
   is_unlisted?: boolean
   isrc?: string | null
   iswc?: string | null

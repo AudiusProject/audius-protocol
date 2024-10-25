@@ -223,7 +223,7 @@ def get_feed_sql(args):
             # filter out gated track reposts from feed
             reposted_tracks = list(
                 filter(
-                    lambda track: track.is_stream_gated == False,  # not a gated track
+                    lambda track: track.stream_conditions is None,  # not a gated track
                     reposted_tracks,
                 )
             )

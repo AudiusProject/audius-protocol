@@ -1581,34 +1581,27 @@ def test_update_access_conditions(app, mocker):
         follow_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET).first()
         )
-        assert follow_gated.is_stream_gated == True
+
         assert follow_gated.stream_conditions == follow_gate
-        assert follow_gated.is_download_gated == True
         assert follow_gated.download_conditions == follow_gate
 
         usdc_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 1).first()
         )
-        assert usdc_gated.is_stream_gated == True
         assert usdc_gated.stream_conditions == usdc_gate_1
-        assert usdc_gated.is_download_gated == True
         assert usdc_gated.download_conditions == usdc_gate_1
 
         free: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 2).first()
         )
-        assert free.is_stream_gated == False
         assert free.stream_conditions == None
-        assert free.is_download_gated == False
         assert free.download_conditions == None
 
         hidden_follow_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 3).first()
         )
         assert hidden_follow_gated.is_unlisted == True
-        assert hidden_follow_gated.is_stream_gated == True
         assert hidden_follow_gated.stream_conditions == collectible_gate
-        assert hidden_follow_gated.is_download_gated == True
         assert hidden_follow_gated.download_conditions == collectible_gate
 
 

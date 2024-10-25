@@ -203,9 +203,8 @@ def get_feed_es(args, limit=10, offset=0):
                 or s.get("is_private")
                 or s.get("is_unlisted")
                 or s.get("stem_of")
-                or s.get("is_stream_gated")
             ):
-                # MISSING: skip reposts for delete, private, unlisted, stem_of, is_stream_gated
+                # MISSING: skip reposts for delete, private, unlisted, stem_of
                 # this is why we took soft limit above
                 continue
             keyed_reposts[s["item_key"]] = s
