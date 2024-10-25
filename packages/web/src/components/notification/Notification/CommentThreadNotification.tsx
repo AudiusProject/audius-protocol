@@ -30,7 +30,8 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   replied: ' replied to your comment on',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentThreadNotificationProps = {
@@ -55,7 +56,8 @@ export const CommentThreadNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
-
+  const isOwnerReply =
+    entity?.user?.user_id === firstUser?.user_id && !isMultiUser
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
@@ -102,6 +104,8 @@ export const CommentThreadNotification = (
         {messages.replied}{' '}
         {isOwner ? (
           messages.your
+        ) : isOwnerReply ? (
+          messages.their
         ) : (
           <UserNameLink
             user={entity.user}

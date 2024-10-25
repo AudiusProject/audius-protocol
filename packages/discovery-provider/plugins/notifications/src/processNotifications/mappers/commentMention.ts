@@ -96,6 +96,8 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
     } tagged you in a comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
+        : this.entityUserId === this.commenterUserId
+        ? 'their'
         : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (

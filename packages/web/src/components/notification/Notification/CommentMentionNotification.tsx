@@ -30,7 +30,8 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   mentioned: ' tagged you in a comment on ',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentMentionNotificationProps = {
@@ -55,7 +56,8 @@ export const CommentMentionNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
-
+  const isOwnerMention =
+    entity?.user?.user_id === firstUser?.user_id && !isMultiUser
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
@@ -102,6 +104,8 @@ export const CommentMentionNotification = (
         {messages.mentioned}{' '}
         {isOwner ? (
           messages.your
+        ) : isOwnerMention ? (
+          messages.their
         ) : (
           <UserNameLink
             user={entity.user}
