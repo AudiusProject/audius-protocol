@@ -577,20 +577,16 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
-      const userIds = Array.from(
-        new Set(
-          notification.actions
-            .map((action) => {
-              const data = action.data
-              entityId = HashId.parse(data.entityId)
-              entityUserId = HashId.parse(data.entityUserId)
-              // @ts-ignore
-              entityType = data.type
-              return HashId.parse(data.commentUserId)
-            })
-            .filter(removeNullable)
-        )
-      )
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = HashId.parse(data.entityId)
+          entityUserId = HashId.parse(data.entityUserId)
+          // @ts-ignore
+          entityType = data.type
+          return HashId.parse(data.commentUserId)
+        })
+        .filter(removeNullable)
       return {
         type: NotificationType.CommentMention,
         userIds,
@@ -604,20 +600,16 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
-      const userIds = Array.from(
-        new Set(
-          notification.actions
-            .map((action) => {
-              const data = action.data
-              entityId = HashId.parse(data.entityId)
-              entityUserId = HashId.parse(data.entityUserId)
-              // @ts-ignore
-              entityType = data.type
-              return HashId.parse(data.reacterUserId)
-            })
-            .filter(removeNullable)
-        )
-      )
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = HashId.parse(data.entityId)
+          entityUserId = HashId.parse(data.entityUserId)
+          // @ts-ignore
+          entityType = data.type
+          return HashId.parse(data.reacterUserId)
+        })
+        .filter(removeNullable)
       return {
         type: NotificationType.CommentReaction,
         userIds,
