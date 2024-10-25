@@ -76,6 +76,9 @@ export const initializeAudiusLibs = async (handle) => {
   return audiusLibs
 }
 
+/**
+ * @type {import('@audius/sdk').AudiusSdk}
+ */
 let audiusSdk
 export const initializeAudiusSdk = async ({
   apiKey = undefined,

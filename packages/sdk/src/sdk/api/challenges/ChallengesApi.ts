@@ -10,7 +10,6 @@ import { AntiAbuseOracleService } from '../../services/AntiAbuseOracle/types'
 import type { RewardManagerClient } from '../../services/Solana/programs/RewardManagerClient/RewardManagerClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { AntiAbuseOracleAttestationError } from '../../utils/errors'
-import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import {
   ChallengesApi as GeneratedChallengesApi,
@@ -69,18 +68,13 @@ export class ChallengesApi extends GeneratedChallengesApi {
       case ChallengeId.MOBILE_INSTALL:
       case ChallengeId.SEND_FIRST_TIP:
       case ChallengeId.TRACK_UPLOADS:
-        return `${encodeHashId(args.userId)}`
-      case ChallengeId.AUDIO_MATCHING_BUYER:
-        return `${encodeHashId(args.sellerUserId)}:${encodeHashId(
-          args.trackId
-        )}`
+        return `${args.userId.toString(16)}`
       case ChallengeId.AUDIO_MATCHING_SELLER:
-        return `${encodeHashId(args.buyerUserId)}:${encodeHashId(args.trackId)}`
+      case ChallengeId.AUDIO_MATCHING_BUYER:
+        return `${args.userId.toString(16)}:${args.contentId.toString(16)}`
       case ChallengeId.REFERRALS:
       case ChallengeId.VERIFIED_REFERRALS:
-        return `${encodeHashId(args.userId)}:${encodeHashId(
-          args.referredUserId
-        )}`
+        return `${args.userId.toString(16)}:${args.referredUserId.toString(16)}`
       default:
         throw new Error(`Unknown challenge ID: ${args.challengeId}`)
     }

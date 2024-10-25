@@ -69,6 +69,4 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
         return num_tracks_per_user
 
 
-track_upload_challenge_manager = ChallengeManager(
-    "track-upload", TrackUploadChallengeUpdater()
-)
+track_upload_challenge_manager = ChallengeManager("u", TrackUploadChallengeUpdater())

@@ -16,43 +16,43 @@ import { notificationTypes as NotificationType } from '../../constants'
 import { capitalize } from '../../processNotifications/utils'
 
 const challengeRewardsConfig = {
-  referred: {
+  rd: {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
   },
-  referrals: {
+  r: {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
   },
-  'ref-v': {
+  rv: {
     title: 'Invite your Fans',
     icon: <IncomingEnvelopeIcon />
   },
-  'connect-verified': {
+  v: {
     title: 'Link Verified Accounts',
     icon: <WhiteHeavyCheckMarkIcon />
   },
-  'listen-streak': {
+  l: {
     title: 'Listening Streak: 7 Days',
     icon: <HeadphoneIcon />
   },
-  'mobile-install': {
+  m: {
     title: 'Get the Audius Mobile App',
     icon: <MobilePhoneWithArrowIcon />
   },
-  'profile-completion': {
+  p: {
     title: 'Complete Your Profile',
     icon: <WhiteHeavyCheckMarkIcon />
   },
-  'track-upload': {
+  u: {
     title: 'Upload 3 Tracks',
     icon: <MultipleMusicalNotesIcon />
   },
-  'send-first-tip': {
+  ft: {
     title: 'Send Your First Tip',
     icon: <MoneyMouthFaceIcon />
   },
-  'first-playlist': {
+  fp: {
     title: 'Create a Playlist',
     icon: <TrebleClefIcon />
   }
@@ -71,8 +71,7 @@ const HighlightText = ({ text }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -84,8 +83,7 @@ const BodyText = ({ text, className }) => (
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -260,7 +258,7 @@ const notificationMap = {
     const { rewardAmount } = notification
     const { title, icon } = challengeRewardsConfig[notification.challengeId]
     let bodyText
-    if (notification.challengeId === 'referred') {
+    if (notification.challengeId === 'rd') {
       bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
     } else {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`

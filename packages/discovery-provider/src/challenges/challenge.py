@@ -73,7 +73,7 @@ class ChallengeUpdater(ABC):
 
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
         """Optional method to provide a custom specifier for a challenge, given a user_id"""
-        return str(user_id)
+        return hex(user_id)[2:]
 
     def should_create_new_challenge(
         self, session: Session, event: str, user_id: int, extra: Dict

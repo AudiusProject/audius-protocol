@@ -7,7 +7,7 @@ from src.models.users.user import User
 
 
 def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
-    return f"{user_id}=>{extra['track_id']}"
+    return f"{hex(user_id)[2:]}:{hex(extra['track_id'])[2:]}"
 
 
 def does_user_exist_with_verification_status(

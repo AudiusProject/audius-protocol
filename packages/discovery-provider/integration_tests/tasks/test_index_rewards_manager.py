@@ -28,23 +28,23 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 
 
 def test_decode_reward_manager_transfer_instruction():
-    transfer_data = "4uzJ5EwVTSPet22fnLDyB9JaEMWSqopW7F5PYKjf65j76BGhtMR5LXfv3twbV7Bq3CSH2iMRr7fNJzyijZ7"
+    transfer_data = "2dMckupP2dfPwa1UR3LcxX1JgXQbkV7JYgDvmg3j7FuqqsZn36ue3tonBeiR"
     decoded_data = parse_transfer_instruction_data(transfer_data)
     assert decoded_data == {
         "amount": 10000000000,
-        "id": "profile-completion:123456789",
+        "id": "p:123456789",
         "eth_recipient": "0x0403be3560116a12b467855cb29a393174a59876",
     }
 
 
 def test_parse_transfer_instruction_id():
-    transfer_id = "profile-completion:123456789"
+    transfer_id = "p:123456789"
     parsed_id = parse_transfer_instruction_id(transfer_id)
-    assert parsed_id[0] == "profile-completion"
+    assert parsed_id[0] == "p"
     assert parsed_id[1] == "123456789"
 
     # Returns None on invalid transfer_id
-    transfer_id = "profile-completion_123456789"
+    transfer_id = "p_123456789"
     parsed_id = parse_transfer_instruction_id(transfer_id)
     assert parsed_id == None
 
@@ -233,7 +233,7 @@ mock_tx_info = GetTransactionResp.from_json(
                             },
                             {
                                 "accounts": [2, 10, 11, 3, 1, 4, 12, 0, 7, 8, 9],
-                                "data": "4uzJ5EwVTSPet22fnLDyB9JaEMWSqopW7F5PYKjf65j76BGhtMR5LXfv3twbV7Bq3CSH2iMRr7fNJzyijZ7",
+                                "data": "2dMckupP2dfPwa1UR3LcxX1JgXQbkV7JYgDvmg3j7FuqqsZn36ue3tonBeiR",
                                 "programIdIndex": 14,
                             },
                         ],
@@ -272,7 +272,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     )
     assert (
         parsed_tx["transfer_instruction"]["challenge_id"]  # pylint: disable=E1136
-        == "profile-completion"
+        == "p"
     )
     assert parsed_tx["tx_sig"] == first_tx_sig
     assert parsed_tx["slot"] == 72131741
