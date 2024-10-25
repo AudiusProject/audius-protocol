@@ -197,7 +197,7 @@ export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
 export const AUDIUS_CAREERS_LINK = 'https://www.tikilabs.com/careers'
 export const AUDIUS_PODCAST_LINK =
-  'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
+  'https://www.youtube.com/playlist?list=PLKEECkHRxmPbcG59urFnWgsm6EQ9GAbPb'
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
 export const AUDIUS_API_LINK = 'https://audius.org/api'
 
