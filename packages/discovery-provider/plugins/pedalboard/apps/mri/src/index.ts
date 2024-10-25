@@ -30,8 +30,8 @@ const main = async () => {
     timeZone: 'America/Los_Angeles'
   })
   const udrJob = CronJob.from({
-    // run once per quarter, 1 hour into the next quarter
-    cronTime: '0 1 1 */3 *',
+    // run once per month, 1 hour into the next month
+    cronTime: '0 1 1 * *',
     onTick: async function () {
       await udr(db, udrS3s, new Date())
     },
