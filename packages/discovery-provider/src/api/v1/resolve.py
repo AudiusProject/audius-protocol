@@ -1,7 +1,8 @@
 import logging
 
-from flask import redirect
+from flask import redirect, make_response
 from flask_restx import Namespace, Resource, reqparse
+from flask_cors import cross_origin
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -30,6 +31,7 @@ class Resolve(Resource):
         responses={302: "Internal redirect"},
     )
     @ns.expect(resolve_route_parser)
+    @cross_origin()
     def get(self):
         """
         Resolves and redirects a provided Audius app URL to the API resource URL it represents.
@@ -49,7 +51,9 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url, ns)
 
-                return redirect(resolved_url, code=302)
+                response = make_response(redirect(resolved_url, code=302))
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                return response
 
         except Exception as e:
             logger.warning(e)
