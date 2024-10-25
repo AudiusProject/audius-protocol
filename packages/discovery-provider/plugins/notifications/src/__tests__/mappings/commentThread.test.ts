@@ -92,6 +92,8 @@ describe('Comment Thread Notification', () => {
         data: {
           id: 'timestamp:1589373:group_id:comment_thread:1',
           type: 'CommentThread',
+          entityType: 'track',
+          entityId: 1,
           userIds: [2]
         }
       }
@@ -162,6 +164,8 @@ describe('Comment Thread Notification', () => {
         data: {
           id: 'timestamp:1589373:group_id:comment_thread:1',
           type: 'CommentThread',
+          entityType: 'track',
+          entityId: 1,
           userIds: [2]
         }
       }
@@ -267,7 +271,7 @@ describe('Comment Thread Notification', () => {
       (_, num) => ({
         type: 'comment_thread',
         timestamp: new Date(),
-        specifier: (num + 3).toString(),
+        specifier: (num + 2).toString(),
         group_id: 'comment_thread:1',
         data: {
           type: EntityType.Track,

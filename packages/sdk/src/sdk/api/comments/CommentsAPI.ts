@@ -16,11 +16,22 @@ import {
 
 import { CommentMetadata } from './types'
 
+type EditCommentMetadata = CommentMetadata & {
+  trackId: number
+}
+
 type PinCommentMetadata = {
   userId: number
   entityId: number
   trackId: number
   isPin: boolean
+}
+
+type ReactCommentMetadata = {
+  userId: number
+  commentId: number
+  isLiked: boolean
+  trackId: number
 }
 
 type CommentNotificationOptions = OverrideProperties<
@@ -65,8 +76,8 @@ export class CommentsApi extends GeneratedCommentsApi {
     return encodeHashId(newCommentId)
   }
 
-  async editComment(metadata: CommentMetadata) {
-    const { userId, entityId } = metadata
+  async editComment(metadata: EditCommentMetadata) {
+    const { userId, entityId, trackId } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
@@ -74,7 +85,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(metadata)
+        data: snakecaseKeys({ ...metadata, entityId: trackId })
       }),
       auth: this.auth
     })
@@ -94,13 +105,17 @@ export class CommentsApi extends GeneratedCommentsApi {
     return response
   }
 
-  async reactComment(userId: number, entityId: number, isLiked: boolean) {
+  async reactComment(metadata: ReactCommentMetadata) {
+    const { userId, commentId, isLiked, trackId } = metadata
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.COMMENT,
-      entityId,
+      entityId: commentId,
       action: isLiked ? Action.REACT : Action.UNREACT,
-      metadata: '',
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys({ entityId: trackId, entityType: EntityType.TRACK })
+      }),
       auth: this.auth
     })
     return response

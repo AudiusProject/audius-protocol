@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById, useGetUsersByIds } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -70,8 +70,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
     onSubmit,
     messageId,
     presetMessage,
-    presetUserMentionIds = [],
+    presetUserMentions = [],
     maxLength = 400,
+    maxMentions = Infinity,
     placeholder,
     isLoading,
     entityId,
@@ -84,9 +85,6 @@ export const ComposerInput = (props: ComposerInputProps) => {
     id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
-  const { data: presetMentionUsers } = useGetUsersByIds({
-    ids: presetUserMentionIds
-  })
   const [value, setValue] = useState(presetMessage ?? '')
   const [focused, setFocused] = useState(false)
   const [autocompleteAtIndex, setAutocompleteAtIndex] = useState(0)
@@ -94,29 +92,21 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const [isUserAutocompleteActive, setIsUserAutocompleteActive] =
     useState(false)
 
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      acc[`@${mention.handle}`] = mention.userId
+      return acc
+    }, {})
+  )
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)
   // Ref to keep track of the submit state of the input
   const submittedRef = useRef(false)
   // Ref to keep track of a unique id for each change
   const changeOpIdRef = useRef(0)
-
-  useEffect(() => {
-    if (presetMentionUsers) {
-      setUserMentions((mentions) => [
-        ...mentions,
-        ...presetMentionUsers.map((user) => `@${user.handle}`)
-      ])
-      setUserIdMap((map) => {
-        presetMentionUsers.forEach((user) => {
-          map[`@${user.handle}`] = user.user_id
-        })
-        return map
-      })
-    }
-  }, [presetMentionUsers])
 
   const {
     linkEntities,
@@ -211,6 +201,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ]
   }, [autocompleteAtIndex, isUserAutocompleteActive, value])
 
+  const mentionCount = useMemo(() => {
+    return getUserMentions(value)?.length ?? 0
+  }, [getUserMentions, value])
+
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
@@ -266,14 +260,22 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
+    if (ref.current) {
+      ref.current.blur()
+    }
     submittedRef.current = true
     changeOpIdRef.current++
-    const mentionIds =
+    const mentions =
       getUserMentions(value)?.map((match) => {
-        return userIdMap[match.text]
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
       }) ?? []
-    onSubmit?.(restoreLinks(value), linkEntities, mentionIds)
+    onSubmit?.(restoreLinks(value), linkEntities, mentions)
     submittedRef.current = false
+    setUserMentions([])
+    setUserIdMap({})
   }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
 
   // Submit when pressing enter while not holding shift
@@ -324,8 +326,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Start user autocomplete
       if (e.key === AT_KEY) {
-        setAutocompleteAtIndex(cursorPosition)
-        setIsUserAutocompleteActive(true)
+        if (mentionCount < maxMentions) {
+          setAutocompleteAtIndex(cursorPosition)
+          setIsUserAutocompleteActive(true)
+        }
       }
 
       // Delete any matched values with a single backspace
@@ -351,7 +355,9 @@ export const ComposerInput = (props: ComposerInputProps) => {
       handleAutocomplete,
       onSubmit,
       handleSubmit,
-      handleBackspace
+      handleBackspace,
+      maxMentions,
+      mentionCount
     ]
   )
 

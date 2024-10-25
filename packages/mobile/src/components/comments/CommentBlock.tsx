@@ -2,13 +2,20 @@ import { useCallback } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
-import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import {
+  Name,
+  type Comment,
+  type ID,
+  type ReplyComment
+} from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
+import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
@@ -36,6 +43,7 @@ export const CommentBlockInternal = (
   const {
     id: commentId,
     message,
+    mentions = [],
     trackTimestampS,
     createdAt,
     userId,
@@ -57,6 +65,19 @@ export const CommentBlockInternal = (
     closeDrawer?.()
     onPressProfilePic()
   }, [closeDrawer, onPressProfilePic])
+
+  const handlePressTimestamp = useCallback(
+    (e: GestureResponderEvent, timestampSeconds: number) => {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_CLICK_TIMESTAMP,
+          commentId,
+          timestamp: timestampSeconds
+        })
+      )
+    },
+    [commentId]
+  )
 
   const isCommentByArtist = userId === artistId
 
@@ -105,13 +126,22 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
+                  <TimestampLink
+                    size='s'
+                    timestampSeconds={trackTimestampS}
+                    onPress={handlePressTimestamp}
+                  />
                 </>
               ) : null}
             </Flex>
           </Flex>
         ) : null}
-        <CommentText isEdited={isEdited && !isTombstone} isPreview={isPreview}>
+        <CommentText
+          isEdited={isEdited && !isTombstone}
+          isPreview={isPreview}
+          commentId={commentId}
+          mentions={mentions}
+        >
           {message}
         </CommentText>
         {!isPreview ? (

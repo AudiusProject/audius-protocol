@@ -160,6 +160,7 @@ export const GetNotificationsValidTypesEnum = {
     ClaimableReward: 'claimable_reward',
     Comment: 'comment',
     CommentThread: 'comment_thread',
-    CommentMention: 'comment_mention'
+    CommentMention: 'comment_mention',
+    CommentReaction: 'comment_reaction'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

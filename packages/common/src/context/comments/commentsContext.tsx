@@ -14,14 +14,21 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useGetTrackById, useGetCommentsByTrackId, QUERY_KEYS } from '~/api'
+import {
+  useGetTrackById,
+  useGetCommentsByTrackId,
+  QUERY_KEYS,
+  useTrackCommentCount,
+  resetPreviousCommentCount
+} from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
   ModalSource,
   ID,
   Comment,
   ReplyComment,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Name
 } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
@@ -30,6 +37,8 @@ import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
 import { Nullable } from '~/utils'
+
+import { useAppContext } from '../appContext'
 
 type CommentSectionProviderProps<NavigationProp> = {
   entityId: ID
@@ -57,7 +66,7 @@ type CommentSectionContextType<NavigationProp> = {
   currentUserId: Nullable<ID>
   artistId: ID
   isEntityOwner: boolean
-  commentCount: number
+  commentCount: number | undefined
   track: UserTrackMetadata
   playTrack: (timestampSeconds?: number) => void
   commentSectionLoading: boolean
@@ -65,9 +74,11 @@ type CommentSectionContextType<NavigationProp> = {
   currentSort: CommentSortMethod
   isLoadingMorePages: boolean
   hasMorePages: boolean
-  reset: (hard?: boolean) => void
+  resetComments: () => void
   setCurrentSort: (sort: CommentSortMethod) => void
   loadMorePages: () => void
+  hasNewComments: boolean
+  isCommentCountLoading: boolean
 } & CommentSectionProviderProps<NavigationProp>
 
 export const CommentSectionContext = createContext<
@@ -87,13 +98,23 @@ export function CommentSectionProvider<NavigationProp>(
     closeDrawer
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
+  const {
+    analytics: { make, track: trackEvent }
+  } = useAppContext()
 
   const [currentSort, setCurrentSort] = useState<CommentSortMethod>(
     CommentSortMethod.Top
   )
   const handleSetCurrentSort = (sortMethod: CommentSortMethod) => {
+    resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     setCurrentSort(sortMethod)
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_APPLY_SORT,
+        sortType: sortMethod
+      })
+    )
   }
 
   const currentUserId = useSelector(getUserId)
@@ -111,11 +132,22 @@ export function CommentSectionProvider<NavigationProp>(
   })
   const queryClient = useQueryClient()
   // hard refreshes all data
-  const reset = () => {
+  const resetComments = useCallback(() => {
+    // Reset our comment count since we're reloading comments again - aka can hide the "new comments" button
+    resetPreviousCommentCount(queryClient, entityId)
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.trackCommentList] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.comment] })
     queryClient.resetQueries({ queryKey: [QUERY_KEYS.commentReplies] })
-  }
+  }, [queryClient, entityId])
+
+  const { data: commentCountData, isLoading: isCommentCountLoading } =
+    useTrackCommentCount(entityId, currentUserId, true)
+
+  const hasNewComments =
+    commentCountData?.previousValue !== undefined &&
+    commentCountData?.currentValue !== undefined &&
+    commentCountData?.previousValue < commentCountData?.currentValue
+
   const dispatch = useDispatch()
 
   const lineup = useSelector(getLineup)
@@ -124,6 +156,24 @@ export function CommentSectionProvider<NavigationProp>(
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+
+  const handleLoadMorePages = useCallback(() => {
+    loadMorePages()
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_LOAD_MORE_COMMENTS,
+        trackId: entityId,
+        offset: commentIds.length
+      })
+    )
+  }, [commentIds.length, entityId, loadMorePages, make, trackEvent])
+
+  const handleResetComments = useCallback(() => {
+    resetComments()
+    trackEvent(
+      make({ eventName: Name.COMMENTS_LOAD_NEW_COMMENTS, trackId: entityId })
+    )
+  }, [entityId, make, resetComments, trackEvent])
 
   const handleCloseDrawer = useCallback(() => {
     closeDrawer?.()
@@ -169,7 +219,7 @@ export function CommentSectionProvider<NavigationProp>(
     return null
   }
 
-  const { owner_id, comment_count: commentCount } = track
+  const { owner_id } = track
 
   return (
     <CommentSectionContext.Provider
@@ -178,22 +228,24 @@ export function CommentSectionProvider<NavigationProp>(
         artistId: owner_id,
         entityId,
         entityType,
-        commentCount,
+        commentCount: commentCountData?.currentValue ?? track.comment_count,
+        isCommentCountLoading,
         commentIds,
         commentSectionLoading,
         isEntityOwner: currentUserId === owner_id,
         isLoadingMorePages,
         track,
-        reset,
+        resetComments: handleResetComments,
         hasMorePages: !!hasNextPage,
         currentSort,
         replyingAndEditingState,
         setReplyingAndEditingState,
         setCurrentSort: handleSetCurrentSort,
         playTrack,
-        loadMorePages,
+        loadMorePages: handleLoadMorePages,
         navigation,
-        closeDrawer: handleCloseDrawer
+        closeDrawer: handleCloseDrawer,
+        hasNewComments
       }}
     >
       {children}

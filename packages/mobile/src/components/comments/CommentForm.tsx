@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import type { ID, UserMetadata } from '@audius/common/models'
+import type { CommentMention } from '@audius/sdk'
 import type { TextInput as RNTextInput } from 'react-native'
 
 import {
@@ -15,6 +17,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
+import { make, track } from 'app/services/analytics'
 
 import { ComposerInput } from '../composer-input'
 import { ProfilePicture } from '../core'
@@ -69,13 +72,14 @@ const CommentFormHelperText = (props: CommentFormHelperTextProps) => {
 }
 
 type CommentFormProps = {
-  onSubmit?: (commentMessage: string, mentions?: ID[]) => void
+  onSubmit?: (commentMessage: string, mentions?: CommentMention[]) => void
   initialValue?: string
   isLoading?: boolean
   onAutocompleteChange?: (isActive: boolean, value: string) => void
   setAutocompleteHandler?: (handler: (user: UserMetadata) => void) => void
   TextInputComponent?: typeof RNTextInput
   autoFocus?: boolean
+  isPreview?: boolean
 }
 
 export const CommentForm = (props: CommentFormProps) => {
@@ -86,10 +90,12 @@ export const CommentForm = (props: CommentFormProps) => {
     onSubmit = () => {},
     initialValue,
     TextInputComponent,
-    autoFocus
+    autoFocus,
+    isPreview
   } = props
   const [messageId, setMessageId] = useState(0)
   const [initialMessage, setInitialMessage] = useState(initialValue)
+  const [initialMentions, setInitialMentions] = useState<CommentMention[]>([])
   const { currentUserId, entityId, replyingAndEditingState } =
     useCurrentCommentSection()
   const { replyingToComment, editingComment } = replyingAndEditingState ?? {}
@@ -104,9 +110,8 @@ export const CommentForm = (props: CommentFormProps) => {
     { disabled: !replyingToComment }
   )
 
-  // TODO: Add mentions back here
-  const handleSubmit = (message: string) => {
-    onSubmit(message)
+  const handleSubmit = (message: string, mentions?: CommentMention[]) => {
+    onSubmit(message, mentions)
     setMessageId((id) => ++id)
   }
 
@@ -121,6 +126,12 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (replyingToComment && replyingToUser) {
       setInitialMessage(replyInitialMessage(replyingToUser.handle))
+      setInitialMentions([
+        {
+          handle: replyingToUser.handle,
+          userId: replyingToUser.user_id
+        }
+      ])
       focusInput()
     }
   }, [replyingToComment, replyingToUser, focusInput])
@@ -131,6 +142,7 @@ export const CommentForm = (props: CommentFormProps) => {
   useEffect(() => {
     if (editingComment) {
       setInitialMessage(editingComment.message)
+      setInitialMentions(editingComment.mentions ?? [])
       focusInput()
     }
   }, [editingComment, focusInput])
@@ -154,7 +166,48 @@ export const CommentForm = (props: CommentFormProps) => {
     }
   }, [editingComment, initialMessage?.length, replyingToComment])
 
+  const handleFocus = useCallback(() => {
+    track(
+      make({
+        eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
+        trackId: entityId,
+        source: isPreview ? 'comment_preview' : 'comment_input'
+      })
+    )
+  }, [entityId, isPreview])
+
   const showHelperText = editingComment || replyingToComment
+
+  const handleAddMention = useCallback((userId: ID) => {
+    track(
+      make({
+        eventName: Name.COMMENTS_ADD_MENTION,
+        userId
+      })
+    )
+  }, [])
+
+  const handleAddTimestamp = useCallback((timestamp: number) => {
+    track(
+      make({
+        eventName: Name.COMMENTS_ADD_TIMESTAMP,
+        timestamp
+      })
+    )
+  }, [])
+
+  const handleAddLink = useCallback(
+    (entityId: ID, kind: 'track' | 'collection' | 'user') => {
+      track(
+        make({
+          eventName: Name.COMMENTS_ADD_LINK,
+          entityId,
+          kind
+        })
+      )
+    },
+    []
+  )
 
   return (
     <Flex direction='row' gap='m' alignItems='center'>
@@ -177,15 +230,21 @@ export const CommentForm = (props: CommentFormProps) => {
             ref={ref}
             onAutocompleteChange={onAutocompleteChange}
             setAutocompleteHandler={setAutocompleteHandler}
+            onFocus={handleFocus}
             isLoading={isLoading}
             messageId={messageId}
             entityId={entityId}
             presetMessage={initialMessage}
+            presetUserMentions={initialMentions}
             placeholder={messages.addComment}
             onSubmit={handleSubmit}
             TextInputComponent={TextInputComponent}
             onLayout={handleLayout}
             maxLength={400}
+            maxMentions={10}
+            onAddMention={handleAddMention}
+            onAddTimestamp={handleAddTimestamp}
+            onAddLink={handleAddLink}
             styles={{
               container: {
                 borderTopLeftRadius: showHelperText ? 0 : spacing.unit1,

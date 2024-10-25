@@ -3,12 +3,11 @@ import {
   forwardRef,
   ReactNode,
   useCallback,
-  useEffect,
+  useMemo,
   useState
 } from 'react'
 
-import { useGetUserByHandle } from '@audius/common/api'
-import { ID } from '@audius/common/models'
+import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
 import { profilePage } from '@audius/common/src/utils/route'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -21,7 +20,8 @@ import { Text, TextProps } from '@audius/harmony'
 import {
   instanceOfTrackResponse,
   instanceOfPlaylistResponse,
-  instanceOfUserResponse
+  instanceOfUserResponse,
+  CommentMention
 } from '@audius/sdk'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -48,7 +48,7 @@ type UserGeneratedTextV2Props = {
   children: string
   matchers?: Matcher[]
   linkProps?: Partial<TextLinkProps>
-  onUserIdsChange?: (userIds: ID[]) => void
+  mentions?: CommentMention[]
 
   // If true, only linkify Audius URLs
   internalLinksOnly?: boolean
@@ -106,22 +106,15 @@ const Link = ({
 
 const HandleLink = ({
   handle,
-  onUserLoad,
   ...other
 }: Omit<TextLinkProps, 'to'> & {
   handle: string
-  onUserLoad: (userId: ID) => void
 }) => {
   const currentUserId = useSelector(getUserId)
-
   const { data: user } = useGetUserByHandle({
     handle: handle.replace('@', ''),
     currentUserId
   })
-
-  useEffect(() => {
-    if (user) onUserLoad(user.user_id)
-  }, [onUserLoad, user])
 
   return user ? (
     <ArtistPopover handle={user.handle} component='span'>
@@ -139,6 +132,23 @@ const HandleLink = ({
   )
 }
 
+const MentionLink = ({
+  handle,
+  ...other
+}: Omit<TextLinkProps, 'to'> & {
+  handle: string
+}) => {
+  const userHandle = handle.replace('@', '')
+
+  return (
+    <ArtistPopover handle={userHandle} component='span'>
+      <TextLink {...other} to={profilePage(userHandle)}>
+        {handle}
+      </TextLink>
+    </ArtistPopover>
+  )
+}
+
 /**
  * Hand rolled implementation of UserGeneratedText that supports custom matchers, unlike linkify-react
  */
@@ -150,26 +160,26 @@ export const UserGeneratedTextV2 = forwardRef(function (
     children,
     matchers: matchersProp,
     linkProps,
-    onUserIdsChange,
+    mentions,
     internalLinksOnly,
     suffix,
     ...other
   } = props
 
-  const [userIds, setUserIds] = useState<ID[]>([])
+  // Fetch the users for artists popovers for mentions
+  useGetUsersByIds({
+    ids: mentions ? mentions.map((mention) => mention.userId) : []
+  })
 
-  const handleUserLoad = useCallback(
-    (userId: ID) => {
-      if (!userIds.includes(userId)) {
-        setUserIds((ids) => [...ids, userId])
-      }
-    },
-    [userIds]
-  )
+  const mentionRegex = useMemo(() => {
+    const nullRegex = /(?!)/
+    if (!mentions) return nullRegex
 
-  useEffect(() => {
-    onUserIdsChange?.(userIds)
-  }, [onUserIdsChange, userIds])
+    const regexString = [...mentions.map((mention) => `@${mention.handle}`)]
+      .sort((a, b) => b.length - a.length)
+      .join('|')
+    return regexString.length ? new RegExp(regexString, 'g') : nullRegex
+  }, [mentions])
 
   const renderLink = useCallback(
     (text: string, _: RegExpMatchArray, index: number) => {
@@ -190,6 +200,24 @@ export const UserGeneratedTextV2 = forwardRef(function (
     []
   )
 
+  const renderMentionLink = useCallback(
+    (text: string, _: RegExpMatchArray, index: number) => {
+      const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
+      return isHandleUnrestricted ? (
+        <MentionLink
+          key={index}
+          {...(other as any)}
+          variant='visible'
+          textVariant={other.variant}
+          handle={text}
+          {...linkProps}
+        />
+      ) : null
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
   const renderHandleLink = useCallback(
     (text: string, _: RegExpMatchArray, index: number) => {
       const isHandleUnrestricted = !restrictedHandles.has(text.toLowerCase())
@@ -200,7 +228,6 @@ export const UserGeneratedTextV2 = forwardRef(function (
           variant='visible'
           textVariant={other.variant}
           handle={text}
-          onUserLoad={handleUserLoad}
           {...linkProps}
         />
       ) : null
@@ -216,10 +243,19 @@ export const UserGeneratedTextV2 = forwardRef(function (
       renderLink
     },
     // Handle matcher e.g. @handle
-    {
-      pattern: handleRegex,
-      renderLink: renderHandleLink
-    },
+    ...(mentions
+      ? [
+          {
+            pattern: mentionRegex,
+            renderLink: renderMentionLink
+          }
+        ]
+      : [
+          {
+            pattern: handleRegex,
+            renderLink: renderHandleLink
+          }
+        ]),
     ...(matchersProp ?? [])
   ]
 
@@ -277,7 +313,15 @@ export const UserGeneratedTextV2 = forwardRef(function (
 
   return (
     <Text
-      style={{ whiteSpace: 'pre-wrap' }}
+      style={{
+        whiteSpace: 'pre-wrap'
+      }}
+      css={{
+        '&::selection': {
+          backgroundColor: '#a116b7',
+          color: 'var(--harmony-white)'
+        }
+      }}
       ref={ref as ForwardedRef<'p'>}
       {...other}
     >

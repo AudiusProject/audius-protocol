@@ -15,7 +15,7 @@ var (
 		RateLimitTimeframeHours:             24,
 		RateLimitMaxNumMessages:             2000,
 		RateLimitMaxNumMessagesPerRecipient: 1000,
-		RateLimitMaxNumNewChats:             100,
+		RateLimitMaxNumNewChats:             100000,
 	}
 
 	// honorary nodes used to create db snapshots

@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { ID } from '@audius/common/models'
 import {
   getDurationFromTimestampMatch,
   timestampRegex
 } from '@audius/common/utils'
 import { Flex, Text, TextLink } from '@audius/harmony'
+import { CommentMention } from '@audius/sdk'
 import { useToggle } from 'react-use'
 
 import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGeneratedTextV2'
@@ -16,26 +16,19 @@ import { TimestampLink } from './TimestampLink'
 
 export type CommentTextProps = {
   children: string
+  mentions: CommentMention[]
   isEdited?: boolean
-  onUserMentionsChange?: (userIds: ID[]) => void
   isPreview?: boolean
 }
 
 export const CommentText = (props: CommentTextProps) => {
-  const { children, isEdited, onUserMentionsChange, isPreview } = props
+  const { children, isEdited, mentions, isPreview } = props
   const textRef = useRef<HTMLElement>()
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const {
     track: { duration }
   } = useCurrentCommentSection()
-
-  const handleUserIdsChange = useCallback(
-    (userIds: ID[]) => {
-      onUserMentionsChange?.(userIds)
-    },
-    [onUserMentionsChange]
-  )
 
   useEffect(() => {
     setIsOverflowing(
@@ -49,10 +42,14 @@ export const CommentText = (props: CommentTextProps) => {
     <Flex direction='column' alignItems='flex-start' gap='xs'>
       <UserGeneratedTextV2
         ref={textRef}
-        onUserIdsChange={handleUserIdsChange}
+        mentions={mentions}
         internalLinksOnly
         maxLines={isExpanded ? undefined : 3}
-        css={{ textAlign: 'left', wordBreak: 'break-word' }}
+        css={{
+          textAlign: 'left',
+          wordBreak: 'break-word',
+          userSelect: 'text'
+        }}
         suffix={
           isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null
         }

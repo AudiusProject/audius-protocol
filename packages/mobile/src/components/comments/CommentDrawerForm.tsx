@@ -6,8 +6,9 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
+import type { CommentMention } from '@audius/sdk'
 import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
@@ -41,7 +42,7 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
   const playerPosition = useSelector(playerSelectors.getSeek)
   const playerTrackId = useSelector(playerSelectors.getTrackId)
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
     } else {

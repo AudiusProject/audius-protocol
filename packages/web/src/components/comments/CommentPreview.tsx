@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
 import {
@@ -45,7 +45,7 @@ const CommentPreviewHeader = () => {
       alignItems='center'
     >
       <Flex gap='s'>
-        <IconMessage />
+        <IconMessage color='default' />
         <Text variant='title' size='l'>
           Comments
           {isShowingComments ? (
@@ -64,35 +64,51 @@ const CommentPreviewHeader = () => {
 
 const CommentPreviewContent = () => {
   const {
+    entityId,
     currentUserId,
     commentSectionLoading: isLoading,
     commentIds
   } = useCurrentCommentSection()
+  const dispatch = useDispatch()
+
+  const { data: track } = useGetTrackById({ id: entityId })
+
+  const handleClick = useCallback(() => {
+    dispatch(pushRoute(`${track?.permalink}/comments`))
+  }, [track, dispatch])
 
   // Loading state
   if (isLoading) {
     return (
-      <Flex direction='row' gap='s' alignItems='center'>
-        <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
-        <Flex gap='s' direction='column'>
-          <Skeleton h={20} w={240} />
-          <Skeleton h={20} w={160} />
+      <Paper w='100%' direction='column' gap='s' p='l'>
+        <Flex direction='row' gap='s' alignItems='center'>
+          <Skeleton w={40} h={40} css={{ borderRadius: 100 }} />
+          <Flex gap='s' direction='column'>
+            <Skeleton h={20} w={240} />
+            <Skeleton h={20} w={160} />
+          </Flex>
         </Flex>
-      </Flex>
+      </Paper>
     )
   }
 
   // Empty state
   if (!commentIds || !commentIds.length) {
     return (
-      <Flex gap='m' column alignItems='flex-start'>
-        <Text variant='body'>{messages.noComments}</Text>
-        <CommentForm hideAvatar={!currentUserId} />
-      </Flex>
+      <Paper w='100%' direction='column' gap='s' p='l'>
+        <Flex gap='m' column alignItems='flex-start'>
+          <Text variant='body'>{messages.noComments}</Text>
+          <CommentForm hideAvatar={!currentUserId} />
+        </Flex>
+      </Paper>
     )
   }
 
-  return <CommentBlock commentId={commentIds[0]} isPreview />
+  return (
+    <Paper w='100%' direction='column' gap='s' p='l' onClick={handleClick}>
+      <CommentBlock commentId={commentIds[0]} isPreview />
+    </Paper>
+  )
 }
 
 type CommentPreviewProps = {
@@ -119,9 +135,7 @@ export const CommentPreview = (props: CommentPreviewProps) => {
     <CommentSectionProvider entityId={entityId}>
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader />
-        <Paper w='100%' direction='column' gap='s' p='l'>
-          <CommentPreviewContent />
-        </Paper>
+        <CommentPreviewContent />
       </Flex>
     </CommentSectionProvider>
   )
