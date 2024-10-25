@@ -92,8 +92,8 @@
 }
 
 textarea::selection {
-  background: #a116b7;
-  color: var(--harmony-white);
+  background: var(--harmony-s-500);
+  color: var(--harmony-static-white);
 }
 
 textarea.transparentTextArea {

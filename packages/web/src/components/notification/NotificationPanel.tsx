@@ -149,7 +149,12 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
               initialLoad={status === Status.IDLE}
               useWindow={false}
               threshold={SCROLL_THRESHOLD}
-              loader={<LoadingSpinner className={styles.spinner} />}
+              loader={
+                <LoadingSpinner
+                  key='loading-spinner'
+                  className={styles.spinner}
+                />
+              }
               getScrollParent={getScrollParent}
               className={styles.content}
               element='ul'

@@ -525,15 +525,19 @@ export const notificationFromSDK = (
     case 'comment': {
       let entityId = 0
       let entityType = Entity.Track
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = HashId.parse(data.entityId)
-          // @ts-ignore
-          entityType = data.type
-          return HashId.parse(data.commentUserId)
-        })
-        .filter(removeNullable)
+      const userIds = Array.from(
+        new Set(
+          notification.actions
+            .map((action) => {
+              const data = action.data
+              entityId = HashId.parse(data.entityId)
+              // @ts-ignore
+              entityType = data.type
+              return HashId.parse(data.commentUserId)
+            })
+            .filter(removeNullable)
+        )
+      )
       return {
         type: NotificationType.Comment,
         userIds,
@@ -546,16 +550,20 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
-      const userIds = notification.actions
-        .map((action) => {
-          const data = action.data
-          entityId = HashId.parse(data.entityId)
-          entityUserId = HashId.parse(data.entityUserId)
-          // @ts-ignore
-          entityType = data.type
-          return HashId.parse(data.commentUserId)
-        })
-        .filter(removeNullable)
+      const userIds = Array.from(
+        new Set(
+          notification.actions
+            .map((action) => {
+              const data = action.data
+              entityId = HashId.parse(data.entityId)
+              entityUserId = HashId.parse(data.entityUserId)
+              // @ts-ignore
+              entityType = data.type
+              return HashId.parse(data.commentUserId)
+            })
+            .filter(removeNullable)
+        )
+      )
       return {
         type: NotificationType.CommentThread,
         userIds,
@@ -581,6 +589,29 @@ export const notificationFromSDK = (
         .filter(removeNullable)
       return {
         type: NotificationType.CommentMention,
+        userIds,
+        entityId,
+        entityType,
+        entityUserId,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'comment_reaction': {
+      let entityId = 0
+      let entityType = Entity.Track
+      let entityUserId = 0
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = HashId.parse(data.entityId)
+          entityUserId = HashId.parse(data.entityUserId)
+          // @ts-ignore
+          entityType = data.type
+          return HashId.parse(data.reacterUserId)
+        })
+        .filter(removeNullable)
+      return {
+        type: NotificationType.CommentReaction,
         userIds,
         entityId,
         entityType,

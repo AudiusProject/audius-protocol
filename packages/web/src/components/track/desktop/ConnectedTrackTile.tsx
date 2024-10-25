@@ -6,7 +6,8 @@ import {
   RepostSource,
   FavoriteSource,
   ID,
-  UID
+  UID,
+  Name
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -31,6 +32,7 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
+import { make, track as trackEvent } from 'services/analytics'
 import {
   setUsers,
   setVisibility
@@ -180,6 +182,14 @@ const ConnectedTrackTile = ({
 
   const onClickStatComment = () => {
     goToRoute(permalink + '?showComments=true')
+
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId,
+        source: 'lineup'
+      })
+    )
   }
 
   useEffect(() => {

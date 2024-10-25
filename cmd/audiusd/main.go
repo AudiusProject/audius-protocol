@@ -3,21 +3,21 @@ package main
 import (
 	"context"
 	"encoding/hex"
-	"flag"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"log"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
-	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
@@ -26,9 +26,8 @@ import (
 )
 
 func main() {
-	enableTLS := flag.Bool("tls", false, "Enable TLS and serve on port 443")
-	enableStorage := flag.Bool("storage", false, "Enable content server")
-	flag.Parse()
+	tlsEnabled := getEnvBool("ENABLE_TLS", false)
+	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
 
 	logger := common.NewLogger(nil)
 
@@ -48,7 +47,7 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(*enableTLS); err != nil {
+		if err := startEchoProxyWithOptionalTLS(tlsEnabled); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
 			cancel()
 		}
@@ -68,7 +67,7 @@ func main() {
 		}
 	}()
 
-	if *enableStorage {
+	if storageEnabled {
 		go func() {
 			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
@@ -122,7 +121,7 @@ func startEchoProxyWithOptionalTLS(enableTLS bool) error {
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
 	if enableTLS {
-		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+		e.AutoTLSManager.Cache = autocert.DirCache("/data/var/www/.cache")
 		e.Pre(middleware.HTTPSRedirect())
 
 		go func() {
@@ -152,4 +151,17 @@ func keyGen() (pKey string, addr string) {
 	privateKeyStr := hex.EncodeToString(privateKeyBytes)
 	address := crypto.PubkeyToAddress(privateKey.PublicKey)
 	return privateKeyStr, address.Hex()
+}
+
+func getEnvBool(key string, defaultVal bool) bool {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal
+	}
+	parsed, err := strconv.ParseBool(val)
+	if err != nil {
+		log.Printf("Invalid value for %s: %v, defaulting to %v", key, val, defaultVal)
+		return defaultVal
+	}
+	return parsed
 }

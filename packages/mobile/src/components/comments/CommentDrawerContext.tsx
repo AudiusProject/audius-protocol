@@ -8,7 +8,10 @@ import React, {
   useState
 } from 'react'
 
+import { Name, type ID } from '@audius/common/models'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
+
+import { make, track } from 'app/services/analytics'
 
 import type { CommentDrawerData } from './CommentDrawer'
 import { CommentDrawer } from './CommentDrawer'
@@ -16,7 +19,7 @@ import { CommentDrawer } from './CommentDrawer'
 interface CommentDrawerContextState {
   isOpen: boolean
   open: (data: CommentDrawerData) => void
-  close: () => void
+  close: (trackId: ID) => void
 }
 
 const CommentDrawerContext = createContext<
@@ -35,10 +38,22 @@ export const CommentDrawerProvider = (props: PropsWithChildren) => {
   const open = useCallback((props: CommentDrawerData) => {
     setDrawerData(props)
     setIsOpen(true)
+    track(
+      make({
+        eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER,
+        trackId: props.entityId
+      })
+    )
   }, [])
 
-  const close = useCallback(() => {
+  const close = useCallback((trackId: ID) => {
     setIsOpen(false)
+    track(
+      make({
+        eventName: Name.COMMENTS_CLOSE_COMMENT_DRAWER,
+        trackId
+      })
+    )
   }, [])
 
   useEffect(() => {

@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, ReactElement } from 'react'
 
-import { route } from '@audius/common/utils'
+import { BadgeTier } from '@audius/common/models'
+import { route, Nullable } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -8,14 +9,24 @@ import {
   ModalContent,
   ModalContentText,
   ModalHeader,
-  ModalTitle
+  ModalTitle,
+  IconArrowRight as IconArrow,
+  IconTokenBronze,
+  IconTokenGold,
+  IconTokenPlatinum,
+  IconTokenSilver
 } from '@audius/harmony'
+import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useProfileTier } from 'hooks/wallet'
-import { Tier } from 'pages/audio-rewards-page/Tiers'
+import { TierLevel, TierNumber } from 'pages/audio-rewards-page/Tiers'
+
+import styles from './TierExplainerModal.module.css'
+
 const { AUDIO_PAGE } = route
 
 export const messages = {
@@ -23,7 +34,77 @@ export const messages = {
   desc1: 'Unlock $AUDIO VIP Tiers by simply holding more $AUDIO.',
   desc2:
     'Advancing to a new tier will earn you a profile badge, visible throughout the app, and unlock various new features, as they are released.',
-  learnMore: 'LEARN MORE'
+  learnMore: 'LEARN MORE',
+  currentTier: 'CURRENT TIER'
+}
+
+const BADGE_SIZE = 108
+
+type AudioTiers = Exclude<BadgeTier, 'none'>
+
+const audioTierMapSvg: {
+  [tier in AudioTiers]: Nullable<ReactElement>
+} = {
+  bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
+  silver: <IconTokenSilver width={BADGE_SIZE} height={BADGE_SIZE} />,
+  gold: <IconTokenGold width={BADGE_SIZE} height={BADGE_SIZE} />,
+  platinum: <IconTokenPlatinum width={BADGE_SIZE} height={BADGE_SIZE} />
+}
+
+type TierProps = {
+  isActive?: boolean
+  tier: AudioTiers
+  isCompact?: boolean
+  onClickDiscord?: () => void
+}
+
+/** Shows info about a tier - badge, level, tier # */
+export const Tier = ({
+  tier,
+  isActive = false,
+  isCompact = false,
+  onClickDiscord = () => {}
+}: TierProps) => {
+  const badgeImage = audioTierMapSvg[tier]
+
+  return (
+    <div
+      className={cn(styles.tierContainerWrapper, {
+        [styles.tierContainerActive]: isActive,
+        [styles.compact]: isCompact
+      })}
+    >
+      {isActive && (
+        <div className={styles.currentTier}>
+          {messages.currentTier}
+          <div className={styles.arrowWrapper}>
+            <IconArrow />
+          </div>
+        </div>
+      )}
+      <div
+        className={cn(
+          styles.tierContainer,
+          {
+            [styles.tierContainerActive]: isActive
+          },
+          {
+            [styles.compact]: isCompact
+          }
+        )}
+      >
+        <TierNumber tier={tier} />
+        <BadgeTierText
+          tier={tier}
+          fontSize={28}
+          className={styles.badgeTierText}
+        />
+        <TierLevel tier={tier} />
+        <div className={styles.divider} />
+        <div className={styles.imageWrapper}>{badgeImage}</div>
+      </div>
+    </div>
+  )
 }
 
 const TierExplainerModal = () => {

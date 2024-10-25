@@ -8,7 +8,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { UserMetadata } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -205,7 +205,7 @@ export type CommentDrawerData = {
 
 type CommentDrawerProps = {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>
-  handleClose: () => void
+  handleClose: (trackId: ID) => void
 } & CommentDrawerData
 
 export const CommentDrawer = (props: CommentDrawerProps) => {
@@ -273,6 +273,10 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     ]
   )
 
+  const handleCloseDrawer = useCallback(() => {
+    handleClose(entityId)
+  }, [entityId, handleClose])
+
   return (
     <>
       <BottomSheetModal
@@ -296,7 +300,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           />
         )}
         footerComponent={renderFooterComponent}
-        onDismiss={handleClose}
+        onDismiss={handleCloseDrawer}
         android_keyboardInputMode='adjustResize'
       >
         <CommentSectionProvider
@@ -304,7 +308,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           replyingAndEditingState={replyingAndEditingState}
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
-          closeDrawer={handleClose}
+          closeDrawer={handleCloseDrawer}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />

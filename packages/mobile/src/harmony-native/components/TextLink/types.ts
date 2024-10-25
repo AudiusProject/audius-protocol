@@ -1,3 +1,4 @@
+import type { ID } from '@audius/common/models'
 import type { NavigationAction, ParamListBase } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { GestureResponderEvent } from 'react-native'
@@ -6,18 +7,27 @@ import type { SharedValue } from 'react-native-reanimated'
 import type { TextProps } from '../Text/Text'
 
 export type Source = 'profile page' | 'track page' | 'collection page'
+export type LinkKind = 'track' | 'collection' | 'user' | 'mention' | 'other'
 
 export type InternalLinkToProps<
   ParamList extends ReactNavigation.RootParamList
 > = {
   to: To<ParamList>
   action?: NavigationAction
-  onPress?: (e: GestureResponderEvent) => void
+  onPress?: (
+    e: GestureResponderEvent,
+    linkKind?: LinkKind,
+    linkEntityId?: ID
+  ) => void
 }
 
 export type ExternalLinkProps = {
   url: string
-  onPress?: (e: GestureResponderEvent) => void
+  onPress?: (
+    e: GestureResponderEvent,
+    linkKind?: LinkKind,
+    linkEntityId?: ID
+  ) => void
   source?: Source
 }
 
