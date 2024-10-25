@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
+import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
@@ -13,6 +14,7 @@ import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
+import { ToastContext } from 'components/toast/ToastContext'
 import { AppState } from 'store/types'
 
 import { ArtistPick } from './ArtistPick'
@@ -61,6 +63,7 @@ const CommentBlockInternal = (
   )
 
   const [deleteComment] = useDeleteComment()
+  const { toast } = useContext(ToastContext)
 
   // triggers a fetch to get user profile info
   useGetUserById({ id: userId }) // TODO: display a load state while fetching
@@ -137,7 +140,10 @@ const CommentBlockInternal = (
             comment={comment}
             onClickReply={() => setShowReplyInput((prev) => !prev)}
             onClickEdit={() => setShowEditInput((prev) => !prev)}
-            onClickDelete={() => deleteComment(commentId, parentCommentId)}
+            onClickDelete={() => {
+              deleteComment(commentId, parentCommentId)
+              toast(messages.toasts.deleted)
+            }}
             isDisabled={isTombstone || showReplyInput}
             hideReactCount={isTombstone}
             parentCommentId={parentCommentId}
