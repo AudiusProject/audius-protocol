@@ -76,7 +76,8 @@ export const CommentNotification = (props: CommentNotificationProps) => {
       track(
         make({
           eventName: Name.COMMENTS_NOTIFICATION_OPEN,
-          commentId: notification.entityId
+          commentId: notification.entityId,
+          notificationType: 'comment'
         })
       )
     },

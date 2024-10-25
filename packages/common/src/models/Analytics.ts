@@ -2605,6 +2605,7 @@ export type CommentsClickLink = {
 export type CommentsNotificationOpen = {
   eventName: Name.COMMENTS_NOTIFICATION_OPEN
   commentId: ID
+  notificationType: 'comment' | 'reaction' | 'thread' | 'mention'
 }
 
 export type CommentsReportComment = {

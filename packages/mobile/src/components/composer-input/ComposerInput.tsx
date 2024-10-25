@@ -14,6 +14,7 @@ import type { ID, UserMetadata } from '@audius/common/models'
 import {
   decodeHashId,
   getDurationFromTimestampMatch,
+  parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
@@ -33,7 +34,6 @@ import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { parseCommentTrackTimestamp } from 'app/utils/comments'
 import { useThemeColors } from 'app/utils/theme'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'

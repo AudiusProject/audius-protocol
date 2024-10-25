@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
+import { formatCommentTrackTimestamp } from '@audius/common/utils'
 import type { GestureResponderEvent } from 'react-native'
 
 import type { TextLinkProps } from '@audius/harmony-native'
 import { TextLink } from '@audius/harmony-native'
-import { formatCommentTrackTimestamp } from 'app/utils/comments'
 
 type TimestampLinkProps = {
   timestampSeconds: number

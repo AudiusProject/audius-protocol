@@ -13,6 +13,7 @@ import { ID, UserMetadata } from '@audius/common/models'
 import {
   decodeHashId,
   getDurationFromTimestampMatch,
+  parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
@@ -528,7 +529,4 @@ export const ComposerInput = (props: ComposerInputProps) => {
       )}
     </TextAreaV2>
   )
-}
-function parseCommentTrackTimestamp(text: string): number {
-  throw new Error('Function not implemented.')
 }

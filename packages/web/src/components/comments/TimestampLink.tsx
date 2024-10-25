@@ -1,7 +1,8 @@
 import { useCallback, MouseEvent } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
-import { formatTrackTimestamp, TextLink, TextLinkProps } from '@audius/harmony'
+import { formatCommentTrackTimestamp } from '@audius/common/utils'
+import { TextLink, TextLinkProps } from '@audius/harmony'
 
 type TimestampLinkProps = {
   timestampSeconds: number
@@ -22,7 +23,7 @@ export const TimestampLink = (props: TimestampLinkProps) => {
 
   return (
     <TextLink onClick={handleClick} variant='visible' {...other}>
-      {formatTrackTimestamp(timestampSeconds)}
+      {formatCommentTrackTimestamp(timestampSeconds)}
     </TextLink>
   )
 }
