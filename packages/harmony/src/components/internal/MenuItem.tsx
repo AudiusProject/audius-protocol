@@ -1,22 +1,28 @@
-import { forwardRef, MouseEventHandler, Ref, useCallback } from 'react'
+import {
+  forwardRef,
+  MouseEventHandler,
+  ReactNode,
+  Ref,
+  useCallback
+} from 'react'
 
 import { CSSObject } from '@emotion/react'
 
-import { ButtonProps } from 'components'
 import { BaseButton } from 'components/button/BaseButton/BaseButton'
+import { BaseButtonProps } from 'components/button/BaseButton/types'
 import { IconComponent } from 'components/icon'
 import { Text } from 'components/text/Text'
 import { useTheme } from 'foundations'
 
 export type MenuItemProps<Value extends string> = Omit<
-  ButtonProps,
+  BaseButtonProps,
   'variant' | 'onChange'
 > & {
   variant?: 'option' | 'button'
-  label?: string
+  label?: ReactNode
   icon?: IconComponent
-  leadingElement?: JSX.Element
-  helperText?: string
+  leadingElement?: ReactNode
+  helperText?: ReactNode
   isActive?: boolean
 } & (
     | {
@@ -39,6 +45,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
     leadingElement,
     variant,
     helperText,
+    styles,
     ...other
   } = props
 
@@ -53,7 +60,8 @@ export const MenuItem = forwardRef(function <Value extends string>(
   const activeOptionCss: CSSObject = {
     transform: 'none',
     backgroundColor: color.secondary.s300,
-    color: color.static.white
+    color: color.static.white,
+    '& a, & span': { color: color.static.white }
   }
 
   const optionCss: CSSObject = {
@@ -96,9 +104,13 @@ export const MenuItem = forwardRef(function <Value extends string>(
       styles={{
         button: {
           ...optionCss,
-          ...(isActive ? activeOptionCss : {})
+          ...(isActive ? activeOptionCss : {}),
+          ...styles?.button
         },
-        icon: optionIconCss
+        icon: {
+          ...optionIconCss,
+          ...styles?.icon
+        }
       }}
       onClick={handleClick}
       role={variant === 'option' ? 'option' : undefined}
@@ -106,14 +118,18 @@ export const MenuItem = forwardRef(function <Value extends string>(
       onChange={undefined}
     >
       {leadingElement ?? null}
-      <Text
-        variant='body'
-        size={variant === 'option' ? 'l' : 'm'}
-        strength={variant === 'button' ? 'strong' : 'default'}
-      >
-        {variant === 'option' ? label ?? props.value : label}
-      </Text>
-      {helperText ? (
+      {typeof label === 'string' ? (
+        <Text
+          variant='body'
+          size={variant === 'option' ? 'l' : 'm'}
+          strength={variant === 'button' ? 'strong' : 'default'}
+        >
+          {variant === 'option' ? label ?? props.value : label}
+        </Text>
+      ) : (
+        label
+      )}
+      {typeof helperText === 'string' ? (
         <Text
           variant='body'
           size={variant === 'option' ? 'l' : 'm'}
@@ -122,7 +138,9 @@ export const MenuItem = forwardRef(function <Value extends string>(
         >
           {helperText}
         </Text>
-      ) : null}
+      ) : (
+        helperText ?? null
+      )}
     </BaseButton>
   )
 })
