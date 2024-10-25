@@ -32,7 +32,7 @@ import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
-import { AutocompleteText } from './components/AutocompleteText'
+import { UserMentionAutocompleteText } from './components/UserMentionAutocompleteText'
 import { ComposerInputProps } from './types'
 
 const messages = {
@@ -293,7 +293,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
       const cursorPosition = textarea.selectionStart
 
       if (isUserAutocompleteActive) {
-        if (e.key === ENTER_KEY || e.key === TAB_KEY) {
+        if (e.key === TAB_KEY) {
           e.preventDefault()
           if (firstAutocompleteResult.current) {
             handleAutocomplete(firstAutocompleteResult.current)
@@ -436,7 +436,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
         if (type === 'autocomplete') {
           // Autocomplete highlight
           renderedTextSections.push(
-            <AutocompleteText
+            <UserMentionAutocompleteText
               text={text}
               onConfirm={handleAutocomplete}
               onResultsLoaded={(results) => {

@@ -27,13 +27,24 @@ type OptionKeyHandlerProps<Value extends string> = {
   optionRefs: RefObject<HTMLButtonElement[]>
   options: OptionType<Value>[]
   scrollRef: RefObject<HTMLDivElement>
+  initialActiveIndex?: number
 }
 
 export const OptionKeyHandler = <Value extends string>(
   props: OptionKeyHandlerProps<Value>
 ) => {
-  const { disabled, options, onChange, optionRefs, scrollRef, children } = props
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const {
+    disabled,
+    options,
+    onChange,
+    optionRefs,
+    scrollRef,
+    children,
+    initialActiveIndex = null
+  } = props
+  const [activeIndex, setActiveIndex] = useState<number | null>(
+    initialActiveIndex
+  )
   const activeValue = activeIndex !== null ? options[activeIndex]?.value : null
 
   useEffect(() => {
