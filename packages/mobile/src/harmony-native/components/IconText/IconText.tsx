@@ -20,7 +20,7 @@ export const IconText = ({
   )
 
   return (
-    <Flex direction='row' h='l' gap='xs' alignItems='center'>
+    <Flex direction='row' gap='xs' alignItems='center'>
       {icons.map(({ icon: Icon, color: iconColor = 'default' }, index) => (
         <Fragment key={`icon${index}`}>
           {index > 0 ? separator : null}

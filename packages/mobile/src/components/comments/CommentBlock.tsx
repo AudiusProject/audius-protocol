@@ -2,13 +2,20 @@ import { useCallback } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
-import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import {
+  Name,
+  type Comment,
+  type ID,
+  type ReplyComment
+} from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
+import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { UserLink } from '../user-link'
@@ -59,6 +66,19 @@ export const CommentBlockInternal = (
     onPressProfilePic()
   }, [closeDrawer, onPressProfilePic])
 
+  const handlePressTimestamp = useCallback(
+    (e: GestureResponderEvent, timestampSeconds: number) => {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_CLICK_TIMESTAMP,
+          commentId,
+          timestamp: timestampSeconds
+        })
+      )
+    },
+    [commentId]
+  )
+
   const isCommentByArtist = userId === artistId
 
   return (
@@ -79,7 +99,9 @@ export const CommentBlockInternal = (
       </TouchableOpacity>
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          {userId !== undefined ? (
+            <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          ) : null}
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex direction='row' justifyContent='space-between' w='100%'>
@@ -88,12 +110,14 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center' w='65%'>
-            <UserLink
-              userId={userId}
-              strength='strong'
-              onPress={closeDrawer}
-              lineHeight='single'
-            />
+            {userId !== undefined ? (
+              <UserLink
+                userId={userId}
+                strength='strong'
+                onPress={closeDrawer}
+                lineHeight='single'
+              />
+            ) : null}
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
               <Timestamp time={dayjs.utc(createdAt).toDate()} />
               {trackTimestampS !== undefined ? (
@@ -102,7 +126,11 @@ export const CommentBlockInternal = (
                     •
                   </Text>
 
-                  <TimestampLink size='s' timestampSeconds={trackTimestampS} />
+                  <TimestampLink
+                    size='s'
+                    timestampSeconds={trackTimestampS}
+                    onPress={handlePressTimestamp}
+                  />
                 </>
               ) : null}
             </Flex>
@@ -111,6 +139,7 @@ export const CommentBlockInternal = (
         <CommentText
           isEdited={isEdited && !isTombstone}
           isPreview={isPreview}
+          commentId={commentId}
           mentions={mentions}
         >
           {message}

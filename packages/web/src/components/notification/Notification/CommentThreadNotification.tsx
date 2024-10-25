@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
   CommentThreadNotification as CommentThreadNotificationType
@@ -10,6 +11,7 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
+import { make, track } from 'services/analytics'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -30,7 +32,8 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   replied: ' replied to your comment on',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentThreadNotificationProps = {
@@ -55,7 +58,8 @@ export const CommentThreadNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
-
+  const isOwnerReply =
+    entity?.user?.user_id === firstUser?.user_id && !isMultiUser
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
@@ -79,8 +83,24 @@ export const CommentThreadNotification = (
       } else {
         handleGoToEntity(event)
       }
+
+      track(
+        make({
+          eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+          commentId: notification.entityId,
+          notificationType: 'thread'
+        })
+      )
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity,
+      notification.entityId
+    ]
   )
 
   if (!users || !firstUser || !entity || !entity.user) return null
@@ -102,6 +122,8 @@ export const CommentThreadNotification = (
         {messages.replied}{' '}
         {isOwner ? (
           messages.your
+        ) : isOwnerReply ? (
+          messages.their
         ) : (
           <UserNameLink
             user={entity.user}

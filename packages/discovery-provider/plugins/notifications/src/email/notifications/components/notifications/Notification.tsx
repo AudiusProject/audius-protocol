@@ -483,6 +483,9 @@ const notificationMap = {
   ['comment_thread'](notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
+    const { users, entityUser } = notification
+    const isOwnerMention =
+      users.length === 1 && users[0].user_id === entityUser.user_id
     return (
       <span className={'notificationText'}>
         {user}
@@ -491,6 +494,8 @@ const notificationMap = {
           text={
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
+              : isOwnerMention
+              ? 'their'
               : `${notification.entityUser.name}'s`
           }
         />
@@ -501,6 +506,9 @@ const notificationMap = {
   ['comment_mention'](notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
+    const { users, entityUser } = notification
+    const isOwnerMention =
+      users.length === 1 && users[0].user_id === entityUser.user_id
     return (
       <span className={'notificationText'}>
         {user}
@@ -509,6 +517,8 @@ const notificationMap = {
           text={
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
+              : isOwnerMention
+              ? 'their'
               : `${notification.entityUser.name}'s`
           }
         />
@@ -519,6 +529,9 @@ const notificationMap = {
   ['comment_reaction'](notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
+    const { users, entityUser } = notification
+    const isOwnerMention =
+      users.length === 1 && users[0].user_id === entityUser.user_id
     return (
       <span className={'notificationText'}>
         {user}
@@ -527,6 +540,8 @@ const notificationMap = {
           text={
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
+              : isOwnerMention
+              ? 'their'
               : `${notification.entityUser.name}'s`
           }
         />

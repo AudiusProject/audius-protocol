@@ -240,7 +240,6 @@ export const useTrackCommentCount = (
   const previousCurrentCount = usePrevious(currentCountValue) // note: this is different from data.previousValue
   useEffect(() => {
     if (
-      previousCurrentCount !== undefined &&
       currentCountValue !== undefined &&
       previousCurrentCount !== currentCountValue
     ) {
@@ -473,7 +472,9 @@ export const useReactToComment = () => {
             ...prevCommentState,
             reactCount:
               (prevCommentState?.reactCount ?? 0) + (isLiked ? 1 : -1),
-            isArtistReacted: isEntityOwner && isLiked,
+            isArtistReacted: isEntityOwner
+              ? isLiked // If the artist is reacting, update the state accordingly
+              : prevCommentState?.isArtistReacted, // otherwise, keep the previous state
             isCurrentUserReacted: isLiked
           } as CommentOrReply)
       )

@@ -96,6 +96,8 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     } replied to your comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
+        : this.entityUserId === this.commenterUserId
+        ? 'their'
         : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (

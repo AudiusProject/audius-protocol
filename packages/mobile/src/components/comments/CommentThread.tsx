@@ -3,7 +3,12 @@ import { useState } from 'react'
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ID, ReplyComment } from '@audius/common/models'
+import {
+  Name,
+  type Comment,
+  type ID,
+  type ReplyComment
+} from '@audius/common/models'
 
 import {
   Box,
@@ -12,6 +17,7 @@ import {
   IconCaretUp,
   PlainButton
 } from '@audius/harmony-native'
+import { make, track } from 'app/services/analytics'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 
@@ -23,6 +29,7 @@ type CommentThreadProps = {
 
 export const CommentThread = (props: CommentThreadProps) => {
   const { commentId } = props
+  const { entityId } = useCurrentCommentSection()
   const { data: rootCommentData } = useGetCommentById(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
@@ -35,6 +42,16 @@ export const CommentThread = (props: CommentThreadProps) => {
     const newHiddenReplies = { ...hiddenReplies }
     newHiddenReplies[commentId] = !newHiddenReplies[commentId]
     setHiddenReplies(newHiddenReplies)
+
+    track(
+      make({
+        eventName: newHiddenReplies[commentId]
+          ? Name.COMMENTS_HIDE_REPLIES
+          : Name.COMMENTS_SHOW_REPLIES,
+        commentId,
+        trackId: entityId
+      })
+    )
   }
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
   const { fetchNextPage: loadMoreReplies, isFetching: isFetchingReplies } =
@@ -47,6 +64,13 @@ export const CommentThread = (props: CommentThreadProps) => {
   const handleLoadMoreReplies = () => {
     if (hasRequestedMore) {
       loadMoreReplies()
+      track(
+        make({
+          eventName: Name.COMMENTS_LOAD_MORE_REPLIES,
+          commentId,
+          trackId: entityId
+        })
+      )
     } else {
       // If hasLoadedMore is false, this is the first time the user is requesting more replies
       // In this case audius-query will automatically fetch the first page of replies, no need to trigger via loadMore()

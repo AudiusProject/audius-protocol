@@ -18,7 +18,7 @@ type BaseAvatarProps = Omit<AvatarProps, 'source' | 'accessibilityLabel'>
 // User should prefer userId, and provide user if it's not in the cache
 type ProfilePictureUserProps =
   | {
-      userId: ID
+      userId: ID | undefined
     }
   | { user: Pick<User, 'user_id' | 'name' | 'profile_picture_sizes'> }
 
@@ -34,7 +34,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   })
 
   const { source, handleError } = useProfilePicture(
-    userId,
+    userId ?? null,
     SquareSizes.SIZE_150_BY_150,
     'user' in props ? props.user.profile_picture_sizes : undefined
   )

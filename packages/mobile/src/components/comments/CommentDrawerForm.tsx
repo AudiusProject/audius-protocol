@@ -13,6 +13,7 @@ import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
+import TrackPlayer from 'react-native-track-player'
 import { useSelector } from 'react-redux'
 
 import { Box } from '@audius/harmony-native'
@@ -39,16 +40,19 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
     replyingAndEditingState ?? {}
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
-  const playerPosition = useSelector(playerSelectors.getSeek)
   const playerTrackId = useSelector(playerSelectors.getTrackId)
 
-  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
+  const handlePostComment = async (
+    message: string,
+    mentions?: CommentMention[]
+  ) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
     } else {
+      const currentPosition = await TrackPlayer.getPosition()
       const trackTimestampS =
-        playerTrackId !== null && playerPosition && playerTrackId === entityId
-          ? Math.floor(playerPosition)
+        playerTrackId !== null && currentPosition && playerTrackId === entityId
+          ? Math.floor(currentPosition)
           : undefined
 
       postComment(
