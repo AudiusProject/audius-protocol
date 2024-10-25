@@ -121,6 +121,8 @@ def get_replies(
                 ),
                 CommentReport.is_delete == True,
             ),
+            # Exclude comments where the artist has muted the commenter
+            MutedUser.user_id != artist_id,
         )
         .order_by(asc(Comment.created_at))
         .offset(offset)
@@ -317,6 +319,8 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
                 ),  # Exclude muted users' comments
+                # Exclude comments where the artist has muted the commenter
+                MutedUser.user_id != artist_id,
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
