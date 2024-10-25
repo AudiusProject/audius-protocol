@@ -99,9 +99,9 @@ def get_replies(
                 MutedUser.muted_user_id == Comment.user_id,
                 or_(
                     MutedUser.user_id == current_user_id,
-                    MutedUser.muted_user_id == current_user_id,
                     MutedUser.muted_user_id.in_(muted_by_karma),
                 ),
+                current_user_id != Comment.user_id,
             ),
         )
         .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
@@ -110,25 +110,16 @@ def get_replies(
             CommentThread.parent_comment_id == parent_comment_id,
             Comment.is_delete == False,
             or_(
+                MutedUser.muted_user_id == None,
+                MutedUser.is_delete == True,
+            ),  # Exclude muted users' comments
+            or_(
                 CommentReport.comment_id == None,
                 and_(
                     CommentReport.user_id != current_user_id,
                     CommentReport.user_id != artist_id,
                 ),
                 CommentReport.is_delete == True,
-            ),
-            or_(
-                # Include comments where muting was undone
-                MutedUser.is_delete == True,
-                # Include comments where the current user is muted
-                # (Even if I am muted, I can still see my own comments)
-                MutedUser.muted_user_id == current_user_id,
-                # Include comments where the artist has not muted the commenter
-                and_(
-                    MutedUser.muted_user_id == Comment.user_id,
-                    MutedUser.user_id != artist_id,
-                    artist_id == current_user_id,
-                ),
             ),
         )
         .order_by(asc(Comment.created_at))
@@ -290,9 +281,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == Comment.user_id,
                     or_(
                         MutedUser.user_id == current_user_id,
-                        MutedUser.muted_user_id == current_user_id,
                         MutedUser.muted_user_id.in_(muted_by_karma),
                     ),
+                    current_user_id != Comment.user_id,  # show comment to comment owner
                 ),
             )
             .outerjoin(
@@ -323,18 +314,9 @@ def get_track_comments(args, track_id, current_user_id=None):
                     CommentReport.is_delete == True,
                 ),
                 or_(
-                    # Include comments where muting was undone
+                    MutedUser.muted_user_id == None,
                     MutedUser.is_delete == True,
-                    # Include comments where the current user is muted
-                    # (Even if I am muted, I can still see my own comments)
-                    MutedUser.muted_user_id == current_user_id,
-                    # Include comments where the artist has not muted the commenter
-                    and_(
-                        MutedUser.muted_user_id == Comment.user_id,
-                        MutedUser.user_id != artist_id,
-                        artist_id == current_user_id,
-                    ),
-                ),
+                ),  # Exclude muted users' comments
             )
             .having(
                 (func.count(ReplyCountAlias.comment_id) > 0)
