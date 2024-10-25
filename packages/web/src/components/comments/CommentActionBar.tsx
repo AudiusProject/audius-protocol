@@ -35,6 +35,7 @@ import {
   useAuthenticatedCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
@@ -153,6 +154,8 @@ export const CommentActionBar = ({
     toast(messages.toasts.mutedUser)
   }, [comment.userId, currentSort, entityId, muteUser, toast])
 
+  const { requiresAccount } = useRequiresAccountCallback()
+
   const handleFlagComment = useCallback(() => {
     reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndHidden)
@@ -164,6 +167,7 @@ export const CommentActionBar = ({
   }, [commentId, parentCommentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
+    requiresAccount()
     if (isMobile) {
       toggleIsMobileAppDrawer()
       trackEvent(
@@ -192,7 +196,8 @@ export const CommentActionBar = ({
     currentUserId,
     dispatch,
     onClickReply,
-    commentId
+    commentId,
+    requiresAccount
   ])
 
   // Confirmation Modal state
@@ -331,6 +336,7 @@ export const CommentActionBar = ({
 
   const handleClickOverflowMenu = useCallback(
     (triggerPopup: () => void) => {
+      requiresAccount()
       if (isMobile) {
         toggleIsMobileAppDrawer()
         trackEvent(
@@ -360,7 +366,8 @@ export const CommentActionBar = ({
       dispatch,
       entityId,
       isMobile,
-      toggleIsMobileAppDrawer
+      toggleIsMobileAppDrawer,
+      requiresAccount
     ]
   )
 
