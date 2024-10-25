@@ -382,8 +382,8 @@ export const UserGeneratedTextV2 = forwardRef(function (
       }}
       css={{
         '&::selection': {
-          backgroundColor: '#a116b7',
-          color: 'var(--harmony-white)'
+          backgroundColor: 'var(--harmony-s-500)',
+          color: 'var(--harmony-static-white)'
         }
       }}
       ref={ref as ForwardedRef<'p'>}
