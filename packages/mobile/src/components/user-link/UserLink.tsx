@@ -59,6 +59,7 @@ export const UserLink = (props: UserLinkProps) => {
           numberOfLines={1}
           flexShrink={1}
           animatedPressed={animatedPressed}
+          style={{ lineHeight: 20 }}
           {...other}
         >
           {userName}
