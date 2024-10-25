@@ -77,25 +77,36 @@ export const CommentForm = ({
     }
   }
 
-  const handleClickInput = useAuthenticatedCallback(() => {
-    if (isMobile) {
-      toggleIsMobileAppDrawer()
+  const handleClickInput = useAuthenticatedCallback(
+    () => {
+      if (isMobile) {
+        toggleIsMobileAppDrawer()
+        track(
+          make({
+            eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+            trackId: entityId
+          })
+        )
+      } else {
+        track(
+          make({
+            eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
+            trackId: entityId,
+            source: 'comment_input'
+          })
+        )
+      }
+    },
+    [isMobile, toggleIsMobileAppDrawer, entityId],
+    () => {
       track(
         make({
-          eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER,
+          eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
           trackId: entityId
         })
       )
-    } else {
-      track(
-        make({
-          eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
-          trackId: entityId,
-          source: 'comment_input'
-        })
-      )
     }
-  }, [isMobile, toggleIsMobileAppDrawer, entityId])
+  )
 
   const profileImage = useProfilePicture(
     currentUserId ?? null,
@@ -119,13 +130,7 @@ export const CommentForm = ({
 
   const handleCloseMobileAppDrawer = useCallback(() => {
     toggleIsMobileAppDrawer()
-    track(
-      make({
-        eventName: Name.COMMENTS_CLOSE_COMMENT_DRAWER,
-        trackId: entityId
-      })
-    )
-  }, [toggleIsMobileAppDrawer, entityId])
+  }, [toggleIsMobileAppDrawer])
 
   const handleAddMention = useCallback((userId: ID) => {
     track(

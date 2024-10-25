@@ -563,7 +563,9 @@ export enum Name {
   COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_TRACK = 'Comments: Turn Off Notifications for Track',
   COMMENTS_DISABLE_TRACK_COMMENTS = 'Comments: Disable Track Comments',
   COMMENTS_OPEN_COMMENT_DRAWER = 'Comments: Open Comment Drawer',
-  COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer'
+  COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer',
+  COMMENTS_OPEN_AUTH_MODAL = 'Comments: Open Auth Modal',
+  COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal'
 }
 
 type PageView = {
@@ -2722,6 +2724,16 @@ type CommentsCloseCommentDrawer = {
   trackId: ID
 }
 
+export type CommentsOpenAuthModal = {
+  eventName: Name.COMMENTS_OPEN_AUTH_MODAL
+  trackId: ID
+}
+
+export type CommentsOpenInstallAppModal = {
+  eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL
+  trackId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -3085,3 +3097,5 @@ export type AllTrackingEvents =
   | CommentsDisableTrackComments
   | CommentsOpenCommentDrawer
   | CommentsCloseCommentDrawer
+  | CommentsOpenAuthModal
+  | CommentsOpenInstallAppModal

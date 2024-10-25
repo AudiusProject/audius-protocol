@@ -112,9 +112,20 @@ export const CommentActionBar = ({
     useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
-  const handleReact = useAuthenticatedCallback(() => {
-    reactToComment(commentId, !isCurrentUserReacted)
-  }, [commentId, isCurrentUserReacted, reactToComment])
+  const handleReact = useAuthenticatedCallback(
+    () => {
+      reactToComment(commentId, !isCurrentUserReacted)
+    },
+    [commentId, isCurrentUserReacted, reactToComment],
+    () => {
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
+          trackId: entityId
+        })
+      )
+    }
+  )
 
   const handleDelete = useCallback(() => {
     // note: we do some UI logic in the CommentBlock above this so we can't trigger directly from here
@@ -156,7 +167,7 @@ export const CommentActionBar = ({
       toggleIsMobileAppDrawer()
       trackEvent(
         make({
-          eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER,
+          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
           trackId: entityId
         })
       )
@@ -317,6 +328,31 @@ export const CommentActionBar = ({
     ]
   )
 
+  const handleClickOverflowMenu = useCallback((triggerPopup: () => void) => {
+    if (isMobile) {
+      toggleIsMobileAppDrawer()
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+          trackId: entityId
+        })
+      )
+    } else {
+      if (currentUserId === undefined) {
+        openAuthModal(dispatch)
+      } else {
+        triggerPopup()
+
+        trackEvent(
+          make({
+            eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
+            commentId
+          })
+        )
+      }
+    }
+  }, [])
+
   return (
     <Flex gap='l' alignItems='center'>
       <Flex alignItems='center'>
@@ -355,24 +391,7 @@ export const CommentActionBar = ({
             ref={anchorRef}
             disabled={isDisabled}
             size='m'
-            onClick={() => {
-              if (isMobile) {
-                toggleIsMobileAppDrawer()
-              } else {
-                if (currentUserId === undefined) {
-                  openAuthModal(dispatch)
-                } else {
-                  triggerPopup()
-
-                  trackEvent(
-                    make({
-                      eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
-                      commentId
-                    })
-                  )
-                }
-              }
-            }}
+            onClick={() => handleClickOverflowMenu(triggerPopup)}
           />
         )}
       />
