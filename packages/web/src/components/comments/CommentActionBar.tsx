@@ -150,7 +150,7 @@ export const CommentActionBar = ({
     toast(messages.toasts.flaggedAndRemoved)
   }, [commentId, parentCommentId, reportComment, toast])
 
-  const handleClickReply = useCallback(() => {
+  const handleClickReply = useAuthenticatedCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
     } else {
@@ -338,7 +338,7 @@ export const CommentActionBar = ({
               if (isMobile) {
                 toggleIsMobileAppDrawer()
               } else {
-                if (currentUserId === undefined) {
+                if (currentUserId === undefined || currentUserId === null) {
                   openAuthModal(dispatch)
                 } else {
                   triggerPopup()
