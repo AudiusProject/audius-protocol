@@ -111,6 +111,7 @@ textarea.transparentTextArea {
   position: relative;
   text-align: left;
   pointer-events: none;
+  overflow-wrap: anywhere;
 }
 
 .displayElementContainer::after {
