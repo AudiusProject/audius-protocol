@@ -1,5 +1,6 @@
 import type { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import type { StyleProp, TextStyle } from 'react-native'
 import { Pressable } from 'react-native'
 import Animated, {
   interpolate,
@@ -24,10 +25,11 @@ type ParamList = Pick<AppTabScreenParamList, 'Profile'>
 type UserLinkProps = Omit<TextLinkProps<ParamList>, 'to' | 'children'> & {
   userId: ID
   badgeSize?: IconSize
+  textLinkStyle?: StyleProp<TextStyle>
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, badgeSize = 's', style, ...other } = props
+  const { userId, badgeSize = 's', style, textLinkStyle, ...other } = props
   const userName = useSelector((state) => getUser(state, { id: userId })?.name)
 
   const { motion } = useTheme()
@@ -59,7 +61,7 @@ export const UserLink = (props: UserLinkProps) => {
           numberOfLines={1}
           flexShrink={1}
           animatedPressed={animatedPressed}
-          style={{ lineHeight: 20 }}
+          style={textLinkStyle}
           {...other}
         >
           {userName}
