@@ -35,10 +35,7 @@ enum MobileEventNames {
   OFFLINE_MODE_PLAY = 'Offline Mode: Offline Play',
   OFFLINE_MODE_FILEPATH_MIGRATION_STARTED = 'Offline Mode: File path migration started',
   OFFLINE_MODE_FILEPATH_MIGRATION_SUCCESS = 'Offline Mode: File path migration succeeded',
-  OFFLINE_MODE_FILEPATH_MIGRATION_FAILURE = 'Offline Mode: File path migration failed',
-
-  COMMENTS_OPEN_COMMENT_DRAWER = 'Comments: Open Comment Drawer',
-  COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer'
+  OFFLINE_MODE_FILEPATH_MIGRATION_FAILURE = 'Offline Mode: File path migration failed'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -155,16 +152,6 @@ type OfflineFilePathMigrationFailed = {
   eventName: MobileEventNames.OFFLINE_MODE_FILEPATH_MIGRATION_FAILURE
 }
 
-type CommentsOpenCommentDrawer = {
-  eventName: MobileEventNames.COMMENTS_OPEN_COMMENT_DRAWER
-  trackId: ID
-}
-
-type CommentsCloseCommentDrawer = {
-  eventName: MobileEventNames.COMMENTS_CLOSE_COMMENT_DRAWER
-  trackId: ID
-}
-
 type MobileTrackingEvents =
   | NotificationsOpenPushNotification
   | AppError
@@ -187,8 +174,6 @@ type MobileTrackingEvents =
   | OfflineFilePathMigrationStarted
   | OfflineFilePathMigrationSucceess
   | OfflineFilePathMigrationFailed
-  | CommentsOpenCommentDrawer
-  | CommentsCloseCommentDrawer
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 

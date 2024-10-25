@@ -62,7 +62,8 @@ export const CommentThreadNotification = (
     track(
       make({
         eventName: Name.COMMENTS_NOTIFICATION_OPEN,
-        commentId: notification.entityId
+        commentId: notification.entityId,
+        notificationType: 'thread'
       })
     )
   }, [navigation, notification])

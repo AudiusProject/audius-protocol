@@ -14,6 +14,7 @@ import type { ID, UserMetadata } from '@audius/common/models'
 import {
   decodeHashId,
   getDurationFromTimestampMatch,
+  parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
@@ -25,6 +26,7 @@ import type {
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
+import { TextInput as ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
 import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
@@ -33,7 +35,6 @@ import { env } from 'app/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { parseCommentTrackTimestamp } from 'app/utils/comments'
 import { useThemeColors } from 'app/utils/theme'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
@@ -106,7 +107,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     presetUserMentions = [],
     entityId,
     styles: propStyles,
-    TextInputComponent,
+    // Use ReactNativeGestureHandlerTextInput to allow for nesting <Text> inside <TextInput>
+    TextInputComponent = ReactNativeGestureHandlerTextInput,
     onLayout,
     maxLength = 10000,
     maxMentions = Infinity
@@ -534,7 +536,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID='none'
         maxLength={maxLength}
         autoCorrect
-        TextInputComponent={TextInputComponent}
+        TextInputComponent={TextInputComponent as any}
         onFocus={onFocus}
       >
         {isTextHighlighted ? (

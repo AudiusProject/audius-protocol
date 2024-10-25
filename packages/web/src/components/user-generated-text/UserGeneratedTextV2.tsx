@@ -4,31 +4,37 @@ import {
   ReactNode,
   useCallback,
   useMemo,
-  useState
+  useState,
+  MouseEvent
 } from 'react'
 
 import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
   formatUserName,
-  handleRegex
+  handleRegex,
+  decodeHashId
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import {
   instanceOfTrackResponse,
   instanceOfPlaylistResponse,
   instanceOfUserResponse,
-  CommentMention
+  CommentMention,
+  Track,
+  User,
+  Playlist
 } from '@audius/sdk'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { TextLink, TextLinkProps } from 'components/link/TextLink'
+import { LinkKind, TextLink, TextLinkProps } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
@@ -47,7 +53,9 @@ type Matcher = {
 type UserGeneratedTextV2Props = {
   children: string
   matchers?: Matcher[]
-  linkProps?: Partial<TextLinkProps>
+  linkProps?: Partial<Omit<TextLinkProps, 'onClick'>> & {
+    onClick?: (e: MouseEvent, linkKind: LinkKind, linkEntityId?: ID) => void
+  }
   mentions?: CommentMention[]
 
   // If true, only linkify Audius URLs
@@ -72,6 +80,11 @@ const Link = ({
   ...other
 }: Omit<TextLinkProps, 'to'> & { url: string }) => {
   const [unfurledContent, setUnfurledContent] = useState<string>()
+  const [unfurledContentObject, setUnfurledContentObject] = useState<{
+    track?: Track
+    collection?: Playlist
+    user?: User
+  }>()
 
   useAsync(async () => {
     if (isAudiusUrl(url) && !unfurledContent) {
@@ -79,11 +92,16 @@ const Link = ({
       const res = await sdk.resolve({ url })
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
-          setUnfurledContent(formatTrackName({ track: res.data }))
+          const obj = { track: res.data }
+          setUnfurledContent(formatTrackName(obj))
+          setUnfurledContentObject(obj)
         } else if (instanceOfPlaylistResponse(res)) {
-          setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
+          const obj = { collection: res.data[0] }
+          setUnfurledContent(formatCollectionName(obj))
         } else if (instanceOfUserResponse(res)) {
-          setUnfurledContent(formatUserName({ user: res.data }))
+          const obj = { user: res.data }
+          setUnfurledContent(formatUserName(obj))
+          setUnfurledContentObject(obj)
         }
       }
     }
@@ -92,12 +110,44 @@ const Link = ({
   const isExternalLink = !isAudiusUrl(url)
   const to = isExternalLink ? formatExternalLink(url) : formatAudiusUrl(url)
 
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      if (to) {
+        if (unfurledContentObject) {
+          if (unfurledContentObject.track) {
+            other.onClick?.(
+              e,
+              'track',
+              decodeHashId(unfurledContentObject.track.id) ?? 0
+            )
+          } else if (unfurledContentObject.collection) {
+            other.onClick?.(
+              e,
+              'collection',
+              decodeHashId(unfurledContentObject.collection.id) ?? 0
+            )
+          } else if (unfurledContentObject.user) {
+            other.onClick?.(
+              e,
+              'user',
+              decodeHashId(unfurledContentObject.user.id) ?? 0
+            )
+          }
+        } else {
+          other.onClick?.(e, 'other')
+        }
+      }
+    },
+    [to, other, unfurledContentObject]
+  )
+
   return (
     <TextLink
       {...other}
       to={to}
       variant={other.variant ?? 'visible'}
       isExternal={isExternalLink}
+      onClick={handleClick}
     >
       {unfurledContent ?? children}
     </TextLink>
@@ -116,9 +166,16 @@ const HandleLink = ({
     currentUserId
   })
 
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      other.onClick?.(e, 'mention', user?.user_id)
+    },
+    [other, user]
+  )
+
   return user ? (
     <ArtistPopover handle={user.handle} component='span'>
-      <TextLink {...other} to={profilePage(user.handle)}>
+      <TextLink {...other} to={profilePage(user.handle)} onClick={handleClick}>
         {handle}
       </TextLink>
     </ArtistPopover>
@@ -140,9 +197,16 @@ const MentionLink = ({
 }) => {
   const userHandle = handle.replace('@', '')
 
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      other.onClick?.(e, 'mention')
+    },
+    [other]
+  )
+
   return (
     <ArtistPopover handle={userHandle} component='span'>
-      <TextLink {...other} to={profilePage(userHandle)}>
+      <TextLink {...other} to={profilePage(userHandle)} onClick={handleClick}>
         {handle}
       </TextLink>
     </ArtistPopover>
@@ -313,7 +377,15 @@ export const UserGeneratedTextV2 = forwardRef(function (
 
   return (
     <Text
-      style={{ whiteSpace: 'pre-wrap' }}
+      style={{
+        whiteSpace: 'pre-wrap'
+      }}
+      css={{
+        '&::selection': {
+          backgroundColor: '#a116b7',
+          color: 'var(--harmony-white)'
+        }
+      }}
       ref={ref as ForwardedRef<'p'>}
       {...other}
     >
