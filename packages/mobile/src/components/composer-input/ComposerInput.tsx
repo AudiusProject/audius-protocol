@@ -25,6 +25,7 @@ import type {
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
+import { TextInput as ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
 import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
@@ -106,7 +107,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
     presetUserMentions = [],
     entityId,
     styles: propStyles,
-    TextInputComponent,
+    // Use ReactNativeGestureHandlerTextInput to allow for nesting <Text> inside <TextInput>
+    TextInputComponent = ReactNativeGestureHandlerTextInput,
     onLayout,
     maxLength = 10000,
     maxMentions = Infinity
@@ -534,7 +536,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID='none'
         maxLength={maxLength}
         autoCorrect
-        TextInputComponent={TextInputComponent}
+        TextInputComponent={TextInputComponent as any}
         onFocus={onFocus}
       >
         {isTextHighlighted ? (
