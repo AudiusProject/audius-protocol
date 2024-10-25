@@ -9,7 +9,7 @@ import {
   useMuteUser
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment } from '@audius/common/models'
+import { Comment, ID, Name, ReplyComment } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import {
   Box,
@@ -35,6 +35,7 @@ import {
   useAuthenticatedCallback
 } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
 const { getUser } = cacheUsersSelectors
@@ -153,14 +154,34 @@ export const CommentActionBar = ({
   const handleClickReply = useCallback(() => {
     if (isMobile) {
       toggleIsMobileAppDrawer()
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER,
+          trackId: entityId
+        })
+      )
     } else {
       if (currentUserId === undefined) {
         openAuthModal(dispatch)
       } else {
         onClickReply()
+        trackEvent(
+          make({
+            eventName: Name.COMMENTS_CLICK_REPLY_BUTTON,
+            commentId
+          })
+        )
       }
     }
-  }, [currentUserId, dispatch, isMobile, onClickReply, toggleIsMobileAppDrawer])
+  }, [
+    isMobile,
+    toggleIsMobileAppDrawer,
+    entityId,
+    currentUserId,
+    dispatch,
+    onClickReply,
+    commentId
+  ])
 
   // Confirmation Modal state
   const confirmationModals: {
@@ -342,6 +363,13 @@ export const CommentActionBar = ({
                   openAuthModal(dispatch)
                 } else {
                   triggerPopup()
+
+                  trackEvent(
+                    make({
+                      eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
+                      commentId
+                    })
+                  )
                 }
               }
             }}

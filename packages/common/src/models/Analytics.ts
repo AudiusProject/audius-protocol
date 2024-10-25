@@ -561,7 +561,9 @@ export enum Name {
   COMMENTS_OPEN_TRACK_OVERFLOW_MENU = 'Comments: Open Track Overflow Menu',
   COMMENTS_TURN_ON_NOTIFICATIONS_FOR_TRACK = 'Comments: Turn On Notifications for Track',
   COMMENTS_TURN_OFF_NOTIFICATIONS_FOR_TRACK = 'Comments: Turn Off Notifications for Track',
-  COMMENTS_DISABLE_TRACK_COMMENTS = 'Comments: Disable Track Comments'
+  COMMENTS_DISABLE_TRACK_COMMENTS = 'Comments: Disable Track Comments',
+  COMMENTS_OPEN_COMMENT_DRAWER = 'Comments: Open Comment Drawer',
+  COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer'
 }
 
 type PageView = {
@@ -2546,7 +2548,7 @@ export type CommentsDeleteComment = {
 
 export type CommentsFocusCommentInput = {
   eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT
-  trackId?: ID
+  trackId: ID
   source: 'comment_input' | 'comment_preview'
 }
 
@@ -2603,6 +2605,7 @@ export type CommentsClickLink = {
 export type CommentsNotificationOpen = {
   eventName: Name.COMMENTS_NOTIFICATION_OPEN
   commentId: ID
+  notificationType: 'comment' | 'reaction' | 'thread' | 'mention'
 }
 
 export type CommentsReportComment = {
@@ -2706,6 +2709,16 @@ export type CommentsTurnOffNotificationsForTrack = {
 
 export type CommentsDisableTrackComments = {
   eventName: Name.COMMENTS_DISABLE_TRACK_COMMENTS
+  trackId: ID
+}
+
+type CommentsOpenCommentDrawer = {
+  eventName: Name.COMMENTS_OPEN_COMMENT_DRAWER
+  trackId: ID
+}
+
+type CommentsCloseCommentDrawer = {
+  eventName: Name.COMMENTS_CLOSE_COMMENT_DRAWER
   trackId: ID
 }
 
@@ -3070,3 +3083,5 @@ export type AllTrackingEvents =
   | CommentsTurnOnNotificationsForTrack
   | CommentsTurnOffNotificationsForTrack
   | CommentsDisableTrackComments
+  | CommentsOpenCommentDrawer
+  | CommentsCloseCommentDrawer

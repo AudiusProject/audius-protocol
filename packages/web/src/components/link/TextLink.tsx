@@ -1,14 +1,22 @@
 import { Ref, forwardRef, useCallback, MouseEvent } from 'react'
 
+import { ID } from '@audius/common/models'
 import {
   TextLink as HarmonyTextLink,
   TextLinkProps as HarmonyTextLinkProps
 } from '@audius/harmony'
 import { Link, LinkProps } from 'react-router-dom'
 
+export type LinkKind = 'track' | 'collection' | 'user' | 'mention' | 'other'
+
 export type TextLinkProps = HarmonyTextLinkProps &
-  Omit<LinkProps, 'color'> & {
+  Omit<LinkProps, 'color' | 'onClick'> & {
     stopPropagation?: boolean
+    onClick?: (
+      e: MouseEvent<HTMLAnchorElement>,
+      linkKind?: LinkKind,
+      linkEntityId?: ID
+    ) => void
   }
 
 export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {

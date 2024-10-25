@@ -6,7 +6,8 @@ import {
   RepostSource,
   FavoriteSource,
   FavoriteType,
-  ID
+  ID,
+  Name
 } from '@audius/common/models'
 import { FeatureFlags, trpc } from '@audius/common/services'
 import {
@@ -34,6 +35,7 @@ import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackTileProps } from 'components/track/types'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
@@ -197,6 +199,14 @@ const ConnectedTrackTile = ({
   const makeGoToCommentsPage = (_: ID) => (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation()
     goToRoute(track?.permalink + '?showComments=true')
+
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId: track_id,
+        source: 'lineup'
+      })
+    )
   }
 
   // We wanted to use mobile track tile on desktop, which means shimming in the desktop overflow
