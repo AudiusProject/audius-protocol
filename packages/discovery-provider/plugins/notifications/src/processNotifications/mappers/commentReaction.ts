@@ -101,7 +101,7 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
         this.receiverUserId,
-        'comments'
+        'reactions'
       )
     ) {
       await sendBrowserNotification(
@@ -120,7 +120,7 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
       }) &&
       userNotificationSettings.isNotificationTypeEnabled(
         this.receiverUserId,
-        'comments'
+        'reactions'
       )
     ) {
       const devices: Device[] = userNotificationSettings.getDevices(

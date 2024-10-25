@@ -357,6 +357,8 @@ export type NotificationData =
   | CommentNotification
   | CommentThreadNotification
   | CommentMentionNotification
+  | CommentReactionNotification
+
 export class RequiresRetry extends Error {
   constructor(message: string) {
     super(message)
