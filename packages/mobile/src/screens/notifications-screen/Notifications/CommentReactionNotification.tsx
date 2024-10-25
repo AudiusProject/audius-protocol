@@ -27,7 +27,8 @@ const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
   liked: ' liked your comment on',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentReactionNotificationProps = {
@@ -56,6 +57,8 @@ export const CommentReactionNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
+  const isOwnerReaction =
+    entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
@@ -79,7 +82,13 @@ export const CommentReactionNotification = (
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.liked}{' '}
-        {isOwner ? messages.your : <UserNameLink user={entity.user} isOwner />}{' '}
+        {isOwner ? (
+          messages.your
+        ) : isOwnerReaction ? (
+          messages.their
+        ) : (
+          <UserNameLink user={entity.user} isOwner />
+        )}{' '}
         {entityType.toLowerCase()} <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>
