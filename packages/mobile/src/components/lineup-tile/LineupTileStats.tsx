@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import { isContentUSDCPurchaseGated, Name } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
 import {
   repostsUserListActions,
@@ -26,6 +26,7 @@ import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
 import { makeStyles, flexRowCentered } from 'app/styles'
 
 import { GatedTrackLabel } from './GatedTrackLabel'
@@ -155,9 +156,15 @@ export const LineupTileStats = ({
   }, [dispatch, id, navigation, repostType])
 
   const handlePressComments = useCallback(() => {
-    dispatch(setFavorite(id, favoriteType))
     navigation.push('Track', { id, showComments: true })
-  }, [dispatch, id, navigation, favoriteType])
+    track(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId: id,
+        source: 'lineup'
+      })
+    )
+  }, [id, navigation])
 
   const downloadStatusIndicator = isCollection ? (
     <CollectionDownloadStatusIndicator size='s' collectionId={id} />

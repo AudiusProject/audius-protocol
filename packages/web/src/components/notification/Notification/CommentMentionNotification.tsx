@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
   CommentMentionNotification as CommentMentionNotificationType
@@ -10,6 +11,7 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
+import { track, make } from 'services/analytics'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -81,8 +83,23 @@ export const CommentMentionNotification = (
       } else {
         handleGoToEntity(event)
       }
+      track(
+        make({
+          eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+          commentId: notification.entityId,
+          notificationType: 'mention'
+        })
+      )
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      notification.entityId,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity
+    ]
   )
 
   if (!users || !firstUser || !entity || !entity.user) return null

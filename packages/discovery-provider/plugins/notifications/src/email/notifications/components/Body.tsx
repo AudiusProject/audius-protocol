@@ -206,6 +206,14 @@ const snippetMap = {
         ? 'their'
         : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
+  ['comment_reaction'](notification) {
+    const [user] = notification.users
+    return `${user.name} liked your comment on ${
+      notification.entityUser.user_id === notification.receiverUserId
+        ? 'your'
+        : `${notification.entityUser.name}'s`
+    } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
 }
 

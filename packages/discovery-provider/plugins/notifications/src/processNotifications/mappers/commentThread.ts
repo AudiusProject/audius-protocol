@@ -132,6 +132,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
       const timestamp = Math.floor(
         Date.parse(this.notification.timestamp as unknown as string) / 1000
       )
+
       const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(

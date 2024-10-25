@@ -188,16 +188,16 @@ export const externalInternalLinks = [
 // Org Links
 export const AUDIUS_ORG = 'https://audius.org'
 export const AUDIUS_DOCS_LINK = 'https://docs.audius.org'
-export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
+export const AUDIUS_TEAM_LINK = 'https://www.tikilabs.com/team'
 export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
 export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
-export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
+export const AUDIUS_CAREERS_LINK = 'https://www.tikilabs.com/careers'
 export const AUDIUS_PODCAST_LINK =
-  'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
+  'https://www.youtube.com/playlist?list=PLKEECkHRxmPbcG59urFnWgsm6EQ9GAbPb'
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
 export const AUDIUS_API_LINK = 'https://audius.org/api'
 

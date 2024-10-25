@@ -34,7 +34,8 @@ import {
   RequestManagerNotification,
   CommentNotification,
   CommentThreadNotification,
-  CommentMentionNotification
+  CommentMentionNotification,
+  CommentReactionNotification
 } from './Notifications'
 
 type NotificationListItemProps = {
@@ -122,6 +123,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <CommentThreadNotification notification={notification} />
       case NotificationType.CommentMention:
         return <CommentMentionNotification notification={notification} />
+      case NotificationType.CommentReaction:
+        return <CommentReactionNotification notification={notification} />
       default:
         return null
     }

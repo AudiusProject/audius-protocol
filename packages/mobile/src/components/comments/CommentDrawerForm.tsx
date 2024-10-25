@@ -6,12 +6,14 @@ import {
   useEditComment,
   usePostComment
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { UserMetadata } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
+import type { CommentMention } from '@audius/sdk'
 import {
   BottomSheetTextInput,
   type BottomSheetFlatListMethods
 } from '@gorhom/bottom-sheet'
+import TrackPlayer from 'react-native-track-player'
 import { useSelector } from 'react-redux'
 
 import { Box } from '@audius/harmony-native'
@@ -38,16 +40,19 @@ export const CommentDrawerForm = (props: CommentDrawerFormProps) => {
     replyingAndEditingState ?? {}
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
-  const playerPosition = useSelector(playerSelectors.getSeek)
   const playerTrackId = useSelector(playerSelectors.getTrackId)
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = async (
+    message: string,
+    mentions?: CommentMention[]
+  ) => {
     if (editingComment) {
       editComment(editingComment.id, message, mentions)
     } else {
+      const currentPosition = await TrackPlayer.getPosition()
       const trackTimestampS =
-        playerTrackId !== null && playerPosition && playerTrackId === entityId
-          ? Math.floor(playerPosition)
+        playerTrackId !== null && currentPosition && playerTrackId === entityId
+          ? Math.floor(currentPosition)
           : undefined
 
       postComment(

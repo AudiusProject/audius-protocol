@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
@@ -45,10 +45,10 @@ const CommentBlockInternal = (
     createdAt,
     userId,
     isEdited,
-    isArtistReacted
+    isArtistReacted,
+    mentions = []
   } = comment
 
-  const [userMentionIds, setUserMentionIds] = useState<ID[]>([])
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(
@@ -69,10 +69,6 @@ const CommentBlockInternal = (
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = userId === artistId
 
-  const handleUserMentionsChange = useCallback((userIds: ID[]) => {
-    setUserMentionIds(userIds)
-  }, [])
-
   return (
     <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
       <Box css={{ flexShrink: 0, width: 44 }}>
@@ -80,7 +76,9 @@ const CommentBlockInternal = (
       </Box>
       <Flex direction='column' gap='s' w='100%' alignItems='flex-start'>
         <Box css={{ position: 'absolute', top: 0, right: 0 }}>
-          <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          {userId !== undefined ? (
+            <CommentBadge isArtist={isCommentByArtist} commentUserId={userId} />
+          ) : null}
         </Box>
         {isPinned || isArtistReacted ? (
           <Flex justifyContent='space-between' w='100%'>
@@ -89,7 +87,9 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
-            <UserLink userId={userId} popover size='l' strength='strong' />
+            {userId !== undefined ? (
+              <UserLink userId={userId} popover size='l' strength='strong' />
+            ) : null}
             <Flex gap='xs' alignItems='flex-end' h='100%'>
               <Timestamp time={createdAtDate} />
               {trackTimestampS !== undefined ? (
@@ -111,7 +111,7 @@ const CommentBlockInternal = (
               onSubmit={() => setShowEditInput(false)}
               commentId={commentId}
               initialValue={message}
-              initialUserMentionIds={userMentionIds}
+              initialUserMentions={mentions}
               isEdit
               hideAvatar
             />
@@ -125,8 +125,9 @@ const CommentBlockInternal = (
         ) : (
           <CommentText
             isEdited={isEdited && !isTombstone}
-            onUserMentionsChange={handleUserMentionsChange}
             isPreview={isPreview}
+            mentions={mentions}
+            commentId={commentId}
           >
             {message}
           </CommentText>
@@ -143,13 +144,15 @@ const CommentBlockInternal = (
           />
         )}
 
-        {showReplyInput ? (
+        {showReplyInput && userId !== undefined ? (
           <Flex w='100%' direction='column' gap='s'>
             <CommentForm
               autoFocus
               parentCommentId={parentCommentId ?? comment.id}
               initialValue={`@${userHandle} `}
-              initialUserMentionIds={[userId]}
+              initialUserMentions={
+                userHandle ? [{ userId, handle: userHandle }] : []
+              }
               onSubmit={() => setShowReplyInput(false)}
             />
             <PlainButton

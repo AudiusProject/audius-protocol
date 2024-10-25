@@ -8,26 +8,26 @@ import {
   useState
 } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetUserByHandle,
-  useGetTrackById
-} from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
+  decodeHashId,
   getDurationFromTimestampMatch,
-  handleRegex,
+  parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
-import { Platform, TouchableOpacity } from 'react-native'
+import { isEqual } from 'lodash'
 import type { TextInput as RnTextInput } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import type {
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   TextInputSelectionChangeEventData
 } from 'react-native/types'
+import { TextInput as ReactNativeGestureHandlerTextInput } from 'react-native-gesture-handler'
+import { usePrevious } from 'react-use'
 
 import { Flex, IconSend, mergeRefs } from '@audius/harmony-native'
 import { Text, TextInput } from 'app/components/core'
@@ -95,29 +95,39 @@ export const ComposerInput = forwardRef(function ComposerInput(
     onSubmit,
     onChange,
     onAutocompleteChange,
+    onFocus,
+    onAddMention,
+    onAddTimestamp,
+    onAddLink,
     setAutocompleteHandler,
     isLoading,
     messageId,
     placeholder,
     presetMessage,
+    presetUserMentions = [],
     entityId,
     styles: propStyles,
-    TextInputComponent,
+    // Use ReactNativeGestureHandlerTextInput to allow for nesting <Text> inside <TextInput>
+    TextInputComponent = ReactNativeGestureHandlerTextInput,
     onLayout,
     maxLength = 10000,
     maxMentions = Infinity
   } = props
-  const { data: currentUserId } = useGetCurrentUserId({})
+
   const [value, setValue] = useState(presetMessage ?? '')
   const [autocompletePosition, setAutocompletePosition] = useState(0)
   const [isAutocompleteActive, setIsAutocompleteActive] = useState(false)
-  const [userMentions, setUserMentions] = useState<string[]>([])
-  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>({})
-  const [presetUserMention, setPresetUserMention] = useState('')
-  const { data: replyUser } = useGetUserByHandle({
-    handle: presetUserMention.slice(1), // slice to remove the @
-    currentUserId
-  })
+  const [userMentions, setUserMentions] = useState<string[]>(
+    presetUserMentions.map((mention) => `@${mention.handle}`)
+  )
+  const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
+    presetUserMentions.reduce((acc, mention) => {
+      return {
+        ...acc,
+        [`@${mention.handle}`]: mention.userId
+      }
+    }, {})
+  )
   const selectionRef = useRef<TextInputSelectionChangeEventData['selection']>()
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
@@ -125,6 +135,16 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+
+  useEffect(() => {
+    setUserMentions(presetUserMentions.map((mention) => `@${mention.handle}`))
+    setUserIdMap(
+      presetUserMentions.reduce((acc, mention) => {
+        acc[`@${mention.handle}`] = mention.userId
+        return acc
+      }, {})
+    )
+  }, [presetUserMentions])
 
   const getAutocompleteRange = useCallback(() => {
     if (!isAutocompleteActive) return null
@@ -159,46 +179,32 @@ export const ComposerInput = forwardRef(function ComposerInput(
     hostname: env.PUBLIC_HOSTNAME,
     audiusSdk
   })
+  const prevLinkEntities = usePrevious(linkEntities)
 
-  const getTimestamps = useCallback(
-    (value: string) => {
-      if (!track || !track.access.stream) return []
+  const timestamps = useMemo(() => {
+    if (!track || !track.access.stream) return []
 
-      const { duration } = track
-      return Array.from(value.matchAll(timestampRegex))
-        .filter((match) => getDurationFromTimestampMatch(match) <= duration)
-        .map((match) => ({
-          type: 'timestamp',
-          text: match[0],
-          index: match.index,
-          link: ''
-        }))
-    },
-    [track]
-  )
+    const { duration } = track
+    return Array.from(value.matchAll(timestampRegex))
+      .filter((match) => getDurationFromTimestampMatch(match) <= duration)
+      .map((match) => ({
+        type: 'timestamp',
+        text: match[0],
+        index: match.index,
+        link: ''
+      }))
+  }, [track, value])
+  const prevTimestamps = usePrevious(timestamps)
 
   useEffect(() => {
     const fn = async () => {
       if (presetMessage) {
         const editedValue = await resolveLinks(presetMessage)
         setValue(editedValue)
-        if (handleRegex.test(editedValue.trimEnd())) {
-          setPresetUserMention(editedValue.trimEnd())
-        }
       }
     }
     fn()
   }, [presetMessage, resolveLinks])
-
-  useEffect(() => {
-    if (replyUser && !userMentions.includes(presetUserMention)) {
-      setUserMentions((mentions) => [...mentions, presetUserMention])
-      setUserIdMap((map) => {
-        map[presetUserMention] = replyUser.user_id
-        return map
-      })
-    }
-  }, [presetUserMention, replyUser, userMentions])
 
   useEffect(() => {
     onChange?.(restoreLinks(value), linkEntities)
@@ -256,9 +262,11 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
         return `${textBeforeMention}${fillText}${textAfterMention}`
       })
+      onAddMention?.(user.user_id)
+
       setIsAutocompleteActive(false)
     },
-    [getAutocompleteRange, userMentions]
+    [getAutocompleteRange, userMentions, onAddMention]
   )
 
   useEffect(() => {
@@ -290,9 +298,15 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    const userIds =
-      getUserMentions(value)?.map((match) => userIdMap[match.text]) ?? []
-    onSubmit?.(restoreLinks(value), userIds)
+    const mentions =
+      getUserMentions(value)?.map((match) => {
+        return {
+          handle: match.text.replace('@', ''),
+          userId: userIdMap[match.text]
+        }
+      }) ?? []
+
+    onSubmit?.(restoreLinks(value), mentions)
   }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
 
   const handleKeyDown = useCallback(
@@ -398,16 +412,14 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
   const isTextHighlighted = useMemo(() => {
     const matches = getMatches(value) ?? []
-    const timestamps = getTimestamps(value)
     const mentions = getUserMentions(value) ?? []
     const fullMatches = [...matches, ...mentions, ...timestamps]
     return Boolean(fullMatches.length || isAutocompleteActive)
-  }, [getMatches, getTimestamps, getUserMentions, isAutocompleteActive, value])
+  }, [getMatches, timestamps, getUserMentions, isAutocompleteActive, value])
 
   const renderDisplayText = useCallback(
     (value: string) => {
       const matches = getMatches(value) ?? []
-      const timestamps = getTimestamps(value)
       const mentions = getUserMentions(value) ?? []
       const fullMatches = [...matches, ...mentions, ...timestamps]
 
@@ -478,12 +490,30 @@ export const ComposerInput = forwardRef(function ComposerInput(
     },
     [
       getMatches,
-      getTimestamps,
+      timestamps,
       getUserMentions,
       isAutocompleteActive,
       getAutocompleteRange
     ]
   )
+
+  useEffect(() => {
+    if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
+      const { type, data } = linkEntities[linkEntities.length - 1]
+      const id = decodeHashId(data.id)
+      if (id) {
+        onAddLink?.(id, type)
+      }
+    }
+  }, [linkEntities, onAddLink, prevLinkEntities])
+
+  useEffect(() => {
+    if (timestamps.length && !isEqual(timestamps, prevTimestamps)) {
+      onAddTimestamp?.(
+        parseCommentTrackTimestamp(timestamps[timestamps.length - 1].text)
+      )
+    }
+  }, [onAddTimestamp, timestamps, prevTimestamps])
 
   return (
     <>
@@ -506,7 +536,8 @@ export const ComposerInput = forwardRef(function ComposerInput(
         inputAccessoryViewID='none'
         maxLength={maxLength}
         autoCorrect
-        TextInputComponent={TextInputComponent}
+        TextInputComponent={TextInputComponent as any}
+        onFocus={onFocus}
       >
         {isTextHighlighted ? (
           <Text allowNewline>{renderDisplayText(value)}</Text>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -6,9 +6,10 @@ import {
   usePostComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { ID, SquareSizes } from '@audius/common/models'
+import { ID, Name, SquareSizes } from '@audius/common/models'
 import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
+import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -17,17 +18,18 @@ import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/D
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { make, track } from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 
 type CommentFormValues = {
   commentMessage: string
-  mentions?: ID[]
+  mentions?: CommentMention[]
 }
 
 type CommentFormProps = {
   onSubmit?: ({ commentMessage }: { commentMessage: string }) => void
   initialValue?: string
-  initialUserMentionIds?: ID[]
+  initialUserMentions?: CommentMention[]
   hideAvatar?: boolean
   commentId?: ID
   parentCommentId?: ID
@@ -39,7 +41,7 @@ type CommentFormProps = {
 export const CommentForm = ({
   onSubmit,
   initialValue = '',
-  initialUserMentionIds = [],
+  initialUserMentions = [],
   commentId,
   parentCommentId,
   isEdit,
@@ -56,7 +58,7 @@ export const CommentForm = ({
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
 
-  const handlePostComment = (message: string, mentions?: ID[]) => {
+  const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer
       ? Math.floor(audioPlayer.getPosition())
       : undefined
@@ -66,17 +68,45 @@ export const CommentForm = ({
     postComment(message, parentCommentId, trackTimestampS, mentions)
   }
 
-  const handleCommentEdit = (commentMessage: string, mentions?: ID[]) => {
+  const handleCommentEdit = (
+    commentMessage: string,
+    mentions?: CommentMention[]
+  ) => {
     if (commentId) {
       editComment(commentId, commentMessage, mentions)
     }
   }
 
-  const handleClickInput = useAuthenticatedCallback(() => {
-    if (isMobile) {
-      toggleIsMobileAppDrawer()
+  const handleClickInput = useAuthenticatedCallback(
+    () => {
+      if (isMobile) {
+        toggleIsMobileAppDrawer()
+        track(
+          make({
+            eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+            trackId: entityId
+          })
+        )
+      } else {
+        track(
+          make({
+            eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
+            trackId: entityId,
+            source: 'comment_input'
+          })
+        )
+      }
+    },
+    [isMobile, toggleIsMobileAppDrawer, entityId],
+    () => {
+      track(
+        make({
+          eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
+          trackId: entityId
+        })
+      )
     }
-  }, [isMobile, toggleIsMobileAppDrawer])
+  )
 
   const profileImage = useProfilePicture(
     currentUserId ?? null,
@@ -98,6 +128,41 @@ export const CommentForm = ({
     setMessageId((prev) => prev + 1)
   }
 
+  const handleCloseMobileAppDrawer = useCallback(() => {
+    toggleIsMobileAppDrawer()
+  }, [toggleIsMobileAppDrawer])
+
+  const handleAddMention = useCallback((userId: ID) => {
+    track(
+      make({
+        eventName: Name.COMMENTS_ADD_MENTION,
+        userId
+      })
+    )
+  }, [])
+
+  const handleAddTimestamp = useCallback((timestamp: number) => {
+    track(
+      make({
+        eventName: Name.COMMENTS_ADD_TIMESTAMP,
+        timestamp
+      })
+    )
+  }, [])
+
+  const handleAddLink = useCallback(
+    (entityId: ID, kind: 'track' | 'collection' | 'user') => {
+      track(
+        make({
+          eventName: Name.COMMENTS_ADD_LINK,
+          entityId,
+          kind
+        })
+      )
+    },
+    []
+  )
+
   return (
     <>
       <Flex w='100%' gap='m' alignItems='center' justifyContent='center'>
@@ -115,7 +180,7 @@ export const CommentForm = ({
           entityId={entityId}
           entityType={entityType}
           presetMessage={initialValue}
-          presetUserMentionIds={initialUserMentionIds}
+          presetUserMentions={initialUserMentions}
           readOnly={isMobile}
           onClick={handleClickInput}
           messageId={messageId}
@@ -124,12 +189,15 @@ export const CommentForm = ({
           onSubmit={(value: string, _, mentions) => {
             handleSubmit({ commentMessage: value, mentions })
           }}
+          onAddMention={handleAddMention}
+          onAddTimestamp={handleAddTimestamp}
+          onAddLink={handleAddLink}
           disabled={disabled}
         />
       </Flex>
       <DownloadMobileAppDrawer
         isOpen={isMobileAppDrawerOpen}
-        onClose={toggleIsMobileAppDrawer}
+        onClose={handleCloseMobileAppDrawer}
       />
     </>
   )
