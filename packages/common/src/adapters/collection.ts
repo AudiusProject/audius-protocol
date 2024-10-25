@@ -88,10 +88,9 @@ export const userCollectionMetadataFromSDK = (
       input.followeeFavorites,
       favoriteFromSDK
     ),
-    // TODO: Use playlistContents
     playlist_contents: {
       track_ids: transformAndCleanList(
-        input.playlistContents ?? input.addedTimestamps,
+        input.addedTimestamps ?? input.playlistContents,
         addedTimestampToPlaylistTrackId
       )
     },
