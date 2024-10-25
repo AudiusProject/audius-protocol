@@ -45,7 +45,11 @@ export const CommentText = (props: CommentTextProps) => {
         mentions={mentions}
         internalLinksOnly
         maxLines={isExpanded ? undefined : 3}
-        css={{ textAlign: 'left', wordBreak: 'break-word' }}
+        css={{
+          textAlign: 'left',
+          wordBreak: 'break-word',
+          userSelect: 'text'
+        }}
         suffix={
           isEdited ? <Text color='subdued'> ({messages.edited})</Text> : null
         }
