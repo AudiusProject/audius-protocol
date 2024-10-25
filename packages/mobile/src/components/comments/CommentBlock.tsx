@@ -116,6 +116,7 @@ export const CommentBlockInternal = (
                 strength='strong'
                 onPress={closeDrawer}
                 lineHeight='single'
+                textLinkStyle={{ lineHeight: 20 }}
               />
             ) : null}
             <Flex direction='row' gap='xs' alignItems='center' h='100%'>
