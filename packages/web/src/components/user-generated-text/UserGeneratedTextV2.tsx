@@ -313,7 +313,15 @@ export const UserGeneratedTextV2 = forwardRef(function (
 
   return (
     <Text
-      style={{ whiteSpace: 'pre-wrap' }}
+      style={{
+        whiteSpace: 'pre-wrap'
+      }}
+      css={{
+        '&::selection': {
+          backgroundColor: '#a116b7',
+          color: 'var(--harmony-white)'
+        }
+      }}
       ref={ref as ForwardedRef<'p'>}
       {...other}
     >
