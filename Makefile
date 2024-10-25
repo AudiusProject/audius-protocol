@@ -63,7 +63,12 @@ bin/audius-ctl-arm64-darwin-experimental: $(BUILD_SRCS)
 release-audius-ctl:
 	bash scripts/release-audius-ctl.sh
 
-audius-ctl-production-build: clean regen-abi bin/audius-ctl-arm64-linux bin/audius-ctl-x86_64-linux bin/audius-ctl-arm64-darwin bin/audius-ctl-x86_64-darwin
+audius-ctl-production-build: clean ignore-code-gen bin/audius-ctl-arm64-linux bin/audius-ctl-x86_64-linux bin/audius-ctl-arm64-darwin bin/audius-ctl-x86_64-darwin
+
+.PHONY: ignore-code-gen
+ignore-code-gen:
+	@echo "Warning: not regenerating .go files from sql, templ, proto, etc. Using existing artifacts instead."
+	@touch $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS) $(PROTO_ARTIFACTS) go.mod
 
 .PHONY: build-docker-local build-push-docker
 build-docker-local:
@@ -95,7 +100,6 @@ install-deps:
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
-	@scripts/add-sandbox-hosts.sh
 
 go.sum: go.mod
 go.mod: $(GO_SRCS)
@@ -175,7 +179,8 @@ core-test: gen
 	go test -v pkg/core/... -timeout 60s
 
 .PHONY: core-sandbox
-core-sandbox: build-amd64
+core-sandbox: core-build-amd64
+	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev up --build -d
 
 .PHONY: core-down-sandbox
@@ -184,14 +189,17 @@ core-down-sandbox:
 
 .PHONY: core-prod-sandbox
 core-prod-sandbox:
+	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod up --build -d
 
 .PHONY: core-stage-sandbox
 core-stage-sandbox:
+	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile stage up --build -d
 
 .PHONY: core-dev-sandbox
 core-dev-sandbox:
+	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile dev up --build -d
 
 .PHONY: core-livereload
