@@ -1,12 +1,14 @@
 import { useCallback } from 'react'
 
 import { useProxySelector } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { track, make } from 'app/services/analytics'
 
 import {
   NotificationHeader,
@@ -50,6 +52,13 @@ export const CommentNotification = (props: CommentNotificationProps) => {
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
+    track(
+      make({
+        eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+        commentId: notification.entityId,
+        notificationType: 'comment'
+      })
+    )
   }, [navigation, notification])
 
   if (!users || !firstUser || !entity) return null

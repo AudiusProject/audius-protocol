@@ -27,7 +27,8 @@ export const openAuthModal = (dispatch: Dispatch) => {
  */
 export const useAuthenticatedCallback = <T extends (...args: any) => any>(
   callback: T,
-  deps: any[]
+  deps: any[],
+  onOpenAuthModal?: () => void
 ) => {
   const isSignedIn = useSelector(getHasAccount)
   const dispatch = useDispatch()
@@ -36,6 +37,7 @@ export const useAuthenticatedCallback = <T extends (...args: any) => any>(
     (...args: Parameters<T>) => {
       if (!isSignedIn) {
         openAuthModal(dispatch)
+        onOpenAuthModal?.()
       } else {
         // eslint-disable-next-line n/no-callback-literal
         return callback(...args)

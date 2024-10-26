@@ -19,6 +19,7 @@ export type MenuContentProps = {
   children: ReactNode
   maxHeight?: CSSObject['maxHeight']
   width?: CSSObject['width']
+  minWidth?: CSSObject['minWidth']
   MenuListProps?: WithCSS<Partial<FlexProps>>
   scrollRef: Ref<HTMLDivElement>
   'aria-label'?: string
@@ -42,6 +43,7 @@ export const MenuContent = (props: MenuContentProps) => {
     children,
     maxHeight,
     width,
+    minWidth,
     MenuListProps,
     scrollRef,
     'aria-label': ariaLabel,
@@ -55,7 +57,7 @@ export const MenuContent = (props: MenuContentProps) => {
       gap='s'
       alignItems='flex-start'
       role='listbox'
-      css={{ maxHeight, width, overflowY: 'auto' }}
+      css={{ maxHeight, width, minWidth, overflowY: 'auto' }}
       ref={scrollRef}
       onClick={(e) => e.stopPropagation()}
       aria-label={ariaLabel}

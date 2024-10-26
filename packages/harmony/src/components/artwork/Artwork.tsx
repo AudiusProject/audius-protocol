@@ -85,6 +85,7 @@ export const Artwork = (props: ArtworkProps) => {
             // @ts-ignore
             src={src}
             data-testid={testId}
+            draggable={false}
             css={{
               position: 'absolute',
               top: 0,

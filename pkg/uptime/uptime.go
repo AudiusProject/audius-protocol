@@ -599,7 +599,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		logger.Error("failed to init Uptime server", "err", err)
 	}
 
-	go refreshPeersAndSigners(ph, g, nodeType)
+	// go refreshPeersAndSigners(ph, g, nodeType)
 
 	ph.Start()
 }

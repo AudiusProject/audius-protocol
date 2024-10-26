@@ -9,8 +9,10 @@ from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentR
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.tasks.entity_manager.utils import (
+    COMMENT_BODY_LIMIT,
     Action,
     EntityType,
     ManageEntityParameters,
@@ -23,16 +25,44 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
-def validate_comment_tx(params: ManageEntityParameters):
+def validate_delete_comment_tx(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+    if comment_id not in params.existing_records[EntityType.COMMENT.value]:
+        raise IndexingValidationError(
+            f"Cannot delete comment {comment_id} that does not exist"
+        )
+    comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    track_owner_id = (
+        params.session.query(Track.owner_id)
+        .filter(Track.track_id == comment.entity_id)
+        .scalar()
+    )
+
+    if user_id != comment.user_id and user_id != track_owner_id:
+        raise IndexingValidationError(
+            f"Only track owner or comment owner can delete comment {comment_id}"
+        )
+
+
+def validate_write_comment_tx(params: ManageEntityParameters):
     comment_id = params.entity_id
     validate_signer(params)
-    if (
-        params.action == Action.CREATE
-        and comment_id in params.existing_records[EntityType.COMMENT.value]
-    ):
-        raise IndexingValidationError(f"Comment {comment_id} already exists")
+    if params.action == Action.CREATE:
+        if comment_id in params.existing_records[EntityType.COMMENT.value]:
+            raise IndexingValidationError(f"Comment {comment_id} already exists")
+    if params.action == Action.UPDATE:
+        if (
+            comment_id not in params.existing_records[EntityType.COMMENT.value]
+            or params.existing_records[EntityType.COMMENT.value][comment_id].is_delete
+        ):
+            raise IndexingValidationError(
+                f"Cannot update comment {comment_id} that does not exist"
+            )
+
     # Entity type only supports track at the moment
-    if params.metadata["entity_type"] != "Track":
+    if "entity_type" in params.metadata and params.metadata["entity_type"] != "Track":
         raise IndexingValidationError(
             f"Entity type {params.metadata['entity_type']} does not exist"
         )
@@ -48,6 +78,8 @@ def validate_comment_tx(params: ManageEntityParameters):
             f"Track {params.metadata['entity_id']} does not exist"
         )
     if params.metadata["body"] is None or params.metadata["body"] == "":
+        raise IndexingValidationError("Comment body is empty")
+    if len(params.metadata["body"]) > COMMENT_BODY_LIMIT:
         raise IndexingValidationError("Comment body is empty")
 
     # Validate parent_comment_id if it exists
@@ -74,7 +106,7 @@ def validate_comment_tx(params: ManageEntityParameters):
 
 
 def create_comment(params: ManageEntityParameters):
-    validate_comment_tx(params)
+    validate_write_comment_tx(params)
     existing_records = params.existing_records
     metadata = params.metadata
     user_id = params.user_id
@@ -99,7 +131,7 @@ def create_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
         is not None
     )
@@ -152,7 +184,7 @@ def create_comment(params: ManageEntityParameters):
             user_ids=[entity_user_id],
             timestamp=params.block_datetime,
             type="comment",
-            specifier=str(user_id),
+            specifier=str(comment_id),
             group_id=f"comment:{entity_id}:type:{entity_type}",
             data={
                 "type": entity_type,
@@ -169,10 +201,10 @@ def create_comment(params: ManageEntityParameters):
             .all()
         )
 
-        for mention in mentions:
+        for mention_user_id in mentions:
             comment_mention = CommentMention(
                 comment_id=comment_id,
-                user_id=mention,
+                user_id=mention_user_id,
                 txhash=params.txhash,
                 blockhash=params.event_blockhash,
                 blocknumber=params.block_number,
@@ -181,29 +213,29 @@ def create_comment(params: ManageEntityParameters):
                 is_delete=False,
             )
             params.add_record(
-                (comment_id, mention),
+                (comment_id, mention_user_id),
                 comment_mention,
                 EntityType.COMMENT_MENTION,
             )
 
             track_owner_mention_mute = (
-                mention == entity_user_id and track_owner_notifications_off
+                mention_user_id == entity_user_id and track_owner_notifications_off
             )
 
             if (
-                mention != user_id
-                and mention != parent_comment_user_id
-                and mention not in mention_mutes
+                mention_user_id != user_id
+                and mention_user_id != parent_comment_user_id
+                and mention_user_id not in mention_mutes
                 and not track_owner_mention_mute
                 and not is_muted_by_karma
             ):
                 mention_notification = Notification(
                     blocknumber=params.block_number,
-                    user_ids=[mention],
+                    user_ids=[mention_user_id],
                     timestamp=params.block_datetime,
                     type="comment_mention",
-                    specifier=str(mention),
-                    group_id=f"comment_mention:{entity_id}:type:{entity_type}",
+                    specifier=str(mention_user_id),
+                    group_id=f"comment_mention:{comment_id}",
                     data={
                         "type": entity_type,
                         "entity_id": entity_id,
@@ -245,7 +277,7 @@ def create_comment(params: ManageEntityParameters):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.muted_user_id == user_id)
             .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
             .scalar()
             is not None
         )
@@ -260,7 +292,7 @@ def create_comment(params: ManageEntityParameters):
                 user_ids=[parent_comment_user_id],
                 timestamp=params.block_datetime,
                 type="comment_thread",
-                specifier=str(user_id),
+                specifier=str(comment_id),
                 group_id=f"comment_thread:{parent_comment_id}",
                 data={
                     "type": entity_type,
@@ -272,23 +304,13 @@ def create_comment(params: ManageEntityParameters):
             safe_add_notification(params, thread_notification)
 
 
-def validate_update_comment_tx(params: ManageEntityParameters):
-    validate_signer(params)
-    comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value].get(comment_id)
-    if not existing_comment:
-        raise IndexingValidationError(f"Comment {comment_id} does not exist")
-    if existing_comment.is_delete:
-        raise IndexingValidationError(f"Comment {comment_id} is deleted")
-
-
 def get_existing_mentions_for_comment(params: ManageEntityParameters, comment_id: int):
     all_existing_mentions = params.existing_records[EntityType.COMMENT_MENTION.value]
     return {k[1]: v for k, v in all_existing_mentions.items() if k[0] == comment_id}
 
 
 def update_comment(params: ManageEntityParameters):
-    validate_update_comment_tx(params)
+    validate_write_comment_tx(params)
     existing_records = params.existing_records
     metadata = params.metadata
     comment_id = params.entity_id
@@ -326,7 +348,7 @@ def update_comment(params: ManageEntityParameters):
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.muted_user_id == user_id)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .scalar()
     ) is not None
 
@@ -441,7 +463,7 @@ def update_comment(params: ManageEntityParameters):
                         timestamp=params.block_datetime,
                         type="comment_mention",
                         specifier=str(mention_user_id),
-                        group_id=f"comment_mention:{entity_id}:type:{entity_type}",
+                        group_id=f"comment_mention:{comment_id}",
                         data={
                             "type": entity_type,
                             "entity_id": entity_id,
@@ -453,7 +475,7 @@ def update_comment(params: ManageEntityParameters):
 
 
 def delete_comment(params: ManageEntityParameters):
-    validate_signer(params)
+    validate_delete_comment_tx(params)
     comment_id = params.entity_id
     existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
     if params.entity_id in params.new_records[EntityType.COMMENT.value]:
@@ -490,6 +512,9 @@ def react_comment(params: ManageEntityParameters):
     validate_comment_reaction_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
+    metadata = params.metadata
+    entity_id = metadata.get("entity_id")
+    entity_type = metadata.get("entity_type", EntityType.TRACK.value)
 
     comment_reaction_record = CommentReaction(
         comment_id=comment_id,
@@ -504,6 +529,87 @@ def react_comment(params: ManageEntityParameters):
     params.add_record(
         (user_id, comment_id), comment_reaction_record, EntityType.COMMENT_REACTION
     )
+
+    if entity_id:
+        entity_user_id = params.existing_records[EntityType.TRACK.value][
+            entity_id
+        ].owner_id
+        comment_user_id = params.existing_records[EntityType.COMMENT.value][
+            comment_id
+        ].user_id
+
+        comment_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == EntityType.COMMENT.value,
+                CommentNotificationSetting.entity_id == comment_id,
+                CommentNotificationSetting.user_id == comment_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == comment_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        is_muted_by_karma = (
+            params.session.query(MutedUser.muted_user_id)
+            .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
+            .filter(MutedUser.muted_user_id == user_id)
+            .group_by(MutedUser.muted_user_id)
+            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .scalar()
+        ) is not None
+
+        track_owner_notifications_off = params.session.query(
+            params.session.query(CommentNotificationSetting)
+            .filter(
+                CommentNotificationSetting.entity_type == "Track",
+                CommentNotificationSetting.entity_id == entity_id,
+                CommentNotificationSetting.user_id == entity_user_id,
+                CommentNotificationSetting.is_muted == True,
+            )
+            .exists()
+            | params.session.query(MutedUser)
+            .filter(
+                MutedUser.muted_user_id == user_id,
+                MutedUser.user_id == entity_user_id,
+                MutedUser.is_delete == False,
+            )
+            .exists()
+        ).scalar()
+
+        track_owner_mention_mute = (
+            comment_user_id == entity_user_id and track_owner_notifications_off
+        )
+
+        if (
+            user_id != comment_user_id
+            and not comment_owner_notifications_off
+            and not is_muted_by_karma
+            and not track_owner_mention_mute
+        ):
+            comment_reaction_notification = Notification(
+                blocknumber=params.block_number,
+                user_ids=[comment_user_id],
+                timestamp=params.block_datetime,
+                type="comment_reaction",
+                specifier=str(user_id),
+                group_id=f"comment_reaction:{comment_id}",
+                data={
+                    "type": entity_type,
+                    "entity_id": entity_id,
+                    "entity_user_id": entity_user_id,
+                    "comment_id": comment_id,
+                    "reacter_user_id": user_id,
+                },
+            )
+
+            safe_add_notification(params, comment_reaction_notification)
 
 
 def unreact_comment(params: ManageEntityParameters):

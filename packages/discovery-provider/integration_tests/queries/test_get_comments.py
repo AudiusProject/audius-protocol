@@ -188,6 +188,186 @@ def test_get_muted_comments(app):
         assert comments[0]["is_muted"] == True
 
 
+def test_get_comments_from_muted_user_by_track_owner(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+        ],
+        "muted_users": [
+            {
+                "muted_user_id": 1,
+                "user_id": 10,  # the owner of this track
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # the muted user should see their own comment
+        comments = get_track_comments({}, 1, current_user_id=1)
+        assert len(comments) == 1
+
+        # the person who muted the user should not see the comment
+        comments = get_track_comments({}, 1, current_user_id=10)
+        assert len(comments) == 0
+
+        # to a third party user, there should be no comments
+        # because the track owner muted the user
+        comments = get_track_comments({}, 1, current_user_id=2)
+        assert len(comments) == 0
+
+
+def test_get_comments_from_muted_user_by_other_user(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+        ],
+        "muted_users": [
+            {
+                "muted_user_id": 1,
+                "user_id": 9,
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # the muted user should see their own comment
+        comments = get_track_comments({}, 1, current_user_id=1)
+        assert len(comments) == 1
+
+        # the person who muted the user should not see the comment
+        comments = get_track_comments({}, 1, current_user_id=9)
+        assert len(comments) == 0
+
+        # to a third party user, they should still see the comment
+        comments = get_track_comments({}, 1, current_user_id=2)
+        assert len(comments) == 1
+
+
+def test_get_comment_replies_from_muted_user_by_track_owner(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            },
+        ],
+        "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
+        "muted_users": [
+            {
+                "muted_user_id": 1,
+                "user_id": 10,  # the owner of this track
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # the person who muted the user should not see the comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=10
+        )
+        assert len(comments) == 0
+        # to a third party user, there should be no comment replies
+        # because the track owner muted the user
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
+        )
+        assert len(comments) == 0
+        # the muted user should see their own comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
+        )
+        assert len(comments) == 1
+
+
+def test_get_comment_replies_from_muted_user_by_other_user(app):
+    entities = {
+        "comments": [
+            {
+                "comment_id": 1,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 1),
+                "track_timestamp_s": 1,
+            },
+            {
+                "comment_id": 2,
+                "user_id": 1,
+                "entity_id": 1,
+                "entity_type": "Track",
+                "created_at": datetime(2022, 1, 2),
+                "track_timestamp_s": 2,
+            },
+        ],
+        "comment_threads": [{"parent_comment_id": 1, "comment_id": 2}],
+        "muted_users": [
+            {
+                "muted_user_id": 1,
+                "user_id": 9,
+            }
+        ],
+        "tracks": [{"track_id": 1, "owner_id": 10}],
+    }
+
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, entities)
+
+        # the person who muted the user should not see the comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=9
+        )
+        assert len(comments) == 0
+        # to a third party user, they should still see the comment replies
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=2
+        )
+        assert len(comments) == 1
+        # the muted user should see their own comment
+        comments = get_paginated_replies(
+            {"limit": 10, "offset": 0, "sort_method": "newest"}, 1, current_user_id=1
+        )
+        assert len(comments) == 1
+
+
 def test_get_deleted_comments(app):
     entities = {
         "comments": [
@@ -289,32 +469,31 @@ def test_get_tombstone_comments(app):
 def test_get_reported_comments(app):
     "Test that we do not receive comments that have been reported by artist or high-karma user"
 
+    initial_entities = {
+        "aggregate_user": [{"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD}],
+    }
+
     entities = {
         "comments": [
             {
                 "comment_id": 1,
                 "user_id": 2,
                 "entity_id": 1,
+                "text": "b",
             },
-            {
-                "comment_id": 2,
-                "user_id": 2,
-                "entity_id": 1,
-            },
+            {"comment_id": 2, "user_id": 2, "entity_id": 1, "text": "a"},
         ],
         "comment_reports": [
             {"comment_id": 1, "user_id": 1},
             {"comment_id": 2, "user_id": 3},
         ],
-        "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 4}],
-        "aggregate_user": [
-            {"user_id": 3, "follower_count": COMMENT_KARMA_THRESHOLD + 1}
-        ],
+        "users": [{"user_id": 1}, {"user_id": 2}, {"user_id": 3}, {"user_id": 4}],
         "tracks": [{"track_id": 1, "owner_id": 1}],
     }
 
     with app.app_context():
         db = get_db()
+        populate_mock_db(db, initial_entities)
         populate_mock_db(db, entities)
 
         comments = get_track_comments({}, 1, 4)

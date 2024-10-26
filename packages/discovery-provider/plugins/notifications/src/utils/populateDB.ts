@@ -22,7 +22,8 @@ import {
   GrantRow,
   CommentRow,
   CommentThreadRow,
-  CommentMentionRow
+  CommentMentionRow,
+  CommentReactionRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -856,6 +857,32 @@ export const createCommentMentions = async (
       }))
     )
     .into('comment_mentions')
+}
+
+type CreateCommentReaction = Pick<
+  CommentReactionRow,
+  'comment_id' | 'user_id'
+> &
+  Partial<CommentReactionRow>
+
+export const createCommentReactions = async (
+  db: Knex,
+  commentReactions: CreateCommentReaction[]
+) => {
+  await db
+    .insert(
+      commentReactions.map((reaction) => ({
+        comment_id: reaction.comment_id,
+        user_id: reaction.user_id,
+        created_at: reaction.created_at || new Date(Date.now()),
+        updated_at: reaction.updated_at || new Date(Date.now()),
+        is_delete: reaction.is_delete || false,
+        txhash: `0x${reaction.comment_id}`,
+        blockhash: `0x${reaction.comment_id}`,
+        blocknumber: reaction.blocknumber ?? 0
+      }))
+    )
+    .into('comment_reactions')
 }
 
 export type UserWithDevice = {

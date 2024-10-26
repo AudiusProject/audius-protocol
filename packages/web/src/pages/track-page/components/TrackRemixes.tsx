@@ -88,9 +88,14 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     return null
   }
 
-  const { _remixes, permalink, comments_disabled } = track as unknown as Track
+  const {
+    _remixes: remixes,
+    _remixes_count: remixesCount,
+    permalink,
+    comments_disabled
+  } = track as unknown as Track
   const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
-  const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
+  const remixTrackIds = remixes?.map(({ track_id }) => track_id) ?? null
 
   const lineupVariant =
     (isCommentingEnabled && isDesktop) || isMobile
@@ -104,7 +109,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   return (
     <Flex
       direction='column'
-      gap='l'
+      gap='s'
       w={!isDesktop || isCommentingEnabled ? '100%' : 720}
     >
       <Flex
@@ -134,7 +139,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         playTrack={handlePlay}
         pauseTrack={handlePause}
       />
-      {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
+      {remixesCount && remixesCount > MAX_REMIXES_TO_DISPLAY ? (
         <Box alignSelf='flex-start'>
           <Button iconRight={IconArrowRight} size='xs' asChild>
             <Link to={trackRemixesPage(permalink)}>

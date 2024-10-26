@@ -168,7 +168,8 @@ export function* parseAndProcessNotifications(
     if (
       type === NotificationType.Comment ||
       type === NotificationType.CommentThread ||
-      type === NotificationType.CommentMention
+      type === NotificationType.CommentMention ||
+      type === NotificationType.CommentReaction
     ) {
       if (notification.entityType === Entity.Track) {
         trackIdsToFetch.add(notification.entityId)

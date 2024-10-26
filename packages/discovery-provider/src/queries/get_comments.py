@@ -52,12 +52,20 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
+    if artist_id is None:
+        artist_id = (
+            session.query(Track)
+            .join(Comment, Track.track_id == Comment.entity_id)
+            .first()
+            .owner_id
+        )
+
     muted_by_karma = (
         session.query(MutedUser.muted_user_id)
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
         .filter(MutedUser.is_delete == False)
         .group_by(MutedUser.muted_user_id)
-        .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+        .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
         .subquery()
     )
 
@@ -99,6 +107,7 @@ def get_replies(
                 MutedUser.muted_user_id == Comment.user_id,
                 or_(
                     MutedUser.user_id == current_user_id,
+                    MutedUser.user_id == artist_id,
                     MutedUser.muted_user_id.in_(muted_by_karma),
                 ),
                 current_user_id != Comment.user_id,
@@ -115,9 +124,10 @@ def get_replies(
             ),  # Exclude muted users' comments
             or_(
                 CommentReport.comment_id == None,
-                current_user_id == None,
-                CommentReport.user_id != current_user_id,
-                CommentReport.user_id != artist_id,
+                and_(
+                    CommentReport.user_id != current_user_id,
+                    CommentReport.user_id != artist_id,
+                ),
                 CommentReport.is_delete == True,
             ),
         )
@@ -126,14 +136,6 @@ def get_replies(
         .limit(limit)
         .all()
     )
-
-    if artist_id is None:
-        artist_id = (
-            session.query(Track)
-            .join(Comment, Track.track_id == Comment.entity_id)
-            .first()
-            .owner_id
-        )
 
     def remove_delete(mention):
         del mention["is_delete"]
@@ -217,7 +219,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
             .filter(MutedUser.is_delete == False)
             .group_by(MutedUser.muted_user_id)
-            .having(func.sum(AggregateUser.follower_count) > COMMENT_KARMA_THRESHOLD)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
             .subquery()
         )
 
@@ -280,6 +282,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == Comment.user_id,
                     or_(
                         MutedUser.user_id == current_user_id,
+                        MutedUser.user_id == artist_id,
                         MutedUser.muted_user_id.in_(muted_by_karma),
                     ),
                     current_user_id != Comment.user_id,  # show comment to comment owner
@@ -306,9 +309,11 @@ def get_track_comments(args, track_id, current_user_id=None):
                 == None,  # Check if parent_comment_id is null
                 or_(
                     CommentReport.comment_id == None,
-                    current_user_id == None,
-                    CommentReport.user_id != current_user_id,
-                    CommentReport.user_id != artist_id,
+                    and_(
+                        CommentReport.user_id != current_user_id,
+                        CommentReport.user_id != artist_id,
+                    ),
+                    CommentReport.is_delete == True,
                 ),
                 or_(
                     MutedUser.muted_user_id == None,
@@ -322,7 +327,7 @@ def get_track_comments(args, track_id, current_user_id=None):
             # Ensure that the combined follower count of all users who reported the comment is below the threshold.
             .having(
                 func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                <= COMMENT_KARMA_THRESHOLD,
+                < COMMENT_KARMA_THRESHOLD,
             )
             .order_by(
                 # pinned comments at the top, tombstone comments at the bottom, then all others inbetween
