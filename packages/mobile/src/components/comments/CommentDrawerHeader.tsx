@@ -6,6 +6,7 @@ import {
   useUpdateTrackCommentNotificationSetting
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import { Portal } from '@gorhom/portal'
 import { useKeyboard } from '@react-native-community/hooks'
 import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
@@ -21,6 +22,7 @@ import {
   Text
 } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
+import { track, make } from 'app/services/analytics'
 
 import { ActionDrawerWithoutRedux } from '../action-drawer'
 
@@ -36,10 +38,11 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
 
   const {
     commentCount,
+    hasNewComments,
     currentUserId,
     artistId,
     entityId,
-    reset,
+    resetComments,
     closeDrawer
   } = useCurrentCommentSection()
   const isOwner = currentUserId === artistId
@@ -60,7 +63,17 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
     })
   }
 
-  const showCommentSortBar = commentCount > 1
+  const handlePressOverflowMenu = () => {
+    toggleNotificationActionDrawer()
+    track(
+      make({
+        eventName: Name.COMMENTS_OPEN_TRACK_OVERFLOW_MENU,
+        trackId: entityId
+      })
+    )
+  }
+
+  const showCommentSortBar = commentCount !== undefined && commentCount > 1
 
   const dismissKeyboard = useCallback(() => {
     Keyboard.dismiss()
@@ -90,19 +103,19 @@ export const CommentDrawerHeader = (props: CommentDrawerHeaderProps) => {
                     <Text color='subdued'>&nbsp;({commentCount})</Text>
                   </Text>
 
-                  <PlainButton
-                    iconLeft={IconRefresh}
-                    variant='subdued'
-                    onPress={() => reset(true)}
-                  >
-                    {messages.newComments}
-                  </PlainButton>
+                  {hasNewComments ? (
+                    <PlainButton
+                      iconLeft={IconRefresh}
+                      variant='subdued'
+                      onPress={resetComments}
+                    >
+                      {messages.newComments}
+                    </PlainButton>
+                  ) : null}
                 </Flex>
                 <IconButton
                   icon={isOwner ? IconKebabHorizontal : IconCloseAlt}
-                  onPress={
-                    isOwner ? toggleNotificationActionDrawer : closeDrawer
-                  }
+                  onPress={isOwner ? handlePressOverflowMenu : closeDrawer}
                   color='subdued'
                   size='m'
                 />

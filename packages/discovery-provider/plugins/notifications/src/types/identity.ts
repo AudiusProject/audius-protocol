@@ -239,6 +239,7 @@ export interface UserNotificationBrowserSettingRow {
   reposts?: boolean
   comments?: boolean
   mentions?: boolean
+  reactions?: boolean
   updatedAt: Date
   userId: number
 }
@@ -253,6 +254,7 @@ export interface UserNotificationMobileSettingRow {
   reposts?: boolean
   comments?: boolean
   mentions?: boolean
+  reactions?: boolean
   updatedAt: Date
   userId: number
 }

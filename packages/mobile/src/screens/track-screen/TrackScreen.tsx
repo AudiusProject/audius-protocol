@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { trackPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -34,7 +35,7 @@ const { getIsReachable } = reachabilitySelectors
 const messages = {
   moreBy: 'More By',
   originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  ...trackPageMessages
 }
 
 const MAX_RELATED_TRACKS_TO_DISPLAY = 6

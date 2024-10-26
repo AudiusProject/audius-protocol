@@ -4,8 +4,7 @@ import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import { ID, LineupState, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
-import { Link } from 'react-router-dom-v5-compat'
+import { Box, Flex, Text } from '@audius/harmony'
 
 import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -17,9 +16,9 @@ import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
-import { trackRemixesPage } from 'utils/route'
 
 import { TrackRemixes } from '../TrackRemixes'
+import { ViewOtherRemixesButton } from '../ViewOtherRemixesButton'
 import { useTrackPageSize } from '../useTrackPageSize'
 
 import Remixes from './Remixes'
@@ -29,8 +28,7 @@ const { tracksActions } = trackPageLineupActions
 
 const messages = {
   moreBy: 'More By',
-  originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  originalTrack: 'Original Track'
 }
 
 export type OwnProps = {
@@ -219,7 +217,7 @@ const TrackPage = ({
       >{`${messages.moreBy} ${user?.name}`}</Text>
     ) : null
 
-  const { fieldVisibility, remixTrackIds, permalink } = defaults
+  const { fieldVisibility, remixTrackIds } = defaults
 
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
@@ -303,15 +301,10 @@ const TrackPage = ({
                     <Box
                       alignSelf={isCommentingEnabled ? 'flex-start' : 'center'}
                     >
-                      <Button
+                      <ViewOtherRemixesButton
+                        parentTrackId={defaults.remixParentTrackId!}
                         size={isCommentingEnabled ? 'xs' : 'small'}
-                        iconRight={IconArrowRight}
-                        asChild
-                      >
-                        <Link to={trackRemixesPage(permalink)}>
-                          {messages.viewOtherRemixes}
-                        </Link>
-                      </Button>
+                      />
                     </Box>
                     <Flex
                       mb='l'

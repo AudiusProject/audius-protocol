@@ -5,7 +5,7 @@ import {
   BNWei,
   SolanaWalletAddress
 } from '@audius/common/models'
-import { FeatureFlags, createUserBankIfNeeded } from '@audius/common/services'
+import { createUserBankIfNeeded } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -207,7 +207,6 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
@@ -220,11 +219,6 @@ function* fetchBalanceAsync() {
 
     const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
       yield* select(getLocalBalanceDidChange)
-
-    const useSolAudio = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.ENABLE_SPL_AUDIO
-    )
 
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
       call([walletClient, 'getCurrentBalance'], {
@@ -263,46 +257,32 @@ function* fetchBalanceAsync() {
       )
     }
 
-    if (useSolAudio) {
-      if (isNullOrUndefined(currentSolAudioWeiBalance)) {
-        console.warn(
-          "Failed to fetch and set user's balance - error getting SOL wAudio balance."
-        )
-        yield* put(
-          setBalanceError({
-            balanceLoadDidFail: true,
-            totalBalanceLoadDidFail: true
-          })
-        )
-        return
-      }
-
-      const audioWeiBalance = currentEthAudioWeiBalance.add(
-        currentSolAudioWeiBalance!
-      ) as BNWei
-
-      const totalBalance = isNullOrUndefined(associatedWalletBalance)
-        ? undefined
-        : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
+    if (isNullOrUndefined(currentSolAudioWeiBalance)) {
+      console.warn(
+        "Failed to fetch and set user's balance - error getting SOL wAudio balance."
+      )
       yield* put(
-        setBalance({
-          balance: weiToString(audioWeiBalance),
-          totalBalance
+        setBalanceError({
+          balanceLoadDidFail: true,
+          totalBalanceLoadDidFail: true
         })
       )
-    } else {
-      const totalBalance = isNullOrUndefined(associatedWalletBalance)
-        ? undefined
-        : weiToString(
-            currentEthAudioWeiBalance.add(associatedWalletBalance) as BNWei
-          )
-      yield* put(
-        setBalance({
-          balance: weiToString(currentEthAudioWeiBalance),
-          totalBalance
-        })
-      )
+      return
     }
+
+    const audioWeiBalance = currentEthAudioWeiBalance.add(
+      currentSolAudioWeiBalance!
+    ) as BNWei
+
+    const totalBalance = isNullOrUndefined(associatedWalletBalance)
+      ? undefined
+      : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
+    yield* put(
+      setBalance({
+        balance: weiToString(audioWeiBalance),
+        totalBalance
+      })
+    )
   } catch (err) {
     console.error(err)
     yield* call(reportToSentry, {

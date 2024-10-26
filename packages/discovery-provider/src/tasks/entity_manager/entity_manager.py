@@ -600,6 +600,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     or action == Action.UPDATE
                     or action == Action.PIN
                     or action == Action.UNPIN
+                    or action == Action.REACT
                 ):
                     try:
                         json_metadata = json.loads(metadata)
@@ -610,12 +611,13 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                         # skip invalid metadata
                         continue
                     track_id = json_metadata.get("data", {}).get("entity_id")
-                    parent_comment_id = json_metadata.get("data", {}).get(
-                        "parent_comment_id"
-                    )
                     entities_to_fetch[EntityType.TRACK].add(track_id)
                     entities_to_fetch[EntityType.COMMENT_NOTIFICATION_SETTING].add(
                         (user_id, entity_id, entity_type)
+                    )
+
+                    parent_comment_id = json_metadata.get("data", {}).get(
+                        "parent_comment_id"
                     )
                     if parent_comment_id:
                         entities_to_fetch[EntityType.COMMENT].add(parent_comment_id)

@@ -8,7 +8,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { UserMetadata } from '@audius/common/models'
+import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -25,6 +25,7 @@ import type { ParamListBase } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -204,7 +205,7 @@ export type CommentDrawerData = {
 
 type CommentDrawerProps = {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>
-  handleClose: () => void
+  handleClose: (trackId: ID) => void
 } & CommentDrawerData
 
 export const CommentDrawer = (props: CommentDrawerProps) => {
@@ -239,23 +240,27 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     setAutoCompleteActive(active)
   }, [])
 
+  const gesture = Gesture.Pan()
+
   const renderFooterComponent = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={insets.bottom}>
-        <Divider orientation='horizontal' />
-        <CommentSectionProvider
-          entityId={entityId}
-          replyingAndEditingState={replyingAndEditingState}
-          setReplyingAndEditingState={setReplyingAndEditingState}
-        >
-          <CommentDrawerForm
-            commentListRef={commentListRef}
-            onAutocompleteChange={onAutoCompleteChange}
-            setAutocompleteHandler={setAutocompleteHandler}
-            autoFocus={autoFocusInput}
-          />
-        </CommentSectionProvider>
-      </BottomSheetFooter>
+      <GestureDetector gesture={gesture}>
+        <BottomSheetFooter {...props} bottomInset={insets.bottom}>
+          <Divider orientation='horizontal' />
+          <CommentSectionProvider
+            entityId={entityId}
+            replyingAndEditingState={replyingAndEditingState}
+            setReplyingAndEditingState={setReplyingAndEditingState}
+          >
+            <CommentDrawerForm
+              commentListRef={commentListRef}
+              onAutocompleteChange={onAutoCompleteChange}
+              setAutocompleteHandler={setAutocompleteHandler}
+              autoFocus={autoFocusInput}
+            />
+          </CommentSectionProvider>
+        </BottomSheetFooter>
+      </GestureDetector>
     ),
     // intentionally excluding insets.bottom because it causes a rerender
     // when the keyboard is opened on android, causing the keyboard to close
@@ -267,6 +272,10 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
       replyingAndEditingState
     ]
   )
+
+  const handleCloseDrawer = useCallback(() => {
+    handleClose(entityId)
+  }, [entityId, handleClose])
 
   return (
     <>
@@ -291,7 +300,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           />
         )}
         footerComponent={renderFooterComponent}
-        onDismiss={handleClose}
+        onDismiss={handleCloseDrawer}
         android_keyboardInputMode='adjustResize'
       >
         <CommentSectionProvider
@@ -299,7 +308,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           replyingAndEditingState={replyingAndEditingState}
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
-          closeDrawer={handleClose}
+          closeDrawer={handleCloseDrawer}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />

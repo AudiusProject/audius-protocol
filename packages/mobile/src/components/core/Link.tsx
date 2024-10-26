@@ -24,11 +24,18 @@ export const useOnOpenLink = (
       }
 
       try {
-        const supported = await Linking.canOpenURL(url)
+        const urlWithPrefix = url.startsWith('http') ? url : `https://${url}`
+        const supported = await Linking.canOpenURL(urlWithPrefix)
         if (supported) {
-          await Linking.openURL(url)
+          await Linking.openURL(urlWithPrefix)
           if (source) {
-            track(make({ eventName: EventNames.LINK_CLICKING, url, source }))
+            track(
+              make({
+                eventName: EventNames.LINK_CLICKING,
+                url: urlWithPrefix,
+                source
+              })
+            )
           }
         } else {
           toast(errorToastConfig)

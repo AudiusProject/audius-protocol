@@ -8,8 +8,7 @@ import {
   OverflowAction,
   QueueItem
 } from '@audius/common/store'
-import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
-import { Link } from 'react-router-dom-v5-compat'
+import { Box, Flex, Text } from '@audius/harmony'
 
 import { CommentPreview } from 'components/comments/CommentPreview'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -22,9 +21,9 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import { getTrackDefaults } from 'pages/track-page/utils'
-import { trackRemixesPage } from 'utils/route'
 
 import { TrackRemixes } from '../TrackRemixes'
+import { ViewOtherRemixesButton } from '../ViewOtherRemixesButton'
 
 import Remixes from './Remixes'
 import TrackPageHeader from './TrackHeader'
@@ -32,8 +31,7 @@ const { tracksActions } = trackPageLineupActions
 
 const messages = {
   moreBy: 'More By',
-  originalTrack: 'Original Track',
-  viewOtherRemixes: 'View Other Remixes'
+  originalTrack: 'Original Track'
 }
 
 export type OwnProps = {
@@ -57,7 +55,6 @@ export type OwnProps = {
   }) => void
   onHeroShare: (trackId: ID) => void
   goToAllRemixesPage: () => void
-  goToParentRemixesPage: () => void
   onHeroRepost: (isReposted: boolean, trackId: number) => void
   onClickMobileOverflow: (
     trackId: ID,
@@ -91,7 +88,6 @@ const TrackPage = ({
   onHeroPlay,
   onHeroShare,
   goToAllRemixesPage,
-  goToParentRemixesPage,
   onSaveTrack,
   onHeroRepost,
   onClickMobileOverflow,
@@ -149,7 +145,7 @@ const TrackPage = ({
   }
 
   const defaults = getTrackDefaults(heroTrack)
-  const { fieldVisibility, remixTrackIds, permalink } = defaults
+  const { fieldVisibility, remixTrackIds } = defaults
 
   const hasRemixes =
     fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
@@ -243,11 +239,10 @@ const TrackPage = ({
             leadingElementDelineator={
               <Flex direction='column' gap='xl'>
                 <Box alignSelf='flex-start'>
-                  <Button size='xs' iconRight={IconArrowRight} asChild>
-                    <Link to={trackRemixesPage(permalink)}>
-                      {messages.viewOtherRemixes}
-                    </Link>
-                  </Button>
+                  <ViewOtherRemixesButton
+                    size='xs'
+                    parentTrackId={defaults.remixParentTrackId!}
+                  />
                 </Box>
                 {renderMoreByTitle()}
               </Flex>

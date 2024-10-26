@@ -32,6 +32,7 @@ import { getRedisConnection } from '../utils/redisConnection'
 import { RequiresRetry } from '../types/notifications'
 import { CommentThread } from './mappers/commentThread'
 import { CommentMention } from './mappers/commentMention'
+import { CommentReaction } from './mappers/commentReaction'
 
 const NOTIFICATION_RETRY_QUEUE_REDIS_KEY = 'notification_retry'
 
@@ -53,6 +54,7 @@ export type NotificationProcessor =
   | Comment
   | CommentThread
   | CommentMention
+  | CommentReaction
 
 export const notificationTypeMapping = {
   follow: MappingVariable.PushFollow,
@@ -88,7 +90,8 @@ export const notificationTypeMapping = {
   reward_in_cooldown: MappingVariable.PushRewardInCooldown,
   comment: MappingVariable.PushComment,
   comment_thread: MappingVariable.PushCommentThread,
-  comment_mention: MappingVariable.PushCommentMention
+  comment_mention: MappingVariable.PushCommentMention,
+  comment_reaction: MappingVariable.PushCommentReaction
 }
 
 export class AppNotificationsProcessor {

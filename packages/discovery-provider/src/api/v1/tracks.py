@@ -70,6 +70,7 @@ from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_top_listeners_for_track import get_top_listeners_for_track
 from src.queries.get_track_access_info import get_track_access_info
+from src.queries.get_track_comment_count import get_track_comment_count
 from src.queries.get_track_signature import (
     get_track_download_signature,
     get_track_stream_signature,
@@ -512,6 +513,41 @@ track_comment_notification_setting_response = make_response(
     ns,
     fields.Nested(comment_notification_setting_model),
 )
+
+comment_count_model = ns.model(
+    "comment_count", {"track_id": fields.Integer, "comment_count": fields.Integer}
+)
+
+track_comment_count_parser = current_user_parser.copy()
+track_comment_count_response = make_response(
+    "track_comment_count_response",
+    ns,
+    fields.Integer,
+)
+
+
+@ns.route("/<string:track_id>/comment_count")
+class TrackCommentCount(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Track Comment Count""",
+        description="""Get the comment count for a track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error",
+        },
+    )
+    @ns.expect(track_comment_count_parser)
+    @ns.marshal_with(track_comment_count_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_comments_parser.parse_args()
+        decoded_track_id = decode_with_abort(track_id, ns)
+        current_user_id = args.get("user_id")
+        track_comments = get_track_comment_count(decoded_track_id, current_user_id)
+        return success_response(track_comments)
 
 
 @ns.route("/<string:track_id>/comment_notification_setting")

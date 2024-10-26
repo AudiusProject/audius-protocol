@@ -39,7 +39,7 @@ function* downloadCollection(action: CollectionAction) {
   const sdk = yield* getSDK()
 
   const { data = [] } = yield* call(
-    [sdk.playlists, sdk.playlists.getPlaylist],
+    [sdk.playlists, sdk.full.playlists.getPlaylist],
     {
       playlistId: Id.parse(collectionId),
       userId: OptionalId.parse(currentUserId)

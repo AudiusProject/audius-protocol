@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { CommentMention } from './CommentMention';
+import {
+    CommentMentionFromJSON,
+    CommentMentionFromJSONTyped,
+    CommentMentionToJSON,
+} from './CommentMention';
 import type { ReplyComment } from './ReplyComment';
 import {
     ReplyCommentFromJSON,
@@ -38,13 +44,19 @@ export interface Comment {
      * @type {string}
      * @memberof Comment
      */
-    userId: string;
+    userId?: string;
     /**
      * 
      * @type {string}
      * @memberof Comment
      */
     message: string;
+    /**
+     * 
+     * @type {Array<CommentMention>}
+     * @memberof Comment
+     */
+    mentions?: Array<CommentMention>;
     /**
      * 
      * @type {number}
@@ -119,7 +131,6 @@ export interface Comment {
 export function instanceOfComment(value: object): value is Comment {
     let isInstance = true;
     isInstance = isInstance && "id" in value && value["id"] !== undefined;
-    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "message" in value && value["message"] !== undefined;
     isInstance = isInstance && "reactCount" in value && value["reactCount"] !== undefined;
     isInstance = isInstance && "replyCount" in value && value["replyCount"] !== undefined;
@@ -140,8 +151,9 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
     return {
         
         'id': json['id'],
-        'userId': json['user_id'],
+        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
         'message': json['message'],
+        'mentions': !exists(json, 'mentions') ? undefined : ((json['mentions'] as Array<any>).map(CommentMentionFromJSON)),
         'trackTimestampS': !exists(json, 'track_timestamp_s') ? undefined : json['track_timestamp_s'],
         'reactCount': json['react_count'],
         'replyCount': json['reply_count'],
@@ -168,6 +180,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'id': value.id,
         'user_id': value.userId,
         'message': value.message,
+        'mentions': value.mentions === undefined ? undefined : ((value.mentions as Array<any>).map(CommentMentionToJSON)),
         'track_timestamp_s': value.trackTimestampS,
         'react_count': value.reactCount,
         'reply_count': value.replyCount,

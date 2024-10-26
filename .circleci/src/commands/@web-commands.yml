@@ -131,30 +131,34 @@ web-distribute:
     - create_concatenated_patch_file:
         filename: combined-patch-file.txt
 
+    - run:
+        name: Remove Node Modules from previous builds
+        command: rm -rf node_modules && rm -rf packages/*/node_modules
+
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}{{ if eq parameters.os "mac" }}-mac{{ end }}
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ arch }}
 
     - run:
         name: Install dependencies
+        # Running on a new system potentially could take a long time.
+        # Generally should not take an hour though.
+        no_output_timeout: 1h
         # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
         command: |
-          [[ ! -d node_modules ]] || CI=true npm run postinstall
-          [[ -d node_modules ]] || CI=true npm ci
+          [[ ! -d node_modules ]] || CI=true SKIP_POD_INSTALL=true NODE_OPTIONS="--max-old-space-size=8192" npm run postinstall
+          [[ -d node_modules ]] || CI=true SKIP_POD_INSTALL=true NODE_OPTIONS="--max-old-space-size=8192" npm ci
 
-    - when:
-        condition: << eq parameters.os "mac" >>
-        steps:
-          - save_cache:
-              key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-mac
-              paths:
-                - ./node_modules
-                - ./packages/web/node_modules
-                - ./packages/harmony/node_modules
-                - ./packages/common/node_modules
-                - ./packages/libs/node_modules
-                - ./packages/sdk/node_modules
-                - ./packages/trpc-server/node_modules
+    - save_cache:
+        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ arch }}
+        paths:
+          - ./node_modules
+          - ./packages/web/node_modules
+          - ./packages/harmony/node_modules
+          - ./packages/common/node_modules
+          - ./packages/libs/node_modules
+          - ./packages/sdk/node_modules
+          - ./packages/trpc-server/node_modules
     - when:
         condition: << parameters.install-license >>
         steps:
@@ -163,6 +167,8 @@ web-distribute:
               command: npm run install-dmg-license -w @audius/web
     - run:
         name: distribute
+        # MacoS distribution requires notarizing the application and apple's servers may take a long time
+        no_output_timeout: 1h
         command: |
           cd packages/web
           npm run dist:<< parameters.build-type >>

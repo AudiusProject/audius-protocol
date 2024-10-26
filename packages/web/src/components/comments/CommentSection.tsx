@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import {
   CommentSectionProvider,
@@ -7,48 +7,23 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Divider, Flex, LoadingSpinner, Paper, Skeleton } from '@audius/harmony'
+import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { CommentForm } from './CommentForm'
 import { CommentHeader } from './CommentHeader'
+import {
+  CommentBlockSkeletons,
+  CommentFormSkeleton,
+  SortBarSkeletons
+} from './CommentSkeletons'
 import { CommentSortBar } from './CommentSortBar'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
-
-const CommentSkeletons = () => {
-  return (
-    <>
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-      <Skeleton w='100%' h='120px' />
-    </>
-  )
-}
-
-const FullCommentSkeletons = () => (
-  <Flex gap='l' direction='column' w='100%' alignItems='flex-start'>
-    <CommentHeader isLoading />
-    <Paper p='xl' w='100%' direction='column' gap='xl'>
-      <Flex
-        gap='s'
-        w='100%'
-        h='60px'
-        alignItems='center'
-        justifyContent='center'
-      >
-        <Skeleton w='40px' h='40px' css={{ borderRadius: '100%' }} />
-        <Skeleton w='100%' h='60px' />
-      </Flex>
-      <Divider color='default' orientation='horizontal' />
-      <CommentSkeletons />
-    </Paper>
-  </Flex>
-)
 
 type CommentSectionInnerProps = {
   commentSectionRef: React.RefObject<HTMLDivElement>
@@ -81,8 +56,24 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
+  const { history } = useHistoryContext()
 
-  // Scroll to the comment section if the showComments query param is present
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
+
+  useEffect(() => {
+    if (!commentSectionLoading && isFirstLoad) {
+      setIsFirstLoad(false)
+    }
+  }, [commentSectionLoading, isFirstLoad])
+
+  const handleScrollEnd = useCallback(() => {
+    history.replace({ search: '' })
+    // replacing history scrolls to top, so we need to scroll to the comment section
+    commentSectionRef.current?.scrollIntoView()
+    setHasScrolledIntoView(true)
+    mainContentRef.current?.removeEventListener('scrollend', handleScrollEnd)
+  }, [history, mainContentRef, commentSectionRef])
+
   useEffect(() => {
     if (
       showComments &&
@@ -90,19 +81,24 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
       !commentSectionLoading &&
       commentSectionRef.current
     ) {
-      commentSectionRef.current.scrollIntoView()
-      setHasScrolledIntoView(true)
+      const mainContent = mainContentRef.current
+      mainContent?.addEventListener('scrollend', handleScrollEnd)
+
+      commentSectionRef.current.scrollIntoView({ behavior: 'smooth' })
+
+      return () => {
+        mainContent?.removeEventListener('scrollend', handleScrollEnd)
+      }
     }
   }, [
     commentSectionLoading,
     showComments,
     hasScrolledIntoView,
-    commentSectionRef
+    commentSectionRef,
+    history,
+    handleScrollEnd,
+    mainContentRef
   ])
-
-  if (commentSectionLoading) {
-    return <FullCommentSkeletons />
-  }
 
   return (
     <Flex
@@ -113,18 +109,26 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
       ref={commentSectionRef}
     >
       <CommentHeader />
-      <Paper w='100%' direction='column'>
+      <Paper w='100%' direction='column' css={{ overflow: 'visible' }}>
         {commentPostAllowed ? (
           <>
             <Flex gap='s' p='xl' w='100%' direction='column'>
-              <CommentForm />
+              {commentSectionLoading && isFirstLoad ? (
+                <CommentFormSkeleton />
+              ) : (
+                <CommentForm disabled={commentSectionLoading} />
+              )}
             </Flex>
 
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
         <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
-          {showCommentSortBar ? <CommentSortBar /> : null}
+          {commentSectionLoading ? (
+            <SortBarSkeletons />
+          ) : showCommentSortBar ? (
+            <CommentSortBar />
+          ) : null}
           <InfiniteScroll
             hasMore={hasMorePages}
             loadMore={loadMorePages}
@@ -133,15 +137,21 @@ export const CommentSectionInner = (props: CommentSectionInnerProps) => {
             threshold={-250}
           >
             <Flex direction='column' gap='xl' pt='m'>
-              {commentIds.length === 0 ? <NoComments /> : null}
-              {commentIds.map((id) => (
-                <CommentThread commentId={id} key={id} />
-              ))}
-              {isLoadingMorePages ? (
-                <Flex justifyContent='center' mt='l'>
-                  <LoadingSpinner css={{ width: 20, height: 20 }} />
-                </Flex>
-              ) : null}
+              {commentSectionLoading ? (
+                <CommentBlockSkeletons />
+              ) : (
+                <>
+                  {commentIds.length === 0 ? <NoComments /> : null}
+                  {commentIds.map((id) => (
+                    <CommentThread commentId={id} key={id} />
+                  ))}
+                  {isLoadingMorePages ? (
+                    <Flex justifyContent='center' mt='l'>
+                      <LoadingSpinner css={{ width: 20, height: 20 }} />
+                    </Flex>
+                  ) : null}
+                </>
+              )}
             </Flex>
           </InfiniteScroll>
         </Flex>

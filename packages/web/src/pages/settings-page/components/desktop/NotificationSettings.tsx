@@ -31,6 +31,7 @@ const messages = {
   messages: 'Messages',
   comments: 'Comments',
   mentions: 'Mentions',
+  reactions: 'Reactions',
   emailFrequency: "'What You Missed' Email Frequency",
   enablePermissions:
     'Notifications for Audius are blocked. Please enable in your browser settings and reload the page.'
@@ -127,13 +128,6 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
         browserPushEnabled &&
         props.settings[BrowserNotificationSetting.Messages],
       type: BrowserNotificationSetting.Messages
-    },
-    {
-      text: messages.mentions,
-      isOn:
-        browserPushEnabled &&
-        props.settings[BrowserNotificationSetting.Mentions],
-      type: BrowserNotificationSetting.Mentions
     }
   ]
 
@@ -151,6 +145,13 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
         browserPushEnabled &&
         props.settings[BrowserNotificationSetting.Mentions],
       type: BrowserNotificationSetting.Mentions
+    })
+    notificationToggles.push({
+      text: messages.reactions,
+      isOn:
+        browserPushEnabled &&
+        props.settings[BrowserNotificationSetting.Reactions],
+      type: BrowserNotificationSetting.Reactions
     })
   }
 

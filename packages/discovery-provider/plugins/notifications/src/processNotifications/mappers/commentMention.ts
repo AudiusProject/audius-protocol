@@ -96,6 +96,8 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
     } tagged you in a comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
+        : this.entityUserId === this.commenterUserId
+        ? 'their'
         : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
@@ -145,7 +147,9 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
-                type: 'CommentMention'
+                type: 'CommentMention',
+                entityType: this.entityType,
+                entityId: this.entityId
               }
             }
           )

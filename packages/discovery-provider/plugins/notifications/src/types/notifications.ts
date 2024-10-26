@@ -314,6 +314,15 @@ export type CommentMentionNotification = {
   comment_user_id: number
 }
 
+export type CommentReactionNotification = {
+  type: EntityType
+  entity_id: number
+  entity_user_id: number
+  comment_id: number
+  comment_user_id: number
+  reacter_user_id: number
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -348,6 +357,8 @@ export type NotificationData =
   | CommentNotification
   | CommentThreadNotification
   | CommentMentionNotification
+  | CommentReactionNotification
+
 export class RequiresRetry extends Error {
   constructor(message: string) {
     super(message)

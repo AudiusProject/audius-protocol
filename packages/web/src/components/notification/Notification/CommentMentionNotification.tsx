@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
   CommentMentionNotification as CommentMentionNotificationType
@@ -10,6 +11,7 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
+import { track, make } from 'services/analytics'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -30,7 +32,8 @@ const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   mentioned: ' tagged you in a comment on ',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentMentionNotificationProps = {
@@ -55,11 +58,12 @@ export const CommentMentionNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
-
+  const isOwnerMention =
+    entity?.user?.user_id === firstUser?.user_id && !isMultiUser
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
@@ -79,8 +83,23 @@ export const CommentMentionNotification = (
       } else {
         handleGoToEntity(event)
       }
+      track(
+        make({
+          eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+          commentId: notification.entityId,
+          notificationType: 'mention'
+        })
+      )
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
+    [
+      isMultiUser,
+      notification.entityId,
+      dispatch,
+      entityType,
+      id,
+      isMobile,
+      handleGoToEntity
+    ]
   )
 
   if (!users || !firstUser || !entity || !entity.user) return null
@@ -102,6 +121,8 @@ export const CommentMentionNotification = (
         {messages.mentioned}{' '}
         {isOwner ? (
           messages.your
+        ) : isOwnerMention ? (
+          messages.their
         ) : (
           <UserNameLink
             user={entity.user}
