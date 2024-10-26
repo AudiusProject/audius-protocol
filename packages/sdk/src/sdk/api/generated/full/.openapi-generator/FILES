@@ -44,6 +44,7 @@ models/CosignNotification.ts
 models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts
 models/CoverArt.ts
+models/CoverAttribution.ts
 models/CoverPhoto.ts
 models/CreateNotification.ts
 models/CreateNotificationAction.ts

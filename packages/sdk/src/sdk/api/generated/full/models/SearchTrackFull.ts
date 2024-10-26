@@ -32,6 +32,12 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
+import type { CoverAttribution } from './CoverAttribution';
+import {
+    CoverAttributionFromJSON,
+    CoverAttributionFromJSONTyped,
+    CoverAttributionToJSON,
+} from './CoverAttribution';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -525,6 +531,18 @@ export interface SearchTrackFull {
      * @memberof SearchTrackFull
      */
     downloadConditions?: AccessGate;
+    /**
+     * 
+     * @type {CoverAttribution}
+     * @memberof SearchTrackFull
+     */
+    coverAttribution?: CoverAttribution;
+    /**
+     * Indicates whether the track is owned by the user for MRI sake
+     * @type {boolean}
+     * @memberof SearchTrackFull
+     */
+    isOwnedByUser: boolean;
 }
 
 /**
@@ -563,6 +581,7 @@ export function instanceOfSearchTrackFull(value: object): value is SearchTrackFu
     isInstance = isInstance && "isAvailable" in value && value["isAvailable"] !== undefined;
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isDownloadGated" in value && value["isDownloadGated"] !== undefined;
+    isInstance = isInstance && "isOwnedByUser" in value && value["isOwnedByUser"] !== undefined;
 
     return isInstance;
 }
@@ -650,6 +669,8 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
         'isDownloadGated': json['is_download_gated'],
         'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
+        'coverAttribution': !exists(json, 'cover_attribution') ? undefined : CoverAttributionFromJSON(json['cover_attribution']),
+        'isOwnedByUser': json['is_owned_by_user'],
     };
 }
 
@@ -735,6 +756,8 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'stream_conditions': AccessGateToJSON(value.streamConditions),
         'is_download_gated': value.isDownloadGated,
         'download_conditions': AccessGateToJSON(value.downloadConditions),
+        'cover_attribution': CoverAttributionToJSON(value.coverAttribution),
+        'is_owned_by_user': value.isOwnedByUser,
     };
 }
 

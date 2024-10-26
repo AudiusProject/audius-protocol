@@ -34,6 +34,7 @@ export * from './CosignNotification';
 export * from './CosignNotificationAction';
 export * from './CosignNotificationActionData';
 export * from './CoverArt';
+export * from './CoverAttribution';
 export * from './CoverPhoto';
 export * from './CreateNotification';
 export * from './CreateNotificationAction';
