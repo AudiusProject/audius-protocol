@@ -147,7 +147,7 @@ export class CommentReaction extends BaseNotification<CommentReactionNotificatio
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.reacterUserId],
                 type: 'CommentReaction',
-                entityType: this.notification.data.type,
+                entityType: 'Track',
                 entityId: this.entityId,
                 entityUserId: this.entityUserId
               }
