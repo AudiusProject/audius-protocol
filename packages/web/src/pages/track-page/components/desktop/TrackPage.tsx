@@ -294,6 +294,7 @@ const TrackPage = ({
                 alignItems='flex-start'
                 justifyContent='center'
                 gap='l'
+                w='100%'
               >
                 {hasValidRemixParent
                   ? renderOriginalTrackTitle()
