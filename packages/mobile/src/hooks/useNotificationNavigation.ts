@@ -45,7 +45,8 @@ import type {
   ApproveManagerRequestNotification,
   CommentNotification,
   CommentMentionNotification,
-  CommentThreadNotification
+  CommentThreadNotification,
+  CommentReactionNotification
 } from '@audius/common/store'
 import {
   NotificationType,
@@ -129,6 +130,7 @@ export const useNotificationNavigation = () => {
         | CommentNotification
         | CommentMentionNotification
         | CommentThreadNotification
+        | CommentReactionNotification
     ) => {
       const { entityType, entityId, type } = notification
       if (entityType === Entity.Track) {
