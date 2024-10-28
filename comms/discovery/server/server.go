@@ -635,9 +635,17 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 
 func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 
-	// bind to RpcRow
 	rpc := new(schema.RpcLog)
-	if err := c.Bind(rpc); err != nil {
+
+	// after nodes are updated >= 0.7.21
+	// peer client can start posting msgpack with ?msgpack=t
+	if ok, _ := strconv.ParseBool(c.QueryParam("msgpack")); ok {
+		dec := msgpack.NewDecoder(c.Request().Body)
+		err := dec.Decode(&rpc)
+		if err != nil {
+			return err
+		}
+	} else if err := c.Bind(rpc); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -646,8 +654,6 @@ func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	slog.Info("got relay", "from", rpc.RelayedBy, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
 }
