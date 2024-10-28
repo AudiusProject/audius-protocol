@@ -4,6 +4,7 @@ from typing import Optional
 import grpc
 from sqlalchemy.orm.session import Session
 
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.tasks.core.gen.protocol_pb2 import (
     BlockResponse,
     GetBlockRequest,
@@ -24,10 +25,11 @@ environment = shared_config["discprov"]["env"]
 class CoreClient:
     """A simplified client for the core."""
 
-    db: SessionManager
     endpoint: str
     channel: grpc.Channel
     rpc: ProtocolStub
+
+    chain_id: Optional[str]
 
     def __init__(self, db: SessionManager):
         self.endpoint = self.get_core_endpoint()
@@ -53,13 +55,30 @@ class CoreClient:
             logger.error(f"core_client.py | node info {e}")
             return None
 
-    def latest_indexed_block(self):
+    def latest_indexed_block(
+        self, session: Session, chain_id: str
+    ) -> Optional[CoreIndexedBlocks]:
         """Gets the latest indexed block from the database."""
-        pass
+        try:
+            return (
+                session.query(CoreIndexedBlocks)
+                .filter(CoreIndexedBlocks.chain_id == chain_id)
+                .order_by(CoreIndexedBlocks.height.desc())
+                .first()
+            )
+        except Exception as e:
+            logger.error(f"core_client.py | error getting latest indexed block {e}")
+            return None
 
-    def get_indexed_block(self, height: int):
+    def get_indexed_block(self, session: Session, height: int):
         """Gets the specified block from the database. Returns None if not found."""
-        pass
+        try:
+            return (
+                session.query(CoreIndexedBlocks).filter_by(height=height).one_or_none()
+            )
+        except Exception as e:
+            logger.error(f"core_client.py | error getting block at height {height} {e}")
+            return None
 
     def get_block(self, height: int) -> Optional[BlockResponse]:
         """Gets the specified block from core. Returns None if not found."""
@@ -74,7 +93,29 @@ class CoreClient:
         session: Session,
         chain_id: str,
         height: int,
-        blockhash: int,
-        parenthash: int,
-    ):
-        pass
+        blockhash: str,
+        parenthash: Optional[str],
+    ) -> bool:
+        try:
+            new_block = CoreIndexedBlocks(
+                chain_id=chain_id,
+                height=height,
+                blockhash=blockhash,
+                parenthash=parenthash,
+            )
+            session.add(new_block)
+        except Exception as e:
+            logger.error(f"core_client.py | Error committing block {height} {e}")
+            return False
+
+
+core_instance: Optional[CoreClient] = None
+
+
+def get_core_instance(db: SessionManager) -> CoreClient:
+    # pylint: disable=W0603
+    global core_instance
+    if not core_instance:
+        core_instance = CoreClient(db)
+        return core_instance
+    return core_instance
