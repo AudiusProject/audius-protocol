@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
-import { createApi } from '~/audius-query'
+import { QueryHookOptions, createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
 import { accountSelectors } from '~/store/account'
 
@@ -226,22 +226,24 @@ const accountApi = createApi({
 })
 
 export const useGetCurrentUser = (
-  ...[fetchArgs, options = {}]: Parameters<typeof useGetUserAccount>
+  _fetchArgs: {},
+  options?: QueryHookOptions
 ) => {
   const wallets = useSelector(accountSelectors.getWalletAddresses)
   const result = useGetUserAccount(
-    { ...fetchArgs, wallet: wallets.currentUser! },
+    { wallet: wallets.currentUser! },
     { ...options, disabled: !wallets.currentUser }
   )
   return { ...result, data: result.data ? result.data.user : null }
 }
 
 export const useGetCurrentWeb3User = (
-  ...[fetchArgs, options = {}]: Parameters<typeof useGetUserAccount>
+  _fetchArgs: {},
+  options?: QueryHookOptions
 ) => {
   const wallets = useSelector(accountSelectors.getWalletAddresses)
   const result = useGetUserAccount(
-    { ...fetchArgs, wallet: wallets.web3User! },
+    { wallet: wallets.web3User! },
     { ...options, disabled: !wallets.web3User }
   )
 
