@@ -147,7 +147,7 @@ const Link = ({
       isExternal={isExternalLink}
       onClick={handleClick}
     >
-      {unfurledContent ?? children}
+      {unfurledContent ?? children ?? url}
     </TextLink>
   )
 }
