@@ -41,7 +41,6 @@ test_entities = {
             "track_id": 1,
             "title": "a",
             "owner_id": 10,
-            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,

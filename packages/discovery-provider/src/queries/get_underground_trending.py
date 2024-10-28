@@ -123,8 +123,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[6],
-            "is_stream_gated": record[7],
-            "stream_conditions": record[8],
+            "is_stream_gated": bool(record[7]),
+            "stream_conditions": record[7],
         }
         for record in base_query
     }

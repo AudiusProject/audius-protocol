@@ -73,6 +73,7 @@ def get_authed_or_managed_user(
 def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
     is_preview = args.get("is_preview", False)
+    is_stream_gated = track["stream_conditions"] is not None
     user_data = args.get("user_data")
     user_id = args.get("user_id")
     user_signature = args.get("user_signature")
@@ -86,7 +87,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
 
     # all track previews and non-stream-gated tracks should be publicly available
-    if is_preview:
+    if is_preview or not is_stream_gated:
         signature = get_gated_content_signature(
             {
                 "track_id": track["track_id"],
