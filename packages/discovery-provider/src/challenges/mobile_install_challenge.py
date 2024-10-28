@@ -26,5 +26,5 @@ class MobileInstallChallengeUpdater(ChallengeUpdater):
 
 
 mobile_install_challenge_manager = ChallengeManager(
-    "mobile-install", MobileInstallChallengeUpdater()
+    "m", MobileInstallChallengeUpdater()
 )
