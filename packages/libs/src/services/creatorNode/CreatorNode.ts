@@ -483,7 +483,6 @@ export class CreatorNode {
     const user = {} as any
     if (this.wallet && this.userId) {
       headers['X-User-Wallet-Addr'] = user.wallet
-      // TODO-NOW: Verify string conversion works
       headers['X-User-Id'] = `${this.userId}`
     }
 

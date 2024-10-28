@@ -76,7 +76,6 @@ export const AccountSwitcher = () => {
     switchToWeb3User
   ])
 
-  // TODO-NOW: Account switcher not showing after login
   return !currentWeb3User || !currentUserId || accounts.length === 0 ? null : (
     <Box ref={parentElementRef}>
       <IconButton

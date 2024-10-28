@@ -267,4 +267,3 @@ export const {
 } = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer
-export const accountApiFetchSaga = accountApi.fetchSaga
