@@ -291,7 +291,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen
         name='FilterButton'
         component={FilterButtonScreen}
-        options={{ presentation: 'fullScreenModal' }}
+        options={{ ...screenOptions, presentation: 'fullScreenModal' }}
       />
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
@@ -303,7 +303,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             // @ts-ignore hard to correctly type navigation params (PAY-1141)
             params?.chatId
           }
-          options={{ fullScreenGestureEnabled: false }}
+          options={{ ...screenOptions, fullScreenGestureEnabled: false }}
         />
       </Stack.Group>
     </Stack.Navigator>
