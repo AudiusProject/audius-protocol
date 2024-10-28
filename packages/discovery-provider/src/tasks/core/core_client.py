@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 
 import grpc
 from sqlalchemy.orm.session import Session
@@ -80,10 +80,14 @@ class CoreClient:
             logger.error(f"core_client.py | error getting block at height {height} {e}")
             return None
 
-    def get_block(self, height: int) -> Optional[BlockResponse]:
-        """Gets the specified block from core. Returns None if not found."""
+    def get_block(
+        self, session: Session, height: int
+    ) -> Tuple[Optional[BlockResponse], Optional[CoreIndexedBlocks]]:
+        """Gets the specified block from core and gets the indexed record. Returns None if not found in either."""
         try:
-            return self.rpc.GetBlock(GetBlockRequest(height=height))
+            return self.rpc.GetBlock(
+                GetBlockRequest(height=height)
+            ), self.get_indexed_block(session=session, height=height)
         except Exception as e:
             logger.error(f"core_client.py | error getting block {height} {e}")
             return None

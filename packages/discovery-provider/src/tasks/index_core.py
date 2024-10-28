@@ -1,13 +1,41 @@
 import logging
 from typing import Optional
 
+from sqlalchemy.orm.session import Session
+
 from src.tasks.celery_app import celery
-from src.tasks.core.core_client import get_core_instance
+from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
+from src.tasks.index_core_manage_entities import index_core_manage_entity
+from src.tasks.index_core_plays import index_core_play
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
+
+
+def _index_core_txs(session: Session, core: CoreClient, block: BlockResponse):
+    # TODO: parallelize?
+    for tx in block.transactions:
+        # Check which type of transaction is currently set
+        transaction_type = tx.WhichOneof("transaction")
+        logger.debug(
+            f"index_core.py | received tx type of {transaction_type} {block.height}"
+        )
+        if transaction_type == "plays":
+            index_core_play(session=session, core=core, tx=tx)
+            continue
+        elif transaction_type == "manage_entity":
+            index_core_manage_entity(session=session, core=core, tx=tx)
+            continue
+        elif transaction_type == "validator_registration":
+            continue
+        elif transaction_type == "sla_rollup":
+            continue
+        else:
+            logger.warning(
+                f"index_core.py | unhandled tx type found {transaction_type}"
+            )
 
 
 def _index_core(db: SessionManager) -> Optional[BlockResponse]:
@@ -33,9 +61,13 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
 
         logger.debug(f"index_core.py | querying block {next_block} on chain {chainid}")
 
-        block = core.get_block(height=next_block)
+        block, indexed_block = core.get_block(session=session, height=next_block)
         if not block:
             logger.error(f"index_core.py | could not get block {next_block} {chainid}")
+            return None
+
+        if indexed_block:
+            logger.debug(f"index_core.py | block already indexed {next_block}")
             return None
 
         # core returns -1 for block that doesn't exist
@@ -44,7 +76,7 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
 
         logger.debug(f"index_core.py | got block {block.height} on chain {chainid}")
 
-        # TODO: index play and em txs
+        _index_core_txs(session=session, core=core, block=block)
         # if first block there's no parent hash
         parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
 
