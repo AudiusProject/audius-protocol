@@ -11,6 +11,7 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/signing"
+	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/exp/slog"
 )
 
@@ -48,7 +49,7 @@ func (proc *RPCProcessor) sweepHost(host string) error {
 		logger.Error("backfill failed to get cursor: ", "err", err)
 	}
 
-	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
+	endpoint := host + bulkEndpoint + "?msgpack=t&after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
 	started := time.Now()
 
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -74,10 +75,19 @@ func (proc *RPCProcessor) sweepHost(host string) error {
 	}
 
 	var ops []*schema.RpcLog
-	dec := json.NewDecoder(resp.Body)
-	err = dec.Decode(&ops)
-	if err != nil {
-		return err
+
+	if resp.Header.Get("Content-Type") == "application/msgpack" {
+		dec := msgpack.NewDecoder(resp.Body)
+		err = dec.Decode(&ops)
+		if err != nil {
+			return err
+		}
+	} else {
+		dec := json.NewDecoder(resp.Body)
+		err = dec.Decode(&ops)
+		if err != nil {
+			return err
+		}
 	}
 
 	var cursor time.Time

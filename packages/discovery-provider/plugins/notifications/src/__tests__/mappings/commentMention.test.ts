@@ -86,7 +86,7 @@ describe('Comment Mention Notification', () => {
           id: 'timestamp:1589373:group_id:comment_mention:1',
           type: 'CommentMention',
           userIds: [1],
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 1
         }
       }
