@@ -24,6 +24,7 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/exp/slog"
 )
 
@@ -615,10 +616,14 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 		return err
 	}
 
-	// using this with debug=true
-	// pretty prints the json and sig match fails
-	// ouch!
-	// return c.JSON(200, rpcs)
+	// prefer msgpack moving forward...
+	if ok, _ := strconv.ParseBool(c.QueryParam("msgpack")); ok {
+		m, err := msgpack.Marshal(rpcs)
+		if err != nil {
+			return err
+		}
+		return c.Blob(200, "application/msgpack", m)
+	}
 
 	j, err := json.Marshal(rpcs)
 	if err != nil {
