@@ -24,6 +24,7 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/exp/slog"
 )
 
@@ -615,10 +616,14 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 		return err
 	}
 
-	// using this with debug=true
-	// pretty prints the json and sig match fails
-	// ouch!
-	// return c.JSON(200, rpcs)
+	// prefer msgpack moving forward...
+	if ok, _ := strconv.ParseBool(c.QueryParam("msgpack")); ok {
+		m, err := msgpack.Marshal(rpcs)
+		if err != nil {
+			return err
+		}
+		return c.Blob(200, "application/msgpack", m)
+	}
 
 	j, err := json.Marshal(rpcs)
 	if err != nil {
@@ -630,9 +635,17 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 
 func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 
-	// bind to RpcRow
 	rpc := new(schema.RpcLog)
-	if err := c.Bind(rpc); err != nil {
+
+	// after nodes are updated >= 0.7.21
+	// peer client can start posting msgpack with ?msgpack=t
+	if ok, _ := strconv.ParseBool(c.QueryParam("msgpack")); ok {
+		dec := msgpack.NewDecoder(c.Request().Body)
+		err := dec.Decode(&rpc)
+		if err != nil {
+			return err
+		}
+	} else if err := c.Bind(rpc); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -641,8 +654,6 @@ func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	slog.Info("got relay", "from", rpc.RelayedBy, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
 }
