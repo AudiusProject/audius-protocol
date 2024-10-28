@@ -70,6 +70,7 @@ import {
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
+import { ScreenReady } from 'app/components/core/ScreenReady'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -80,7 +81,9 @@ import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
 import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
+import { Skeleton } from 'app/components/skeleton'
 import UserBadges from 'app/components/user-badges'
+import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -623,46 +626,48 @@ export const TrackScreenDetailsTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
-          <DetailsTileNoAccess
-            trackId={trackId}
-            contentType={PurchaseableContentType.TRACK}
-            streamConditions={streamConditions}
+        <ScreenReady loadingComponent={<Skeleton height={64} />}>
+          {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
+            <DetailsTileNoAccess
+              trackId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+            />
+          ) : null}
+          {(hasStreamAccess || isOwner) && streamConditions ? (
+            <DetailsTileHasAccess
+              streamConditions={streamConditions}
+              isOwner={isOwner}
+              trackArtist={user}
+              contentType={PurchaseableContentType.TRACK}
+            />
+          ) : null}
+          <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={shouldHidePlayCount}
+            favoriteCount={saveCount}
+            hideFavoriteCount={shouldHideFavoriteCount}
+            repostCount={repostCount}
+            hideRepostCount={shouldHideRepostCount}
+            commentCount={commentCount}
+            hideCommentCount={shouldHideCommentCount}
+            onPressFavorites={handlePressFavorites}
+            onPressReposts={handlePressReposts}
+            onPressComments={handlePressComments}
           />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={PurchaseableContentType.TRACK}
-          />
-        ) : null}
-        <DetailsTileStats
-          playCount={playCount}
-          hidePlayCount={shouldHidePlayCount}
-          favoriteCount={saveCount}
-          hideFavoriteCount={shouldHideFavoriteCount}
-          repostCount={repostCount}
-          hideRepostCount={shouldHideRepostCount}
-          commentCount={commentCount}
-          hideCommentCount={shouldHideCommentCount}
-          onPressFavorites={handlePressFavorites}
-          onPressReposts={handlePressReposts}
-          onPressComments={handlePressComments}
-        />
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText source={'track page'} variant='body' size='s'>
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
-        <TrackMetadataList trackId={trackId} />
-        {renderTags()}
-        <OfflineStatusRow contentId={trackId} isCollection={false} />
+          {description ? (
+            <Box w='100%'>
+              <UserGeneratedText source={'track page'} variant='body' size='s'>
+                {description}
+              </UserGeneratedText>
+            </Box>
+          ) : null}
+          <TrackMetadataList trackId={trackId} />
+          {renderTags()}
+          <OfflineStatusRow contentId={trackId} isCollection={false} />
+        </ScreenReady>
       </Flex>
-      {renderBottomContent()}
+      <ScreenReady>{renderBottomContent()}</ScreenReady>
     </Paper>
   )
 }
