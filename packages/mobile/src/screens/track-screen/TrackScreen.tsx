@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useEffect } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { trackPageMessages } from '@audius/common/messages'
@@ -10,7 +10,6 @@ import {
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
@@ -21,6 +20,7 @@ import {
   VirtualizedScrollView
 } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -65,20 +65,21 @@ export const TrackScreen = () => {
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const isReady = useIsScreenReady()
 
-  const handleFetchTrack = useCallback(() => {
-    dispatch(tracksActions.reset())
-    dispatch(
-      fetchTrack(
-        id ?? null,
-        decodeURIComponent(slug ?? ''),
-        handle ?? user?.handle,
-        canBeUnlisted
+  useEffect(() => {
+    if (isReady) {
+      dispatch(tracksActions.reset())
+      dispatch(
+        fetchTrack(
+          id ?? null,
+          decodeURIComponent(slug ?? ''),
+          handle ?? user?.handle,
+          canBeUnlisted
+        )
       )
-    )
-  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
-
-  useFocusEffect(handleFetchTrack)
+    }
+  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isReady])
 
   if (!track || !user) {
     return <TrackScreenSkeleton />
@@ -141,7 +142,7 @@ export const TrackScreen = () => {
               isLineupLoading={!lineup?.entries?.[0]}
             />
 
-            {isReachable ? (
+            {isReachable && isReady ? (
               <>
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
