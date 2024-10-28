@@ -209,7 +209,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         setAllowedApiKeys(null)
       }
       if (get(values, IS_COVER)) {
-        // If cover attribution is not set, but the toggle is on, set it to an empty object for MRI reporting
+        // If cover attribution is not set, but the toggle is on, set it to an empty object for reporting to publishers
         setCoverAttribution(
           get(values, COVER_ATTRIBUTION) ??
             coverAttribution ?? {
