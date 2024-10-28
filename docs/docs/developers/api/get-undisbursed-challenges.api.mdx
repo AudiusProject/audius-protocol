@@ -1,11 +1,11 @@
 ---
-id: verify-id-token
-title: 'Verify ID Token'
-description: 'Verify if the given jwt ID token was signed by the subject (user) in the payload'
-sidebar_label: 'Verify OAuth Token'
+id: get-undisbursed-challenges
+title: 'Get Undisbursed Challenges'
+description: 'Get all undisbursed challenges'
+sidebar_label: 'Get Undisbursed Challenges'
 hide_title: true
 hide_table_of_contents: true
-api: eJy1VE1v2zAM/SuCTi0Q1M7QAkNuHTYM2anYuu5QFIViMbFSR3IlKq1h5L+PlN2kiY3utINtyI8fj08kW4lqFeTsXsYAPsiHidQQCm9qNM7KmbwDb5aNMEuBJYiV2YIV6xcU868C3RMdXlQQwawsaLFoklGIizUUKM445LkwNv2tVVM5peVEuhq84vBzfUhA8W45HuG18moDyHRm9620dCA77FHDrJ4j+Eaecv3x55ZIiW2KSKiH52g8UBb0ESYyFCVslJy1EpuaYwb0xq7kbvfAxqF2NkBg/FOe8+c4/K9YFBACBS6cRbDIJqquK1OkcrJ1YLt2mMclQbg0z8Wj6bJohcnqwPNekqOpyLJUVlfA9Sp2TCJQBXFBb9Z1zkqmSg05Ev+PU/Uuw9InfcYxpFN+BOjJjUF7Sgdw4VwFyjJKpJamghtTYPTwb4WmV/krPaOZLj/nr/SMYtM8J8c8H0MJRoNM/5TOrhN4LCDfwoehNBROg35koR+7Xn0Pdz25Bxi6HOuxL0rTwNQRj7qsM78cmu+n0DoUW1UZPfC7Gm1l8MRIgPfOn3iQCw1f6Xg2V5CuRGFJhyxtiOyoEhIsReomNXrqI1ki1mGWZdqEwhHWkMpbo8FfqKhNDBeFy7ZTyTNn7NIlWXuVrm/mg6G+Tk7ibio6lLN1yPQiTz3lAm5UGrx+VQxXylHI9lDv/1hvfY8gvGJWV8qkxk/StL2Ub8t2ctwWJEhJtTDetgsV4Levdjv+3a07lphEVYuKx2upqgAfVHb2s98q5+J0L44yfILm3ZalXopsk65pq7zhrMTggacfFN1motM5XdNerPGd12ApcpR9V33/dksj8BezRjJ7
+api: eJytVU1v2zAM/SuCTtsQJO2wXXLrPlD0NmDtLkNRKDIdq5UllZLTBUb++0g7tZ3GdYeup0TmE9/jh8haJrWOcvlb6kJZC24NUV7PZAZRownJeCeX8hySIKuoXGbiqsIImRjgZ9IHQMXgi2wPvxpAvw6hQaEqIQEyay0dHeiKz/MIicyG+e4rwK18quKyAOGqcgUofC5MgjKK5EW8M2EuriLklRW5RxHU2rhGjXhH/7tLH4Q1pUnvyXHUBZRKLmuZtoH5jUuwBpS73azT1KBfJSmHpIt/paki4I3JponOOEAUF98a98ZS/kQi8vGKMEhRHjAZXVmFgjnG9MSExq0P5GhfBkv1yW5W1uu7NrppcT8TM7m1GNxgCQjkHjYgOp/Pd9BEqqgdEWLwLhKSAB9PTvjniYZKa4jsSXu66RJDVAjW6KYVFreRcfUxkV/dguY6B+Q2TqZlyVQaohSi4sibGvN3hPvKIGT8dlTpK8cuupDagva5VOngeJhajaA6UKFcZoEzEkCb3DSIvkcemCDxE52Wf6DkuOC9yzFbTz1m3Uc7ZhqPcKSoXZxjXvYxjhL0qZrmfxbgbeYf3E2mtnH8Ycpkkm0eZt+rN106CfESJDKGQJ/G+vSLygS3DsR00Kt84fNoYwNu6DkBoscnN+gKTdLC88xdN9MzqFTQYdFrWQwkclM13trRW6ElbJFSiMvFglDak21LfbQxGeBcVZmp4lz7xeZU8is0LvdNzvbRn/24OB5UzSXx61S0VmZrLafzE65A8DGVqnmK+4kzuS4OvNd9+C/vpH1lE/xJi2AVzS/ueo653ufpYOnNhsXk91WQUMbU9UpFuEK72/HndgRy/gitVpYnQK5shAmtb7i5RqO6g+1wh26UrRgkeaz/t8rHZTbB/LgpX0n8NsttQl8/Pl+p8C023IS+5xZDr/aaD2hYLvXeNc9PUBnPVmrE1skZLcAwrMLR9mMv3cA4/35Jc+ovbpJ8mA==
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,11 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading as={'h1'} className={'openapi__heading'} children={'Verify ID Token'}></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Undisbursed Challenges'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/users/verify_token'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/challenges/undisbursed'}></MethodEndpoint>
 
-Verify if the given jwt ID token was signed by the subject (user) in the payload
+Get all undisbursed challenges
 
 <Heading
   id={'request'}
@@ -51,11 +51,37 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'token',
+          name: 'offset',
           in: 'query',
-          description: 'JWT to verify',
-          required: true,
+          description: 'The number of items to skip. Useful for pagination (page number * limit)',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'limit',
+          in: 'query',
+          description: 'The number of items to fetch',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'A User ID to filter the undisbursed challenges to a particular user',
           schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'completed_blocknumber',
+          in: 'query',
+          description: 'Starting blocknumber to retrieve completed undisbursed challenges',
+          schema: { type: 'integer' },
         }}
       ></ParamsItem>
     </ul>
@@ -87,13 +113,25 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                           <summary style={{}}>
                             <span className={'openapi-schema__container'}>
                               <strong className={'openapi-schema__property'}>data</strong>
-                              <span className={'openapi-schema__name'}>object</span>
+                              <span className={'openapi-schema__name'}>object[]</span>
                             </span>
                           </summary>
                           <div style={{ marginLeft: '1rem' }}>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                  paddingBottom: '.5rem',
+                                }}
+                              >
+                                Array [
+                              </div>
+                            </li>
                             <SchemaItem
                               collapsible={false}
-                              name={'userId'}
+                              name={'challenge_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -101,7 +139,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'email'}
+                              name={'user_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -109,11 +147,27 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'name'}
+                              name={'specifier'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'amount'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'completed_blocknumber'}
+                              required={true}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
@@ -125,53 +179,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'verified'}
-                              required={true}
-                              schemaName={'boolean'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'boolean' }}
-                            ></SchemaItem>
-                            <SchemaItem collapsible={true} className={'schemaItem'}>
-                              <details style={{}} className={'openapi-markdown__details'}>
-                                <summary style={{}}>
-                                  <span className={'openapi-schema__container'}>
-                                    <strong className={'openapi-schema__property'}>
-                                      profilePicture
-                                    </strong>
-                                    <span className={'openapi-schema__name'}>object</span>
-                                  </span>
-                                </summary>
-                                <div style={{ marginLeft: '1rem' }}>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'150x150'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'480x480'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'1000x1000'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                </div>
-                              </details>
-                            </SchemaItem>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'sub'}
+                              name={'wallet'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -179,12 +187,39 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'iat'}
+                              name={'created_at'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
                             ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'completed_at'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'cooldown_days'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                }}
+                              >
+                                ]
+                              </div>
+                            </li>
                           </div>
                         </details>
                       </SchemaItem>
@@ -193,7 +228,9 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                 </TabItem>
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
-                    responseExample={"{\n  \"data\": {\n    \"userId\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"handle\": \"string\",\n    \"verified\": true,\n    \"profilePicture\": {\n      \"150x150\": \"string\",\n      \"480x480\": \"string\",\n      \"1000x1000\": \"string\"\n    },\n    \"sub\": \"string\",\n    \"iat\": \"string\"\n  }\n}"}
+                    responseExample={
+                      '{\n  "data": [\n    {\n      "challenge_id": "string",\n      "user_id": "string",\n      "specifier": "string",\n      "amount": "string",\n      "completed_blocknumber": 0,\n      "handle": "string",\n      "wallet": "string",\n      "created_at": "string",\n      "completed_at": "string",\n      "cooldown_days": 0\n    }\n  ]\n}'
+                    }
                     language={'json'}
                   ></ResponseSamples>
                 </TabItem>
@@ -203,11 +240,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
         </div>
       </TabItem>
       <TabItem label={'400'} value={'400'}>
-        <div>Bad input</div>
-        <div></div>
-      </TabItem>
-      <TabItem label={'404'} value={'404'}>
-        <div>ID token not valid</div>
+        <div>Bad request</div>
         <div></div>
       </TabItem>
       <TabItem label={'500'} value={'500'}>

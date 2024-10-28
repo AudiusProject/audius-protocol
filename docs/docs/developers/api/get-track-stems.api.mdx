@@ -1,11 +1,11 @@
 ---
-id: verify-id-token
-title: 'Verify ID Token'
-description: 'Verify if the given jwt ID token was signed by the subject (user) in the payload'
-sidebar_label: 'Verify OAuth Token'
+id: get-track-stems
+title: 'Get Track Stems'
+description: 'Get the remixable stems of a track'
+sidebar_label: 'Get Track Stems'
 hide_title: true
 hide_table_of_contents: true
-api: eJy1VE1v2zAM/SuCTi0Q1M7QAkNuHTYM2anYuu5QFIViMbFSR3IlKq1h5L+PlN2kiY3utINtyI8fj08kW4lqFeTsXsYAPsiHidQQCm9qNM7KmbwDb5aNMEuBJYiV2YIV6xcU868C3RMdXlQQwawsaLFoklGIizUUKM445LkwNv2tVVM5peVEuhq84vBzfUhA8W45HuG18moDyHRm9620dCA77FHDrJ4j+Eaecv3x55ZIiW2KSKiH52g8UBb0ESYyFCVslJy1EpuaYwb0xq7kbvfAxqF2NkBg/FOe8+c4/K9YFBACBS6cRbDIJqquK1OkcrJ1YLt2mMclQbg0z8Wj6bJohcnqwPNekqOpyLJUVlfA9Sp2TCJQBXFBb9Z1zkqmSg05Ev+PU/Uuw9InfcYxpFN+BOjJjUF7Sgdw4VwFyjJKpJamghtTYPTwb4WmV/krPaOZLj/nr/SMYtM8J8c8H0MJRoNM/5TOrhN4LCDfwoehNBROg35koR+7Xn0Pdz25Bxi6HOuxL0rTwNQRj7qsM78cmu+n0DoUW1UZPfC7Gm1l8MRIgPfOn3iQCw1f6Xg2V5CuRGFJhyxtiOyoEhIsReomNXrqI1ki1mGWZdqEwhHWkMpbo8FfqKhNDBeFy7ZTyTNn7NIlWXuVrm/mg6G+Tk7ibio6lLN1yPQiTz3lAm5UGrx+VQxXylHI9lDv/1hvfY8gvGJWV8qkxk/StL2Ub8t2ctwWJEhJtTDetgsV4Levdjv+3a07lphEVYuKx2upqgAfVHb2s98q5+J0L44yfILm3ZalXopsk65pq7zhrMTggacfFN1motM5XdNerPGd12ApcpR9V33/dksj8BezRjJ7
+api: eJyNVE1v2zAM/SuGTisQxMmOuQXYUOQ2rO0uQRAwMmOrsS1VooMGhv/7SNn5zopdbFmPFB+fHt0qgjyo2VKRB70LajVSGQbtjSNjazVTz0gJFZh4rMwnbEpMAmEVErtNIIlJaqSsQw+SsMiGlFdBkhcJZdyBhwoJvZRqVc0fHBez1ybjACOlHFChbuvPh6MWPxjy+NEYj1yEfIMjFXSBFahZq+jg5MhA3tS56rqVBAdn64BB8O+Tibyuz35ptMYgBLWtCWuSEHCuNDp2k74HiWvv69jNO2qSzrz0TqavkgFdRoH3cJDuogy8f+a/VJvS6l3dVBv0QgAIc+slWveKyMN6k6+3psSoWNSRWfaSNQG9rLjTr0lxzL1Al2c9Qk98HoL/SDpSeoRdtnvGDcue80532+uDK+U+DZX9Fla8cbMT1scbF0xQtlxhxZE5RlnEXzOV9lZP26P/ujQMPmX++6NJG19ycEHkwixNMxO0ZezA2u5Nhn4MTWaaMNY23U+V+M3UWxt5D5zmvxb3bo5JyZ9p0qNSrUem40m8FRuogmi6YUrup+nqyPbs3f+b1UFWwk9KXQk8eXJz0mw7KHT6GYxkzk4z2ovEjRbMUaLadgMB33zZdbL90aD4ZcnLPXgj9aOQLJ2s+R62UAb8gv+338N8PCVXY/+Q8nHGapmZPZSNfPFyh4fLf0u34tgCIRPfMZsenvPgO7pIvJt6udGTf55/vrKn/gJsaMNb
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,11 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading as={'h1'} className={'openapi__heading'} children={'Verify ID Token'}></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Track Stems'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/users/verify_token'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/tracks/{track_id}/stems'}></MethodEndpoint>
 
-Verify if the given jwt ID token was signed by the subject (user) in the payload
+Get the remixable stems of a track
 
 <Heading
   id={'request'}
@@ -44,16 +44,16 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
   open={true}
 >
   <summary style={{}}>
-    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
   </summary>
   <div>
     <ul>
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'token',
-          in: 'query',
-          description: 'JWT to verify',
+          name: 'track_id',
+          in: 'path',
+          description: 'A Track ID',
           required: true,
           schema: { type: 'string' },
         }}
@@ -87,13 +87,25 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                           <summary style={{}}>
                             <span className={'openapi-schema__container'}>
                               <strong className={'openapi-schema__property'}>data</strong>
-                              <span className={'openapi-schema__name'}>object</span>
+                              <span className={'openapi-schema__name'}>object[]</span>
                             </span>
                           </summary>
                           <div style={{ marginLeft: '1rem' }}>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                  paddingBottom: '.5rem',
+                                }}
+                              >
+                                Array [
+                              </div>
+                            </li>
                             <SchemaItem
                               collapsible={false}
-                              name={'userId'}
+                              name={'id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -101,7 +113,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'email'}
+                              name={'parent_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -109,7 +121,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'name'}
+                              name={'category'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -117,7 +129,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'handle'}
+                              name={'cid'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -125,53 +137,7 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'verified'}
-                              required={true}
-                              schemaName={'boolean'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'boolean' }}
-                            ></SchemaItem>
-                            <SchemaItem collapsible={true} className={'schemaItem'}>
-                              <details style={{}} className={'openapi-markdown__details'}>
-                                <summary style={{}}>
-                                  <span className={'openapi-schema__container'}>
-                                    <strong className={'openapi-schema__property'}>
-                                      profilePicture
-                                    </strong>
-                                    <span className={'openapi-schema__name'}>object</span>
-                                  </span>
-                                </summary>
-                                <div style={{ marginLeft: '1rem' }}>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'150x150'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'480x480'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                  <SchemaItem
-                                    collapsible={false}
-                                    name={'1000x1000'}
-                                    required={false}
-                                    schemaName={'string'}
-                                    qualifierMessage={undefined}
-                                    schema={{ type: 'string' }}
-                                  ></SchemaItem>
-                                </div>
-                              </details>
-                            </SchemaItem>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'sub'}
+                              name={'user_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -179,12 +145,31 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'iat'}
+                              name={'blocknumber'}
+                              required={true}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'orig_filename'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
                             ></SchemaItem>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                }}
+                              >
+                                ]
+                              </div>
+                            </li>
                           </div>
                         </details>
                       </SchemaItem>
@@ -193,7 +178,9 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
                 </TabItem>
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
-                    responseExample={"{\n  \"data\": {\n    \"userId\": \"string\",\n    \"email\": \"string\",\n    \"name\": \"string\",\n    \"handle\": \"string\",\n    \"verified\": true,\n    \"profilePicture\": {\n      \"150x150\": \"string\",\n      \"480x480\": \"string\",\n      \"1000x1000\": \"string\"\n    },\n    \"sub\": \"string\",\n    \"iat\": \"string\"\n  }\n}"}
+                    responseExample={
+                      '{\n  "data": [\n    {\n      "id": "xdJZNpY",\n      "parent_id": "v25ZN2R",\n      "category": "MELODIC_LEAD",\n      "cid": "baeaaaiqsedgkbn7jmmtttawlbtmb5f3afmdih6mbcnvysygvnkmlk5xf4rga6",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600949,\n      "orig_filename": "FREE LOOP #3 - Melodic_Lead.mp3"\n    },\n    {\n      "id": "85odkNO",\n      "parent_id": "v25ZN2R",\n      "category": "MELODIC_LEAD",\n      "cid": "baeaaaiqsec3eyvrxmdshoesvn7yjcd5ac6fgrcuvxnme4ujeobkrbojbmhe46",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600939,\n      "orig_filename": "FREE LOOP #3 - Melodic_Lead 2.mp3"\n    },\n    {\n      "id": "K76mw9y",\n      "parent_id": "v25ZN2R",\n      "category": "OTHER",\n      "cid": "baeaaaiqsebep5eua6hx66o5qtyxwjbyi24gxnkn7zbd3sz7az7bqo3puosk64",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600949,\n      "orig_filename": "FREE LOOP #3 - Other.mp3"\n    },\n    {\n      "id": "gbJ05Y2",\n      "parent_id": "v25ZN2R",\n      "category": "PERCUSSION",\n      "cid": "baeaaaiqsea7wgy4x6bwul2rzk6hdrpcutqvc2gtsa25zxmhvdgyuipvjph5rm",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600962,\n      "orig_filename": "FREE LOOP #3 - Percussion.mp3"\n    },\n    {\n      "id": "K9jqwQB",\n      "parent_id": "v25ZN2R",\n      "category": "PERCUSSION",\n      "cid": "baeaaaiqseaawhqubgorf7zn2ntxm3ehwnupgb5khqa7lcakvzl6uhijmeiq6o",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600945,\n      "orig_filename": "FREE LOOP #3 - Percussion 2.mp3"\n    }\n  ]\n}'
+                    }
                     language={'json'}
                   ></ResponseSamples>
                 </TabItem>
@@ -201,18 +188,6 @@ Verify if the given jwt ID token was signed by the subject (user) in the payload
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem>
-      <TabItem label={'400'} value={'400'}>
-        <div>Bad input</div>
-        <div></div>
-      </TabItem>
-      <TabItem label={'404'} value={'404'}>
-        <div>ID token not valid</div>
-        <div></div>
-      </TabItem>
-      <TabItem label={'500'} value={'500'}>
-        <div>Server error</div>
-        <div></div>
       </TabItem>
     </ApiTabs>
   </div>
