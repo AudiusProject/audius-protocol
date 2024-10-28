@@ -224,12 +224,15 @@ program
           audiusLibs
         })
 
+        const userId = audiusLibs.Account.getCurrentUser().user_id
+
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
+          userId,
           trackStream,
           null,
           {
-            owner_id: audiusLibs.Account.getCurrentUser().user_id,
+            owner_id: userId,
             cover_art: null,
             cover_art_sizes: null,
             title: trackTitle,

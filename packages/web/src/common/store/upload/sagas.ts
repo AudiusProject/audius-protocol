@@ -278,12 +278,17 @@ function* publishWorker(
     const { trackIndex, stemIndex, trackId: presetTrackId, metadata } = task
     try {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const userId = yield* select(accountSelectors.getUserId)
+      if (!userId) {
+        throw new Error('No user id found during upload. Not signed in?')
+      }
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
       const {
         trackId: updatedTrackId,
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
         [libs.Track, libs.Track!.writeTrackToChain],
+        userId,
         metadata,
         EntityManagerAction.CREATE,
         presetTrackId

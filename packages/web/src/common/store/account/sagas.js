@@ -1,4 +1,4 @@
-import { accountApiFetchSaga, userApiFetchSaga } from '@audius/common/api'
+import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,
@@ -49,7 +49,8 @@ const {
   tikTokLogin,
   fetchSavedPlaylists,
   addAccountPlaylist,
-  resetAccount
+  resetAccount,
+  setWalletAddresses
 } = accountActions
 
 const IP_STORAGE_KEY = 'user-ip-timestamp'
@@ -101,6 +102,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
+  const getWalletAddresses = yield getContext('getWalletAddresses')
 
   const libs = yield call([
     audiusBackendInstance,
@@ -112,7 +114,10 @@ function* onSignedIn({ payload: { account } }) {
   })
 
   if (account && account.handle) {
-    const web3User = yield call(accountApiFetchSaga.getCurrentWeb3User)
+    const { web3WalletAddress } = yield call(getWalletAddresses)
+    const { user: web3User } = yield call(userApiFetchSaga.getUserAccount, {
+      wallet: web3WalletAddress
+    })
 
     let solanaWallet
     let managerUserId
@@ -180,7 +185,9 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   yield put(accountActions.fetchAccountRequested())
 
-  const { accountWalletAddress: wallet } = yield call(getWalletAddresses)
+  const { accountWalletAddress: wallet, web3WalletAddress } = yield call(
+    getWalletAddresses
+  )
 
   if (!wallet) {
     yield put(
@@ -222,6 +229,9 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   // Cache the account and put the signedIn action. We're done.
   yield call(cacheAccount, account)
+  yield put(
+    setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
+  )
 
   // Sync current user info to libs
   const libs = yield call([

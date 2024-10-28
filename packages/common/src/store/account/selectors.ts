@@ -27,6 +27,9 @@ export const getAccountToCache = (state: CommonState) => ({
   collections: state.account.collections
 })
 
+export const getWalletAddresses = (state: CommonState) =>
+  state.account.walletAddresses
+
 export const getAccountUser = createSelector(
   [internalGetAccountUser],
   (user) => user

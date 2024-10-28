@@ -70,7 +70,6 @@ export type DiscoveryProviderConfig = {
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   discoveryNodeSelector?: DiscoveryNodeSelector
-  // TODO-NOW: Maybe move userId/wallet out of config and into init or constructor params?
   userId?: number
 } & Pick<
   DiscoveryProviderSelectionConfig,

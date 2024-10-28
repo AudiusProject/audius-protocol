@@ -114,24 +114,6 @@ export function* setupBackend() {
     yield* put(backendActions.libsError(libsError))
     return
   }
-  const result = yield* race({
-    failure: take(accountActions.fetchAccountFailed),
-    success: take(accountActions.fetchAccountSucceeded)
-  })
-
-  // Fetch account failed (e.g. user not found or not logged in), just return
-  // at this point.
-  if (result.failure) {
-    yield* put(backendActions.setupBackendFailed())
-    return
-  }
-
-  const user = yield* select(accountSelectors.getAccountUser)
-  if (!user || !user.wallet || !user.user_id) {
-    console.error('Failed to select user after successful account fetch')
-    yield* put(backendActions.setupBackendFailed())
-    return
-  }
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline

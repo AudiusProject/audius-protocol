@@ -319,17 +319,6 @@ export class Users extends Base {
       newMetadata.is_storage_v2 = true
       newMetadata.wallet = this.web3Manager.getWalletAddress()
       newMetadata.user_id = userId
-      // TODO-NOW: Make sure the logic below holds true for whatever user is in the
-      // cache. It _should_ be as we fetch the profile right aferwards...
-      // this.userStateManager.setCurrentUser({
-      //   ...newMetadata,
-      //   // Initialize counts to be 0. We don't want to write this data to backends ever really
-      //   // (hence the cleanUserMetadata above), but we do want to make sure clients
-      //   // can properly "do math" on these numbers.
-      //   followee_count: 0,
-      //   follower_count: 0,
-      //   repost_count: 0
-      // })
 
       // Upload images
       if (profilePictureFile) {
@@ -402,8 +391,6 @@ export class Users extends Base {
           userId,
           manageEntityResponse.txReceipt.blockNumber
         )
-        // Update libs instance with new user metadata object
-        // TODO-NOW: Make sure calling locations refresh the user data
       } catch (e) {
         const errorMsg = `repairEntityManagerUserV2() error: ${e}`
         if (e instanceof Error) {
@@ -510,13 +497,6 @@ export class Users extends Base {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
 
-    // TODO-NOW: Check that a current user is set? Or maybe have the calling
-    // location verify that a user exists before calling this
-    // const oldMetadata = this.userStateManager.getCurrentUser()
-    // if (!oldMetadata) {
-    //   throw new Error('No current user.')
-    // }
-
     newMetadata = this.cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
 
@@ -536,9 +516,6 @@ export class Users extends Base {
         )
       const blockNumber = txReceipt.blockNumber
 
-      // TODO-NOW: Find callers of updateMetadataV2 and make sure they are
-      // updating user info in cache
-      // this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
       return {
         blockHash: txReceipt.blockHash,
         blockNumber

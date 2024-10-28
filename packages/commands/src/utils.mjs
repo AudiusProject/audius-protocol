@@ -62,6 +62,7 @@ export const initializeAudiusLibs = async (handle) => {
 
   await audiusLibs.init()
 
+  // TODO-NOW: Update this to initialize correctly
   if (handle) {
     // Log out of existing user, log in as new user, and re-init
     await audiusLibs.Account.logout()

@@ -115,8 +115,7 @@ export const userCollectionMetadataFromSDK = (
 }
 
 export const accountCollectionFromSDK = (
-  // TODO-NOW: Update with type from SDK once generated
-  input: any
+  input: full.AccountCollection
 ): AccountCollection | undefined => {
   const playlistId = decodeHashId(input.id)
   const ownerId = decodeHashId(input.user.id)

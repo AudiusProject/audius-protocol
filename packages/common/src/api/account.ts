@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 
 import dayjs from 'dayjs'
+import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
+import { accountSelectors } from '~/store/account'
 
-import { userApiFetch } from './user'
+import { useGetUserAccount } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -32,44 +34,6 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    // TODO-NOW: These are going to double-request the same user and store it under a different key.
-    // Would be helpful to consolidate
-    getCurrentUser: {
-      async fetch(_, context) {
-        const { accountWalletAddress: wallet } =
-          await context.getWalletAddresses()
-
-        if (!wallet) {
-          console.warn('No wallet found for current user')
-          return null
-        }
-        const account = await userApiFetch.getUserAccount({ wallet }, context)
-        return account?.user
-      },
-      options: {
-        // TODO-NOW: Only doing this to avoid double caching of user
-        // Decide if that's necessary (also applies to getCurrentWeb3User)
-        schemaKey: 'currentUser'
-      }
-    },
-    getCurrentWeb3User: {
-      async fetch(_, context) {
-        const { web3WalletAddress: wallet } = await context.getWalletAddresses()
-
-        if (!wallet) {
-          console.warn('No wallet found for current user')
-          return null
-        }
-        const account = await userApiFetch.getUserAccount({ wallet }, context)
-        return account?.user
-      },
-      // TODO-NOW: Can this go away? Or at least be structured such that the user itself gets cached?
-      options: {
-        // Note that this schema key is used to prevent caching of the
-        // web3 user as it does not match the standard user schema.
-        schemaKey: 'currentWeb3User'
-      }
-    },
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
@@ -261,18 +225,39 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUserId = (
-  ...args: Parameters<typeof accountApi.hooks.useGetCurrentUser>
+export const useGetCurrentUser = (
+  ...[fetchArgs, options = {}]: Parameters<typeof useGetUserAccount>
 ) => {
-  const result = accountApi.hooks.useGetCurrentUser(...args)
+  const wallets = useSelector(accountSelectors.getWalletAddresses)
+  const result = useGetUserAccount(
+    { ...fetchArgs, wallet: wallets.currentUser! },
+    { ...options, disabled: !wallets.currentUser }
+  )
+  return { ...result, data: result.data ? result.data.user : null }
+}
+
+export const useGetCurrentWeb3User = (
+  ...[fetchArgs, options = {}]: Parameters<typeof useGetUserAccount>
+) => {
+  const wallets = useSelector(accountSelectors.getWalletAddresses)
+  const result = useGetUserAccount(
+    { ...fetchArgs, wallet: wallets.web3User! },
+    { ...options, disabled: !wallets.web3User }
+  )
+
+  return { ...result, data: result.data ? result.data.user : null }
+}
+
+export const useGetCurrentUserId = (
+  ...args: Parameters<typeof useGetCurrentUser>
+) => {
+  const result = useGetCurrentUser(...args)
   return useMemo(() => {
     return { ...result, data: result.data ? result.data.user_id : null }
   }, [result])
 }
 
 export const {
-  useGetCurrentUser,
-  useGetCurrentWeb3User,
   useResetPassword,
   useGetManagedAccounts,
   useGetManagers,

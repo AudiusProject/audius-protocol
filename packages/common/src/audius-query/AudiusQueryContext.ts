@@ -27,7 +27,6 @@ export type AudiusQueryContextType = {
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
   fetch: typeof fetch
-  getWalletAddresses: () => Promise<GetWalletAddressesResult>
   remoteConfigInstance: RemoteConfigInstance
   getFeatureEnabled: (
     flag: FeatureFlags,

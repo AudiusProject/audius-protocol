@@ -392,6 +392,7 @@ const userApi = createApi({
 })
 
 export const {
+  useGetUserAccount,
   useGetUserById,
   useGetUsersByIds,
   useGetUserByHandle,

@@ -393,7 +393,6 @@ export class Track extends Base {
    * @param metadata json of the track metadata with all fields, missing fields will error
    * @param onProgress callback fired with (loaded, total) on byte upload progress
    */
-  // TODO-NOW: Update callers
   async uploadTrackV2(
     userId: number,
     trackFile: File,

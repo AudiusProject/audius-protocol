@@ -1,16 +1,13 @@
 import { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
-import { createGetWalletAddresses } from '@audius/common/services'
 import { useDispatch } from 'react-redux'
 
 import * as analytics from 'services/analytics'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { hedgehogInstance } from 'services/audius-sdk/hedgehog'
 import { env } from 'services/env'
-import { localStorage } from 'services/local-storage'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -18,11 +15,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 type AudiusQueryProviderProps = {
   children: ReactNode
 }
-
-const getWalletAddresses = createGetWalletAddresses({
-  localStorage,
-  hedgehogInstance
-})
 
 export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
   const { children } = props
@@ -34,7 +26,6 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         audiusBackend: audiusBackendInstance,
         audiusSdk,
         dispatch,
-        getWalletAddresses,
         reportToSentry,
         env,
         fetch,
