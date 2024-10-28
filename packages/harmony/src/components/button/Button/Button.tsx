@@ -37,6 +37,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       typography
     } = useTheme()
 
+    const isSmallOrXs = size === 'small' || size === 'xs'
+
     // Size Styles
     const smallStyles: CSSObject = {
       gap: spacing.xs,
@@ -172,7 +174,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       borderRadius: cornerRadius.s,
       boxShadow: shadows.near,
 
-      ...(size === 'small' || size === 'xs'
+      ...(isSmallOrXs
         ? smallStyles
         : size === 'large'
         ? largeStyles
@@ -209,12 +211,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       })
     }
 
-    const iconCss =
-      size === 'small' || size === 'xs'
-        ? smallIconStyles
-        : size === 'large'
-        ? largeIconStyles
-        : defaultIconStyles
+    const iconCss = isSmallOrXs
+      ? smallIconStyles
+      : size === 'large'
+      ? largeIconStyles
+      : defaultIconStyles
 
     const style: CSSCustomProperties =
       variant === 'primary' && !disabled
