@@ -130,7 +130,9 @@ const Link = ({
     ...(to ? { onPress: handlePress } : { url })
   }
 
-  return <TextLink {...linkProps}>{unfurledContent ?? url}</TextLink>
+  return (
+    <TextLink {...linkProps}>{unfurledContent ?? children ?? url}</TextLink>
+  )
 }
 
 const HandleLink = ({
