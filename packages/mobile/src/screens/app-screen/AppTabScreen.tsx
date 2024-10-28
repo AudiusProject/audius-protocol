@@ -210,26 +210,10 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       }}
     >
       {baseScreen(Stack)}
-      <Stack.Screen
-        name='Track'
-        component={TrackScreen}
-        options={screenOptions}
-      />
-      <Stack.Screen
-        name='TrackRemixes'
-        component={TrackRemixesScreen}
-        options={screenOptions}
-      />
-      <Stack.Screen
-        name='Collection'
-        component={CollectionScreen}
-        options={screenOptions}
-      />
-      <Stack.Screen
-        name='Profile'
-        component={ProfileScreen}
-        options={screenOptions}
-      />
+      <Stack.Screen name='Track' component={TrackScreen} />
+      <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
+      <Stack.Screen name='Collection' component={CollectionScreen} />
+      <Stack.Screen name='Profile' component={ProfileScreen} />
       {isSearchV2Enabled ? (
         <Stack.Screen
           name='Search'
@@ -246,70 +230,28 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
               cardStyleInterpolator: forFade
             })}
           />
-          <Stack.Screen
-            name='SearchResults'
-            component={SearchResultsScreen}
-            options={screenOptions}
-          />
-          <Stack.Screen
-            name='TagSearch'
-            component={TagSearchScreen}
-            options={screenOptions}
-          />
+          <Stack.Screen name='SearchResults' component={SearchResultsScreen} />
+          <Stack.Screen name='TagSearch' component={TagSearchScreen} />
         </Stack.Group>
       )}
       <Stack.Group>
-        <Stack.Screen
-          name='Followers'
-          component={FollowersScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='Following'
-          component={FollowingScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='Favorited'
-          component={FavoritedScreen}
-          options={screenOptions}
-        />
+        <Stack.Screen name='Followers' component={FollowersScreen} />
+        <Stack.Screen name='Following' component={FollowingScreen} />
+        <Stack.Screen name='Favorited' component={FavoritedScreen} />
         <Stack.Screen
           name='AiGeneratedTracks'
           component={AiGeneratedTracksScreen}
-          options={screenOptions}
         />
-        <Stack.Screen
-          name='Mutuals'
-          component={MutualsScreen}
-          options={screenOptions}
-        />
-        <Stack.Screen
-          name='RelatedArtists'
-          component={RelatedArtistsScreen}
-          options={screenOptions}
-        />
+        <Stack.Screen name='Mutuals' component={MutualsScreen} />
+        <Stack.Screen name='RelatedArtists' component={RelatedArtistsScreen} />
         <Stack.Screen
           name='NotificationUsers'
           component={NotificationUsersScreen}
-          options={screenOptions}
         />
       </Stack.Group>
-      <Stack.Screen
-        name='Reposts'
-        component={RepostsScreen}
-        options={screenOptions}
-      />
-      <Stack.Screen
-        name='TopSupporters'
-        component={TopSupportersScreen}
-        options={screenOptions}
-      />
-      <Stack.Screen
-        name='SupportingUsers'
-        component={SupportingUsersScreen}
-        options={screenOptions}
-      />
+      <Stack.Screen name='Reposts' component={RepostsScreen} />
+      <Stack.Screen name='TopSupporters' component={TopSupportersScreen} />
+      <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
       <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
 
@@ -349,7 +291,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen
         name='FilterButton'
         component={FilterButtonScreen}
-        options={{ ...screenOptions, presentation: 'fullScreenModal' }}
+        options={{ presentation: 'fullScreenModal' }}
       />
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
