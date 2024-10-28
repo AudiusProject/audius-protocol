@@ -506,6 +506,14 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
         raise IndexingValidationError(
             f"User {user_id} already reacted to comment {comment_id}"
         )
+    if (
+        params.action == Action.UNREACT
+        and (user_id, comment_id)
+        not in params.existing_records[EntityType.COMMENT_REACTION.value]
+    ):
+        raise IndexingValidationError(
+            f"User {user_id} has not reacted to comment {comment_id}"
+        )
 
 
 def react_comment(params: ManageEntityParameters):
@@ -613,7 +621,7 @@ def react_comment(params: ManageEntityParameters):
 
 
 def unreact_comment(params: ManageEntityParameters):
-    validate_signer(params)
+    validate_comment_reaction_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
 

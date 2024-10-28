@@ -253,6 +253,20 @@ def test_invalid_comment(app, mocker):
                 )
             },
         ],
+        "UnreactCommentNotExisting": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "Unreact",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     db, index_transaction = setup_test(app, mocker, entities, tx_receipts)
@@ -269,6 +283,8 @@ def test_invalid_comment(app, mocker):
             session.query(Track).filter(Track.pinned_comment_id != None).all()
         )
         assert len(pinned_comments) == 0
+        comment_reactions: List[CommentReaction] = session.query(CommentReaction).all()
+        assert len(comment_reactions) == 0
 
 
 def test_comment_reply(app, mocker):
