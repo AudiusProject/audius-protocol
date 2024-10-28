@@ -76,12 +76,14 @@ func (r *Registry) RegisterSelf() error {
 	ethBlock := info.BlockNumber.String()
 
 	nodeRecord, err := r.queries.GetNodeByEndpoint(ctx, nodeEndpoint)
-	if err != nil {
+	if errors.Is(err, pgx.ErrNoRows) {
 		r.logger.Infof("node %s not found on comet but found on eth, registering", nodeEndpoint)
 		if err := r.registerSelfOnComet(ethBlock, spID.String()); err != nil {
 			return fmt.Errorf("could not register on comet: %v", err)
 		}
-		return r.RegisterSelf()
+		return nil
+	} else if err != nil {
+		return err
 	}
 
 	r.logger.Infof("node %s : %s registered on network %s", nodeRecord.EthAddress, nodeRecord.Endpoint, r.config.Environment)
