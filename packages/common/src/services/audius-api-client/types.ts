@@ -158,6 +158,9 @@ export type APITrack = {
   is_downloadable: boolean
   is_original_available: boolean
   ddex_app: Nullable<string>
+  is_owned_by_user: boolean
+  cover_original_song_title: Nullable<string>
+  cover_original_artist: Nullable<string>
 }
 
 export type APISearchTrack = Omit<

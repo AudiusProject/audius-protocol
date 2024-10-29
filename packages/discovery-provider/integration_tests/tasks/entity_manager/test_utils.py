@@ -201,6 +201,9 @@ def test_valid_parse_metadata(app):
                 "is_custom_musical_key": False,
                 "audio_analysis_error_count": 0,
                 "comments_disabled": False,
+                "is_owned_by_user": False,
+                "cover_original_song_title": None,
+                "cover_original_artist": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

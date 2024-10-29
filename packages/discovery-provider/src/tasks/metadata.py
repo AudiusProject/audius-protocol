@@ -113,6 +113,7 @@ class TrackMetadata(TypedDict):
     remix_of: Optional[TrackRemix]
     is_scheduled_release: bool
     is_unlisted: bool
+    is_owned_by_user: bool
     field_visibility: Optional[TrackFieldVisibility]
     stem_of: Optional[TrackStem]
     is_stream_gated: Optional[bool]
@@ -139,6 +140,8 @@ class TrackMetadata(TypedDict):
     is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
     comments_disabled: bool
+    cover_original_song_title: Optional[str]
+    cover_original_artist: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -171,6 +174,7 @@ track_metadata_format: TrackMetadata = {
     "remix_of": None,
     "is_scheduled_release": False,
     "is_unlisted": False,
+    "is_owned_by_user": False,
     "field_visibility": None,
     "stem_of": None,
     "is_stream_gated": False,
@@ -197,6 +201,8 @@ track_metadata_format: TrackMetadata = {
     "is_custom_musical_key": False,
     "audio_analysis_error_count": 0,
     "comments_disabled": False,
+    "cover_original_song_title": None,
+    "cover_original_artist": None,
 }
 
 track_download_metadata_format = {"city": None, "region": None, "country": None}

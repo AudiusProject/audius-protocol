@@ -180,6 +180,7 @@ export type TrackMetadata = {
   is_unlisted: boolean
   is_scheduled_release: boolean
   is_available: boolean
+  is_owned_by_user?: boolean
   is_stream_gated: boolean
   stream_conditions: Nullable<GatedConditions>
   is_download_gated: boolean
@@ -210,6 +211,8 @@ export type TrackMetadata = {
   stem_of?: {
     parent_track_id: ID
   }
+  cover_original_song_title?: Nullable<string>
+  cover_original_artist?: Nullable<string>
 
   // Added fields
   dateListened?: string
