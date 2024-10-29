@@ -2879,7 +2879,6 @@ export type AllTrackingEvents =
   | SearchTag
   | SearchMoreResults
   | SearchResultSelect
-  | SearchTabClick
   | Listen
   | ListenGated
   | ErrorPage
