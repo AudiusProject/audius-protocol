@@ -1,1 +1,2 @@
-export { SearchScreen } from './SearchScreen'
+export { SearchScreenStack } from './SearchScreen'
+export type { SearchParams } from './searchParams'
