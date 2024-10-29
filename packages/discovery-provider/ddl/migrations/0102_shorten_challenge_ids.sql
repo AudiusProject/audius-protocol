@@ -243,4 +243,4 @@ END $$;
 ALTER TABLE ONLY user_challenges
     ADD CONSTRAINT user_challenges_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES challenges(id);
 
-ROLLBACK;
+COMMIT;
