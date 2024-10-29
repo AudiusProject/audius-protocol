@@ -43,11 +43,11 @@ const ConnectedNavBar = ({
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
 
   const search = (query: string) => {
-      history.push({
-        pathname: history.location.pathname,
-        search: query ? new URLSearchParams({ query }).toString() : undefined,
-        state: {}
-      })
+    history.push({
+      pathname: history.location.pathname,
+      search: query ? new URLSearchParams({ query }).toString() : undefined,
+      state: {}
+    })
   }
 
   const record = useRecord()

@@ -1539,13 +1539,6 @@ type SearchResultSelect = {
   kind: 'track' | 'profile' | 'playlist' | 'album'
 }
 
-// This event is no longer fired with search v2
-// Use page views instead
-type SearchTabClick = {
-  eventName: Name.SEARCH_TAB_CLICK
-  term: string
-  tab: 'people' | 'tracks' | 'albums' | 'playlists'
-}
 type Listen = {
   eventName: Name.LISTEN
   trackId: string

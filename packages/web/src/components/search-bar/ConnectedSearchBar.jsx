@@ -21,7 +21,7 @@ import {
   clearSearch
 } from 'common/store/search-bar/actions'
 import { getSearch } from 'common/store/search-bar/selectors'
-import SearchBarV2 from 'components/search/SearchBarV2'
+import SearchBar from 'components/search/SearchBar'
 import { getPathname } from 'utils/route'
 
 const { profilePage, collectionPage, SEARCH_PAGE } = route
@@ -301,7 +301,7 @@ class ConnectedSearchBar extends Component {
     const { status, searchText } = this.props.search
     return (
       <Box ml='unit10' mt='l'>
-        <SearchBarV2
+        <SearchBar
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
           isViewingSearchPage={this.props.isViewingSearchPage}
