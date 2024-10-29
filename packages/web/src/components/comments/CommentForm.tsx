@@ -193,6 +193,7 @@ export const CommentForm = ({
           onAddTimestamp={handleAddTimestamp}
           onAddLink={handleAddLink}
           disabled={disabled}
+          blurOnSubmit={true}
         />
       </Flex>
       <DownloadMobileAppDrawer

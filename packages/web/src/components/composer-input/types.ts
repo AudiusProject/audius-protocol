@@ -14,6 +14,7 @@ export type ComposerInputProps = {
     linkEntities: LinkEntity[],
     mentions: CommentMention[]
   ) => void
+  blurOnSubmit?: boolean
   onAddMention?: (mentionUserId: ID) => void
   onAddTimestamp?: (timestamp: number) => void
   onAddLink?: (entityId: ID, kind: 'track' | 'collection' | 'user') => void
