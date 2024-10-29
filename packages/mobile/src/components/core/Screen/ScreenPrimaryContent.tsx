@@ -1,14 +1,16 @@
 import { useEffect, type ReactNode } from 'react'
 
 import { useScreenContext } from './ScreenContextProvider'
-export const ScreenPrimaryContent = ({
-  children,
-  skeleton
-}: {
+
+type ScreenPrimaryContentProps = {
   children: ReactNode
   skeleton?: ReactNode
-}) => {
+}
+
+export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
+  const { children, skeleton } = props
   const { isScreenReady, setIsPrimaryContentReady } = useScreenContext()
+
   useEffect(() => {
     if (!isScreenReady) return
     requestAnimationFrame(() => {

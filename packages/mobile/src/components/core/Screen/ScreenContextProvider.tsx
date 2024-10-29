@@ -2,7 +2,12 @@ import type { ReactNode } from 'react'
 import { createContext, useContext, useMemo, useState } from 'react'
 
 import { useIsScreenReady } from './hooks/useIsScreenReady'
-import type { ScreenContextType } from './types'
+
+export type ScreenContextType = {
+  isScreenReady: boolean
+  isPrimaryContentReady: boolean
+  setIsPrimaryContentReady: (ready: boolean) => void
+}
 
 export const ScreenContext = createContext<ScreenContextType>({
   isScreenReady: false,
