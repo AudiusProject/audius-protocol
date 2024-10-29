@@ -48,6 +48,8 @@ import {
   spacing
 } from '@audius/harmony-native'
 import { DogEar, UserGeneratedText } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
 import { DetailsTileHasAccess } from 'app/components/details-tile/DetailsTileHasAccess'
@@ -409,127 +411,131 @@ export const CollectionScreenDetailsTile = ({
 
   return (
     <Paper mb='2xl' style={{ overflow: 'hidden' }}>
-      {renderDogEar()}
-      <Flex p='l' gap='l' alignItems='center' w='100%'>
-        <Text
-          variant='label'
-          size='m'
-          strength='default'
-          textTransform='uppercase'
-          color='subdued'
-        >
-          {messages.collectionType}
-        </Text>
-
-        {badges.length > 0 ? (
-          <Flex direction='row' gap='s'>
-            {badges.map((badge) => badge)}
-          </Flex>
-        ) : null}
-        {imageElement}
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s' textAlign='center'>
-            {title}
-          </Text>
-          {user ? (
-            <TouchableOpacity onPress={handlePressArtistName}>
-              <Flex direction='row' gap='xs'>
-                <Text variant='body' color='accent' size='l'>
-                  {user.name}
-                </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
-              </Flex>
-            </TouchableOpacity>
-          ) : null}
-        </Flex>
-        {shouldShowPlay ? (
-          <Button
-            iconLeft={isPlaying ? IconPause : IconPlay}
-            onPress={handlePressPlay}
-            disabled={!isPlayable}
-            fullWidth
+      <ScreenPrimaryContent>
+        {renderDogEar()}
+        <Flex p='l' gap='l' alignItems='center' w='100%'>
+          <Text
+            variant='label'
+            size='m'
+            strength='default'
+            textTransform='uppercase'
+            color='subdued'
           >
-            {isPlaying ? messages.pause : messages.play}
-          </Button>
-        ) : null}
-        {shouldShowPreview ? <PreviewButton /> : null}
-        <DetailsTileActionButtons
-          ddexApp={ddexApp}
-          hasReposted={!!hasReposted}
-          hasSaved={!!hasSaved}
-          hideFavorite={shouldHideActions}
-          hideOverflow={shouldHideOverflow}
-          hideRepost={shouldHideActions}
-          hideShare={shouldeHideShare}
-          isOwner={isOwner}
-          isCollection
-          collectionId={numericCollectionId}
-          isPublished={isPublished}
-          onPressEdit={onPressEdit}
-          onPressOverflow={onPressOverflow}
-          onPressRepost={onPressRepost}
-          onPressSave={onPressSave}
-          onPressShare={onPressShare}
-          onPressPublish={onPressPublish}
-        />
-      </Flex>
-      <Flex
-        p='l'
-        gap='l'
-        alignItems='center'
-        borderTop='default'
-        backgroundColor='surface1'
-        borderBottomLeftRadius='m'
-        borderBottomRightRadius='m'
-      >
-        {!hasStreamAccess &&
-        !isOwner &&
-        streamConditions &&
-        numericCollectionId ? (
-          <DetailsTileNoAccess
-            trackId={numericCollectionId}
-            contentType={PurchaseableContentType.ALBUM}
-            streamConditions={streamConditions}
-          />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={PurchaseableContentType.ALBUM}
-          />
-        ) : null}
-        {isPublished && numericCollectionId ? (
-          <DetailsTileStats
-            playCount={playCount}
-            hidePlayCount={hidePlayCount}
-            favoriteCount={saveCount}
-            hideFavoriteCount={hideFavoriteCount}
-            repostCount={repostCount}
-            hideRepostCount={hideRepostCount}
-            onPressFavorites={onPressFavorites}
-            onPressReposts={onPressReposts}
-          />
-        ) : null}
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText
-              source={'collection page'}
-              variant='body'
-              size='s'
+            {messages.collectionType}
+          </Text>
+
+          {badges.length > 0 ? (
+            <Flex direction='row' gap='s'>
+              {badges.map((badge) => badge)}
+            </Flex>
+          ) : null}
+          {imageElement}
+          <Flex gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' textAlign='center'>
+              {title}
+            </Text>
+            {user ? (
+              <TouchableOpacity onPress={handlePressArtistName}>
+                <Flex direction='row' gap='xs'>
+                  <Text variant='body' color='accent' size='l'>
+                    {user.name}
+                  </Text>
+                  <UserBadges badgeSize={spacing.l} user={user} hideName />
+                </Flex>
+              </TouchableOpacity>
+            ) : null}
+          </Flex>
+          {shouldShowPlay ? (
+            <Button
+              iconLeft={isPlaying ? IconPause : IconPlay}
+              onPress={handlePressPlay}
+              disabled={!isPlayable}
+              fullWidth
             >
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
-        {numericCollectionId ? (
-          <CollectionMetadataList collectionId={numericCollectionId} />
-        ) : null}
-        <OfflineStatusRow contentId={numericCollectionId} isCollection />
-      </Flex>
-      <Divider />
-      {renderTrackList()}
+              {isPlaying ? messages.pause : messages.play}
+            </Button>
+          ) : null}
+          {shouldShowPreview ? <PreviewButton /> : null}
+          <DetailsTileActionButtons
+            ddexApp={ddexApp}
+            hasReposted={!!hasReposted}
+            hasSaved={!!hasSaved}
+            hideFavorite={shouldHideActions}
+            hideOverflow={shouldHideOverflow}
+            hideRepost={shouldHideActions}
+            hideShare={shouldeHideShare}
+            isOwner={isOwner}
+            isCollection
+            collectionId={numericCollectionId}
+            isPublished={isPublished}
+            onPressEdit={onPressEdit}
+            onPressOverflow={onPressOverflow}
+            onPressRepost={onPressRepost}
+            onPressSave={onPressSave}
+            onPressShare={onPressShare}
+            onPressPublish={onPressPublish}
+          />
+        </Flex>
+        <Flex
+          p='l'
+          gap='l'
+          alignItems='center'
+          borderTop='default'
+          backgroundColor='surface1'
+          borderBottomLeftRadius='m'
+          borderBottomRightRadius='m'
+        >
+          {!hasStreamAccess &&
+          !isOwner &&
+          streamConditions &&
+          numericCollectionId ? (
+            <DetailsTileNoAccess
+              trackId={numericCollectionId}
+              contentType={PurchaseableContentType.ALBUM}
+              streamConditions={streamConditions}
+            />
+          ) : null}
+          {(hasStreamAccess || isOwner) && streamConditions ? (
+            <DetailsTileHasAccess
+              streamConditions={streamConditions}
+              isOwner={isOwner}
+              trackArtist={user}
+              contentType={PurchaseableContentType.ALBUM}
+            />
+          ) : null}
+          {isPublished && numericCollectionId ? (
+            <DetailsTileStats
+              playCount={playCount}
+              hidePlayCount={hidePlayCount}
+              favoriteCount={saveCount}
+              hideFavoriteCount={hideFavoriteCount}
+              repostCount={repostCount}
+              hideRepostCount={hideRepostCount}
+              onPressFavorites={onPressFavorites}
+              onPressReposts={onPressReposts}
+            />
+          ) : null}
+          {description ? (
+            <Box w='100%'>
+              <UserGeneratedText
+                source={'collection page'}
+                variant='body'
+                size='s'
+              >
+                {description}
+              </UserGeneratedText>
+            </Box>
+          ) : null}
+          {numericCollectionId ? (
+            <CollectionMetadataList collectionId={numericCollectionId} />
+          ) : null}
+          <OfflineStatusRow contentId={numericCollectionId} isCollection />
+        </Flex>
+      </ScreenPrimaryContent>
+      <ScreenSecondaryContent>
+        <Divider />
+        {renderTrackList()}
+      </ScreenSecondaryContent>
     </Paper>
   )
 }

@@ -13,6 +13,7 @@ import { areSetsEqual, Uid, makeUid } from '@audius/common/utils'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 

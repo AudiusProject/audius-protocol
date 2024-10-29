@@ -41,6 +41,7 @@ import {
   VirtualizedScrollView,
   Divider
 } from 'app/components/core'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -332,10 +333,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               updatedAt={updated_at}
             />
             {isOwner && !is_album && !ddex_app ? (
-              <>
+              <ScreenSecondaryContent>
                 <Divider style={styles.divider} color={neutralLight5} />
                 <SuggestedTracks collectionId={playlist_id} />
-              </>
+              </ScreenSecondaryContent>
             ) : null}
           </>
         </VirtualizedScrollView>
