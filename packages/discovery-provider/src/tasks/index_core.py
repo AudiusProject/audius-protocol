@@ -8,10 +8,13 @@ from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
 from src.tasks.index_core_manage_entities import index_core_manage_entity
 from src.tasks.index_core_plays import index_core_play
+from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
+
+environment = shared_config["discprov"]["env"]
 
 
 def _index_core_txs(session: Session, core: CoreClient, block: BlockResponse):
@@ -19,9 +22,6 @@ def _index_core_txs(session: Session, core: CoreClient, block: BlockResponse):
     for tx in block.transactions:
         # Check which type of transaction is currently set
         transaction_type = tx.WhichOneof("transaction")
-        logger.debug(
-            f"index_core.py | received tx type of {transaction_type} {block.height}"
-        )
         if transaction_type == "plays":
             index_core_play(session=session, core=core, tx=tx)
             continue
@@ -93,7 +93,10 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
 @celery.task(name="index_core", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_core(self):
-    # Index AUDIO Transfer events to update user balances
+    if environment != "dev":
+        # index from core in dev
+        return
+
     db = index_core.db
     redis = index_core.redis
 

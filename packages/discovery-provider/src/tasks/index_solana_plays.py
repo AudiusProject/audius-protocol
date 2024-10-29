@@ -36,6 +36,8 @@ from src.utils.redis_constants import (
     latest_sol_plays_slot_key,
 )
 
+environment = shared_config["discprov"]["env"]
+
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
@@ -712,6 +714,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 @celery.task(name="index_solana_plays", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_solana_plays(self):
+    if environment == "dev":
+        # index from core in dev
+        return
+
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py

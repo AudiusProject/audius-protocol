@@ -10,4 +10,4 @@ logger = logging.getLogger(__name__)
 
 def index_core_manage_entity(session: Session, core: CoreClient, tx: SignedTransaction):
     """Indexes legacy core manage entities."""
-    logger.debug("index_core_manage_entities.py | got manage entity")
+    logger.debug(f"index_core_manage_entities.py | got manage entity {tx}")
