@@ -116,6 +116,22 @@ SET
       to_hex(split_part(specifier, '=>', 2)::integer)
 WHERE challenge_id = 'ref-v';
 
+UPDATE user_challenges 
+SET
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 'b' AND STRPOS(specifier, '=>') > 0;
+
+UPDATE user_challenges 
+SET 
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 's' AND STRPOS(specifier, '=>') > 0;
+
 -- readd index (probably not super necessary since the pkey covers this anyway, but whatevs)
 CREATE INDEX user_challenges_challenge_idx ON public.user_challenges USING btree (challenge_id);
 
@@ -222,6 +238,22 @@ SET
       to_hex(split_part(specifier, '=>', 2)::integer)
 WHERE challenge_id = 'ref-v';
 
+UPDATE challenge_disbursements 
+SET
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 'b' AND STRPOS(specifier, '=>') > 0;
+
+UPDATE challenge_disbursements 
+SET 
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 's' AND STRPOS(specifier, '=>') > 0;
+
 -- readd pkey
 ALTER TABLE ONLY challenge_disbursements
     ADD CONSTRAINT challenge_disbursements_pkey PRIMARY KEY (challenge_id, specifier);
@@ -243,4 +275,4 @@ END $$;
 ALTER TABLE ONLY user_challenges
     ADD CONSTRAINT user_challenges_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES challenges(id);
 
-ROLLBACK;
+COMMIT;

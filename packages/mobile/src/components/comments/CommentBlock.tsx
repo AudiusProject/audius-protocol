@@ -6,7 +6,8 @@ import {
   Name,
   type Comment,
   type ID,
-  type ReplyComment
+  type ReplyComment,
+  Status
 } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
@@ -18,6 +19,7 @@ import { Box, Flex, Text } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
+import { Skeleton } from '../skeleton'
 import { UserLink } from '../user-link'
 
 import { ArtistPick } from './ArtistPick'
@@ -53,7 +55,8 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
 
-  useGetUserById({ id: userId })
+  const { status } = useGetUserById({ id: userId })
+  const isLoadingUser = status === Status.LOADING
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
       screen: 'Profile',
@@ -92,10 +95,18 @@ export const CommentBlockInternal = (
         {...profilePicLinkProps}
         onPress={handlePressProfilePic}
       >
-        <ProfilePicture
-          style={{ width: 32, height: 32, flexShrink: 0 }}
-          userId={userId}
-        />
+        {isLoadingUser ? (
+          <Skeleton
+            width={32}
+            height={32}
+            style={{ borderRadius: 100, flexShrink: 0 }}
+          />
+        ) : (
+          <ProfilePicture
+            style={{ width: 32, height: 32, flexShrink: 0 }}
+            userId={userId}
+          />
+        )}
       </TouchableOpacity>
       <Flex gap='xs' w='100%' alignItems='flex-start' style={{ flexShrink: 1 }}>
         <Box style={{ position: 'absolute', top: 0, right: 0 }}>
@@ -110,7 +121,8 @@ export const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex direction='row' gap='s' alignItems='center' w='65%'>
-            {userId !== undefined ? (
+            {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
+            {userId !== undefined && !isLoadingUser ? (
               <UserLink
                 userId={userId}
                 strength='strong'

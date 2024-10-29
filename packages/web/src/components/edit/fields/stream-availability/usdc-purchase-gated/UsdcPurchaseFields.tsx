@@ -14,7 +14,8 @@ import {
   decimalIntegerToHumanReadable,
   Nullable
 } from '@audius/common/utils'
-import { Hint, IconInfo } from '@audius/harmony'
+import { Hint, IconInfo, Checkbox, Text, Box, Flex } from '@audius/harmony'
+import { css } from '@emotion/react'
 import cn from 'classnames'
 import { useField } from 'formik'
 
@@ -28,7 +29,8 @@ import {
   PRICE,
   ALBUM_TRACK_PRICE,
   GateKeeper,
-  LAST_GATE_KEEPER
+  LAST_GATE_KEEPER,
+  IS_OWNED_BY_USER
 } from '../../types'
 
 const messagesV1 = {
@@ -68,7 +70,16 @@ const messagesV1 = {
   usdc: '(USDC)',
   seconds: '(Seconds)',
   premiumDownloads:
-    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
+    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!',
+  publishingRights: {
+    checkboxLabel: 'Direct Publishing Payments',
+    confirmationText:
+      'In order to receive direct publishing payments from Audius, I hereby confirm:',
+    bulletPoints: [
+      'I own all publishing rights to this music, including performance rights',
+      'I am not registered with a Performing Rights Organization or collection society'
+    ]
+  }
 }
 
 const messagesV2 = {
@@ -110,6 +121,7 @@ export type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
   prefillValue?: number
+  shouldShowRightsDeclaration?: boolean
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
@@ -135,6 +147,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
             prefillValue={500}
+            shouldShowRightsDeclaration
           />
           {isUpload && (
             <PriceField
@@ -153,6 +166,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.standaloneTrackPrice}
             fieldName={PRICE}
             prefillValue={100}
+            shouldShowRightsDeclaration
           />
           <PreviewField disabled={disabled} />
           {showPremiumDownloadsMessage ? (
@@ -166,7 +180,8 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
 
 const PreviewField = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
-  const [{ value }, , { setValue: setPreview }] = useField<number>(PREVIEW)
+  const [{ value }, _ignored, { setValue: setPreview }] =
+    useField<number>(PREVIEW)
   const [humanizedValue, setHumanizedValue] = useState<string | undefined>(
     value?.toString()
   )
@@ -201,10 +216,22 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
 }
 
 const PriceField = (props: PriceFieldProps) => {
-  const { disabled, messaging, fieldName, prefillValue } = props
-  const [{ value }, , { setValue: setPrice }] = useField<number | null>(
+  const {
+    disabled,
+    messaging,
+    fieldName,
+    prefillValue,
+    shouldShowRightsDeclaration
+  } = props
+  const [{ value }, _ignored, { setValue: setPrice }] = useField<number | null>(
     fieldName
   )
+
+  const [
+    { value: isFullyOwnedByUser },
+    _ignored1,
+    { setValue: setIsFullyOwnedByUser }
+  ] = useField<boolean>(IS_OWNED_BY_USER)
 
   const messages = useMessages(
     messagesV1,
@@ -254,12 +281,21 @@ const PriceField = (props: PriceFieldProps) => {
     (e) => {
       if (humanizedValue === null && !e.target.value) {
         // Do nothing if there is no value set and the user just loses focus
+
         return
       }
       setHumanizedValue(padDecimalValue(e.target.value))
     },
     [humanizedValue]
   )
+
+  const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> =
+    useCallback(
+      (e) => {
+        setIsFullyOwnedByUser(e.target.checked)
+      },
+      [setIsFullyOwnedByUser]
+    )
 
   return (
     <BoxedTextField
@@ -273,6 +309,31 @@ const PriceField = (props: PriceFieldProps) => {
       onChange={handlePriceChange}
       onBlur={handlePriceBlur}
       disabled={disabled}
-    />
+    >
+      {shouldShowRightsDeclaration && (
+        <Box>
+          <Flex alignItems='center' justifyContent='flex-start' mb='s' gap='xs'>
+            <Checkbox
+              name={IS_OWNED_BY_USER}
+              checked={!!isFullyOwnedByUser}
+              onChange={handleCheckboxChange}
+            />
+            <Text variant='title'>
+              {messages.publishingRights.checkboxLabel}
+            </Text>
+          </Flex>
+          <Text variant='body'>
+            {messages.publishingRights.confirmationText}
+          </Text>
+          <Box as='ul' ml='l' p='s' css={css({ listStyleType: 'disc' })}>
+            {messages.publishingRights.bulletPoints.map((point, index) => (
+              <Box as='li' key={index}>
+                <Text variant='body'>{point}</Text>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+    </BoxedTextField>
   )
 }

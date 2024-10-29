@@ -81,7 +81,10 @@ const emptyMetadata: TrackMetadataForUpload = {
   is_original_available: false,
   remix_of: null,
   duration: 0,
-  updated_at: ''
+  updated_at: '',
+  is_owned_by_user: false,
+  cover_original_song_title: null,
+  cover_original_artist: null
 }
 
 describe('upload', () => {

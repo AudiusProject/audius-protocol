@@ -82,9 +82,7 @@ class Track(Base, RepresentableMixin):
     slot = Column(Integer)
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
     allowed_api_keys = Column(ARRAY(String))
-    is_stream_gated = Column(Boolean, nullable=False, server_default=text("false"))
     stream_conditions = Column(JSONB(True))
-    is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
     download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     playlists_containing_track = Column(
@@ -119,6 +117,9 @@ class Track(Base, RepresentableMixin):
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())
     parental_warning_type = Column(String)
+    cover_original_song_title = Column(String)
+    cover_original_artist = Column(String)
+    is_owned_by_user = Column(Boolean, nullable=False, server_default=text("false"))
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
