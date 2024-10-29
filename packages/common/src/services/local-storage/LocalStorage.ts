@@ -119,7 +119,4 @@ export class LocalStorage {
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)
 
   clearPlaybackRate = async () => this.removeItem(PLAYBACK_RATE_LS_KEY)
-
-  getCurrentUserExists = async () =>
-    this.getValue(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
 }

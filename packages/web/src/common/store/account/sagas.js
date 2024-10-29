@@ -253,7 +253,6 @@ export function* fetchLocalAccountAsync() {
 
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
-  const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
 
   if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
     yield call(
@@ -261,7 +260,7 @@ export function* fetchLocalAccountAsync() {
       { ...cachedAccountUser, local: true },
       cachedAccountUser.orderedPlaylists
     )
-  } else if (!currentUserExists) {
+  } else {
     yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
 }
