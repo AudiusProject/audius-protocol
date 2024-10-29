@@ -19,8 +19,8 @@ import {
   ScreenContent,
   VirtualizedScrollView
 } from 'app/components/core'
+import { useScreenContext } from 'app/components/core/Screen/hooks/useScreenContext'
 import { Lineup } from 'app/components/lineup'
-import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -65,10 +65,10 @@ export const TrackScreen = () => {
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  const isReady = useIsScreenReady()
+  const { isScreenReady } = useScreenContext()
 
   useEffect(() => {
-    if (isReady) {
+    if (isScreenReady) {
       dispatch(tracksActions.reset())
       dispatch(
         fetchTrack(
@@ -79,7 +79,7 @@ export const TrackScreen = () => {
         )
       )
     }
-  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isReady])
+  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isScreenReady])
 
   if (!track || !user) {
     return <TrackScreenSkeleton />
@@ -132,6 +132,7 @@ export const TrackScreen = () => {
   return (
     <Screen url={permalink}>
       <ScreenContent isOfflineCapable>
+        <Text>{isScreenReady ? 'ready' : 'not ready'}</Text>
         <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
             {/* Track Details */}
@@ -142,7 +143,7 @@ export const TrackScreen = () => {
               isLineupLoading={!lineup?.entries?.[0]}
             />
 
-            {isReachable && isReady ? (
+            {isReachable && isScreenReady ? (
               <>
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native'
 import { InteractionManager } from 'react-native'
 
-import { useNavigation } from './useNavigation'
+import { useNavigation } from '../../../../hooks/useNavigation'
 
 export const useIsScreenReady = () => {
   const delay = 1

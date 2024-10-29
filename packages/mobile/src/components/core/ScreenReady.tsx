@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { usePrevious } from 'react-use'
 
-import { useIsScreenReady } from 'app/hooks/useIsScreenReady'
+import { useScreenContext } from './Screen/hooks/useScreenContext'
 
 export const ScreenReady = ({
   loadingComponent = null,
@@ -12,9 +12,9 @@ export const ScreenReady = ({
   loadingComponent?: ReactNode
   children: ReactNode
 }) => {
-  const isReady = useIsScreenReady()
-  const wasReady = usePrevious(isReady)
-  return isReady ? (
+  const { isScreenReady } = useScreenContext()
+  const wasReady = usePrevious(isScreenReady)
+  return isScreenReady ? (
     <Animated.View entering={wasReady ? FadeIn : undefined}>
       {children}
     </Animated.View>
