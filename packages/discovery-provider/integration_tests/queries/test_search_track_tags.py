@@ -30,8 +30,8 @@ def test_search_track_tags(app_module):
                 "tags": "funk,pop",
                 "stream_conditions": {
                     "usdc_purchase": {
-                        "price": 199,
-                        "splits": {"some_user_bank": 1990000},
+                        "price": 100,
+                        "splits": [{"user_id": 2, "percentage": 100}],
                     }
                 },
                 "comments_disabled": True,
