@@ -1,5 +1,3 @@
-import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk-legacy/dist/core'
-
 import { User } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
