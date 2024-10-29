@@ -6,10 +6,10 @@ import {
   useDeleteComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment } from '@audius/common/models'
+import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
-import { Box, Flex, PlainButton, Text } from '@audius/harmony'
+import { Box, Flex, PlainButton, Skeleton, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
@@ -66,7 +66,8 @@ const CommentBlockInternal = (
   const { toast } = useContext(ToastContext)
 
   // triggers a fetch to get user profile info
-  useGetUserById({ id: userId }) // TODO: display a load state while fetching
+  const { status } = useGetUserById({ id: userId })
+  const isLoadingUser = status === Status.LOADING
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
@@ -90,6 +91,7 @@ const CommentBlockInternal = (
         ) : null}
         {!isTombstone ? (
           <Flex gap='s' alignItems='center'>
+            {isLoadingUser ? <Skeleton w={80} h={18} /> : null}
             {userId !== undefined ? (
               <UserLink userId={userId} popover size='l' strength='strong' />
             ) : null}

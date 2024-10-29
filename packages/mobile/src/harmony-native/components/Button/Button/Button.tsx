@@ -38,6 +38,8 @@ export const Button = (props: ButtonProps) => {
     typography
   } = useTheme()
 
+  const isSmallOrXs = size === 'small' || size === 'xs'
+
   const smallHeight = size === 'xs' ? spacing.unit7 : spacing.unit8
   // - Size Styles -
   const smallStyles: ReactNativeStyle = {
@@ -207,7 +209,7 @@ export const Button = (props: ButtonProps) => {
       ? destructiveStyles
       : primaryStyles),
 
-    ...(size === 'small' || size === 'xs' ? smallStyles : defaultStyles),
+    ...(isSmallOrXs ? smallStyles : defaultStyles),
 
     ...(isDisabled && { shadowColor: 'transparent' })
   }
@@ -231,7 +233,7 @@ export const Button = (props: ButtonProps) => {
     }
   }, [isDisabled, variant, color])
 
-  const textStyles = size === 'small' ? smallTextStyles : defaultTextStyles
+  const textStyles = isSmallOrXs ? smallTextStyles : defaultTextStyles
 
   const animatedTextStyles = useAnimatedStyle(() => {
     return {
@@ -265,9 +267,9 @@ export const Button = (props: ButtonProps) => {
       ? 'danger'
       : 'staticWhite'
 
-  const iconSize: IconProps['size'] = size === 'small' ? 's' : 'm'
+  const iconSize: IconProps['size'] = isSmallOrXs ? 's' : 'm'
 
-  const loaderSize = size === 'small' ? 16 : 20
+  const loaderSize = isSmallOrXs ? 16 : 20
 
   return (
     <BaseButton
