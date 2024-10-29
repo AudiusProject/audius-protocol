@@ -107,7 +107,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
 
   const options: Opts = useMemo(
     () => ({
-      render: RenderLink,
+      render: (linkProps) => <RenderLink {...linkProps} />,
       attributes: {
         source: linkSource,
         onClick: onClickLink,
