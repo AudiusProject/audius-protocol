@@ -119,7 +119,8 @@ class Track(Base, RepresentableMixin):
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())
     parental_warning_type = Column(String)
-    cover_attribution = Column(JSONB())
+    cover_original_song_title = Column(String)
+    cover_original_artist = Column(String)
     is_owned_by_user = Column(Boolean, nullable=False, server_default=text("false"))
 
     block1 = relationship(  # type: ignore

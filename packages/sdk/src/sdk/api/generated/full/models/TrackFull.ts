@@ -32,12 +32,6 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
-import type { CoverAttribution } from './CoverAttribution';
-import {
-    CoverAttributionFromJSON,
-    CoverAttributionFromJSONTyped,
-    CoverAttributionToJSON,
-} from './CoverAttribution';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -533,10 +527,16 @@ export interface TrackFull {
     downloadConditions?: AccessGate;
     /**
      * 
-     * @type {CoverAttribution}
+     * @type {string}
      * @memberof TrackFull
      */
-    coverAttribution?: CoverAttribution;
+    coverOriginalSongTitle?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    coverOriginalArtist?: string;
     /**
      * Indicates whether the track is owned by the user for MRI sake
      * @type {boolean}
@@ -671,7 +671,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : AccessGateFromJSON(json['stream_conditions']),
         'isDownloadGated': json['is_download_gated'],
         'downloadConditions': !exists(json, 'download_conditions') ? undefined : AccessGateFromJSON(json['download_conditions']),
-        'coverAttribution': !exists(json, 'cover_attribution') ? undefined : CoverAttributionFromJSON(json['cover_attribution']),
+        'coverOriginalSongTitle': !exists(json, 'cover_original_song_title') ? undefined : json['cover_original_song_title'],
+        'coverOriginalArtist': !exists(json, 'cover_original_artist') ? undefined : json['cover_original_artist'],
         'isOwnedByUser': json['is_owned_by_user'],
     };
 }
@@ -758,7 +759,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'stream_conditions': AccessGateToJSON(value.streamConditions),
         'is_download_gated': value.isDownloadGated,
         'download_conditions': AccessGateToJSON(value.downloadConditions),
-        'cover_attribution': CoverAttributionToJSON(value.coverAttribution),
+        'cover_original_song_title': value.coverOriginalSongTitle,
+        'cover_original_artist': value.coverOriginalArtist,
         'is_owned_by_user': value.isOwnedByUser,
     };
 }

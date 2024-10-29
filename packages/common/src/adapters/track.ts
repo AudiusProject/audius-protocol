@@ -9,11 +9,7 @@ import {
   StemCategory,
   TrackSegment
 } from '~/models'
-import {
-  CoverAttribution,
-  StemTrackMetadata,
-  UserTrackMetadata
-} from '~/models/Track'
+import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { License } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
@@ -153,10 +149,9 @@ export const userTrackMetadataFromSDK = (
       : null,
     save_count: input.favoriteCount,
     pinned_comment_id: input.pinnedCommentId ?? null,
-    is_owned_by_user: input.isOwnedByUser ?? false,
-    cover_attribution: input.coverAttribution
-      ? (snakecaseKeys(input.coverAttribution) as CoverAttribution)
-      : null
+    is_owned_by_user: input.isOwnedByUser,
+    cover_original_artist: input.coverOriginalArtist ?? null,
+    cover_original_song_title: input.coverOriginalSongTitle ?? null
   }
 
   return newTrack

@@ -83,11 +83,6 @@ class Copyright(TypedDict):
     Text: str
 
 
-class CoverAttribution(TypedDict):
-    original_song_title: str
-    original_song_artist: str
-
-
 class TrackMetadata(TypedDict):
     track_cid: Optional[str]
     preview_cid: Optional[str]
@@ -145,7 +140,8 @@ class TrackMetadata(TypedDict):
     is_custom_musical_key: Optional[bool]
     audio_analysis_error_count: Optional[int]
     comments_disabled: bool
-    cover_attribution: Optional[CoverAttribution]
+    cover_original_song_title: Optional[str]
+    cover_original_artist: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -205,7 +201,8 @@ track_metadata_format: TrackMetadata = {
     "is_custom_musical_key": False,
     "audio_analysis_error_count": 0,
     "comments_disabled": False,
-    "cover_attribution": None,
+    "cover_original_song_title": None,
+    "cover_original_artist": None,
 }
 
 track_download_metadata_format = {"city": None, "region": None, "country": None}

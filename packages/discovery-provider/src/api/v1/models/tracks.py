@@ -53,14 +53,6 @@ stem_parent = ns.model(
     },
 )
 
-cover_attribution = ns.model(
-    "cover_attribution",
-    {
-        "original_song_title": fields.String,
-        "original_song_artist": fields.String,
-    },
-)
-
 field_visibility = ns.model(
     "field_visibility",
     {
@@ -216,7 +208,8 @@ track_full = ns.clone(
             access_gate, allow_null=True, description="How to unlock the track download"
         ),
         "pinned_comment_id": fields.Integer(allow_null=True),
-        "cover_attribution": fields.Nested(cover_attribution, allow_null=True),
+        "cover_original_song_title": fields.String,
+        "cover_original_artist": fields.String,
         "is_owned_by_user": fields.Boolean(
             required=True,
             description="Indicates whether the track is owned by the user for MRI sake",

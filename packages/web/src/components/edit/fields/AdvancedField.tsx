@@ -64,7 +64,8 @@ const BPM = 'bpm'
 const MUSICAL_KEY = 'musical_key'
 const IS_UNLISTED = 'is_unlisted'
 const COMMENTS_DISABLED = 'comments_disabled'
-const COVER_ATTRIBUTION = 'cover_attribution'
+const COVER_ORIGINAL_SONG_TITLE = 'cover_original_song_title'
+const COVER_ORIGINAL_ARTIST = 'cover_original_artist'
 const IS_COVER = 'is_cover'
 
 const allowAttributionValues = [
@@ -89,11 +90,6 @@ const derivativeWorksValues = [
 const isrcRegex = /^[A-Z]{2}-?[A-Z\d]{3}-?\d{2}-?\d{5}$/i
 const iswcRegex = /^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i
 
-const coverAttributionSchema = z.object({
-  original_song_title: z.optional(z.string()),
-  original_song_artist: z.optional(z.string())
-})
-
 const AdvancedFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
@@ -107,7 +103,8 @@ const AdvancedFormSchema = z
     [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
     [BPM]: z.optional(z.string().nullable()),
     [MUSICAL_KEY]: z.optional(z.string().nullable()),
-    [COVER_ATTRIBUTION]: z.optional(coverAttributionSchema),
+    [COVER_ORIGINAL_SONG_TITLE]: z.optional(z.string()),
+    [COVER_ORIGINAL_ARTIST]: z.optional(z.string()),
     [IS_COVER]: z.optional(z.boolean())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
@@ -139,31 +136,48 @@ const getInitialBpm = (bpm: number | null | undefined) => {
 }
 
 export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
-  const [{ value: aiUserId }, , { setValue: setAiUserId }] =
+  const [{ value: aiUserId }, _ignored, { setValue: setAiUserId }] =
     useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
-  const [{ value: isrcValue }, , { setValue: setIsrc }] =
+  const [{ value: isrcValue }, _ignored2, { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
-  const [{ value: releaseDate }, , { setValue: setReleaseDate }] =
+  const [{ value: releaseDate }, _ignored3, { setValue: setReleaseDate }] =
     useTrackField<SingleTrackEditValues[typeof RELEASE_DATE]>(RELEASE_DATE)
-  const [{ value: iswcValue }, , { setValue: setIswc }] =
+  const [{ value: iswcValue }, _ignored4, { setValue: setIswc }] =
     useTrackField<SingleTrackEditValues[typeof ISWC]>(ISWC)
-  const [{ value: license }, , { setValue: setLicense }] =
+  const [{ value: license }, _ignored5, { setValue: setLicense }] =
     useTrackField<License>(LICENSE)
-  const [{ value: allowedApiKeys }, , { setValue: setAllowedApiKeys }] =
+  const [
+    { value: allowedApiKeys },
+    _ignored6,
+    { setValue: setAllowedApiKeys }
+  ] =
     useTrackField<SingleTrackEditValues[typeof ALLOWED_API_KEYS]>(
       ALLOWED_API_KEYS
     )
-  const [{ value: bpm }, , { setValue: setBpm }] =
+  const [{ value: bpm }, _ignored7, { setValue: setBpm }] =
     useTrackField<SingleTrackEditValues[typeof BPM]>(BPM)
-  const [{ value: musicalKey }, , { setValue: setMusicalKey }] =
+  const [{ value: musicalKey }, _ignored8, { setValue: setMusicalKey }] =
     useTrackField<SingleTrackEditValues[typeof MUSICAL_KEY]>(MUSICAL_KEY)
-  const [{ value: isHidden }] = useTrackField<boolean>(IS_UNLISTED)
-  const [{ value: commentsDisabled }, , { setValue: setIsCommentsDisabled }] =
-    useTrackField<boolean>(COMMENTS_DISABLED)
-  const [{ value: coverAttribution }, , { setValue: setCoverAttribution }] =
-    useTrackField<SingleTrackEditValues[typeof COVER_ATTRIBUTION]>(
-      COVER_ATTRIBUTION
-    )
+  const [{ value: isHidden }, _ignored9] = useTrackField<boolean>(IS_UNLISTED)
+  const [
+    { value: commentsDisabled },
+    _ignored10,
+    { setValue: setIsCommentsDisabled }
+  ] = useTrackField<boolean>(COMMENTS_DISABLED)
+  const [
+    { value: coverOriginalSongTitle },
+    _ignored11,
+    { setValue: setCoverOriginalSongTitle }
+  ] = useTrackField<SingleTrackEditValues[typeof COVER_ORIGINAL_SONG_TITLE]>(
+    COVER_ORIGINAL_SONG_TITLE
+  )
+  const [
+    { value: coverOriginalArtist },
+    _ignored12,
+    { setValue: setCoverOriginalArtist }
+  ] = useTrackField<SingleTrackEditValues[typeof COVER_ORIGINAL_ARTIST]>(
+    COVER_ORIGINAL_ARTIST
+  )
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -179,8 +193,13 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     set(initialValues, RELEASE_DATE, releaseDate)
     set(initialValues, IS_UNLISTED, isHidden)
     set(initialValues, COMMENTS_DISABLED, commentsDisabled)
-    set(initialValues, COVER_ATTRIBUTION, coverAttribution)
-    set(initialValues, IS_COVER, !!coverAttribution)
+    set(initialValues, COVER_ORIGINAL_SONG_TITLE, coverOriginalSongTitle)
+    set(initialValues, COVER_ORIGINAL_ARTIST, coverOriginalArtist)
+    set(
+      initialValues,
+      IS_COVER,
+      !!(coverOriginalSongTitle || coverOriginalArtist)
+    )
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -193,7 +212,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     releaseDate,
     isHidden,
     commentsDisabled,
-    coverAttribution
+    coverOriginalSongTitle,
+    coverOriginalArtist
   ])
 
   const onSubmit = useCallback(
@@ -209,16 +229,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         setAllowedApiKeys(null)
       }
       if (get(values, IS_COVER)) {
-        // If cover attribution is not set, but the toggle is on, set it to an empty object for reporting to publishers
-        setCoverAttribution(
-          get(values, COVER_ATTRIBUTION) ??
-            coverAttribution ?? {
-              original_song_artist: '',
-              original_song_title: ''
-            }
-        )
-      } else {
-        setCoverAttribution(null)
+        // If values are not set, but the toggle is on, set to empty strings for reporting to publishers
+        setCoverOriginalSongTitle(get(values, COVER_ORIGINAL_SONG_TITLE) ?? '')
+        setCoverOriginalArtist(get(values, COVER_ORIGINAL_ARTIST) ?? '')
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
@@ -252,8 +265,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       setAiUserId,
       aiUserId,
       setAllowedApiKeys,
-      setCoverAttribution,
-      coverAttribution
+      setCoverOriginalSongTitle,
+      setCoverOriginalArtist
     ]
   )
 
@@ -371,8 +384,21 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const [{ value: coverAttribution }, , { setValue: setCoverAttribution }] =
-    useField<SingleTrackEditValues[typeof COVER_ATTRIBUTION]>(COVER_ATTRIBUTION)
+  const [
+    { value: coverOriginalSongTitle },
+    ,
+    { setValue: setCoverOriginalSongTitle }
+  ] = useField<SingleTrackEditValues[typeof COVER_ORIGINAL_SONG_TITLE]>(
+    COVER_ORIGINAL_SONG_TITLE
+  )
+
+  const [
+    { value: coverOriginalArtist },
+    ,
+    { setValue: setCoverOriginalArtist }
+  ] = useField<SingleTrackEditValues[typeof COVER_ORIGINAL_ARTIST]>(
+    COVER_ORIGINAL_ARTIST
+  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -551,31 +577,25 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
           </Box>
           <Flex gap='m'>
             <TextField
-              name={`${COVER_ATTRIBUTION}.original_song_title`}
+              name={COVER_ORIGINAL_SONG_TITLE}
               label={messages.coverAttribution.attribution.originalSongTitle}
               placeholder={
                 messages.coverAttribution.attribution.originalSongTitle
               }
-              value={coverAttribution?.original_song_title || ''}
+              value={coverOriginalSongTitle || ''}
               onChange={(e) => {
-                setCoverAttribution({
-                  ...coverAttribution,
-                  original_song_title: e.target.value
-                })
+                setCoverOriginalSongTitle(e.target.value)
               }}
             />
             <TextField
-              name={`${COVER_ATTRIBUTION}.original_song_artist`}
+              name={COVER_ORIGINAL_ARTIST}
               label={messages.coverAttribution.attribution.originalSongArtist}
               placeholder={
                 messages.coverAttribution.attribution.originalSongArtist
               }
-              value={coverAttribution?.original_song_artist || ''}
+              value={coverOriginalArtist || ''}
               onChange={(e) => {
-                setCoverAttribution({
-                  ...coverAttribution,
-                  original_song_artist: e.target.value
-                })
+                setCoverOriginalArtist(e.target.value)
               }}
             />
           </Flex>

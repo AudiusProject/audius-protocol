@@ -180,7 +180,8 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
 
 const PreviewField = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
-  const [{ value }, , { setValue: setPreview }] = useField<number>(PREVIEW)
+  const [{ value }, _ignored, { setValue: setPreview }] =
+    useField<number>(PREVIEW)
   const [humanizedValue, setHumanizedValue] = useState<string | undefined>(
     value?.toString()
   )
@@ -222,12 +223,15 @@ const PriceField = (props: PriceFieldProps) => {
     prefillValue,
     shouldShowRightsDeclaration
   } = props
-  const [{ value }, , { setValue: setPrice }] = useField<number | null>(
+  const [{ value }, _ignored, { setValue: setPrice }] = useField<number | null>(
     fieldName
   )
 
-  const [{ value: isFullyOwnedByUser }, , { setValue: setIsFullyOwnedByUser }] =
-    useField<boolean>(IS_OWNED_BY_USER)
+  const [
+    { value: isFullyOwnedByUser },
+    _ignored1,
+    { setValue: setIsFullyOwnedByUser }
+  ] = useField<boolean>(IS_OWNED_BY_USER)
 
   const messages = useMessages(
     messagesV1,

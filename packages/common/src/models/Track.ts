@@ -235,7 +235,7 @@ export type TrackMetadata = {
   orig_filename: Nullable<string>
   is_downloadable: boolean
   is_original_available: boolean
-  is_owned_by_user?: boolean
+  is_owned_by_user: boolean
   ddex_app?: Nullable<string>
   ddex_release_ids?: any | null
   artists?: ResourceContributor[] | null
@@ -264,7 +264,8 @@ export type TrackMetadata = {
   remix_of: Nullable<RemixOf>
   preview_cid?: Nullable<CID>
   preview_start_seconds?: Nullable<number>
-  cover_attribution?: Nullable<CoverAttribution>
+  cover_original_song_title?: Nullable<string>
+  cover_original_artist?: Nullable<string>
 
   // Added fields
   dateListened?: string

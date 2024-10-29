@@ -661,8 +661,9 @@ export class Track extends Base {
       audio_analysis_error_count,
       comments_disabled,
       comment_count,
-      cover_attribution,
       field_visibility,
+      cover_original_song_title,
+      cover_original_artist,
       ...other
     } = trackMetadata
     if (typeof other !== 'undefined') {
@@ -726,7 +727,8 @@ export class Track extends Base {
       comments_disabled,
       comment_count,
       field_visibility,
-      cover_attribution
+      cover_original_song_title,
+      cover_original_artist
     }
   }
 }
