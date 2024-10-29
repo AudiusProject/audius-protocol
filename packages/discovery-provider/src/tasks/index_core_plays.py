@@ -27,6 +27,7 @@ def index_core_play(session: Session, core: CoreClient, tx: SignedTransaction):
         user_id = tx_play.user_id
         # need other fields
 
+        # TODO: add relevant location data
         plays.append(
             {
                 "user_id": user_id,
