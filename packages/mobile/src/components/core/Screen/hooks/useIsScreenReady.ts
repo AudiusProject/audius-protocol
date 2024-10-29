@@ -8,6 +8,10 @@ const SCHEDULING_DELAY = 1
 // Maximum delay before allowing the screen to render
 const RESET_DELAY = 200
 
+/**
+ * useIsScreenReady returns a boolean indicating whether the screen animations
+ * have completed and the screen content can be safely rendered
+ */
 export const useIsScreenReady = () => {
   const [isReady, setIsReady] = useState(false)
 
