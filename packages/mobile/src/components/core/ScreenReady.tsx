@@ -3,8 +3,7 @@ import type { ReactNode } from 'react'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { usePrevious } from 'react-use'
 
-import { useScreenContext } from './Screen/hooks/useScreenContext'
-
+import { useScreenContext } from './Screen/ScreenContextProvider'
 export const ScreenReady = ({
   loadingComponent = null,
   children

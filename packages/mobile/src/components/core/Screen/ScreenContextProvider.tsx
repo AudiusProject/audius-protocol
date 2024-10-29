@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { createContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 
 import { useIsScreenReady } from './hooks/useIsScreenReady'
 import type { ScreenContextType } from './types'
@@ -17,11 +17,22 @@ export const ScreenContextProvider = ({
 }) => {
   const [isPrimaryContentReady, setIsPrimaryContentReady] = useState(false)
   const isScreenReady = useIsScreenReady()
+
+  const context = useMemo(() => {
+    return { isScreenReady, isPrimaryContentReady, setIsPrimaryContentReady }
+  }, [isScreenReady, isPrimaryContentReady])
+
   return (
-    <ScreenContext.Provider
-      value={{ isScreenReady, isPrimaryContentReady, setIsPrimaryContentReady }}
-    >
-      {children}
-    </ScreenContext.Provider>
+    <ScreenContext.Provider value={context}>{children}</ScreenContext.Provider>
   )
+}
+
+export const useScreenContext = () => {
+  const context = useContext(ScreenContext)
+  if (!context) {
+    throw new Error(
+      'useScreenContext must be used within a ScreenContextProvider'
+    )
+  }
+  return context
 }

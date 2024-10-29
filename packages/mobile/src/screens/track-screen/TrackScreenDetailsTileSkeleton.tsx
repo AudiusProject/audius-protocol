@@ -81,6 +81,7 @@ import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
 import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
+import Skeleton from 'app/components/skeleton'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -551,7 +552,7 @@ export const TrackScreenDetailsTile = ({
 
   return (
     <Paper>
-      <ScreenPrimaryContent>
+      <ScreenPrimaryContent skeleton={<Skeleton height={650} />}>
         {renderDogEar()}
         <Flex p='l' gap='l' alignItems='center' w='100%'>
           <Text

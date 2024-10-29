@@ -1,13 +1,20 @@
-import { useEffectOnce } from 'react-use'
+import { useEffect, type ReactNode } from 'react'
 
-import { useScreenContext } from './hooks/useScreenContext'
-
-export const ScreenPrimaryContent = ({ children }) => {
-  const { isPrimaryContentReady, setIsPrimaryContentReady } = useScreenContext()
-  useEffectOnce(() => {
+import { useScreenContext } from './ScreenContextProvider'
+export const ScreenPrimaryContent = ({
+  children,
+  skeleton
+}: {
+  children: ReactNode
+  skeleton?: ReactNode
+}) => {
+  const { isScreenReady, setIsPrimaryContentReady } = useScreenContext()
+  useEffect(() => {
+    if (!isScreenReady) return
     requestAnimationFrame(() => {
       setIsPrimaryContentReady(true)
     })
-  })
-  return isPrimaryContentReady ? children : null
+  }, [isScreenReady, setIsPrimaryContentReady])
+
+  return isScreenReady ? <>{children}</> : <>{skeleton ?? null}</>
 }

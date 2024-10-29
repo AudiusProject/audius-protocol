@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 
-import { useScreenContext } from './hooks/useScreenContext'
-
+import { useScreenContext } from './ScreenContextProvider'
 export const ScreenSecondaryContent = ({
-  children
+  children,
+  skeleton
 }: {
   children: ReactNode
+  skeleton?: ReactNode
 }) => {
   const { isPrimaryContentReady } = useScreenContext()
-  if (!isPrimaryContentReady) return null
-  return children
+  if (!isPrimaryContentReady) return <>{skeleton ?? null}</>
+  return <>{children}</>
 }

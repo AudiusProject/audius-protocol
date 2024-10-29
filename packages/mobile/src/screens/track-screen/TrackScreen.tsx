@@ -19,7 +19,8 @@ import {
   ScreenContent,
   VirtualizedScrollView
 } from 'app/components/core'
-import { useScreenContext } from 'app/components/core/Screen/hooks/useScreenContext'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
+import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -65,8 +66,8 @@ export const TrackScreen = () => {
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  const { isScreenReady } = useScreenContext()
 
+  const isScreenReady = useIsScreenReady()
   useEffect(() => {
     if (isScreenReady) {
       dispatch(tracksActions.reset())
@@ -132,7 +133,6 @@ export const TrackScreen = () => {
   return (
     <Screen url={permalink}>
       <ScreenContent isOfflineCapable>
-        <Text>{isScreenReady ? 'ready' : 'not ready'}</Text>
         <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
             {/* Track Details */}
@@ -143,8 +143,8 @@ export const TrackScreen = () => {
               isLineupLoading={!lineup?.entries?.[0]}
             />
 
-            {isReachable && isScreenReady ? (
-              <>
+            {isReachable ? (
+              <ScreenSecondaryContent>
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
@@ -188,7 +188,7 @@ export const TrackScreen = () => {
                     }
                   />
                 </Flex>
-              </>
+              </ScreenSecondaryContent>
             ) : null}
           </Flex>
         </VirtualizedScrollView>
