@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -11,6 +11,7 @@ import { getTrackId } from '@audius/common/src/store/player/selectors'
 import { Avatar, Flex } from '@audius/harmony'
 import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
@@ -57,6 +58,12 @@ export const CommentForm = ({
   const currentlyPlayingTrackId = useSelector(getTrackId)
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
+  const location = useLocation()
+
+  useEffect(() => {
+    // Reset input text when the location changes
+    setMessageId((prev) => prev + 1)
+  }, [location])
 
   const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer
