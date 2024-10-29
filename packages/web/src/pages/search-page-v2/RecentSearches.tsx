@@ -41,7 +41,7 @@ const MAX_RECENT_SEARCHES = 12
 
 const { SEARCH_PAGE, profilePage } = route
 const { removeItem, clearHistory } = searchActions
-const { getV2SearchHistory: getSearchHistory } = searchSelectors
+const { getSearchHistory } = searchSelectors
 
 const RecentSearchSkeleton = () => (
   <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>

@@ -96,6 +96,8 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
     } replied to your comment on ${
       this.entityUserId === this.receiverUserId
         ? 'your'
+        : this.entityUserId === this.commenterUserId
+        ? 'their'
         : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
@@ -147,7 +149,7 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
                 type: 'CommentThread',
-                entityType: this.entityType,
+                entityType: 'Track',
                 entityId: this.entityId
               }
             }

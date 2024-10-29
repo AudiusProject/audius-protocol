@@ -88,7 +88,7 @@ describe('Comment Reaction Notification', () => {
         data: {
           id: 'timestamp:1589373:group_id:comment_reaction:1',
           type: 'CommentReaction',
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 1,
           entityUserId: 1,
           userIds: [2]
@@ -155,7 +155,7 @@ describe('Comment Reaction Notification', () => {
         data: {
           id: 'timestamp:1589373:group_id:comment_reaction:1',
           type: 'CommentReaction',
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 1,
           entityUserId: 3,
           userIds: [2]

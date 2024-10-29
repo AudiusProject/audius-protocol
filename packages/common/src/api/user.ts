@@ -90,7 +90,10 @@ const userApi = createApi({
     },
     getUserById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
+        {
+          id,
+          currentUserId
+        }: { id: ID | undefined; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
         if (!id || id === -1) return null

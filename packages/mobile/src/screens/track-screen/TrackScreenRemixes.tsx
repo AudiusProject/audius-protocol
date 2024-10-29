@@ -35,7 +35,7 @@ type TrackScreenRemixesProps = {
 
 export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
   const { track } = props
-  const { _remixes } = track
+  const { _remixes: remixes, _remixes_count: remixesCount } = track
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
@@ -59,7 +59,7 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
     navigation.push('TrackRemixes', { id: track.track_id })
   }
 
-  const remixTrackIds = _remixes?.map(({ track_id }) => track_id) ?? null
+  const remixTrackIds = remixes?.map(({ track_id }) => track_id) ?? null
 
   if (!remixTrackIds || !remixTrackIds.length) {
     return null
@@ -82,7 +82,7 @@ export const TrackScreenRemixes = (props: TrackScreenRemixesProps) => {
           paddingVertical: 12
         }}
       />
-      {remixTrackIds.length > MAX_REMIXES_TO_DISPLAY ? (
+      {remixesCount && remixesCount > MAX_REMIXES_TO_DISPLAY ? (
         <Flex pt='m' alignItems='flex-start'>
           <Button
             iconRight={IconArrowRight}

@@ -19,6 +19,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/AudiusProject/audius-protocol/pkg/registrar"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,8 +32,8 @@ var (
 )
 
 type Config struct {
-	Self       registrar.Peer
-	Peers      []registrar.Peer
+	Self       server.Peer
+	Peers      []server.Peer
 	ListenPort string
 	Dir        string
 
@@ -537,12 +538,17 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 	if isProd {
 		g = registrar.NewMultiProd()
 	}
-	var peers []registrar.Peer
+	var peers []server.Peer
 	var err error
 
 	eg := new(errgroup.Group)
 	eg.Go(func() error {
-		peers, err = g.Peers(nodeType)
+		switch nodeType {
+		case "content":
+			peers, err = g.Peers()
+		case "discovery":
+			peers, err = g.Signers()
+		}
 		return err
 	})
 	if err := eg.Wait(); err != nil {
@@ -552,7 +558,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 	logger.Info("fetched registered nodes", "peers", len(peers), "nodeType", nodeType, "env", env)
 
 	config := Config{
-		Self: registrar.Peer{
+		Self: server.Peer{
 			Host: httputil.RemoveTrailingSlash(strings.ToLower(myEndpoint)),
 		},
 		Peers:      peers,
@@ -599,7 +605,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		logger.Error("failed to init Uptime server", "err", err)
 	}
 
-	go refreshPeersAndSigners(ph, g, nodeType)
+	// go refreshPeersAndSigners(ph, g, nodeType)
 
 	ph.Start()
 }
@@ -608,12 +614,17 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 func refreshPeersAndSigners(ph *Uptime, g registrar.PeerProvider, nodeType string) {
 	ticker := time.NewTicker(30 * time.Minute)
 	for range ticker.C {
-		var peers []registrar.Peer
+		var peers []server.Peer
 		var err error
 
 		eg := new(errgroup.Group)
 		eg.Go(func() error {
-			peers, err = g.Peers(nodeType)
+			switch nodeType {
+			case "content":
+				peers, err = g.Peers()
+			case "discovery":
+				peers, err = g.Signers()
+			}
 			return err
 		})
 		if err := eg.Wait(); err != nil {

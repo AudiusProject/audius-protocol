@@ -83,7 +83,7 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { make, track as record } from 'app/services/analytics'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DownloadSection } from './DownloadSection'
@@ -139,7 +139,7 @@ type TrackScreenDetailsTileProps = {
 }
 
 const recordPlay = (id, play = true, isPreview = false) => {
-  record(
+  trackEvent(
     make({
       eventName: play ? Name.PLAYBACK_PLAY : Name.PLAYBACK_PAUSE,
       id: String(id),
@@ -176,9 +176,6 @@ export const TrackScreenDetailsTile = ({
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
 
   const {
     _co_sign: coSign,
@@ -363,6 +360,13 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressComments = useCallback(() => {
     openCommentDrawer({ entityId: trackId, navigation })
+    trackEvent(
+      make({
+        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
+        trackId,
+        source: 'track_page'
+      })
+    )
   }, [openCommentDrawer, trackId, navigation])
 
   const handlePressSave = () => {
@@ -404,13 +408,9 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      if (isSearchV2Enabled) {
-        navigation.push('Search', { query: `#${tag}` })
-      } else {
-        navigation.push('TagSearch', { query: tag })
-      }
+      navigation.push('Search', { query: `#${tag}` })
     },
-    [isSearchV2Enabled, navigation]
+    [navigation]
   )
 
   const handlePressEdit = useCallback(() => {

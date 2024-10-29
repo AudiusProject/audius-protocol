@@ -42,10 +42,10 @@ services:
 
   base-sandbox:
     build:
-      context: ../
-      dockerfile: ./infra/Dockerfile.dev
+      context: ../../../
+      dockerfile: ./cmd/core/infra/Dockerfile.dev
     volumes:
-      - /tmp:/bin/tmp
+      - /tmp:/tmp
     restart: unless-stopped
     networks:
       - sandbox-core-net

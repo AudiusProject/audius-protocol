@@ -64,7 +64,6 @@ jobs:
       requires:
         - web-build-ssr-production
 
-
   - web-test:
       context:
         - Audius Client
@@ -163,26 +162,27 @@ jobs:
   #     filters:
   #       branches:
   #         only: /(^main)$/
-  - web-dist-win-staging:
-      context:
-        - Audius Client
-        - Vercel
-        - slack-secrets
-      requires:
-        - web-build-staging
-      filters:
-        branches:
-          only: /(^main)$/
-  - web-dist-linux-staging:
-      context:
-        - Audius Client
-        - Vercel
-        - slack-secrets
-      requires:
-        - web-build-staging
-      filters:
-        branches:
-          only: /(^main)$/
+  # Also removing win and linux since this is unecessary work for 99.9% percent of cases
+  # - web-dist-win-staging:
+  #     context:
+  #       - Audius Client
+  #       - Vercel
+  #       - slack-secrets
+  #     requires:
+  #       - web-build-staging
+  #     filters:
+  #       branches:
+  #         only: /(^main)$/
+  # - web-dist-linux-staging:
+  #     context:
+  #       - Audius Client
+  #       - Vercel
+  #       - slack-secrets
+  #     requires:
+  #       - web-build-staging
+  #     filters:
+  #       branches:
+  #         only: /(^main)$/
 
   # Distribute production desktop binaries.
   - web-hold-dist-mac-production:

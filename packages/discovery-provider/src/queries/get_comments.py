@@ -52,6 +52,14 @@ def get_replies(
     offset=0,
     limit=COMMENT_REPLIES_LIMIT,
 ):
+    if artist_id is None:
+        artist_id = (
+            session.query(Track)
+            .join(Comment, Track.track_id == Comment.entity_id)
+            .first()
+            .owner_id
+        )
+
     muted_by_karma = (
         session.query(MutedUser.muted_user_id)
         .join(AggregateUser, MutedUser.user_id == AggregateUser.user_id)
@@ -99,6 +107,7 @@ def get_replies(
                 MutedUser.muted_user_id == Comment.user_id,
                 or_(
                     MutedUser.user_id == current_user_id,
+                    MutedUser.user_id == artist_id,
                     MutedUser.muted_user_id.in_(muted_by_karma),
                 ),
                 current_user_id != Comment.user_id,
@@ -127,14 +136,6 @@ def get_replies(
         .limit(limit)
         .all()
     )
-
-    if artist_id is None:
-        artist_id = (
-            session.query(Track)
-            .join(Comment, Track.track_id == Comment.entity_id)
-            .first()
-            .owner_id
-        )
 
     def remove_delete(mention):
         del mention["is_delete"]
@@ -281,6 +282,7 @@ def get_track_comments(args, track_id, current_user_id=None):
                     MutedUser.muted_user_id == Comment.user_id,
                     or_(
                         MutedUser.user_id == current_user_id,
+                        MutedUser.user_id == artist_id,
                         MutedUser.muted_user_id.in_(muted_by_karma),
                     ),
                     current_user_id != Comment.user_id,  # show comment to comment owner

@@ -7,7 +7,6 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -20,7 +19,6 @@ import { FilterButtonScreen } from '@audius/harmony-native'
 import type { FilterButtonScreenParams } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AudioScreen } from 'app/screens/audio-screen'
@@ -31,13 +29,8 @@ import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
-import {
-  SearchResultsScreen,
-  TagSearchScreen
-} from 'app/screens/search-results-screen'
-import { SearchScreen } from 'app/screens/search-screen'
-import type { SearchParams } from 'app/screens/search-screen-v2'
-import { SearchScreenStack } from 'app/screens/search-screen-v2'
+import type { SearchParams } from 'app/screens/search-screen'
+import { SearchScreenStack } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -140,12 +133,6 @@ export type AppTabScreenParamList = {
   FilterButton: FilterButtonScreenParams
 }
 
-const forFade = ({ current }) => ({
-  cardStyle: {
-    opacity: current.progress
-  }
-})
-
 type NavigationStateEvent = EventArg<
   'state',
   false,
@@ -167,9 +154,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -230,34 +214,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={ProfileScreen}
         options={screenOptions}
       />
-      {isSearchV2Enabled ? (
-        <Stack.Screen
-          name='Search'
-          component={SearchScreenStack}
-          options={{ ...screenOptions, headerShown: false }}
-        />
-      ) : (
-        <Stack.Group>
-          <Stack.Screen
-            name='Search'
-            component={SearchScreen}
-            options={(props) => ({
-              ...screenOptions(props),
-              cardStyleInterpolator: forFade
-            })}
-          />
-          <Stack.Screen
-            name='SearchResults'
-            component={SearchResultsScreen}
-            options={screenOptions}
-          />
-          <Stack.Screen
-            name='TagSearch'
-            component={TagSearchScreen}
-            options={screenOptions}
-          />
-        </Stack.Group>
-      )}
+      <Stack.Screen
+        name='Search'
+        component={SearchScreenStack}
+        options={{ ...screenOptions, headerShown: false }}
+      />
       <Stack.Group>
         <Stack.Screen
           name='Followers'

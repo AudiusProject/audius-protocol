@@ -12,7 +12,7 @@ from src.models.users.user import User
 
 
 def generate_referral_specifier(user_id: int, extra: Dict) -> str:
-    return f"{user_id}=>{extra['referred_user_id']}"
+    return f"{hex(user_id)[2:]}:{hex(extra['referred_user_id'])[2:]}"
 
 
 def does_user_exist_with_verification_status(
@@ -70,9 +70,9 @@ class ReferredChallengeUpdater(ChallengeUpdater):
             user_challenge.is_complete = True
 
 
-referral_challenge_manager = ChallengeManager("referrals", ReferralChallengeUpdater())
+referral_challenge_manager = ChallengeManager("r", ReferralChallengeUpdater())
 verified_referral_challenge_manager = ChallengeManager(
-    "ref-v", VerifiedReferralChallengeUpdater()
+    "rv", VerifiedReferralChallengeUpdater()
 )
 
-referred_challenge_manager = ChallengeManager("referred", ReferredChallengeUpdater())
+referred_challenge_manager = ChallengeManager("rd", ReferredChallengeUpdater())

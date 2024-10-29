@@ -34,7 +34,7 @@ base_comment_model = ns.model(
     "comment",
     {
         "id": fields.String(required=True),
-        "user_id": fields.String(required=True),
+        "user_id": fields.String(required=False),
         "message": fields.String(required=True),
         "mentions": fields.List(
             fields.Nested(comment_mention),

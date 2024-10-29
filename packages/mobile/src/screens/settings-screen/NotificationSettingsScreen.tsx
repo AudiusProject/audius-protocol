@@ -26,7 +26,8 @@ const messages = {
   remixes: 'Remixes of My Tracks',
   messages: 'Messages',
   comments: 'Comments',
-  mentions: 'Mentions'
+  mentions: 'Mentions',
+  reactions: 'Reactions'
 }
 
 export const NotificationSettingsScreen = () => {
@@ -82,6 +83,10 @@ export const NotificationSettingsScreen = () => {
             <NotificationRow
               label={messages.mentions}
               type={PushNotificationSetting.Mentions}
+            />
+            <NotificationRow
+              label={messages.reactions}
+              type={PushNotificationSetting.Reactions}
             />
           </>
         ) : null}

@@ -87,13 +87,14 @@
 }
 
 .left {
+  display: flex;
   position: relative;
   width: 100%;
 }
 
 textarea::selection {
-  background: #a116b7;
-  color: var(--harmony-white);
+  background: var(--harmony-s-500);
+  color: var(--harmony-static-white);
 }
 
 textarea.transparentTextArea {
@@ -111,6 +112,7 @@ textarea.transparentTextArea {
   position: relative;
   text-align: left;
   pointer-events: none;
+  overflow-wrap: anywhere;
 }
 
 .displayElementContainer::after {

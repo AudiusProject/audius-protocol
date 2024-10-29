@@ -11,6 +11,9 @@ import {
 } from '@audius/sdk-legacy/dist/libs.js'
 import { PublicKey } from '@solana/web3.js'
 
+/**
+ * @type {import('@audius/sdk').AudiusSdk}
+ */
 let audiusSdk
 export const initializeAudiusSdk = async ({
   apiKey = undefined,

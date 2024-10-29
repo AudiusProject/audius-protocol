@@ -38,10 +38,13 @@ const addedTimestampToPlaylistTrackId = ({
 }
 
 export const userCollectionMetadataFromSDK = (
-  input: full.PlaylistFullWithoutTracks | full.SearchPlaylistFull
+  input:
+    | full.PlaylistFullWithoutTracks
+    | full.SearchPlaylistFull
+    | full.PlaylistFull
 ): UserCollectionMetadata | undefined => {
   const decodedPlaylistId = decodeHashId(input.id)
-  const decodedOwnerId = decodeHashId(input.userId)
+  const decodedOwnerId = decodeHashId(input.userId ?? input.user.id)
   const user = userMetadataFromSDK(input.user)
   if (!decodedPlaylistId || !decodedOwnerId || !user) {
     return undefined
@@ -86,10 +89,9 @@ export const userCollectionMetadataFromSDK = (
       input.followeeFavorites,
       favoriteFromSDK
     ),
-    // TODO: Use playlistContents
     playlist_contents: {
       track_ids: transformAndCleanList(
-        input.addedTimestamps,
+        input.addedTimestamps ?? input.playlistContents,
         addedTimestampToPlaylistTrackId
       )
     },

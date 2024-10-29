@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/chain"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -52,7 +53,8 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("db migrations successful")
 
-	pool, err := pgxpool.New(ctx, config.PSQLConn) // Use the passed context for the pool
+	// Use the passed context for the pool
+	pool, err := pgxpool.New(ctx, config.PSQLConn)
 	if err != nil {
 		return fmt.Errorf("couldn't create pgx pool: %v", err)
 	}
@@ -60,6 +62,12 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	// Create an errgroup to manage concurrent tasks with context
 	eg, ctx := errgroup.WithContext(ctx)
+
+	// start pprof server
+	eg.Go(func() error {
+		logger.Info("pprof server starting")
+		return http.ListenAndServe(":6060", nil)
+	})
 
 	e := echo.New()
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -211,20 +219,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig := cconfig.DefaultConfig()
 	cometConfig.SetRoot(cometRootDir)
 
-	// get derived comet key
-	delegatePrivateKey := envConfig.DelegatePrivateKey
-	key, err := accounts.EthToCometKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating key %v", err)
-	}
-	envConfig.CometKey = key
-
-	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating eth key %v", err)
-	}
-	envConfig.EthereumKey = ethKey
-
 	// get paths to priv validator and state file
 	privValKeyFile := cometConfig.PrivValidatorKeyFile()
 	privValStateFile := cometConfig.PrivValidatorStateFile()
@@ -236,7 +230,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 			"stateFile", privValStateFile)
 		pv = privval.LoadFilePV(privValKeyFile, privValStateFile)
 	} else {
-		pv = privval.NewFilePV(key, privValKeyFile, privValStateFile)
+		pv = privval.NewFilePV(envConfig.CometKey, privValKeyFile, privValStateFile)
 		pv.Save()
 		logger.Info("Generated private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
@@ -251,7 +245,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		logger.Info("Found node key", "path", nodeKeyFile)
 	} else {
 		p2pKey := p2p.NodeKey{
-			PrivKey: key,
+			PrivKey: envConfig.CometKey,
 		}
 		if err := p2pKey.SaveAs(nodeKeyFile); err != nil {
 			return nil, nil, fmt.Errorf("creating node key %v", err)

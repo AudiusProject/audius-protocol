@@ -32,7 +32,8 @@ export const initialState = {
     [BrowserNotificationSetting.Remixes]: true,
     [BrowserNotificationSetting.Messages]: true,
     [BrowserNotificationSetting.Comments]: true,
-    [BrowserNotificationSetting.Mentions]: true
+    [BrowserNotificationSetting.Mentions]: true,
+    [BrowserNotificationSetting.Reactions]: true
   },
   pushNotifications: {
     [PushNotificationSetting.MobilePush]: true,
@@ -43,7 +44,8 @@ export const initialState = {
     [PushNotificationSetting.Favorites]: true,
     [PushNotificationSetting.Messages]: true,
     [PushNotificationSetting.Comments]: true,
-    [PushNotificationSetting.Mentions]: true
+    [PushNotificationSetting.Mentions]: true,
+    [PushNotificationSetting.Reactions]: true
   },
   [emailFrequency]: EmailFrequency.Daily
 }

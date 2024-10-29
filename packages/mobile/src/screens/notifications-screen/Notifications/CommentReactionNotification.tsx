@@ -2,12 +2,14 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import type { CommentReactionNotification as CommentReactionNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { make, track } from 'app/services/analytics'
 
 import {
   NotificationHeader,
@@ -25,7 +27,8 @@ const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
   liked: ' liked your comment on',
-  your: 'your'
+  your: 'your',
+  their: 'their'
 }
 
 type CommentReactionNotificationProps = {
@@ -54,9 +57,18 @@ export const CommentReactionNotification = (
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
+  const isOwnerReaction =
+    entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
+    track(
+      make({
+        eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+        commentId: notification.entityId,
+        notificationType: 'reaction'
+      })
+    )
   }, [navigation, notification])
 
   if (!users || !firstUser || !entity || !entity.user) return null
@@ -70,7 +82,13 @@ export const CommentReactionNotification = (
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.liked}{' '}
-        {isOwner ? messages.your : <UserNameLink user={entity.user} isOwner />}{' '}
+        {isOwner ? (
+          messages.your
+        ) : isOwnerReaction ? (
+          messages.their
+        ) : (
+          <UserNameLink user={entity.user} isOwner />
+        )}{' '}
         {entityType.toLowerCase()} <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>

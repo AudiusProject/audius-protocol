@@ -81,12 +81,12 @@ describe('Comment Mention Notification', () => {
       },
       {
         title: 'New Mention',
-        body: "user_1 tagged you in a comment on user_1's track track_title_1",
+        body: 'user_1 tagged you in a comment on their track track_title_1',
         data: {
           id: 'timestamp:1589373:group_id:comment_mention:1',
           type: 'CommentMention',
           userIds: [1],
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 1
         }
       }

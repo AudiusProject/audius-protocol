@@ -9,8 +9,10 @@ from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD, CommentR
 from src.models.comments.comment_thread import CommentThread
 from src.models.moderation.muted_user import MutedUser
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.tasks.entity_manager.utils import (
+    COMMENT_BODY_LIMIT,
     Action,
     EntityType,
     ManageEntityParameters,
@@ -23,16 +25,44 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
-def validate_comment_tx(params: ManageEntityParameters):
+def validate_delete_comment_tx(params: ManageEntityParameters):
+    validate_signer(params)
+    comment_id = params.entity_id
+    user_id = params.user_id
+    if comment_id not in params.existing_records[EntityType.COMMENT.value]:
+        raise IndexingValidationError(
+            f"Cannot delete comment {comment_id} that does not exist"
+        )
+    comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    track_owner_id = (
+        params.session.query(Track.owner_id)
+        .filter(Track.track_id == comment.entity_id)
+        .scalar()
+    )
+
+    if user_id != comment.user_id and user_id != track_owner_id:
+        raise IndexingValidationError(
+            f"Only track owner or comment owner can delete comment {comment_id}"
+        )
+
+
+def validate_write_comment_tx(params: ManageEntityParameters):
     comment_id = params.entity_id
     validate_signer(params)
-    if (
-        params.action == Action.CREATE
-        and comment_id in params.existing_records[EntityType.COMMENT.value]
-    ):
-        raise IndexingValidationError(f"Comment {comment_id} already exists")
+    if params.action == Action.CREATE:
+        if comment_id in params.existing_records[EntityType.COMMENT.value]:
+            raise IndexingValidationError(f"Comment {comment_id} already exists")
+    if params.action == Action.UPDATE:
+        if (
+            comment_id not in params.existing_records[EntityType.COMMENT.value]
+            or params.existing_records[EntityType.COMMENT.value][comment_id].is_delete
+        ):
+            raise IndexingValidationError(
+                f"Cannot update comment {comment_id} that does not exist"
+            )
+
     # Entity type only supports track at the moment
-    if params.metadata["entity_type"] != "Track":
+    if "entity_type" in params.metadata and params.metadata["entity_type"] != "Track":
         raise IndexingValidationError(
             f"Entity type {params.metadata['entity_type']} does not exist"
         )
@@ -48,6 +78,8 @@ def validate_comment_tx(params: ManageEntityParameters):
             f"Track {params.metadata['entity_id']} does not exist"
         )
     if params.metadata["body"] is None or params.metadata["body"] == "":
+        raise IndexingValidationError("Comment body is empty")
+    if len(params.metadata["body"]) > COMMENT_BODY_LIMIT:
         raise IndexingValidationError("Comment body is empty")
 
     # Validate parent_comment_id if it exists
@@ -74,7 +106,7 @@ def validate_comment_tx(params: ManageEntityParameters):
 
 
 def create_comment(params: ManageEntityParameters):
-    validate_comment_tx(params)
+    validate_write_comment_tx(params)
     existing_records = params.existing_records
     metadata = params.metadata
     user_id = params.user_id
@@ -272,23 +304,13 @@ def create_comment(params: ManageEntityParameters):
             safe_add_notification(params, thread_notification)
 
 
-def validate_update_comment_tx(params: ManageEntityParameters):
-    validate_signer(params)
-    comment_id = params.entity_id
-    existing_comment = params.existing_records[EntityType.COMMENT.value].get(comment_id)
-    if not existing_comment:
-        raise IndexingValidationError(f"Comment {comment_id} does not exist")
-    if existing_comment.is_delete:
-        raise IndexingValidationError(f"Comment {comment_id} is deleted")
-
-
 def get_existing_mentions_for_comment(params: ManageEntityParameters, comment_id: int):
     all_existing_mentions = params.existing_records[EntityType.COMMENT_MENTION.value]
     return {k[1]: v for k, v in all_existing_mentions.items() if k[0] == comment_id}
 
 
 def update_comment(params: ManageEntityParameters):
-    validate_update_comment_tx(params)
+    validate_write_comment_tx(params)
     existing_records = params.existing_records
     metadata = params.metadata
     comment_id = params.entity_id
@@ -453,7 +475,7 @@ def update_comment(params: ManageEntityParameters):
 
 
 def delete_comment(params: ManageEntityParameters):
-    validate_signer(params)
+    validate_delete_comment_tx(params)
     comment_id = params.entity_id
     existing_comment = params.existing_records[EntityType.COMMENT.value][comment_id]
     if params.entity_id in params.new_records[EntityType.COMMENT.value]:
@@ -483,6 +505,14 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     ):
         raise IndexingValidationError(
             f"User {user_id} already reacted to comment {comment_id}"
+        )
+    if (
+        params.action == Action.UNREACT
+        and (user_id, comment_id)
+        not in params.existing_records[EntityType.COMMENT_REACTION.value]
+    ):
+        raise IndexingValidationError(
+            f"User {user_id} has not reacted to comment {comment_id}"
         )
 
 
@@ -591,7 +621,7 @@ def react_comment(params: ManageEntityParameters):
 
 
 def unreact_comment(params: ManageEntityParameters):
-    validate_signer(params)
+    validate_comment_reaction_tx(params)
     comment_id = params.entity_id
     user_id = params.user_id
 

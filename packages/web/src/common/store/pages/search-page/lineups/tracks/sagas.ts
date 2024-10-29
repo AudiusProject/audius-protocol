@@ -1,6 +1,5 @@
 import { searchApiFetchSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -13,10 +12,7 @@ import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import {
-  getSearchResults,
-  getTagSearchResults
-} from 'common/store/pages/search-page/sagas'
+import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
@@ -34,14 +30,12 @@ function* getSearchPageResultsTracks({
   payload?: any
 }) {
   const isNativeMobile = yield* getContext('isNativeMobile')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isSearchV2Enabled = getFeatureEnabled(FeatureFlags.SEARCH_V2)
 
   if (
     category === SearchKind.TRACKS ||
     isNativeMobile ||
     isMobileWeb() ||
-    (category === SearchKind.ALL && isSearchV2Enabled)
+    category === SearchKind.ALL
   ) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results: Track[]
@@ -58,33 +52,21 @@ function* getSearchPageResultsTracks({
     } else {
       const currentUserId = yield* select(getUserId)
 
-      if (!isSearchV2Enabled) {
-        const { tracks } = yield* call(getSearchResults, {
-          searchText: query,
-          kind: category,
+      // searchApiFetch.getSearchResults already handles tag search,
+      // so we don't need to specify isTagSearch necessarily
+      const { tracks }: { tracks: Track[] } = yield* call(
+        searchApiFetchSaga.getSearchResults,
+        {
+          currentUserId,
+          query,
+          category,
           limit,
-          offset
-        })
-        results = tracks as unknown as Track[]
-        if (results) return results
-      } else {
-        // searchApiFetch.getSearchResults already handles tag search,
-        // so we don't need to specify isTagSearch necessarily
+          offset,
+          ...filters
+        }
+      )
 
-        const { tracks }: { tracks: Track[] } = yield* call(
-          searchApiFetchSaga.getSearchResults,
-          {
-            currentUserId,
-            query,
-            category,
-            limit,
-            offset,
-            ...filters
-          }
-        )
-
-        if (tracks) return tracks
-      }
+      if (tracks) return tracks
     }
     return [] as Track[]
   } else {
