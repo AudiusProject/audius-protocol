@@ -139,6 +139,17 @@ def get_challenge_type_map(
             )
             for challenge in challenges
         }
+    # Temporary change to map old challenge ids to new ones
+    challenge_type_map_global["p"] = challenge_type_map_global["profile-completion"]
+    challenge_type_map_global["l"] = challenge_type_map_global["listen-streak"]
+    challenge_type_map_global["u"] = challenge_type_map_global["track-upload"]
+    challenge_type_map_global["r"] = challenge_type_map_global["referrals"]
+    challenge_type_map_global["rv"] = challenge_type_map_global["ref-v"]
+    challenge_type_map_global["rd"] = challenge_type_map_global["referred"]
+    challenge_type_map_global["v"] = challenge_type_map_global["connect-verified"]
+    challenge_type_map_global["m"] = challenge_type_map_global["mobile-install"]
+    challenge_type_map_global["ft"] = challenge_type_map_global["send-first-tip"]
+    challenge_type_map_global["fp"] = challenge_type_map_global["first-playlist"]
 
     return challenge_type_map_global
 
