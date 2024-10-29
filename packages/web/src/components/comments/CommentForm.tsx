@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useCurrentCommentSection,
@@ -169,7 +169,6 @@ export const CommentForm = ({
     },
     []
   )
-  const ref = useRef<HTMLTextAreaElement>(null)
 
   return (
     <>
