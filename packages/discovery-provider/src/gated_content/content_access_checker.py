@@ -308,9 +308,9 @@ class ContentAccessChecker:
         return {
             track["track_id"]: {  # type: ignore
                 "content_type": "track",
-                "is_stream_gated": track["is_stream_gated"],  # type: ignore
+                "is_stream_gated": track["stream_conditions"] is not None,  # type: ignore
                 "stream_conditions": track["stream_conditions"],  # type: ignore
-                "is_download_gated": track["is_download_gated"],  # type: ignore
+                "is_download_gated": track["download_conditions"] is not None,  # type: ignore
                 "download_conditions": track["download_conditions"],  # type: ignore
                 "content_owner_id": track["owner_id"],  # type: ignore
             }
@@ -334,7 +334,7 @@ class ContentAccessChecker:
         return {
             album["playlist_id"]: {  # type: ignore
                 "content_type": "album",
-                "is_stream_gated": album["is_stream_gated"],  # type: ignore
+                "is_stream_gated": album["stream_conditions"] is not None,  # type: ignore
                 "stream_conditions": album["stream_conditions"],  # type: ignore
                 "content_owner_id": album["playlist_owner_id"],  # type: ignore
             }

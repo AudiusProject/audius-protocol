@@ -5,7 +5,7 @@ begin
   select * into playlist_record from playlists where playlist_id = new.playlist_id limit 1;
 
   -- Add notification for each purchaser
-  if playlist_record.is_stream_gated = true and jsonb_exists(playlist_record.stream_conditions, 'usdc_purchase') then
+  if jsonb_exists(playlist_record.stream_conditions, 'usdc_purchase') then
     with album_purchasers as (
       select distinct buyer_user_id
         from usdc_purchases
