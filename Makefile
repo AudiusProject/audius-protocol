@@ -106,6 +106,7 @@ go.mod: $(GO_SRCS)
 	@# dummy go.mod file to speed up tidy times
 	@[ -d node_modules ] && touch node_modules/go.mod || true
 	go mod tidy
+	@touch go.mod # in case there's nothing to tidy
 
 .PHONY: gen
 gen: regen-abi regen-templ regen-proto regen-sql regen-go
@@ -162,12 +163,12 @@ mediorum-dev:
 .PHONY: core-build-native
 core-build-native: bin/core
 bin/core: $(BUILD_SRCS)
-	@go build -ldflags "$(VERSION_LDFLAG)" -o bin/core ./main.go
+	@go build -ldflags "$(VERSION_LDFLAG)" -o bin/core ./cmd/core/main.go
 
 .PHONY: core-build-amd64
 core-build-amd64: bin/core-amd64
 bin/core-amd64: $(BUILD_SRCS)
-	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64
+	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64 ./cmd/core/main.go
 
 .PHONY: core-dev
 core-dev: gen
