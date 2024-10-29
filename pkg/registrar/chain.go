@@ -3,8 +3,8 @@ package registrar
 import (
 	"strings"
 
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
-	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )

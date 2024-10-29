@@ -25,7 +25,7 @@ Whether running as an independent image or embedded, core requires some environm
 
 ### local cluster
 ```
-make deps
+make install-deps
 modd
 ```
 
@@ -45,8 +45,8 @@ audius-compose test run core
 Place unit tests next to appropriate files in the standard go fashion
 
 ```bash
-core/signature.go
-core/signature_test.go
+pkg/core/signature.go
+pkg/core/signature_test.go
 ```
 
 ### integration tests

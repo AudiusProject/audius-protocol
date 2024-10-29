@@ -1,10 +1,8 @@
 package registrar
 
-type PeerProvider interface {
-	Peers(nodeType string) ([]Peer, error)
-}
+import "github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 
-type Peer struct {
-	Host   string `json:"host"`
-	Wallet string `json:"wallet"`
+type PeerProvider interface {
+	Peers() ([]server.Peer, error)
+	Signers() ([]server.Peer, error)
 }
