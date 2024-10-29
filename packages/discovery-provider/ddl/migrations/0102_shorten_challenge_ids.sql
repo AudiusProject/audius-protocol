@@ -116,6 +116,22 @@ SET
       to_hex(split_part(specifier, '=>', 2)::integer)
 WHERE challenge_id = 'ref-v';
 
+UPDATE user_challenges 
+SET
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 'b';
+
+UPDATE user_challenges 
+SET 
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 's';
+
 -- readd index (probably not super necessary since the pkey covers this anyway, but whatevs)
 CREATE INDEX user_challenges_challenge_idx ON public.user_challenges USING btree (challenge_id);
 
@@ -221,6 +237,22 @@ SET
       ':' || 
       to_hex(split_part(specifier, '=>', 2)::integer)
 WHERE challenge_id = 'ref-v';
+
+UPDATE challenge_disbursements 
+SET
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 'b';
+
+UPDATE challenge_disbursements 
+SET 
+    specifier = 
+      to_hex(split_part(specifier, '=>', 1)::integer) || 
+      ':' || 
+      to_hex(split_part(specifier, '=>', 2)::integer)
+WHERE challenge_id = 's';
 
 -- readd pkey
 ALTER TABLE ONLY challenge_disbursements
