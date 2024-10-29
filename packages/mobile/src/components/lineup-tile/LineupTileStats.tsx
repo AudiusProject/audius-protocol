@@ -275,12 +275,8 @@ export const LineupTileStats = ({
               </TouchableOpacity>
               {hideComments ? null : (
                 <TouchableOpacity
-                  style={[
-                    trackTileStyles.statItem,
-                    styles.statItem,
-                    !commentCount ? styles.disabledStatItem : null
-                  ]}
-                  disabled={!commentCount || isReadonly}
+                  style={[trackTileStyles.statItem, styles.statItem]}
+                  disabled={isReadonly}
                   onPress={handlePressComments}
                 >
                   <IconMessage color='subdued' size='s' />

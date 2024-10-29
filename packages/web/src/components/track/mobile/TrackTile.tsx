@@ -467,16 +467,13 @@ const TrackTile = (props: CombinedProps) => {
                 </div>
                 <div
                   className={cn(styles.statItem, fadeIn, {
-                    [styles.disabledStatItem]: !props.commentCount,
                     [styles.isHidden]:
                       !isCommentsEnabled ||
                       props.isUnlisted ||
                       props.commentsDisabled
                   })}
                   onClick={
-                    props.commentCount && !isReadonly
-                      ? props.makeGoToCommentsPage(id)
-                      : undefined
+                    !isReadonly ? props.makeGoToCommentsPage(id) : undefined
                   }
                 >
                   <IconMessage

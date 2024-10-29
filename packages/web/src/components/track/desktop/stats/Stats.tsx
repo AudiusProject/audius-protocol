@@ -37,6 +37,7 @@ type StatsProps = {
   flavor: Flavor
   hideImage?: boolean
   isOwner?: boolean
+  allow0Count?: boolean
 }
 
 const Stats = memo((props: StatsProps) => {
@@ -49,16 +50,17 @@ const Stats = memo((props: StatsProps) => {
     onClick,
     flavor,
     hideImage,
-    isOwner
+    isOwner,
+    allow0Count
   } = props
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
-      if (!onClick || !count) return
+      if (!onClick || (!count && !allow0Count)) return
       e.stopPropagation()
       onClick()
     },
-    [count, onClick]
+    [count, onClick, allow0Count]
   )
 
   const getFolloweeActionsUsers = useMemo(makeFolloweeActionsUsers, [])
@@ -89,7 +91,7 @@ const Stats = memo((props: StatsProps) => {
         [styles.large]: size === 'large',
         [styles.hide]: showSkeleton,
         [styles.show]: !showSkeleton,
-        [styles.showNonEmpty]: !showSkeleton && count
+        [styles.showNonEmpty]: !showSkeleton && (count || allow0Count)
       })}
       onClick={handleClick}
     >

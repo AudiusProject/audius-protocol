@@ -327,6 +327,7 @@ const ConnectedTrackTile = ({
             onClick={onClickStatComment}
             flavor={Flavor.COMMENT}
             isOwner={isOwner}
+            allow0Count
           />
         )}
       </div>
