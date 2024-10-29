@@ -84,6 +84,8 @@ type AudiusLibsConfig = {
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
   useDiscoveryRelay: boolean
+  userId?: number
+  wallet?: string
 }
 
 export class AudiusLibs {
@@ -363,7 +365,9 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage,
-    useDiscoveryRelay = true
+    useDiscoveryRelay = true,
+    userId,
+    wallet
   }: AudiusLibsConfig) {
     // set version
 
@@ -409,6 +413,9 @@ export class AudiusLibs {
     this.Reactions = null
     this.Notifications = null
     this.EntityManager = null
+
+    this.currentUserId = userId
+    this.currentWallet = wallet
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
@@ -658,6 +665,9 @@ export class AudiusLibs {
     this.Reactions = new Reactions(...services)
     this.Notifications = new Notifications(...services)
     this.EntityManager = new EntityManager(...services)
+    if (this.currentUserId) {
+      this.EntityManager.setCurrentUserId(this.currentUserId)
+    }
   }
 }
 

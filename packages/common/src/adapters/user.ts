@@ -123,20 +123,18 @@ export const accountFromSDK = (
   if (!user) {
     return undefined
   }
+  const accountMetadata = {
+    playlists: transformAndCleanList(input.playlists, accountCollectionFromSDK),
+    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
+    track_save_count: input.trackSaveCount
+  }
   return {
     // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
-      playlists: transformAndCleanList(
-        input.playlists,
-        accountCollectionFromSDK
-      ),
-      playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
-      track_save_count: input.trackSaveCount
+      ...accountMetadata
     },
     // These values are included outside the user as well to facilitate separate caching
-    playlists: transformAndCleanList(input.playlists, accountCollectionFromSDK),
-    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
-    track_save_count: input.trackSaveCount
+    ...accountMetadata
   }
 }

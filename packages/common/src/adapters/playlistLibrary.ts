@@ -14,6 +14,8 @@ import { transformAndCleanList } from './utils'
 const playlistIdentifierFromSDK = (
   input: any
 ): PlaylistLibraryIdentifier | null => {
+  // Regular playlists need the id decoded. All others can pass through
+  // as they are.
   if (input.type === 'playlist') {
     const playlist_id = decodeHashId(input.playlist_id)
     return playlist_id ? { type: 'playlist', playlist_id } : null

@@ -191,7 +191,6 @@ export class Account extends Base {
    * Generates and sends a recovery email for a user
    */
   async generateRecoveryLink({
-    handle,
     host
   }: {
     handle: string
@@ -199,9 +198,6 @@ export class Account extends Base {
   }) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     try {
-      if (!handle) {
-        throw new Error('Handle is required to generate recovery link')
-      }
       // @ts-expect-error hard to type this hedgehog addon
       const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
 
@@ -213,8 +209,7 @@ export class Account extends Base {
         login: recoveryInfo.login,
         host: host ?? recoveryInfo.host,
         data,
-        signature,
-        handle
+        signature
       }
 
       return await this.identityService.sendRecoveryInfo(recoveryData)

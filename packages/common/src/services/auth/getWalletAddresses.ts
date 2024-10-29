@@ -17,11 +17,11 @@ export const createGetWalletAddresses = ({
   hedgehogInstance: HedgehogInstance
 }): (() => Promise<GetWalletAddressesResult>) => {
   return async () => {
-    const override = await localStorage.getAudiusUserWalletOverride()
+    const walletOverride = await localStorage.getAudiusUserWalletOverride()
     await hedgehogInstance.waitUntilReady()
     const hedgehogAddress = hedgehogInstance.wallet?.getAddressString()
     return {
-      accountWalletAddress: override || hedgehogAddress || '',
+      accountWalletAddress: walletOverride || hedgehogAddress || '',
       web3WalletAddress: hedgehogAddress || ''
     }
   }

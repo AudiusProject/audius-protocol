@@ -17,7 +17,6 @@ import fetch from 'cross-fetch'
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
 
-import { CurrentUser } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
 import type { EthContracts } from '../ethContracts'
@@ -88,6 +87,12 @@ export type UserProfile = {
     | undefined
   sub: number
   iat: string
+}
+
+type CurrentUser = User & {
+  wallet?: string
+  blocknumber?: number
+  track_blocknumber?: number
 }
 
 type DiscoveryNodeChallenge = {

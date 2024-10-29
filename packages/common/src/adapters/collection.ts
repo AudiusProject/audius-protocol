@@ -118,8 +118,8 @@ export const accountCollectionFromSDK = (
   input: full.AccountCollection
 ): AccountCollection | undefined => {
   const playlistId = decodeHashId(input.id)
-  const ownerId = decodeHashId(input.user.id)
-  if (!playlistId || !ownerId) {
+  const userId = decodeHashId(input.user.id)
+  if (!playlistId || !userId) {
     return undefined
   }
 
@@ -129,7 +129,7 @@ export const accountCollectionFromSDK = (
     name: input.name,
     permalink: input.permalink,
     user: {
-      id: ownerId,
+      id: userId,
       handle: input.user.handle,
       is_deactivated: !!input.user.isDeactivated
     }

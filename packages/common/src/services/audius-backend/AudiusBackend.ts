@@ -508,6 +508,10 @@ export const audiusBackend = ({
     userId,
     handle
   }: {
+    /* wallet/userId/handle will be passed to libs services and used as parameters
+    in various API calls and utility functions. They are optional here because we
+    may not be logged in yet. Values can be updated after initialization by calling
+    libs.setCurrentUser() */
     wallet?: string
     userId?: number
     handle?: string
@@ -624,7 +628,9 @@ export const audiusBackend = ({
         preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         ),
-        hedgehogConfig
+        hedgehogConfig,
+        userId,
+        wallet
       })
       await newAudiusLibs.init()
       audiusLibs = newAudiusLibs
