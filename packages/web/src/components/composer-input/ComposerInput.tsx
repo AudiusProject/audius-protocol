@@ -72,6 +72,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
   const {
     onChange,
     onSubmit,
+    blurOnSubmit = false,
     messageId,
     presetMessage,
     presetUserMentions = [],
@@ -268,7 +269,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
   )
 
   const handleSubmit = useCallback(() => {
-    if (ref.current) {
+    if (blurOnSubmit && ref.current) {
       ref.current.blur()
     }
     submittedRef.current = true
