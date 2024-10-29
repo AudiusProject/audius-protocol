@@ -167,9 +167,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -230,34 +227,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={ProfileScreen}
         options={screenOptions}
       />
-      {isSearchV2Enabled ? (
-        <Stack.Screen
-          name='Search'
-          component={SearchScreenStack}
-          options={{ ...screenOptions, headerShown: false }}
-        />
-      ) : (
-        <Stack.Group>
-          <Stack.Screen
-            name='Search'
-            component={SearchScreen}
-            options={(props) => ({
-              ...screenOptions(props),
-              cardStyleInterpolator: forFade
-            })}
-          />
-          <Stack.Screen
-            name='SearchResults'
-            component={SearchResultsScreen}
-            options={screenOptions}
-          />
-          <Stack.Screen
-            name='TagSearch'
-            component={TagSearchScreen}
-            options={screenOptions}
-          />
-        </Stack.Group>
-      )}
+      <Stack.Screen
+        name='Search'
+        component={SearchScreenStack}
+        options={{ ...screenOptions, headerShown: false }}
+      />
       <Stack.Group>
         <Stack.Screen
           name='Followers'

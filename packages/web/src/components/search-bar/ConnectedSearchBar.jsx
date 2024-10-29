@@ -5,7 +5,6 @@ import {
   imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common/assets'
 import { Kind, Name, SquareSizes } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
@@ -22,9 +21,7 @@ import {
   clearSearch
 } from 'common/store/search-bar/actions'
 import { getSearch } from 'common/store/search-bar/selectors'
-import SearchBar from 'components/search/SearchBar'
 import SearchBarV2 from 'components/search/SearchBarV2'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getPathname } from 'utils/route'
 
 const { profilePage, collectionPage, SEARCH_PAGE } = route
@@ -91,33 +88,22 @@ class ConnectedSearchBar extends Component {
     }
 
     let newPath = pathname
-    if (this.props.isSearchV2Enabled) {
-      const searchMatch = matchPath(getPathname(this.props.history.location), {
-        path: SEARCH_PAGE
-      })
+    const searchMatch = matchPath(getPathname(this.props.history.location), {
+      path: SEARCH_PAGE
+    })
 
-      if (searchMatch) {
-        newPath = generatePath(SEARCH_PAGE, {
-          ...searchMatch.params
-        })
-      }
+    if (searchMatch) {
+      newPath = generatePath(SEARCH_PAGE, {
+        ...searchMatch.params
+      })
     }
 
-    if (!this.props.isSearchV2Enabled && value.startsWith('#')) {
-      // perform tag search
-      this.props.history.push({
-        hash: value.split('#')[1],
-        pathname,
-        state: {}
-      })
-    } else {
-      value = encodeURIComponent(value)
-      this.props.history.push({
-        pathname: newPath,
-        search: locationSearchParams.toString(),
-        state: {}
-      })
-    }
+    value = encodeURIComponent(value)
+    this.props.history.push({
+      pathname: newPath,
+      search: locationSearchParams.toString(),
+      state: {}
+    })
   }
 
   onSelect = (value) => {
@@ -313,12 +299,9 @@ class ConnectedSearchBar extends Component {
       0
     )
     const { status, searchText } = this.props.search
-    const SearchBarComponent = this.props.isSearchV2Enabled
-      ? SearchBarV2
-      : SearchBar
     return (
       <Box ml='unit10' mt='l'>
-        <SearchBarComponent
+        <SearchBarV2
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
           isViewingSearchPage={this.props.isViewingSearchPage}
@@ -341,7 +324,6 @@ class ConnectedSearchBar extends Component {
 
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2),
   isViewingSearchPage: !!matchPath(state.router.location.pathname, {
     path: SEARCH_PAGE
   })
