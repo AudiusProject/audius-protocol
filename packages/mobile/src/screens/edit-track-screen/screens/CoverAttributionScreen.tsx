@@ -43,8 +43,8 @@ export const CoverAttributionScreen = () => {
           <Text variant='body'>{messages.description}</Text>
         </Box>
 
-        {isCover && (
-          <>
+        {isCover ? (
+          <Box>
             <Divider mt='xl' />
             <Box mt='xl'>
               <Text variant='body'>{messages.attribution.header}</Text>
@@ -65,8 +65,8 @@ export const CoverAttributionScreen = () => {
                 />
               </Box>
             </Box>
-          </>
-        )}
+          </Box>
+        ) : null}
       </Box>
     </FormScreen>
   )
