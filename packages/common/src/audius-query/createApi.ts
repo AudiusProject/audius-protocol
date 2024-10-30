@@ -780,8 +780,9 @@ const buildEndpointHooks = <
         const cacheData = yield* select(
           createCacheDataSelector(endpoint, normalizedData)
         )
-
-        return cacheData
+        return endpoint.options?.schemaKey
+          ? cacheData[endpoint.options.schemaKey]
+          : cacheData
       }
     }
 

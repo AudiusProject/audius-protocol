@@ -3,7 +3,6 @@ import retry from 'async-retry'
 import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 
-import type { UserStateManager } from '../../userStateManager'
 import {
   GatedConditions,
   Nullable,
@@ -71,11 +70,11 @@ export type ProgressCB = (
 
 export type CreatorNodeConfig = {
   web3Manager: Web3Manager
+  wallet?: string
+  userId?: number
   // fallback creator node endpoint (to be deprecated)
   creatorNodeEndpoint: string
   isServer: boolean
-  // singleton UserStateManager instance
-  userStateManager: UserStateManager
   schemas: Schemas
   // whether or not to include only specified nodes (default null)
   passList: Set<string> | null
@@ -96,13 +95,14 @@ export class CreatorNode {
   web3Manager: Nullable<Web3Manager>
   creatorNodeEndpoint: string
   isServer: boolean
-  userStateManager: UserStateManager
   schemas: Schemas | undefined
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
   maxBlockNumber: number
   storageNodeSelector: StorageNodeSelectorService
+  wallet?: string
+  userId?: number
 
   /**
    * Constructs a service class for a creator node
@@ -111,18 +111,18 @@ export class CreatorNode {
     web3Manager: Nullable<Web3Manager>,
     creatorNodeEndpoint: string,
     isServer: boolean,
-    userStateManager: UserStateManager,
     schemas: Schemas | undefined,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {},
-    storageNodeSelector: StorageNodeSelectorService
+    storageNodeSelector: StorageNodeSelectorService,
+    wallet?: string,
+    userId?: number
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
-    this.userStateManager = userStateManager
     this.schemas = schemas
 
     this.maxBlockNumber = 0
@@ -131,6 +131,8 @@ export class CreatorNode {
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
     this.storageNodeSelector = storageNodeSelector
+    this.wallet = wallet
+    this.userId = userId
   }
 
   async init() {
@@ -435,9 +437,8 @@ export class CreatorNode {
     try {
       return await axios(axiosRequestObj)
     } catch (e: any) {
-      const wallet = this.userStateManager.getCurrentUser()?.wallet
       // storageNodeSelector is not always defined (not always passed in to the constructor)
-      const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
+      const storageNodes = this.storageNodeSelector.getNodes(this.wallet ?? '')
 
       for (const storageNode of storageNodes) {
         try {
@@ -479,10 +480,10 @@ export class CreatorNode {
     const requestId = uuid()
     headers['X-Request-ID'] = requestId
 
-    const user = this.userStateManager.getCurrentUser()
-    if (user?.wallet && user.user_id) {
+    const user = {} as any
+    if (this.wallet && this.userId) {
       headers['X-User-Wallet-Addr'] = user.wallet
-      headers['X-User-Id'] = user.user_id as unknown as string
+      headers['X-User-Id'] = `${this.userId}`
     }
 
     return { headers, formData }

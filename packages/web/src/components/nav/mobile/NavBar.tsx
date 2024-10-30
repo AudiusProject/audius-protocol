@@ -1,6 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { formatCount, route } from '@audius/common/utils'
@@ -54,7 +53,6 @@ interface NavBarProps {
 
 const messages = {
   signUp: 'Sign Up',
-  searchPlaceholder: 'Search Audius',
   searchPlaceholderV2: 'What do you want to listen to?',
   earlyAccess: 'Early Access'
 }
@@ -76,9 +74,6 @@ const NavBar = ({
 }: NavBarProps) => {
   const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
 
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -96,12 +91,8 @@ const NavBar = ({
   }, [pathname])
 
   const handleOpenSearch = useCallback(() => {
-    if (isSearchV2Enabled) {
-      history.push(`/search`)
-    } else {
-      setIsSearching(true)
-    }
-  }, [history, isSearchV2Enabled])
+    history.push(`/search`)
+  }, [history])
 
   const onCloseSearch = () => {
     setIsSearching(false)
@@ -216,7 +207,7 @@ const NavBar = ({
   return (
     <div
       className={cn(styles.container, {
-        [styles.containerNoBorder]: isSearchV2Enabled && isSearching
+        [styles.containerNoBorder]: isSearching
       })}
     >
       <div
@@ -265,11 +256,7 @@ const NavBar = ({
             onClose={onCloseSearch}
             value={searchValue}
             onSearch={setSearchValue}
-            placeholder={
-              isSearchV2Enabled
-                ? messages.searchPlaceholderV2
-                : messages.searchPlaceholder
-            }
+            placeholder={messages.searchPlaceholderV2}
             showHeader={false}
             className={cn(
               styles.searchBar,

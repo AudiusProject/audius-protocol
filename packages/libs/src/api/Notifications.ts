@@ -21,15 +21,14 @@ export class Notifications extends Base {
   /**
    * Submit a user's view of notification event
    */
-  async viewNotification(
-    {
-      logger = console
-    }: {
-      logger: any
-    } = { logger: console }
-  ): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+  async viewNotification({
+    logger = console,
+    userId
+  }: {
+    userId?: number
+    logger?: any
+  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
     try {
-      const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
         return { error: 'Missing current user ID' }
       }
@@ -84,13 +83,14 @@ export class Notifications extends Base {
 
   async viewPlaylist({
     logger = console,
-    playlistId
+    playlistId,
+    userId
   }: {
+    userId?: number
     logger: any
     playlistId: number
   }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
     try {
-      const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
         return { error: 'Missing current user ID' }
       }

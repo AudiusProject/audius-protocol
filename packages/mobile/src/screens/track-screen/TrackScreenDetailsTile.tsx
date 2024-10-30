@@ -177,9 +177,6 @@ export const TrackScreenDetailsTile = ({
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
-  const { isEnabled: isSearchV2Enabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_V2
-  )
 
   const {
     _co_sign: coSign,
@@ -412,13 +409,9 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      if (isSearchV2Enabled) {
-        navigation.push('Search', { query: `#${tag}` })
-      } else {
-        navigation.push('TagSearch', { query: tag })
-      }
+      navigation.push('Search', { query: `#${tag}` })
     },
-    [isSearchV2Enabled, navigation]
+    [navigation]
   )
 
   const handlePressEdit = useCallback(() => {

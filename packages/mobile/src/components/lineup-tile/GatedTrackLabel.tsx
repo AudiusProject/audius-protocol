@@ -17,7 +17,7 @@ import {
   IconReceive,
   IconSpecialAccess
 } from '@audius/harmony-native'
-import { SearchContext } from 'app/screens/search-screen-v2/searchState'
+import { SearchContext } from 'app/screens/search-screen/searchState'
 
 import { LineupTileLabel } from './LineupTileLabel'
 

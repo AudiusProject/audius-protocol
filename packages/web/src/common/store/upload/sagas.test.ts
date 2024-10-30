@@ -81,7 +81,10 @@ const emptyMetadata: TrackMetadataForUpload = {
   is_original_available: false,
   remix_of: null,
   duration: 0,
-  updated_at: ''
+  updated_at: '',
+  is_owned_by_user: false,
+  cover_original_song_title: null,
+  cover_original_artist: null
 }
 
 describe('upload', () => {
@@ -105,6 +108,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
           [call.fn(addPremiumMetadata), testTrack]
         ])
@@ -148,6 +152,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
@@ -251,6 +256,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
@@ -647,6 +653,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [
             getContext('audiusBackendInstance'),
             {

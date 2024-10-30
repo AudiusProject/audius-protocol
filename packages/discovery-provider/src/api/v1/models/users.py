@@ -96,11 +96,31 @@ user_model_full = ns.clone(
     },
 )
 
+account_collection_user = ns.model(
+    "account_collection_user",
+    {
+        "id": fields.String(required=True),
+        "handle": fields.String(required=True),
+        "is_deactivated": fields.Boolean(required=False),
+    },
+)
+
+account_collection = ns.model(
+    "account_collection",
+    {
+        "id": fields.String(required=True),
+        "is_album": fields.Boolean(required=True),
+        "name": fields.String(required=True),
+        "permalink": fields.String(required=True),
+        "user": fields.Nested(account_collection_user, required=True),
+    },
+)
+
 account_full = ns.model(
     "account_full",
     {
         "user": fields.Nested(user_model_full, required=True),
-        "playlists": fields.List(fields.Raw, required=True),
+        "playlists": fields.List(fields.Nested(account_collection), required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
         "track_save_count": fields.Integer(required=True),
     },

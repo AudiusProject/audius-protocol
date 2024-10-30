@@ -1302,7 +1302,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
             "is_album": True,
-            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
             },
@@ -1312,7 +1311,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
-            "is_stream_gated": False,
             "stream_conditions": None,
         },
         "InvalidCreatePlaylistAccessConditions": {
@@ -1320,7 +1318,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
-            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
             },
@@ -1331,7 +1328,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
             "is_album": True,
-            "is_stream_gated": True,
             "stream_conditions": None,
         },
     }
@@ -1480,7 +1476,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album.is_album == True
-        assert album.is_stream_gated == True
         assert album.stream_conditions == {
             "usdc_purchase": {
                 "price": 100,
@@ -1495,7 +1490,6 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album.is_album == True
-        assert album.is_stream_gated == False
         assert album.stream_conditions == None
 
         # Validate creating usdc-gated non-album playlist fails

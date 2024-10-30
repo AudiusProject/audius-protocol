@@ -25,8 +25,6 @@ export class Account extends Base {
     this.User = userApi
     this.ServiceProvider = serviceProvider
 
-    this.getCurrentUser = this.getCurrentUser.bind(this)
-    this.getWeb3User = this.getWeb3User.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
@@ -46,23 +44,6 @@ export class Account extends Base {
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
     this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
     this.signUpV2 = this.signUpV2.bind(this)
-  }
-
-  /**
-   * Fetches the user metadata for the current account
-   * @return {Object} user metadata
-   */
-  getCurrentUser() {
-    return this.userStateManager.getCurrentUser()
-  }
-
-  /**
-   * Fetches the user metadata for user belonging to the current web3 wallet.
-   * May be different if acting as a managed account.
-   * @return {Object} user metadata
-   */
-  getWeb3User() {
-    return this.userStateManager.getWeb3User()
   }
 
   /**
@@ -99,18 +80,15 @@ export class Account extends Base {
     }
 
     phase = phases.FIND_USER
-    const userAccount = await this.discoveryProvider.getUserAccount(
-      this.web3Manager.getWalletAddress()
-    )
-    if (userAccount) {
-      this.userStateManager.setCurrentUser(userAccount)
-      this.userStateManager.setWeb3User(userAccount)
+    const walletAddress = this.web3Manager.getWalletAddress()
+
+    if (walletAddress && walletAddress.length > 0) {
       const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
         1,
-        userAccount.wallet
+        walletAddress
       )
       await this.creatorNode.setEndpoint(randomNodes[0]!)
-      return { user: userAccount, error: false, phase }
+      return { wallet: walletAddress, error: false, phase }
     }
     return { error: 'No user found', phase }
   }
@@ -125,7 +103,6 @@ export class Account extends Base {
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
       await this.hedgehog.logout()
-      this.userStateManager.clearUser()
     }
   }
 
@@ -214,14 +191,15 @@ export class Account extends Base {
    * Generates and sends a recovery email for a user
    */
   async generateRecoveryLink({
-    handle,
     host
-  }: { handle?: string; host?: Nullable<string> } = {}) {
+  }: {
+    handle: string
+    host?: Nullable<string>
+  }) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     try {
       // @ts-expect-error hard to type this hedgehog addon
       const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
-      handle = handle ?? this.userStateManager.getCurrentUser()!.handle
 
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const data = `Click sign to authenticate with identity service: ${unixTs}`
@@ -231,8 +209,7 @@ export class Account extends Base {
         login: recoveryInfo.login,
         host: host ?? recoveryInfo.host,
         data,
-        signature,
-        handle
+        signature
       }
 
       return await this.identityService.sendRecoveryInfo(recoveryData)

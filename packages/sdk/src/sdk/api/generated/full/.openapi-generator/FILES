@@ -12,6 +12,8 @@ apis/index.ts
 index.ts
 models/Access.ts
 models/AccessGate.ts
+models/AccountCollection.ts
+models/AccountCollectionUser.ts
 models/AccountFull.ts
 models/ActivityFull.ts
 models/AnnouncementNotification.ts

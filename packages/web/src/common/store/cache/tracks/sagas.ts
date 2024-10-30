@@ -290,8 +290,16 @@ function* confirmEditTrack(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
+        yield* waitForAccount()
+        // Need to poll with the new track name in case it changed
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot edit track')
+        }
+
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.updateTrack,
+          userId,
           trackId,
           { ...formFields },
           transcodePreview
@@ -307,10 +315,6 @@ function* confirmEditTrack(
             `Could not confirm edit track for track id ${trackId}`
           )
         }
-
-        yield* waitForAccount()
-        // Need to poll with the new track name in case it changed
-        const userId = yield* select(getUserId)
 
         const { data } = yield* call(
           [sdk.full.tracks, sdk.full.tracks.getTrack],
