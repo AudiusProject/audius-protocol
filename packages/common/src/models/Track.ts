@@ -44,11 +44,6 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
-export type CoverAttribution = {
-  original_song_title?: string
-  original_song_artist?: string
-}
-
 // Gated content
 export type EthTokenStandard = 'ERC721' | 'ERC1155'
 
