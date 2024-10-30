@@ -901,6 +901,7 @@ export const audiusBackend = ({
   }
 
   async function updateTrack(
+    userId: ID,
     _trackId: ID,
     metadata: TrackMetadata | TrackMetadataForUpload,
     transcodePreview?: boolean
@@ -914,6 +915,7 @@ export const audiusBackend = ({
       cleanedMetadata.cover_art_sizes = resp.id
     }
     return await audiusLibs.Track.updateTrackV2(
+      userId,
       cleanedMetadata,
       transcodePreview
     )
