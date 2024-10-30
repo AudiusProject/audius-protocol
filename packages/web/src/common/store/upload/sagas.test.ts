@@ -108,6 +108,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
           [call.fn(addPremiumMetadata), testTrack]
         ])
@@ -151,6 +152,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
@@ -254,6 +256,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
@@ -650,6 +653,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
+          [select(accountSelectors.getUserId), 12345],
           [
             getContext('audiusBackendInstance'),
             {

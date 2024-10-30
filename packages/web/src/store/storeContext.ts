@@ -1,4 +1,4 @@
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, createGetWalletAddresses } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import { setTag, configureScope } from '@sentry/browser'
@@ -74,6 +74,10 @@ export const buildStoreContext = ({
   share: getShare(isMobile),
   audiusSdk,
   hedgehogInstance,
+  getWalletAddresses: createGetWalletAddresses({
+    localStorage,
+    hedgehogInstance
+  }),
   imageUtils: {
     generatePlaylistArtwork
   },

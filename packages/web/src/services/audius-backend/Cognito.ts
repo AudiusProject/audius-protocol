@@ -28,7 +28,7 @@ async function _makeRequest<ResponseModel>({
   } = { method }
   if (useAuth) {
     await waitForLibsInit()
-    const account = libs()?.Account?.getCurrentUser()
+    const account = libs()?.getCurrentUser()
     if (!account) {
       throw new Error('Cognito Identity Request Failed: Missing current user')
     }

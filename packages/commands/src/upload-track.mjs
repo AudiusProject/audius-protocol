@@ -7,7 +7,7 @@ import { Utils } from '@audius/sdk-legacy/dist/libs.js'
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusLibs } from './utils.mjs'
 import { Genre } from '@audius/sdk'
 
 function generateWhiteNoise(duration, outFile) {
@@ -224,12 +224,15 @@ program
           audiusLibs
         })
 
+        const userId = audiusLibs.getCurrentUser().userId
+
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
+          userId,
           trackStream,
           null,
           {
-            owner_id: audiusLibs.Account.getCurrentUser().user_id,
+            owner_id: userId,
             cover_art: null,
             cover_art_sizes: null,
             title: trackTitle,

@@ -2,6 +2,8 @@
 /* eslint-disable */
 export * from './Access';
 export * from './AccessGate';
+export * from './AccountCollection';
+export * from './AccountCollectionUser';
 export * from './AccountFull';
 export * from './ActivityFull';
 export * from './AnnouncementNotification';
