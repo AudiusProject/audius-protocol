@@ -9,7 +9,15 @@ import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
-import { Box, Flex, PlainButton, Skeleton, Text } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  PlainButton,
+  Skeleton,
+  Text,
+  useTheme
+} from '@audius/harmony'
+import { keyframes } from '@emotion/react'
 import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
@@ -32,6 +40,15 @@ export type CommentBlockProps = {
   isPreview?: boolean
 }
 
+const fadeIn = keyframes`
+  0% {
+    filter: opacity(0);
+  }
+  100% {
+    filter: opacity(1);
+  }
+`
+
 const CommentBlockInternal = (
   props: Omit<CommentBlockProps, 'commentId'> & {
     comment: Comment | ReplyComment
@@ -51,6 +68,7 @@ const CommentBlockInternal = (
     mentions = []
   } = comment
 
+  const { motion } = useTheme()
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(
@@ -74,7 +92,14 @@ const CommentBlockInternal = (
   const isCommentByArtist = userId === artistId
 
   return (
-    <Flex w='100%' gap='l' css={{ opacity: isTombstone ? 0.5 : 1 }}>
+    <Flex
+      w='100%'
+      gap='l'
+      css={{
+        opacity: isTombstone ? 0.5 : 1,
+        animation: `${fadeIn} ${motion.calm}`
+      }}
+    >
       <Box css={{ flexShrink: 0, width: 44 }}>
         <Avatar userId={userId} size='medium' popover />
       </Box>
