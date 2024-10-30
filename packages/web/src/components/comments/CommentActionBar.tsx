@@ -77,7 +77,6 @@ export const CommentActionBar = ({
   hideReactCount,
   parentCommentId
 }: CommentActionBarProps) => {
-  const dispatch = useDispatch()
   const { currentUserId, isEntityOwner, entityId, currentSort, track } =
     useCurrentCommentSection()
   const { reactCount, id: commentId, userId, isCurrentUserReacted } = comment
