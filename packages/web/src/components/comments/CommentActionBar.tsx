@@ -30,10 +30,7 @@ import { useToggle } from 'react-use'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
-import {
-  openAuthModal,
-  useAuthenticatedCallback
-} from 'hooks/useAuthenticatedCallback'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
@@ -167,7 +164,6 @@ export const CommentActionBar = ({
   }, [commentId, parentCommentId, reportComment, toast])
 
   const handleClickReply = useCallback(() => {
-    requiresAccount()
     if (isMobile) {
       toggleIsMobileAppDrawer()
       trackEvent(
@@ -178,7 +174,7 @@ export const CommentActionBar = ({
       )
     } else {
       if (currentUserId === undefined) {
-        openAuthModal(dispatch)
+        requiresAccount()
       } else {
         onClickReply()
         trackEvent(
@@ -194,7 +190,6 @@ export const CommentActionBar = ({
     toggleIsMobileAppDrawer,
     entityId,
     currentUserId,
-    dispatch,
     onClickReply,
     commentId,
     requiresAccount
@@ -336,7 +331,6 @@ export const CommentActionBar = ({
 
   const handleClickOverflowMenu = useCallback(
     (triggerPopup: () => void) => {
-      requiresAccount()
       if (isMobile) {
         toggleIsMobileAppDrawer()
         trackEvent(
@@ -347,7 +341,7 @@ export const CommentActionBar = ({
         )
       } else {
         if (currentUserId === undefined) {
-          openAuthModal(dispatch)
+          requiresAccount()
         } else {
           triggerPopup()
 
@@ -363,7 +357,6 @@ export const CommentActionBar = ({
     [
       commentId,
       currentUserId,
-      dispatch,
       entityId,
       isMobile,
       toggleIsMobileAppDrawer,
