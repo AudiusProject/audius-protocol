@@ -8,10 +8,16 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"google.golang.org/protobuf/proto"
 )
 
 // checks mainnet eth for itself, if registered and not
@@ -20,18 +26,30 @@ func (r *Registry) RegisterSelf() error {
 	ctx := context.Background()
 
 	if r.isSelfAlreadyRegistered(ctx) {
+		r.logger.Info("Skipping registration, we are already registered.")
 		return nil
 	}
 
-	logger := r.logger
-
-	web3 := r.contracts
-
-	privKey := r.config.EthereumKey
-	nodeAddress := crypto.PubkeyToAddress(privKey.PublicKey)
+	nodeAddress := crypto.PubkeyToAddress(r.config.EthereumKey.PublicKey)
 	nodeEndpoint := r.config.NodeEndpoint
 
-	spf, err := web3.GetServiceProviderFactoryContract()
+	isRegistered, err := r.isSelfRegisteredOnEth(ctx)
+	if err != nil {
+		return fmt.Errorf("could not check ethereum registration status: %v", err)
+	}
+	if !isRegistered {
+		r.logger.Infof("node %s : %s not registered on Ethereum", nodeAddress.Hex(), nodeEndpoint)
+		if r.isDevEnvironment() {
+			if err := r.registerSelfOnEth(); err != nil {
+				return fmt.Errorf("error registering onto eth: %v", err)
+			}
+		} else {
+			logger.Info("continuing unregistered")
+			return nil
+		}
+	}
+
+	spf, err := r.contracts.GetServiceProviderFactoryContract()
 	if err != nil {
 		return fmt.Errorf("could not get service provider factory: %v", err)
 	}
@@ -41,19 +59,79 @@ func (r *Registry) RegisterSelf() error {
 		return fmt.Errorf("issue getting sp data: %v", err)
 	}
 
-	// contract returns 0 if endpoint not registered
-	if spID.Uint64() == 0 {
-		logger.Infof("node %s : %s not registered on mainnet", nodeAddress.Hex(), nodeEndpoint)
-		if r.config.Environment == "dev" || r.config.Environment == "sandbox" {
-			if err := r.registerSelfOnEth(); err != nil {
-				return fmt.Errorf("error registering onto eth: %v", err)
-			}
-			// call again but registered this time
-			return r.RegisterSelf()
-		}
-		logger.Info("continuing unregistered")
-		return nil
+	serviceType, err := contracts.ServiceType(r.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
 	}
+
+	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
+	if err != nil {
+		return fmt.Errorf("could not get service endpoint info: %v", err)
+	}
+
+	if info.DelegateOwnerWallet != nodeAddress {
+		return fmt.Errorf("node %s is claiming to be %s but that endpoint is owned by %s", nodeAddress.Hex(), nodeEndpoint, info.DelegateOwnerWallet.Hex())
+	}
+
+	ethBlock := info.BlockNumber.String()
+
+	nodeRecord, err := r.queries.GetNodeByEndpoint(ctx, nodeEndpoint)
+	if errors.Is(err, pgx.ErrNoRows) {
+		r.logger.Infof("node %s not found on comet but found on eth, registering", nodeEndpoint)
+		if err := r.registerSelfOnComet(ethBlock, spID.String()); err != nil {
+			return fmt.Errorf("could not register on comet: %v", err)
+		}
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	r.logger.Infof("node %s : %s registered on network %s", nodeRecord.EthAddress, nodeRecord.Endpoint, r.config.Environment)
+	return nil
+}
+
+func (r *Registry) isDevEnvironment() bool {
+	return r.config.Environment == "dev" || r.config.Environment == "sandbox"
+}
+
+func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
+	serviceType, err := contracts.ServiceType(r.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	registrationTx := &gen_proto.ValidatorRegistration{
+		Endpoint:     r.config.NodeEndpoint,
+		CometAddress: r.config.ProposerAddress,
+		EthBlock:     ethBlock,
+		NodeType:     common.HexToUtf8(serviceType),
+		SpId:         spID,
+	}
+
+	eventBytes, err := proto.Marshal(registrationTx)
+	if err != nil {
+		return fmt.Errorf("failure to marshal register event: %v", err)
+	}
+
+	sig, err := accounts.EthSign(r.config.EthereumKey, eventBytes)
+	if err != nil {
+		return fmt.Errorf("could not sign register event: %v", err)
+	}
+
+	event := &gen_proto.SignedTransaction{
+		Signature: sig,
+		RequestId: uuid.NewString(),
+		Transaction: &gen_proto.SignedTransaction_ValidatorRegistration{
+			ValidatorRegistration: registrationTx,
+		},
+	}
+
+	txhash, err := grpc.SendTx(r.logger, r.rpc, event)
+	if err != nil {
+		return fmt.Errorf("send register tx failed: %v", err)
+	}
+
+	r.logger.Infof("registered node %s in tx %s", r.config.NodeEndpoint, txhash)
 
 	return nil
 }
@@ -96,6 +174,21 @@ func (r *Registry) isSelfAlreadyRegistered(ctx context.Context) bool {
 	return res.EthAddress == r.config.WalletAddress
 }
 
+func (r *Registry) isSelfRegisteredOnEth(ctx context.Context) (bool, error) {
+	spf, err := r.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return false, fmt.Errorf("could not get service provider factory: %v", err)
+	}
+
+	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, r.config.NodeEndpoint)
+	if err != nil {
+		return false, fmt.Errorf("issue getting sp data: %v", err)
+	}
+
+	// contract returns 0 if endpoint not registered
+	return spID.Uint64() != 0, nil
+}
+
 func (r *Registry) registerSelfOnEth() error {
 	chainID, err := r.contracts.Rpc.ChainID(context.Background())
 	if err != nil {
@@ -136,11 +229,10 @@ func (r *Registry) registerSelfOnEth() error {
 	}
 
 	endpoint := r.config.NodeEndpoint
-	privKey, err := accounts.EthToEthKey(r.config.DelegatePrivateKey)
 	if err != nil {
 		return fmt.Errorf("could not get eth key: %v", err)
 	}
-	delegateOwnerWallet := crypto.PubkeyToAddress(privKey.PublicKey)
+	delegateOwnerWallet := crypto.PubkeyToAddress(r.config.EthereumKey.PublicKey)
 
 	_, err = spf.Register(opts, serviceType, endpoint, stake, delegateOwnerWallet)
 	if err != nil {

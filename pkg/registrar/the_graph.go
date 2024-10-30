@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 func NewGraphStaging() PeerProvider {
@@ -26,13 +27,22 @@ type graphProvider struct {
 	endpoint string
 }
 
-func (p *graphProvider) Peers(nodeType string) ([]Peer, error) {
-	return p.query(nodeType)
+func (p *graphProvider) Peers() ([]server.Peer, error) {
+	return p.query(true)
 }
 
-func (p *graphProvider) query(nodeType string) ([]Peer, error) {
+func (p *graphProvider) Signers() ([]server.Peer, error) {
+	return p.query(false)
+}
 
-	result := []Peer{}
+func (p *graphProvider) query(isContent bool) ([]server.Peer, error) {
+
+	nodeType := "discovery-node"
+	if isContent {
+		nodeType = "content-node"
+	}
+
+	result := []server.Peer{}
 
 	gql := `
 	query ServiceProviders($type: String, $skip: Int) {
@@ -44,15 +54,12 @@ func (p *graphProvider) query(nodeType string) ([]Peer, error) {
 	`
 
 	for {
-		variables := map[string]interface{}{
-			"skip": len(result),
-		}
-		if nodeType != "all" {
-			variables["type"] = fmt.Sprintf("%s-node", nodeType)
-		}
 		input := map[string]interface{}{
-			"query":     gql,
-			"variables": variables,
+			"query": gql,
+			"variables": map[string]interface{}{
+				"skip": len(result),
+				"type": nodeType,
+			},
 		}
 
 		output := struct {
@@ -74,7 +81,7 @@ func (p *graphProvider) query(nodeType string) ([]Peer, error) {
 		}
 
 		for _, node := range output.Data.ServiceNodes {
-			result = append(result, Peer{
+			result = append(result, server.Peer{
 				Host:   httputil.RemoveTrailingSlash(strings.ToLower(node.Endpoint)),
 				Wallet: node.DelegateOwnerWallet,
 			})

@@ -54,7 +54,7 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
-  unlockAll: (price: string) => `Unlock All $${price}`,
+  unlockAll: (price: string) => `Unlock All ${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>

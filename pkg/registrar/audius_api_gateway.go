@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
+
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 )
 
 type NodeResponse struct {
@@ -35,37 +37,15 @@ type audiusApiGatewayProvider struct {
 	endpoint string
 }
 
-func (p *audiusApiGatewayProvider) Peers(nodeType string) ([]Peer, error) {
-	var peers []Peer
-	var err error
-	switch nodeType {
-	case "content":
-		peers, err = p.contentPeers()
-	case "discovery":
-		peers, err = p.discoveryPeers()
-	case "all":
-		discoveryPeers, err := p.discoveryPeers()
-		if err != nil {
-			return nil, err
-		}
-		contentPeers, err := p.contentPeers()
-		if err != nil {
-			return nil, err
-		}
-		peers = append(discoveryPeers, contentPeers...)
-	}
-	return peers, err
-}
-
-func (p *audiusApiGatewayProvider) contentPeers() ([]Peer, error) {
+func (p *audiusApiGatewayProvider) Peers() ([]server.Peer, error) {
 	return p.getNodes("/content/verbose?all=true")
 }
 
-func (p *audiusApiGatewayProvider) discoveryPeers() ([]Peer, error) {
+func (p *audiusApiGatewayProvider) Signers() ([]server.Peer, error) {
 	return p.getNodes("/discovery/verbose?all=true")
 }
 
-func (p *audiusApiGatewayProvider) getNodes(path string) ([]Peer, error) {
+func (p *audiusApiGatewayProvider) getNodes(path string) ([]server.Peer, error) {
 	endpoint := p.endpoint + path
 
 	resp, err := httpClient.Get(endpoint)
@@ -85,9 +65,9 @@ func (p *audiusApiGatewayProvider) getNodes(path string) ([]Peer, error) {
 		return nil, err
 	}
 
-	var peers []Peer
+	var peers []server.Peer
 	for _, node := range nodeResponse.Data {
-		peer := Peer{
+		peer := server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(node.Endpoint)),
 			Wallet: strings.ToLower(node.DelegateOwnerWallet),
 		}
