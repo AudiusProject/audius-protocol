@@ -480,9 +480,8 @@ export class CreatorNode {
     const requestId = uuid()
     headers['X-Request-ID'] = requestId
 
-    const user = {} as any
     if (this.wallet && this.userId) {
-      headers['X-User-Wallet-Addr'] = user.wallet
+      headers['X-User-Wallet-Addr'] = this.wallet
       headers['X-User-Id'] = `${this.userId}`
     }
 
