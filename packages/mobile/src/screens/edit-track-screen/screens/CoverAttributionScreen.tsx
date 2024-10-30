@@ -18,10 +18,11 @@ const messages = {
 
 export const COVER_ORIGINAL_SONG_TITLE = 'cover_original_song_title'
 export const COVER_ORIGINAL_ARTIST = 'cover_original_artist'
+export const IS_COVER = 'isCover'
 
 export const CoverAttributionScreen = () => {
   const [{ value: isCover }, _ignored, { setValue: setIsCover }] =
-    useField<boolean>('isCover')
+    useField<boolean>(IS_COVER)
   const [{ value: originalSongTitle }] = useField(COVER_ORIGINAL_SONG_TITLE)
   const [{ value: originalArtist }] = useField(COVER_ORIGINAL_ARTIST)
 
