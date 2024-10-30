@@ -97,13 +97,10 @@ export const Text = (props: TextProps) => {
     ]
   )
 
-  const children = useMemo(() => {
-    let processedChildren = childrenProp
-    if (typeof processedChildren === 'string' && !allowNewline) {
-      processedChildren = processedChildren.replace('\n', ' ')
-    }
-    return processedChildren
-  }, [childrenProp, allowNewline])
+  const children =
+    typeof childrenProp === 'string' && !allowNewline
+      ? childrenProp.replace('\n', ' ')
+      : childrenProp
 
   if (bulleted) {
     return (
