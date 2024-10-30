@@ -3,6 +3,7 @@ from typing import Optional
 
 from sqlalchemy.orm.session import Session
 
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
@@ -14,13 +15,24 @@ from src.utils.session_manager import SessionManager
 logger = logging.getLogger(__name__)
 
 
-def _index_core_txs(session: Session, core: CoreClient, block: BlockResponse):
+def _index_core_txs(
+    session: Session,
+    core: CoreClient,
+    challenge_bus: ChallengeEventBus,
+    block: BlockResponse,
+):
     # TODO: parallelize?
     for tx in block.transactions:
         # Check which type of transaction is currently set
         transaction_type = tx.WhichOneof("transaction")
         if transaction_type == "plays":
-            index_core_play(session=session, core=core, tx=tx)
+            index_core_play(
+                session=session,
+                core=core,
+                challenge_bus=challenge_bus,
+                block=block,
+                tx=tx,
+            )
             continue
         elif transaction_type == "manage_entity":
             index_core_manage_entity(session=session, core=core, tx=tx)
@@ -73,7 +85,10 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
 
         logger.debug(f"index_core.py | got block {block.height} on chain {chainid}")
 
-        _index_core_txs(session=session, core=core, block=block)
+        challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
+        _index_core_txs(
+            session=session, core=core, challenge_bus=challenge_bus, block=block
+        )
         # if first block there's no parent hash
         parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
 
