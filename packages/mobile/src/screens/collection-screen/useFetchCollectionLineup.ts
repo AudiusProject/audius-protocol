@@ -31,10 +31,15 @@ const { getIsReachable } = reachabilitySelectors
  */
 export const useFetchCollectionLineup = (
   collectionId: number | SmartCollectionVariant | null,
-  fetchLineup: () => void
+  fetchLineupProp: () => void
 ) => {
+  const fetchLineup = useCallback(() => {
+    console.log('fetchLineup')
+    return fetchLineupProp()
+  }, [fetchLineupProp])
+
   const dispatch = useDispatch()
-  const { isScreenReady } = useScreenContext()
+  const { isPrimaryContentReady } = useScreenContext()
   const offlineTrackIds = useSelector(
     (state) => new Set(getOfflineTrackIds(state) || []),
     areSetsEqual
@@ -76,7 +81,8 @@ export const useFetchCollectionLineup = (
   ) as Record<number, string[]>
 
   const fetchLineupOffline = useCallback(() => {
-    if (collectionId && collection && isScreenReady) {
+    if (collectionId && collection) {
+      console.log('fetchLineupOffline')
       const trackIdEncounters = {} as Record<number, number>
       const sortedTracks = collection.playlist_contents.track_ids
         .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
@@ -125,7 +131,6 @@ export const useFetchCollectionLineup = (
   }, [
     collectionId,
     collection,
-    isScreenReady,
     dispatch,
     offlineTrackIds,
     queueUidsByTrackId,
@@ -135,23 +140,25 @@ export const useFetchCollectionLineup = (
 
   const isReachable = useSelector(getIsReachable)
   const fetchLineupWrapped = useCallback(() => {
-    if (isScreenReady) {
+    if (isPrimaryContentReady) {
       if (isReachable) {
         fetchLineup()
       } else {
         fetchLineupOffline()
       }
     }
-  }, [isScreenReady, isReachable, fetchLineup, fetchLineupOffline])
+  }, [isPrimaryContentReady, isReachable, fetchLineup, fetchLineupOffline])
 
-  const wasScreenReady = usePrevious(isScreenReady)
+  // TODO: this gets called again when revisiting the same collection
+  // Need to figure out a better way to handle this
+  const wasScreenReady = usePrevious(isPrimaryContentReady)
   useEffect(() => {
-    if (isScreenReady && !wasScreenReady) {
+    if (isPrimaryContentReady && !wasScreenReady) {
       fetchLineupWrapped()
     }
-  }, [isScreenReady, fetchLineupWrapped, wasScreenReady])
+  }, [isPrimaryContentReady, fetchLineupWrapped, wasScreenReady])
 
   // Fetch the lineup based on reachability
-  useReachabilityEffect(fetchLineupWrapped, fetchLineupWrapped)
+  useReachabilityEffect(fetchLineup, fetchLineupOffline, false)
   useHasCollectionChanged(collectionId as number, fetchLineupWrapped)
 }
