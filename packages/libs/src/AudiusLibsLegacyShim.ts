@@ -4,14 +4,12 @@ import {
   Utils,
   SolanaUtils,
   CreatorNode,
-  SanityChecks,
   RewardsAttester
 } from './AudiusLibs'
 
 type AudiusLibsLegacyShimType = AudiusLibs & {
   SolanaUtils: typeof SolanaUtils
   CreatorNode: typeof CreatorNode
-  SanityChecks: typeof SanityChecks
   RewardsAttester: typeof RewardsAttester
 }
 
@@ -21,7 +19,6 @@ AudiusLibsLegacyShim.AudiusABIDecoder = AudiusABIDecoder
 AudiusLibsLegacyShim.Utils = Utils
 AudiusLibsLegacyShim.SolanaUtils = SolanaUtils
 AudiusLibsLegacyShim.CreatorNode = CreatorNode
-AudiusLibsLegacyShim.SanityChecks = SanityChecks
 AudiusLibsLegacyShim.RewardsAttester = RewardsAttester
 
 export { AudiusLibsLegacyShim as libs }

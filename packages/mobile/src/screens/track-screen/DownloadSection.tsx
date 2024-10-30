@@ -42,6 +42,10 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
+  // TODO: When upgrading react native to >0.74, we need to remove the $ here
+  // and also update android to include jsc+intl
+  // https://github.com/facebook/hermes/issues/23
+  // https://stackoverflow.com/questions/41408025/react-native-tolocalestring-not-working-on-android
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
   followToDownload: 'Must follow artist to download.',

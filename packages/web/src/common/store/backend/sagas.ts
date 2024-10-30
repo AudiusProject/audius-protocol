@@ -94,8 +94,7 @@ export function* setupBackend() {
     if (localUser) {
       setupArgs = {
         wallet: localUser.wallet,
-        userId: localUser.user_id,
-        handle: localUser.handle
+        userId: localUser.user_id
       }
     }
   }

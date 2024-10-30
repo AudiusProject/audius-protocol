@@ -631,5 +631,4 @@ export class AudiusLibs {
 export { SolanaUtils }
 
 export { Utils } from './utils'
-export { SanityChecks } from './sanityChecks'
 export { RewardsAttester } from './services/solana'
