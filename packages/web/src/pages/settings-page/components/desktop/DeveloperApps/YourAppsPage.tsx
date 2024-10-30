@@ -22,7 +22,7 @@ const messages = {
   yourAppsTitle: 'Your Apps',
   noApps: "You haven't created any apps yet.",
   newAppButton: 'New',
-  maxAllowedApps: 'Maximum of ${maxAppsAllowed} Apps Created'
+  maxAllowedApps: `Maximum of ${maxAppsAllowed} Apps Created`
 }
 
 type YourAppsPageProps = CreateAppPageProps
