@@ -70,6 +70,7 @@ import {
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -543,119 +544,121 @@ export const TrackScreenDetailsTile = ({
 
   return (
     <Paper>
-      {renderDogEar()}
-      <Flex p='l' gap='l' alignItems='center' w='100%'>
-        <Text
-          variant='label'
-          size='m'
-          strength='default'
-          textTransform='uppercase'
-          color='subdued'
-        >
-          {headerText}
-        </Text>
-
-        {badges.length > 0 ? (
-          <Flex direction='row' gap='s'>
-            {badges.map((badge) => badge)}
-          </Flex>
-        ) : null}
-        {imageElement}
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s' textAlign='center'>
-            {title}
-          </Text>
-          {user ? (
-            <TouchableOpacity onPress={handlePressArtistName}>
-              <Flex direction='row' gap='xs'>
-                <Text variant='body' color='accent' size='l'>
-                  {user.name}
-                </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
-              </Flex>
-            </TouchableOpacity>
-          ) : null}
-        </Flex>
-        {isLongFormContent && track ? (
-          <DetailsProgressInfo track={track} />
-        ) : null}
-        {hasStreamAccess ? (
-          <Button
-            iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
-            onPress={handlePressPlay}
-            fullWidth
+      <ScreenPrimaryContent>
+        {renderDogEar()}
+        <Flex p='l' gap='l' alignItems='center' w='100%'>
+          <Text
+            variant='label'
+            size='m'
+            strength='default'
+            textTransform='uppercase'
+            color='subdued'
           >
-            {isPlayingFullAccess ? messages.pause : playText}
-          </Button>
-        ) : null}
-        {shouldShowPreview ? <PreviewButton /> : null}
-        <DetailsTileActionButtons
-          ddexApp={ddexApp}
-          hasReposted={!!hasReposted}
-          hasSaved={!!hasSaved}
-          hideFavorite={hideFavorite}
-          hideOverflow={hideOverflow}
-          hideRepost={hideRepost}
-          hideShare={hideShare}
-          isOwner={isOwner}
-          isCollection={false}
-          isPublished={!isUnlisted || _is_publishing}
-          onPressEdit={handlePressEdit}
-          onPressOverflow={handlePressOverflow}
-          onPressRepost={handlePressRepost}
-          onPressSave={handlePressSave}
-          onPressShare={handlePressShare}
-          onPressPublish={handlePressPublish}
-        />
-      </Flex>
-      <Flex
-        p='l'
-        gap='l'
-        borderTop='default'
-        backgroundColor='surface1'
-        borderBottomLeftRadius='m'
-        borderBottomRightRadius='m'
-      >
-        {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
-          <DetailsTileNoAccess
-            trackId={trackId}
-            contentType={PurchaseableContentType.TRACK}
-            streamConditions={streamConditions}
-          />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
+            {headerText}
+          </Text>
+
+          {badges.length > 0 ? (
+            <Flex direction='row' gap='s'>
+              {badges.map((badge) => badge)}
+            </Flex>
+          ) : null}
+          {imageElement}
+          <Flex gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' textAlign='center'>
+              {title}
+            </Text>
+            {user ? (
+              <TouchableOpacity onPress={handlePressArtistName}>
+                <Flex direction='row' gap='xs'>
+                  <Text variant='body' color='accent' size='l'>
+                    {user.name}
+                  </Text>
+                  <UserBadges badgeSize={spacing.l} user={user} hideName />
+                </Flex>
+              </TouchableOpacity>
+            ) : null}
+          </Flex>
+          {isLongFormContent && track ? (
+            <DetailsProgressInfo track={track} />
+          ) : null}
+          {hasStreamAccess ? (
+            <Button
+              iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
+              onPress={handlePressPlay}
+              fullWidth
+            >
+              {isPlayingFullAccess ? messages.pause : playText}
+            </Button>
+          ) : null}
+          {shouldShowPreview ? <PreviewButton /> : null}
+          <DetailsTileActionButtons
+            ddexApp={ddexApp}
+            hasReposted={!!hasReposted}
+            hasSaved={!!hasSaved}
+            hideFavorite={hideFavorite}
+            hideOverflow={hideOverflow}
+            hideRepost={hideRepost}
+            hideShare={hideShare}
             isOwner={isOwner}
-            trackArtist={user}
-            contentType={PurchaseableContentType.TRACK}
+            isCollection={false}
+            isPublished={!isUnlisted || _is_publishing}
+            onPressEdit={handlePressEdit}
+            onPressOverflow={handlePressOverflow}
+            onPressRepost={handlePressRepost}
+            onPressSave={handlePressSave}
+            onPressShare={handlePressShare}
+            onPressPublish={handlePressPublish}
           />
-        ) : null}
-        <DetailsTileStats
-          playCount={playCount}
-          hidePlayCount={shouldHidePlayCount}
-          favoriteCount={saveCount}
-          hideFavoriteCount={shouldHideFavoriteCount}
-          repostCount={repostCount}
-          hideRepostCount={shouldHideRepostCount}
-          commentCount={commentCount}
-          hideCommentCount={shouldHideCommentCount}
-          onPressFavorites={handlePressFavorites}
-          onPressReposts={handlePressReposts}
-          onPressComments={handlePressComments}
-        />
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText source={'track page'} variant='body' size='s'>
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
-        <TrackMetadataList trackId={trackId} />
-        {renderTags()}
-        <OfflineStatusRow contentId={trackId} isCollection={false} />
-      </Flex>
-      {renderBottomContent()}
+        </Flex>
+        <Flex
+          p='l'
+          gap='l'
+          borderTop='default'
+          backgroundColor='surface1'
+          borderBottomLeftRadius='m'
+          borderBottomRightRadius='m'
+        >
+          {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
+            <DetailsTileNoAccess
+              trackId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+            />
+          ) : null}
+          {(hasStreamAccess || isOwner) && streamConditions ? (
+            <DetailsTileHasAccess
+              streamConditions={streamConditions}
+              isOwner={isOwner}
+              trackArtist={user}
+              contentType={PurchaseableContentType.TRACK}
+            />
+          ) : null}
+          <DetailsTileStats
+            playCount={playCount}
+            hidePlayCount={shouldHidePlayCount}
+            favoriteCount={saveCount}
+            hideFavoriteCount={shouldHideFavoriteCount}
+            repostCount={repostCount}
+            hideRepostCount={shouldHideRepostCount}
+            commentCount={commentCount}
+            hideCommentCount={shouldHideCommentCount}
+            onPressFavorites={handlePressFavorites}
+            onPressReposts={handlePressReposts}
+            onPressComments={handlePressComments}
+          />
+          {description ? (
+            <Box w='100%'>
+              <UserGeneratedText source={'track page'} variant='body' size='s'>
+                {description}
+              </UserGeneratedText>
+            </Box>
+          ) : null}
+          <TrackMetadataList trackId={trackId} />
+          {renderTags()}
+          <OfflineStatusRow contentId={trackId} isCollection={false} />
+        </Flex>
+        {renderBottomContent()}
+      </ScreenPrimaryContent>
     </Paper>
   )
 }
