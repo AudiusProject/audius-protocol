@@ -1,13 +1,13 @@
 import { useField } from 'formik'
 
-import { Box, Divider, Flex } from '@audius/harmony-native'
-import { Switch, Text } from 'app/components/core'
+import { Box, Divider, Flex, Text } from '@audius/harmony-native'
+import { Switch } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { FormScreen } from 'app/screens/form-screen'
 
 const messages = {
   title: 'Cover Attribution',
-  isCover: 'This Song is a Cover',
+  cover: 'This Song is a Cover',
   description: 'This track was written by another artist.',
   attribution: {
     header: 'Please provide the original song title and artist name.',
@@ -36,9 +36,7 @@ export const CoverAttributionScreen = () => {
             alignItems='center'
             mb='s'
           >
-            <Text fontSize='large' weight='demiBold'>
-              {messages.isCover}
-            </Text>
+            <Text variant='title'>{messages.cover}</Text>
             <Switch value={isCover} onValueChange={setIsCover} />
           </Flex>
           <Text variant='body'>{messages.description}</Text>
