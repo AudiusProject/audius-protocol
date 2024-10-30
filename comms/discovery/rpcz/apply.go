@@ -16,6 +16,7 @@ import (
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
 	"github.com/tidwall/gjson"
+	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/exp/slog"
 )
 
@@ -106,7 +107,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	}
 
 	// publish event
-	j, err := json.Marshal(rpcLog)
+	j, err := msgpack.Marshal(rpcLog)
 	if err != nil {
 		slog.Error("err: invalid json", "err", err)
 	} else {
