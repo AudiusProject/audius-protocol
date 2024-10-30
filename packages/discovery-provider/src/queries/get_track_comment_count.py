@@ -64,7 +64,7 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
                     and_(
                         CommentReport.user_id != current_user_id,
                         CommentReport.user_id != track.c.owner_id,
-                        ~Comment.comment_id.in_(high_karma_reporters),
+                        Comment.comment_id.notin_(high_karma_reporters),
                     ),
                     CommentReport.is_delete == True,
                 ),
