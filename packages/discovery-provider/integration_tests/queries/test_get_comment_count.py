@@ -3,9 +3,8 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
-from src.utils.db_session import get_db
 from src.queries.get_track_comment_count import get_track_comment_count
-
+from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
