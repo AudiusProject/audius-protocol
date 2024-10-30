@@ -11,7 +11,7 @@ import {
 
 export const useFirstAvailableBlastAudience = () => {
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({})
 
   const { data: purchasersCount } = useGetPurchasersCount(
     {

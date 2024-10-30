@@ -3,7 +3,8 @@ import {
   settingsPageSelectors,
   settingsPageActions as actions,
   BrowserNotificationSetting,
-  getContext
+  getContext,
+  accountSelectors
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
@@ -27,7 +28,9 @@ function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      if (!isBrowserPushAvailable) return
+      const account = yield* select(accountSelectors.getAccountUser)
+
+      if (!isBrowserPushAvailable || !account) return
       const settings = yield* call(
         audiusBackendInstance.getBrowserPushNotificationSettings
       )
@@ -75,6 +78,9 @@ function* watchToogleBrowserPushNotification() {
     actions.SET_BROWSER_NOTIFICATION_ENABLED,
     function* (action: actions.SetBrowserNotificationEnabled) {
       try {
+        const account = yield* select(accountSelectors.getAccountUser)
+        if (!account) return
+
         if (isPushManagerAvailable) {
           const subscription = yield* call(getPushManagerBrowserSubscription)
           if (subscription) {
@@ -204,6 +210,9 @@ function* watchUpdateNotificationSettings() {
     actions.TOGGLE_NOTIFICATION_SETTING,
     function* (action: actions.ToggleNotificationSetting) {
       try {
+        const account = yield* select(accountSelectors.getAccountUser)
+        if (!account) return
+
         let isOn: boolean | null | undefined | Permission = action.isOn
         if (isOn === undefined) {
           const notificationSettings = yield* select(

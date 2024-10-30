@@ -1,10 +1,14 @@
+import { useMemo } from 'react'
+
 import dayjs from 'dayjs'
+import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
-import { createApi } from '~/audius-query'
+import { QueryHookOptions, createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
+import { accountSelectors } from '~/store/account'
 
-import { useGetUserById } from './user'
+import { useGetUserAccount } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -30,25 +34,6 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    getCurrentUserId: {
-      async fetch(_, context) {
-        const { audiusBackend } = context
-        const account = await audiusBackend.getAccount()
-        return account?.user_id || null
-      },
-      options: {}
-    },
-    getCurrentWeb3User: {
-      async fetch(_, { audiusBackend }) {
-        const libs = await audiusBackend.getAudiusLibsTyped()
-        return libs.Account?.getWeb3User() as UserMetadata | null
-      },
-      options: {
-        // Note that this schema key is used to prevent caching of the
-        // web3 user as it does not match the standard user schema.
-        schemaKey: 'currentWeb3User'
-      }
-    },
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
@@ -240,14 +225,41 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUser = () => {
-  const { data: userId } = accountApi.hooks.useGetCurrentUserId({})
-  return useGetUserById({ id: userId! })
+export const useGetCurrentUser = (
+  _fetchArgs: {},
+  options?: QueryHookOptions
+) => {
+  const wallets = useSelector(accountSelectors.getWalletAddresses)
+  const result = useGetUserAccount(
+    { wallet: wallets.currentUser! },
+    { ...options, disabled: !wallets.currentUser }
+  )
+  return { ...result, data: result.data ? result.data.user : null }
+}
+
+export const useGetCurrentWeb3User = (
+  _fetchArgs: {},
+  options?: QueryHookOptions
+) => {
+  const wallets = useSelector(accountSelectors.getWalletAddresses)
+  const result = useGetUserAccount(
+    { wallet: wallets.web3User! },
+    { ...options, disabled: !wallets.web3User }
+  )
+
+  return { ...result, data: result.data ? result.data.user : null }
+}
+
+export const useGetCurrentUserId = (
+  ...args: Parameters<typeof useGetCurrentUser>
+) => {
+  const result = useGetCurrentUser(...args)
+  return useMemo(() => {
+    return { ...result, data: result.data ? result.data.user_id : null }
+  }, [result])
 }
 
 export const {
-  useGetCurrentUserId,
-  useGetCurrentWeb3User,
   useResetPassword,
   useGetManagedAccounts,
   useGetManagers,

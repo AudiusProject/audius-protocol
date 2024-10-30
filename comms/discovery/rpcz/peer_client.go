@@ -38,7 +38,6 @@ func (p *PeerClient) Send(data []byte) bool {
 	case p.outbox <- data:
 		return true
 	default:
-		p.logger.Info("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
 		return false
 	}
 }
@@ -49,10 +48,10 @@ func (p *PeerClient) startSender() {
 		Timeout: 5 * time.Second,
 	}
 	for data := range p.outbox {
-		endpoint := p.Host + "/comms/rpc/receive" // hardcoded
+		endpoint := p.Host + "/comms/rpc/receive?msgpack=t" // hardcoded
 		req := signing.SignedPost(
 			endpoint,
-			"application/json",
+			"application/msgpack",
 			bytes.NewReader(data),
 			p.proc.discoveryConfig.MyPrivateKey)
 

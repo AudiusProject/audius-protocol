@@ -1,3 +1,4 @@
+import { AccountCollection } from '~/models/Collection'
 import { Nullable } from '~/utils/typeUtils'
 import { uuid } from '~/utils/uid'
 
@@ -9,7 +10,6 @@ import {
   PlaylistLibraryID
 } from '../../models/PlaylistLibrary'
 import { SmartCollectionVariant } from '../../models/SmartCollectionVariant'
-import { AccountCollection } from '../account/types'
 
 /**
  * Finds a playlist by id in the playlist library

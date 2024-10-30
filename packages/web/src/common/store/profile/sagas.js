@@ -343,7 +343,6 @@ function* fetchSupportersAndSupporting(userId) {
 }
 
 function* fetchProfileAsync(action) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
 
@@ -399,12 +398,7 @@ function* fetchProfileAsync(action) {
     yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status
-    // TODO(michelle) simply use user.does_current_user_subscribe after all DNs
-    // are running >v0.4.6
-    const isSubscribed =
-      'does_current_user_subscribe' in user
-        ? user.does_current_user_subscribe
-        : yield call(audiusBackendInstance.getUserSubscribed, user.user_id)
+    const isSubscribed = !!user.does_current_user_subscribe
 
     yield put(
       profileActions.setNotificationSubscription(

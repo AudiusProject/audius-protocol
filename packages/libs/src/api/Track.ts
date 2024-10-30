@@ -47,7 +47,6 @@ export class Track extends Base {
     this.getSaversForPlaylist = this.getSaversForPlaylist.bind(this)
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
     this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
-    this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
     this.logTrackListen = this.logTrackListen.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
   }
@@ -341,20 +340,6 @@ export class Track extends Base {
     )
   }
 
-  /**
-   * Return saved tracks for current user
-   * NOTE in returned JSON, SaveType string one of track, playlist, album
-   */
-  async getListenHistoryTracks(limit = 100, offset = 0) {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.identityService.getListenHistoryTracks(
-      userId!,
-      limit,
-      offset
-    )
-  }
-
   /* ------- SETTERS ------- */
 
   /**
@@ -370,6 +355,7 @@ export class Track extends Base {
    * @param onProgress callback fired with (loaded, total) on byte upload progress
    */
   async uploadTrackV2AndWriteToChain(
+    userId: number,
     trackFile: File,
     coverArtFile: File,
     metadata: UploadTrackMetadata,
@@ -377,6 +363,7 @@ export class Track extends Base {
     trackId?: number
   ) {
     const updatedMetadata = await this.uploadTrackV2(
+      userId,
       trackFile,
       coverArtFile,
       metadata,
@@ -386,7 +373,12 @@ export class Track extends Base {
       trackId: updatedTrackId,
       metadataCid,
       txReceipt
-    } = await this.writeTrackToChain(updatedMetadata, Action.CREATE, trackId)
+    } = await this.writeTrackToChain(
+      userId,
+      updatedMetadata,
+      Action.CREATE,
+      trackId
+    )
     return { trackId: updatedTrackId, metadataCid, updatedMetadata, txReceipt }
   }
 
@@ -402,6 +394,7 @@ export class Track extends Base {
    * @param onProgress callback fired with (loaded, total) on byte upload progress
    */
   async uploadTrackV2(
+    userId: number,
     trackFile: File,
     coverArtFile: File | null,
     metadata: UploadTrackMetadata,
@@ -412,12 +405,11 @@ export class Track extends Base {
     this.FILE_IS_VALID(trackFile)
     if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
     this.IS_OBJECT(metadata)
-    const ownerId = this.userStateManager.getCurrentUserId()
-    if (!ownerId) {
-      throw new Error('No users loaded for this wallet')
+    if (!userId) {
+      throw new Error('userId cannot be empty')
     }
 
-    metadata.owner_id = ownerId
+    metadata.owner_id = userId
     this._validateTrackMetadata(metadata)
 
     // Upload track audio and cover art to storage node
@@ -434,12 +426,7 @@ export class Track extends Base {
   /**
    * Creates a trackId for each CID in metadataCids and adds each track to chain for this user.
    */
-  async addTracksToChainV2(trackMetadatas: TrackMetadata[]) {
-    const ownerId = this.userStateManager.getCurrentUserId()
-    if (!ownerId) {
-      throw new Error('No users loaded for this wallet')
-    }
-
+  async addTracksToChainV2(trackMetadatas: TrackMetadata[], userId: number) {
     // Any failures in adding track to the blockchain will prevent further progress.
     // The list of successful track uploads is returned for revert operations by caller
     let requestFailed = false
@@ -448,6 +435,7 @@ export class Track extends Base {
         trackMetadatas.map(async (trackMetadata) => {
           try {
             const { trackId } = await this.writeTrackToChain(
+              userId,
               trackMetadata,
               Action.CREATE
             )
@@ -469,15 +457,11 @@ export class Track extends Base {
    * Adds the given track's metadata to chain for this user, optionally creating a trackId if one doesn't exist.
    */
   async writeTrackToChain(
+    userId: number,
     trackMetadata: TrackMetadata,
     action: Action,
     trackId?: number
   ) {
-    const ownerId = this.userStateManager.getCurrentUserId()
-    if (!ownerId) {
-      throw new Error('No users loaded for this wallet')
-    }
-
     if (!trackId) trackId = await this.generateTrackId()
     // Prevent extra fields from being added to metadata
     const parsedTrackMetadata = Track._parseTrackMetadata(trackMetadata)
@@ -486,7 +470,7 @@ export class Track extends Base {
     )
     const { txReceipt } =
       await this.contracts.EntityManagerClient!.manageEntity(
-        ownerId,
+        userId,
         EntityManagerClient.EntityType.TRACK,
         trackId,
         action,
@@ -503,15 +487,14 @@ export class Track extends Base {
    * @param metadata json of the track metadata with all fields, missing fields will error
    * @param transcodePreview bool: retranscode track preview and set preview_cid if true
    */
-  async updateTrackV2(metadata: TrackMetadata, transcodePreview = false) {
+  async updateTrackV2(
+    userId: number,
+    metadata: TrackMetadata,
+    transcodePreview = false
+  ) {
     this.IS_OBJECT(metadata)
 
-    const ownerId = this.userStateManager.getCurrentUserId()
-
-    if (!ownerId) {
-      throw new Error('No users loaded for this wallet')
-    }
-    metadata.owner_id = ownerId
+    metadata.owner_id = userId
     this._validateTrackMetadata(metadata)
 
     const trackId = metadata.track_id
@@ -530,6 +513,7 @@ export class Track extends Base {
     }
 
     const { txReceipt } = await this.writeTrackToChain(
+      userId,
       updatedMetadata,
       Action.UPDATE,
       trackId
@@ -551,15 +535,14 @@ export class Track extends Base {
   async logTrackListen(
     trackId: number,
     unauthUuid: number,
+    userId?: number,
     solanaListen = false
   ) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    const accountId = this.userStateManager.getCurrentUserId()
 
-    const userId = accountId ?? unauthUuid
     return await this.identityService.logTrackListen(
       trackId,
-      userId,
+      userId ?? unauthUuid,
       null,
       null,
       solanaListen
@@ -570,13 +553,9 @@ export class Track extends Base {
    * Marks a tracks as deleted
    * @param trackId
    */
-  async deleteTrack(trackId: number) {
-    const ownerId = this.userStateManager.getCurrentUserId()
-
-    if (!ownerId) throw new Error('No users loaded for this wallet')
-
+  async deleteTrack(userId: number, trackId: number) {
     return await this.contracts.EntityManagerClient!.manageEntity(
-      ownerId,
+      userId,
       EntityManagerClient.EntityType.TRACK,
       trackId,
       EntityManagerClient.Action.DELETE,
