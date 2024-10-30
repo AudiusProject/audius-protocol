@@ -13,6 +13,7 @@ import { makeStyles } from 'app/styles'
 import type { ThemeColors } from 'app/utils/theme'
 import { useThemePalette } from 'app/utils/theme'
 
+import { ScreenContextProvider } from './ScreenContextProvider'
 import { SecondaryScreenTitle } from './SecondaryScreenTitle'
 
 type ScreenVariant = 'primary' | 'secondary' | 'secondaryAlt' | 'white'
@@ -125,7 +126,7 @@ export const Screen = (props: ScreenProps) => {
 
   return (
     <RootComponent style={[styles.root, style, { backgroundColor }]}>
-      {children}
+      <ScreenContextProvider>{children}</ScreenContextProvider>
     </RootComponent>
   )
 }

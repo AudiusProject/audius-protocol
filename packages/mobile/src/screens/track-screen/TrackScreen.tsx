@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useEffect } from 'react'
 
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { trackPageMessages } from '@audius/common/messages'
@@ -10,7 +10,6 @@ import {
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
-import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, Button, Text, Flex } from '@audius/harmony-native'
@@ -20,6 +19,8 @@ import {
   ScreenContent,
   VirtualizedScrollView
 } from 'app/components/core'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
+import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
@@ -66,19 +67,20 @@ export const TrackScreen = () => {
     FeatureFlags.COMMENTS_ENABLED
   )
 
-  const handleFetchTrack = useCallback(() => {
-    dispatch(tracksActions.reset())
-    dispatch(
-      fetchTrack(
-        id ?? null,
-        decodeURIComponent(slug ?? ''),
-        handle ?? user?.handle,
-        canBeUnlisted
+  const isScreenReady = useIsScreenReady()
+  useEffect(() => {
+    if (isScreenReady) {
+      dispatch(tracksActions.reset())
+      dispatch(
+        fetchTrack(
+          id ?? null,
+          decodeURIComponent(slug ?? ''),
+          handle ?? user?.handle,
+          canBeUnlisted
+        )
       )
-    )
-  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
-
-  useFocusEffect(handleFetchTrack)
+    }
+  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isScreenReady])
 
   if (!track || !user) {
     return <TrackScreenSkeleton />
@@ -142,7 +144,7 @@ export const TrackScreen = () => {
             />
 
             {isReachable ? (
-              <>
+              <ScreenSecondaryContent>
                 {/* Comments */}
                 {isCommentingEnabled && !comments_disabled ? (
                   <Flex flex={3}>
@@ -186,7 +188,7 @@ export const TrackScreen = () => {
                     }
                   />
                 </Flex>
-              </>
+              </ScreenSecondaryContent>
             ) : null}
           </Flex>
         </VirtualizedScrollView>
