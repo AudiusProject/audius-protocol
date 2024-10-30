@@ -1,7 +1,6 @@
 import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 import {
-  DogEarType,
   ID,
   SquareSizes,
   isContentUSDCPurchaseGated
@@ -17,11 +16,11 @@ import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
-import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
+import { CollectionDogEar } from './CollectionDogEar'
 import { CollectionImage } from './CollectionImage'
 
 const { getCollection } = cacheCollectionsSelectors
@@ -110,16 +109,9 @@ export const CollectionCard = forwardRef(
     const isOwner = accountId === playlist_owner_id
     const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-    const dogEarType =
-      isPurchase && (!access.stream || isOwner)
-        ? DogEarType.USDC_PURCHASE
-        : null
-
     return (
       <Card ref={ref} onClick={handleClick} size={size} {...other}>
-        {dogEarType ? (
-          <DogEar type={dogEarType} css={{ top: -1, left: -1 }} />
-        ) : null}
+        <CollectionDogEar collectionId={id} />
         <Flex direction='column' p='s' gap='s'>
           <CollectionImage
             collectionId={id}

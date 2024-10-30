@@ -15,12 +15,7 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import {
-  Genre,
-  getDogEarType,
-  Nullable,
-  formatReleaseDate
-} from '@audius/common/utils'
+import { Genre, Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -46,7 +41,6 @@ import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
-import { Tile } from 'components/tile'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
@@ -59,6 +53,7 @@ import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import { PlayPauseButton } from './PlayPauseButton'
+import { TrackDogEar } from './TrackDogEar'
 import { TrackMetadataList } from './TrackMetadataList'
 import { TrackStats } from './TrackStats'
 
@@ -122,8 +117,6 @@ export type GiantTrackTileProps = {
   listenCount: number
   loading: boolean
   mood: string
-  onClickFavorites: () => void
-  onClickReposts: () => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -170,8 +163,6 @@ export const GiantTrackTile = ({
   isUnlisted,
   listenCount,
   loading,
-  onClickFavorites,
-  onClickReposts,
   onFollow,
   onMakePublic,
   onPlay,
@@ -399,12 +390,6 @@ export const GiantTrackTile = ({
   }
 
   const isLoading = loading || artworkLoading
-  // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
-  const dogEarType = isLoading
-    ? undefined
-    : getDogEarType({
-        streamConditions
-      })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
@@ -445,192 +430,189 @@ export const GiantTrackTile = ({
   }
 
   return (
-    <Paper className={styles.giantTrackTile}>
-      <Tile
-        dogEar={dogEarType}
-        size='large'
-        elevation='mid'
-        css={{ width: '100%' }}
-      >
-        <Flex p='l' gap='xl' css={{ flexWrap: 'wrap' }}>
-          <GiantArtwork
-            trackId={trackId}
-            coverArtSizes={coverArtSizes}
-            coSign={coSign}
-            callback={onArtworkLoad}
-          />
-          <Flex
-            column
-            justifyContent='space-between'
-            flex={1}
-            css={{ minWidth: '386px', flexBasis: '386px' }}
-          >
-            <Flex column gap='2xl'>
-              <Flex column gap='xl'>
-                <Flex column gap='l' alignItems='flex-start'>
-                  {renderCardTitle(cn(fadeIn))}
-                  <Box>
-                    <Text variant='heading' size='xl' className={cn(fadeIn)}>
-                      {trackTitle}
-                    </Text>
-                    {isLoading && <Skeleton className={styles.skeleton} />}
-                  </Box>
-                  <Flex>
-                    <Text
-                      variant='title'
-                      strength='weak'
-                      tag='h2'
-                      className={cn(fadeIn)}
-                    >
-                      <Text color='subdued'>By </Text>
-                      <UserLink userId={userId} popover />
-                    </Text>
-                    {isLoading && (
-                      <Skeleton className={styles.skeleton} width='60%' />
-                    )}
-                  </Flex>
-                  <div className={cn(fadeIn)}>
-                    <TrackStats
-                      trackId={trackId}
-                      scrollToCommentSection={scrollToCommentSection}
-                    />
-                  </div>
-                </Flex>
-
-                <Flex gap='xl' alignItems='center' className={cn(fadeIn)}>
-                  {showPlay ? (
-                    <PlayPauseButton
-                      disabled={!hasStreamAccess}
-                      playing={playing && !previewing}
-                      onPlay={onPlay}
-                      trackId={trackId}
-                    />
-                  ) : null}
-                  {showPreview ? (
-                    <PlayPauseButton
-                      playing={playing && previewing}
-                      onPlay={onPreview}
-                      trackId={trackId}
-                      isPreview
-                    />
-                  ) : null}
-                  {isLongFormContent ? (
-                    <GiantTrackTileProgressInfo
-                      duration={duration}
-                      trackId={trackId}
-                    />
-                  ) : (
-                    renderListenCount()
-                  )}
-                </Flex>
-              </Flex>
-            </Flex>
-            {isUnlisted && !isOwner ? null : (
-              <div
-                className={cn(styles.actionButtons, fadeIn)}
-                role='group'
-                aria-label={messages.actionGroupLabel}
-              >
-                {renderShareButton()}
-                {renderMakePublicButton()}
-                {hasStreamAccess && renderRepostButton()}
-                {hasStreamAccess && renderFavoriteButton()}
-                <span>
-                  {/* prop types for overflow menu don't work correctly
-              so we need to cast here */}
-                  <Menu {...(overflowMenu as any)}>
-                    {(ref, triggerPopup) => (
-                      <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                        <Button
-                          variant='secondary'
-                          aria-label='More options'
-                          iconLeft={IconKebabHorizontal}
-                          onClick={() => triggerPopup()}
-                        />
-                      </div>
-                    )}
-                  </Menu>
-                </span>
-              </div>
-            )}
-          </Flex>
-          <Flex
-            gap='s'
-            justifyContent='flex-end'
-            css={{ position: 'absolute', right: 'var(--harmony-unit-6)' }}
-          >
-            {aiAttributionUserId ? (
-              <MusicBadge icon={IconRobot} color='lightGreen'>
-                {messages.generatedWithAi}
-              </MusicBadge>
-            ) : null}
-            {trendingBadgeLabel ? (
-              <MusicBadge color='blue' icon={IconTrending}>
-                {trendingBadgeLabel}
-              </MusicBadge>
-            ) : null}
-            {shouldShowScheduledRelease ? (
-              <MusicBadge variant='accent' icon={IconCalendarMonth}>
-                {messages.releases(releaseDate)}
-              </MusicBadge>
-            ) : isUnlisted ? (
-              <MusicBadge icon={IconVisibilityHidden}>
-                {messages.hidden}
-              </MusicBadge>
-            ) : null}
-          </Flex>
-        </Flex>
-
-        {isStreamGated && streamConditions ? (
-          <Box pb='xl' ph='xl' w='100%' backgroundColor='surface1'>
-            <GatedContentSection
-              isLoading={isLoading}
-              contentId={trackId}
-              contentType={PurchaseableContentType.TRACK}
-              streamConditions={streamConditions}
-              hasStreamAccess={hasStreamAccess}
-              isOwner={isOwner}
-              ownerId={userId}
-            />
-          </Box>
-        ) : null}
-
-        {aiAttributionUserId ? (
-          <AiTrackSection attributedUserId={aiAttributionUserId} />
-        ) : null}
-
+    <Paper
+      column
+      w='100%'
+      justifyContent='center'
+      mh='auto'
+      css={{ maxWidth: 1080, textAlign: 'left' }}
+    >
+      <TrackDogEar trackId={trackId} borderOffset={0} />
+      <Flex p='l' gap='xl' css={{ flexWrap: 'wrap' }}>
+        <GiantArtwork
+          trackId={trackId}
+          coverArtSizes={coverArtSizes}
+          coSign={coSign}
+          callback={onArtworkLoad}
+        />
         <Flex
           column
-          p='l'
-          backgroundColor='surface1'
-          borderTop='default'
-          className={cn(fadeIn)}
+          justifyContent='space-between'
+          flex={1}
+          css={{ minWidth: '386px', flexBasis: '386px' }}
         >
-          <TrackMetadataList trackId={trackId} />
-          {description ? (
-            <UserGeneratedText
-              tag='h3'
-              size='s'
-              lineHeight='multi'
-              css={(theme) => ({
-                paddingTop: theme.spacing.m,
-                userSelect: 'text'
-              })}
-            >
-              {description}
-            </UserGeneratedText>
-          ) : null}
+          <Flex column gap='2xl'>
+            <Flex column gap='xl'>
+              <Flex column gap='l' alignItems='flex-start'>
+                {renderCardTitle(cn(fadeIn))}
+                <Box>
+                  <Text variant='heading' size='xl' className={cn(fadeIn)}>
+                    {trackTitle}
+                  </Text>
+                  {isLoading && <Skeleton className={styles.skeleton} />}
+                </Box>
+                <Flex>
+                  <Text
+                    variant='title'
+                    strength='weak'
+                    tag='h2'
+                    className={cn(fadeIn)}
+                  >
+                    <Text color='subdued'>By </Text>
+                    <UserLink userId={userId} popover />
+                  </Text>
+                  {isLoading && (
+                    <Skeleton className={styles.skeleton} width='60%' />
+                  )}
+                </Flex>
+                <div className={cn(fadeIn)}>
+                  <TrackStats
+                    trackId={trackId}
+                    scrollToCommentSection={scrollToCommentSection}
+                  />
+                </div>
+              </Flex>
 
-          {renderTags()}
-          {hasDownloadableAssets ? (
-            <Box pt='l' w='100%'>
-              <Suspense>
-                <DownloadSection trackId={trackId} />
-              </Suspense>
-            </Box>
+              <Flex gap='xl' alignItems='center' className={cn(fadeIn)}>
+                {showPlay ? (
+                  <PlayPauseButton
+                    disabled={!hasStreamAccess}
+                    playing={playing && !previewing}
+                    onPlay={onPlay}
+                    trackId={trackId}
+                  />
+                ) : null}
+                {showPreview ? (
+                  <PlayPauseButton
+                    playing={playing && previewing}
+                    onPlay={onPreview}
+                    trackId={trackId}
+                    isPreview
+                  />
+                ) : null}
+                {isLongFormContent ? (
+                  <GiantTrackTileProgressInfo
+                    duration={duration}
+                    trackId={trackId}
+                  />
+                ) : (
+                  renderListenCount()
+                )}
+              </Flex>
+            </Flex>
+          </Flex>
+          {isUnlisted && !isOwner ? null : (
+            <div
+              className={cn(styles.actionButtons, fadeIn)}
+              role='group'
+              aria-label={messages.actionGroupLabel}
+            >
+              {renderShareButton()}
+              {renderMakePublicButton()}
+              {hasStreamAccess && renderRepostButton()}
+              {hasStreamAccess && renderFavoriteButton()}
+              <span>
+                {/* prop types for overflow menu don't work correctly
+              so we need to cast here */}
+                <Menu {...(overflowMenu as any)}>
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        variant='secondary'
+                        aria-label='More options'
+                        iconLeft={IconKebabHorizontal}
+                        onClick={() => triggerPopup()}
+                      />
+                    </div>
+                  )}
+                </Menu>
+              </span>
+            </div>
+          )}
+        </Flex>
+        <Flex
+          gap='s'
+          justifyContent='flex-end'
+          css={{ position: 'absolute', right: 'var(--harmony-unit-6)' }}
+        >
+          {aiAttributionUserId ? (
+            <MusicBadge icon={IconRobot} color='lightGreen'>
+              {messages.generatedWithAi}
+            </MusicBadge>
+          ) : null}
+          {trendingBadgeLabel ? (
+            <MusicBadge color='blue' icon={IconTrending}>
+              {trendingBadgeLabel}
+            </MusicBadge>
+          ) : null}
+          {shouldShowScheduledRelease ? (
+            <MusicBadge variant='accent' icon={IconCalendarMonth}>
+              {messages.releases(releaseDate)}
+            </MusicBadge>
+          ) : isUnlisted ? (
+            <MusicBadge icon={IconVisibilityHidden}>
+              {messages.hidden}
+            </MusicBadge>
           ) : null}
         </Flex>
-      </Tile>
+      </Flex>
+
+      {isStreamGated && streamConditions ? (
+        <Box pb='xl' ph='xl' w='100%' backgroundColor='surface1'>
+          <GatedContentSection
+            isLoading={isLoading}
+            contentId={trackId}
+            contentType={PurchaseableContentType.TRACK}
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
+            isOwner={isOwner}
+            ownerId={userId}
+          />
+        </Box>
+      ) : null}
+
+      {aiAttributionUserId ? (
+        <AiTrackSection attributedUserId={aiAttributionUserId} />
+      ) : null}
+
+      <Flex
+        column
+        p='l'
+        backgroundColor='surface1'
+        borderTop='default'
+        className={cn(fadeIn)}
+      >
+        <TrackMetadataList trackId={trackId} />
+        {description ? (
+          <UserGeneratedText
+            tag='h3'
+            size='s'
+            lineHeight='multi'
+            css={(theme) => ({ paddingTop: theme.spacing.m })}
+          >
+            {description}
+          </UserGeneratedText>
+        ) : null}
+
+        {renderTags()}
+        {hasDownloadableAssets ? (
+          <Box pt='l' w='100%'>
+            <Suspense>
+              <DownloadSection trackId={trackId} />
+            </Suspense>
+          </Box>
+        ) : null}
+      </Flex>
     </Paper>
   )
 }

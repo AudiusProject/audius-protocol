@@ -19,7 +19,6 @@ import {
   formatCount,
   Genre,
   formatLineupTileDuration,
-  getDogEarType,
   Nullable
 } from '@audius/common/utils'
 import {
@@ -37,7 +36,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
-import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -48,6 +46,7 @@ import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { GatedTrackLabel } from '../GatedTrackLabel'
 import { LineupTileLabel } from '../LineupTileLabel'
+import { TrackDogEar } from '../TrackDogEar'
 import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 
@@ -226,15 +225,6 @@ const TrackTile = (props: CombinedProps) => {
   const trackId = isStreamGated ? id : null
   const gatedTrackStatus = trackId ? gatedTrackStatusMap[trackId] : undefined
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
-
-  const DogEarIconType = isLoading
-    ? undefined
-    : getDogEarType({
-        streamConditions,
-        isOwner,
-        hasStreamAccess
-      })
-
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
   const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
@@ -315,11 +305,7 @@ const TrackTile = (props: CombinedProps) => {
         containerClassName
       )}
     >
-      {DogEarIconType ? (
-        <div className={styles.borderOffset}>
-          <DogEar type={DogEarIconType} />
-        </div>
-      ) : null}
+      <TrackDogEar trackId={id} />
       <div className={styles.mainContent} onClick={handleClick}>
         <Text
           variant='body'

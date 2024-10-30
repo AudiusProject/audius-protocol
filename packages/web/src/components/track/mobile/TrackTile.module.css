@@ -16,12 +16,6 @@
   margin: 0px auto var(--harmony-unit-3);
 }
 
-.borderOffset {
-  position: absolute;
-  top: calc(-1 * var(--border-width));
-  left: calc(-1 * var(--border-width));
-}
-
 .container.readonly {
   --border-width: 0px;
   min-width: 448px;

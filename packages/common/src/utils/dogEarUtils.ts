@@ -1,13 +1,14 @@
 import { isEmpty } from 'lodash'
 
 import { DogEarType } from '~/models/DogEar'
-import { AccessConditions } from '~/models/Track'
+import { AccessConditions, isContentUSDCPurchaseGated } from '~/models/Track'
 
 import { Nullable } from './typeUtils'
 
 type GetDogEarTypeArgs = {
   hasStreamAccess?: boolean
   isOwner?: boolean
+  isDownloadGated?: boolean
   streamConditions?: Nullable<AccessConditions>
   downloadConditions?: Nullable<AccessConditions>
 }
@@ -20,13 +21,17 @@ type GetDogEarTypeArgs = {
  * * isArtistPick: if true and hasStreamAccess is true, prefers artist pick variant
  * * hasStreamAccess: if true, will never return gated variants
  * * isOwner: if true, will always return gated variants if present
+ * * isDownloadGated: if true and downloadConditions indicate USDC purchase, return USDC_EXTRAS
  */
-export const getDogEarType = ({
-  hasStreamAccess,
-  isOwner,
-  streamConditions,
-  downloadConditions
-}: GetDogEarTypeArgs) => {
+export const getDogEarType = (args: GetDogEarTypeArgs) => {
+  const {
+    hasStreamAccess,
+    isOwner,
+    isDownloadGated,
+    streamConditions,
+    downloadConditions
+  } = args
+
   // Show gated variants for track owners or if user does not yet have access
   if (
     (isOwner || !hasStreamAccess) &&
@@ -45,10 +50,8 @@ export const getDogEarType = ({
     }
   }
 
-  if (downloadConditions != null && !isEmpty(downloadConditions)) {
-    if ('usdc_purchase' in downloadConditions) {
-      return DogEarType.USDC_PURCHASE
-    }
+  if (isDownloadGated && isContentUSDCPurchaseGated(downloadConditions)) {
+    return DogEarType.USDC_EXTRAS
   }
 
   return undefined

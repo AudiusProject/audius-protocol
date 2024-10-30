@@ -11,8 +11,7 @@ import {
 import {
   formatCount,
   Genre,
-  formatLineupTileDuration,
-  getDogEarType
+  formatLineupTileDuration
 } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
@@ -27,7 +26,7 @@ import {
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { DogEar } from 'components/dog-ear'
+import { CollectionDogEar } from 'components/collection'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -39,6 +38,7 @@ import {
 import { GatedTrackLabel } from '../GatedTrackLabel'
 import { LineupTileLabel } from '../LineupTileLabel'
 import { OwnerActionButtons } from '../OwnerActionButtons'
+import { TrackDogEar } from '../TrackDogEar'
 import { ViewerActionButtons } from '../ViewerActionButtons'
 import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
@@ -148,6 +148,7 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
+  collectionId,
   trackId,
   releaseDate,
   source
@@ -214,14 +215,6 @@ const TrackTile = ({
     }
   }
 
-  const dogEarType = isLoading
-    ? undefined
-    : getDogEarType({
-        hasStreamAccess,
-        isOwner,
-        streamConditions
-      })
-
   const Root = standalone ? Paper : 'div'
 
   return (
@@ -255,11 +248,8 @@ const TrackTile = ({
       >
         {artwork}
       </div>
-      {dogEarType ? (
-        <div className={styles.borderOffset}>
-          <DogEar type={dogEarType} />
-        </div>
-      ) : null}
+      {trackId ? <TrackDogEar trackId={trackId} /> : null}
+      {collectionId ? <CollectionDogEar collectionId={collectionId} /> : null}
       <div className={styles.body}>
         <Flex inline direction='column' h='100%' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (

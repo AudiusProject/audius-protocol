@@ -26,6 +26,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './LockedContentDetailsTile.module.css'
+import { TrackDogEar } from './TrackDogEar'
 
 const messages = {
   by: 'By',
@@ -114,17 +115,21 @@ export const LockedContentDetailsTile = ({
         image={image}
         aria-label={label}
       />
-      {dogEarType ? (
-        <Flex
-          css={{
-            position: 'absolute',
-            top: -1,
-            left: -1
-          }}
-        >
-          <DogEar type={dogEarType} />
-        </Flex>
-      ) : null}
+      {isAlbum ? (
+        dogEarType ? (
+          <Flex
+            css={{
+              position: 'absolute',
+              top: -1,
+              left: -1
+            }}
+          >
+            <DogEar type={dogEarType} />
+          </Flex>
+        ) : null
+      ) : (
+        <TrackDogEar trackId={contentId} />
+      )}
       <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
           <Flex

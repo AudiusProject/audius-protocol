@@ -56,8 +56,6 @@ export type OwnProps = {
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
   onUnfollow: () => void
-  onClickReposts: () => void
-  onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
@@ -91,8 +89,6 @@ const TrackPage = ({
   onFollow,
   onUnfollow,
   makePublic,
-  onClickReposts,
-  onClickFavorites,
 
   // Tracks Lineup Props
   tracks,
@@ -196,8 +192,6 @@ const TrackPage = ({
       onFollow={onFollow}
       onUnfollow={onUnfollow}
       onMakePublic={makePublic}
-      onClickReposts={onClickReposts}
-      onClickFavorites={onClickFavorites}
     />
   )
 

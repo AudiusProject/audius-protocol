@@ -29,12 +29,6 @@
   height: 128px;
 }
 
-.borderOffset {
-  position: absolute;
-  top: calc(-1 * var(--border-width));
-  left: calc(-1 * var(--border-width));
-}
-
 .order {
   flex: 0 0 var(--harmony-unit-8);
   display: flex;
