@@ -57,8 +57,8 @@ export const TrackPriceField = () => {
         </Flex>
         <Text>{messages.publishingRights.confirmationText}</Text>
         <Box as='ul' mt='s'>
-          {messages.publishingRights.bulletPoints.map((point, index) => (
-            <Box key={index} mb='s'>
+          {messages.publishingRights.bulletPoints.map((point) => (
+            <Box key={point} mb='s'>
               <Text bulleted>{point}</Text>
             </Box>
           ))}
