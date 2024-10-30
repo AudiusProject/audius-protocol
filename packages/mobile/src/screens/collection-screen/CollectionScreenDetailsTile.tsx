@@ -22,7 +22,8 @@ import {
   playerSelectors,
   cacheTracksSelectors,
   PurchaseableContentType,
-  queueActions
+  queueActions,
+  collectionPageActions
 } from '@audius/common/store'
 import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
@@ -60,15 +61,19 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRoute } from 'app/hooks/useRoute'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
+
+import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
+const { resetCollection, fetchCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
   (state: AppState) => getCollectionTracksLineup(state).entries,
@@ -218,6 +223,18 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
+  const { params } = useRoute<'Collection'>()
+
+  // params is incorrectly typed and can sometimes be undefined
+  const { slug, collectionType, handle } = params ?? {}
+  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
+
+  const handleFetchCollection = useCallback(() => {
+    dispatch(resetCollection())
+    dispatch(fetchCollection(collectionId as number, permalink, true))
+  }, [dispatch, collectionId, permalink])
+
+  useFetchCollectionLineup(collectionId, handleFetchCollection)
   const { data: currentUserId } = useGetCurrentUserId({})
   // Since we're supporting SmartCollections, need to explicitly check that
   // collectionId is a number before fetching the playlist. -1 is a placeholder,
@@ -248,7 +265,6 @@ export const CollectionScreenDetailsTile = ({
   const collectionTrackCount = useSelector(selectTrackCount)
   const trackCount = trackCountProp ?? collectionTrackCount
   const isLineupLoading = useSelector(selectIsLineupLoading)
-  const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaybackActive = useSelector(getPlaying)
   const isPlaying = isPlaybackActive && isQueued
@@ -334,53 +350,6 @@ export const CollectionScreenDetailsTile = ({
     () => play({ isPreview: true }),
     [play]
   )
-
-  const handlePressTrackListItemPlay = useCallback(
-    (uid: UID, id: ID) => {
-      if (isPlaying && playingUid === uid) {
-        dispatch(tracksActions.pause())
-        recordPlay(id, false)
-      } else if (playingUid !== uid) {
-        dispatch(tracksActions.play(uid))
-        recordPlay(id)
-      } else {
-        dispatch(tracksActions.play())
-        recordPlay(id)
-      }
-    },
-    [dispatch, isPlaying, playingUid]
-  )
-
-  const renderTrackList = useCallback(() => {
-    return (
-      <TrackList
-        contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
-        trackItemAction='overflow'
-        showSkeleton={isLineupLoading}
-        togglePlay={handlePressTrackListItemPlay}
-        isAlbumPage={isAlbum}
-        uids={uids}
-        ListEmptyComponent={
-          isLineupLoading ? null : (
-            <Box mt='m'>
-              <Text variant='body' style={styles.empty}>
-                {isOwner ? messages.empty : messages.emptyPublic}
-              </Text>
-            </Box>
-          )
-        }
-      />
-    )
-  }, [
-    numericCollectionId,
-    isAlbum,
-    handlePressTrackListItemPlay,
-    isLineupLoading,
-    styles,
-    uids,
-    isOwner,
-    messages
-  ])
 
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
@@ -534,8 +503,73 @@ export const CollectionScreenDetailsTile = ({
       </ScreenPrimaryContent>
       <ScreenSecondaryContent>
         <Divider />
-        {renderTrackList()}
+        <CollectionTrackList
+          isAlbum={isAlbum}
+          isOwner={isOwner}
+          isPlaying={isPlaying}
+          numericCollectionId={numericCollectionId}
+          isLineupLoading={isLineupLoading}
+          uids={uids}
+        />
       </ScreenSecondaryContent>
     </Paper>
+  )
+}
+
+type CollectionTrackListProps = {
+  isAlbum?: boolean
+  isOwner: boolean
+  isPlaying: boolean
+  numericCollectionId?: number
+  isLineupLoading: boolean
+  uids: UID[]
+}
+
+const CollectionTrackList = ({
+  isAlbum,
+  isOwner,
+  numericCollectionId,
+  isLineupLoading,
+  isPlaying,
+  uids
+}: CollectionTrackListProps) => {
+  const styles = useStyles()
+  const dispatch = useDispatch()
+  const playingUid = useSelector(getUid)
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
+
+  const handlePressTrackListItemPlay = useCallback(
+    (uid: UID, id: ID) => {
+      if (isPlaying && playingUid === uid) {
+        dispatch(tracksActions.pause())
+        recordPlay(id, false)
+      } else if (playingUid !== uid) {
+        dispatch(tracksActions.play(uid))
+        recordPlay(id)
+      } else {
+        dispatch(tracksActions.play())
+        recordPlay(id)
+      }
+    },
+    [dispatch, isPlaying, playingUid]
+  )
+  return (
+    <TrackList
+      contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
+      trackItemAction='overflow'
+      showSkeleton={isLineupLoading}
+      togglePlay={handlePressTrackListItemPlay}
+      isAlbumPage={isAlbum}
+      uids={uids}
+      ListEmptyComponent={
+        isLineupLoading ? null : (
+          <Box mt='m'>
+            <Text variant='body' style={styles.empty}>
+              {isOwner ? messages.empty : messages.emptyPublic}
+            </Text>
+          </Box>
+        )
+      }
+    />
   )
 }
