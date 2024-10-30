@@ -239,18 +239,6 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Comments',
-      items: [
-        'developers/api/track-comments',
-        'developers/api/track-comment-count',
-        'developers/api/get-comment-replies',
-        'developers/api/get-muted-users',
-        'developers/api/track-comment-notification-setting',
-      ],
-      collapsed: true,
-    },
-    {
-      type: 'category',
       label: 'Playlists',
       items: [
         'developers/api/get-playlist',
@@ -260,6 +248,18 @@ module.exports = {
         'developers/api/get-trending-playlists',
         'developers/api/get-playlist-access-info',
         'developers/api/get-playlist-tracks',
+      ],
+      collapsed: true,
+    },
+    {
+      type: 'category',
+      label: 'Comments',
+      items: [
+        'developers/api/track-comments',
+        'developers/api/track-comment-count',
+        'developers/api/get-comment-replies',
+        'developers/api/get-muted-users',
+        'developers/api/track-comment-notification-setting',
       ],
       collapsed: true,
     },
