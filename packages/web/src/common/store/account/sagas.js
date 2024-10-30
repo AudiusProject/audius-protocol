@@ -1,3 +1,4 @@
+import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
 import {
   FeatureFlags,
@@ -48,7 +49,8 @@ const {
   tikTokLogin,
   fetchSavedPlaylists,
   addAccountPlaylist,
-  resetAccount
+  resetAccount,
+  setWalletAddresses
 } = accountActions
 
 const IP_STORAGE_KEY = 'user-ip-timestamp'
@@ -100,9 +102,22 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
+  const getWalletAddresses = yield getContext('getWalletAddresses')
+
+  const libs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  yield call([libs, libs.setCurrentUser], {
+    wallet: account.wallet,
+    userId: account.user_id
+  })
+
   if (account && account.handle) {
-    const libs = yield call(audiusBackendInstance.getAudiusLibs)
-    const web3User = yield call([libs.Account, libs.Account.getWeb3User])
+    const { web3WalletAddress } = yield call(getWalletAddresses)
+    const { user: web3User } = yield call(userApiFetchSaga.getUserAccount, {
+      wallet: web3WalletAddress
+    })
 
     let solanaWallet
     let managerUserId
@@ -157,19 +172,24 @@ function* onSignedIn({ payload: { account } }) {
   if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
     yield call(createUserBankIfNeeded, audiusBackendInstance, {
       recordAnalytics: analytics.track,
-      feePayerOverride
+      feePayerOverride,
+      ethAddress: account.wallet
     })
   }
 }
 
 export function* fetchAccountAsync({ isSignUp = false }) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
+  const getWalletAddresses = yield getContext('getWalletAddresses')
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
-  const account = yield call(audiusBackendInstance.getAccount)
-  if (!account) {
+  const { accountWalletAddress: wallet, web3WalletAddress } = yield call(
+    getWalletAddresses
+  )
+
+  if (!wallet) {
     yield put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -177,6 +197,21 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     )
     return
   }
+
+  const accountData = yield call(userApiFetchSaga.getUserAccount, {
+    wallet
+  })
+
+  if (!accountData || !accountData.user) {
+    yield put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_NOT_FOUND'
+      })
+    )
+    return
+  }
+  const account = accountData.user
+
   if (account.is_deactivated) {
     yield put(accountActions.resetAccount())
     yield put(
@@ -194,6 +229,20 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
   // Cache the account and put the signedIn action. We're done.
   yield call(cacheAccount, account)
+  yield put(
+    setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
+  )
+
+  // Sync current user info to libs
+  const libs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  yield call([libs, libs.setCurrentUser], {
+    wallet,
+    userId: account.user_id
+  })
+
   yield put(signedIn({ account, isSignUp }))
 }
 
@@ -204,7 +253,6 @@ export function* fetchLocalAccountAsync() {
 
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
-  const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
 
   if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
     yield call(
@@ -212,7 +260,7 @@ export function* fetchLocalAccountAsync() {
       { ...cachedAccountUser, local: true },
       cachedAccountUser.orderedPlaylists
     )
-  } else if (!currentUserExists) {
+  } else {
     yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
 }
@@ -404,7 +452,7 @@ function* watchResetAccount() {
     const audiusBackendInstance = yield getContext('audiusBackendInstance')
     const localStorage = yield getContext('localStorage')
     const libs = yield call(audiusBackendInstance.getAudiusLibs)
-    yield call([libs.userStateManager, 'clearUser'])
+    yield call([libs, 'clearCurrentUser'])
     yield call([localStorage, 'clearAudiusAccount'])
     yield call([localStorage, 'clearAudiusAccountUser'])
   })

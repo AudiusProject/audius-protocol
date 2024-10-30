@@ -2,7 +2,7 @@
   "steps": [
     {
       "name": "verify",
-      "command": "npm run verify -w @audius/sdk"
+      "command": "npm run verify -w @audius/sdk-legacy"
     }
   ]
 }

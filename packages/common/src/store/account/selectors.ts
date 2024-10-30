@@ -1,12 +1,11 @@
 import { createSelector } from 'reselect'
 
+import { AccountCollection } from '~/models/Collection'
 import { getCollections } from '~/store/cache/collections/selectors'
 import { getUser, getUsers } from '~/store/cache/users/selectors'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { CommonState } from '../commonStore'
-
-import { AccountCollection } from './types'
 
 const internalGetAccountCollections = (state: CommonState) =>
   state.account.collections
@@ -27,6 +26,9 @@ export const getAccountToCache = (state: CommonState) => ({
   userId: state.account.userId,
   collections: state.account.collections
 })
+
+export const getWalletAddresses = (state: CommonState) =>
+  state.account.walletAddresses
 
 export const getAccountUser = createSelector(
   [internalGetAccountUser],

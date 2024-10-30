@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import { audioRewardsPageActions, HCaptchaStatus } from '@audius/common/store'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
@@ -20,6 +21,7 @@ const messages = {
 
 export const HCaptchaModal = () => {
   const [isOpen, setOpen] = useModalState('HCaptcha')
+  const { data: userId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
 
   const handleClose = useCallback(
@@ -34,7 +36,11 @@ export const HCaptchaModal = () => {
 
   const onVerify = useCallback(
     async (token: string) => {
-      const result = await audiusBackendInstance.updateHCaptchaScore(token)
+      if (!userId) {
+        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
+        return
+      }
+      const result = await audiusBackendInstance.updateHCaptchaScore({ token })
       if (result.error) {
         dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
       } else {
@@ -42,7 +48,7 @@ export const HCaptchaModal = () => {
       }
       handleClose(false)
     },
-    [dispatch, handleClose]
+    [userId, dispatch, handleClose]
   )
 
   return sitekey ? (

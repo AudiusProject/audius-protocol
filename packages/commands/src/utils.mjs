@@ -11,6 +11,47 @@ import {
 } from '@audius/sdk-legacy/dist/libs.js'
 import { PublicKey } from '@solana/web3.js'
 
+/**
+ * @type {import('@audius/sdk').AudiusSdk}
+ */
+let audiusSdk
+export const initializeAudiusSdk = async ({
+  apiKey = undefined,
+  apiSecret = undefined
+} = {}) => {
+  const solanaRelay = new SolanaRelay(
+    new Configuration({
+      basePath: '/solana',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      middleware: [
+        {
+          pre: async (context) => {
+            const endpoint = 'http://audius-protocol-discovery-provider-1'
+            const url = `${endpoint}${context.url}`
+            return { url, init: context.init }
+          }
+        }
+      ]
+    })
+  )
+
+  if (!audiusSdk) {
+    audiusSdk = AudiusSdk({
+      appName: 'audius-cmd',
+      apiKey,
+      apiSecret,
+      environment: 'development',
+      services: {
+        solanaRelay
+      }
+    })
+  }
+
+  return audiusSdk
+}
+
 export const initializeAudiusLibs = async (handle) => {
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -62,6 +103,7 @@ export const initializeAudiusLibs = async (handle) => {
 
   await audiusLibs.init()
 
+  // TODO-NOW: Update this to initialize correctly
   if (handle) {
     // Log out of existing user, log in as new user, and re-init
     await audiusLibs.Account.logout()
@@ -71,50 +113,34 @@ export const initializeAudiusLibs = async (handle) => {
       audiusLibs.localStorage.getItem(`handle-${handle}`)
     )
     await audiusLibs.init()
+    // extract privkey and pubkey from hedgehog
+    // only works with accounts created via audius-cmd
+    const wallet = audiusLibs?.hedgehog?.getWallet()
+    const privKey = wallet?.getPrivateKeyString()
+    const pubKey = wallet?.getAddressString()
+
+    // init sdk with priv and pub keys as api keys and secret
+    // this enables writes via sdk
+    const audiusSdk = await initializeAudiusSdk({
+      apiKey: pubKey,
+      apiSecret: privKey
+    })
+    const {
+      data: { user }
+    } = await audiusSdk.full.users.getUserAccount({
+      wallet: pubKey
+    })
+    if (!user) {
+      throw new Error(`Failed to fetch user for ${handle} (${wallet})`)
+    }
+    audiusLibs.setCurrentUser({
+      wallet: pubKey,
+      userId: AudiusUtils.decodeHashId(user.id)
+    })
+    console.log('currentUser:', audiusLibs.getCurrentUser())
   }
 
   return audiusLibs
-}
-
-/**
- * @type {import('@audius/sdk').AudiusSdk}
- */
-let audiusSdk
-export const initializeAudiusSdk = async ({
-  apiKey = undefined,
-  apiSecret = undefined
-} = {}) => {
-  const solanaRelay = new SolanaRelay(
-    new Configuration({
-      basePath: '/solana',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      middleware: [
-        {
-          pre: async (context) => {
-            const endpoint = 'http://audius-protocol-discovery-provider-1'
-            const url = `${endpoint}${context.url}`
-            return { url, init: context.init }
-          }
-        }
-      ]
-    })
-  )
-
-  if (!audiusSdk) {
-    audiusSdk = AudiusSdk({
-      appName: 'audius-cmd',
-      apiKey,
-      apiSecret,
-      environment: 'development',
-      services: {
-        solanaRelay
-      }
-    })
-  }
-
-  return audiusSdk
 }
 
 export const parseUserId = async (arg) => {

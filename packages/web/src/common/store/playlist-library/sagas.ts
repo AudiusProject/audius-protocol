@@ -1,14 +1,14 @@
 import {
   Kind,
   PlaylistLibraryID,
-  PlaylistIdentifier
+  PlaylistIdentifier,
+  AccountCollection
 } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
   playlistLibraryActions,
-  playlistLibraryHelpers,
-  AccountCollection
+  playlistLibraryHelpers
 } from '@audius/common/store'
 import { fork, put, select, takeEvery } from 'typed-redux-saga'
 

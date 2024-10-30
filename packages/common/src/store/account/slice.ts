@@ -1,14 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { User } from '~/models'
+import { AccountCollection, User } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
 import { Status } from '../../models/Status'
 
 import {
-  AccountCollection,
   InstagramAccountPayload,
   TikTokAccountPayload,
   TwitterAccountPayload
@@ -29,7 +28,11 @@ const initialState = {
   status: Status.IDLE,
   reason: null as Nullable<FailureReason>,
   connectivityFailure: false, // Did we fail from no internet connectivity?
-  needsAccountRecovery: false
+  needsAccountRecovery: false,
+  walletAddresses: { currentUser: null, web3User: null } as {
+    currentUser: string | null
+    web3User: string | null
+  }
 }
 
 type FetchAccountSucceededPayload = {
@@ -136,7 +139,16 @@ const slice = createSlice({
     signedIn: (
       _state,
       _action: PayloadAction<{ account: User; isSignUp: boolean }>
-    ) => {}
+    ) => {},
+    setWalletAddresses: (
+      state,
+      action: PayloadAction<{
+        currentUser: string | null
+        web3User: string | null
+      }>
+    ) => {
+      state.walletAddresses = action.payload
+    }
   }
 })
 
@@ -161,6 +173,7 @@ export const {
   setPlaylistOrder,
   setReachable,
   showPushNotificationConfirmation,
+  setWalletAddresses,
   signedIn,
   subscribeBrowserPushNotifications,
   tikTokLogin,
