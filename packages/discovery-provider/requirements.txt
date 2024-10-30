@@ -4,13 +4,14 @@ flake8==4.0.1
 isort==5.10.1
 mypy==1.4.1
 sqlalchemy-stubs==0.4
-typing-extensions==4.7.1
+typing-extensions==4.10.0
 types-python-dateutil==0.1.4
 types-redis==4.6.0.2
 types-requests==2.25.0
 types-pytz==2021.1.2
 types-freezegun==1.1.10
 types-Flask==1.1.6
+mypy-protobuf==3.6.0
 
 web3==6.20.2
 hexbytes==0.3.1
@@ -71,6 +72,11 @@ websockets==10.1
 solders==0.18.1
 # Anchor support
 anchorpy==0.17.2
+
+# Core support
+grpcio==1.67.0
+grpcio-tools==1.67.0
+protobuf==5.28.3
 
 # Test
 pytest-mock==3.6.1
