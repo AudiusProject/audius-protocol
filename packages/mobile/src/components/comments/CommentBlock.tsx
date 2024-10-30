@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -13,7 +13,8 @@ import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
 import type { GestureResponderEvent } from 'react-native'
-import { Animated, TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
 import { Box, Flex, Text } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -84,20 +85,8 @@ export const CommentBlockInternal = (
 
   const isCommentByArtist = userId === artistId
 
-  // Add fade animation and run on mount
-  const fadeAnim = new Animated.Value(0)
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true
-    }).start()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
-    <Animated.View style={{ opacity: fadeAnim, width: '100%' }}>
+    <Animated.View entering={FadeIn.duration(500)}>
       <Flex
         direction='row'
         w='100%'
