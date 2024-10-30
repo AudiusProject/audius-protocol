@@ -70,7 +70,6 @@ import {
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
