@@ -6,7 +6,7 @@ import {
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
-import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
   ExploreCollectionsVariant,
@@ -77,7 +77,6 @@ import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
-import SearchPage from 'pages/search-page/SearchPage'
 import { SearchPageV2 } from 'pages/search-page-v2/SearchPageV2'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
@@ -90,7 +89,6 @@ import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
 import Visualizer from 'pages/visualizer/Visualizer'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { SsrContext } from 'ssr/SsrContext'
@@ -416,8 +414,7 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { incrementScroll, decrementScroll, userHandle, isSearchV2Enabled } =
-      this.props
+    const { incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
       showWebUpdateBanner,
@@ -693,14 +690,8 @@ class WebPlayer extends Component {
                           }).toString()
                         }}
                       />
-                    ) : isSearchV2Enabled ? (
-                      <SearchPageV2 />
                     ) : (
-                      <SearchPage
-                        {...props}
-                        scrollToTop={this.scrollToTop}
-                        containerRef={this.props.mainContentRef.current}
-                      />
+                      <SearchPageV2 />
                     )
                   }}
                 />
@@ -1040,8 +1031,7 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  showCookieBanner: getShowCookieBanner(state),
-  isSearchV2Enabled: getFeatureEnabled(FeatureFlags.SEARCH_V2)
+  showCookieBanner: getShowCookieBanner(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({

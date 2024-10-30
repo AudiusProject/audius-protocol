@@ -2,7 +2,7 @@
   {
     "initiator": 2,
     "metadata": {
-      "challenge_id": "profile-completion"
+      "challenge_id": "p"
     },
     "slot": 112519136,
     "type": "ChallengeReward"
@@ -10,7 +10,7 @@
   {
     "initiator": 4,
     "metadata": {
-      "challenge_id": "connect-verified"
+      "challenge_id": "v"
     },
     "slot": 114983339,
     "type": "ChallengeReward"
@@ -18,7 +18,7 @@
   {
     "initiator": 6,
     "metadata": {
-      "challenge_id": "referrals"
+      "challenge_id": "r"
     },
     "slot": 114989028,
     "type": "ChallengeReward"
@@ -26,7 +26,7 @@
   {
     "initiator": 6,
     "metadata": {
-      "challenge_id": "ref-v"
+      "challenge_id": "rv"
     },
     "slot": 114989029,
     "type": "ChallengeReward"
@@ -34,7 +34,7 @@
   {
     "initiator": 8,
     "metadata": {
-      "challenge_id": "referred"
+      "challenge_id": "rd"
     },
     "slot": 114989029,
     "type": "ChallengeReward"
@@ -42,7 +42,7 @@
   {
     "initiator": 10,
     "metadata": {
-      "challenge_id": "track-upload"
+      "challenge_id": "u"
     },
     "slot": 114838855,
     "type": "ChallengeReward"
@@ -50,7 +50,7 @@
   {
     "initiator": 12,
     "metadata": {
-      "challenge_id": "listen-streak"
+      "challenge_id": "l"
     },
     "slot": 115118977,
     "type": "ChallengeReward"
@@ -58,7 +58,7 @@
   {
     "initiator": 12,
     "metadata": {
-      "challenge_id": "mobile-install"
+      "challenge_id": "m"
     },
     "slot": 115118978,
     "type": "ChallengeReward"
@@ -66,7 +66,7 @@
   {
     "initiator": 14,
     "metadata": {
-      "challenge_id": "send-first-tip"
+      "challenge_id": "ft"
     },
     "slot": 115118979,
     "type": "ChallengeReward"
@@ -74,7 +74,7 @@
   {
     "initiator": 16,
     "metadata": {
-      "challenge_id": "first-playlist"
+      "challenge_id": "fp"
     },
     "slot": 115118980,
     "type": "ChallengeReward"

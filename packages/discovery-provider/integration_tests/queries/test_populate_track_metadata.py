@@ -62,20 +62,14 @@ def test_populate_track_metadata(app):
             {
                 "track_id": 1,
                 "track_cid": "baeaaaiqsecyxqc76k2fy5px6vtyp3utdw7kujpvkvdyxscfvvixkeqfsnhviy",
-                "is_stream_gated": False,
-                "is_download_gated": False,
             },
             {
                 "track_id": 2,
                 "track_cid": "QmajYZEhhd5S5aFcTDF2682Liz22Qr4uruDNtPREqxCoRR",
-                "is_stream_gated": False,
-                "is_download_gated": False,
             },
             {
                 "track_id": 3,
                 "track_cid": "QmV7iiDU935ApQio9Exkfw2dcxGDfEMuYmort88s9r9T8m",
-                "is_stream_gated": False,
-                "is_download_gated": False,
             },
         ]
 

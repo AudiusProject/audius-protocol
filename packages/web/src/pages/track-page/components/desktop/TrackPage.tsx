@@ -281,7 +281,7 @@ const TrackPage = ({
               alignItems={
                 isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
               }
-              gap='l'
+              gap='2xl'
               flex={1}
               css={{
                 minWidth: 330,
@@ -289,61 +289,71 @@ const TrackPage = ({
               }}
             >
               {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
-              {hasValidRemixParent
-                ? renderOriginalTrackTitle()
-                : renderMoreByTitle()}
-              <Lineup
-                lineup={tracks}
-                // Styles for leading element (original track if remix).
-                leadingElementId={defaults.remixParentTrackId}
-                leadingElementDelineator={
-                  <Flex gap='3xl' direction='column'>
-                    <Box
-                      alignSelf={isCommentingEnabled ? 'flex-start' : 'center'}
-                    >
-                      <ViewOtherRemixesButton
-                        parentTrackId={defaults.remixParentTrackId!}
-                        size={isCommentingEnabled ? 'xs' : 'small'}
-                      />
-                    </Box>
-                    <Flex
-                      mb='l'
-                      justifyContent={
-                        isCommentingEnabled ? 'flex-start' : 'center'
-                      }
-                    >
-                      {renderMoreByTitle()}
+              <Flex
+                direction='column'
+                alignItems='flex-start'
+                justifyContent='center'
+                gap='l'
+                w='100%'
+              >
+                {hasValidRemixParent
+                  ? renderOriginalTrackTitle()
+                  : renderMoreByTitle()}
+                <Lineup
+                  lineup={tracks}
+                  // Styles for leading element (original track if remix).
+                  leadingElementId={defaults.remixParentTrackId}
+                  leadingElementDelineator={
+                    <Flex gap='3xl' direction='column'>
+                      <Box
+                        alignSelf={
+                          isCommentingEnabled ? 'flex-start' : 'center'
+                        }
+                      >
+                        <ViewOtherRemixesButton
+                          parentTrackId={defaults.remixParentTrackId!}
+                          size={isCommentingEnabled ? 'xs' : 'small'}
+                        />
+                      </Box>
+                      <Flex
+                        mb='l'
+                        justifyContent={
+                          isCommentingEnabled ? 'flex-start' : 'center'
+                        }
+                      >
+                        {renderMoreByTitle()}
+                      </Flex>
                     </Flex>
-                  </Flex>
-                }
-                leadingElementTileProps={{ size: TrackTileSize.LARGE }}
-                laggingContainerClassName={
-                  !isCommentingEnabled
-                    ? styles.moreByArtistContainer
-                    : undefined
-                }
-                lineupContainerStyles={styles.width100}
-                showLeadingElementArtistPick={false}
-                applyLeadingElementStylesToSkeleton
-                // Don't render the first tile in the lineup since it's actually the "giant"
-                // track tile this page is about.
-                start={1}
-                // Show max 5 loading tiles
-                count={6}
-                // Managed from the parent rather than allowing the lineup to fetch content itself.
-                selfLoad={false}
-                variant={lineupVariant}
-                playingUid={currentQueueItem.uid}
-                playingSource={currentQueueItem.source}
-                playingTrackId={
-                  currentQueueItem.track && currentQueueItem.track.track_id
-                }
-                playing={isPlaying}
-                buffering={isBuffering}
-                playTrack={play}
-                pauseTrack={pause}
-                actions={tracksActions}
-              />
+                  }
+                  leadingElementTileProps={{ size: TrackTileSize.LARGE }}
+                  laggingContainerClassName={
+                    !isCommentingEnabled
+                      ? styles.moreByArtistContainer
+                      : undefined
+                  }
+                  lineupContainerStyles={styles.width100}
+                  showLeadingElementArtistPick={false}
+                  applyLeadingElementStylesToSkeleton
+                  // Don't render the first tile in the lineup since it's actually the "giant"
+                  // track tile this page is about.
+                  start={1}
+                  // Show max 5 loading tiles
+                  count={6}
+                  // Managed from the parent rather than allowing the lineup to fetch content itself.
+                  selfLoad={false}
+                  variant={lineupVariant}
+                  playingUid={currentQueueItem.uid}
+                  playingSource={currentQueueItem.source}
+                  playingTrackId={
+                    currentQueueItem.track && currentQueueItem.track.track_id
+                  }
+                  playing={isPlaying}
+                  buffering={isBuffering}
+                  playTrack={play}
+                  pauseTrack={pause}
+                  actions={tracksActions}
+                />
+              </Flex>
             </Flex>
           ) : null}
         </Flex>

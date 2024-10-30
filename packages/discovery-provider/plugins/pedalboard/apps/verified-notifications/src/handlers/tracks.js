@@ -34,8 +34,8 @@ export default async ({ track_id, updated_at, created_at }) => {
       'tracks.mood',
       'tracks.genre',
       'tracks.release_date',
-      'tracks.is_stream_gated',
-      'tracks.is_download_gated',
+      'tracks.stream_conditions',
+      'tracks.download_conditions',
       'tracks.owner_id',
       'users.user_id',
       'users.handle',
@@ -54,7 +54,7 @@ export default async ({ track_id, updated_at, created_at }) => {
 
   if (results === undefined) return
 
-  const { title, genre, mood, is_stream_gated, is_download_gated, handle, slug, release_date, name } =
+  const { title, genre, mood, stream_conditions, download_conditions, handle, slug, release_date, name } =
     results
 
   const { sendMsg } = slack
@@ -63,8 +63,8 @@ export default async ({ track_id, updated_at, created_at }) => {
     Title: title,
     Genre: genre,
     Mood: mood,
-    'Stream Gated': is_stream_gated,
-    'Download Gated': is_download_gated,
+    'Stream Gated': JSON.stringify(stream_conditions),
+    'Download Gated': JSON.stringify(download_conditions),
     Handle: handle,
     Link: `https://audius.co/${handle}/${slug}`,
     Release: release_date || created_at

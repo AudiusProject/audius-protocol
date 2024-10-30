@@ -459,7 +459,8 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     orig_filename: stem.orig_filename,
     is_downloadable: true,
     is_original_available: false,
-    is_playlist_upload: false
+    is_playlist_upload: false,
+    is_owned_by_user: false
   }
 }
 

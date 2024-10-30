@@ -142,7 +142,7 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.commenterUserId],
                 type: 'Comment',
-                entityType: this.entityType,
+                entityType: 'Track',
                 entityId: this.entityId
               }
             }

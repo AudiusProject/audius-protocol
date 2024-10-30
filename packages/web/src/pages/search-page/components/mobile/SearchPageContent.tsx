@@ -1,7 +1,6 @@
-import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
+import { memo, useContext, useEffect, useMemo } from 'react'
 
 import {
-  Name,
   Status,
   UserCollection,
   UID,
@@ -21,7 +20,6 @@ import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import { make, useRecord } from 'common/store/analytics/actions'
 import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -264,30 +262,12 @@ const SearchPageContent = (props: SearchPageContentProps) => {
     setRight(RightPreset.SEARCH)
   }, [setLeft, setCenter, setRight])
 
-  const record = useRecord()
   const { searchText } = props
-  const didChangeTabsFrom = useCallback(
-    (from: string, to: string) => {
-      if (from !== to)
-        record(
-          make(Name.SEARCH_TAB_CLICK, {
-            term: searchText,
-            tab: to.toLowerCase() as
-              | 'people'
-              | 'tracks'
-              | 'albums'
-              | 'playlists'
-          })
-        )
-    },
-    [record, searchText]
-  )
   const { isTagSearch } = props
   // Show fewer tabs if this is a tagSearch
   const computedTabs = useMemo(() => {
     return isTagSearch
       ? {
-          didChangeTabsFrom,
           tabs: [
             {
               icon: <IconNote />,
@@ -310,7 +290,6 @@ const SearchPageContent = (props: SearchPageContentProps) => {
           ]
         }
       : {
-          didChangeTabsFrom,
           tabs: [
             {
               icon: <IconUser />,
@@ -352,7 +331,7 @@ const SearchPageContent = (props: SearchPageContentProps) => {
             />
           ]
         }
-  }, [isTagSearch, props, didChangeTabsFrom])
+  }, [isTagSearch, props])
 
   const { tabs, body } = useTabs(computedTabs)
   const { setHeader } = useContext(HeaderContext)

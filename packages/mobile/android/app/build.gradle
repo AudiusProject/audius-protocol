@@ -118,7 +118,7 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.448"
+        versionName "1.1.449"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
@@ -213,7 +213,7 @@ dependencies {
 
 
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
-apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 // Google Services Gradle plugin
 apply plugin: 'com.google.gms.google-services'

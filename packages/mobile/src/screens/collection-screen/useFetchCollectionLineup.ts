@@ -112,7 +112,9 @@ export const useFetchCollectionLineup = (
           0,
           sortedTracks.length,
           0,
-          0
+          0,
+          undefined,
+          false /* hasMore override */
         )
       )
     }

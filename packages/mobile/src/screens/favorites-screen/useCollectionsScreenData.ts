@@ -136,6 +136,12 @@ export const useCollectionsScreenData = ({
             collection.playlist_contents.track_ids.map(
               (trackData) => trackData.track
             ) ?? []
+          if (
+            (collectionType === 'albums' && !collection.is_album) ||
+            (collectionType === 'playlists' && collection.is_album)
+          ) {
+            return false
+          }
           // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
           return (
             trackIds.length === 0 ||

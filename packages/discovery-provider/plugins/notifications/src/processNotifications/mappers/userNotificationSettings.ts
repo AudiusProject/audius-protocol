@@ -34,6 +34,7 @@ export type NotificationSettings = {
   messages: boolean
   comments: boolean
   mentions: boolean
+  reactions: boolean
 }
 
 type UserBrowserSettings = {
@@ -255,6 +256,7 @@ export class UserNotificationSettings {
       messages: boolean
       comments: boolean
       mentions: boolean
+      reactions: boolean
       deviceType: string
       awsARN: string
       deviceToken: string
@@ -271,6 +273,7 @@ export class UserNotificationSettings {
         'UserNotificationMobileSettings.messages',
         'UserNotificationMobileSettings.comments',
         'UserNotificationMobileSettings.mentions',
+        'UserNotificationMobileSettings.reactions',
         'NotificationDeviceTokens.deviceType',
         'NotificationDeviceTokens.awsARN',
         'NotificationDeviceTokens.deviceToken',
@@ -305,7 +308,8 @@ export class UserNotificationSettings {
             remixes: setting.remixes,
             messages: setting.messages,
             comments: setting.comments,
-            mentions: setting.mentions
+            mentions: setting.mentions,
+            reactions: setting.reactions
           },
           devices: [
             ...(acc?.[setting.userId]?.devices ?? []),
@@ -386,6 +390,7 @@ export class UserNotificationSettings {
       messages: boolean
       comments: boolean
       mentions: boolean
+      reactions: boolean
       deviceType?: string
       awsARN?: string
       deviceToken?: string
@@ -404,6 +409,7 @@ export class UserNotificationSettings {
         'UserNotificationBrowserSettings.messages',
         'UserNotificationBrowserSettings.comments',
         'UserNotificationBrowserSettings.mentions',
+        'UserNotificationBrowserSettings.reactions',
         'NotificationBrowserSubscriptions.endpoint',
         'NotificationBrowserSubscriptions.p256dhKey',
         'NotificationBrowserSubscriptions.authKey'
@@ -450,7 +456,8 @@ export class UserNotificationSettings {
             remixes: setting.remixes,
             messages: setting.messages,
             comments: setting.comments,
-            mentions: setting.mentions
+            mentions: setting.mentions,
+            reactions: setting.reactions
           },
           browser: acc?.[setting.userId]?.browser ?? []
         }

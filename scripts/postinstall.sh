@@ -20,10 +20,22 @@ printf "${GREEN}Applying patches...\n${NC}"
 npm run patch-package > /dev/null
 
 # xcodebuild may exist (e.g. if xcode-select is installed via homebrew) but won't work alone
-if ! xcodebuild --help &>/dev/null; then
+if [[ -z "${SKIP_POD_INSTALL}" ]]; then
+  if ! xcodebuild --help &>/dev/null; then
     printf "${YELLOW}WARNING: Xcode not installed. Skipping mobile dependency installation.${NC}\n"
     SKIP_POD_INSTALL=true
+  fi
 fi
+
+cd node_modules
+
+source_path=../packages/mobile/node_modules/react-native
+target_path=react-native
+if [ ! -e "$target_path" ]; then
+  ln -s "$source_path" "$target_path"
+fi
+
+cd ..
 
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
@@ -32,18 +44,19 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   if [ -d "$mobile_directory" ]; then
     printf "${GREEN}Installing cocoapods...\n${NC}"
     {
-      # Symlink react-native into the mobile package bc npm doesn't
+      # Symlink react-native into the root package bc npm doesn't
       # support nohoist
-      cd packages/mobile/node_modules
 
-      source_path=../../../node_modules/react-native
-      target_path=react-native
+      cd ./packages/mobile/node_modules
+
+      source_path=../../../node_modules/react-native-code-push
+      target_path=react-native-code-push
       if [ ! -e "$target_path" ]; then
         ln -s "$source_path" "$target_path"
       fi
 
-      source_path=../../../node_modules/react-native-code-push
-      target_path=react-native-code-push
+      source_path=../../../node_modules/react-native-svg
+      target_path=react-native-svg
       if [ ! -e "$target_path" ]; then
         ln -s "$source_path" "$target_path"
       fi

@@ -73,6 +73,7 @@ type FetchLineupMetadatasSucceededAction<T> = {
   nullCount: number
   limit: number
   offset: number
+  hasMore?: boolean
 }
 
 type FetchLineupMetadatasFailedAction = {
@@ -153,7 +154,8 @@ export const actionsMap = {
     const newState = { ...state }
     newState.isMetadataLoading = false
     newState.status = Status.SUCCESS
-    newState.hasMore = action.entries.length + action.deleted >= action.limit
+    newState.hasMore =
+      action.hasMore ?? action.entries.length + action.deleted >= action.limit
 
     // Hack alert:
     // For lineups with max entries (such as trending playlists) and deleted content,

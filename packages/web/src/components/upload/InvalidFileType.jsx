@@ -1,3 +1,4 @@
+import { ALLOWED_MAX_AUDIO_SIZE_BYTES } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -10,7 +11,7 @@ const messages = {
   type: 'Unsupported File Type',
   corrupted:
     'File is corrupted. Please ensure it is playable and stored locally.',
-  size: 'File Too Large (Max 250MB)'
+  size: `File Too Large (Max ${ALLOWED_MAX_AUDIO_SIZE_BYTES / 1000000}MB)`
 }
 
 const InvalidFileType = (props) => {
