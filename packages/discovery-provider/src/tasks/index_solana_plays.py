@@ -715,7 +715,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 @save_duration_metric(metric_group="celery_task")
 def index_solana_plays(self):
     if environment == "dev":
-        # index from core in dev
         return
 
     # Cache custom task class properties
