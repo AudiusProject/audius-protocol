@@ -19,6 +19,7 @@ import {
   ScreenContent,
   VirtualizedScrollView
 } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { Lineup } from 'app/components/lineup'
@@ -136,12 +137,14 @@ export const TrackScreen = () => {
         <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
             {/* Track Details */}
-            <TrackScreenDetailsTile
-              track={track}
-              user={user}
-              uid={lineup?.entries?.[0]?.uid}
-              isLineupLoading={!lineup?.entries?.[0]}
-            />
+            <ScreenPrimaryContent>
+              <TrackScreenDetailsTile
+                track={track}
+                user={user}
+                uid={lineup?.entries?.[0]?.uid}
+                isLineupLoading={!lineup?.entries?.[0]}
+              />
+            </ScreenPrimaryContent>
 
             {isReachable ? (
               <ScreenSecondaryContent>
