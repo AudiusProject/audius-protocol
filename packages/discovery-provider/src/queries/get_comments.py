@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 redis = redis_connection.get_redis()
 
-COMMENT_THREADS_LIMIT = 5
-COMMENT_REPLIES_LIMIT = 3
+COMMENT_ROOT_DEFAULT_LIMIT = 15  # default pagination limit
+COMMENT_REPLIES_DEFAULT_LIMIT = 3  # default replies pagination limit
 
 
 # Returns whether a comment has been reacted to by a particular user
@@ -50,7 +50,7 @@ def get_replies(
     # note: artist id already exists when used via get_track_comments - no need to requery for it
     artist_id=None,
     offset=0,
-    limit=COMMENT_REPLIES_LIMIT,
+    limit=COMMENT_REPLIES_DEFAULT_LIMIT,
 ):
     if artist_id is None:
         artist_id = (
@@ -184,7 +184,7 @@ def get_paginated_replies(args, comment_id, current_user_id=None):
 
 def get_track_comments(args, track_id, current_user_id=None):
     offset, limit = format_offset(args), format_limit(
-        args, default_limit=COMMENT_THREADS_LIMIT
+        args, default_limit=COMMENT_ROOT_DEFAULT_LIMIT
     )
 
     track_comments = []
