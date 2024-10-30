@@ -7,6 +7,7 @@ import type {
 } from 'react-native'
 import { Platform, Text as RNText } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import type { FontSize, FontWeight, TextVariant } from 'app/styles'
 import { makeStyles, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -22,6 +23,7 @@ export type TextProps = RNTextProps & {
   fontSize?: FontSize | 'inherit'
   textTransform?: TextStyle['textTransform']
   allowNewline?: boolean
+  bulleted?: boolean
 }
 
 const useStyles = makeStyles(({ typography, palette }) => ({
@@ -44,6 +46,7 @@ export const Text = (props: TextProps) => {
     textTransform,
     children: childrenProp,
     allowNewline,
+    bulleted,
     ...other
   } = props
   const variant = variantProp ?? 'body'
@@ -94,10 +97,25 @@ export const Text = (props: TextProps) => {
     ]
   )
 
-  const children =
-    typeof childrenProp === 'string' && !allowNewline
-      ? childrenProp.replace('\n', ' ')
-      : childrenProp
+  const children = useMemo(() => {
+    let processedChildren = childrenProp
+    if (typeof processedChildren === 'string' && !allowNewline) {
+      processedChildren = processedChildren.replace('\n', ' ')
+    }
+    return processedChildren
+  }, [childrenProp, allowNewline])
+
+  if (bulleted) {
+    return (
+      <Flex direction='row' alignItems='flex-start' gap='s' flex={1}>
+        {/* unicode character for a bullet */}
+        <RNText style={[styles.root, customStyles]}>{'\u2022'}</RNText>
+        <RNText style={[styles.root, customStyles, style]} {...other}>
+          {children}
+        </RNText>
+      </Flex>
+    )
+  }
 
   return (
     <RNText style={[styles.root, customStyles, style]} {...other}>
