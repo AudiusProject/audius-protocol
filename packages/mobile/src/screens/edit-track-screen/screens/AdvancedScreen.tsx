@@ -13,6 +13,7 @@ import {
   ReleaseDateField,
   SubmenuList
 } from '../fields'
+import { CoverAttributionField } from '../fields/CoverAttributionField'
 import { KeyBpmField } from '../fields/KeyBpmField'
 
 export const AdvancedScreen = () => {
@@ -30,8 +31,6 @@ export const AdvancedScreen = () => {
       variant='white'
     >
       <SubmenuList>
-        <LicenseTypeField />
-        <IsrcField />
         {isUnlisted ? <></> : <ReleaseDateField />}
         {isUpload ? <></> : <KeyBpmField />}
         {isCommentsEnabled ? (
@@ -43,6 +42,9 @@ export const AdvancedScreen = () => {
         ) : (
           <></>
         )}
+        <LicenseTypeField />
+        <IsrcField />
+        <CoverAttributionField />
       </SubmenuList>
     </FormScreen>
   )

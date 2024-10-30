@@ -69,7 +69,9 @@ const trackMetadataSchema = {
   musical_key: null,
   audio_analysis_error_count: 0,
   comments_disabled: false,
-  comment_count: 0
+  comment_count: 0,
+  cover_original_song_title: null,
+  cover_original_artist: null
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
