@@ -446,24 +446,26 @@ export const CollectionScreenDetailsTile = ({
           borderBottomLeftRadius='m'
           borderBottomRightRadius='m'
         >
-          {!hasStreamAccess &&
-          !isOwner &&
-          streamConditions &&
-          numericCollectionId ? (
-            <DetailsTileNoAccess
-              trackId={numericCollectionId}
-              contentType={PurchaseableContentType.ALBUM}
-              streamConditions={streamConditions}
-            />
-          ) : null}
-          {(hasStreamAccess || isOwner) && streamConditions ? (
-            <DetailsTileHasAccess
-              streamConditions={streamConditions}
-              isOwner={isOwner}
-              trackArtist={user}
-              contentType={PurchaseableContentType.ALBUM}
-            />
-          ) : null}
+          <ScreenSecondaryContent>
+            {!hasStreamAccess &&
+            !isOwner &&
+            streamConditions &&
+            numericCollectionId ? (
+              <DetailsTileNoAccess
+                trackId={numericCollectionId}
+                contentType={PurchaseableContentType.ALBUM}
+                streamConditions={streamConditions}
+              />
+            ) : null}
+            {(hasStreamAccess || isOwner) && streamConditions ? (
+              <DetailsTileHasAccess
+                streamConditions={streamConditions}
+                isOwner={isOwner}
+                trackArtist={user}
+                contentType={PurchaseableContentType.ALBUM}
+              />
+            ) : null}
+          </ScreenSecondaryContent>
           {isPublished && numericCollectionId ? (
             <DetailsTileStats
               playCount={playCount}
@@ -490,7 +492,9 @@ export const CollectionScreenDetailsTile = ({
           {numericCollectionId ? (
             <CollectionMetadataList collectionId={numericCollectionId} />
           ) : null}
-          <OfflineStatusRow contentId={numericCollectionId} isCollection />
+          <ScreenSecondaryContent>
+            <OfflineStatusRow contentId={numericCollectionId} isCollection />
+          </ScreenSecondaryContent>
         </Flex>
       </ScreenPrimaryContent>
       <ScreenSecondaryContent>
