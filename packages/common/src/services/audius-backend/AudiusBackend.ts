@@ -127,7 +127,6 @@ export const AuthHeaders = Object.freeze({
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
 export let BackendUtils: any = null
-let SanityChecks: any = null
 let SolanaUtils: any = null
 
 let audiusLibs: any = null
@@ -491,15 +490,6 @@ export const audiusBackend = ({
     )
   }
 
-  async function sanityChecks(audiusLibs: any) {
-    try {
-      const sanityChecks = new SanityChecks(audiusLibs)
-      await sanityChecks.run()
-    } catch (e) {
-      console.error(`Sanity checks failed: ${e}`)
-    }
-  }
-
   async function setup() {
     // Wait for web3 to load if necessary
     await waitForWeb3()
@@ -510,7 +500,6 @@ export const audiusBackend = ({
 
     AudiusLibs = libsModule.AudiusLibs
     BackendUtils = libsModule.Utils
-    SanityChecks = libsModule.SanityChecks
     SolanaUtils = libsModule.SolanaUtils
     // initialize libs
     let libsError: Nullable<string> = null
@@ -620,8 +609,6 @@ export const audiusBackend = ({
       audiusLibs = newAudiusLibs
       onLibsInit(audiusLibs)
       audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
-
-      sanityChecks(audiusLibs)
     } catch (err) {
       console.error(err)
       libsError = getErrorMessage(err)
@@ -2359,7 +2346,6 @@ export const audiusBackend = ({
     repostCollection,
     repostTrack,
     resetPassword,
-    sanityChecks,
     saveCollection,
     saveTrack,
     searchTags,
