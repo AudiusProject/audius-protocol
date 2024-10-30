@@ -24,7 +24,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
