@@ -58,37 +58,27 @@ export const clm = async (
     'time range'
   )
 
-  const clmRows: ClientLabelMetadata[] = await db('tracks')
-    .join('users', 'tracks.owner_id', '=', 'users.user_id')
-    .leftJoin(
-      'playlist_tracks',
-      'tracks.track_id',
-      '=',
-      'playlist_tracks.track_id'
-    )
-    .leftJoin('playlists', function () {
-      this.on(
-        'playlist_tracks.playlist_id',
-        '=',
-        'playlists.playlist_id'
-      ).andOn('playlists.is_album', '=', db.raw('true'))
-    })
-    .distinctOn('tracks.track_id')
-    .select(
-      `tracks.track_id as UniqueTrackIdentifier`,
-      `tracks.title as TrackTitle`,
-      db.raw(`COALESCE(NULLIF(TRIM(users.name), ''), users.handle) AS Artist`),
-      `playlists.playlist_name as AlbumTitle`,
-      `playlists.playlist_id as AlbumId`,
-      db.raw(`'' as "ReleaseLabel"`),
-      `tracks.isrc as ISRC`,
-      `playlists.upc as UPC`,
-      db.raw(`'' as "Composer"`),
-      `tracks.duration as Duration`,
-      db.raw(`'Audio' as "ResourceType"`)
-    )
-    .where('tracks.created_at', '>=', start)
-    .where('tracks.created_at', '<', end)
+  const clmRows: ClientLabelMetadata[] = await db.raw(`
+    select distinct on ("tracks"."track_id")
+      "tracks"."track_id" as "UniqueTrackIdentifier",
+      "tracks"."title" as "TrackTitle",
+      coalesce(nullif(trim("users"."name"), ''), "users"."handle") as "Artist",
+      "playlists"."playlist_name" as "AlbumTitle",
+      "playlists"."playlist_id" as "AlbumId",
+      '' as "ReleaseLabel",
+      "tracks"."isrc" as "ISRC",
+      "playlists"."upc" as "UPC",
+      '' as "Composer",
+      "tracks"."duration" as "Duration",
+      'Audio' as "ResourceType"
+    from "tracks"
+    join "users" on "tracks"."owner_id" = "users"."user_id"
+    left join "playlist_tracks" on "tracks"."track_id" = "playlist_tracks"."track_id"
+    left join "playlists" on "playlist_tracks"."playlist_id" = "playlists"."playlist_id" 
+      and "playlists"."is_album" = true
+    where "tracks"."created_at" >= :start
+      and "tracks"."created_at" < :end
+  `, {start, end}).then(result => result.rows)
 
   const csv = toCsvString(clmRows, ClientLabelMetadataHeader)
   if (isDev) {
