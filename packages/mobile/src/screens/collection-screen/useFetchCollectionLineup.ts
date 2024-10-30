@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
@@ -7,15 +7,12 @@ import {
   cacheActions,
   collectionPageLineupActions,
   collectionPageSelectors,
-  queueSelectors,
-  reachabilitySelectors
+  queueSelectors
 } from '@audius/common/store'
 import { areSetsEqual, Uid, makeUid } from '@audius/common/utils'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
 
-import { useScreenContext } from 'app/components/core/Screen/ScreenContextProvider'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
@@ -24,22 +21,16 @@ import { useHasCollectionChanged } from './useHasCollectionChanged'
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getPositions } = queueSelectors
-const { getIsReachable } = reachabilitySelectors
+
 /**
  * Returns a collection lineup, supports boths online and offline
  * @param collectionId the numeric collection id
  */
 export const useFetchCollectionLineup = (
   collectionId: number | SmartCollectionVariant | null,
-  fetchLineupProp: () => void
+  fetchLineup: () => void
 ) => {
-  const fetchLineup = useCallback(() => {
-    console.log('fetchLineup')
-    return fetchLineupProp()
-  }, [fetchLineupProp])
-
   const dispatch = useDispatch()
-  const { isPrimaryContentReady } = useScreenContext()
   const offlineTrackIds = useSelector(
     (state) => new Set(getOfflineTrackIds(state) || []),
     areSetsEqual
@@ -82,7 +73,6 @@ export const useFetchCollectionLineup = (
 
   const fetchLineupOffline = useCallback(() => {
     if (collectionId && collection) {
-      console.log('fetchLineupOffline')
       const trackIdEncounters = {} as Record<number, number>
       const sortedTracks = collection.playlist_contents.track_ids
         .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
@@ -138,27 +128,7 @@ export const useFetchCollectionLineup = (
     collectionUidSource
   ])
 
-  const isReachable = useSelector(getIsReachable)
-  const fetchLineupWrapped = useCallback(() => {
-    if (isPrimaryContentReady) {
-      if (isReachable) {
-        fetchLineup()
-      } else {
-        fetchLineupOffline()
-      }
-    }
-  }, [isPrimaryContentReady, isReachable, fetchLineup, fetchLineupOffline])
-
-  // TODO: this gets called again when revisiting the same collection
-  // Need to figure out a better way to handle this
-  const wasScreenReady = usePrevious(isPrimaryContentReady)
-  useEffect(() => {
-    if (isPrimaryContentReady && !wasScreenReady) {
-      fetchLineupWrapped()
-    }
-  }, [isPrimaryContentReady, fetchLineupWrapped, wasScreenReady])
-
   // Fetch the lineup based on reachability
-  useReachabilityEffect(fetchLineup, fetchLineupOffline, false)
-  useHasCollectionChanged(collectionId as number, fetchLineupWrapped)
+  useReachabilityEffect(fetchLineup, fetchLineupOffline)
+  useHasCollectionChanged(collectionId as number, fetchLineup)
 }

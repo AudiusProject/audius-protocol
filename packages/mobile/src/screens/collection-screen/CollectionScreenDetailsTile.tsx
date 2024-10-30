@@ -223,18 +223,6 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { params } = useRoute<'Collection'>()
-
-  // params is incorrectly typed and can sometimes be undefined
-  const { slug, collectionType, handle } = params ?? {}
-  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
-
-  const handleFetchCollection = useCallback(() => {
-    dispatch(resetCollection())
-    dispatch(fetchCollection(collectionId as number, permalink, true))
-  }, [dispatch, collectionId, permalink])
-
-  useFetchCollectionLineup(collectionId, handleFetchCollection)
   const { data: currentUserId } = useGetCurrentUserId({})
   // Since we're supporting SmartCollections, need to explicitly check that
   // collectionId is a number before fetching the playlist. -1 is a placeholder,
@@ -303,6 +291,10 @@ export const CollectionScreenDetailsTile = ({
     doesUserHaveAccessToAnyTrack
   const shouldShowPreview =
     isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay
+
+  useEffect(() => {
+    dispatch(resetCollection())
+  }, [dispatch])
 
   useRefetchLineupOnTrackAdd(collectionId)
 
@@ -507,7 +499,7 @@ export const CollectionScreenDetailsTile = ({
           isAlbum={isAlbum}
           isOwner={isOwner}
           isPlaying={isPlaying}
-          numericCollectionId={numericCollectionId}
+          collectionId={collectionId}
           isLineupLoading={isLineupLoading}
           uids={uids}
         />
@@ -516,11 +508,10 @@ export const CollectionScreenDetailsTile = ({
   )
 }
 
-type CollectionTrackListProps = {
-  isAlbum?: boolean
-  isOwner: boolean
-  isPlaying: boolean
-  numericCollectionId?: number
+type CollectionTrackListProps = Pick<
+  CollectionScreenDetailsTileProps,
+  'isAlbum' | 'isOwner' | 'isPlaying' | 'collectionId'
+> & {
   isLineupLoading: boolean
   uids: UID[]
 }
@@ -528,7 +519,7 @@ type CollectionTrackListProps = {
 const CollectionTrackList = ({
   isAlbum,
   isOwner,
-  numericCollectionId,
+  collectionId,
   isLineupLoading,
   isPlaying,
   uids
@@ -537,6 +528,20 @@ const CollectionTrackList = ({
   const dispatch = useDispatch()
   const playingUid = useSelector(getUid)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
+
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+
+  const { params } = useRoute<'Collection'>()
+  const { slug, collectionType, handle } = params ?? {}
+  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
+
+  const handleFetchCollection = useCallback(() => {
+    dispatch(resetCollection())
+    dispatch(fetchCollection(collectionId as number, permalink, true))
+  }, [dispatch, collectionId, permalink])
+
+  useFetchCollectionLineup(collectionId, handleFetchCollection)
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
