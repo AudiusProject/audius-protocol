@@ -6,6 +6,7 @@ import {
   profilePageSelectors
 } from '@audius/common/store'
 
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { Lineup } from 'app/components/lineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
