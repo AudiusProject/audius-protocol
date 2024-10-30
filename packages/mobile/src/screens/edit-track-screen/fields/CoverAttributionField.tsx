@@ -7,7 +7,7 @@ import { IS_COVER } from '../screens/CoverAttributionScreen'
 
 const messages = {
   coverAttribution: 'Cover Attribution',
-  isCover: 'Cover'
+  cover: 'Cover'
 }
 
 type CoverAttributionFieldProps = Partial<ContextualMenuProps>
@@ -15,7 +15,7 @@ type CoverAttributionFieldProps = Partial<ContextualMenuProps>
 export const CoverAttributionField = (props: CoverAttributionFieldProps) => {
   const [{ value: isCover }] = useField<boolean>(IS_COVER)
 
-  const displayValue = isCover ? messages.isCover : null
+  const displayValue = isCover ? messages.cover : null
 
   return (
     <ContextualMenu
