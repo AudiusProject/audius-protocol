@@ -295,6 +295,7 @@ require (
 require (
 	github.com/caseymrm/menuet v1.0.3
 	github.com/cometbft/cometbft-load-test v0.3.0
+	github.com/jaswdr/faker v1.19.1
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
