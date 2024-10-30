@@ -90,7 +90,7 @@ class CoreClient:
             ), self.get_indexed_block(session=session, height=height)
         except Exception as e:
             logger.error(f"core_client.py | error getting block {height} {e}")
-            return None
+            return None, None
 
     def commit_indexed_block(
         self,
@@ -108,6 +108,7 @@ class CoreClient:
                 parenthash=parenthash,
             )
             session.add(new_block)
+            return True
         except Exception as e:
             logger.error(f"core_client.py | Error committing block {height} {e}")
             return False

@@ -81,13 +81,15 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
         parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
 
         # commit block after indexing
-        core.commit_indexed_block(
+        if core.commit_indexed_block(
             session=session,
             chain_id=chainid,
             height=block.height,
             blockhash=block.blockhash,
             parenthash=parenthash,
-        )
+        ):
+            return block
+        return None
 
 
 @celery.task(name="index_core", bind=True)
