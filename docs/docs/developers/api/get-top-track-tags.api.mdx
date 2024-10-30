@@ -5,7 +5,7 @@ description: 'Gets the most used track tags by a user.'
 sidebar_label: 'Get Most Used Tags'
 hide_title: true
 hide_table_of_contents: true
-api: eJyVVMGO0zAQ/RXLF0CqNi2CS29FwKo3BF0uqwq5ybTxNomNZ1IRRfl3ZpyGpt2y0FPj8fTNmzdv3OoA6F2FgHre6rfTqfxkgGmwnqyr9Fx/q9MUEPVEp64iqEhSjPeFTY2kJE8oea3GNIfSyJcPzkMg26NmhmKUGg+MZ0IwDaNZghJHcaRgq53uum4yhNzmCVKSEMfeXSP3wWQqwM8akNMm+v3VBiAcICgIwQUtSOfX90CoKAdVOiRVI2SKgkn3iswO1aZRRoLhjilLV7HnZdb/Ua2cV6uYveJsTvEmmBIIArf22OqKD5xqM2lYqnlDOX8LZxuAYSjUcElpoR64olp+5MyTqpc6Tf7AF7a0NFRgMYLoew654garutwwrNuqqL0ip7ZAaX6tiuVR7yCclREZfpxa+XuhumcvlWg4lmbPtON5GNhLza3ZBKLo/DGWRc0B1jV3ovwOKErNUs51Eu+T1mZdQv0QME68n0AdCk7KiTzOkySzmDq+a9iiB5vxWE2d2RrvUpccZlrK2mrrIiNLhVBafFkypOD1Dc7ups+aXkQQ9X2mJJst5tlLpYlrcRTvsyg99pi4y1ZHd73C3nR4Cd2etu4Wpx7lJPhFiS8Mz4tJRSnao26DrhM9jyON0nH7OWPLbdtuDMJDKLpOwv2wRVCW0GwKse7WFHjp3THff3juKsc9NCNDH0xRS44WF95W+L89+AKNk+FPRNZyCFaY3CjH66/HpX+jxgt+tf7wVlbNuPjAiyl1a87KwbCFI43+YsFPtR8L9+yd7sZ7dP9pxav2G5kpCOc=
+api: eJyVVMGO2jAQ/RXLl7ZSRKBqL7mxarviVrVsLyu0MslAvCSx156goij/3hknQBbSbTlFzoz93jy/50ai2nqZPMrag/NyFckMfOq0RW0qmch7QC8wB1Eaj4KaMoFOpTvB+8T6IBT/dBMZSWPBKd62yLqNYmmsWIbuJaNE0iqnSkBGSh4bWdGCWnVGJc1oVmEuLynMxQMhiMUXqjh4qbUDAkBXQyR9mkOpZNJIPFg+y6PT1Va2bXQ6vtClxiPCSw3ucAWxpAGrulwTjNkIjVDS0EZsAFPmc4WiK4QtuFcwLMPTeZS/A9XdNIyEx2WpdkQ7rHlE8DgGexpuxUp4ayoPnusfp1P+vMb6WacpeJY9NcS3Qm5R1hY6DdcUP3vua65xzPoZUmZgHV8q6g4lUzjsUs4pnjDINcayjSRqLPgfu+XpSJlLVPs0RvpOZQMFzsR5w+fRKcHtSUBwzriLHbSFzJYbtuMWwjzsr0TGwexxo7M2xs6ZPhzT2bJ2BTXliNYncZxpnxqqHUiMvc7I66rOdO0nqYn3M8l3oauNCQL0086/L65dHDaJXzPRVRmtq8wmU0lULQWsVOFCekd9Y/sNg8eR01UfuXe+S6K/hGrOItwS3/72EH5jbAtFJiZSQYqm1+34SEQyCT4P0tH4OZ3N1aZZKw8Prmhb/t0lgAUlCdW64NRuVOHhDb7/COIoxx0cBinfq6LmHsnRvA34v4P5Bo3zK3AmsuKF08zkRjne/+jfuw9i+AqO4h9TWR2G4EdeRKldUVcOiiwcaHSFOT0Sdijc1QvB/E85uv+6pPj+AT0oGq4=
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,7 +20,6 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
@@ -31,12 +30,7 @@ import TabItem from '@theme/TabItem'
   children={"Fetch most used tags in a user's tracks"}
 ></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/users/{id}/tags"}
->
-
-</MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/users/{id}/tags'}></MethodEndpoint>
 
 Gets the most used track tags by a user.
 
@@ -48,166 +42,112 @@ Gets the most used track tags by a user.
 ></Heading>
 
 <details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
   data-collapsed={false}
   open={true}
 >
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Path Parameters
-    </h3>
-  </summary><div>
-    <ul>
-      <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"id","in":"path","required":true,"description":"A User ID","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
-    </ul>
-
-  </div>
-</details><details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
-  data-collapsed={false}
-  open={true}
->
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Query Parameters
-    </h3>
-  </summary><div>
-    <ul>
-      <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"limit","in":"query","description":"The number of items to fetch","schema":{"type":"integer"}}}
-      >
-
-      </ParamsItem><ParamsItem
-        className={"paramsItem"}
-        param={{"name":"user_id","in":"query","description":"The user ID of the user making the request","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
-    </ul>
-
-  </div>
-</details><div>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+  </summary>
   <div>
-    <ApiTabs
-      label={undefined}
-      id={undefined}
-    >
-      <TabItem
-        label={"200"}
-        value={"200"}
-      >
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'id',
+          in: 'path',
+          description: 'A User ID',
+          required: true,
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'limit',
+          in: 'query',
+          description: 'The number of items to fetch',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'The user ID of the user making the request',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<div>
+  <div>
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
         <div>
-
-          Success
-
-
-        </div><div>
-          <MimeTabs
-            className={"openapi-tabs__mime"}
-            schemaType={"response"}
-          >
-            <TabItem
-              label={"application/json"}
-              value={"application/json"}
-            >
-              <SchemaTabs
-                className={"openapi-tabs__schema"}
-              >
-                <TabItem
-                  label={"Schema"}
-                  value={"Schema"}
-                >
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
                   <details
                     style={{}}
-                    className={"openapi-markdown__details response"}
+                    className={'openapi-markdown__details response'}
                     data-collapsed={false}
                     open={true}
                   >
-                    <summary
-                      style={{}}
-                      className={"openapi-markdown__details-summary-response"}
-                    >
-                      <strong>
-                        Schema
-                      </strong>
-                    </summary><div
-                      style={{"textAlign":"left","marginLeft":"1rem"}}
-                    >
-
-                    </div><ul
-                      style={{"marginLeft":"1rem"}}
-                    >
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
                       <SchemaItem
                         collapsible={false}
-                        name={"data"}
+                        name={'data'}
                         required={false}
-                        schemaName={"string[]"}
+                        schemaName={'string[]'}
                         qualifierMessage={undefined}
-                        schema={{"type":"array","items":{"type":"string"}}}
-                      >
-
-                      </SchemaItem>
+                        schema={{ type: 'array', items: { type: 'string' } }}
+                      ></SchemaItem>
                     </ul>
                   </details>
-                </TabItem><TabItem
-                  label={"Example"}
-                  value={"Example"}
-                >
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={'{\n  "data": [\n    "riddim",\n    "bass",\n    "new",\n    "dallas",\n    "tearout",\n    "remix",\n    "melodic",\n    "wonky",\n    "texas",\n    "space",\n    "real",\n    "rap",\n    "ognixin",\n    "og",\n    "misphitz",\n    "laces",\n    "hukae",\n    "hours",\n    "heavy",\n    "future",\n    "filthy",\n    "edit",\n    "dubstep",\n    "discipleremixcomp2",\n    "disciple",\n    "dark",\n    "dallasaudius",\n    "bootleg",\n    "akeos"\n  ]\n}\n'}
-                    language={"json"}
-                  >
-
-                  </ResponseSamples>
+                    language={'json'}
+                  ></ResponseSamples>
                 </TabItem>
               </SchemaTabs>
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem><TabItem
-        label={"400"}
-        value={"400"}
-      >
-        <div>
-
-
-          Bad request
-
-
-        </div><div>
-
-        </div>
-      </TabItem><TabItem
-        label={"500"}
-        value={"500"}
-      >
-        <div>
-
-
-          Server error
-
-
-        </div><div>
-
-        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
       </TabItem>
     </ApiTabs>
-
   </div>
 </div>

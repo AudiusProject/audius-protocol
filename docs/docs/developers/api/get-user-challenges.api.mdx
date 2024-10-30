@@ -1,11 +1,11 @@
 ---
-id: get-reposts
-title: 'Get Reposts'
-description: "Gets the given user's reposts"
-sidebar_label: 'Get Reposts'
+id: get-user-challenges
+title: 'Get User Challenges'
+description: 'Gets all challenges for the given user'
+sidebar_label: 'Get User Challenges'
 hide_title: true
 hide_table_of_contents: true
-api: eJytVctu2zAQ/BWClyaFYSVFe/EtRYsgl6JIk16CIKCllcVYEhlyZUQQ9O/dpSRLrl0nbXqyyH3M7IPjRqJaebm4k5UH5+X9TCbgY6ctalPKhbwE9AIzECu9gVKw1zsvHFjj0cuZNBacYt+rpPMW11ubVU4VgJx3cdfIkg7koxMyac5tFWbyd8ALcUsY4uoLWRw8VdoBZUZXwUz6OINCyUUjsbacy6PT5Uq27Wyb3qSpBxwgnipw9R7GDdVTVsWScEwqNEJBNRrh19rOGT6tcpEaJ6xa6TJUJ07oexv0XuS60HgqD1DSJcIK3A6n4P1PlFLAOHstDA/nYWzvn4GqrsOMhMOxUGtqZThz28HjIdhtw+95Ot6a0oNn+4ezM/7ZxfpRxTF4XoXYEN8S2UVZm+s4dDV69OzX7OOY5SPEzMA63jDUHUqicOqlnFNcYWgX348LcyfjXAVoNvY/DyFuJlEXVJ8qLO/7ccTRdb8J06R71pmEZwrL+Qqditd8QxNmasPZ5qrONXX6vs/1Ygdo3H1hhx6BTDS3v+ClNY5d+uD6W7chXWjLHcDATMWoNxprip7cDs+7DbcfD432s0omezKOlwM+HdwFcBtaM3COmO1GUAjJRGZYQVbh7QZlWMgoiFLU6KSNRsnxIVOnKZXLyS9DtH4RRVy+IVtNZW90Am6uqkRXfh6baHMueWl1mZpurl2pF9+v9iUoBImf56KzMlpnOZ+fcfeYSaHC5vZPb1f4dtI1Y60vqmk/UYRnjGg56BkTWqix6XsyCPVMLsJLH2KptIw+2KFplsrDrcvblq87GeBmUXvUMufXkarcwxGe/1EgD5a0hnoq1RuVV+wkWczezHLQzCPIgyC/AfjVGnqExijYI5F7PjjNTP5yaCfXvfqdiumf6EH8QUDLego+8CJKLUtSBooeUaDRGS5Iz+20cXtizvy3j/ny6w1pyC/rDtxS
+api: eJylVU1v2zAM/SuCThsQ1O2wXXzrPlD0NmzrdiiKgJGZWJ1jqRKdLjD830fK+XBqt9uwS1uXpPjeo/jUaoJV1PmtbiKGqO9musBogvVkXa1zfYUUFVSVMiX/xHqFUS1dUFSiWtkN1koK9Uw7jwGk6Lroy9QNB9SHQxnneAiwRpJG+W2ra/7gXFtwyEozD1Tqpwgu+4OuP3Ik4ENjA3IHCg3OdDQlrkHnraatl7MiBVuvdNfNDsfH0j3OSxvJBWug2vd6aDBsR81+lMjMmJ5TUjdkTSWQgoDK1mCIqatFQ8q4ta+YknAYoVk4VyHUqcsSmop0voQqYtfdCZfoXR1ZGC54c34uv07BfG2MwSjCGVcT1iQp4H3FPCQlu4+S144bu8U9GhLFg8yFbN+lABpmQQggEljCdYof5b3VsHZNLUccJJinQR0/0ylMzcZFEyIW80OJjfNeov7vvUb91yGfP/kyQAI1S/dPOrAyL5M4wTOe/PGkqVj0aOzS8o2dig6xjqfYDYk9Fz6ym8wwTQg8yHkk9Nyr6We6y7M85BVD47w1/Eo5cTr8ZAhTXHbDmAqNJjbdg1EX7rGeF7B9BsZhfH+6eR0vpCZLlaQcwe9XQJ/EV0jz495JjINvpxbkPRRK7ixGOlkSKXg3uVEYNrzdGIILTyp6OqUregTJrdiNcp0lZ8xaW3SZGbpZTIf1VtaEilNLIh/zLGOBjePYlkXY2ALDGTSFbeKZcdnmQsv223rpkmw70pefr8fOl4rU9wvVR6VbH7k4Oxf9vYu0hmQBO7Ob9t2TY9sj7b939910CX9R5iuw6TIn0u1Op/0LMtP5qU+kR6VkpJLTtguIeBOqrpN/9yYsArJksKhkbZJDvoD5vyx6ksdP3E6+ExuoGslOA9tAsILwH9G++rLz1Ndq+JBN4tjbcr0dNt/jY1W7O84qEQrxL4bRBy75lfA0KBk9EYL/cLmvPn3jnfoNnfTC2g==
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,11 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading as={'h1'} className={'openapi__heading'} children={'Get Reposts'}></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get User Challenges'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/users/{id}/reposts'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/users/{id}/challenges'}></MethodEndpoint>
 
-Gets the given user's reposts
+Gets all challenges for the given user
 
 <Heading
   id={'request'}
@@ -75,28 +75,10 @@ Gets the given user's reposts
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'offset',
+          name: 'show_historical',
           in: 'query',
-          description: 'The number of items to skip. Useful for pagination (page number * limit)',
-          schema: { type: 'integer' },
-        }}
-      ></ParamsItem>
-      <ParamsItem
-        className={'paramsItem'}
-        param={{
-          name: 'limit',
-          in: 'query',
-          description: 'The number of items to fetch',
-          schema: { type: 'integer' },
-        }}
-      ></ParamsItem>
-      <ParamsItem
-        className={'paramsItem'}
-        param={{
-          name: 'user_id',
-          in: 'query',
-          description: 'The user ID of the user making the request',
-          schema: { type: 'string' },
+          description: 'Whether to show challenges that are inactive but completed',
+          schema: { type: 'boolean', default: false },
         }}
       ></ParamsItem>
     </ul>
@@ -146,7 +128,7 @@ Gets the given user's reposts
                             </li>
                             <SchemaItem
                               collapsible={false}
-                              name={'timestamp'}
+                              name={'challenge_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -154,21 +136,97 @@ Gets the given user's reposts
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'item_type'}
+                              name={'user_id'}
                               required={true}
                               schemaName={'string'}
-                              qualifierMessage={'**Possible values:** [`track`, `playlist`]'}
-                              schema={{
-                                type: 'string',
-                                example: 'track',
-                                enum: ['track', 'playlist'],
-                              }}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'specifier'}
+                              required={false}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'is_complete'}
+                              required={true}
+                              schemaName={'boolean'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'boolean' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'is_active'}
+                              required={true}
+                              schemaName={'boolean'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'boolean' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'is_disbursed'}
+                              required={true}
+                              schemaName={'boolean'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'boolean' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'current_step_count'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'max_steps'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'challenge_type'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'amount'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'disbursed_amount'}
+                              required={true}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'cooldown_days'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
                             ></SchemaItem>
                             <SchemaItem collapsible={true} className={'schemaItem'}>
                               <details style={{}} className={'openapi-markdown__details'}>
                                 <summary style={{}}>
                                   <span className={'openapi-schema__container'}>
-                                    <strong className={'openapi-schema__property'}>item</strong>
+                                    <strong className={'openapi-schema__property'}>metadata</strong>
                                     <span className={'openapi-schema__name'}>object</span>
                                     <span className={'openapi-schema__divider'}></span>
                                     <span className={'openapi-schema__required'}>required</span>
@@ -186,14 +244,6 @@ Gets the given user's reposts
                                 </div>
                               </details>
                             </SchemaItem>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'class'}
-                              required={true}
-                              schemaName={'string'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'string' }}
-                            ></SchemaItem>
                             <li>
                               <div
                                 style={{
@@ -214,7 +264,7 @@ Gets the given user's reposts
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={
-                      '{\n  "data": [\n    {\n      "timestamp": "2021-05-03 02:48:00",\n      "item_type": "track",\n      "item": {\n        "artwork": {\n          "150x150": "https://creatornode3.audius.co/content/QmWGQf6CnFJJ4he13eDF2vZwDyoaWcHL3HziQyaSPwVFd3/150x150.jpg",\n          "480x480": "https://creatornode3.audius.co/content/QmWGQf6CnFJJ4he13eDF2vZwDyoaWcHL3HziQyaSPwVFd3/480x480.jpg",\n          "1000x1000": "https://creatornode3.audius.co/content/QmWGQf6CnFJJ4he13eDF2vZwDyoaWcHL3HziQyaSPwVFd3/1000x1000.jpg"\n        },\n        "description": null,\n        "genre": "Electronic",\n        "id": "y7XX7",\n        "track_cid": "QmXFnuP57woE7ZZ3HTkWggXuzZL13SJVLiL7rVE9qSFTyf",\n        "mood": "Other",\n        "release_date": "Sun Mar 28 2021 11:52:35 GMT-0700",\n        "remix_of": {\n          "tracks": null\n        },\n        "repost_count": 46,\n        "favorite_count": 100,\n        "tags": null,\n        "title": "PAULINE HERR @ BROWNIES & LEMONADE OPEN AUX 1/30",\n        "user": {\n          "album_count": 1,\n          "artist_pick_track_id": "JbQN0",\n          "bio": "producer, singer, human\\n\\nsocials: @paulineherr",\n          "cover_photo": {\n            "640x": "https://creatornode3.audius.co/content/QmZXwdQDq5QDJW3W17g4n4zXVjaDGDbvuzsMWqhis61W7h/640x.jpg",\n            "2000x": "https://creatornode3.audius.co/content/QmZXwdQDq5QDJW3W17g4n4zXVjaDGDbvuzsMWqhis61W7h/2000x.jpg"\n          },\n          "followee_count": 144,\n          "follower_count": 41573,\n          "does_follow_current_user": false,\n          "handle": "paulineherr",\n          "id": "eGEam",\n          "is_verified": true,\n          "location": "Burbank, CA",\n          "name": "Pauline Herr",\n          "playlist_count": 1,\n          "profile_picture": {\n            "150x150": "https://creatornode3.audius.co/content/QmbqwCk1axAdXk9iFfeU48iu1P73ChUA3kxpeg7PJBRHsC/150x150.jpg",\n            "480x480": "https://creatornode3.audius.co/content/QmbqwCk1axAdXk9iFfeU48iu1P73ChUA3kxpeg7PJBRHsC/480x480.jpg",\n            "1000x1000": "https://creatornode3.audius.co/content/QmbqwCk1axAdXk9iFfeU48iu1P73ChUA3kxpeg7PJBRHsC/1000x1000.jpg"\n          },\n          "repost_count": 155,\n          "track_count": 35,\n          "is_deactivated": false,\n          "is_available": true,\n          "erc_wallet": "0xf568ab060acd91fe4861e52136deb08ca1f26574",\n          "spl_wallet": "3DeyiqjmCAtqPUzGX6MQP2C62kKRANy7LFvcBzUEHqPc",\n          "supporter_count": 8,\n          "supporting_count": 0,\n          "total_audio_balance": 131\n        },\n        "duration": 1708,\n        "downloadable": false,\n        "play_count": 958,\n        "permalink": "/paulineherr/pauline-herr-brownies-lemonade-open-aux-130-316935",\n        "is_streamable": true\n      }\n    }\n  ]\n}'
+                      '{\n  "data": [\n    {\n      "challenge_id": "string",\n      "user_id": "string",\n      "specifier": "string",\n      "is_complete": true,\n      "is_active": true,\n      "is_disbursed": true,\n      "current_step_count": 0,\n      "max_steps": 0,\n      "challenge_type": "string",\n      "amount": "string",\n      "disbursed_amount": 0,\n      "cooldown_days": 0,\n      "metadata": {}\n    }\n  ]\n}'
                     }
                     language={'json'}
                   ></ResponseSamples>

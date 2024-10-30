@@ -1,11 +1,11 @@
 ---
-id: inspect-track
-title: 'Inspects the details of the file for a track'
-description: 'Inspect a track'
-sidebar_label: 'Get Track Details'
+id: track-comment-count
+title: 'Track Comment Count'
+description: 'Get the comment count for a track'
+sidebar_label: 'Track Comment Count'
 hide_title: true
 hide_table_of_contents: true
-api: eJylVMtu2zAQ/BWCpxZwI6doL74laFH41KJNewkMYy2tLCaMyJAro66gf+8uJT8UCwGKnmxxHzM7nGWrCbZRL+41Bcgfo17NdIExD8aTcbVe6GUdPeakQKUMPdPOYwCJLouz+N0Q9RDgCQmDdG11zR+clWrXpuAEI109UKVfQt30TdTyE4cCPjcmIENQaHCmY17hE+hFq2nvpWWkYOqt7rrZEcUFszU12APKc4NhfwHzNf0Bq94pU6qIpMgpAVGmnyUqqlAdmqnnBqyhvSqNRT1BZOOcRagTTgmNJb0owUbsupWMEb2rI0YpeD+fy8+Yzo8mzzFGLs9dTViTpID31uRJ5ewhSl57Cew2D8xWNA9yJ2R6lAIoZZ0UvD+0XqdKnsH8Qbnq1xulrBOc4RZbDLqbjdtNXYkmQzaJY91mberSjU4HO/Ryc0RiH6bEuYVCyRwYaSSQFHycVBPDDoPCEFx4UcElbMzKiWu3mMYVFy501ns/aw8u7bIDNZYqNezN3ATL6RWRj4ssK0zMHcf2rNrOFBiuoClME69yl+2utdx+Glz0Gea++ba8dH0qUr+uVR8VtD5yfTUXsb2L9ATJAoPPl+c+LZDA2KhcmT7Fpap04WxhR3jtSZOJ3R4ukvA3Zd4CbxETSGO3g1rHl2Imm3m21b1gPHTFfCWvbTcQ8WewXSfH/TKKjCwcbKwYM+3JKwT/c1Unp3nE/fip2IFtJC3d2A6CEXL/SPTN92HZ3qrRKzbJYDiEen+OfmB2FLVbcW6FwM5KbPrwDb8Wns4KL54KGeNo9C+f73i//gIeCgWg
+api: eJyVVE2P2kAM/SvRnFoJEajaCze6rVbcqpb2UiFkJobMkmRmZxxUFOW/156Ejyxs1b0kysyz3/OznUYR7IKa/VbkQe+DWo1UhkF748jYSs3UI1JCOSbaliVWxO+an1vrE0hijBop69CD4BcZRyzlNHno8Q+CZ4wDDyUSemFrVMUfjI0Z1iZjgBE2B5SrlxLmSZdy8YWvPD7XxiMTka9xpILOsQQ1axQdnaQM5E21U207OrPUAf0VyXON/njDsuQiBcg0id3GmuNnCXvOF7+FG4NU8zrrSiQGZ6uAQe4/TCbyGnL9qLXGEDiRthWxTQIB5wqjo4/pUxBcc8tjN0+oo59eXCfTsWRA1yjDSXfoxQRFhoqL1X0b17GN65NSBgr04z2tnyG7KvyiVwI+3S0O/YF9Q++tfxHBITwDuZUx2WE3FtzwmUq78Uub00C06UCpWB7TdtNT+4KDciIXZmmamaAt3x3Zk4PJ0I+hzkwdxtqmh6mSlphqa6M/vRnzb4vbMYtBya9p0t0KW3czHU8US3c2UAmxL/1g3R/1QdrmYsB/7VLfQcI/lLoCeGCZOdbb9Gadd3UkO3Den6FfXHPOcgXdNBsI+NMXbSvH3fSLi+wbbApZpS0UAf8h/E27cbeCPR4Hi3iAohZU7M4BvBElb1T17nv/L3ifDH4RdwX0h1Adr9lPws4+tivG5gg8RVFNdz3ndXV0FXizq1LGebQfvy55o/4CmYPVPw==
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,15 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading
-  as={'h1'}
-  className={'openapi__heading'}
-  children={'Inspects the details of the file for a track'}
-></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Track Comment Count'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/tracks/{track_id}/inspect'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/tracks/{track_id}/comment_count'}></MethodEndpoint>
 
-Inspect a track
+Get the comment count for a track
 
 <Heading
   id={'request'}
@@ -79,10 +75,10 @@ Inspect a track
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'original',
+          name: 'user_id',
           in: 'query',
-          description: 'Optional - if set to true inspects the original quality file',
-          schema: { type: 'boolean', default: false },
+          description: 'The user ID of the user making the request',
+          schema: { type: 'string' },
         }}
       ></ParamsItem>
     </ul>
@@ -109,40 +105,20 @@ Inspect a track
                     </summary>
                     <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
                     <ul style={{ marginLeft: '1rem' }}>
-                      <SchemaItem collapsible={true} className={'schemaItem'}>
-                        <details style={{}} className={'openapi-markdown__details'}>
-                          <summary style={{}}>
-                            <span className={'openapi-schema__container'}>
-                              <strong className={'openapi-schema__property'}>data</strong>
-                              <span className={'openapi-schema__name'}>object</span>
-                            </span>
-                          </summary>
-                          <div style={{ marginLeft: '1rem' }}>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'size'}
-                              required={true}
-                              schemaName={'integer'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'integer' }}
-                            ></SchemaItem>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'content_type'}
-                              required={true}
-                              schemaName={'string'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'string' }}
-                            ></SchemaItem>
-                          </div>
-                        </details>
-                      </SchemaItem>
+                      <SchemaItem
+                        collapsible={false}
+                        name={'data'}
+                        required={false}
+                        schemaName={'integer'}
+                        qualifierMessage={undefined}
+                        schema={{ type: 'integer' }}
+                      ></SchemaItem>
                     </ul>
                   </details>
                 </TabItem>
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
-                    responseExample={'{\n  "data": {\n    "size": 9148931,\n    "content_type": "audio/mpeg"\n  }\n}'}
+                    responseExample={'{\n  "data": 2\n}'}
                     language={'json'}
                   ></ResponseSamples>
                 </TabItem>

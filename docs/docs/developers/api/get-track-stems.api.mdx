@@ -1,11 +1,11 @@
 ---
-id: get-developer-apps
-title: 'Get Developer Apps'
-description: 'Gets the developer apps that the user owns'
-sidebar_label: 'Get Developer Apps by User'
+id: get-track-stems
+title: 'Get Track Stems'
+description: 'Get the remixable stems of a track'
+sidebar_label: 'Get Track Stems'
 hide_title: true
 hide_table_of_contents: true
-api: eJyVVE1v2zAM/SuGThsQxMmwXXzL0KHIbdjWXYIgYCw2VudYmkR7Cwz/95FSmubDLbBTHD1SJN97VK8IdkEVK9UG9EGtJ0pjKL1xZGyjCnWPFDKqMNPYYW0d+gyckyOgeC55mf3TBDVRAoMkLnVKze5OWQvO4hAHHvZIUqtY9arhPxxqNENG6jmgSl03scgepMryjhGPv1vjkQuQb3GiQlnhHlTRKzo4uSuQN81ODcNagoOzTcAg+IfZTH4ur/7eliUG6ay0DWFDEsIT1qaMk+RPQeL62zp2+4QlyUheBiSTqmig8yjwHg4yHOE+4i/9rxRo7VPxyMMkirBhMrj1t6s8Z96O/XLJGJb4HgEuWBnBzR52uGl9PcY0d2uolqOTSzbMISOvQUEwBj+OafIZdCY0YaALXSTh06iI6Dv2B3pv/VUGp7DdKiuG3GEkUhxWqDwaPu+NHvKr1thU8cJk0TizqohcKPJcm1Baxg6sR2c0+im02rRhWtq8mysxnWkebWTpOPji6/LW0TEp+znPEirVEjKfzoRvZwPtIWpx3JHRdbqS7TT5/+3tUU/Cv5S7GngRxUZJ60TX8/swUUXc1SvGeOqKG5a4vt9CwAdfD4Mcs4r+wOf82YE3sBVKmFXmUb5ZlkeoA74xybtvx415n52/A6M9Py9dIyvXQd3KP/78hYf0ygxrjqoQWLjYRgIW/AY4Oku5eQBE15OP7r/8YPv+A1vNyS0=
+api: eJyNVE1v2zAM/SuGTisQxMmOuQXYUOQ2rO0uQRAwMmOrsS1VooMGhv/7SNn5zopdbFmPFB+fHt0qgjyo2VKRB70LajVSGQbtjSNjazVTz0gJFZh4rMwnbEpMAmEVErtNIIlJaqSsQw+SsMiGlFdBkhcJZdyBhwoJvZRqVc0fHBez1ybjACOlHFChbuvPh6MWPxjy+NEYj1yEfIMjFXSBFahZq+jg5MhA3tS56rqVBAdn64BB8O+Tibyuz35ptMYgBLWtCWuSEHCuNDp2k74HiWvv69jNO2qSzrz0TqavkgFdRoH3cJDuogy8f+a/VJvS6l3dVBv0QgAIc+slWveKyMN6k6+3psSoWNSRWfaSNQG9rLjTr0lxzL1Al2c9Qk98HoL/SDpSeoRdtnvGDcue80532+uDK+U+DZX9Fla8cbMT1scbF0xQtlxhxZE5RlnEXzOV9lZP26P/ujQMPmX++6NJG19ycEHkwixNMxO0ZezA2u5Nhn4MTWaaMNY23U+V+M3UWxt5D5zmvxb3bo5JyZ9p0qNSrUem40m8FRuogmi6YUrup+nqyPbs3f+b1UFWwk9KXQk8eXJz0mw7KHT6GYxkzk4z2ovEjRbMUaLadgMB33zZdbL90aD4ZcnLPXgj9aOQLJ2s+R62UAb8gv+338N8PCVXY/+Q8nHGapmZPZSNfPFyh4fLf0u34tgCIRPfMZsenvPgO7pIvJt6udGTf55/vrKn/gJsaMNb
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,11 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading as={'h1'} className={'openapi__heading'} children={'Get Developer Apps'}></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Track Stems'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/users/{id}/developer_apps'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/tracks/{track_id}/stems'}></MethodEndpoint>
 
-Gets the developer apps that the user owns
+Get the remixable stems of a track
 
 <Heading
   id={'request'}
@@ -51,9 +51,9 @@ Gets the developer apps that the user owns
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'id',
+          name: 'track_id',
           in: 'path',
-          description: 'A User ID',
+          description: 'A Track ID',
           required: true,
           schema: { type: 'string' },
         }}
@@ -105,7 +105,31 @@ Gets the developer apps that the user owns
                             </li>
                             <SchemaItem
                               collapsible={false}
-                              name={'address'}
+                              name={'id'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'parent_id'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'category'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'cid'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -121,24 +145,16 @@ Gets the developer apps that the user owns
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'name'}
+                              name={'blocknumber'}
                               required={true}
-                              schemaName={'string'}
+                              schemaName={'integer'}
                               qualifierMessage={undefined}
-                              schema={{ type: 'string' }}
+                              schema={{ type: 'integer' }}
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'description'}
-                              required={false}
-                              schemaName={'string'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'string' }}
-                            ></SchemaItem>
-                            <SchemaItem
-                              collapsible={false}
-                              name={'image_url'}
-                              required={false}
+                              name={'orig_filename'}
+                              required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
@@ -163,7 +179,7 @@ Gets the developer apps that the user owns
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={
-                      '{\n  "data": [\n    {\n      "address": "0x9a7a2e7ae18ca6ecfb502f80c668b1ef712143cc",\n      "user_id": "AAWJg3g",\n      "name": "InterviewApp",\n      "description": "An app for interview prep!",\n      "image_url": null\n    },\n    {\n      "address": "0xbc4f021bb9338d1a5603210eb13097c288006bef",\n      "user_id": "AAWJg3g",\n      "name": "audius-cast-local",\n      "description": "audius cast local",\n      "image_url": null\n    }\n  ]\n}'
+                      '{\n  "data": [\n    {\n      "id": "xdJZNpY",\n      "parent_id": "v25ZN2R",\n      "category": "MELODIC_LEAD",\n      "cid": "baeaaaiqsedgkbn7jmmtttawlbtmb5f3afmdih6mbcnvysygvnkmlk5xf4rga6",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600949,\n      "orig_filename": "FREE LOOP #3 - Melodic_Lead.mp3"\n    },\n    {\n      "id": "85odkNO",\n      "parent_id": "v25ZN2R",\n      "category": "MELODIC_LEAD",\n      "cid": "baeaaaiqsec3eyvrxmdshoesvn7yjcd5ac6fgrcuvxnme4ujeobkrbojbmhe46",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600939,\n      "orig_filename": "FREE LOOP #3 - Melodic_Lead 2.mp3"\n    },\n    {\n      "id": "K76mw9y",\n      "parent_id": "v25ZN2R",\n      "category": "OTHER",\n      "cid": "baeaaaiqsebep5eua6hx66o5qtyxwjbyi24gxnkn7zbd3sz7az7bqo3puosk64",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600949,\n      "orig_filename": "FREE LOOP #3 - Other.mp3"\n    },\n    {\n      "id": "gbJ05Y2",\n      "parent_id": "v25ZN2R",\n      "category": "PERCUSSION",\n      "cid": "baeaaaiqsea7wgy4x6bwul2rzk6hdrpcutqvc2gtsa25zxmhvdgyuipvjph5rm",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600962,\n      "orig_filename": "FREE LOOP #3 - Percussion.mp3"\n    },\n    {\n      "id": "K9jqwQB",\n      "parent_id": "v25ZN2R",\n      "category": "PERCUSSION",\n      "cid": "baeaaaiqseaawhqubgorf7zn2ntxm3ehwnupgb5khqa7lcakvzl6uhijmeiq6o",\n      "user_id": "ZOpkv5E",\n      "blocknumber": 50600945,\n      "orig_filename": "FREE LOOP #3 - Percussion 2.mp3"\n    }\n  ]\n}'
                     }
                     language={'json'}
                   ></ResponseSamples>
@@ -172,14 +188,6 @@ Gets the developer apps that the user owns
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem>
-      <TabItem label={'400'} value={'400'}>
-        <div>Bad request</div>
-        <div></div>
-      </TabItem>
-      <TabItem label={'500'} value={'500'}>
-        <div>Server error</div>
-        <div></div>
       </TabItem>
     </ApiTabs>
   </div>

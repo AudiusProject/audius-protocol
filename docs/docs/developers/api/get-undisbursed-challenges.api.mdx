@@ -1,11 +1,11 @@
 ---
-id: get-developer-apps
-title: 'Get Developer Apps'
-description: 'Gets the developer apps that the user owns'
-sidebar_label: 'Get Developer Apps by User'
+id: get-undisbursed-challenges
+title: 'Get Undisbursed Challenges'
+description: 'Get all undisbursed challenges'
+sidebar_label: 'Get Undisbursed Challenges'
 hide_title: true
 hide_table_of_contents: true
-api: eJyVVE1v2zAM/SuGThsQxMmwXXzL0KHIbdjWXYIgYCw2VudYmkR7Cwz/95FSmubDLbBTHD1SJN97VK8IdkEVK9UG9EGtJ0pjKL1xZGyjCnWPFDKqMNPYYW0d+gyckyOgeC55mf3TBDVRAoMkLnVKze5OWQvO4hAHHvZIUqtY9arhPxxqNENG6jmgSl03scgepMryjhGPv1vjkQuQb3GiQlnhHlTRKzo4uSuQN81ODcNagoOzTcAg+IfZTH4ur/7eliUG6ay0DWFDEsIT1qaMk+RPQeL62zp2+4QlyUheBiSTqmig8yjwHg4yHOE+4i/9rxRo7VPxyMMkirBhMrj1t6s8Z96O/XLJGJb4HgEuWBnBzR52uGl9PcY0d2uolqOTSzbMISOvQUEwBj+OafIZdCY0YaALXSTh06iI6Dv2B3pv/VUGp7DdKiuG3GEkUhxWqDwaPu+NHvKr1thU8cJk0TizqohcKPJcm1Baxg6sR2c0+im02rRhWtq8mysxnWkebWTpOPji6/LW0TEp+znPEirVEjKfzoRvZwPtIWpx3JHRdbqS7TT5/+3tUU/Cv5S7GngRxUZJ60TX8/swUUXc1SvGeOqKG5a4vt9CwAdfD4Mcs4r+wOf82YE3sBVKmFXmUb5ZlkeoA74xybtvx415n52/A6M9Py9dIyvXQd3KP/78hYf0ygxrjqoQWLjYRgIW/AY4Oku5eQBE15OP7r/8YPv+A1vNyS0=
+api: eJytVU1v2zAM/SuCTtsQJO2wXXLrPlD0NmDtLkNRKDIdq5UllZLTBUb++0g7tZ3GdYeup0TmE9/jh8haJrWOcvlb6kJZC24NUV7PZAZRownJeCeX8hySIKuoXGbiqsIImRjgZ9IHQMXgi2wPvxpAvw6hQaEqIQEyay0dHeiKz/MIicyG+e4rwK18quKyAOGqcgUofC5MgjKK5EW8M2EuriLklRW5RxHU2rhGjXhH/7tLH4Q1pUnvyXHUBZRKLmuZtoH5jUuwBpS73azT1KBfJSmHpIt/paki4I3JponOOEAUF98a98ZS/kQi8vGKMEhRHjAZXVmFgjnG9MSExq0P5GhfBkv1yW5W1uu7NrppcT8TM7m1GNxgCQjkHjYgOp/Pd9BEqqgdEWLwLhKSAB9PTvjniYZKa4jsSXu66RJDVAjW6KYVFreRcfUxkV/dguY6B+Q2TqZlyVQaohSi4sibGvN3hPvKIGT8dlTpK8cuupDagva5VOngeJhajaA6UKFcZoEzEkCb3DSIvkcemCDxE52Wf6DkuOC9yzFbTz1m3Uc7ZhqPcKSoXZxjXvYxjhL0qZrmfxbgbeYf3E2mtnH8Ycpkkm0eZt+rN106CfESJDKGQJ/G+vSLygS3DsR00Kt84fNoYwNu6DkBoscnN+gKTdLC88xdN9MzqFTQYdFrWQwkclM13trRW6ElbJFSiMvFglDak21LfbQxGeBcVZmp4lz7xeZU8is0LvdNzvbRn/24OB5UzSXx61S0VmZrLafzE65A8DGVqnmK+4kzuS4OvNd9+C/vpH1lE/xJi2AVzS/ueo653ufpYOnNhsXk91WQUMbU9UpFuEK72/HndgRy/gitVpYnQK5shAmtb7i5RqO6g+1wh26UrRgkeaz/t8rHZTbB/LgpX0n8NsttQl8/Pl+p8C023IS+5xZDr/aaD2hYLvXeNc9PUBnPVmrE1skZLcAwrMLR9mMv3cA4/35Jc+ovbpJ8mA==
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -24,11 +24,11 @@ import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
-<Heading as={'h1'} className={'openapi__heading'} children={'Get Developer Apps'}></Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Undisbursed Challenges'}></Heading>
 
-<MethodEndpoint method={'get'} path={'/users/{id}/developer_apps'}></MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/challenges/undisbursed'}></MethodEndpoint>
 
-Gets the developer apps that the user owns
+Get all undisbursed challenges
 
 <Heading
   id={'request'}
@@ -44,18 +44,44 @@ Gets the developer apps that the user owns
   open={true}
 >
   <summary style={{}}>
-    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
   </summary>
   <div>
     <ul>
       <ParamsItem
         className={'paramsItem'}
         param={{
-          name: 'id',
-          in: 'path',
-          description: 'A User ID',
-          required: true,
+          name: 'offset',
+          in: 'query',
+          description: 'The number of items to skip. Useful for pagination (page number * limit)',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'limit',
+          in: 'query',
+          description: 'The number of items to fetch',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'A User ID to filter the undisbursed challenges to a particular user',
           schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'completed_blocknumber',
+          in: 'query',
+          description: 'Starting blocknumber to retrieve completed undisbursed challenges',
+          schema: { type: 'integer' },
         }}
       ></ParamsItem>
     </ul>
@@ -105,7 +131,7 @@ Gets the developer apps that the user owns
                             </li>
                             <SchemaItem
                               collapsible={false}
-                              name={'address'}
+                              name={'challenge_id'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -121,7 +147,7 @@ Gets the developer apps that the user owns
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'name'}
+                              name={'specifier'}
                               required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
@@ -129,19 +155,59 @@ Gets the developer apps that the user owns
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'description'}
-                              required={false}
+                              name={'amount'}
+                              required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
                             ></SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'image_url'}
-                              required={false}
+                              name={'completed_blocknumber'}
+                              required={true}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'handle'}
+                              required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'wallet'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'created_at'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'completed_at'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'cooldown_days'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
                             ></SchemaItem>
                             <li>
                               <div
@@ -163,7 +229,7 @@ Gets the developer apps that the user owns
                 <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={
-                      '{\n  "data": [\n    {\n      "address": "0x9a7a2e7ae18ca6ecfb502f80c668b1ef712143cc",\n      "user_id": "AAWJg3g",\n      "name": "InterviewApp",\n      "description": "An app for interview prep!",\n      "image_url": null\n    },\n    {\n      "address": "0xbc4f021bb9338d1a5603210eb13097c288006bef",\n      "user_id": "AAWJg3g",\n      "name": "audius-cast-local",\n      "description": "audius cast local",\n      "image_url": null\n    }\n  ]\n}'
+                      '{\n  "data": [\n    {\n      "challenge_id": "string",\n      "user_id": "string",\n      "specifier": "string",\n      "amount": "string",\n      "completed_blocknumber": 0,\n      "handle": "string",\n      "wallet": "string",\n      "created_at": "string",\n      "completed_at": "string",\n      "cooldown_days": 0\n    }\n  ]\n}'
                     }
                     language={'json'}
                   ></ResponseSamples>
