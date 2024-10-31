@@ -504,7 +504,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     is_unhealthy = not bypass_errors and (
         unhealthy_blocks
         or unhealthy_challenges
-        # or play_health_info["is_unhealthy"]
+        or play_health_info["is_unhealthy"]
         or not user_bank_health_info["is_healthy"]
         or not reward_manager_health_info["is_healthy"]
         or not spl_token_health_info["is_healthy"]
