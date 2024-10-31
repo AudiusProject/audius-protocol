@@ -90,6 +90,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             Track.created_at,
             Track.release_date,
             User.is_verified,
+            Track.is_stream_gated,
             Track.stream_conditions,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
@@ -123,8 +124,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[6],
-            "is_stream_gated": bool(record[7]),
-            "stream_conditions": record[7],
+            "is_stream_gated": record[7],
+            "stream_conditions": record[8],
         }
         for record in base_query
     }

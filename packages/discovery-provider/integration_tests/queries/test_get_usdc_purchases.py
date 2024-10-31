@@ -17,6 +17,7 @@ test_entities = {
             "track_id": 1,
             "title": "a",
             "owner_id": 10,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
@@ -28,6 +29,7 @@ test_entities = {
             "track_id": 2,
             "title": "f",
             "owner_id": 10,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 299,
@@ -39,6 +41,7 @@ test_entities = {
             "track_id": 3,
             "title": "c",
             "owner_id": 10,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 199,
@@ -50,6 +53,7 @@ test_entities = {
             "track_id": 4,
             "title": "b",
             "owner_id": 10,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 350,
@@ -61,6 +65,7 @@ test_entities = {
             "track_id": 5,
             "title": "d",
             "owner_id": 20,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
@@ -72,6 +77,7 @@ test_entities = {
             "track_id": 6,
             "title": "zzz",
             "owner_id": 20,
+            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
