@@ -118,7 +118,7 @@ const RELAY_RATE_LIMITS = {
     owner: 100,
     app: 5,
     allowlist: 1000,
-    anonymous: 0,
+    anonymous: 20,
   },
   VerifyUser: {
     owner: 100,
