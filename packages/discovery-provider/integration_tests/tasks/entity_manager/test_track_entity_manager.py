@@ -108,7 +108,6 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": True,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -155,7 +154,6 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -201,7 +199,6 @@ def test_index_valid_track(app, mocker):
             "is_current": True,
             "is_scheduled_release": True,
             "is_unlisted": False,  # is_unlisted is overriden by is_scheduled_release
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -245,7 +242,6 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -290,7 +286,6 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -638,7 +633,6 @@ def test_index_invalid_tracks(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -689,7 +683,6 @@ def test_index_invalid_tracks(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -1144,7 +1137,6 @@ def test_invalid_track_description(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -1280,27 +1272,13 @@ def test_access_conditions(app, mocker):
     }
 
     metadatas = {
-        "InvalidStreamGatedNoConditions": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 1",
-            "is_stream_gated": True,
-            "stream_conditions": None,
-            "is_download_gated": False,
-            "download_conditions": None,
-            "is_downloadable": False,
-        },
         "InvalidStreamGatedMultipleConditions": {
             **default_metadata,
             "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 2",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1, "follow_user_id": 1},
-            "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
         },
@@ -1310,9 +1288,7 @@ def test_access_conditions(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 3",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1},
-            "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": True,
         },
@@ -1322,22 +1298,8 @@ def test_access_conditions(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 4",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1},
-            "is_download_gated": True,
             "download_conditions": {"follow_user_id": 1},
-            "is_downloadable": True,
-        },
-        "InvalidDownloadGatedNoConditions": {
-            **default_metadata,
-            "track_id": TRACK_ID_OFFSET + 5,
-            "owner_id": 1,
-            "track_cid": "some-track-cid",
-            "title": "track 6",
-            "is_stream_gated": False,
-            "stream_conditions": None,
-            "is_download_gated": True,
-            "download_conditions": None,
             "is_downloadable": True,
         },
         "InvalidDownloadGatedMultipleConditions": {
@@ -1346,9 +1308,7 @@ def test_access_conditions(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 7",
-            "is_stream_gated": False,
             "stream_conditions": None,
-            "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1, "follow_user_id": 1},
             "is_downloadable": True,
         },
@@ -1358,9 +1318,7 @@ def test_access_conditions(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 8",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1},
-            "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
             "stem_of": {"parent_track_id": 1},
@@ -1371,9 +1329,7 @@ def test_access_conditions(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 9",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1},
-            "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
         },
@@ -1464,7 +1420,6 @@ def test_update_access_conditions(app, mocker):
     metadatas = {
         "UpdateToFollowGated": {
             "track_id": TRACK_ID_OFFSET,
-            "is_stream_gated": True,
             "stream_conditions": follow_gate,
             "is_download_gated": True,
             "download_conditions": follow_gate,
@@ -1472,21 +1427,18 @@ def test_update_access_conditions(app, mocker):
         "UpdateToUSDCGated": {
             "track_id": TRACK_ID_OFFSET + 1,
             "owner_id": 1,
-            "is_stream_gated": True,
             "stream_conditions": usdc_gate_1,
             "is_download_gated": True,
             "download_conditions": usdc_gate_1,
         },
         "FollowGatedToFree": {
             "track_id": TRACK_ID_OFFSET + 2,
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
         },
         "HiddenUpdateToFollowGated": {
             "track_id": TRACK_ID_OFFSET + 3,
-            "is_stream_gated": True,
             "stream_conditions": collectible_gate,
             "is_download_gated": True,
             "download_conditions": collectible_gate,
@@ -1534,7 +1486,6 @@ def test_update_access_conditions(app, mocker):
             {  # non-gated
                 "track_id": TRACK_ID_OFFSET,
                 "owner_id": 1,
-                "is_stream_gated": False,
                 "stream_conditions": None,
                 "is_download_gated": False,
                 "download_conditions": None,
@@ -1542,7 +1493,6 @@ def test_update_access_conditions(app, mocker):
             {  # follow-gated
                 "track_id": TRACK_ID_OFFSET + 1,
                 "owner_id": 1,
-                "is_stream_gated": True,
                 "stream_conditions": follow_gate,
                 "is_download_gated": True,
                 "download_conditions": follow_gate,
@@ -1550,7 +1500,6 @@ def test_update_access_conditions(app, mocker):
             {  # follow-gated (to be changed to free)
                 "track_id": TRACK_ID_OFFSET + 2,
                 "owner_id": 1,
-                "is_stream_gated": True,
                 "stream_conditions": follow_gate,
                 "is_download_gated": True,
                 "download_conditions": follow_gate,
@@ -1559,7 +1508,6 @@ def test_update_access_conditions(app, mocker):
                 "track_id": TRACK_ID_OFFSET + 3,
                 "owner_id": 1,
                 "is_unlisted": True,
-                "is_stream_gated": False,
                 "stream_conditions": None,
                 "is_download_gated": False,
                 "download_conditions": None,
@@ -1581,34 +1529,27 @@ def test_update_access_conditions(app, mocker):
         follow_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET).first()
         )
-        assert follow_gated.is_stream_gated == True
+
         assert follow_gated.stream_conditions == follow_gate
-        assert follow_gated.is_download_gated == True
         assert follow_gated.download_conditions == follow_gate
 
         usdc_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 1).first()
         )
-        assert usdc_gated.is_stream_gated == True
         assert usdc_gated.stream_conditions == usdc_gate_1
-        assert usdc_gated.is_download_gated == True
         assert usdc_gated.download_conditions == usdc_gate_1
 
         free: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 2).first()
         )
-        assert free.is_stream_gated == False
         assert free.stream_conditions == None
-        assert free.is_download_gated == False
         assert free.download_conditions == None
 
         hidden_follow_gated: Track = (
             session.query(Track).filter(Track.track_id == TRACK_ID_OFFSET + 3).first()
         )
         assert hidden_follow_gated.is_unlisted == True
-        assert hidden_follow_gated.is_stream_gated == True
         assert hidden_follow_gated.stream_conditions == collectible_gate
-        assert hidden_follow_gated.is_download_gated == True
         assert hidden_follow_gated.download_conditions == collectible_gate
 
 
@@ -1672,7 +1613,6 @@ def test_remixability(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "parent track 1",
-            "is_stream_gated": True,
             "stream_conditions": {"tip_user_id": 1},
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
@@ -1684,7 +1624,6 @@ def test_remixability(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "parent track 2",
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -1696,7 +1635,6 @@ def test_remixability(app, mocker):
             "owner_id": 2,
             "track_cid": "some-track-cid",
             "title": "remix track 1",
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,
@@ -1709,7 +1647,6 @@ def test_remixability(app, mocker):
             "owner_id": 2,
             "track_cid": "some-track-cid",
             "title": "remix track 2",
-            "is_stream_gated": False,
             "stream_conditions": None,
             "is_download_gated": False,
             "download_conditions": None,

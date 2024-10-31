@@ -26,7 +26,7 @@ def get_latest_entities(type, args):
                 session.query(Track.track_id)
                 .filter(Track.is_unlisted == False)
                 .filter(Track.is_current == True)
-                .filter(Track.is_stream_gated == False)
+                .filter(Track.stream_conditions.is_(None))
                 # order must be deterministic
                 .order_by(desc(Track.created_at), desc(Track.track_id))
             )
