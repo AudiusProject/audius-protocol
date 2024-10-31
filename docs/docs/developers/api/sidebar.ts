@@ -60,6 +60,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'developers/api/get-user-challenges',
+          label: 'Get User Challenges',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
           id: 'developers/api/get-connected-wallets',
           label: 'Get connected wallets',
           className: 'api-method get',
@@ -90,6 +96,18 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'developers/api/get-muted-users',
+          label: 'Get Muted Users',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/get-purchasers',
+          label: 'Get purchasers',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
           id: 'developers/api/download-purchases-as-csv',
           label: 'Download Purchases as CSV',
           className: 'api-method get',
@@ -102,8 +120,20 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'developers/api/get-remixers',
+          label: 'Get remixers',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
           id: 'developers/api/get-reposts',
           label: 'Get Reposts',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/get-sales-aggregate',
+          label: 'Get Sales Aggregate',
           className: 'api-method get',
         },
         {
@@ -140,6 +170,12 @@ const sidebar: SidebarsConfig = {
           type: 'doc',
           id: 'developers/api/get-tracks-by-user',
           label: 'Get Tracks by User',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/get-user-tracks-remixed',
+          label: 'Get User Tracks Remixed',
           className: 'api-method get',
         },
         {
@@ -240,6 +276,24 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'developers/api/track-comment-count',
+          label: 'Track Comment Count',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/track-comment-notification-setting',
+          label: 'Track Comment Notification Setting',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/track-comments',
+          label: 'Track Comments',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
           id: 'developers/api/download-track',
           label: 'Download the original or MP3 file of a track',
           className: 'api-method get',
@@ -252,20 +306,32 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'developers/api/get-track-stems',
+          label: 'Get Track Stems',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
           id: 'developers/api/stream-track',
           label: 'Get the streamable MP3 file of a track',
           className: 'api-method get',
         },
         {
           type: 'doc',
-          id: 'developers/api/stream-url',
-          label: 'POC: An alternate form of the /stream url',
-          className: 'api-method get',
-        },
-        {
-          type: 'doc',
           id: 'developers/api/get-track-top-listeners',
           label: 'Get Track Top Listeners',
+          className: 'api-method get',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'challenges',
+      items: [
+        {
+          type: 'doc',
+          id: 'developers/api/get-undisbursed-challenges',
+          label: 'Get Undisbursed Challenges',
           className: 'api-method get',
         },
       ],
@@ -315,6 +381,24 @@ const sidebar: SidebarsConfig = {
           id: 'developers/api/resolve',
           label:
             'Resolves and redirects a provided Audius app URL to the API resource URL it represents',
+          className: 'api-method get',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'comments',
+      items: [
+        {
+          type: 'doc',
+          id: 'developers/api/get-unclaimed-comment-id',
+          label: 'Get unclaimed comment ID',
+          className: 'api-method get',
+        },
+        {
+          type: 'doc',
+          id: 'developers/api/get-comment-replies',
+          label: 'Get Comment Replies',
           className: 'api-method get',
         },
       ],

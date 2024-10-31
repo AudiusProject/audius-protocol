@@ -1,12 +1,8 @@
-import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk-legacy/dist/core'
-
 import { User } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
 import { Nullable } from '../../utils'
 
-// TODO: the following should come from @audius/libs/dist/core when
-// discoveryProvider/constants is migrated to typescript.
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
 const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
 const AUDIUS_USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
@@ -121,7 +117,4 @@ export class LocalStorage {
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)
 
   clearPlaybackRate = async () => this.removeItem(PLAYBACK_RATE_LS_KEY)
-
-  getCurrentUserExists = async () =>
-    this.getValue(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
 }

@@ -5,7 +5,7 @@ description: 'Gets a User ID from an associated wallet address'
 sidebar_label: 'Get User By Wallet'
 hide_title: true
 hide_table_of_contents: true
-api: eJydU8Fu2zAM/RVBpxUI4mTYLrll6FDkNmzrehiKgrGYWK1jaaScLjDy7yPlBEnc9LKTJerp6fE9urOEHEPDyHbW2Y+TiX4cckk+Jh8aO7M/2rJEZjuyZWgSNkkhEGPtS1BI8cyK6yyXFW5AV5FCREq+Z3WQrlRbRnryTpdpF1Ee4kS+Wdv9fnSshOUzlulqRWufrsn9As4Q/mmRBTayn6+2hLRFMkgUKLNfHt9hYgPmXhSaxa1ZUdgYaAwwh9JDQmdeoa4xGXCOemu0s+zGwvUEl7cfMl5wEQg2mJDEg9+dbWQj+BPz0+sR6VWJtEE72WhDnlC4E7U41PswVHNKYmjtozgJa308B8BWCqKnCip7fZCYKtkU+byQhIQv+9VLbqmW0yqlyLOicJ7LIGc7CXfrHdIYWudbHpeh2E6tvuebVchSfKpVy/zbQiiVr1c/HU/ssKN5JjG/pkbRElAMnDaQx+zg2fseX1B1p6n9n1wP/iX8m4pYg4QiYrIF3cGoo5HSqFM3K1Gq1a5bAuM91fu9lvsk1UCxDJa1ZrmCmodhnuv98P0Q+415E/FVYS+4e2eatlC3is+JbIG8ShA5j3KrQpDgsraeYC4/fDy/9eZv35+Pzd3XnzJZ/wAEHne+
+api: eJydU8Fu2zAM/RVBpw0I4mTYLrll2FDkNmzreiiCgJGYWJ1jqRKdLjDy7yNlZ23idBh2Miw+ko/vka0m2CY9u9dNwpj0cqQtJhNdIOdrPdM3SEmBuuWoWnxSm+h3CmoFKXnjgNCqJ6gqJAXWRkxJj7QPGEHSF7YrcJ59l/GMCxBhhyRtZ/etrvmH8c+VV08npBMmjw3Gg77kd3fZPeJj4yJya4oNjnQyJe5Az1pNhyANEkVXb/XxuBRwCr5OmCT+bjKRz3n9b40xXWHja8KaBAIhVM7kGYuHJLh22MevH9DkOaMoQq7rYoH+ASVurJy9RnukyVElT1gbb1mnE/hlLL8NtFydBmasoN9fG/kjWCUqYqKzsSXhw1WNMO7ZYIzRx4sMTmGLSy+bsO1dp5J/irxvBbNmi3J+twVNrDhaEoU0KwrrkvEcO7A6e2cxjqGxrklj44v9VIuFrt74LFM/+PzLYrAk85ykfkxVF5VuXWQ6nmjmGHyiHWQf+zV8fW3PSrfP0/7PqfTeEv6iIlTAe85ksgRtL9TpMHlQK9dZMlN5bds1JLyN1fEoz91xiIAsGawr2f8NVAn/wvfN1/5U3qrBFV0l9hMPrxzoHqpG8NmRPUQnFJjOkrNKBDYuc+sKzPmiwsuswTlJlT9rc/P5O2/rb1s6mig=
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,19 +20,13 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
 <Heading as={'h1'} className={'openapi__heading'} children={'Get User ID from Wallet'}></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/users/id"}
->
-
-</MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/users/id'}></MethodEndpoint>
 
 Gets a User ID from an associated wallet address
 
@@ -44,166 +38,92 @@ Gets a User ID from an associated wallet address
 ></Heading>
 
 <details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
   data-collapsed={false}
   open={true}
 >
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Query Parameters
-    </h3>
-  </summary><div>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
     <ul>
       <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"associated_wallet","in":"query","required":true,"description":"Wallet address","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
+        className={'paramsItem'}
+        param={{
+          name: 'associated_wallet',
+          in: 'query',
+          description: 'Wallet address',
+          required: true,
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
     </ul>
-
   </div>
-</details><div>
+</details>
+<div>
   <div>
-    <ApiTabs
-      label={undefined}
-      id={undefined}
-    >
-      <TabItem
-        label={"200"}
-        value={"200"}
-      >
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
         <div>
-
-          Success
-
-
-        </div><div>
-          <MimeTabs
-            className={"openapi-tabs__mime"}
-            schemaType={"response"}
-          >
-            <TabItem
-              label={"application/json"}
-              value={"application/json"}
-            >
-              <SchemaTabs
-                className={"openapi-tabs__schema"}
-              >
-                <TabItem
-                  label={"Schema"}
-                  value={"Schema"}
-                >
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
                   <details
                     style={{}}
-                    className={"openapi-markdown__details response"}
+                    className={'openapi-markdown__details response'}
                     data-collapsed={false}
                     open={true}
                   >
-                    <summary
-                      style={{}}
-                      className={"openapi-markdown__details-summary-response"}
-                    >
-                      <strong>
-                        Schema
-                      </strong>
-                    </summary><div
-                      style={{"textAlign":"left","marginLeft":"1rem"}}
-                    >
-
-                    </div><ul
-                      style={{"marginLeft":"1rem"}}
-                    >
-                      <SchemaItem
-                        collapsible={true}
-                        className={"schemaItem"}
-                      >
-                        <details
-                          style={{}}
-                          className={"openapi-markdown__details"}
-                        >
-                          <summary
-                            style={{}}
-                          >
-                            <span
-                              className={"openapi-schema__container"}
-                            >
-                              <strong
-                                className={"openapi-schema__property"}
-                              >
-                                data
-                              </strong><span
-                                className={"openapi-schema__name"}
-                              >
-                                 object
-                              </span>
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
+                      <SchemaItem collapsible={true} className={'schemaItem'}>
+                        <details style={{}} className={'openapi-markdown__details'}>
+                          <summary style={{}}>
+                            <span className={'openapi-schema__container'}>
+                              <strong className={'openapi-schema__property'}>data</strong>
+                              <span className={'openapi-schema__name'}>object</span>
                             </span>
-                          </summary><div
-                            style={{"marginLeft":"1rem"}}
-                          >
+                          </summary>
+                          <div style={{ marginLeft: '1rem' }}>
                             <SchemaItem
                               collapsible={false}
-                              name={"user_id"}
+                              name={'user_id'}
                               required={false}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem>
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
                           </div>
                         </details>
                       </SchemaItem>
                     </ul>
                   </details>
-                </TabItem><TabItem
-                  label={"Example"}
-                  value={"Example"}
-                >
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={'{\n  "data": {\n    "user_id": "ASFe4f"\n  }\n}'}
-                    language={"json"}
-                  >
-
-                  </ResponseSamples>
+                    language={'json'}
+                  ></ResponseSamples>
                 </TabItem>
               </SchemaTabs>
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem><TabItem
-        label={"400"}
-        value={"400"}
-      >
-        <div>
-
-
-          Bad request
-
-
-        </div><div>
-
-        </div>
-      </TabItem><TabItem
-        label={"500"}
-        value={"500"}
-      >
-        <div>
-
-
-          Server error
-
-
-        </div><div>
-
-        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
       </TabItem>
     </ApiTabs>
-
   </div>
 </div>

@@ -71,6 +71,9 @@ contract_addresses: Dict[str, Any] = defaultdict()
 logger = logging.getLogger(__name__)
 
 
+environment = shared_config["discprov"]["env"]
+
+
 def get_contract_addresses():
     return contract_addresses
 
@@ -326,6 +329,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
+            "src.tasks.index_core",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
@@ -499,6 +503,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
     redis_inst.delete("create_engagement_notifications")
+    redis_inst.delete("index_core_lock")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
@@ -547,3 +552,6 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
+
+    if environment == "dev":
+        celery.send_task("index_core")

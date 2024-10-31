@@ -1,15 +1,22 @@
 import { full } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
-import { userMetadataListFromSDK } from '~/adapters/user'
+import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
+import {
+  HashId,
+  ID,
+  Kind,
+  OptionalId,
+  SolanaWalletAddress,
+  StringUSDC
+} from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
-import { encodeHashId } from '~/utils'
+import { encodeHashId, isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
@@ -47,6 +54,40 @@ const parseTransaction = ({
 const userApi = createApi({
   reducerPath: 'userApi',
   endpoints: {
+    getUserAccount: {
+      fetch: async ({ wallet }: { wallet: string }, { audiusSdk }) => {
+        try {
+          const sdk = await audiusSdk()
+          const { data } = await sdk.full.users.getUserAccount({ wallet })
+          if (!data) {
+            console.warn('Missing user from account response')
+            return null
+          }
+
+          const account = accountFromSDK(data)
+          // If we got a valid account, populate user bank since that's
+          // expected to exist on "account" users
+          if (account) {
+            const userBank =
+              await sdk.services.claimableTokensClient.deriveUserBank({
+                ethWallet: wallet,
+                mint: 'wAUDIO'
+              })
+            account.user.userBank = userBank.toString() as SolanaWalletAddress
+          }
+          return account
+        } catch (e) {
+          // Account doesn't exist, don't bubble up an error, just return null
+          if (isResponseError(e) && [401, 404].includes(e.response.status)) {
+            return null
+          }
+          throw e
+        }
+      },
+      options: {
+        schemaKey: 'accountUser'
+      }
+    },
     getUserById: {
       fetch: async (
         {
@@ -354,6 +395,7 @@ const userApi = createApi({
 })
 
 export const {
+  useGetUserAccount,
   useGetUserById,
   useGetUsersByIds,
   useGetUserByHandle,
@@ -372,5 +414,6 @@ export const {
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
 export const userApiFetch = userApi.fetch
+export const userApiFetchSaga = userApi.fetchSaga
 export const userApiActions = userApi.actions
 export const userApiUtils = userApi.util

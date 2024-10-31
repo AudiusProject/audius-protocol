@@ -2,7 +2,8 @@ import {
   accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext
+  getContext,
+  accountSelectors
 } from '@audius/common/store'
 import {
   put,
@@ -80,14 +81,39 @@ export function* setupBackend() {
 
   // Fire-and-forget init fp
   fingerprintClient.init()
+
+  // Check for cached local account so we can use it to initialize backend
+  const fetchLocalAccountResult = yield* race({
+    failure: take(accountActions.fetchAccountFailed),
+    success: take(accountActions.fetchAccountSucceeded)
+  })
+
+  let setupArgs = {}
+  if (fetchLocalAccountResult.success) {
+    const localUser = yield* select(accountSelectors.getAccountUser)
+    if (localUser) {
+      setupArgs = {
+        wallet: localUser.wallet,
+        userId: localUser.user_id
+      }
+    }
+  }
+
+  // Start remote account fetch while we setup backend
   yield* put(accountActions.fetchAccount())
-  const { web3Error, libsError } = yield* call(audiusBackendInstance.setup)
+
+  const { web3Error, libsError } = yield* call(
+    audiusBackendInstance.setup,
+    setupArgs
+  )
+
   if (libsError) {
     yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
     yield* put(backendActions.setupBackendFailed())
     yield* put(backendActions.libsError(libsError))
     return
   }
+
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline
   // This happens when we started the app with the device offline because

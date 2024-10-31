@@ -5,7 +5,7 @@ description: "Gets a user's favorite tracks"
 sidebar_label: 'Get Favorites'
 hide_title: true
 hide_table_of_contents: true
-api: eJyFVMGOm0AM/RU0l7ZSFJKqvXDLqu0qt6rt9rJaRQ44YXYJTD0GNUL8e+2BKIQg9cRgP+zn9zy0htC7qvToTdKaj6uVPjL0KVnHtipNYn7WaYrem4VJq5KxZIWAc4VNQSHxq1dca3ya4wn05KhySGz7qhlwiPLZodQDIjhLNct4CnnCP7UlzEzybFJCYMx2wII4QFORwHYK3dlsHArFFqb2SJp5WUya3n17JeCZbHk03bTaHOJSfy434nqflvwQqfavmLJE5kIS+zQn+gNkkeqCnrXV51ljkBqkCIkqCg1v04/IPoJIJ3jno8uoEROkb+qmqhUM3GY9Ovo2YDTrgOCEjCRqPremlBdBBQ+sVnfAuZyv3jHVOKWwiZ6ke7T9IsjrdkyVEu8YjtonyO3VTGmdV8rriBzYSLfExCEftzbr4sOIrA9K9ExrKgSZMzufxHFmfVpJ7izb0dgMaQl1Zmu/TKu4WRvtbctDFWhZLpTX5vtWSmq9foj1cmXuBgtFot/rSNEivas8nyBcg0GqqaA3BdrrXfqvT4NcjH85dgWI+rqXOmU76HLRbWGSm0sSlMyFmULadg8en6joOg3LatFZ4nJsgCzsdXaRTwTTs0h/gMJPHR3zfv9j8P5DNPZ5lu7l6pd68Rsoan2T4xue+63qXgSVI4hDgUaf2Mifx/Hok7vfTjfelcevv2Sd/gHhz6Xy
+api: eJyFVE2PmzAQ/SuWL22lKCRVe+G2q7ar3Kq220sURROYBO8S7NoDaoT4750xsJsPtD0Bfs/z8eYNrSY4BJ2udR3QB72Z6RxD5o0jYyud6gekoEAJ+i6oPTTWG0JFHrLnoGfaOvQg3FXes9W3gSOoAw9HJImcrltd8QezTM6QkegOqNDXKe/UI2dTqy+MePxTG48cm3yNMx2yAo+g01bTyUmsQN5UB911GyEHZ6vAmRn/uFjI4zL0zzrLMEhlma0IKxIKOFeaLDaRPAXhtbd57O4JM5KWvLRMps+SA52zwHs4SXOEx4i/1r/WmUcgzLcgYUYlt0LdRkVejmKwWZyIINzZ20XcxLqV5zr6FGPMN4Wd1T6hPRdoqJSjMQsfTpyG7TgiwZnwaWpI95Ar0Q0DXQxKLnyenCr6hg2D3lt/dYOvsP8KK+Y8YJROLJfqJPo9aU3eJfszx4YYq7dr7UtmFkQupEmSm5BZxk4sfmNy9HOoc1OHeWaTZqnFgKba26jP0Pfd99Wtu+Ml9XupelSy9chyvhCpnQ10hOjCYV+ut+oiYPva73+XdZgb4V9KXAm8gjJ26bIddBn/AzOdXngy/hkKrkwobbuDgI++7Do55kn5E5/zawPewE56Z/lYMHln6fdQBnyj7vc/hjX5oM6Xf7LccdMq2bMGylq++PUZT/2vpdswq0DgCcUyeuCOF9/R2ZWbrZcBvnjl4esvtug/29vATQ==
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,7 +20,6 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
@@ -54,8 +53,8 @@ Gets a user's favorite tracks
         param={{
           name: 'id',
           in: 'path',
-          required: true,
           description: 'A User ID',
+          required: true,
           schema: { type: 'string' },
         }}
       ></ParamsItem>

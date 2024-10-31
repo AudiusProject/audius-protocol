@@ -465,21 +465,29 @@ function* recoverPurchaseIfNecessary() {
     }
 
     console.debug('Recovering', amount, 'USDC from root wallet...')
-    yield* call(recoverUsdcFromRootWallet, {
+    const signature = yield* call(recoverUsdcFromRootWallet, {
       sdk,
       sender: rootAccount,
       receiverEthWallet: ethWallet,
       amount
     })
 
+    const connection = sdk.services.solanaClient.connection
+    // Wait for transaction to be finalized before polling balance
+    yield* call(
+      [connection, connection.confirmTransaction],
+      signature,
+      'finalized'
+    )
+
+    // Ensure RPC catches up to balance change before continuing
     const updatedBalance = yield* call(
       pollForTokenBalanceChange,
       audiusBackendInstance,
       {
         tokenAccount: userBank,
         mint: 'usdc',
-        initialBalance: userBankInitialBalance,
-        maxRetryCount: TRANSACTION_RETRY_COUNT
+        initialBalance: userBankInitialBalance
       }
     )
 

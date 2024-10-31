@@ -37,7 +37,6 @@ import {
 import type { MonitoringCallbacks } from './services/types'
 import { Web3Config, Web3Manager } from './services/web3Manager'
 import { Wormhole, WormholeConfig } from './services/wormhole'
-import { UserStateManager } from './userStateManager'
 import { Utils, Nullable, Logger, getNStorageNodes } from './utils'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import { version } from './version'
@@ -61,7 +60,7 @@ type LibsWormholeConfig = Merge<WormholeConfig, { rpcHosts: string | string[] }>
 
 type LibsDiscoveryProviderConfig = Omit<
   DiscoveryProviderConfig,
-  'userStateManager' | 'ethContracts' | 'web3Manager'
+  'ethContracts' | 'web3Manager'
 >
 
 type LibsComstockConfig = {
@@ -85,6 +84,8 @@ type AudiusLibsConfig = {
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
   useDiscoveryRelay: boolean
+  userId?: number
+  wallet?: string
 }
 
 export class AudiusLibs {
@@ -304,7 +305,6 @@ export class AudiusLibs {
   Utils: Utils
 
   // Services to initialize. Initialized in .init().
-  userStateManager: Nullable<UserStateManager>
   identityService: Nullable<IdentityService>
   hedgehog: Nullable<HedgehogBase>
   discoveryProvider: Nullable<DiscoveryProvider>
@@ -335,6 +335,10 @@ export class AudiusLibs {
   localStorage: LocalStorage
   useDiscoveryRelay: boolean
 
+  // Temporary hack to facilitate SDK migration
+  private currentWallet?: string
+  private currentUserId?: number
+
   /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
@@ -361,7 +365,9 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage,
-    useDiscoveryRelay = true
+    useDiscoveryRelay = true,
+    userId,
+    wallet
   }: AudiusLibsConfig) {
     // set version
 
@@ -384,7 +390,6 @@ export class AudiusLibs {
     this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
-    this.userStateManager = null
     this.identityService = null
     this.hedgehog = null
     this.discoveryProvider = null
@@ -409,6 +414,9 @@ export class AudiusLibs {
     this.Notifications = null
     this.EntityManager = null
 
+    this.currentUserId = userId
+    this.currentWallet = wallet
+
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
     this.localStorage = localStorage
@@ -420,15 +428,63 @@ export class AudiusLibs {
     this.schemas = schemaValidator.getSchemas()
   }
 
+  private async determineCreatorNodeEndpointForWallet(wallet?: string) {
+    let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
+    if (!wallet) {
+      return creatorNodeEndpoint
+    }
+    if (this.creatorNodeConfig.storageNodeSelector) {
+      const [storageNode] =
+        this.creatorNodeConfig.storageNodeSelector.getNodes(wallet)
+      if (storageNode) {
+        creatorNodeEndpoint = storageNode
+      }
+    } else if (this.ethContracts) {
+      const storageV2Nodes =
+        await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+          'content-node'
+        )
+      const randomNodes = await getNStorageNodes(
+        storageV2Nodes,
+        1,
+        this.creatorNodeConfig.wallet,
+        this.logger
+      )
+      creatorNodeEndpoint = randomNodes[0]!
+    }
+    return creatorNodeEndpoint
+  }
+
+  /** Update the current user for CreatorNode and DiscoveryProvider requests */
+  async setCurrentUser({ wallet, userId }: { wallet: string; userId: number }) {
+    this.currentWallet = wallet
+    this.currentUserId = userId
+    this.creatorNode?.setEndpoint(
+      await this.determineCreatorNodeEndpointForWallet(wallet)
+    )
+    this.discoveryProvider?.setCurrentUser(userId)
+    this.EntityManager?.setCurrentUserId(userId)
+  }
+
+  getCurrentUser() {
+    return { wallet: this.currentWallet, userId: this.currentUserId }
+  }
+
+  /** Clear the current user for CreatorNode and DiscoveryProvder requests */
+  clearCurrentUser() {
+    delete this.currentWallet
+    delete this.currentUserId
+    this.creatorNode?.setEndpoint(this.creatorNodeConfig.fallbackUrl)
+    this.discoveryProvider?.clearCurrentUser()
+    this.EntityManager?.clearCurrentUserId()
+  }
+
   /** Init services based on presence of a relevant config. */
   async init() {
     if (!this.localStorage) {
       this.localStorage = await getPlatformLocalStorage()
     }
 
-    this.userStateManager = new UserStateManager({
-      localStorage: this.localStorage
-    })
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
@@ -537,7 +593,6 @@ export class AudiusLibs {
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
-        userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
         localStorage: this.localStorage,
@@ -552,44 +607,23 @@ export class AudiusLibs {
 
     /** Creator Node */
     if (this.creatorNodeConfig) {
-      const currentUser = this.userStateManager.getCurrentUser()
-
       // Use rendezvous to select creatorNodeEndpoint
-      let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
-      if (currentUser?.wallet) {
-        if (this.creatorNodeConfig.storageNodeSelector) {
-          const [storageNode] =
-            this.creatorNodeConfig.storageNodeSelector.getNodes(
-              currentUser.wallet
-            )
-          if (storageNode) {
-            creatorNodeEndpoint = storageNode
-          }
-        } else if (this.ethContracts) {
-          const storageV2Nodes =
-            await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
-              'content-node'
-            )
-          const randomNodes = await getNStorageNodes(
-            storageV2Nodes,
-            1,
-            currentUser.wallet,
-            this.logger
-          )
-          creatorNodeEndpoint = randomNodes[0]!
-        }
-      }
+      const creatorNodeEndpoint =
+        await this.determineCreatorNodeEndpointForWallet(
+          this.creatorNodeConfig.wallet
+        )
 
       this.creatorNode = new CreatorNode(
         this.web3Manager,
         creatorNodeEndpoint,
         this.isServer,
-        this.userStateManager,
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.storageNodeSelector
+        this.creatorNodeConfig.storageNodeSelector,
+        this.creatorNodeConfig.wallet,
+        this.creatorNodeConfig.userId
       )
       await this.creatorNode.init()
     }
@@ -601,7 +635,6 @@ export class AudiusLibs {
 
     // Initialize apis
     const services = [
-      this.userStateManager,
       this.identityService,
       this.hedgehog,
       this.discoveryProvider,
@@ -632,11 +665,13 @@ export class AudiusLibs {
     this.Reactions = new Reactions(...services)
     this.Notifications = new Notifications(...services)
     this.EntityManager = new EntityManager(...services)
+    if (this.currentUserId) {
+      this.EntityManager.setCurrentUserId(this.currentUserId)
+    }
   }
 }
 
 export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
 export { IdentityRequestError }
 
-export { SanityChecks } from './sanityChecks'
 export { RewardsAttester, DEFAULT_MINT, MintName } from './services/solana'

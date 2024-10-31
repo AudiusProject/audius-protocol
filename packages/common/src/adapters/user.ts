@@ -3,6 +3,7 @@ import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
+  AccountUserMetadata,
   ManagedUserMetadata,
   UserManagerMetadata,
   UserMetadata
@@ -11,12 +12,14 @@ import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
 import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
+import { accountCollectionFromSDK } from './collection'
 import { grantFromSDK } from './grant'
 import {
   coverPhotoSizesCIDsFromSDK,
   profilePictureSizesCIDsFromSDK
 } from './imageSize'
 import { playlistLibraryFromSDK } from './playlistLibrary'
+import { transformAndCleanList } from './utils'
 
 /** Converts a SDK `full.UserFull` response to a UserMetadata. Note: Will _not_ include the "current user" fields as those aren't returned by the Users API */
 export const userMetadataFromSDK = (
@@ -112,3 +115,26 @@ export const userManagerFromSDK = (
 
 export const userManagerListFromSDK = (input?: full.UserManager[]) =>
   input ? input.map((d) => userManagerFromSDK(d)).filter(removeNullable) : []
+
+export const accountFromSDK = (
+  input: full.AccountFull
+): AccountUserMetadata | undefined => {
+  const user = userMetadataFromSDK(input.user)
+  if (!user) {
+    return undefined
+  }
+  const accountMetadata = {
+    playlists: transformAndCleanList(input.playlists, accountCollectionFromSDK),
+    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
+    track_save_count: input.trackSaveCount
+  }
+  return {
+    // Account users included extended information, so we'll merge that in here.
+    user: {
+      ...user,
+      ...accountMetadata
+    },
+    // These values are included outside the user as well to facilitate separate caching
+    ...accountMetadata
+  }
+}

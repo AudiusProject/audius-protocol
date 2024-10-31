@@ -3,8 +3,12 @@ import {
   remoteConfigIntDefaults,
   RemoteConfigInstance
 } from '@audius/common/services'
-import { notificationsActions, getContext } from '@audius/common/store'
-import { call, takeEvery } from 'typed-redux-saga'
+import {
+  notificationsActions,
+  getContext,
+  accountSelectors
+} from '@audius/common/store'
+import { call, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -38,8 +42,11 @@ function* watchMarkAllNotificationsViewed() {
 
 export function* markAllNotificationsViewed() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const userId = yield* select(accountSelectors.getUserId)
+  if (!userId) return
+
   yield* call(waitForWrite)
-  yield* call(audiusBackendInstance.markAllNotificationAsViewed)
+  yield* call(audiusBackendInstance.markAllNotificationAsViewed, { userId })
 }
 
 export default function sagas() {

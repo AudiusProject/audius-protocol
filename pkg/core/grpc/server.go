@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"net"
+	"strings"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -21,6 +22,7 @@ type GRPCServer struct {
 	chain  *local.Local
 	server *grpc.Server
 	db     *db.Queries
+	config *config.Config
 	proto.UnimplementedProtocolServer
 }
 
@@ -28,6 +30,7 @@ func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Lo
 	server := &GRPCServer{
 		logger: logger.Child("grpc"),
 		chain:  chain,
+		config: config,
 		db:     db.New(pool),
 	}
 
@@ -97,6 +100,58 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 		Transaction: &transaction,
 	}
 
+	return res, nil
+}
+
+
+func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
+	block, err := s.chain.Block(ctx, &req.Height)
+	if err != nil {
+		blockInFutureMsg := "must be less than or equal to the current blockchain height"
+		if strings.Contains(err.Error(), blockInFutureMsg) {
+			// return block with -1 to indicate it doesn't exist yet
+			return &proto.BlockResponse{
+				Chainid: s.config.GenesisFile.ChainID,
+				Height:  -1,
+			}, nil
+		}
+		s.logger.Errorf("error getting block: %v", err)
+		return nil, err
+	}
+
+	txs := []*proto.SignedTransaction{}
+	for _, tx := range block.Block.Txs {
+		var transaction proto.SignedTransaction
+		err = protob.Unmarshal(tx, &transaction)
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, &transaction)
+	}
+
+	res := &proto.BlockResponse{
+		Blockhash:    block.BlockID.Hash.String(),
+		Chainid:      s.config.GenesisFile.ChainID,
+		Proposer:     block.Block.ProposerAddress.String(),
+		Height:       block.Block.Height,
+		Transactions: txs,
+	}
+
+	return res, nil
+}
+func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequest) (*proto.NodeInfoResponse, error) {
+	status, err := s.chain.Status(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &proto.NodeInfoResponse{
+		Chainid:       s.config.GenesisFile.ChainID,
+		Synced:        !status.SyncInfo.CatchingUp,
+		CometAddress:  s.config.ProposerAddress,
+		EthAddress:    s.config.WalletAddress,
+		CurrentHeight: status.SyncInfo.LatestBlockHeight,
+	}
 	return res, nil
 }
 

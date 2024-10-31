@@ -46,7 +46,7 @@ const AppOrPublicSite = () => {
   }, [])
 
   const { value: foundUser } = useAsync(() =>
-    localStorage.getCurrentUserExists()
+    localStorage.getAudiusAccountUser()
   )
 
   useEffect(() => {

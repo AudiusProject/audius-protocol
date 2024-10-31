@@ -365,22 +365,25 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
           const linkLayout = linkLayouts[index]
 
           return linkLayout && linkContainerLayout ? (
-            <Link
-              {...other}
-              variant='visible'
-              textVariant={other.variant}
-              key={`${linkLayout.x} ${linkLayout.y} ${index}`}
+            <View
               style={{
                 position: 'absolute',
                 top: linkLayout.y - linkContainerLayout.y,
                 left: linkLayout.x - linkContainerLayout.x
               }}
-              url={match.getAnchorHref()}
-              source={source}
-              {...linkProps}
             >
-              {text}
-            </Link>
+              <Link
+                {...other}
+                variant='visible'
+                textVariant={other.variant}
+                key={`${linkLayout.x} ${linkLayout.y} ${index}`}
+                url={match.getAnchorHref()}
+                source={source}
+                {...linkProps}
+              >
+                {text}
+              </Link>
+            </View>
           ) : null
         })}
       </View>

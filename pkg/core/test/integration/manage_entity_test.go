@@ -7,6 +7,7 @@ import (
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"
@@ -28,6 +29,7 @@ var _ = Describe("EntityManager", func() {
 		}
 
 		signedManageEntity := &gen_proto.SignedTransaction{
+			RequestId: uuid.NewString(),
 			Transaction: &gen_proto.SignedTransaction_ManageEntity{
 				ManageEntity: manageEntity,
 			},
