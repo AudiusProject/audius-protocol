@@ -50,6 +50,7 @@ models/CosignNotificationAction.ts
 models/CosignNotificationActionData.ts
 models/CoverArt.ts
 models/CoverPhoto.ts
+models/CoverPhotoFull.ts
 models/CreateNotification.ts
 models/CreateNotificationAction.ts
 models/CreateNotificationActionData.ts
@@ -105,6 +106,7 @@ models/Notifications.ts
 models/NotificationsResponse.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
+models/PlaylistArtworkFull.ts
 models/PlaylistFeedItem.ts
 models/PlaylistFull.ts
 models/PlaylistFullWithoutTracks.ts
@@ -114,6 +116,7 @@ models/PlaylistUpdate.ts
 models/PlaylistUpdates.ts
 models/PlaylistUpdatesResponse.ts
 models/ProfilePicture.ts
+models/ProfilePictureFull.ts
 models/Purchase.ts
 models/PurchaseGate.ts
 models/PurchaseSplit.ts
@@ -187,7 +190,7 @@ models/TrackAddedToPlaylistNotificationActionData.ts
 models/TrackAddedToPurchasedAlbumNotification.ts
 models/TrackAddedToPurchasedAlbumNotificationAction.ts
 models/TrackAddedToPurchasedAlbumNotificationActionData.ts
-models/TrackArtwork.ts
+models/TrackArtworkFull.ts
 models/TrackFavoritesResponseFull.ts
 models/TrackFeedItem.ts
 models/TrackFull.ts

@@ -44,6 +44,12 @@ import {
     PlaylistArtworkFromJSONTyped,
     PlaylistArtworkToJSON,
 } from './PlaylistArtwork';
+import type { PlaylistArtworkFull } from './PlaylistArtworkFull';
+import {
+    PlaylistArtworkFullFromJSON,
+    PlaylistArtworkFullFromJSONTyped,
+    PlaylistArtworkFullToJSON,
+} from './PlaylistArtworkFull';
 import type { Repost } from './Repost';
 import {
     RepostFromJSON,
@@ -71,10 +77,10 @@ import {
 export interface PlaylistFull {
     /**
      * 
-     * @type {PlaylistArtwork}
+     * @type {PlaylistArtworkFull}
      * @memberof PlaylistFull
      */
-    artwork?: PlaylistArtwork;
+    artwork?: PlaylistArtworkFull;
     /**
      * 
      * @type {string}
@@ -356,7 +362,7 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'artwork': !exists(json, 'artwork') ? undefined : PlaylistArtworkFromJSON(json['artwork']),
+        'artwork': !exists(json, 'artwork') ? undefined : PlaylistArtworkFullFromJSON(json['artwork']),
         'description': !exists(json, 'description') ? undefined : json['description'],
         'permalink': json['permalink'],
         'id': json['id'],
@@ -408,7 +414,7 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
     }
     return {
         
-        'artwork': PlaylistArtworkToJSON(value.artwork),
+        'artwork': PlaylistArtworkFullToJSON(value.artwork),
         'description': value.description,
         'permalink': value.permalink,
         'id': value.id,
