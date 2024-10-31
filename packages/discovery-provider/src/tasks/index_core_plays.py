@@ -41,7 +41,12 @@ def index_core_play(
         timestamp = tx_play.timestamp.ToDatetime()
         track_id = int(tx_play.track_id)
         user_id = int(tx_play.user_id)
-        slot = block.height  # plus last solana slot
+        source = tx_play.source
+        city = tx_play.city
+        region = tx_play.region
+        country = tx_play.country
+        # TODO: core block + plus last solana slot
+        slot = block.height
 
         plays.append(
             {
@@ -50,12 +55,11 @@ def index_core_play(
                 "updated_at": datetime.now(),
                 "slot": slot,
                 "signature": signature,
-                # TODO: add after proxy service
                 "created_at": timestamp,
-                "source": "",
-                "city": "",
-                "region": "",
-                "country": "",
+                "source": source,
+                "city": city,
+                "region": region,
+                "country": country,
             }
         )
 

@@ -68,22 +68,17 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
         if latest_indexed_block:
             next_block = latest_indexed_block.height + 1
 
-        logger.debug(f"index_core.py | querying block {next_block} on chain {chainid}")
-
         block, indexed_block = core.get_block(session=session, height=next_block)
         if not block:
             logger.error(f"index_core.py | could not get block {next_block} {chainid}")
             return None
 
         if indexed_block:
-            logger.debug(f"index_core.py | block already indexed {next_block}")
             return None
 
         # core returns -1 for block that doesn't exist
         if block.height < 0:
             return None
-
-        logger.debug(f"index_core.py | got block {block.height} on chain {chainid}")
 
         challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
         _index_core_txs(

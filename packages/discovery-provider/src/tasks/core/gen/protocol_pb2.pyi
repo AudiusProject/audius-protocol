@@ -327,9 +327,17 @@ class TrackPlay(google.protobuf.message.Message):
     TRACK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     SIGNATURE_FIELD_NUMBER: builtins.int
+    SOURCE_FIELD_NUMBER: builtins.int
+    CITY_FIELD_NUMBER: builtins.int
+    REGION_FIELD_NUMBER: builtins.int
+    COUNTRY_FIELD_NUMBER: builtins.int
     user_id: builtins.str
     track_id: builtins.str
     signature: builtins.str
+    source: builtins.str
+    city: builtins.str
+    region: builtins.str
+    country: builtins.str
     @property
     def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
     def __init__(
@@ -339,6 +347,10 @@ class TrackPlay(google.protobuf.message.Message):
         track_id: builtins.str = ...,
         timestamp: google.protobuf.timestamp_pb2.Timestamp | None = ...,
         signature: builtins.str = ...,
+        source: builtins.str = ...,
+        city: builtins.str = ...,
+        region: builtins.str = ...,
+        country: builtins.str = ...,
     ) -> None: ...
     def HasField(
         self, field_name: typing.Literal["timestamp", b"timestamp"]
@@ -346,8 +358,16 @@ class TrackPlay(google.protobuf.message.Message):
     def ClearField(
         self,
         field_name: typing.Literal[
+            "city",
+            b"city",
+            "country",
+            b"country",
+            "region",
+            b"region",
             "signature",
             b"signature",
+            "source",
+            b"source",
             "timestamp",
             b"timestamp",
             "track_id",
