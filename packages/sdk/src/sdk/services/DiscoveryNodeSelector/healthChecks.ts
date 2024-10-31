@@ -54,21 +54,6 @@ const isApiIndexerHealthy = ({
   data.latest_indexed_block === undefined ||
   data.latest_chain_block - data.latest_indexed_block <= maxBlockDiff
 
-const isSolanaIndexerHealthy = ({
-  data,
-  maxSlotDiffPlays
-}: {
-  data: HealthCheckResponseData
-  maxSlotDiffPlays: number | null
-}) =>
-  !data.plays?.is_unhealthy &&
-  !data.rewards_manager?.is_unhealthy &&
-  !data.spl_audio_info?.is_unhealthy &&
-  !data.user_bank?.is_unhealthy &&
-  (!data.plays?.tx_info?.slot_diff ||
-    maxSlotDiffPlays === null ||
-    data.plays?.tx_info?.slot_diff <= maxSlotDiffPlays)
-
 const isApiSolanaIndexerHealthy = ({
   data,
   maxSlotDiffPlays
@@ -151,7 +136,7 @@ const getHealthCheckData = async (
 export const parseHealthStatusReason = ({
   data,
   comms,
-  healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
+  healthCheckThresholds: { minVersion, maxBlockDiff }
 }: {
   data: HealthCheckResponseData | null
   comms: HealthCheckComms | null
@@ -200,8 +185,12 @@ export const parseHealthStatusReason = ({
   if (!isIndexerHealthy({ data, maxBlockDiff })) {
     return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }
-  if (!isSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
-    return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
+
+  if (!data.discovery_provider_healthy) {
+    return {
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: data.errors?.join(', ')
+    }
   }
 
   return { health: HealthCheckStatus.HEALTHY }

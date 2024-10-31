@@ -47,6 +47,8 @@ export type HealthCheckResponseData = DeepPartial<{
     blockhash: string
     number: number
   }
+  discovery_provider_healthy: boolean
+  errors: string[]
   filesystem_size: number
   filesystem_used: number
   final_poa_block: any
