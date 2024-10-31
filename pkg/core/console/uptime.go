@@ -5,6 +5,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
@@ -26,18 +27,18 @@ func (cs *Console) uptimeFragment(c echo.Context) error {
 		cs.logger.Error("Sla page called with invalid rollup id")
 		return err
 	}
-	if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		cs.logger.Error("Failed to retrieve SlaRollup from db", "error", err)
 		return err
 	}
 	reports, err = cs.db.GetRollupReportsForId(ctx, pgtype.Int4{Int32: rollup.ID, Valid: true})
-	if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		cs.logger.Error("Failed to reports for latest SlaRollup from db", "error", err)
 		return err
 	}
 
 	recentRollups, err = cs.db.GetRecentRollups(ctx)
-	if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		cs.logger.Error("Failed to get recent rollups from db", "error", err)
 		return err
 	}
