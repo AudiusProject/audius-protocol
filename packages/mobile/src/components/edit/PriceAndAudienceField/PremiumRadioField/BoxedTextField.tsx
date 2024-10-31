@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
@@ -33,6 +33,7 @@ type BoxedTextFieldProps = TextFieldProps & {
   description: string
   style?: ViewStyle
   TextField?: ComponentType<TextFieldProps>
+  children?: ReactNode
 }
 
 export const BoxedTextField = (props: BoxedTextFieldProps) => {
@@ -41,6 +42,7 @@ export const BoxedTextField = (props: BoxedTextFieldProps) => {
     description,
     style,
     TextField = DefaultTextField,
+    children,
     ...other
   } = props
   const styles = useStyles()
@@ -55,6 +57,7 @@ export const BoxedTextField = (props: BoxedTextFieldProps) => {
         errorBeforeSubmit
         {...other}
       />
+      {children}
     </View>
   )
 }
