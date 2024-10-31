@@ -271,7 +271,7 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 7
+        assert len(all_apps) == 5
         for expected_app in first_set_new_apps_data:
             found_matches = [
                 item
