@@ -49,9 +49,15 @@ func (rp *RemoteProxy) GetIPData(ip string) (*LocationData, error) {
 		// if all error, increase attempt count
 		// else return the response from the first client
 		for _, clientIPUrl := range clientIpUrls {
-			res, err := rp.GetIPDataFromClient(clientIPUrl, ip)
+			res, shouldRetry, err := rp.GetIPDataFromClient(clientIPUrl, ip)
+			// bad requests or unauthorized, don't retry
+			if !shouldRetry && err != nil {
+				return nil, err
+			}
+
 			if err != nil {
 				logger.Errorf("error getting ip proxy data: %v", err)
+				time.Sleep(3 * time.Second)
 				continue
 			}
 			return res, nil
@@ -66,15 +72,15 @@ func (rp *RemoteProxy) GetIPData(ip string) (*LocationData, error) {
 	return nil, errors.New("exhausted ip proxy requests")
 }
 
-// calls GET url/{ip}
-func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, error) {
+// calls GET url/{ip}, bool is a shouldRetry param
+func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, bool, error) {
 	logger := rp.logger
 
 	// Create the request with the specified IP endpoint
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", url, ip), nil)
 	if err != nil {
 		logger.Error("Error creating request for IP proxy data:", err)
-		return nil, err
+		return nil, true, err
 	}
 
 	// Use the current Unix time for signing
@@ -84,21 +90,26 @@ func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, error
 	err = signProxyRequest(rp.self, req, ip, reqTime)
 	if err != nil {
 		logger.Error("Error signing proxy request:", err)
-		return nil, err
+		return nil, true, err
 	}
 
 	// Execute the signed request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Error("Error requesting IP proxy data:", err)
-		return nil, err
+		return nil, true, err
 	}
 	defer resp.Body.Close()
 
 	// Check for non-200 response codes
 	if resp.StatusCode != http.StatusOK {
-		logger.Error("Non-200 response from IP proxy service:", resp.Status)
-		return nil, fmt.Errorf("non-200 response: %s", resp.Status)
+		logger.Error("Non-200 response from IP proxy service:", "status", resp.Status)
+		shouldRetry := true
+		// don't retry on bad requests or unauth errors
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			shouldRetry = false
+		}
+		return nil, shouldRetry, fmt.Errorf("non-200 response: %s", resp.Status)
 	}
 
 	// Decode the response body into the expected structure
@@ -109,8 +120,8 @@ func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, error
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		logger.Error("Error decoding IP proxy response:", err)
-		return nil, err
+		logger.Error("Error decoding IP proxy response:", "error", err)
+		return nil, false, err
 	}
 
 	// Map the response to LocationData
@@ -120,7 +131,7 @@ func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, error
 		Country: data.CountryName,
 	}
 
-	return location, nil
+	return location, false, nil
 }
 
 var _ ServiceProxy = (*RemoteProxy)(nil)
