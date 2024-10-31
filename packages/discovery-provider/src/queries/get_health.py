@@ -32,8 +32,6 @@ from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
-    LAST_REACTIONS_INDEX_TIME_KEY,
-    LAST_SEEN_NEW_REACTION_TIME_KEY,
     SolanaIndexerStatus,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
@@ -174,10 +172,6 @@ class GetHealthArgs(TypedDict):
     # Number of seconds play counts are allowed to drift
     plays_count_max_drift: Optional[int]
 
-    # Reactions max drift
-    reactions_max_indexing_drift: Optional[int]
-    reactions_max_last_reaction_drift: Optional[int]
-
     # Number of seconds reward_manager indexer is allowed to drift
     reward_manager_max_drift: Optional[int]
     # Number of seconds user_bank indexer is allowed to drift
@@ -186,6 +180,8 @@ class GetHealthArgs(TypedDict):
     spl_token_max_drift: Optional[int]
     # Number of seconds payment_router indexer allowed to drift
     payment_router_max_drift: Optional[int]
+    # Number of seconds aggregate_tips indexer is allowed to drift
+    aggregate_tips_max_drift: Optional[int]
 
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
@@ -202,13 +198,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
-    reactions_max_indexing_drift = args.get("reactions_max_indexing_drift")
-    reactions_max_last_reaction_drift = args.get("reactions_max_last_reaction_drift")
     plays_count_max_drift = args.get("plays_count_max_drift")
     reward_manager_max_drift = args.get("reward_manager_max_drift")
     user_bank_max_drift = args.get("user_bank_max_drift")
     spl_token_max_drift = args.get("spl_token_max_drift")
     payment_router_max_drift = args.get("payment_router_max_drift")
+    aggregate_tips_max_drift = args.get("aggregate_tips_max_drift")
 
     errors = []
 
@@ -276,10 +271,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     payment_router_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.payment_router, payment_router_max_drift
     )
-    reactions_health_info = get_reactions_health_info(
+    aggregate_tips_health_info = get_solana_indexer_status(
         redis,
-        reactions_max_indexing_drift,
-        reactions_max_last_reaction_drift,
+        redis_keys.solana.aggregate_tips,
+        aggregate_tips_max_drift,
     )
 
     trending_tracks_age_sec = get_elapsed_time_redis(
@@ -368,9 +363,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "payment_router": payment_router_health_info,
             "reward_manager": reward_manager_health_info,
             "user_bank": user_bank_health_info,
+            "aggregate_tips": aggregate_tips_health_info,
         },
         "openresty_public_key": openresty_public_key,
-        "reactions": reactions_health_info,
         "infra_setup": infra_setup,
         "url": url,
         # Temp
@@ -478,8 +473,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy challenges")
     if play_health_info["is_unhealthy"]:
         errors.append("unhealthy plays")
-    if reactions_health_info["is_unhealthy"]:
-        errors.append("unhealthy reactions")
     if not user_bank_health_info["is_healthy"]:
         errors.append("unhealthy user_bank indexer")
     if not reward_manager_health_info["is_healthy"]:
@@ -488,6 +481,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy spl_token indexer")
     if not payment_router_health_info["is_healthy"]:
         errors.append("unhealthy payment_router indexer")
+    if not aggregate_tips_health_info["is_healthy"]:
+        errors.append("unhealthy aggregate_tips indexer")
 
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
@@ -510,7 +505,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         unhealthy_blocks
         or unhealthy_challenges
         # or play_health_info["is_unhealthy"]
-        or reactions_health_info["is_unhealthy"]
         or not user_bank_health_info["is_healthy"]
         or not reward_manager_health_info["is_healthy"]
         or not spl_token_health_info["is_healthy"]
@@ -701,47 +695,6 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
-    }
-
-
-def get_reactions_health_info(
-    redis: Redis,
-    max_indexing_drift: Optional[int] = None,
-    max_reaction_drift: Optional[int] = None,
-):
-    now = datetime.now()
-    last_index_time = redis.get(LAST_REACTIONS_INDEX_TIME_KEY)
-    last_index_time = int(last_index_time) if last_index_time else None
-    last_reaction_time = redis.get(LAST_SEEN_NEW_REACTION_TIME_KEY)
-    last_reaction_time = int(last_reaction_time) if last_reaction_time else None
-
-    last_index_time = (
-        datetime.fromtimestamp(last_index_time) if last_index_time else None
-    )
-    last_reaction_time = (
-        datetime.fromtimestamp(last_reaction_time) if last_reaction_time else None
-    )
-
-    indexing_delta = (
-        (now - last_index_time).total_seconds() if last_index_time else None
-    )
-    reaction_delta = (
-        (now - last_reaction_time).total_seconds() if last_reaction_time else None
-    )
-
-    is_unhealthy_indexing = bool(
-        indexing_delta and max_indexing_drift and indexing_delta > max_indexing_drift
-    )
-    is_unhealthy_reaction = bool(
-        reaction_delta and max_reaction_drift and reaction_delta > max_reaction_drift
-    )
-
-    is_unhealthy = is_unhealthy_indexing or is_unhealthy_reaction
-
-    return {
-        "indexing_delta": indexing_delta,
-        "reaction_delta": reaction_delta,
-        "is_unhealthy": is_unhealthy,
     }
 
 

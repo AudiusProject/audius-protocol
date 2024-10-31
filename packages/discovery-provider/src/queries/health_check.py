@@ -50,12 +50,6 @@ def health_check():
             "challenge_events_age_max_drift", type=int
         ),
         "plays_count_max_drift": request.args.get("plays_count_max_drift", type=int),
-        "reactions_max_indexing_drift": request.args.get(
-            "reactions_max_indexing_drift", type=int
-        ),
-        "reactions_max_last_reaction_drift": request.args.get(
-            "reactions_max_last_reaction_drift", type=int
-        ),
         "reward_manager_max_drift": request.args.get(
             "reward_manager_max_drift", type=int, default=300
         ),
@@ -67,6 +61,9 @@ def health_check():
         ),
         "payment_router_max_drift": request.args.get(
             "payment_router_max_drift", type=int, default=300
+        ),
+        "aggregate_tips_max_drift": request.args.get(
+            "aggregate_tips_max_drift", type=int, default=300
         ),
     }
     try:

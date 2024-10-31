@@ -56,6 +56,10 @@ class SolanaIndexers(NamedTuple):
         last_tx="solana:spl_token:last_tx",
         last_completed_at="solana:spl_token:last_completed_at",
     )
+    aggregate_tips: SolanaIndexerStatus = SolanaIndexerStatus(
+        last_tx="solana:aggregate_tips:last_tx",
+        last_completed_at="solana:aggregate_tips:last_completed_at",
+    )
 
 
 class RedisKeys(NamedTuple):
@@ -63,10 +67,6 @@ class RedisKeys(NamedTuple):
 
 
 redis_keys = RedisKeys()
-
-# Reactions
-LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
-LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
 
 # Delist status cursor monitoring keys
 USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY = (
