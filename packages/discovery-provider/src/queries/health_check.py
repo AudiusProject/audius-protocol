@@ -56,13 +56,17 @@ def health_check():
         "reactions_max_last_reaction_drift": request.args.get(
             "reactions_max_last_reaction_drift", type=int
         ),
-        "rewards_manager_max_drift": request.args.get(
-            "rewards_manager_max_drift", type=int
+        "reward_manager_max_drift": request.args.get(
+            "reward_manager_max_drift", type=int, default=300
         ),
-        "user_bank_max_drift": request.args.get("user_bank_max_drift", type=int),
-        "spl_audio_max_drift": request.args.get("spl_audio_max_drift", type=int),
+        "user_bank_max_drift": request.args.get(
+            "user_bank_max_drift", type=int, default=300
+        ),
+        "spl_token_max_drift": request.args.get(
+            "spl_token_max_drift", type=int, default=300
+        ),
         "payment_router_max_drift": request.args.get(
-            "payment_router_max_drift", type=int
+            "payment_router_max_drift", type=int, default=300
         ),
     }
     try:

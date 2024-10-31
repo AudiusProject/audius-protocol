@@ -1,7 +1,7 @@
 import concurrent.futures
-import datetime
 import logging
 import time
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional, Set, TypedDict, TypeVar, cast
 
@@ -32,11 +32,6 @@ from src.solana.constants import (
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    CachedProgramTxInfo,
-    cache_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import (
     get_account_index,
@@ -45,10 +40,7 @@ from src.utils.helpers import (
     has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_constants import (
-    latest_sol_spl_token_db_key,
-    latest_sol_spl_token_program_tx_key,
-)
+from src.utils.redis_constants import redis_keys
 from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
@@ -90,19 +82,13 @@ class SplTokenTransactionInfo(TypedDict):
     user_bank: str
     signature: str
     slot: int
-    timestamp: datetime.datetime
+    timestamp: datetime
     vendor: Optional[str]
     prebalance: int
     postbalance: int
     sender_wallet: Optional[str]
     root_accounts: List[str]
     token_accounts: List[str]
-
-
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
-    cache_sol_db_tx(redis, latest_sol_spl_token_db_key, latest_tx)
 
 
 def parse_memo_instruction(tx_message: Message) -> str:
@@ -200,7 +186,7 @@ def parse_spl_token_transaction(
                         "user_bank": key,
                         "signature": tx_sig,
                         "slot": result.slot,
-                        "timestamp": datetime.datetime.utcfromtimestamp(
+                        "timestamp": datetime.utcfromtimestamp(
                             float(result.block_time or 0)
                         ),
                         "vendor": vendor,
@@ -239,9 +225,7 @@ def parse_spl_token_transaction(
                 "user_bank": receiver_token_account,
                 "signature": tx_sig,
                 "slot": result.slot,
-                "timestamp": datetime.datetime.utcfromtimestamp(
-                    float(result.block_time or 0)
-                ),
+                "timestamp": datetime.utcfromtimestamp(float(result.block_time or 0)),
                 "vendor": vendor,
                 "prebalance": balance_changes[receiver_token_account]["pre_balance"],
                 "postbalance": balance_changes[receiver_token_account]["post_balance"],
@@ -431,16 +415,9 @@ def parse_sol_tx_batch(
             last_scanned_slot = last_tx.slot
             last_scanned_signature = str(last_tx.signature)
             solana_logger.add_log(
-                f"Updating last_scanned_slot to {last_scanned_slot} and signature to {last_scanned_signature}"
+                f"Updating last_tx signature to {last_scanned_signature}"
             )
-            cache_latest_spl_audio_db_tx(
-                redis,
-                {
-                    "signature": last_scanned_signature,
-                    "slot": last_scanned_slot,
-                    "timestamp": last_tx.block_time or 0,
-                },
-            )
+            redis.set(redis_keys.solana.spl_token.last_tx, last_scanned_signature)
 
             record = session.query(SPLTokenTransaction).first()
             if record:
@@ -650,18 +627,15 @@ def index_spl_token(self):
     update_lock = redis.lock(index_spl_token_lock, blocking_timeout=25, timeout=14400)
 
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            WAUDIO_MINT,
-            latest_sol_spl_token_program_tx_key,
-        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.debug("index_spl_token.py | Acquired lock")
             process_spl_token_tx(solana_client_manager, db, redis)
+            redis.set(
+                redis_keys.solana.spl_token.last_completed_at,
+                datetime.now(timezone.utc).timestamp(),
+            )
     except Exception as e:
         logger.error("index_spl_token.py | Fatal error in main loop", exc_info=True)
         raise e

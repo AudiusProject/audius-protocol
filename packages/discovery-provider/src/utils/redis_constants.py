@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 latest_block_redis_key = "latest_block_from_chain"
 latest_block_hash_redis_key = "latest_blockhash_from_chain"
 most_recent_indexed_block_redis_key = "most_recently_indexed_block_from_db"
@@ -32,19 +34,46 @@ latest_sol_rewards_manager_db_tx_key = "latest_sol_program_tx:rewards_manager:db
 latest_sol_user_bank_program_tx_key = "latest_sol_program_tx:user_bank:chain"
 latest_sol_user_bank_db_tx_key = "latest_sol_program_tx:user_bank:db"
 
-latest_sol_payment_router_program_tx_key = "latest_sol_program_tx:payment_router:chain"
-latest_sol_payment_router_db_tx_key = "latest_sol_program_tx:payment_router:db"
-
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
 
 # Solana latest slot per indexer
 # Used to get the latest processed slot of each indexing task, using the global slots instead of the per-program slots
 latest_sol_user_bank_slot_key = "latest_sol_slot:user_bank"
-latest_sol_payment_router_slot_key = "latest_sol_slot:payment_router"
 latest_sol_aggregate_tips_slot_key = "latest_sol_slot:aggregate_tips"
 latest_sol_plays_slot_key = "latest_sol_slot:plays"
 latest_sol_rewards_manager_slot_key = "latest_sol_slot:rewards_manager"
+
+
+class SolanaIndexerStatus(NamedTuple):
+    last_tx: str
+    last_completed_at: str
+
+
+class SolanaIndexers(NamedTuple):
+    user_bank: SolanaIndexerStatus = SolanaIndexerStatus(
+        last_tx="solana:user_bank:last_tx",
+        last_completed_at="solana:user_bank:last_completed_at",
+    )
+    reward_manager: SolanaIndexerStatus = SolanaIndexerStatus(
+        last_tx="solana:reward_manager:last_tx",
+        last_completed_at="solana:reward_manager:last_completed_at",
+    )
+    payment_router: SolanaIndexerStatus = SolanaIndexerStatus(
+        last_tx="solana:payment_router:last_tx",
+        last_completed_at="solana:payment_router:last_completed_at",
+    )
+    spl_token: SolanaIndexerStatus = SolanaIndexerStatus(
+        last_tx="solana:spl_token:last_tx",
+        last_completed_at="solana:spl_token:last_completed_at",
+    )
+
+
+class RedisKeys(NamedTuple):
+    solana: SolanaIndexers = SolanaIndexers()
+
+
+redis_keys = RedisKeys()
 
 # Reactions
 LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
