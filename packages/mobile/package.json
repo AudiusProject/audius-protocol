@@ -134,6 +134,7 @@
     "react-native-document-picker": "9.1.0",
     "react-native-draggable-flatlist": "4.0.1",
     "react-native-dynamic": "1.0.0",
+    "react-native-fast-crypto": "2.2.0",
     "react-native-fast-image": "8.6.3",
     "react-native-fs": "2.20.0",
     "react-native-gesture-handler": "2.14.0",

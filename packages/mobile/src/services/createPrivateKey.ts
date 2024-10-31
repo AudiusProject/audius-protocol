@@ -1,4 +1,4 @@
-import { scrypt } from 'scrypt-js'
+import { scrypt } from 'react-native-fast-crypto'
 
 /**
  * Given a user encryptStr and initialization vector, generate a private key
@@ -13,17 +13,7 @@ export const createPrivateKey = async (encryptStr: string, ivHex: string) => {
   const encryptStrBuffer = Buffer.from(encryptStr)
   const ivBuffer = Buffer.from(ivHex)
 
-  // scrypt-js expects Uint8Array inputs
-  const keyBuffer = await scrypt(
-    new Uint8Array(encryptStrBuffer),
-    new Uint8Array(ivBuffer),
-    N,
-    r,
-    p,
-    dkLen
-  )
-
-  // Convert the Uint8Array to hex string
+  const keyBuffer = await scrypt(encryptStrBuffer, ivBuffer, N, r, p, dkLen)
   const keyHex = Buffer.from(keyBuffer).toString('hex')
 
   return { keyHex, keyBuffer }

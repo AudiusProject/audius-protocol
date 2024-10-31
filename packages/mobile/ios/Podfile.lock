@@ -1292,6 +1292,8 @@ PODS:
     - React-Core
   - react-native-document-picker (9.1.0):
     - React-Core
+  - react-native-fast-crypto (2.2.0):
+    - React
   - react-native-get-random-values (1.10.0):
     - React-Core
   - react-native-google-cast (4.6.2):
@@ -1949,6 +1951,7 @@ DEPENDENCIES:
   - "react-native-cookies (from `../../../node_modules/@react-native-cookies/cookies`)"
   - react-native-create-thumbnail (from `../../../node_modules/react-native-create-thumbnail`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-fast-crypto (from `../../../node_modules/react-native-fast-crypto`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../../../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
@@ -2134,6 +2137,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-create-thumbnail"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
+  react-native-fast-crypto:
+    :path: "../../../node_modules/react-native-fast-crypto"
   react-native-get-random-values:
     :path: "../../../node_modules/react-native-get-random-values"
   react-native-google-cast:
@@ -2325,6 +2330,7 @@ SPEC CHECKSUMS:
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-create-thumbnail: ab55d24aea01723cf386f18b0b542aabb1982f27
   react-native-document-picker: b4f4a23b73f864ce17965b284c0757648993805b
+  react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-google-cast: 0a82cf63114470403e41e04ffa2b13d6448b6112
   react-native-image-picker: 62c70831aede6c4348386726b9012f9d554e5320
