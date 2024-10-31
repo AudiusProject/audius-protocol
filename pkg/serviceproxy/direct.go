@@ -10,6 +10,8 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 )
 
+// a service proxy that calls services directly without going through
+// another registered node
 type DirectProxy struct {
 	// if empty string, returns stub data
 	ipDataApiKey string
@@ -21,7 +23,7 @@ func NewDirectProxy(logger *common.Logger, apiKey string) *DirectProxy {
 		logger.Warn("api key not specified for direct proxy, returning mock data")
 	}
 	return &DirectProxy{
-		logger:       logger,
+		logger:       logger.Child("service_proxy"),
 		ipDataApiKey: apiKey,
 	}
 }
