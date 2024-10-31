@@ -148,7 +148,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
 # Returns None otherwise
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]
-    is_download_gated = track["is_download_gated"]
+    is_download_gated = track["download_conditions"] is not None
     title = track["title"]
     is_original = args.get("is_original", False)
     filename = args.get("filename")
