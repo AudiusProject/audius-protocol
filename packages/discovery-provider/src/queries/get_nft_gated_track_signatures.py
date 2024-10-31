@@ -45,7 +45,8 @@ def _get_tracks(track_ids: List[int], session: Session):
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     return list(
         filter(
-            lambda track: track.stream_conditions != None
+            lambda track: track.is_stream_gated
+            and track.stream_conditions != None
             and "nft_collection" in track.stream_conditions,
             _get_tracks(track_ids, session),
         )

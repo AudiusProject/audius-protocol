@@ -84,19 +84,19 @@ def generate_unpopulated_trending_from_mat_views(
     # non-USDC purchase tracks before applying the limit.
     if usdc_purchase_only:
         trending_track_ids_query = trending_track_ids_query.filter(
-            Track.stream_conditions.isnot(None),
+            Track.is_stream_gated == True,
             text("CAST(stream_conditions AS TEXT) LIKE '%usdc_purchase%'"),
         )
     # If exclude_gated is true, then filter out track ids belonging to
     # gated tracks before applying the limit.
     elif exclude_gated:
         trending_track_ids_query = trending_track_ids_query.filter(
-            Track.stream_conditions.is_(None),
+            Track.is_stream_gated == False,
         )
     elif exclude_collectible_gated:
         trending_track_ids_query = trending_track_ids_query.filter(
             or_(
-                Track.stream_conditions.is_(None),
+                Track.is_stream_gated == False,
                 not_(text("CAST(stream_conditions AS TEXT) LIKE '%nft_collection%'")),
             ),
         )
