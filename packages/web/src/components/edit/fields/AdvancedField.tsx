@@ -352,6 +352,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
 }
 
 const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
+  )
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -561,46 +564,54 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
         </span>
       </div>
       <Divider />
-      <SwitchRowField
-        name={IS_COVER}
-        header={messages.coverAttribution.toggle.header}
-        description={messages.coverAttribution.toggle.description}
-      >
-        <Box mt='m' p='l' w='100%' borderRadius='m' backgroundColor='surface1'>
-          <Text variant='title' size='m'>
-            {messages.coverAttribution.attribution.header}
-          </Text>
-          <Box mb='m'>
-            <Text variant='body'>
-              {messages.coverAttribution.attribution.description}
+      {isRightsAndCoversEnabled ? (
+        <SwitchRowField
+          name={IS_COVER}
+          header={messages.coverAttribution.toggle.header}
+          description={messages.coverAttribution.toggle.description}
+        >
+          <Box
+            mt='m'
+            p='l'
+            w='100%'
+            borderRadius='m'
+            backgroundColor='surface1'
+          >
+            <Text variant='title' size='m'>
+              {messages.coverAttribution.attribution.header}
             </Text>
+            <Box mb='m'>
+              <Text variant='body'>
+                {messages.coverAttribution.attribution.description}
+              </Text>
+            </Box>
+            <Flex gap='m'>
+              <TextField
+                name={COVER_ORIGINAL_SONG_TITLE}
+                label={messages.coverAttribution.attribution.originalSongTitle}
+                placeholder={
+                  messages.coverAttribution.attribution.originalSongTitle
+                }
+                value={coverOriginalSongTitle || ''}
+                onChange={(e) => {
+                  setCoverOriginalSongTitle(e.target.value)
+                }}
+              />
+              <TextField
+                name={COVER_ORIGINAL_ARTIST}
+                label={messages.coverAttribution.attribution.originalSongArtist}
+                placeholder={
+                  messages.coverAttribution.attribution.originalSongArtist
+                }
+                value={coverOriginalArtist || ''}
+                onChange={(e) => {
+                  setCoverOriginalArtist(e.target.value)
+                }}
+              />
+            </Flex>
           </Box>
-          <Flex gap='m'>
-            <TextField
-              name={COVER_ORIGINAL_SONG_TITLE}
-              label={messages.coverAttribution.attribution.originalSongTitle}
-              placeholder={
-                messages.coverAttribution.attribution.originalSongTitle
-              }
-              value={coverOriginalSongTitle || ''}
-              onChange={(e) => {
-                setCoverOriginalSongTitle(e.target.value)
-              }}
-            />
-            <TextField
-              name={COVER_ORIGINAL_ARTIST}
-              label={messages.coverAttribution.attribution.originalSongArtist}
-              placeholder={
-                messages.coverAttribution.attribution.originalSongArtist
-              }
-              value={coverOriginalArtist || ''}
-              onChange={(e) => {
-                setCoverOriginalArtist(e.target.value)
-              }}
-            />
-          </Flex>
-        </Box>
-      </SwitchRowField>
+        </SwitchRowField>
+      ) : null}
       <Divider />
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}

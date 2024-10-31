@@ -6,6 +6,7 @@ import {
   useState
 } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -126,6 +127,9 @@ export type PriceFieldProps = TrackAvailabilityFieldsProps & {
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
+  )
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
   const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
@@ -147,7 +151,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
             prefillValue={500}
-            shouldShowRightsDeclaration
+            shouldShowRightsDeclaration={isRightsAndCoversEnabled}
           />
           {isUpload && (
             <PriceField
@@ -166,7 +170,7 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.standaloneTrackPrice}
             fieldName={PRICE}
             prefillValue={100}
-            shouldShowRightsDeclaration
+            shouldShowRightsDeclaration={isRightsAndCoversEnabled}
           />
           <PreviewField disabled={disabled} />
           {showPremiumDownloadsMessage ? (
