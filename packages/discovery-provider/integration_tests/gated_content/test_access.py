@@ -30,13 +30,17 @@ usdc_gate_1 = {
 non_gated_track = {
     "track_id": 1,
     "owner_id": 3,
+    "is_stream_gated": False,
     "stream_conditions": None,
+    "is_download_gated": False,
     "download_conditions": None,
 }
 stream_gated_track_1 = {
     "track_id": 2,
     "owner_id": 3,
+    "is_stream_gated": True,
     "stream_conditions": collectible_gate,
+    "is_download_gated": True,
     "download_conditions": collectible_gate,
 }
 stream_gated_track_2 = {
@@ -47,19 +51,25 @@ stream_gated_track_2 = {
 stream_gated_track_3 = {
     "track_id": 4,
     "owner_id": 1,
+    "is_stream_gated": True,
     "stream_conditions": follow_gate_1,
+    "is_download_gated": True,
     "download_conditions": follow_gate_1,
 }
 download_gated_track_1 = {
     "track_id": 5,
     "owner_id": 3,
+    "is_stream_gated": False,
     "stream_conditions": None,
+    "is_download_gated": True,
     "download_conditions": follow_gate_2,
 }
 download_gated_track_2 = {
     "track_id": 6,
     "owner_id": 1,
+    "is_stream_gated": False,
     "stream_conditions": None,
+    "is_download_gated": True,
     "download_conditions": follow_gate_1,
 }
 stem_track_1 = {
@@ -80,21 +90,27 @@ stem_track_3 = {
 usdc_stream_gated_track = {
     "track_id": 10,
     "owner_id": 1,
+    "is_stream_gated": True,
     "stream_conditions": usdc_gate_1,
+    "is_download_gated": True,
     "download_conditions": usdc_gate_1,
     "playlists_containing_track": [1],
 }
 usdc_download_gated_track = {
     "track_id": 11,
     "owner_id": 1,
+    "is_stream_gated": False,
     "stream_conditions": None,
+    "is_download_gated": True,
     "download_conditions": usdc_gate_1,
     "playlists_containing_track": [1],
 }
 usdc_stream_gated_track_previously_purchased_album = {
     "track_id": 12,
     "owner_id": 2,
+    "is_stream_gated": True,
     "stream_conditions": usdc_gate_1,
+    "is_download_gated": True,
     "download_conditions": usdc_gate_1,
     "playlists_previously_containing_track": {"2": {"time": 1711485199}},
 }
@@ -121,7 +137,9 @@ for track in tracks:
             txhash=str(0),
             track_id=track.get("track_id", 0),
             owner_id=track.get("owner_id", 1),
+            is_stream_gated=track.get("is_stream_gated", False),
             stream_conditions=track.get("stream_conditions", None),
+            is_download_gated=track.get("is_download_gated", False),
             download_conditions=track.get("download_conditions", None),
             stem_of=track.get("stem_of", None),
             playlists_containing_track=track.get("playlists_containing_track", []),
@@ -155,6 +173,7 @@ playlists: List[Dict[str, Any]] = [
                 {"track": 11, "time": 0},
             ]
         },
+        "is_stream_gated": True,
         "stream_conditions": usdc_gate_1,
     },
     {
@@ -169,6 +188,7 @@ playlists: List[Dict[str, Any]] = [
                 {"track": 11, "time": 0},
             ]
         },
+        "is_stream_gated": True,
         "stream_conditions": usdc_gate_1,
     },
 ]
@@ -181,6 +201,7 @@ for playlist in playlists:
             txhash=str(0),
             playlist_id=playlist.get("playlist_id", 0),
             playlist_owner_id=playlist.get("playlist_owner_id", 1),
+            is_stream_gated=playlist.get("is_stream_gated", False),
             stream_conditions=playlist.get("stream_conditions", None),
             is_current=True,
             is_delete=False,

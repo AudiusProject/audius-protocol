@@ -88,8 +88,7 @@ def does_user_have_usdc_access(
 
         # Don't check album purchase if track is download-gated only
         if not track_record or (
-            track_record.download_conditions is not None
-            and track_record.stream_conditions is None
+            track_record.is_download_gated and not track_record.is_stream_gated
         ):
             return False
 

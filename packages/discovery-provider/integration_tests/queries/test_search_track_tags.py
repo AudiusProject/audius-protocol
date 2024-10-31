@@ -28,12 +28,7 @@ def test_search_track_tags(app_module):
                 "track_id": 4,
                 "owner_id": 2,
                 "tags": "funk,pop",
-                "stream_conditions": {
-                    "usdc_purchase": {
-                        "price": 100,
-                        "splits": [{"user_id": 2, "percentage": 100}],
-                    }
-                },
+                "is_stream_gated": True,
                 "comments_disabled": True,
             },
             {"track_id": 5, "owner_id": 2, "tags": "funk,pop"},
