@@ -20,6 +20,12 @@ import {
     CoverPhotoFromJSONTyped,
     CoverPhotoToJSON,
 } from './CoverPhoto';
+import type { CoverPhotoFull } from './CoverPhotoFull';
+import {
+    CoverPhotoFullFromJSON,
+    CoverPhotoFullFromJSONTyped,
+    CoverPhotoFullToJSON,
+} from './CoverPhotoFull';
 import type { PlaylistLibrary } from './PlaylistLibrary';
 import {
     PlaylistLibraryFromJSON,
@@ -32,6 +38,12 @@ import {
     ProfilePictureFromJSONTyped,
     ProfilePictureToJSON,
 } from './ProfilePicture';
+import type { ProfilePictureFull } from './ProfilePictureFull';
+import {
+    ProfilePictureFullFromJSON,
+    ProfilePictureFullFromJSONTyped,
+    ProfilePictureFullToJSON,
+} from './ProfilePictureFull';
 
 /**
  * 
@@ -59,10 +71,10 @@ export interface UserFull {
     bio?: string;
     /**
      * 
-     * @type {CoverPhoto}
+     * @type {CoverPhotoFull}
      * @memberof UserFull
      */
-    coverPhoto?: CoverPhoto;
+    coverPhoto?: CoverPhotoFull;
     /**
      * 
      * @type {number}
@@ -161,10 +173,10 @@ export interface UserFull {
     playlistCount: number;
     /**
      * 
-     * @type {ProfilePicture}
+     * @type {ProfilePictureFull}
      * @memberof UserFull
      */
-    profilePicture?: ProfilePicture;
+    profilePicture?: ProfilePictureFull;
     /**
      * 
      * @type {number}
@@ -435,7 +447,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'albumCount': json['album_count'],
         'artistPickTrackId': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
         'bio': !exists(json, 'bio') ? undefined : json['bio'],
-        'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
+        'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFullFromJSON(json['cover_photo']),
         'followeeCount': json['followee_count'],
         'followerCount': json['follower_count'],
         'handle': json['handle'],
@@ -452,7 +464,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'location': !exists(json, 'location') ? undefined : json['location'],
         'name': json['name'],
         'playlistCount': json['playlist_count'],
-        'profilePicture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
+        'profilePicture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFullFromJSON(json['profile_picture']),
         'repostCount': json['repost_count'],
         'trackCount': json['track_count'],
         'isDeactivated': json['is_deactivated'],
@@ -503,7 +515,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'album_count': value.albumCount,
         'artist_pick_track_id': value.artistPickTrackId,
         'bio': value.bio,
-        'cover_photo': CoverPhotoToJSON(value.coverPhoto),
+        'cover_photo': CoverPhotoFullToJSON(value.coverPhoto),
         'followee_count': value.followeeCount,
         'follower_count': value.followerCount,
         'handle': value.handle,
@@ -520,7 +532,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'location': value.location,
         'name': value.name,
         'playlist_count': value.playlistCount,
-        'profile_picture': ProfilePictureToJSON(value.profilePicture),
+        'profile_picture': ProfilePictureFullToJSON(value.profilePicture),
         'repost_count': value.repostCount,
         'track_count': value.trackCount,
         'is_deactivated': value.isDeactivated,

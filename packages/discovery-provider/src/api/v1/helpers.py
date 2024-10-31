@@ -66,57 +66,11 @@ def init_rendezvous(user, cid):
     )
 
 
-def get_primary_endpoint(user, cid):
-    rendezvous = init_rendezvous(user, cid)
-    if not rendezvous:
-        return ""
-    return rendezvous.get(cid)
-
-
 def get_n_primary_endpoints(user, cid, n):
     rendezvous = init_rendezvous(user, cid)
     if not rendezvous:
         return ""
     return rendezvous.get_n(n, cid)
-
-
-def add_track_artwork(track):
-    if "user" not in track:
-        return track
-    cid = track["cover_art_sizes"]
-    cover_cids = get_image_cids(track["user"], cid, COVER_ART_SIZES)
-    track["cover_art_cids"] = cover_cids
-    endpoint = get_primary_endpoint(track["user"], cid)
-    artwork = get_image_urls(track["user"], cover_cids)
-    if endpoint and not artwork:
-        # Fallback to legacy image url format with dumb endpoint
-        artwork = {
-            "150x150": make_image(endpoint, cid, 150, 150),
-            "480x480": make_image(endpoint, cid, 480, 480),
-            "1000x1000": make_image(endpoint, cid, 1000, 1000),
-        }
-    track["artwork"] = artwork
-    return track
-
-
-def add_playlist_artwork(playlist):
-    if "user" not in playlist:
-        return playlist
-
-    cid = playlist["playlist_image_sizes_multihash"]
-    cover_cids = get_image_cids(playlist["user"], cid, COVER_ART_SIZES)
-    playlist["cover_art_cids"] = cover_cids
-    endpoint = get_primary_endpoint(playlist["user"], cid)
-    artwork = get_image_urls(playlist["user"], cover_cids)
-    if endpoint and not artwork:
-        # Fallback to legacy image url format with dumb endpoint
-        artwork = {
-            "150x150": make_image(endpoint, cid, 150, 150),
-            "480x480": make_image(endpoint, cid, 480, 480),
-            "1000x1000": make_image(endpoint, cid, 1000, 1000),
-        }
-    playlist["artwork"] = artwork
-    return playlist
 
 
 def get_playlist_added_timestamps(playlist):
@@ -134,42 +88,6 @@ def get_playlist_added_timestamps(playlist):
     return added_timestamps
 
 
-def add_user_artwork(user):
-    # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user.get("cover_photo")
-    user["profile_picture_legacy"] = user.get("profile_picture")
-
-    profile_cid = user.get("profile_picture_sizes")
-    profile_endpoint = get_primary_endpoint(user, profile_cid)
-    if profile_cid:
-        profile_cids = get_image_cids(user, profile_cid, PROFILE_PICTURE_SIZES)
-        user["profile_picture_cids"] = profile_cids
-        profile = get_image_urls(user, profile_cids)
-        if profile_endpoint and not profile:
-            # Fallback to legacy image url format with dumb endpoint
-            profile = {
-                "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
-                "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
-                "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
-            }
-        user["profile_picture"] = profile
-    cover_cid = user.get("cover_photo_sizes")
-    cover_endpoint = get_primary_endpoint(user, cover_cid)
-    if cover_cid:
-        cover_cids = get_image_cids(user, cover_cid, PROFILE_COVER_PHOTO_SIZES)
-        user["cover_photo_cids"] = cover_cids
-        cover = get_image_urls(user, cover_cids)
-        if cover_endpoint and not cover:
-            # Fallback to legacy image url format with dumb endpoint
-            cover = {
-                "640x": make_image(cover_endpoint, cover_cid, 640),
-                "2000x": make_image(cover_endpoint, cover_cid, 2000),
-            }
-        user["cover_photo"] = cover
-
-    return user
-
-
 # Helpers
 
 
@@ -178,90 +96,6 @@ async def fetch_url(url):
     future = loop.run_in_executor(None, requests.get, url)
     response = await future
     return response
-
-
-async def race_requests(urls, timeout):
-    tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
-    done, pending = await asyncio.wait(
-        tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
-    )
-    for task in done:
-        response = task.result()
-        if response.status_code == 200:
-            return response
-    raise Exception(f"No 200 responses for urls {urls}")
-
-
-# Get cids corresponding to each transcoded variant for the given upload_id.
-# Cache upload_id -> cids mappings.
-def get_image_cids(user, upload_id, variants):
-    # skip resolution step
-    # we want to use upload_id/variant.jpg
-    # after: https://github.com/AudiusProject/audius-protocol/pull/6043
-    return {}
-    if not upload_id:
-        return {}
-    try:
-        image_cids = {}
-        if upload_id.startswith("Qm"):
-            # Legacy path - no need to query content nodes for image variant cids
-            image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
-        else:
-            redis_key = f"image_cids:{upload_id}"
-            image_cids = redis.hgetall(redis_key)
-            if image_cids:
-                image_cids = {
-                    variant.decode("utf-8"): cid.decode("utf-8")
-                    for variant, cid in image_cids.items()
-                }
-            else:
-                # Query content for the transcoded cids corresponding to this upload id and
-                # cache upload_id -> { variant: cid, ... }
-                endpoints = get_n_primary_endpoints(user, upload_id, 3)
-                urls = list(
-                    map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
-                )
-
-                # Race requests in a new event loop
-                try:
-                    loop = asyncio.get_event_loop()
-                    resp = loop.run_until_complete(race_requests(urls, 0.5))
-                except RuntimeError:
-                    resp = asyncio.run(race_requests(urls, 0.5))
-
-                resp.raise_for_status()
-                image_cids = resp.json().get("results", {})
-                if not image_cids:
-                    return image_cids
-
-                image_cids = {
-                    variant.strip(".jpg"): cid for variant, cid in image_cids.items()
-                }
-                redis.hset(redis_key, mapping=image_cids)
-                redis.expire(redis_key, 86400)  # 24 hour ttl
-        return image_cids
-    except Exception as e:
-        logger.error(f"Exception fetching image cids for id: {upload_id}: {e}")
-        return {}
-
-
-# Map each image cid to a url with its preferred node. This reduces
-# redirects from initially attempting to query the wrong node.
-def get_image_urls(user, image_cids):
-    if not image_cids:
-        return {}
-
-    image_urls = {}
-    for variant, cid in image_cids.items():
-        if variant == "original":
-            continue
-        primary_endpoint = get_primary_endpoint(user, cid)
-        if not primary_endpoint:
-            raise Exception(
-                "Could not get primary endpoint for user {user.user_id}, cid {cid}"
-            )
-        image_urls[variant] = f"{primary_endpoint}/content/{cid}"
-    return image_urls
 
 
 def extend_search(resp):
@@ -282,6 +116,48 @@ def extend_search(resp):
     if "saved_albums" in resp:
         resp["saved_albums"] = list(map(extend_playlist, resp["saved_albums"]))
     return resp
+
+
+def add_user_artwork(user):
+    # Legacy CID-only references to images
+    user["cover_photo_legacy"] = user.get("cover_photo")
+    user["profile_picture_legacy"] = user.get("profile_picture")
+
+    profile_cid = user.get("profile_picture_sizes")
+    if profile_cid:
+        profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
+        profile_endpoint = profile_endpoints[0]
+        profile_mirrors = profile_endpoints[1:]
+        user["profile_picture"] = {
+            "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
+            "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
+            "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
+            "mirrors": profile_mirrors,
+        }
+    else:
+        user["profile_picture"] = {
+            "150x150": None,
+            "480x480": None,
+            "1000x1000": None,
+            "mirrors": [],
+        }
+    cover_cid = user.get("cover_photo_sizes")
+    if cover_cid:
+        cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
+        cover_endpoint = cover_endpoints[0]
+        cover_mirrors = cover_endpoints[1:]
+        user["cover_photo"] = {
+            "640x": make_image(cover_endpoint, cover_cid, 640),
+            "2000x": make_image(cover_endpoint, cover_cid, 2000),
+            "mirrors": cover_mirrors,
+        }
+    else:
+        user["cover_photo"] = {
+            "640x": None,
+            "2000x": None,
+            "mirrors": [],
+        }
+    return user
 
 
 def extend_user(user, current_user_id=None):
@@ -403,6 +279,30 @@ def parse_unix_epoch_param_non_utc(time, default=0):
     return datetime.fromtimestamp(time)
 
 
+def add_track_artwork(track):
+    if "user" not in track:
+        return track
+    cid = track["cover_art_sizes"]
+    if cid:
+        endpoints = get_n_primary_endpoints(track["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
+        track["artwork"] = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+            "mirrors": mirrors,
+        }
+    else:
+        track["artwork"] = {
+            "150x150": None,
+            "480x480": None,
+            "1000x1000": None,
+            "mirrors": [],
+        }
+    return track
+
+
 def extend_track(track, session=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -475,6 +375,31 @@ def stem_from_track(track):
         "orig_filename": orig_filename,
         "blocknumber": track["blocknumber"],
     }
+
+
+def add_playlist_artwork(playlist):
+    if "user" not in playlist:
+        return playlist
+
+    cid = playlist["playlist_image_sizes_multihash"]
+    if cid:
+        endpoints = get_n_primary_endpoints(playlist["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
+        playlist["artwork"] = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+            "mirrors": mirrors,
+        }
+    else:
+        playlist["artwork"] = {
+            "150x150": None,
+            "480x480": None,
+            "1000x1000": None,
+            "mirrors": [],
+        }
+    return playlist
 
 
 def extend_playlist(playlist):

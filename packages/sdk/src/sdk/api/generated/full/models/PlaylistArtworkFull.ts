@@ -17,43 +17,49 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface TrackArtwork
+ * @interface PlaylistArtworkFull
  */
-export interface TrackArtwork {
+export interface PlaylistArtworkFull {
     /**
      * 
      * @type {string}
-     * @memberof TrackArtwork
+     * @memberof PlaylistArtworkFull
      */
     _150x150?: string;
     /**
      * 
      * @type {string}
-     * @memberof TrackArtwork
+     * @memberof PlaylistArtworkFull
      */
     _480x480?: string;
     /**
      * 
      * @type {string}
-     * @memberof TrackArtwork
+     * @memberof PlaylistArtworkFull
      */
     _1000x1000?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof PlaylistArtworkFull
+     */
+    mirrors?: Array<string>;
 }
 
 /**
- * Check if a given object implements the TrackArtwork interface.
+ * Check if a given object implements the PlaylistArtworkFull interface.
  */
-export function instanceOfTrackArtwork(value: object): value is TrackArtwork {
+export function instanceOfPlaylistArtworkFull(value: object): value is PlaylistArtworkFull {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function TrackArtworkFromJSON(json: any): TrackArtwork {
-    return TrackArtworkFromJSONTyped(json, false);
+export function PlaylistArtworkFullFromJSON(json: any): PlaylistArtworkFull {
+    return PlaylistArtworkFullFromJSONTyped(json, false);
 }
 
-export function TrackArtworkFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackArtwork {
+export function PlaylistArtworkFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistArtworkFull {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -62,10 +68,11 @@ export function TrackArtworkFromJSONTyped(json: any, ignoreDiscriminator: boolea
         '_150x150': !exists(json, '150x150') ? undefined : json['150x150'],
         '_480x480': !exists(json, '480x480') ? undefined : json['480x480'],
         '_1000x1000': !exists(json, '1000x1000') ? undefined : json['1000x1000'],
+        'mirrors': !exists(json, 'mirrors') ? undefined : json['mirrors'],
     };
 }
 
-export function TrackArtworkToJSON(value?: TrackArtwork | null): any {
+export function PlaylistArtworkFullToJSON(value?: PlaylistArtworkFull | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -77,6 +84,7 @@ export function TrackArtworkToJSON(value?: TrackArtwork | null): any {
         '150x150': value._150x150,
         '480x480': value._480x480,
         '1000x1000': value._1000x1000,
+        'mirrors': value.mirrors,
     };
 }
 
