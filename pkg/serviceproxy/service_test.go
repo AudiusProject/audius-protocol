@@ -50,7 +50,7 @@ func TestProxyService(t *testing.T) {
 	ipRoute := fmt.Sprintf("http://%s/ip", addr)
 
 	// create direct proxy with stub data, empty api key
-	servicerDirectProxy := NewDirectProxy(logger, "")
+	servicerDirectProxy := NewDirectProxy(logger, "", true)
 	serviceeRemoteProxy := NewRemoteProxy(logger, serviceePkey, []string{ipRoute}, 10)
 	unregisteredRemoteProxy := NewRemoteProxy(logger, unregisteredPkey, []string{ipRoute}, 10)
 
@@ -59,7 +59,7 @@ func TestProxyService(t *testing.T) {
 	}
 
 	// create service and register route with echo
-	proxyRoutes := NewProxyRoutes(registeredNodes, *servicerDirectProxy)
+	proxyRoutes := NewProxyRoutes(registeredNodes, servicerDirectProxy)
 	e.GET("/ip/:ip", proxyRoutes.GetIPDataRoute)
 
 	t.Run("Registered node can call proxy", func(t *testing.T) {

@@ -340,12 +340,28 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
+		if ss.serviceProxy == nil {
+			ss.logger.Error("core error service proxy not configured")
+			return
+		}
+
+		ip := c.RealIP()
+		ipData, err := ss.serviceProxy.GetIPData(ip)
+		if err != nil {
+			ss.logger.Error("core error getting ip data:", "err", err)
+			return
+		}
+
 		// construct play data into event
 		play := &proto.TrackPlay{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
 			Timestamp: timestamppb.New(parsedTime),
 			Signature: signatureData.Signature,
+			Source:    "mediorum",
+			City:      ipData.City,
+			Region:    ipData.Region,
+			Country:   ipData.Country,
 		}
 
 		// form actual proto event for signing

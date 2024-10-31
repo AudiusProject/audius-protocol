@@ -5,11 +5,11 @@ import "github.com/labstack/echo/v4"
 type ProxyRoutes struct {
 	// address -> nil just for constant access
 	registeredNodes map[string]struct{}
-	directProxy     DirectProxy
+	directProxy     *DirectProxy
 }
 
 func NewProxyRoutes(registeredNodes map[string]struct{},
-	directProxy DirectProxy) *ProxyRoutes {
+	directProxy *DirectProxy) *ProxyRoutes {
 	return &ProxyRoutes{
 		registeredNodes: registeredNodes,
 		directProxy:     directProxy,

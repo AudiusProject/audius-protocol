@@ -15,15 +15,14 @@ import (
 type DirectProxy struct {
 	// if empty string, returns stub data
 	ipDataApiKey string
+	useMockData  bool
 	logger       *common.Logger
 }
 
-func NewDirectProxy(logger *common.Logger, apiKey string) *DirectProxy {
-	if apiKey == "" {
-		logger.Warn("api key not specified for direct proxy, returning mock data")
-	}
+func NewDirectProxy(logger *common.Logger, apiKey string, useMockData bool) *DirectProxy {
 	return &DirectProxy{
 		logger:       logger.Child("service_proxy"),
+		useMockData:  useMockData,
 		ipDataApiKey: apiKey,
 	}
 }
@@ -31,7 +30,7 @@ func NewDirectProxy(logger *common.Logger, apiKey string) *DirectProxy {
 func (dp *DirectProxy) GetIPData(ip string) (*LocationData, error) {
 	logger := dp.logger
 
-	if dp.ipDataApiKey == "" {
+	if dp.useMockData {
 		f := faker.New()
 
 		city := f.Address().City()
