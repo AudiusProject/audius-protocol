@@ -12,6 +12,8 @@ import { useDispatch } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
@@ -49,27 +51,31 @@ export const FeedScreen = () => {
 
   return (
     <Screen url='Feed'>
-      <ScreenHeader text={messages.header} icon={IconFeed}>
-        <OnlineOnly>
-          <FeedFilterButton />
-        </OnlineOnly>
-      </ScreenHeader>
+      <ScreenPrimaryContent>
+        <ScreenHeader text={messages.header} icon={IconFeed}>
+          <OnlineOnly>
+            <FeedFilterButton />
+          </OnlineOnly>
+        </ScreenHeader>
+      </ScreenPrimaryContent>
       <ScreenContent>
-        <Lineup
-          pullToRefresh
-          delineate
-          selfLoad
-          header={isUsdcEnabled ? null : <FeedTipTile />}
-          hideHeaderOnEmpty
-          ListFooterComponent={
-            <EndOfLineupNotice description={messages.endOfFeed} />
-          }
-          LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
-          actions={feedActions}
-          lineupSelector={getFeedLineup}
-          loadMore={loadMore}
-          showsVerticalScrollIndicator={false}
-        />
+        <ScreenSecondaryContent>
+          <Lineup
+            pullToRefresh
+            delineate
+            selfLoad
+            header={isUsdcEnabled ? null : <FeedTipTile />}
+            hideHeaderOnEmpty
+            ListFooterComponent={
+              <EndOfLineupNotice description={messages.endOfFeed} />
+            }
+            LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
+            actions={feedActions}
+            lineupSelector={getFeedLineup}
+            loadMore={loadMore}
+            showsVerticalScrollIndicator={false}
+          />
+        </ScreenSecondaryContent>
       </ScreenContent>
     </Screen>
   )
