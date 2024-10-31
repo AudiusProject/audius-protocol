@@ -17,7 +17,6 @@ import type {
 import {
   accountSelectors,
   collectionPageSelectors,
-  collectionPageActions,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -41,6 +40,7 @@ import {
   VirtualizedScrollView,
   Divider
 } from 'app/components/core'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -52,7 +52,6 @@ import { useThemePalette } from 'app/utils/theme'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
-import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -64,7 +63,6 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { resetCollection, fetchCollection } = collectionPageActions
 const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
 
@@ -83,25 +81,9 @@ const useStyles = makeStyles(({ spacing }) => ({
  */
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
-  const dispatch = useDispatch()
 
   // params is incorrectly typed and can sometimes be undefined
-  const {
-    id = null,
-    searchCollection,
-    slug,
-    collectionType,
-    handle
-  } = params ?? {}
-
-  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
-
-  const handleFetchCollection = useCallback(() => {
-    dispatch(resetCollection())
-    dispatch(fetchCollection(id, permalink, true))
-  }, [dispatch, id, permalink])
-
-  useFetchCollectionLineup(id, handleFetchCollection)
+  const { id = null, searchCollection, collectionType } = params ?? {}
 
   const cachedCollection = useSelector((state) =>
     getCollection(state, { id })
@@ -332,10 +314,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               updatedAt={updated_at}
             />
             {isOwner && !is_album && !ddex_app ? (
-              <>
+              <ScreenSecondaryContent>
                 <Divider style={styles.divider} color={neutralLight5} />
                 <SuggestedTracks collectionId={playlist_id} />
-              </>
+              </ScreenSecondaryContent>
             ) : null}
           </>
         </VirtualizedScrollView>
