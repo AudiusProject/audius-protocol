@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
@@ -43,7 +44,7 @@ const (
 )
 
 const (
-	ProdPersistentPeers = "53a2506dcf34b267c3e04bb63e0ee4f563c7850d@34.67.133.214:26656,f0d79ce5eb91847db0a1b9ad4c8a15824710f9c3@34.121.217.14:26656,edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656,35207ecb279b19ab53e0172f0e3ae47ac930d147@35.193.73.250:26656,bc6662eb1cff8c214fdd2147cef52ce6abc0b441@35.162.219.88:26656,2c47b1aba8e89caee91ac00c856b551a3035acad@34.208.174.151:26656,3afb27bab2cc0cea09fc65a9c33ffa8592a2eaf1@149.28.155.8:26656,d494895a1af5760d68566e4febf6d98de62cd575@207.246.72.205:26656"
+	ProdPersistentPeers  = "53a2506dcf34b267c3e04bb63e0ee4f563c7850d@34.67.133.214:26656,f0d79ce5eb91847db0a1b9ad4c8a15824710f9c3@34.121.217.14:26656,edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656,35207ecb279b19ab53e0172f0e3ae47ac930d147@35.193.73.250:26656,bc6662eb1cff8c214fdd2147cef52ce6abc0b441@35.162.219.88:26656,2c47b1aba8e89caee91ac00c856b551a3035acad@34.208.174.151:26656,3afb27bab2cc0cea09fc65a9c33ffa8592a2eaf1@149.28.155.8:26656,d494895a1af5760d68566e4febf6d98de62cd575@207.246.72.205:26656"
 	StagePersistentPeers = "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656,2f13439b2ee4c34bafe643f89575f40b7863a079@34.136.137.33:26656,c9b1ed3d3040e0c2ac70e3215f0ea9b16b401bca@34.68.24.207:26656,1eec5742f64fb243d22594e4143e14e77a38f232@34.71.167.168:26656,2da43f6e1b5614ea8fc8b7e89909863033ca6a27@35.208.173.168:26656"
 	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
 )
@@ -69,13 +70,12 @@ type Config struct {
 	MaxOutboundPeers int
 
 	/* Audius Config */
-	Environment        string
-	DelegatePrivateKey string
-	WalletAddress      string
-	ProposerAddress    string
-	GRPCladdr          string
-	CoreServerAddr     string
-	NodeEndpoint       string
+	Environment     string
+	WalletAddress   string
+	ProposerAddress string
+	GRPCladdr       string
+	CoreServerAddr  string
+	NodeEndpoint    string
 
 	/* Ethereum Config */
 	EthRPCUrl          string
@@ -134,27 +134,40 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	// check if discovery specific key is set
 	isDiscovery := os.Getenv("audius_delegate_private_key") != ""
+	var delegatePrivateKey string
 	if isDiscovery {
 		cfg.NodeType = Discovery
 		cfg.Environment = os.Getenv("audius_discprov_env")
-		cfg.DelegatePrivateKey = os.Getenv("audius_delegate_private_key")
+		delegatePrivateKey = os.Getenv("audius_delegate_private_key")
 		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
 		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
 		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
-		cfg.DelegatePrivateKey = os.Getenv("delegatePrivateKey")
+		delegatePrivateKey = os.Getenv("delegatePrivateKey")
 		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
-	ethAddress, err := common.PrivKeyHexToAddress(cfg.DelegatePrivateKey)
+	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("creating eth key %v", err)
+	}
+	cfg.EthereumKey = ethKey
+
+	ethAddress, err := common.PrivKeyToAddress(ethKey)
 	if err != nil {
 		return nil, fmt.Errorf("could not get address from priv key: %v", err)
 	}
 	cfg.WalletAddress = ethAddress
+
+	key, err := accounts.EthToCometKey(cfg.EthereumKey)
+	if err != nil {
+		return nil, fmt.Errorf("creating key %v", err)
+	}
+	cfg.CometKey = key
 
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {

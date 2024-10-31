@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 	"github.com/oklog/ulid/v2"

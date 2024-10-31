@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { AccountCollection } from './AccountCollection';
+import {
+    AccountCollectionFromJSON,
+    AccountCollectionFromJSONTyped,
+    AccountCollectionToJSON,
+} from './AccountCollection';
 import type { PlaylistLibrary } from './PlaylistLibrary';
 import {
     PlaylistLibraryFromJSON,
@@ -41,10 +47,10 @@ export interface AccountFull {
     user: UserFull;
     /**
      * 
-     * @type {Array<object>}
+     * @type {Array<AccountCollection>}
      * @memberof AccountFull
      */
-    playlists: Array<object>;
+    playlists: Array<AccountCollection>;
     /**
      * 
      * @type {PlaylistLibrary}
@@ -82,7 +88,7 @@ export function AccountFullFromJSONTyped(json: any, ignoreDiscriminator: boolean
     return {
         
         'user': UserFullFromJSON(json['user']),
-        'playlists': json['playlists'],
+        'playlists': ((json['playlists'] as Array<any>).map(AccountCollectionFromJSON)),
         'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
         'trackSaveCount': json['track_save_count'],
     };
@@ -98,7 +104,7 @@ export function AccountFullToJSON(value?: AccountFull | null): any {
     return {
         
         'user': UserFullToJSON(value.user),
-        'playlists': value.playlists,
+        'playlists': ((value.playlists as Array<any>).map(AccountCollectionToJSON)),
         'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
         'track_save_count': value.trackSaveCount,
     };

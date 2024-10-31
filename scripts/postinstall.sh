@@ -34,9 +34,10 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   if [ -d "$mobile_directory" ]; then
     printf "${GREEN}Installing cocoapods...\n${NC}"
     {
-      # Symlink react-native into the mobile package bc npm doesn't
+      # Symlink react-native into the root package bc npm doesn't
       # support nohoist
-      cd packages/mobile/node_modules
+
+      cd ./packages/mobile/node_modules
 
       source_path=../../../node_modules/react-native
       target_path=react-native
@@ -46,6 +47,12 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
       source_path=../../../node_modules/react-native-code-push
       target_path=react-native-code-push
+      if [ ! -e "$target_path" ]; then
+        ln -s "$source_path" "$target_path"
+      fi
+
+      source_path=../../../node_modules/react-native-svg
+      target_path=react-native-svg
       if [ ! -e "$target_path" ]; then
         ln -s "$source_path" "$target_path"
       fi

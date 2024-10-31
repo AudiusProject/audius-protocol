@@ -3,7 +3,11 @@ from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models.comments.comment_report import COMMENT_KARMA_THRESHOLD
-from src.queries.get_comments import get_paginated_replies, get_track_comments
+from src.queries.get_comments import (
+    COMMENT_ROOT_DEFAULT_LIMIT,
+    get_paginated_replies,
+    get_track_comments,
+)
 from src.utils.db_session import get_db
 from src.utils.helpers import decode_string_id
 
@@ -20,7 +24,7 @@ test_entities = {
             "is_edited": i == 10,
             "track_timestamp_s": i,
         }
-        for i in range(1, 11)
+        for i in range(1, 20)
     ]
     + [
         {  # replies
@@ -41,7 +45,6 @@ test_entities = {
             "track_id": 1,
             "title": "a",
             "owner_id": 10,
-            "is_stream_gated": True,
             "stream_conditions": {
                 "usdc_purchase": {
                     "price": 100,
@@ -59,7 +62,7 @@ def test_get_comments_default(app):
         populate_mock_db(db, test_entities)
         comments = get_track_comments({"sort_method": "newest"}, 1)
 
-        assert len(comments) == 5
+        assert len(comments) == COMMENT_ROOT_DEFAULT_LIMIT
         for comment in comments:
             if decode_string_id(comment["id"]) == 10:
                 assert len(comment["replies"]) == 3
@@ -69,7 +72,8 @@ def test_get_comments_default(app):
             else:
                 assert len(comment["replies"]) == 0
 
-            assert 5 <= decode_string_id(comment["id"]) <= 10
+            # We have 20 comments total, we should only get the last 15
+            assert 5 <= decode_string_id(comment["id"]) <= 20
 
 
 def test_get_comments_page(app):
@@ -81,7 +85,7 @@ def test_get_comments_page(app):
         )
 
         for comment in comments:
-            assert 1 <= decode_string_id(comment["id"]) <= 5
+            assert 10 <= decode_string_id(comment["id"]) <= 15
 
 
 def test_get_comments_sort(app):
@@ -101,7 +105,7 @@ def test_get_comments_sort(app):
 
         # Testing sort "newest"
         comments = get_track_comments({"sort_method": "newest"}, 1)
-        assert decode_string_id(comments[0]["id"]) == 10
+        assert decode_string_id(comments[0]["id"]) == 19
 
         # Testing sort "timestamp"
         comments = get_track_comments({"sort_method": "timestamp"}, 1)

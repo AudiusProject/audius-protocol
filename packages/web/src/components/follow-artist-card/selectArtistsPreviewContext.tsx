@@ -32,10 +32,13 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [track, setTrack] = useState<UserTrackMetadata | null>(null)
   const dispatch = useDispatch()
 
-  const { data: artist } = useGetUserById({
-    id: nowPlayingArtistId,
-    currentUserId: null
-  })
+  const { data: artist } = useGetUserById(
+    {
+      id: nowPlayingArtistId,
+      currentUserId: null
+    },
+    { disabled: nowPlayingArtistId === -1 }
+  )
   const { data: artistTracks } = useGetUserTracksByHandle(
     {
       handle: artist?.handle || '',

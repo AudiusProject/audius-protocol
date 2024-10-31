@@ -37,7 +37,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const accountId = useSelector(getUserId)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
-  const [isExpansible, setIsExpansible] = useState(false)
+  const [isExpandable, setIsExpandable] = useState(false)
 
   const {
     user_id: userId,
@@ -81,10 +81,10 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     allow_ai_attribution
 
   useEffect(() => {
-    if (!isExpansible && shouldExpand) {
-      setIsExpansible(true)
+    if (!isExpandable && shouldExpand) {
+      setIsExpandable(true)
     }
-  }, [shouldExpand, isExpansible, setIsExpansible])
+  }, [shouldExpand, isExpandable, setIsExpandable])
 
   const handleFollow = useCallback(() => {
     if (!doesCurrentUserFollow) {
@@ -135,11 +135,11 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
             <ExpandedSection />
           ) : (
             <CollapsedSection
-              isExpansible={isExpansible}
-              setIsExpansible={setIsExpansible}
+              isExpandable={isExpandable}
+              setIsExpandable={setIsExpandable}
             />
           )}
-          {isExpansible ? (
+          {isExpandable ? (
             <ExpandHeaderToggleButton
               isExpanded={isExpanded}
               onPress={handleToggleExpand}

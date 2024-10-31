@@ -39,6 +39,9 @@ import { QUERY_KEYS } from './queryKeys'
 
 type CommentOrReply = Comment | ReplyComment
 
+const COMMENT_ROOT_PAGE_SIZE = 15
+const COMMENT_REPLIES_PAGE_SIZE = 3
+
 const messages = {
   loadError: (type: 'comments' | 'replies') =>
     `There was an error loading ${type}. Please try again.`,
@@ -75,13 +78,13 @@ export const useGetCommentsByTrackId = ({
   trackId,
   userId,
   sortMethod,
-  pageSize = 5
+  pageSize = COMMENT_ROOT_PAGE_SIZE
 }: GetCommentsByTrackArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
   const queryRes = useInfiniteQuery({
-    enabled: !!trackId && isMutating === 0,
+    enabled: !!trackId && trackId !== 0 && isMutating === 0,
     getNextPageParam: (lastPage: ID[], pages) => {
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
@@ -121,7 +124,7 @@ export const useGetCommentsByTrackId = ({
       toast({ content: messages.loadError('comments') })
     },
     staleTime: Infinity, // Stale time is set to infinity so that we never reload data thats currently shown on screen (because sorting could have changed)
-    cacheTime: 1 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
+    cacheTime: 0 // Cache time is set to 1 so that the data is cleared any time we leave the page viewing it or change sorts
   })
   return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
 }
@@ -261,7 +264,7 @@ export const useGetCommentRepliesById = ({
   commentId,
   enabled,
   currentUserId,
-  pageSize = 3
+  pageSize = COMMENT_REPLIES_PAGE_SIZE
 }: GetRepliesArgs) => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()

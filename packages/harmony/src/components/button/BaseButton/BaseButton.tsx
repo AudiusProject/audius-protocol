@@ -62,6 +62,8 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       textAlign: 'center',
       userSelect: 'none',
       whiteSpace: 'nowrap',
+      paddingInline: 0,
+      '-webkit-padding': 0,
       transition: `
         transform ${motion.hover},
         border-color ${motion.hover},

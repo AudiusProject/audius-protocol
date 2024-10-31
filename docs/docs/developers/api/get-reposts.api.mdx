@@ -5,7 +5,7 @@ description: "Gets the given user's reposts"
 sidebar_label: 'Get Reposts'
 hide_title: true
 hide_table_of_contents: true
-api: eJytVcFu2zAM/RVBl7VDEbfDdsktw4ait6FrdxmKQrHpWK1taRQdLDD87yPlOHFSr+vWnSyJFN/jIym3GiF4VwcIet7qd+fn8skgpGg9WVfruf7apCmEoM906mqCmsTFeF/a1IhL8hDEr9UhLaAysvLoPCDZPmpmKJ7SxgPHM4hmw9EsQRWeepOtIJCp/OhKILT1Snf9pfv+dGd1ywdIabBOGNhyfDJ1xGfvpwT4aDKF8KNhWgLyYVIkwDWgAkSHEfDQfAkUFBWgVnYNtWoC4JvAQb0LJMqKAFHMq6z3Vtc7mzdoKiBAlud7q2vesI/NREKJ7Q0VvBaGFoHvEzZwTGChbhlTXX1iz32djuTtznbhXZ4HoAGCc0cp2WHMG86nbqolx3W5iuVU5FR4tH4mcHlTqtyh8mZl65idOuH17tJbVdrK0ukUJcudtgI84BS9/4lSDpQWL4WR4tzv5f09UNMrKkg0bCvzyFLG/dAyzwl+x21oVlLYCBs0H3CtCydtsIoFiOWd6yTak9ZmXbLvmxDbrm+MBkv2K4h8mCdJZkPq2Lbh6VrbDHBmmsw2YZa6ZH2hBdnWuesnjkphtfhyxSElXp/jxez8Sd6LGER9u1DizX0uTCoT53+r32H3Hlxv90/IH0diKxXBT0p8abgWjBZzbLeaDJqd6Xks13CXUyt4IQ5tuzQBbrHsOjnuaylisTxmWcq05KYMx+My5vkfu3wypUfYjOdtbcpGnLR05KtZDo3/DPIwVa8AfvEgPENjP3V7IneyQStM/rJoJ9fb1/BUjV++Sfzht1RvxuADL6bU3bFXAYaHKNLoDQv+K/qxcE9+id14mC8/3/C8/wJprYeg
+api: eJytVctu2zAQ/BWClyaFYSVFe/EtRYsgl6JIk16CIKCllcVYEhlyZUQQ9O/dpSRLrl0nbXqyyH3M7IPjRqJaebm4k5UH5+X9TCbgY6ctalPKhbwE9AIzECu9gVKw1zsvHFjj0cuZNBacYt+rpPMW11ubVU4VgJx3cdfIkg7koxMyac5tFWbyd8ALcUsY4uoLWRw8VdoBZUZXwUz6OINCyUUjsbacy6PT5Uq27Wyb3qSpBxwgnipw9R7GDdVTVsWScEwqNEJBNRrh19rOGT6tcpEaJ6xa6TJUJ07oexv0XuS60HgqD1DSJcIK3A6n4P1PlFLAOHstDA/nYWzvn4GqrsOMhMOxUGtqZThz28HjIdhtw+95Ot6a0oNn+4ezM/7ZxfpRxTF4XoXYEN8S2UVZm+s4dDV69OzX7OOY5SPEzMA63jDUHUqicOqlnFNcYWgX348LcyfjXAVoNvY/DyFuJlEXVJ8qLO/7ccTRdb8J06R71pmEZwrL+Qqditd8QxNmasPZ5qrONXX6vs/1Ygdo3H1hhx6BTDS3v+ClNY5d+uD6W7chXWjLHcDATMWoNxprip7cDs+7DbcfD432s0omezKOlwM+HdwFcBtaM3COmO1GUAjJRGZYQVbh7QZlWMgoiFLU6KSNRsnxIVOnKZXLyS9DtH4RRVy+IVtNZW90Am6uqkRXfh6baHMueWl1mZpurl2pF9+v9iUoBImf56KzMlpnOZ+fcfeYSaHC5vZPb1f4dtI1Y60vqmk/UYRnjGg56BkTWqix6XsyCPVMLsJLH2KptIw+2KFplsrDrcvblq87GeBmUXvUMufXkarcwxGe/1EgD5a0hnoq1RuVV+wkWczezHLQzCPIgyC/AfjVGnqExijYI5F7PjjNTP5yaCfXvfqdiumf6EH8QUDLego+8CJKLUtSBooeUaDRGS5Iz+20cXtizvy3j/ny6w1pyC/rDtxS
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,7 +20,6 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
@@ -54,8 +53,8 @@ Gets the given user's reposts
         param={{
           name: 'id',
           in: 'path',
-          required: true,
           description: 'A User ID',
+          required: true,
           schema: { type: 'string' },
         }}
       ></ParamsItem>
@@ -148,7 +147,7 @@ Gets the given user's reposts
                             <SchemaItem
                               collapsible={false}
                               name={'timestamp'}
-                              required={false}
+                              required={true}
                               schemaName={'string'}
                               qualifierMessage={undefined}
                               schema={{ type: 'string' }}
@@ -156,18 +155,44 @@ Gets the given user's reposts
                             <SchemaItem
                               collapsible={false}
                               name={'item_type'}
-                              required={false}
-                              schemaName={'object'}
-                              qualifierMessage={undefined}
-                              schema={{ type: 'object' }}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={'**Possible values:** [`track`, `playlist`]'}
+                              schema={{
+                                type: 'string',
+                                example: 'track',
+                                enum: ['track', 'playlist'],
+                              }}
                             ></SchemaItem>
+                            <SchemaItem collapsible={true} className={'schemaItem'}>
+                              <details style={{}} className={'openapi-markdown__details'}>
+                                <summary style={{}}>
+                                  <span className={'openapi-schema__container'}>
+                                    <strong className={'openapi-schema__property'}>item</strong>
+                                    <span className={'openapi-schema__name'}>object</span>
+                                    <span className={'openapi-schema__divider'}></span>
+                                    <span className={'openapi-schema__required'}>required</span>
+                                  </span>
+                                </summary>
+                                <div style={{ marginLeft: '1rem' }}>
+                                  <SchemaItem
+                                    collapsible={false}
+                                    name={''}
+                                    required={false}
+                                    schemaName={'object'}
+                                    qualifierMessage={undefined}
+                                    schema={{}}
+                                  ></SchemaItem>
+                                </div>
+                              </details>
+                            </SchemaItem>
                             <SchemaItem
                               collapsible={false}
-                              name={'item'}
-                              required={false}
-                              schemaName={'object'}
+                              name={'class'}
+                              required={true}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{ type: 'object' }}
+                              schema={{ type: 'string' }}
                             ></SchemaItem>
                             <li>
                               <div

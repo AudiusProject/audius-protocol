@@ -1,4 +1,4 @@
-import { AccountCollection } from '~/store/account'
+import { AccountCollection } from '~/models/Collection'
 import { EnhancedCollection } from '~/store/cache/collections/selectors'
 
 type FilterCollectionsOptions = {

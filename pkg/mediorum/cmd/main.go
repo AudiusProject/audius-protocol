@@ -10,8 +10,8 @@ import (
 	"strconv"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cmd/loadtest"
-	"github.com/AudiusProject/audius-protocol/pkg/mediorum/registrar"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
+	"github.com/AudiusProject/audius-protocol/pkg/registrar"
 )
 
 func getenvWithDefault(key string, fallback string) string {

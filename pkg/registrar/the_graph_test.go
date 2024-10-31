@@ -10,12 +10,14 @@ func TestTheGraph(t *testing.T) {
 
 	{
 		p := NewGraphProd()
-		fmt.Println(p.Peers("all"))
+		fmt.Println(p.Peers())
+		fmt.Println(p.Signers())
 	}
 
 	{
 		p := NewGraphStaging()
-		fmt.Println(p.Peers("all"))
+		fmt.Println(p.Peers())
+		fmt.Println(p.Signers())
 	}
 
 }

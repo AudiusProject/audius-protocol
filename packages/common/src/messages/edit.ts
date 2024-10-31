@@ -130,7 +130,20 @@ export const advancedTrackMessages = {
     }
   },
   noLicense: 'All Rights Reserved',
-  releaseDate: 'Release Date'
+  releaseDate: 'Release Date',
+  coverAttribution: {
+    toggle: {
+      header: 'This Song is a Cover',
+      description: 'This track was written by another artist.'
+    },
+    attribution: {
+      header: 'Cover Attribution',
+      description:
+        'If your song is a cover, please provide the original title and creator’s name.',
+      originalSongTitle: 'Original Song Title',
+      originalSongArtist: 'Original Artist'
+    }
+  }
 }
 
 export const advancedAlbumMessages = {

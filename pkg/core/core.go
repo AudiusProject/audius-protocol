@@ -8,7 +8,6 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/chain"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -220,20 +219,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig := cconfig.DefaultConfig()
 	cometConfig.SetRoot(cometRootDir)
 
-	// get derived comet key
-	delegatePrivateKey := envConfig.DelegatePrivateKey
-	key, err := accounts.EthToCometKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating key %v", err)
-	}
-	envConfig.CometKey = key
-
-	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("creating eth key %v", err)
-	}
-	envConfig.EthereumKey = ethKey
-
 	// get paths to priv validator and state file
 	privValKeyFile := cometConfig.PrivValidatorKeyFile()
 	privValStateFile := cometConfig.PrivValidatorStateFile()
@@ -245,7 +230,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 			"stateFile", privValStateFile)
 		pv = privval.LoadFilePV(privValKeyFile, privValStateFile)
 	} else {
-		pv = privval.NewFilePV(key, privValKeyFile, privValStateFile)
+		pv = privval.NewFilePV(envConfig.CometKey, privValKeyFile, privValStateFile)
 		pv.Save()
 		logger.Info("Generated private validator", "keyFile", privValKeyFile,
 			"stateFile", privValStateFile)
@@ -260,7 +245,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		logger.Info("Found node key", "path", nodeKeyFile)
 	} else {
 		p2pKey := p2p.NodeKey{
-			PrivKey: key,
+			PrivKey: envConfig.CometKey,
 		}
 		if err := p2pKey.SaveAs(nodeKeyFile); err != nil {
 			return nil, nil, fmt.Errorf("creating node key %v", err)

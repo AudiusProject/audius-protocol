@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/AudiusProject/audius-protocol/pkg/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"

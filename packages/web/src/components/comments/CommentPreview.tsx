@@ -30,7 +30,8 @@ const CommentPreviewHeader = () => {
   const {
     entityId,
     commentSectionLoading: isLoading,
-    commentIds
+    commentIds,
+    commentCount
   } = useCurrentCommentSection()
 
   const { data: track } = useGetTrackById({ id: entityId })
@@ -49,7 +50,7 @@ const CommentPreviewHeader = () => {
         <Text variant='title' size='l'>
           Comments
           {isShowingComments ? (
-            <Text color='subdued'>&nbsp;({commentIds.length})</Text>
+            <Text color='subdued'>&nbsp;({commentCount})</Text>
           ) : null}
         </Text>
       </Flex>

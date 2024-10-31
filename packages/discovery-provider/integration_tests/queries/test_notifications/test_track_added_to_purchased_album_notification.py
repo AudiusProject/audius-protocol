@@ -23,7 +23,6 @@ def test_get_track_added_to_purchased_album_notifications(app):
                     "playlist_name": "name",
                     "description": "description",
                     "is_album": True,
-                    "is_stream_gated": True,
                     "stream_conditions": {
                         "usdc_purchase": {
                             "price": 100,
@@ -94,7 +93,6 @@ def test_extended_track_added_to_purchased_album_notification(app):
                     "playlist_name": "name",
                     "description": "description",
                     "is_album": True,
-                    "is_stream_gated": True,
                     "stream_conditions": {
                         "usdc_purchase": {
                             "price": 100,

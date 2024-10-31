@@ -5,7 +5,7 @@ description: "Get the User's ERC and SPL connected wallets"
 sidebar_label: 'Get Connected Wallets'
 hide_title: true
 hide_table_of_contents: true
-api: eJyVVE1v2zAM/SuCLtuAIE6G7eJbuhVFgB2Kdt2lKAbFYmN1jqVRtLfA8H8fqbiJ87FDT6Yofjy+R7nTCDH4OkLUeac/zmbysRALdIGcr3Wu75uigBj1RBe+JqhJQkwIlSuMhGQvUeI6HYsSNkasgD4AkttVtYaSF+F34xCszh81YPHzj6kqICkcQ7U/PU1O0sehfKRtAEZlEM2WUx3BZuyPhK5e674/rvqGRM4cXH71AgXpSx7xfbrE1pWxSgaFyGET/fkio4AtoAJEj6n68fUNkKIS1EMEfBfV9d0XZWqr7m+/KVagZgBg1YE84SoJsbRD8qWoYNBsgAB55sdO13zgaGeFCWkaDJVsHzQibOAU2SJhUsuvotle7VMCWUEya+mjmygN2cGtSy/41kAJDXfLdZbus87ZPtuDHu9FImqHuMGKM0qiEPMssy4Wnu+2vCuts4BT01jXxGnhs3auBYOrn32C56gSfIvbJZeUerth5tOZPhswFVE/5kqiWZngI21MWu+Bsv8RfFSoO7yVt8o5sEnwl7JQGRaHYaThu4G2V1onOk/6nTPH05cMXEK7bmUiPGDV9+LmxcQt+9lsDTqzEmqYXeZTbFbo2VTxVPjxOO/vhhX5oMbrcBH265Or5cG1pmrkxOYv2O6Wr3/iqBIMC5hg7C4W/MMJNEo5+9v045W6uf7OW/cPHTWh5w==
+api: eJyVVE1v2zAM/SuCLtuAIE6G7eJbthVFgB2Kdt0lCArGZmN1jqVJtLfA8H8fKTtfTRagJ0siHz8eH91qgnXQ6ULXAX3Qy5HOMWTeODK20qm+RVJUoHpk87ugbu6/Kqhy9XD3XWW2qjAjzNUfKEukoEfaOvQg0Hk+gC95OfCwQZKE6aLVFV/Y2+RsMpLUARX6dSWzWIOaf2OLx9+18cg5yNc40iErcAM6bTVtncQK5E211l23FOfgbBUwiP3jZCKf09APdZZhkMq4WsKKxAWcK00Wm0legvi153ns6oWbk5a8tE6mz5IDRa9DnQuNPns6UBBcub9xjdfDHUMPucF72AplhJtwqffTLG8AMpIMlfK2H98+zlXr045sicKOny7R/QVyJcxgoBPKBfD54nzQNzx69N76VwiGsJIKK3JbY6ROxJPqJAo6aU3eJedNMDUxZi/A2peMKIhcSJMkNyGzbNvyEBqTox9DnZs6jDObNFMtkjLVs43EDTzM7ubneo0g9XOqeqtk6y3T8URz3c4G2kDU1bAB/9uXk8Dtof+3bucwZ8K/lLgSeNe4jNh8O9C2+w+MdBrX8Zw57r7gwsW1bVcQ8NGXXSfPPFC/5Xc+NuANrIQaZpf5lDNP6BnKgFfaeX8/7MsHdbztF8veabkSJTdQ1nLj4y/c9v+SbsleBQIPMJbRG2a86Y6OIGdrLvPdS+r25gcr+R/JjMMr
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,19 +20,13 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
 <Heading as={'h1'} className={'openapi__heading'} children={'Get connected wallets'}></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/users/{id}/connected_wallets"}
->
-
-</MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/users/{id}/connected_wallets'}></MethodEndpoint>
 
 Get the User's ERC and SPL connected wallets
 
@@ -44,175 +38,102 @@ Get the User's ERC and SPL connected wallets
 ></Heading>
 
 <details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
   data-collapsed={false}
   open={true}
 >
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Path Parameters
-    </h3>
-  </summary><div>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+  </summary>
+  <div>
     <ul>
       <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"id","in":"path","required":true,"description":"A User ID","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
+        className={'paramsItem'}
+        param={{
+          name: 'id',
+          in: 'path',
+          description: 'A User ID',
+          required: true,
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
     </ul>
-
   </div>
-</details><div>
+</details>
+<div>
   <div>
-    <ApiTabs
-      label={undefined}
-      id={undefined}
-    >
-      <TabItem
-        label={"200"}
-        value={"200"}
-      >
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
         <div>
-
-          Success
-
-
-        </div><div>
-          <MimeTabs
-            className={"openapi-tabs__mime"}
-            schemaType={"response"}
-          >
-            <TabItem
-              label={"application/json"}
-              value={"application/json"}
-            >
-              <SchemaTabs
-                className={"openapi-tabs__schema"}
-              >
-                <TabItem
-                  label={"Schema"}
-                  value={"Schema"}
-                >
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
                   <details
                     style={{}}
-                    className={"openapi-markdown__details response"}
+                    className={'openapi-markdown__details response'}
                     data-collapsed={false}
                     open={true}
                   >
-                    <summary
-                      style={{}}
-                      className={"openapi-markdown__details-summary-response"}
-                    >
-                      <strong>
-                        Schema
-                      </strong>
-                    </summary><div
-                      style={{"textAlign":"left","marginLeft":"1rem"}}
-                    >
-
-                    </div><ul
-                      style={{"marginLeft":"1rem"}}
-                    >
-                      <SchemaItem
-                        collapsible={true}
-                        className={"schemaItem"}
-                      >
-                        <details
-                          style={{}}
-                          className={"openapi-markdown__details"}
-                        >
-                          <summary
-                            style={{}}
-                          >
-                            <span
-                              className={"openapi-schema__container"}
-                            >
-                              <strong
-                                className={"openapi-schema__property"}
-                              >
-                                data
-                              </strong><span
-                                className={"openapi-schema__name"}
-                              >
-                                 object
-                              </span>
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
+                      <SchemaItem collapsible={true} className={'schemaItem'}>
+                        <details style={{}} className={'openapi-markdown__details'}>
+                          <summary style={{}}>
+                            <span className={'openapi-schema__container'}>
+                              <strong className={'openapi-schema__property'}>data</strong>
+                              <span className={'openapi-schema__name'}>object</span>
                             </span>
-                          </summary><div
-                            style={{"marginLeft":"1rem"}}
-                          >
+                          </summary>
+                          <div style={{ marginLeft: '1rem' }}>
                             <SchemaItem
                               collapsible={false}
-                              name={"erc_wallets"}
+                              name={'erc_wallets'}
                               required={true}
-                              schemaName={"string[]"}
+                              schemaName={'string[]'}
                               qualifierMessage={undefined}
-                              schema={{"type":"array","items":{"type":"string"}}}
-                            >
-
-                            </SchemaItem><SchemaItem
+                              schema={{ type: 'array', items: { type: 'string' } }}
+                            ></SchemaItem>
+                            <SchemaItem
                               collapsible={false}
-                              name={"spl_wallets"}
+                              name={'spl_wallets'}
                               required={true}
-                              schemaName={"string[]"}
+                              schemaName={'string[]'}
                               qualifierMessage={undefined}
-                              schema={{"type":"array","items":{"type":"string"}}}
-                            >
-
-                            </SchemaItem>
+                              schema={{ type: 'array', items: { type: 'string' } }}
+                            ></SchemaItem>
                           </div>
                         </details>
                       </SchemaItem>
                     </ul>
                   </details>
-                </TabItem><TabItem
-                  label={"Example"}
-                  value={"Example"}
-                >
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
-                    responseExample={'{\n  "data": {\n    "erc_wallets": [\n      "0xc0ffee254729296a45a3885639AC7E10F9d54979",\n      "0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E"\n    ],\n    "spl_wallets": ["DpNXPNWvWoHaZ9P3WtfGCb2ZdLihW8VW1w1Ph4KDH9iG"]\n    \n  }\n}\n'}
-                    language={"json"}
-                  >
-
-                  </ResponseSamples>
+                    responseExample={
+                      '{\n  "data": {\n    "erc_wallets": [\n      "0xc0ffee254729296a45a3885639AC7E10F9d54979",\n      "0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E"\n    ],\n    "spl_wallets": ["DpNXPNWvWoHaZ9P3WtfGCb2ZdLihW8VW1w1Ph4KDH9iG"]\n    \n  }\n}\n'
+                    }
+                    language={'json'}
+                  ></ResponseSamples>
                 </TabItem>
               </SchemaTabs>
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem><TabItem
-        label={"400"}
-        value={"400"}
-      >
-        <div>
-
-
-          Bad request
-
-
-        </div><div>
-
-        </div>
-      </TabItem><TabItem
-        label={"500"}
-        value={"500"}
-      >
-        <div>
-
-
-          Server error
-
-
-        </div><div>
-
-        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
       </TabItem>
     </ApiTabs>
-
   </div>
 </div>
