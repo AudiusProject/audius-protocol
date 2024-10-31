@@ -1,258 +1,672 @@
 {
-  "swagger": "2.0",
-  "basePath": "https://discoveryprovider.audius.co/v1",
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API",
+    "description": "Audius V1 API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://discoveryprovider.audius.co/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "users",
+      "description": "User related operations"
+    },
+    {
+      "name": "playlists",
+      "description": "Playlist related operations"
+    },
+    {
+      "name": "tracks",
+      "description": "Track related operations"
+    },
+    {
+      "name": "challenges",
+      "description": "Challenge related operations"
+    },
+    {
+      "name": "tips",
+      "description": "Tip related operations"
+    },
+    {
+      "name": "developer_apps",
+      "description": "Developer app related operations"
+    },
+    {
+      "name": "dashboard_wallet_users",
+      "description": "Protocol dashboard wallet users related operations"
+    },
+    {
+      "name": "resolve",
+      "description": "Audius Cannonical URL resolver"
+    },
+    {
+      "name": "comments",
+      "description": "Comment related operations"
+    }
+  ],
   "paths": {
-    "/dashboard_wallet_users": {
+    "/challenges/undisbursed": {
       "get": {
+        "tags": [
+          "challenges"
+        ],
+        "description": "Get all undisbursed challenges",
+        "operationId": "Get Undisbursed Challenges",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "A User ID to filter the undisbursed challenges to a particular user",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "completed_blocknumber",
+            "in": "query",
+            "description": "Starting blocknumber to retrieve completed undisbursed challenges",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
-            "schema": { "$ref": "#/definitions/dashboard_wallet_users_response" }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/undisbursed_challenges"
+                }
+              }
+            }
           },
-          "400": { "description": "Bad request" },
-          "404": { "description": "No such dashboard wallets" },
-          "500": { "description": "Server error" }
-        },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/comments/unclaimed_id": {
+      "get": {
+        "tags": [
+          "comments"
+        ],
+        "description": "Gets an unclaimed blockchain comment ID",
+        "operationId": "Get unclaimed comment ID",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/unclaimed_id_response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/comments/{comment_id}/replies": {
+      "get": {
+        "tags": [
+          "comments"
+        ],
+        "description": "Gets replies to a parent comment",
+        "operationId": "Get Comment Replies",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "description": "A Comment ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/comment_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/dashboard_wallet_users": {
+      "get": {
+        "tags": [
+          "dashboard_wallet_users"
+        ],
         "description": "Gets Audius user profiles connected to given dashboard wallet addresses",
         "operationId": "Bulk get dashboard wallet users",
         "parameters": [
           {
             "name": "wallets",
             "in": "query",
-            "type": "array",
+            "description": "The wallets for which to fetch connected Audius user profiles.",
             "required": true,
-            "items": { "type": "string" },
-            "collectionFormat": "csv",
-            "description": "The wallets for which to fetch connected Audius user profiles."
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
-        "tags": ["dashboard_wallet_users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dashboard_wallet_users_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "404": {
+            "description": "No such dashboard wallets",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/developer_apps/{address}": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/developer_app_response" }
-          },
-          "400": { "description": "Bad request" },
-          "404": { "description": "Not found" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "developer_apps"
+        ],
         "description": "Gets developer app matching given address (API key)",
         "operationId": "Get Developer App",
         "parameters": [
           {
             "name": "address",
             "in": "path",
+            "description": "A developer app address (API Key)",
             "required": true,
-            "type": "string",
-            "description": "A developer app address (API Key)"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["developer_apps"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/developer_app_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "404": {
+            "description": "Not found",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/playlists": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/playlist_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Gets a list of playlists by ID",
         "operationId": "Get Bulk Playlists",
         "parameters": [
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "id",
             "in": "query",
-            "type": "array",
-            "items": { "type": "string" },
-            "collectionFormat": "multi",
-            "description": "The ID of the playlist(s)"
+            "description": "The ID of the playlist(s)",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/playlist_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/playlists/by_permalink/{handle}/{slug}": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/playlist_response" }
-          }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Get a playlist by handle and slug",
         "operationId": "Get Playlist By Handle and Slug",
         "parameters": [
           {
             "name": "handle",
             "in": "path",
+            "description": "playlist owner handle",
             "required": true,
-            "type": "string",
-            "description": "playlist owner handle"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "slug",
             "in": "path",
+            "description": "playlist slug",
             "required": true,
-            "type": "string",
-            "description": "playlist slug"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/playlist_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/playlists/search": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/playlist_search_result" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Search for a playlist",
         "operationId": "Search Playlists",
         "parameters": [
           {
             "name": "query",
             "in": "query",
-            "type": "string",
-            "required": true,
-            "description": "The search query"
+            "description": "The search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "description": "The genres to filter by",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevant",
+                "popular",
+                "recent"
+              ]
+            }
+          },
+          {
+            "name": "mood",
+            "in": "query",
+            "description": "The moods to filter by",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "includePurchaseable",
+            "in": "query",
+            "description": "Whether or not to include purchaseable content",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "has_downloads",
+            "in": "query",
+            "description": "Only include tracks that have downloads in the track results",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/playlist_search_result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/playlists/trending": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/trending_playlists_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Gets trending playlists for a time period",
         "operationId": "Get Trending Playlists",
         "parameters": [
           {
             "name": "time",
             "in": "query",
-            "type": "string",
-            "enum": ["week", "month", "year", "allTime"],
-            "description": "Calculate trending over a specified time range"
+            "description": "Calculate trending over a specified time range",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "week",
+                "month",
+                "year",
+                "allTime"
+              ]
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/trending_playlists_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/playlists/{playlist_id}": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/playlist_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Get a playlist by ID",
         "operationId": "Get Playlist",
         "parameters": [
           {
             "name": "playlist_id",
             "in": "path",
+            "description": "A Playlist ID",
             "required": true,
-            "type": "string",
-            "description": "A Playlist ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/playlist_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/playlists/{playlist_id}/access-info": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/access_info_response" }
-          }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Gets the information necessary to access the playlist and what access the given user has.",
         "operationId": "Get Playlist Access Info",
         "parameters": [
           {
             "name": "playlist_id",
             "in": "path",
+            "description": "A Playlist ID",
             "required": true,
-            "type": "string",
-            "description": "A Playlist ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/access_info_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/playlists/{playlist_id}/tracks": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/playlist_tracks_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "playlists"
+        ],
         "description": "Fetch tracks within a playlist.",
         "operationId": "Get Playlist Tracks",
         "parameters": [
           {
             "name": "playlist_id",
             "in": "path",
+            "description": "A Playlist ID",
             "required": true,
-            "type": "string",
-            "description": "A Playlist ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["playlists"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/playlist_tracks_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/resolve": {
       "get": {
-        "responses": { "302": { "description": "Internal redirect" } },
+        "tags": [
+          "resolve"
+        ],
         "summary": "Resolves and redirects a provided Audius app URL to the API resource URL it represents",
         "description": "This endpoint allows you to lookup and access API resources when you only know the\naudius.co URL.\nTracks, Playlists, and Users are supported.",
         "operationId": "Resolve",
@@ -260,248 +674,659 @@
           {
             "name": "url",
             "in": "query",
-            "type": "string",
+            "description": "URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path",
             "required": true,
-            "description": "URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["resolve"]
+        "responses": {
+          "302": {
+            "description": "Internal redirect",
+            "content": {}
+          }
+        }
       }
     },
     "/tips": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/get_tips_response" }
-          }
-        },
+        "tags": [
+          "tips"
+        ],
         "description": "Gets the most recent tips on the network",
         "operationId": "Get Tips",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "receiver_min_followers",
             "in": "query",
-            "type": "integer",
-            "default": 0,
-            "description": "Only include tips to recipients that have this many followers"
+            "description": "Only include tips to recipients that have this many followers",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
           },
           {
             "name": "receiver_is_verified",
             "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Only include tips to recipients that are verified"
+            "description": "Only include tips to recipients that are verified",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "current_user_follows",
             "in": "query",
-            "type": "string",
-            "enum": ["sender", "receiver", "sender_or_receiver"],
-            "description": "Only include tips involving the user's followers in the given capacity. Requires user_id to be set."
+            "description": "Only include tips involving the user's followers in the given capacity. Requires user_id to be set.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sender",
+                "receiver",
+                "sender_or_receiver"
+              ]
+            }
           },
           {
             "name": "unique_by",
             "in": "query",
-            "type": "string",
-            "enum": ["sender", "receiver"],
-            "description": "Only include the most recent tip for a user was involved in the given capacity.\n\nEg. 'sender' will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.\n    "
+            "description": "Only include the most recent tip for a user was involved in the given capacity.\n\nEg. 'sender' will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.\n    ",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sender",
+                "receiver"
+              ]
+            }
           }
         ],
-        "tags": ["tips"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/get_tips_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/tracks": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/tracks_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Gets a list of tracks using their IDs or permalinks",
         "operationId": "Get Bulk Tracks",
         "parameters": [
           {
             "name": "permalink",
             "in": "query",
-            "type": "array",
-            "items": { "type": "string" },
-            "collectionFormat": "multi",
-            "description": "The permalink of the track(s)"
+            "description": "The permalink of the track(s)",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
           {
             "name": "id",
             "in": "query",
-            "type": "array",
-            "items": { "type": "string" },
-            "collectionFormat": "multi",
-            "description": "The ID of the track(s)"
+            "description": "The ID of the track(s)",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tracks_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/search": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_search" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Search for a track or tracks",
         "operationId": "Search Tracks",
         "parameters": [
           {
             "name": "query",
             "in": "query",
-            "type": "string",
-            "required": true,
-            "description": "The search query"
+            "description": "The search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "description": "The genres to filter by",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevant",
+                "popular",
+                "recent"
+              ]
+            }
+          },
+          {
+            "name": "mood",
+            "in": "query",
+            "description": "The moods to filter by",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
           {
             "name": "only_downloadable",
             "in": "query",
-            "type": "string",
-            "default": false,
-            "description": "Return only downloadable tracks"
+            "description": "Return only downloadable tracks",
+            "schema": {
+              "type": "string",
+              "default": "false"
+            }
+          },
+          {
+            "name": "includePurchaseable",
+            "in": "query",
+            "description": "Whether or not to include purchaseable content",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_purchaseable",
+            "in": "query",
+            "description": "Only include purchaseable tracks and albums in the track and album results",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "has_downloads",
+            "in": "query",
+            "description": "Only include tracks that have downloads in the track results",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "Only include tracks that match the musical key",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "bpm_min",
+            "in": "query",
+            "description": "Only include tracks that have a bpm greater than or equal to",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bpm_max",
+            "in": "query",
+            "description": "Only include tracks that have a bpm less than or equal to",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_search"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/trending": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/tracks_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Gets the top 100 trending (most popular) tracks on Audius",
         "operationId": "Get Trending Tracks",
         "parameters": [
           {
             "name": "genre",
             "in": "query",
-            "type": "string",
-            "description": "Filter trending to a specified genre"
+            "description": "Filter trending to a specified genre",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "time",
             "in": "query",
-            "type": "string",
-            "enum": ["week", "month", "year", "allTime"],
-            "description": "Calculate trending over a specified time range"
+            "description": "Calculate trending over a specified time range",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "week",
+                "month",
+                "year",
+                "allTime"
+              ]
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tracks_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/trending/underground": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/tracks_response" } }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Gets the top 100 trending underground tracks on Audius",
         "operationId": "Get Underground Trending Tracks",
         "parameters": [
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tracks_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/tracks/{track_id}": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_response" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Gets a track by ID",
         "operationId": "Get Track",
         "parameters": [
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/{track_id}/access-info": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/access_info_response" }
-          }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Gets the information necessary to access the track and what access the given user has.",
         "operationId": "Get Track Access Info",
         "parameters": [
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/access_info_response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tracks/{track_id}/comment_count": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "description": "Get the comment count for a track",
+        "operationId": "Track Comment Count",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "description": "A Track ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_comment_count_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/tracks/{track_id}/comment_notification_setting": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "description": "Get the comment notification setting for a track",
+        "operationId": "Track Comment Notification Setting",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "description": "A Track ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_comment_notification_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/tracks/{track_id}/comments": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "description": "Get a list of comments for a track",
+        "operationId": "Track Comments",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "description": "A Track ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "default": "top",
+              "enum": [
+                "top",
+                "newest",
+                "timestamp"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_comments_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/{track_id}/download": {
       "get": {
-        "responses": {
-          "200": { "description": "Success" },
-          "216": { "description": "Partial content" },
-          "400": { "description": "Bad request" },
-          "416": { "description": "Content range invalid" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "summary": "Download the original or MP3 file of a track",
         "description": "Download an original or mp3 track",
         "operationId": "Download Track",
@@ -509,52 +1334,91 @@
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_signature",
             "in": "query",
-            "type": "string",
-            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_data",
             "in": "query",
-            "type": "string",
-            "description": "Optional - data which was used to generate the optional signature argument."
+            "description": "Optional - data which was used to generate the optional signature argument.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "nft_access_signature",
             "in": "query",
-            "type": "string",
-            "description": "Optional - nft access signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
+            "description": "Optional - nft access signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "original",
             "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - true if downloading original file"
+            "description": "Optional - true if downloading original file",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "filename",
             "in": "query",
-            "type": "string",
-            "description": "Optional - name of file to download. If not provided, defaults to track original filename or title."
+            "description": "Optional - name of file to download. If not provided, defaults to track original filename or title.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {}
+          },
+          "216": {
+            "description": "Partial content",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "416": {
+            "description": "Content range invalid",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/tracks/{track_id}/inspect": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/track_inspect" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "summary": "Inspects the details of the file for a track",
         "description": "Inspect a track",
         "operationId": "Inspect Track",
@@ -562,30 +1426,81 @@
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "original",
             "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - if set to true inspects the original quality file"
+            "description": "Optional - if set to true inspects the original quality file",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/track_inspect"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/tracks/{track_id}/stems": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "description": "Get the remixable stems of a track",
+        "operationId": "Get Track Stems",
+        "parameters": [
+          {
+            "name": "track_id",
+            "in": "path",
+            "description": "A Track ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stems_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/tracks/{track_id}/stream": {
       "get": {
-        "responses": {
-          "200": { "description": "Success" },
-          "216": { "description": "Partial content" },
-          "400": { "description": "Bad request" },
-          "416": { "description": "Content range invalid" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "summary": "Get the streamable MP3 file of a track",
         "description": "Stream an mp3 track\nThis endpoint accepts the Range header for streaming.\nhttps://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests",
         "operationId": "Stream Track",
@@ -593,839 +1508,1626 @@
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "preview",
             "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - true if streaming track preview"
+            "description": "Optional - true if streaming track preview",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "user_signature",
             "in": "query",
-            "type": "string",
-            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_data",
             "in": "query",
-            "type": "string",
-            "description": "Optional - data which was used to generate the optional signature argument."
+            "description": "Optional - data which was used to generate the optional signature argument.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "nft_access_signature",
             "in": "query",
-            "type": "string",
-            "description": "Optional - gated content signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
+            "description": "Optional - gated content signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "skip_play_count",
             "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - boolean that disables tracking of play counts."
+            "description": "Optional - boolean that disables tracking of play counts.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           },
           {
             "name": "api_key",
             "in": "query",
-            "type": "string",
-            "description": "Optional - API key for third party apps. This is required for tracks that only allow specific API keys."
+            "description": "Optional - API key for third party apps. This is required for tracks that only allow specific API keys.",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "skip_check",
             "in": "query",
-            "type": "string",
-            "description": "Optional - POC to skip node 'double dip' health check"
+            "description": "Optional - POC to skip node 'double dip' health check",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "no_redirect",
+            "in": "query",
+            "description": "Optional - If true will not return a 302 and instead will return the stream url in JSON",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
-        "tags": ["tracks"]
-      }
-    },
-    "/tracks/{track_id}/stream-url": {
-      "get": {
         "responses": {
-          "200": { "description": "Success" },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
-        "summary": "POC: An alternate form of the /stream url",
-        "description": "Fetch the CN url for a track stream\nInstead of redirecting to the content node, it just returns the url as a string\nThis means the client can pre-fetch the url",
-        "operationId": "Stream Url",
-        "parameters": [
-          {
-            "name": "track_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "A Track ID"
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/stream_url_response"
+                }
+              }
+            }
           },
-          {
-            "name": "preview",
-            "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - true if streaming track preview"
+          "216": {
+            "description": "Partial content",
+            "content": {}
           },
-          {
-            "name": "user_signature",
-            "in": "query",
-            "type": "string",
-            "description": "Optional - signature from the requesting user's wallet.\n        This is needed to authenticate the user and verify access in case the track is gated."
+          "400": {
+            "description": "Bad request",
+            "content": {}
           },
-          {
-            "name": "user_data",
-            "in": "query",
-            "type": "string",
-            "description": "Optional - data which was used to generate the optional signature argument."
+          "416": {
+            "description": "Content range invalid",
+            "content": {}
           },
-          {
-            "name": "nft_access_signature",
-            "in": "query",
-            "type": "string",
-            "description": "Optional - gated content signature for this track which was previously generated by a registered DN.\n        We perform checks on it and pass it through to CN."
-          },
-          {
-            "name": "skip_play_count",
-            "in": "query",
-            "type": "boolean",
-            "default": false,
-            "description": "Optional - boolean that disables tracking of play counts."
-          },
-          {
-            "name": "api_key",
-            "in": "query",
-            "type": "string",
-            "description": "Optional - API key for third party apps. This is required for tracks that only allow specific API keys."
+          "500": {
+            "description": "Server error",
+            "content": {}
           }
-        ],
-        "tags": ["tracks"]
+        }
       }
     },
     "/tracks/{track_id}/top_listeners": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/top_listener" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "tracks"
+        ],
         "description": "Get the users that have listened to a track the most",
         "operationId": "Get Track Top Listeners",
         "parameters": [
           {
             "name": "track_id",
             "in": "path",
+            "description": "A Track ID",
             "required": true,
-            "type": "string",
-            "description": "A Track ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["tracks"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/top_listener"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/users_response" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a list of users by ID",
         "operationId": "Get Bulk Users",
         "parameters": [
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "id",
             "in": "query",
-            "type": "array",
-            "items": { "type": "string" },
-            "collectionFormat": "multi",
-            "description": "The ID of the user(s)"
+            "description": "The ID of the user(s)",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/users_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/handle/{handle}": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_response" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a single user by their handle",
         "operationId": "Get User by Handle",
         "parameters": [
           {
             "name": "handle",
             "in": "path",
+            "description": "A User handle",
             "required": true,
-            "type": "string",
-            "description": "A User handle"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/handle/{handle}/tracks/ai_attributed": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/tracks_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the AI generated tracks attributed to a user using the user's handle",
         "operationId": "Get AI Attributed Tracks by User Handle",
         "parameters": [
           {
             "name": "handle",
             "in": "path",
+            "description": "A User handle",
             "required": true,
-            "type": "string",
-            "description": "A User handle"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "sort",
             "in": "query",
-            "type": "string",
-            "default": "date",
-            "enum": ["date", "plays"],
-            "description": "[Deprecated] Field to sort by"
+            "description": "[Deprecated] Field to sort by",
+            "schema": {
+              "type": "string",
+              "default": "date",
+              "enum": [
+                "date",
+                "plays"
+              ]
+            }
           },
-          { "name": "query", "in": "query", "type": "string", "description": "The filter query" },
+          {
+            "name": "query",
+            "in": "query",
+            "description": "The filter query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "sort_method",
             "in": "query",
-            "type": "string",
-            "enum": [
-              "title",
-              "artist_name",
-              "release_date",
-              "last_listen_date",
-              "added_date",
-              "plays",
-              "reposts",
-              "saves",
-              "most_listens_by_user"
-            ],
-            "description": "The sort method"
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "title",
+                "artist_name",
+                "release_date",
+                "last_listen_date",
+                "added_date",
+                "plays",
+                "reposts",
+                "saves",
+                "most_listens_by_user"
+              ]
+            }
           },
           {
             "name": "sort_direction",
             "in": "query",
-            "type": "string",
-            "enum": ["asc", "desc"],
-            "description": "The sort direction"
+            "description": "The sort direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           },
           {
             "name": "filter_tracks",
             "in": "query",
-            "type": "string",
-            "default": "all",
-            "enum": ["all", "public", "unlisted"],
-            "description": "Filter by unlisted or public tracks"
+            "description": "Filter by unlisted or public tracks",
+            "schema": {
+              "type": "string",
+              "default": "all",
+              "enum": [
+                "all",
+                "public",
+                "unlisted"
+              ]
+            }
           },
           {
             "name": "Encoded-Data-Message",
             "in": "header",
-            "type": "string",
-            "description": "The data that was signed by the user for signature recovery"
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Signature",
             "in": "header",
-            "type": "string",
-            "description": "The signature of data, used for signature recovery"
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tracks_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/id": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/user_associated_wallet_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a User ID from an associated wallet address",
         "operationId": "Get User ID from Wallet",
         "parameters": [
           {
             "name": "associated_wallet",
             "in": "query",
-            "type": "string",
+            "description": "Wallet address",
             "required": true,
-            "description": "Wallet address"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_associated_wallet_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/search": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_search" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Search for users that match the given query",
         "operationId": "Search Users",
         "parameters": [
           {
             "name": "query",
             "in": "query",
-            "type": "string",
-            "required": true,
-            "description": "The search query"
+            "description": "The search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "description": "The genres to filter by",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sort_method",
+            "in": "query",
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevant",
+                "popular",
+                "recent"
+              ]
+            }
+          },
+          {
+            "name": "is_verified",
+            "in": "query",
+            "description": "Only include verified users in the user results",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_search"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/verify_token": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/verify_token" } },
-          "400": { "description": "Bad input" },
-          "404": { "description": "ID token not valid" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Verify if the given jwt ID token was signed by the subject (user) in the payload",
         "operationId": "Verify ID Token",
         "parameters": [
           {
             "name": "token",
             "in": "query",
-            "type": "string",
+            "description": "JWT to verify",
             "required": true,
-            "description": "JWT to verify"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/verify_token"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad input",
+            "content": {}
+          },
+          "404": {
+            "description": "ID token not valid",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/user_response" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a single user by their user ID",
         "operationId": "Get User",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/authorized_apps": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/authorized_apps" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Get the apps that user has authorized to write to their account",
         "operationId": "Get Authorized Apps",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/authorized_apps"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/users/{id}/challenges": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets all challenges for the given user",
+        "operationId": "Get User Challenges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "show_historical",
+            "in": "query",
+            "description": "Whether to show challenges that are inactive but completed",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/get_challenges"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/connected_wallets": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/connected_wallets_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Get the User's ERC and SPL connected wallets",
         "operationId": "Get connected wallets",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/connected_wallets_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/developer_apps": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/developer_apps" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the developer apps that the user owns",
         "operationId": "Get Developer Apps",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/developer_apps"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/favorites": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/favorites_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a user's favorite tracks",
         "operationId": "Get Favorites",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/favorites_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/followers": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/followers_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "All users that follow the provided user",
         "operationId": "Get Followers",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/followers_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/following": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/following_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "All users that the provided user follows",
         "operationId": "Get Following",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/following_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/users/{id}/muted": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets users muted by the given user",
+        "operationId": "Get Muted Users",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/users_response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/purchasers": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets the list of unique users who have purchased content by the given user",
+        "operationId": "Get purchasers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "content_type",
+            "in": "query",
+            "description": "Type of content to filter by (track or album)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "content_id",
+            "in": "query",
+            "description": "Filters for users who have purchased the given track or album ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/purchasers_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/purchases/download": {
       "get": {
-        "responses": { "200": { "description": "Success" } },
+        "tags": [
+          "users"
+        ],
         "description": "Downloads the purchases the user has made as a CSV file",
         "operationId": "Download Purchases as CSV",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Message",
             "in": "header",
-            "type": "string",
-            "description": "The data that was signed by the user for signature recovery"
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Signature",
             "in": "header",
-            "type": "string",
-            "description": "The signature of data, used for signature recovery"
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "produces": ["text/csv"],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/related": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/related_artist_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets a list of users that might be of interest to followers of this user.",
         "operationId": "Get Related Users",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/related_artist_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/users/{id}/remixers": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided",
+        "operationId": "Get remixers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "track_id",
+            "in": "query",
+            "description": "Filters for remixers who have remixed the given track ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/remixers_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/reposts": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/reposts" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the given user's reposts",
         "operationId": "Get Reposts",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reposts"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/users/{id}/sales/aggregate": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets the aggregated sales data for the user",
+        "operationId": "Get Sales Aggregate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Encoded-Data-Message",
+            "in": "header",
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Encoded-Data-Signature",
+            "in": "header",
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sales_aggregate_response"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/users/{id}/sales/download": {
       "get": {
-        "responses": { "200": { "description": "Success" } },
+        "tags": [
+          "users"
+        ],
         "description": "Downloads the sales the user has made as a CSV file",
         "operationId": "Download Sales as CSV",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Message",
             "in": "header",
-            "type": "string",
-            "description": "The data that was signed by the user for signature recovery"
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Signature",
             "in": "header",
-            "type": "string",
-            "description": "The signature of data, used for signature recovery"
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "produces": ["text/csv"],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/subscribers": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/subscribers_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "All users that subscribe to the provided user",
         "operationId": "Get Subscribers",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscribers_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/supporters": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/get_supporters" } }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the supporters of the given user",
         "operationId": "Get Supporters",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/get_supporters"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/users/{id}/supporting": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/get_supported_users" }
-          }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the users that the given user supports",
         "operationId": "Get Supported Users",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/get_supported_users"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/users/{id}/tags": {
       "get": {
-        "responses": {
-          "200": { "description": "Success", "schema": { "$ref": "#/definitions/tags_response" } },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "summary": "Fetch most used tags in a user's tracks",
         "description": "Gets the most used track tags by a user.",
         "operationId": "Get Top Track Tags",
@@ -1433,710 +3135,2016 @@
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tags_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/tracks": {
       "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": { "$ref": "#/definitions/tracks_response" }
-          },
-          "400": { "description": "Bad request" },
-          "500": { "description": "Server error" }
-        },
+        "tags": [
+          "users"
+        ],
         "description": "Gets the tracks created by a user using their user ID",
         "operationId": "Get Tracks by User",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to skip. Useful for pagination (page number * limit)"
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "integer",
-            "description": "The number of items to fetch"
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "sort",
             "in": "query",
-            "type": "string",
-            "default": "date",
-            "enum": ["date", "plays"],
-            "description": "[Deprecated] Field to sort by"
+            "description": "[Deprecated] Field to sort by",
+            "schema": {
+              "type": "string",
+              "default": "date",
+              "enum": [
+                "date",
+                "plays"
+              ]
+            }
           },
-          { "name": "query", "in": "query", "type": "string", "description": "The filter query" },
+          {
+            "name": "query",
+            "in": "query",
+            "description": "The filter query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "sort_method",
             "in": "query",
-            "type": "string",
-            "enum": [
-              "title",
-              "artist_name",
-              "release_date",
-              "last_listen_date",
-              "added_date",
-              "plays",
-              "reposts",
-              "saves",
-              "most_listens_by_user"
-            ],
-            "description": "The sort method"
+            "description": "The sort method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "title",
+                "artist_name",
+                "release_date",
+                "last_listen_date",
+                "added_date",
+                "plays",
+                "reposts",
+                "saves",
+                "most_listens_by_user"
+              ]
+            }
           },
           {
             "name": "sort_direction",
             "in": "query",
-            "type": "string",
-            "enum": ["asc", "desc"],
-            "description": "The sort direction"
+            "description": "The sort direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           },
           {
             "name": "filter_tracks",
             "in": "query",
-            "type": "string",
-            "default": "all",
-            "enum": ["all", "public", "unlisted"],
-            "description": "Filter by unlisted or public tracks"
+            "description": "Filter by unlisted or public tracks",
+            "schema": {
+              "type": "string",
+              "default": "all",
+              "enum": [
+                "all",
+                "public",
+                "unlisted"
+              ]
+            }
           },
           {
             "name": "Encoded-Data-Message",
             "in": "header",
-            "type": "string",
-            "description": "The data that was signed by the user for signature recovery"
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Signature",
             "in": "header",
-            "type": "string",
-            "description": "The signature of data, used for signature recovery"
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tracks_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/users/{id}/tracks/remixed": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Gets tracks owned by the user which have been remixed by another track",
+        "operationId": "Get User Tracks Remixed",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A User ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip. Useful for pagination (page number * limit)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The number of items to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_tracks_remixed_response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {}
+          },
+          "500": {
+            "description": "Server error",
+            "content": {}
+          }
+        }
       }
     },
     "/users/{id}/withdrawals/download": {
       "get": {
-        "responses": { "200": { "description": "Success" } },
+        "tags": [
+          "users"
+        ],
         "description": "Downloads the USDC withdrawals the user has made as a CSV file",
         "operationId": "Download USDC Withdrawals as CSV",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "A User ID",
             "required": true,
-            "type": "string",
-            "description": "A User ID"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "user_id",
             "in": "query",
-            "type": "string",
-            "description": "The user ID of the user making the request"
+            "description": "The user ID of the user making the request",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Message",
             "in": "header",
-            "type": "string",
-            "description": "The data that was signed by the user for signature recovery"
+            "description": "The data that was signed by the user for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "Encoded-Data-Signature",
             "in": "header",
-            "type": "string",
-            "description": "The signature of data, used for signature recovery"
+            "description": "The signature of data, used for signature recovery",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "produces": ["text/csv"],
-        "tags": ["users"]
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {}
+          }
+        }
       }
     }
   },
-  "info": { "title": "API", "version": "1.0", "description": "Audius V1 API" },
-  "produces": ["application/json"],
-  "consumes": ["application/json"],
-  "tags": [
-    { "name": "users", "description": "User related operations" },
-    { "name": "playlists", "description": "Playlist related operations" },
-    { "name": "tracks", "description": "Track related operations" },
-    { "name": "tips", "description": "Tip related operations" },
-    { "name": "developer_apps", "description": "Developer app related operations" },
-    {
-      "name": "dashboard_wallet_users",
-      "description": "Protocol dashboard wallet users related operations"
-    },
-    { "name": "resolve", "description": "Audius Cannonical URL resolver" }
-  ],
-  "definitions": {
-    "user_response": {
-      "properties": { "data": { "$ref": "#/definitions/user" } },
-      "type": "object"
-    },
-    "user": {
-      "required": [
-        "album_count",
-        "erc_wallet",
-        "followee_count",
-        "follower_count",
-        "handle",
-        "id",
-        "is_available",
-        "is_deactivated",
-        "is_verified",
-        "name",
-        "playlist_count",
-        "repost_count",
-        "spl_wallet",
-        "supporter_count",
-        "supporting_count",
-        "total_audio_balance",
-        "track_count",
-        "verified_with_instagram",
-        "verified_with_tiktok",
-        "verified_with_twitter",
-        "wallet"
-      ],
-      "properties": {
-        "album_count": { "type": "integer" },
-        "artist_pick_track_id": { "type": "string" },
-        "bio": { "type": "string" },
-        "cover_photo": { "$ref": "#/definitions/cover_photo" },
-        "followee_count": { "type": "integer" },
-        "follower_count": { "type": "integer" },
-        "handle": { "type": "string" },
-        "id": { "type": "string" },
-        "is_verified": { "type": "boolean" },
-        "twitter_handle": { "type": "string" },
-        "instagram_handle": { "type": "string" },
-        "tiktok_handle": { "type": "string" },
-        "verified_with_twitter": { "type": "boolean" },
-        "verified_with_instagram": { "type": "boolean" },
-        "verified_with_tiktok": { "type": "boolean" },
-        "website": { "type": "string" },
-        "donation": { "type": "string" },
-        "location": { "type": "string" },
-        "name": { "type": "string" },
-        "playlist_count": { "type": "integer" },
-        "profile_picture": { "$ref": "#/definitions/profile_picture" },
-        "repost_count": { "type": "integer" },
-        "track_count": { "type": "integer" },
-        "is_deactivated": { "type": "boolean" },
-        "is_available": { "type": "boolean" },
-        "erc_wallet": { "type": "string" },
-        "spl_wallet": { "type": "string" },
-        "supporter_count": { "type": "integer" },
-        "supporting_count": { "type": "integer" },
-        "total_audio_balance": { "type": "integer" },
-        "wallet": {
-          "type": "string",
-          "description": "The user's Ethereum wallet address for their account"
+  "components": {
+    "schemas": {
+      "user_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/user"
+          }
         }
       },
-      "type": "object"
-    },
-    "cover_photo": {
-      "properties": { "640x": { "type": "string" }, "2000x": { "type": "string" } },
-      "type": "object"
-    },
-    "profile_picture": {
-      "properties": {
-        "150x150": { "type": "string" },
-        "480x480": { "type": "string" },
-        "1000x1000": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "users_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "tracks_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
-      "type": "object"
-    },
-    "Track": {
-      "required": [
-        "duration",
-        "favorite_count",
-        "id",
-        "play_count",
-        "repost_count",
-        "title",
-        "user"
-      ],
-      "properties": {
-        "artwork": { "$ref": "#/definitions/track_artwork" },
-        "description": { "type": "string" },
-        "genre": { "type": "string" },
-        "id": { "type": "string" },
-        "track_cid": { "type": "string" },
-        "preview_cid": { "type": "string" },
-        "orig_file_cid": { "type": "string" },
-        "orig_filename": { "type": "string" },
-        "is_original_available": { "type": "boolean" },
-        "mood": { "type": "string" },
-        "release_date": { "type": "string" },
-        "remix_of": { "$ref": "#/definitions/remix_parent" },
-        "repost_count": { "type": "integer" },
-        "favorite_count": { "type": "integer" },
-        "tags": { "type": "string" },
-        "title": { "type": "string" },
-        "user": { "$ref": "#/definitions/user" },
-        "duration": { "type": "integer" },
-        "is_downloadable": { "type": "boolean" },
-        "play_count": { "type": "integer" },
-        "permalink": { "type": "string" },
-        "is_streamable": { "type": "boolean" },
-        "ddex_app": { "type": "string" },
-        "playlists_containing_track": { "type": "array", "items": { "type": "integer" } }
-      },
-      "type": "object"
-    },
-    "track_artwork": {
-      "properties": {
-        "150x150": { "type": "string" },
-        "480x480": { "type": "string" },
-        "1000x1000": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "remix_parent": {
-      "properties": {
-        "tracks": { "type": "array", "items": { "$ref": "#/definitions/track_element" } }
-      },
-      "type": "object"
-    },
-    "track_element": {
-      "required": ["parent_track_id"],
-      "properties": { "parent_track_id": { "type": "string" } },
-      "type": "object"
-    },
-    "reposts": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/activity" } } },
-      "type": "object"
-    },
-    "activity": {
-      "properties": {
-        "timestamp": { "type": "string" },
-        "item_type": { "type": "object" },
-        "item": { "type": "object" }
-      },
-      "type": "object"
-    },
-    "tags_response": {
-      "properties": { "data": { "type": "array", "items": { "type": "string" } } },
-      "type": "object"
-    },
-    "favorites_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/favorite" } } },
-      "type": "object"
-    },
-    "favorite": {
-      "required": ["created_at", "favorite_item_id", "favorite_type", "user_id"],
-      "properties": {
-        "favorite_item_id": { "type": "string" },
-        "favorite_type": { "type": "string" },
-        "user_id": { "type": "string" },
-        "created_at": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "user_search": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "subscribers_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "followers_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "following_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "related_artist_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/user" } } },
-      "type": "object"
-    },
-    "user_associated_wallet_response": {
-      "properties": { "data": { "$ref": "#/definitions/encoded_user_id" } },
-      "type": "object"
-    },
-    "encoded_user_id": { "properties": { "user_id": { "type": "string" } }, "type": "object" },
-    "connected_wallets_response": {
-      "properties": { "data": { "$ref": "#/definitions/connected_wallets" } },
-      "type": "object"
-    },
-    "connected_wallets": {
-      "required": ["erc_wallets", "spl_wallets"],
-      "properties": {
-        "erc_wallets": { "type": "array", "items": { "type": "string" } },
-        "spl_wallets": { "type": "array", "items": { "type": "string" } }
-      },
-      "type": "object"
-    },
-    "get_supporters": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/supporter" } } },
-      "type": "object"
-    },
-    "supporter": {
-      "required": ["amount", "rank", "sender"],
-      "properties": {
-        "rank": { "type": "integer" },
-        "amount": { "type": "string" },
-        "sender": { "$ref": "#/definitions/user" }
-      },
-      "type": "object"
-    },
-    "get_supported_users": {
-      "properties": {
-        "data": { "type": "array", "items": { "$ref": "#/definitions/supporting" } }
-      },
-      "type": "object"
-    },
-    "supporting": {
-      "required": ["amount", "rank", "receiver"],
-      "properties": {
-        "rank": { "type": "integer" },
-        "amount": { "type": "string" },
-        "receiver": { "$ref": "#/definitions/user" }
-      },
-      "type": "object"
-    },
-    "verify_token": {
-      "properties": { "data": { "$ref": "#/definitions/decoded_user_token" } },
-      "type": "object"
-    },
-    "decoded_user_token": {
-      "required": ["email", "handle", "iat", "name", "sub", "userId", "verified"],
-      "properties": {
-        "userId": { "type": "string" },
-        "email": { "type": "string" },
-        "name": { "type": "string" },
-        "handle": { "type": "string" },
-        "verified": { "type": "boolean" },
-        "profilePicture": { "$ref": "#/definitions/profilePicture" },
-        "sub": { "type": "string" },
-        "iat": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "profilePicture": {
-      "properties": {
-        "150x150": { "type": "string" },
-        "480x480": { "type": "string" },
-        "1000x1000": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "developer_apps": {
-      "properties": {
-        "data": { "type": "array", "items": { "$ref": "#/definitions/developer_app" } }
-      },
-      "type": "object"
-    },
-    "developer_app": {
-      "required": ["address", "name", "user_id"],
-      "properties": {
-        "address": { "type": "string" },
-        "user_id": { "type": "string" },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "image_url": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "authorized_apps": {
-      "properties": {
-        "data": { "type": "array", "items": { "$ref": "#/definitions/authorized_app" } }
-      },
-      "type": "object"
-    },
-    "authorized_app": {
-      "required": ["address", "grant_created_at", "grant_updated_at", "grantor_user_id", "name"],
-      "properties": {
-        "address": { "type": "string" },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "image_url": { "type": "string" },
-        "grantor_user_id": { "type": "string" },
-        "grant_created_at": { "type": "string" },
-        "grant_updated_at": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "playlist_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
-      "type": "object"
-    },
-    "playlist": {
-      "required": [
-        "favorite_count",
-        "id",
-        "is_album",
-        "is_image_autogenerated",
-        "playlist_contents",
-        "playlist_name",
-        "repost_count",
-        "total_play_count",
-        "user"
-      ],
-      "properties": {
-        "artwork": { "$ref": "#/definitions/playlist_artwork" },
-        "description": { "type": "string" },
-        "permalink": { "type": "string" },
-        "id": { "type": "string" },
-        "is_album": { "type": "boolean" },
-        "is_image_autogenerated": { "type": "boolean" },
-        "playlist_name": { "type": "string" },
-        "playlist_contents": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/playlist_added_timestamp" }
-        },
-        "repost_count": { "type": "integer" },
-        "favorite_count": { "type": "integer" },
-        "total_play_count": { "type": "integer" },
-        "user": { "$ref": "#/definitions/user" },
-        "ddex_app": { "type": "string" },
-        "access": { "$ref": "#/definitions/access" },
-        "upc": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "playlist_artwork": {
-      "properties": {
-        "150x150": { "type": "string" },
-        "480x480": { "type": "string" },
-        "1000x1000": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "playlist_added_timestamp": {
-      "required": ["metadata_timestamp", "timestamp", "track_id"],
-      "properties": {
-        "metadata_timestamp": { "type": "integer" },
-        "timestamp": { "type": "integer" },
-        "track_id": { "type": "string" }
-      },
-      "type": "object"
-    },
-    "access": {
-      "properties": { "stream": { "type": "boolean" }, "download": { "type": "boolean" } },
-      "type": "object"
-    },
-    "playlist_tracks_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
-      "type": "object"
-    },
-    "playlist_search_result": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
-      "type": "object"
-    },
-    "trending_playlists_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/playlist" } } },
-      "type": "object"
-    },
-    "access_info_response": {
-      "properties": { "data": { "$ref": "#/definitions/track_access_info" } },
-      "type": "object"
-    },
-    "track_access_info": {
-      "required": ["blocknumber", "user_id"],
-      "properties": {
-        "access": {
-          "description": "Describes what access the given user has",
-          "allOf": [{ "$ref": "#/definitions/access" }]
-        },
-        "user_id": { "type": "string", "description": "The user ID of the owner of this track" },
-        "blocknumber": {
-          "type": "integer",
-          "description": "The blocknumber this track was last updated"
-        },
-        "is_stream_gated": {
-          "type": "boolean",
-          "description": "Whether or not the owner has restricted streaming behind an access gate"
-        },
-        "stream_conditions": {
-          "description": "How to unlock stream access to the track",
-          "allOf": [{ "$ref": "#/definitions/extended_access_gate" }]
-        },
-        "is_download_gated": {
-          "type": "boolean",
-          "description": "Whether or not the owner has restricted downloading behind an access gate"
-        },
-        "download_conditions": {
-          "description": "How to unlock the track download",
-          "allOf": [{ "$ref": "#/definitions/extended_access_gate" }]
+      "user": {
+        "required": [
+          "album_count",
+          "erc_wallet",
+          "followee_count",
+          "follower_count",
+          "handle",
+          "id",
+          "is_available",
+          "is_deactivated",
+          "is_verified",
+          "name",
+          "playlist_count",
+          "repost_count",
+          "spl_wallet",
+          "supporter_count",
+          "supporting_count",
+          "total_audio_balance",
+          "track_count",
+          "verified_with_instagram",
+          "verified_with_tiktok",
+          "verified_with_twitter",
+          "wallet"
+        ],
+        "type": "object",
+        "properties": {
+          "album_count": {
+            "type": "integer"
+          },
+          "artist_pick_track_id": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "cover_photo": {
+            "$ref": "#/components/schemas/cover_photo"
+          },
+          "followee_count": {
+            "type": "integer"
+          },
+          "follower_count": {
+            "type": "integer"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "twitter_handle": {
+            "type": "string"
+          },
+          "instagram_handle": {
+            "type": "string"
+          },
+          "tiktok_handle": {
+            "type": "string"
+          },
+          "verified_with_twitter": {
+            "type": "boolean"
+          },
+          "verified_with_instagram": {
+            "type": "boolean"
+          },
+          "verified_with_tiktok": {
+            "type": "boolean"
+          },
+          "website": {
+            "type": "string"
+          },
+          "donation": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "playlist_count": {
+            "type": "integer"
+          },
+          "profile_picture": {
+            "$ref": "#/components/schemas/profile_picture"
+          },
+          "repost_count": {
+            "type": "integer"
+          },
+          "track_count": {
+            "type": "integer"
+          },
+          "is_deactivated": {
+            "type": "boolean"
+          },
+          "is_available": {
+            "type": "boolean"
+          },
+          "erc_wallet": {
+            "type": "string"
+          },
+          "spl_wallet": {
+            "type": "string"
+          },
+          "spl_usdc_payout_wallet": {
+            "type": "string"
+          },
+          "supporter_count": {
+            "type": "integer"
+          },
+          "supporting_count": {
+            "type": "integer"
+          },
+          "total_audio_balance": {
+            "type": "integer"
+          },
+          "wallet": {
+            "type": "string",
+            "description": "The user's Ethereum wallet address for their account"
+          }
         }
       },
-      "type": "object"
-    },
-    "extended_access_gate": {
-      "oneOf": [
-        { "$ref": "#/definitions/tip_gate" },
-        { "$ref": "#/definitions/follow_gate" },
-        { "$ref": "#/definitions/extended_purchase_gate" },
-        { "$ref": "#/definitions/nft_gate" }
-      ]
-    },
-    "tip_gate": {
-      "required": ["tip_user_id"],
-      "properties": {
-        "tip_user_id": { "type": "integer", "description": "Must tip the given user ID to unlock" }
-      },
-      "type": "object"
-    },
-    "follow_gate": {
-      "required": ["follow_user_id"],
-      "properties": {
-        "follow_user_id": {
-          "type": "integer",
-          "description": "Must follow the given user ID to unlock"
+      "cover_photo": {
+        "type": "object",
+        "properties": {
+          "640x": {
+            "type": "string"
+          },
+          "2000x": {
+            "type": "string"
+          }
         }
       },
-      "type": "object"
-    },
-    "extended_purchase_gate": {
-      "required": ["usdc_purchase"],
-      "properties": {
-        "usdc_purchase": {
-          "description": "Must pay the total price and split to the given addresses to unlock",
-          "allOf": [{ "$ref": "#/definitions/extended_usdc_gate" }]
+      "profile_picture": {
+        "type": "object",
+        "properties": {
+          "150x150": {
+            "type": "string"
+          },
+          "480x480": {
+            "type": "string"
+          },
+          "1000x1000": {
+            "type": "string"
+          }
         }
       },
-      "type": "object"
-    },
-    "extended_usdc_gate": {
-      "required": ["price", "splits"],
-      "properties": {
-        "price": { "type": "integer" },
-        "splits": { "type": "array", "items": { "$ref": "#/definitions/extended_payment_split" } }
-      },
-      "type": "object"
-    },
-    "extended_payment_split": {
-      "required": ["amount", "eth_wallet", "payout_wallet", "percentage", "user_id"],
-      "properties": {
-        "user_id": { "type": "integer" },
-        "percentage": { "type": "number" },
-        "eth_wallet": { "type": "string" },
-        "payout_wallet": { "type": "string" },
-        "amount": { "type": "integer" }
-      },
-      "type": "object"
-    },
-    "nft_gate": {
-      "required": ["nft_collection"],
-      "properties": {
-        "nft_collection": {
-          "description": "Must hold an NFT of the given collection to unlock",
-          "allOf": [{ "$ref": "#/definitions/nft_collection" }]
+      "users_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
         }
       },
-      "type": "object"
-    },
-    "nft_collection": {
-      "required": ["address", "chain", "name"],
-      "properties": {
-        "chain": { "type": "string", "example": "eth", "enum": ["eth", "sol"] },
-        "address": { "type": "string" },
-        "name": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "externalLink": { "type": "string" }
+      "tracks_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Track"
+            }
+          }
+        }
       },
-      "type": "object"
-    },
-    "track_response": {
-      "properties": { "data": { "$ref": "#/definitions/Track" } },
-      "type": "object"
-    },
-    "track_inspect": {
-      "properties": { "data": { "$ref": "#/definitions/blob_info" } },
-      "type": "object"
-    },
-    "blob_info": {
-      "required": ["content_type", "size"],
-      "properties": { "size": { "type": "integer" }, "content_type": { "type": "string" } },
-      "type": "object"
-    },
-    "track_search": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/Track" } } },
-      "type": "object"
-    },
-    "top_listener": {
-      "properties": {
-        "data": { "type": "array", "items": { "$ref": "#/definitions/top_listener" } }
+      "Track": {
+        "required": [
+          "artwork",
+          "comment_count",
+          "duration",
+          "favorite_count",
+          "genre",
+          "id",
+          "is_downloadable",
+          "is_original_available",
+          "permalink",
+          "play_count",
+          "repost_count",
+          "title",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "artwork": {
+            "$ref": "#/components/schemas/track_artwork"
+          },
+          "description": {
+            "type": "string"
+          },
+          "genre": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "track_cid": {
+            "type": "string"
+          },
+          "preview_cid": {
+            "type": "string"
+          },
+          "orig_file_cid": {
+            "type": "string"
+          },
+          "orig_filename": {
+            "type": "string"
+          },
+          "is_original_available": {
+            "type": "boolean"
+          },
+          "mood": {
+            "type": "string"
+          },
+          "release_date": {
+            "type": "string"
+          },
+          "remix_of": {
+            "$ref": "#/components/schemas/remix_parent"
+          },
+          "repost_count": {
+            "type": "integer"
+          },
+          "favorite_count": {
+            "type": "integer"
+          },
+          "comment_count": {
+            "type": "integer"
+          },
+          "tags": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/user"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "is_downloadable": {
+            "type": "boolean"
+          },
+          "play_count": {
+            "type": "integer"
+          },
+          "permalink": {
+            "type": "string"
+          },
+          "is_streamable": {
+            "type": "boolean"
+          },
+          "ddex_app": {
+            "type": "string"
+          },
+          "playlists_containing_track": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "pinned_comment_id": {
+            "type": "integer"
+          }
+        }
       },
-      "type": "object"
-    },
-    "get_tips_response": {
-      "properties": { "data": { "type": "array", "items": { "$ref": "#/definitions/tip" } } },
-      "type": "object"
-    },
-    "tip": {
-      "required": ["amount", "created_at"],
-      "properties": {
-        "amount": { "type": "string" },
-        "sender": { "$ref": "#/definitions/user" },
-        "receiver": { "$ref": "#/definitions/user" },
-        "created_at": { "type": "string" }
+      "track_artwork": {
+        "type": "object",
+        "properties": {
+          "150x150": {
+            "type": "string"
+          },
+          "480x480": {
+            "type": "string"
+          },
+          "1000x1000": {
+            "type": "string"
+          }
+        }
       },
-      "type": "object"
-    },
-    "developer_app_response": {
-      "properties": { "data": { "$ref": "#/definitions/developer_app" } },
-      "type": "object"
-    },
-    "dashboard_wallet_users_response": {
-      "properties": {
-        "data": { "type": "array", "items": { "$ref": "#/definitions/dashboard_wallet_user" } }
+      "remix_parent": {
+        "type": "object",
+        "properties": {
+          "tracks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/track_element"
+            }
+          }
+        }
       },
-      "type": "object"
+      "track_element": {
+        "required": [
+          "parent_track_id"
+        ],
+        "type": "object",
+        "properties": {
+          "parent_track_id": {
+            "type": "string"
+          }
+        }
+      },
+      "reposts": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/activity"
+            }
+          }
+        }
+      },
+      "track_activity": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/activity"
+          },
+          {
+            "required": [
+              "item",
+              "item_type"
+            ],
+            "type": "object",
+            "properties": {
+              "item_type": {
+                "type": "string",
+                "example": "track",
+                "enum": [
+                  "track"
+                ]
+              },
+              "item": {
+                "$ref": "#/components/schemas/Track"
+              }
+            }
+          }
+        ]
+      },
+      "activity": {
+        "required": [
+          "class",
+          "item",
+          "item_type",
+          "timestamp"
+        ],
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "item_type": {
+            "type": "string",
+            "example": "track",
+            "enum": [
+              "track",
+              "playlist"
+            ]
+          },
+          "item": {
+            "type": "object",
+            "properties": {}
+          },
+          "class": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "class"
+        }
+      },
+      "collection_activity": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/activity"
+          },
+          {
+            "required": [
+              "item",
+              "item_type"
+            ],
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string"
+              },
+              "item_type": {
+                "type": "string",
+                "example": "playlist",
+                "enum": [
+                  "playlist"
+                ]
+              },
+              "item": {
+                "$ref": "#/components/schemas/playlist"
+              }
+            }
+          }
+        ]
+      },
+      "playlist": {
+        "required": [
+          "access",
+          "favorite_count",
+          "id",
+          "is_album",
+          "is_image_autogenerated",
+          "permalink",
+          "playlist_contents",
+          "playlist_name",
+          "repost_count",
+          "total_play_count",
+          "track_count",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "artwork": {
+            "$ref": "#/components/schemas/playlist_artwork"
+          },
+          "description": {
+            "type": "string"
+          },
+          "permalink": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_album": {
+            "type": "boolean"
+          },
+          "is_image_autogenerated": {
+            "type": "boolean"
+          },
+          "playlist_name": {
+            "type": "string"
+          },
+          "playlist_contents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/playlist_added_timestamp"
+            }
+          },
+          "repost_count": {
+            "type": "integer"
+          },
+          "favorite_count": {
+            "type": "integer"
+          },
+          "total_play_count": {
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/user"
+          },
+          "ddex_app": {
+            "type": "string"
+          },
+          "access": {
+            "$ref": "#/components/schemas/access"
+          },
+          "upc": {
+            "type": "string"
+          },
+          "track_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "playlist_artwork": {
+        "type": "object",
+        "properties": {
+          "150x150": {
+            "type": "string"
+          },
+          "480x480": {
+            "type": "string"
+          },
+          "1000x1000": {
+            "type": "string"
+          }
+        }
+      },
+      "playlist_added_timestamp": {
+        "required": [
+          "metadata_timestamp",
+          "timestamp",
+          "track_id"
+        ],
+        "type": "object",
+        "properties": {
+          "metadata_timestamp": {
+            "type": "integer"
+          },
+          "timestamp": {
+            "type": "integer"
+          },
+          "track_id": {
+            "type": "string"
+          }
+        }
+      },
+      "access": {
+        "required": [
+          "download",
+          "stream"
+        ],
+        "type": "object",
+        "properties": {
+          "stream": {
+            "type": "boolean"
+          },
+          "download": {
+            "type": "boolean"
+          }
+        }
+      },
+      "tags_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "favorites_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/favorite"
+            }
+          }
+        }
+      },
+      "favorite": {
+        "required": [
+          "created_at",
+          "favorite_item_id",
+          "favorite_type",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "favorite_item_id": {
+            "type": "string"
+          },
+          "favorite_type": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "user_search": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "subscribers_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "followers_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "following_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "related_artist_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "user_associated_wallet_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/encoded_user_id"
+          }
+        }
+      },
+      "encoded_user_id": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          }
+        }
+      },
+      "connected_wallets_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/connected_wallets"
+          }
+        }
+      },
+      "connected_wallets": {
+        "required": [
+          "erc_wallets",
+          "spl_wallets"
+        ],
+        "type": "object",
+        "properties": {
+          "erc_wallets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spl_wallets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "get_challenges": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/challenge_response"
+            }
+          }
+        }
+      },
+      "challenge_response": {
+        "required": [
+          "amount",
+          "challenge_id",
+          "challenge_type",
+          "disbursed_amount",
+          "is_active",
+          "is_complete",
+          "is_disbursed",
+          "metadata",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "challenge_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "specifier": {
+            "type": "string"
+          },
+          "is_complete": {
+            "type": "boolean"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_disbursed": {
+            "type": "boolean"
+          },
+          "current_step_count": {
+            "type": "integer"
+          },
+          "max_steps": {
+            "type": "integer"
+          },
+          "challenge_type": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "disbursed_amount": {
+            "type": "integer"
+          },
+          "cooldown_days": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "get_supporters": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supporter"
+            }
+          }
+        }
+      },
+      "supporter": {
+        "required": [
+          "amount",
+          "rank",
+          "sender"
+        ],
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/user"
+          }
+        }
+      },
+      "get_supported_users": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supporting"
+            }
+          }
+        }
+      },
+      "supporting": {
+        "required": [
+          "amount",
+          "rank",
+          "receiver"
+        ],
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "receiver": {
+            "$ref": "#/components/schemas/user"
+          }
+        }
+      },
+      "verify_token": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/decoded_user_token"
+          }
+        }
+      },
+      "decoded_user_token": {
+        "required": [
+          "email",
+          "handle",
+          "iat",
+          "name",
+          "sub",
+          "userId",
+          "verified"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "profilePicture": {
+            "$ref": "#/components/schemas/profilePicture"
+          },
+          "sub": {
+            "type": "string"
+          },
+          "iat": {
+            "type": "string"
+          }
+        }
+      },
+      "profilePicture": {
+        "type": "object",
+        "properties": {
+          "150x150": {
+            "type": "string"
+          },
+          "480x480": {
+            "type": "string"
+          },
+          "1000x1000": {
+            "type": "string"
+          }
+        }
+      },
+      "developer_apps": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/developer_app"
+            }
+          }
+        }
+      },
+      "developer_app": {
+        "required": [
+          "address",
+          "name",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      },
+      "authorized_apps": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/authorized_app"
+            }
+          }
+        }
+      },
+      "authorized_app": {
+        "required": [
+          "address",
+          "grant_created_at",
+          "grant_updated_at",
+          "grantor_user_id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "grantor_user_id": {
+            "type": "string"
+          },
+          "grant_created_at": {
+            "type": "string"
+          },
+          "grant_updated_at": {
+            "type": "string"
+          }
+        }
+      },
+      "sales_aggregate_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/sales_aggregate"
+            }
+          }
+        }
+      },
+      "sales_aggregate": {
+        "required": [
+          "content_id",
+          "content_type",
+          "purchase_count"
+        ],
+        "type": "object",
+        "properties": {
+          "content_type": {
+            "type": "string"
+          },
+          "content_id": {
+            "type": "string"
+          },
+          "purchase_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "remixers_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "purchasers_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/user"
+            }
+          }
+        }
+      },
+      "user_tracks_remixed_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/remixed_track_aggregate"
+            }
+          }
+        }
+      },
+      "remixed_track_aggregate": {
+        "required": [
+          "remix_count",
+          "title",
+          "track_id"
+        ],
+        "type": "object",
+        "properties": {
+          "track_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "remix_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "playlist_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/playlist"
+            }
+          }
+        }
+      },
+      "playlist_tracks_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Track"
+            }
+          }
+        }
+      },
+      "playlist_search_result": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/playlist"
+            }
+          }
+        }
+      },
+      "trending_playlists_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/playlist"
+            }
+          }
+        }
+      },
+      "access_info_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/track_access_info"
+          }
+        }
+      },
+      "track_access_info": {
+        "required": [
+          "blocknumber",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "object",
+            "description": "Describes what access the given user has",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/access"
+              }
+            ]
+          },
+          "user_id": {
+            "type": "string",
+            "description": "The user ID of the owner of this track"
+          },
+          "blocknumber": {
+            "type": "integer",
+            "description": "The blocknumber this track was last updated"
+          },
+          "is_stream_gated": {
+            "type": "boolean",
+            "description": "Whether or not the owner has restricted streaming behind an access gate"
+          },
+          "stream_conditions": {
+            "type": "object",
+            "description": "How to unlock stream access to the track",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/extended_access_gate"
+              }
+            ]
+          },
+          "is_download_gated": {
+            "type": "boolean",
+            "description": "Whether or not the owner has restricted downloading behind an access gate"
+          },
+          "download_conditions": {
+            "type": "object",
+            "description": "How to unlock the track download",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/extended_access_gate"
+              }
+            ]
+          }
+        }
+      },
+      "extended_access_gate": {
+        "type": "object"
+      },
+      "tip_gate": {
+        "required": [
+          "tip_user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "tip_user_id": {
+            "type": "integer",
+            "description": "Must tip the given user ID to unlock"
+          }
+        }
+      },
+      "follow_gate": {
+        "required": [
+          "follow_user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "follow_user_id": {
+            "type": "integer",
+            "description": "Must follow the given user ID to unlock"
+          }
+        }
+      },
+      "extended_purchase_gate": {
+        "required": [
+          "usdc_purchase"
+        ],
+        "type": "object",
+        "properties": {
+          "usdc_purchase": {
+            "type": "object",
+            "description": "Must pay the total price and split to the given addresses to unlock",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/extended_usdc_gate"
+              }
+            ]
+          }
+        }
+      },
+      "extended_usdc_gate": {
+        "required": [
+          "price",
+          "splits"
+        ],
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "integer"
+          },
+          "splits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/extended_payment_split"
+            }
+          }
+        }
+      },
+      "extended_payment_split": {
+        "required": [
+          "amount",
+          "payout_wallet",
+          "percentage"
+        ],
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "eth_wallet": {
+            "type": "string"
+          },
+          "payout_wallet": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer"
+          }
+        }
+      },
+      "nft_gate": {
+        "required": [
+          "nft_collection"
+        ],
+        "type": "object",
+        "properties": {
+          "nft_collection": {
+            "type": "object",
+            "description": "Must hold an NFT of the given collection to unlock",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/nft_collection"
+              }
+            ]
+          }
+        }
+      },
+      "nft_collection": {
+        "required": [
+          "address",
+          "chain",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "chain": {
+            "type": "string",
+            "example": "eth",
+            "enum": [
+              "eth",
+              "sol"
+            ]
+          },
+          "standard": {
+            "type": "string",
+            "example": "ERC721",
+            "enum": [
+              "ERC721",
+              "ERC1155"
+            ]
+          },
+          "address": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "externalLink": {
+            "type": "string"
+          }
+        }
+      },
+      "track_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Track"
+          }
+        }
+      },
+      "track_inspect": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/blob_info"
+          }
+        }
+      },
+      "blob_info": {
+        "required": [
+          "content_type",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "integer"
+          },
+          "content_type": {
+            "type": "string"
+          }
+        }
+      },
+      "track_comments_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/comment"
+            }
+          }
+        }
+      },
+      "comment": {
+        "required": [
+          "created_at",
+          "id",
+          "is_edited",
+          "message",
+          "react_count",
+          "reply_count"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "mentions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/comment_mention"
+            }
+          },
+          "track_timestamp_s": {
+            "type": "integer"
+          },
+          "react_count": {
+            "type": "integer"
+          },
+          "reply_count": {
+            "type": "integer"
+          },
+          "is_edited": {
+            "type": "boolean"
+          },
+          "is_current_user_reacted": {
+            "type": "boolean"
+          },
+          "is_artist_reacted": {
+            "type": "boolean"
+          },
+          "is_tombstone": {
+            "type": "boolean"
+          },
+          "is_muted": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/reply_comment"
+            }
+          }
+        }
+      },
+      "comment_mention": {
+        "required": [
+          "handle",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer"
+          },
+          "handle": {
+            "type": "string"
+          }
+        }
+      },
+      "reply_comment": {
+        "required": [
+          "created_at",
+          "id",
+          "is_edited",
+          "message",
+          "react_count",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "mentions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/comment_mention"
+            }
+          },
+          "track_timestamp_s": {
+            "type": "integer"
+          },
+          "react_count": {
+            "type": "integer"
+          },
+          "is_edited": {
+            "type": "boolean"
+          },
+          "is_current_user_reacted": {
+            "type": "boolean"
+          },
+          "is_artist_reacted": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        }
+      },
+      "track_comment_count_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "integer"
+          }
+        }
+      },
+      "track_comment_notification_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/comment_notification_setting"
+          }
+        }
+      },
+      "comment_notification_setting": {
+        "required": [
+          "is_muted"
+        ],
+        "type": "object",
+        "properties": {
+          "is_muted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "stream_url_response": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "track_search": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Track"
+            }
+          }
+        }
+      },
+      "top_listener": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/top_listener"
+            }
+          }
+        }
+      },
+      "stems_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/stem"
+            }
+          }
+        }
+      },
+      "stem": {
+        "required": [
+          "blocknumber",
+          "category",
+          "cid",
+          "id",
+          "orig_filename",
+          "parent_id",
+          "user_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "cid": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "blocknumber": {
+            "type": "integer"
+          },
+          "orig_filename": {
+            "type": "string"
+          }
+        }
+      },
+      "undisbursed_challenges": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/undisbursed_challenge"
+            }
+          }
+        }
+      },
+      "undisbursed_challenge": {
+        "required": [
+          "amount",
+          "challenge_id",
+          "completed_at",
+          "completed_blocknumber",
+          "created_at",
+          "handle",
+          "specifier",
+          "user_id",
+          "wallet"
+        ],
+        "type": "object",
+        "properties": {
+          "challenge_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "specifier": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "completed_blocknumber": {
+            "type": "integer"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "wallet": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "completed_at": {
+            "type": "string"
+          },
+          "cooldown_days": {
+            "type": "integer"
+          }
+        }
+      },
+      "get_tips_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/tip"
+            }
+          }
+        }
+      },
+      "tip": {
+        "required": [
+          "amount",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/user"
+          },
+          "receiver": {
+            "$ref": "#/components/schemas/user"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "developer_app_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/developer_app"
+          }
+        }
+      },
+      "dashboard_wallet_users_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dashboard_wallet_user"
+            }
+          }
+        }
+      },
+      "dashboard_wallet_user": {
+        "required": [
+          "user",
+          "wallet"
+        ],
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/user"
+          }
+        }
+      },
+      "comment_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/reply_comment"
+            }
+          }
+        }
+      },
+      "unclaimed_id_response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
     },
-    "dashboard_wallet_user": {
-      "required": ["user", "wallet"],
-      "properties": { "wallet": { "type": "string" }, "user": { "$ref": "#/definitions/user" } },
-      "type": "object"
+    "responses": {
+      "ParseError": {
+        "description": "When a mask can't be parsed",
+        "content": {}
+      },
+      "MaskError": {
+        "description": "When any error occurs on mask",
+        "content": {}
+      }
     }
   },
-  "responses": {
-    "ParseError": { "description": "When a mask can't be parsed" },
-    "MaskError": { "description": "When any error occurs on mask" }
-  }
+  "x-original-swagger-version": "2.0"
 }

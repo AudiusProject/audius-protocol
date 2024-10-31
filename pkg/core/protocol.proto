@@ -9,6 +9,8 @@ option go_package = "./proto;proto";
 service Protocol {
   rpc SendTransaction (SendTransactionRequest) returns (TransactionResponse);
   rpc GetTransaction (GetTransactionRequest) returns (TransactionResponse);
+  rpc GetBlock(GetBlockRequest) returns (BlockResponse);
+  rpc GetNodeInfo(GetNodeInfoRequest) returns (NodeInfoResponse);
   rpc Ping (PingRequest) returns (PingResponse);
 }
 
@@ -34,6 +36,28 @@ message GetTransactionRequest {
 message TransactionResponse {
   string txhash = 1;
   SignedTransaction transaction = 2;
+}
+
+message GetBlockRequest {
+  int64 height = 1;
+}
+
+message BlockResponse {
+  string blockhash = 1;
+  string chainid = 2;
+  string proposer = 3;
+  int64 height = 4;
+  repeated SignedTransaction transactions = 5;
+}
+
+message GetNodeInfoRequest {}
+
+message NodeInfoResponse {
+  string chainid = 1;
+  bool synced = 2;
+  string comet_address = 3;
+  string eth_address = 4;
+  int64 current_height = 5;
 }
 
 message TrackPlays {

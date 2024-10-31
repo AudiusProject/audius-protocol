@@ -15,6 +15,16 @@ track_artwork = ns.model(
     },
 )
 
+track_artwork_full = ns.model(
+    "track_artwork_full",
+    {
+        "150x150": fields.String,
+        "480x480": fields.String,
+        "1000x1000": fields.String,
+        "mirrors": fields.List(fields.String),
+    },
+)
+
 track_segment = ns.model(
     "track_segment",
     {
@@ -139,6 +149,7 @@ track_full = ns.clone(
     "track_full",
     track,
     {
+        "artwork": fields.Nested(track_artwork_full, allow_null=True, required=True),
         "access": fields.Nested(
             access,
             required=True,
@@ -149,6 +160,7 @@ track_full = ns.clone(
         ),
         "create_date": fields.String,
         "cover_art_sizes": fields.String(required=True),
+        # TODO: Remove this after images are fetched from `artwork` in the clients
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String(required=True),
         "credits_splits": fields.String,

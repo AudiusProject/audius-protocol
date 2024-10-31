@@ -22,7 +22,8 @@ import {
   playerSelectors,
   cacheTracksSelectors,
   PurchaseableContentType,
-  queueActions
+  queueActions,
+  collectionPageActions
 } from '@audius/common/store'
 import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
@@ -48,6 +49,8 @@ import {
   spacing
 } from '@audius/harmony-native'
 import { DogEar, UserGeneratedText } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
 import { DetailsTileHasAccess } from 'app/components/details-tile/DetailsTileHasAccess'
@@ -58,15 +61,19 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRoute } from 'app/hooks/useRoute'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
+
+import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
+const { resetCollection, fetchCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
   (state: AppState) => getCollectionTracksLineup(state).entries,
@@ -246,7 +253,6 @@ export const CollectionScreenDetailsTile = ({
   const collectionTrackCount = useSelector(selectTrackCount)
   const trackCount = trackCountProp ?? collectionTrackCount
   const isLineupLoading = useSelector(selectIsLineupLoading)
-  const playingUid = useSelector(getUid)
   const isQueued = useSelector(selectIsQueued)
   const isPlaybackActive = useSelector(getPlaying)
   const isPlaying = isPlaybackActive && isQueued
@@ -285,6 +291,10 @@ export const CollectionScreenDetailsTile = ({
     doesUserHaveAccessToAnyTrack
   const shouldShowPreview =
     isUSDCPurchaseGated && !hasStreamAccess && !shouldShowPlay
+
+  useEffect(() => {
+    dispatch(resetCollection())
+  }, [dispatch])
 
   useRefetchLineupOnTrackAdd(collectionId)
 
@@ -333,53 +343,6 @@ export const CollectionScreenDetailsTile = ({
     [play]
   )
 
-  const handlePressTrackListItemPlay = useCallback(
-    (uid: UID, id: ID) => {
-      if (isPlaying && playingUid === uid) {
-        dispatch(tracksActions.pause())
-        recordPlay(id, false)
-      } else if (playingUid !== uid) {
-        dispatch(tracksActions.play(uid))
-        recordPlay(id)
-      } else {
-        dispatch(tracksActions.play())
-        recordPlay(id)
-      }
-    },
-    [dispatch, isPlaying, playingUid]
-  )
-
-  const renderTrackList = useCallback(() => {
-    return (
-      <TrackList
-        contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
-        trackItemAction='overflow'
-        showSkeleton={isLineupLoading}
-        togglePlay={handlePressTrackListItemPlay}
-        isAlbumPage={isAlbum}
-        uids={uids}
-        ListEmptyComponent={
-          isLineupLoading ? null : (
-            <Box mt='m'>
-              <Text variant='body' style={styles.empty}>
-                {isOwner ? messages.empty : messages.emptyPublic}
-              </Text>
-            </Box>
-          )
-        }
-      />
-    )
-  }, [
-    numericCollectionId,
-    isAlbum,
-    handlePressTrackListItemPlay,
-    isLineupLoading,
-    styles,
-    uids,
-    isOwner,
-    messages
-  ])
-
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
@@ -409,127 +372,213 @@ export const CollectionScreenDetailsTile = ({
 
   return (
     <Paper mb='2xl' style={{ overflow: 'hidden' }}>
-      {renderDogEar()}
-      <Flex p='l' gap='l' alignItems='center' w='100%'>
-        <Text
-          variant='label'
-          size='m'
-          strength='default'
-          textTransform='uppercase'
-          color='subdued'
-        >
-          {messages.collectionType}
-        </Text>
-
-        {badges.length > 0 ? (
-          <Flex direction='row' gap='s'>
-            {badges.map((badge) => badge)}
-          </Flex>
-        ) : null}
-        {imageElement}
-        <Flex gap='xs' alignItems='center'>
-          <Text variant='heading' size='s' textAlign='center'>
-            {title}
-          </Text>
-          {user ? (
-            <TouchableOpacity onPress={handlePressArtistName}>
-              <Flex direction='row' gap='xs'>
-                <Text variant='body' color='accent' size='l'>
-                  {user.name}
-                </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
-              </Flex>
-            </TouchableOpacity>
-          ) : null}
-        </Flex>
-        {shouldShowPlay ? (
-          <Button
-            iconLeft={isPlaying ? IconPause : IconPlay}
-            onPress={handlePressPlay}
-            disabled={!isPlayable}
-            fullWidth
+      <ScreenPrimaryContent>
+        {renderDogEar()}
+        <Flex p='l' gap='l' alignItems='center' w='100%'>
+          <Text
+            variant='label'
+            size='m'
+            strength='default'
+            textTransform='uppercase'
+            color='subdued'
           >
-            {isPlaying ? messages.pause : messages.play}
-          </Button>
-        ) : null}
-        {shouldShowPreview ? <PreviewButton /> : null}
-        <DetailsTileActionButtons
-          ddexApp={ddexApp}
-          hasReposted={!!hasReposted}
-          hasSaved={!!hasSaved}
-          hideFavorite={shouldHideActions}
-          hideOverflow={shouldHideOverflow}
-          hideRepost={shouldHideActions}
-          hideShare={shouldeHideShare}
-          isOwner={isOwner}
-          isCollection
-          collectionId={numericCollectionId}
-          isPublished={isPublished}
-          onPressEdit={onPressEdit}
-          onPressOverflow={onPressOverflow}
-          onPressRepost={onPressRepost}
-          onPressSave={onPressSave}
-          onPressShare={onPressShare}
-          onPressPublish={onPressPublish}
-        />
-      </Flex>
-      <Flex
-        p='l'
-        gap='l'
-        alignItems='center'
-        borderTop='default'
-        backgroundColor='surface1'
-        borderBottomLeftRadius='m'
-        borderBottomRightRadius='m'
-      >
-        {!hasStreamAccess &&
-        !isOwner &&
-        streamConditions &&
-        numericCollectionId ? (
-          <DetailsTileNoAccess
-            trackId={numericCollectionId}
-            contentType={PurchaseableContentType.ALBUM}
-            streamConditions={streamConditions}
-          />
-        ) : null}
-        {(hasStreamAccess || isOwner) && streamConditions ? (
-          <DetailsTileHasAccess
-            streamConditions={streamConditions}
-            isOwner={isOwner}
-            trackArtist={user}
-            contentType={PurchaseableContentType.ALBUM}
-          />
-        ) : null}
-        {isPublished && numericCollectionId ? (
-          <DetailsTileStats
-            playCount={playCount}
-            hidePlayCount={hidePlayCount}
-            favoriteCount={saveCount}
-            hideFavoriteCount={hideFavoriteCount}
-            repostCount={repostCount}
-            hideRepostCount={hideRepostCount}
-            onPressFavorites={onPressFavorites}
-            onPressReposts={onPressReposts}
-          />
-        ) : null}
-        {description ? (
-          <Box w='100%'>
-            <UserGeneratedText
-              source={'collection page'}
-              variant='body'
-              size='s'
+            {messages.collectionType}
+          </Text>
+
+          {badges.length > 0 ? (
+            <Flex direction='row' gap='s'>
+              {badges.map((badge) => badge)}
+            </Flex>
+          ) : null}
+          {imageElement}
+          <Flex gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' textAlign='center'>
+              {title}
+            </Text>
+            {user ? (
+              <TouchableOpacity onPress={handlePressArtistName}>
+                <Flex direction='row' gap='xs'>
+                  <Text variant='body' color='accent' size='l'>
+                    {user.name}
+                  </Text>
+                  <UserBadges badgeSize={spacing.l} user={user} hideName />
+                </Flex>
+              </TouchableOpacity>
+            ) : null}
+          </Flex>
+          {shouldShowPlay ? (
+            <Button
+              iconLeft={isPlaying ? IconPause : IconPlay}
+              onPress={handlePressPlay}
+              disabled={!isPlayable}
+              fullWidth
             >
-              {description}
-            </UserGeneratedText>
-          </Box>
-        ) : null}
-        {numericCollectionId ? (
-          <CollectionMetadataList collectionId={numericCollectionId} />
-        ) : null}
-        <OfflineStatusRow contentId={numericCollectionId} isCollection />
-      </Flex>
-      <Divider />
-      {renderTrackList()}
+              {isPlaying ? messages.pause : messages.play}
+            </Button>
+          ) : null}
+          {shouldShowPreview ? <PreviewButton /> : null}
+          <DetailsTileActionButtons
+            ddexApp={ddexApp}
+            hasReposted={!!hasReposted}
+            hasSaved={!!hasSaved}
+            hideFavorite={shouldHideActions}
+            hideOverflow={shouldHideOverflow}
+            hideRepost={shouldHideActions}
+            hideShare={shouldeHideShare}
+            isOwner={isOwner}
+            isCollection
+            collectionId={numericCollectionId}
+            isPublished={isPublished}
+            onPressEdit={onPressEdit}
+            onPressOverflow={onPressOverflow}
+            onPressRepost={onPressRepost}
+            onPressSave={onPressSave}
+            onPressShare={onPressShare}
+            onPressPublish={onPressPublish}
+          />
+        </Flex>
+        <Flex
+          p='l'
+          gap='l'
+          alignItems='center'
+          borderTop='default'
+          backgroundColor='surface1'
+          borderBottomLeftRadius='m'
+          borderBottomRightRadius='m'
+        >
+          <ScreenSecondaryContent>
+            {!hasStreamAccess &&
+            !isOwner &&
+            streamConditions &&
+            numericCollectionId ? (
+              <DetailsTileNoAccess
+                trackId={numericCollectionId}
+                contentType={PurchaseableContentType.ALBUM}
+                streamConditions={streamConditions}
+              />
+            ) : null}
+            {(hasStreamAccess || isOwner) && streamConditions ? (
+              <DetailsTileHasAccess
+                streamConditions={streamConditions}
+                isOwner={isOwner}
+                trackArtist={user}
+                contentType={PurchaseableContentType.ALBUM}
+              />
+            ) : null}
+          </ScreenSecondaryContent>
+          {isPublished && numericCollectionId ? (
+            <DetailsTileStats
+              playCount={playCount}
+              hidePlayCount={hidePlayCount}
+              favoriteCount={saveCount}
+              hideFavoriteCount={hideFavoriteCount}
+              repostCount={repostCount}
+              hideRepostCount={hideRepostCount}
+              onPressFavorites={onPressFavorites}
+              onPressReposts={onPressReposts}
+            />
+          ) : null}
+          {description ? (
+            <Box w='100%'>
+              <UserGeneratedText
+                source={'collection page'}
+                variant='body'
+                size='s'
+              >
+                {description}
+              </UserGeneratedText>
+            </Box>
+          ) : null}
+          {numericCollectionId ? (
+            <CollectionMetadataList collectionId={numericCollectionId} />
+          ) : null}
+          <ScreenSecondaryContent>
+            <OfflineStatusRow contentId={numericCollectionId} isCollection />
+          </ScreenSecondaryContent>
+        </Flex>
+      </ScreenPrimaryContent>
+      <ScreenSecondaryContent>
+        <Divider />
+        <CollectionTrackList
+          isAlbum={isAlbum}
+          isOwner={isOwner}
+          isPlaying={isPlaying}
+          collectionId={collectionId}
+          isLineupLoading={isLineupLoading}
+          uids={uids}
+        />
+      </ScreenSecondaryContent>
     </Paper>
+  )
+}
+
+type CollectionTrackListProps = Pick<
+  CollectionScreenDetailsTileProps,
+  'isAlbum' | 'isOwner' | 'isPlaying' | 'collectionId'
+> & {
+  isLineupLoading: boolean
+  uids: UID[]
+}
+
+const CollectionTrackList = ({
+  isAlbum,
+  isOwner,
+  collectionId,
+  isLineupLoading,
+  isPlaying,
+  uids
+}: CollectionTrackListProps) => {
+  const styles = useStyles()
+  const dispatch = useDispatch()
+  const playingUid = useSelector(getUid)
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
+
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+
+  const { params } = useRoute<'Collection'>()
+  const { slug, collectionType, handle } = params ?? {}
+  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
+
+  const handleFetchCollection = useCallback(() => {
+    dispatch(resetCollection())
+    dispatch(fetchCollection(collectionId as number, permalink, true))
+  }, [dispatch, collectionId, permalink])
+
+  useFetchCollectionLineup(collectionId, handleFetchCollection)
+
+  const handlePressTrackListItemPlay = useCallback(
+    (uid: UID, id: ID) => {
+      if (isPlaying && playingUid === uid) {
+        dispatch(tracksActions.pause())
+        recordPlay(id, false)
+      } else if (playingUid !== uid) {
+        dispatch(tracksActions.play(uid))
+        recordPlay(id)
+      } else {
+        dispatch(tracksActions.play())
+        recordPlay(id)
+      }
+    },
+    [dispatch, isPlaying, playingUid]
+  )
+  return (
+    <TrackList
+      contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
+      trackItemAction='overflow'
+      showSkeleton={isLineupLoading}
+      togglePlay={handlePressTrackListItemPlay}
+      isAlbumPage={isAlbum}
+      uids={uids}
+      ListEmptyComponent={
+        isLineupLoading ? null : (
+          <Box mt='m'>
+            <Text variant='body' style={styles.empty}>
+              {isOwner ? messages.empty : messages.emptyPublic}
+            </Text>
+          </Box>
+        )
+      }
+    />
   )
 }

@@ -14,14 +14,14 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type BioProps = {
-  isExpansible?: boolean
-  setIsExpansible?: (isExpansible: boolean) => void
+export type BioProps = {
+  isExpandable?: boolean
+  setIsExpandable?: (isExpansible: boolean) => void
   numberOfLines?: number
 }
 
 export const Bio = (props: BioProps) => {
-  const { isExpansible, setIsExpansible, numberOfLines } = props
+  const { isExpandable, setIsExpandable, numberOfLines } = props
   const profile = useSelectProfile(['bio'])
   const { bio } = profile
   const styles = useStyles()
@@ -29,13 +29,15 @@ export const Bio = (props: BioProps) => {
 
   if (!bio) return null
 
+  // Collapsed case
+  // This is separate because we want to allow scrolling on the bio text
   if (numberOfLines)
     return (
       <View pointerEvents='none'>
         <Text
           onTextLayout={(e) => {
-            if (setIsExpansible && e.nativeEvent.lines.length > MAX_BIO_LINES) {
-              setIsExpansible(true)
+            if (setIsExpandable && e.nativeEvent.lines.length > MAX_BIO_LINES) {
+              setIsExpandable(true)
             }
           }}
           variant='body'
@@ -45,7 +47,7 @@ export const Bio = (props: BioProps) => {
           // this allows us to let the parent component know whether we have met one of
           // the conditions to make the bio section expansible.
           numberOfLines={
-            isExpansible && numberOfLines ? numberOfLines : undefined
+            isExpandable && numberOfLines ? numberOfLines : undefined
           }
         >
           {bio}

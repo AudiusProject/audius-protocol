@@ -1,0 +1,252 @@
+---
+id: get-undisbursed-challenges
+title: 'Get Undisbursed Challenges'
+description: 'Get all undisbursed challenges'
+sidebar_label: 'Get Undisbursed Challenges'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVU1v2zAM/SuCTtsQJO2wXXLrPlD0NmDtLkNRKDIdq5UllZLTBUb++0g7tZ3GdYeup0TmE9/jh8haJrWOcvlb6kJZC24NUV7PZAZRownJeCeX8hySIKuoXGbiqsIImRjgZ9IHQMXgi2wPvxpAvw6hQaEqIQEyay0dHeiKz/MIicyG+e4rwK18quKyAOGqcgUofC5MgjKK5EW8M2EuriLklRW5RxHU2rhGjXhH/7tLH4Q1pUnvyXHUBZRKLmuZtoH5jUuwBpS73azT1KBfJSmHpIt/paki4I3JponOOEAUF98a98ZS/kQi8vGKMEhRHjAZXVmFgjnG9MSExq0P5GhfBkv1yW5W1uu7NrppcT8TM7m1GNxgCQjkHjYgOp/Pd9BEqqgdEWLwLhKSAB9PTvjniYZKa4jsSXu66RJDVAjW6KYVFreRcfUxkV/dguY6B+Q2TqZlyVQaohSi4sibGvN3hPvKIGT8dlTpK8cuupDagva5VOngeJhajaA6UKFcZoEzEkCb3DSIvkcemCDxE52Wf6DkuOC9yzFbTz1m3Uc7ZhqPcKSoXZxjXvYxjhL0qZrmfxbgbeYf3E2mtnH8Ycpkkm0eZt+rN106CfESJDKGQJ/G+vSLygS3DsR00Kt84fNoYwNu6DkBoscnN+gKTdLC88xdN9MzqFTQYdFrWQwkclM13trRW6ElbJFSiMvFglDak21LfbQxGeBcVZmp4lz7xeZU8is0LvdNzvbRn/24OB5UzSXx61S0VmZrLafzE65A8DGVqnmK+4kzuS4OvNd9+C/vpH1lE/xJi2AVzS/ueo653ufpYOnNhsXk91WQUMbU9UpFuEK72/HndgRy/gitVpYnQK5shAmtb7i5RqO6g+1wh26UrRgkeaz/t8rHZTbB/LgpX0n8NsttQl8/Pl+p8C023IS+5xZDr/aaD2hYLvXeNc9PUBnPVmrE1skZLcAwrMLR9mMv3cA4/35Jc+ovbpJ8mA==
+sidebar_class_name: 'get api-method'
+info_path: developers/api/api
+custom_edit_url: null
+---
+
+import ApiTabs from '@theme/ApiTabs'
+import DiscriminatorTabs from '@theme/DiscriminatorTabs'
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import SecuritySchemes from '@theme/ApiExplorer/SecuritySchemes'
+import MimeTabs from '@theme/MimeTabs'
+import ParamsItem from '@theme/ParamsItem'
+import ResponseSamples from '@theme/ResponseSamples'
+import SchemaItem from '@theme/SchemaItem'
+import SchemaTabs from '@theme/SchemaTabs'
+import Heading from '@theme/Heading'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get Undisbursed Challenges'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/challenges/undisbursed'}></MethodEndpoint>
+
+Get all undisbursed challenges
+
+<Heading
+  id={'request'}
+  as={'h2'}
+  className={'openapi-tabs__heading'}
+  children={'Request'}
+></Heading>
+
+<details
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
+  data-collapsed={false}
+  open={true}
+>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
+    <ul>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'offset',
+          in: 'query',
+          description: 'The number of items to skip. Useful for pagination (page number * limit)',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'limit',
+          in: 'query',
+          description: 'The number of items to fetch',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'user_id',
+          in: 'query',
+          description: 'A User ID to filter the undisbursed challenges to a particular user',
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
+      <ParamsItem
+        className={'paramsItem'}
+        param={{
+          name: 'completed_blocknumber',
+          in: 'query',
+          description: 'Starting blocknumber to retrieve completed undisbursed challenges',
+          schema: { type: 'integer' },
+        }}
+      ></ParamsItem>
+    </ul>
+  </div>
+</details>
+<div>
+  <div>
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
+        <div>
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
+                  <details
+                    style={{}}
+                    className={'openapi-markdown__details response'}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
+                      <SchemaItem collapsible={true} className={'schemaItem'}>
+                        <details style={{}} className={'openapi-markdown__details'}>
+                          <summary style={{}}>
+                            <span className={'openapi-schema__container'}>
+                              <strong className={'openapi-schema__property'}>data</strong>
+                              <span className={'openapi-schema__name'}>object[]</span>
+                            </span>
+                          </summary>
+                          <div style={{ marginLeft: '1rem' }}>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                  paddingBottom: '.5rem',
+                                }}
+                              >
+                                Array [
+                              </div>
+                            </li>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'challenge_id'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'user_id'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'specifier'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'amount'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'completed_blocknumber'}
+                              required={true}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'handle'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'wallet'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'created_at'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'completed_at'}
+                              required={true}
+                              schemaName={'string'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
+                              collapsible={false}
+                              name={'cooldown_days'}
+                              required={false}
+                              schemaName={'integer'}
+                              qualifierMessage={undefined}
+                              schema={{ type: 'integer' }}
+                            ></SchemaItem>
+                            <li>
+                              <div
+                                style={{
+                                  fontSize: 'var(--ifm-code-font-size)',
+                                  opacity: '0.6',
+                                  marginLeft: '-.5rem',
+                                }}
+                              >
+                                ]
+                              </div>
+                            </li>
+                          </div>
+                        </details>
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
+                  <ResponseSamples
+                    responseExample={
+                      '{\n  "data": [\n    {\n      "challenge_id": "string",\n      "user_id": "string",\n      "specifier": "string",\n      "amount": "string",\n      "completed_blocknumber": 0,\n      "handle": "string",\n      "wallet": "string",\n      "created_at": "string",\n      "completed_at": "string",\n      "cooldown_days": 0\n    }\n  ]\n}'
+                    }
+                    language={'json'}
+                  ></ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>

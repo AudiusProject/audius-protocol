@@ -5,7 +5,7 @@ description: 'This endpoint allows you to lookup and access API resources when y
 sidebar_label: 'Resolve URL'
 hide_title: true
 hide_table_of_contents: true
-api: eJzNU01vGjEQ/SsjnxIJQWhv3HKIKqQeIgS9NDmY3YF1MbYzM4auVvz3jpcFUdRrpJ5gxub5fdEZQk4xMLKZdebr05fyUSNX5JK4GMzMzIMgBeuBsHaElZjTaXR3Z9k4Bgx1ii4IWO/jkaGNGSSCj3GXE9hQg60qZIbn17mCccykIxwbDP3dGHwLuxCPIA2+BZtrl3lcRVgtvo/fwpJsteMRvHrbeseiXwvmipEYLCFwTimSYD02IxMTki3s5rXyW+hr/oC6T5bsHlWRCv7ZmaCDnmfyeuaKlI+M1OpA+JFVrv5aKOO9YKVUtNEZdwwvTjkTbLJXDZtIe6wLbXhoRBLPJpOrmkeIBL8yS1EJdq0AWRCSlUZf5arBvS0hSJsKMxZyYauWv4+M2G1hbYZXja5UShOLwi1Kr05RZmZCV73qzuEitqicmQuj2nEV9axNFA+uRhpfOU4OU1MedGETey5OfCGjwSlkwTu7MB0/mXtnnnsQ+DEtMRttSoosexsKzuD2kAb3+V1apRMMTGoYQGxKMDhdzLrtTb93onPSFQbheyadqaJWN8h/2c8hXsHfMkneavXUqj6gbkjxr5wbNbGsum5tGVfkT6eyPpe1ZKtp2rUvdd1Yz/d9vfXiYTE0+xE+q8X/FLfD9vpPO1ify42+ZQdLrnBXHe+nm0p/e1lq7/8A+QmccA==
+api: eJzNk01v2zAMhv8KoVMLGEmz3XzroRgC7FAEyS5rDorNxFoUSRUpZ4bh/z7KcbN+DLsN2MkWKVHP+5LqFesDqfK7ikjetqi2haqRqmgCG+9UqdaNIUBXB28cg7bWnwk6n4A9WO+PKYB2NeiqQiK4f1xCLpWiLOHcoBv3emc7ODp/Bm7wyelUm0SzysNm9XX25NZRV0cq4NHqzhpi+c01N4SRQEcESiH4yFjPVKF8wKgz3bIWvtUEXqigoz4hyxkR1CsnC8mnaCVnspTnhLFT7wUKQtYyGTCDByOMEfbJCvPexxPWGRNuGuZA5Xx+pb8FH+FHIs6qQO+kQGKEoLmRWyI+JxNRGDkmLBRVDZ60KnvFXchkxNG4gxqGbd5MwTtCyvnPd5/y5y3m0okyp62A1lK2Yrmi8hJ0LJuHYSiUiG989uSAPPohHKWax6tD4mf7Yk/2pVQvmmpDlZdcF6JvTY1xdlU5bxcqIxq39yO9YZvxpdUfvLwfD8G3BVyy+bZLZjG7U4IYPPFJu1xn6s/UPxo7/qJNVjCR1DAV1SHA1Kts9+tJG+OGZR0kJI7Qe7L+t1f/4URPA8H4k+fBahlWsWpsUD918c0DbcTEHOr7nSbcRDsMOXwZ79xb6abe2Tx6e20J/+LFzWqa0lv4V+/gj+KO2F3fZqttyjvGKWt1NJlddGxfj/SXh7W8lF/z2qEN
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,7 +20,6 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
@@ -33,12 +32,7 @@ import TabItem from '@theme/TabItem'
   }
 ></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/resolve"}
->
-
-</MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/resolve'}></MethodEndpoint>
 
 This endpoint allows you to lookup and access API resources when you only know the audius.co URL.
 Tracks, Playlists, and Users are supported.
@@ -51,50 +45,37 @@ Tracks, Playlists, and Users are supported.
 ></Heading>
 
 <details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
   data-collapsed={false}
   open={true}
 >
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Query Parameters
-    </h3>
-  </summary><div>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Query Parameters</h3>
+  </summary>
+  <div>
     <ul>
       <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"url","in":"query","required":true,"description":"URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
+        className={'paramsItem'}
+        param={{
+          name: 'url',
+          in: 'query',
+          description:
+            'URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path',
+          required: true,
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
     </ul>
-
   </div>
-</details><div>
+</details>
+<div>
   <div>
-    <ApiTabs
-      label={undefined}
-      id={undefined}
-    >
-      <TabItem
-        label={"302"}
-        value={"302"}
-      >
-        <div>
-
-          Internal redirect
-
-
-        </div><div>
-
-        </div>
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'302'} value={'302'}>
+        <div>Internal redirect</div>
+        <div></div>
       </TabItem>
     </ApiTabs>
-
   </div>
 </div>

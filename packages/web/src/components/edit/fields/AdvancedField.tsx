@@ -232,8 +232,12 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       }
       if (get(values, IS_COVER)) {
         // If values are not set, but the toggle is on, set to empty strings for reporting to publishers
-        setCoverOriginalSongTitle(get(values, COVER_ORIGINAL_SONG_TITLE) ?? '')
-        setCoverOriginalArtist(get(values, COVER_ORIGINAL_ARTIST) ?? '')
+        setCoverOriginalSongTitle(
+          get(values, COVER_ORIGINAL_SONG_TITLE) ?? coverOriginalSongTitle ?? ''
+        )
+        setCoverOriginalArtist(
+          get(values, COVER_ORIGINAL_ARTIST) ?? coverOriginalArtist ?? ''
+        )
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
@@ -268,7 +272,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
       aiUserId,
       setAllowedApiKeys,
       setCoverOriginalSongTitle,
-      setCoverOriginalArtist
+      coverOriginalSongTitle,
+      setCoverOriginalArtist,
+      coverOriginalArtist
     ]
   )
 

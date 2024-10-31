@@ -16,8 +16,8 @@ import { useToggle } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { make, track } from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
@@ -52,6 +52,7 @@ export const CommentForm = ({
 }: CommentFormProps) => {
   const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
+  const { requiresAccount } = useRequiresAccountCallback()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
@@ -84,36 +85,40 @@ export const CommentForm = ({
     }
   }
 
-  const handleClickInput = useAuthenticatedCallback(
-    () => {
-      if (isMobile) {
-        toggleIsMobileAppDrawer()
-        track(
-          make({
-            eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
-            trackId: entityId
-          })
-        )
-      } else {
-        track(
-          make({
-            eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
-            trackId: entityId,
-            source: 'comment_input'
-          })
-        )
-      }
-    },
-    [isMobile, toggleIsMobileAppDrawer, entityId],
-    () => {
+  const handleClickInput = useCallback(() => {
+    if (isMobile) {
+      toggleIsMobileAppDrawer()
       track(
         make({
-          eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
+          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
           trackId: entityId
         })
       )
+    } else {
+      if (currentUserId === undefined) {
+        requiresAccount()
+        track(
+          make({
+            eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
+            trackId: entityId
+          })
+        )
+      }
+      track(
+        make({
+          eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
+          trackId: entityId,
+          source: 'comment_input'
+        })
+      )
     }
-  )
+  }, [
+    isMobile,
+    toggleIsMobileAppDrawer,
+    entityId,
+    currentUserId,
+    requiresAccount
+  ])
 
   const profileImage = useProfilePicture(
     currentUserId ?? null,

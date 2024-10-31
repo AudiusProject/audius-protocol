@@ -5,7 +5,7 @@ description: 'Gets developer app matching given address (API key)'
 sidebar_label: 'Get Developer App'
 hide_title: true
 hide_table_of_contents: true
-api: eJydVMtu2zAQ/BWCpwQwLLtIL765SBEEBYqir0sQBLS4tpjKIrtcCTUE/Xt3KcUPWYeiJ9O7o+XszEitRojBVxGiXrX63WIhPxZiji6Q85Ve6W91nkOMeqZzXxFUJBATQulyI5DsNQqu1TEvYG/kFNAHQHL9VGsoVRF+1w7B6tWTNtZiP7Qye+CfOgK+OKufZ6On35B8pEMAJhQJXbXT3emhqV6aO9W42G6i7/ZmBy81lhNdbg8Vv3mFnCYrUrubUvKDsUpEgEg6Ye6uMZ89qa2vKyuI95N+ADaAChA9pvsv2w9AUVlooBQVFRul9obygvmrnWugUoOi6mb95VH9gsMtyy/Y5Oaj7Weo++OIdQiMCAZZUQJkK57aQd4zH51cHgwVfD45TVjDmOF6RO+Cz6eezylLYwc4IGR2QkIfx7zwmCjRYYKFlw12QIkz01np7BKYtcONnVyU1Ox3Sp7rgijEVZZZF3PPvQPnsXEWcG5q6+o4z33WLLUQcdXWJ46OSiHJC/BImddvupwv9NX2aYj6uVSCZvuCj7Q3KYuDqFPyj1J7fBX/0+9BVYI/lIXSsHnyOvWZ71W7knemV29u8+oFsxZQ225MhB9Ydp2UOdx44DofG4PObEQXlpbFlDNbszVlHEfifJ+br0N4btW/BGVykaFoqoPYYcpa/vGRlz/LbPfM0AIMW5s49t01f+0CnT139anrzoP28PE7h/IvTMXNag==
+api: eJydVE2L2zAQ/StCp10IcVK2F99SWpalUEq/LksIijWJtetYqjQ2Dcb/vTOWk41jdyl7sqx58/neqJGo9kGmj1JDDYV14DfKuSDXM7oJmTcOjS1lKu8BgziDBIHEQWGWm3Iv9qaGUiitPYQgblZfH8QzHG/lTDJWcYQHHWOIj+cQK+cI4ZRXB0DwXEUjS/ohZB+L7IaTO4W5vK5odVXOIP/nmN/D78p4oOToK5jJkOVwUDJtJB4dJwroqQPZtmsGB2fLAIHt7xYL/gxTfq+yLJaV2RKhRIZQ7sJkXZfJU2BcM85jt0+QIffruWA0MYtW2KFe6ny86L0bxkxWgVgxmjl5PdrJc9zeS5ApWxz6hGHQ/YTdHNQeNpUvpiZK1Ros+GqgrX9bNicCCMKguykKPigteFoQcEBDdLgbO3yxKHa2KvUI/n6SYvA1CQq8t/7Kg1xIqbllKe+hGz/rMpXJcHmSpieiJUjo4kVxd4OSOaILaZJoEzJLtiORWBsNfq4qbaowz2xSLyUr0pQ72422Hxcpe7wGnZP4tRTRytmiZTlfMEnOBjyojsB+u6b28Irqc99vXPxeDAh/MHGFoi1mDUahxKmNnpyZTE8CptZzqppBTbNVAX76om35moj3R7qnY628UVueC42WhslnomanigCv9HPzrd+1W/E/L8hkI/2lKo88cFVU/EdHav7i8WrXBM1BEbVdjdG6oifE4YXf6P1g5s9Cu//0g9bhL+BM7/s=
 sidebar_class_name: 'get api-method'
 info_path: developers/api/api
 custom_edit_url: null
@@ -20,19 +20,13 @@ import ParamsItem from '@theme/ParamsItem'
 import ResponseSamples from '@theme/ResponseSamples'
 import SchemaItem from '@theme/SchemaItem'
 import SchemaTabs from '@theme/SchemaTabs'
-import Markdown from '@theme/Markdown'
 import Heading from '@theme/Heading'
 import OperationTabs from '@theme/OperationTabs'
 import TabItem from '@theme/TabItem'
 
 <Heading as={'h1'} className={'openapi__heading'} children={'Get Developer App'}></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/developer_apps/{address}"}
->
-
-</MethodEndpoint>
+<MethodEndpoint method={'get'} path={'/developer_apps/{address}'}></MethodEndpoint>
 
 Gets developer app matching given address (API key)
 
@@ -44,215 +38,128 @@ Gets developer app matching given address (API key)
 ></Heading>
 
 <details
-  style={{"marginBottom":"1rem"}}
-  className={"openapi-markdown__details"}
+  style={{ marginBottom: '1rem' }}
+  className={'openapi-markdown__details'}
   data-collapsed={false}
   open={true}
 >
-  <summary
-    style={{}}
-  >
-    <h3
-      className={"openapi-markdown__details-summary-header-params"}
-    >
-      Path Parameters
-    </h3>
-  </summary><div>
+  <summary style={{}}>
+    <h3 className={'openapi-markdown__details-summary-header-params'}>Path Parameters</h3>
+  </summary>
+  <div>
     <ul>
       <ParamsItem
-        className={"paramsItem"}
-        param={{"name":"address","in":"path","required":true,"description":"A developer app address (API Key)","schema":{"type":"string"}}}
-      >
-
-      </ParamsItem>
+        className={'paramsItem'}
+        param={{
+          name: 'address',
+          in: 'path',
+          description: 'A developer app address (API Key)',
+          required: true,
+          schema: { type: 'string' },
+        }}
+      ></ParamsItem>
     </ul>
-
   </div>
-</details><div>
+</details>
+<div>
   <div>
-    <ApiTabs
-      label={undefined}
-      id={undefined}
-    >
-      <TabItem
-        label={"200"}
-        value={"200"}
-      >
+    <ApiTabs label={undefined} id={undefined}>
+      <TabItem label={'200'} value={'200'}>
+        <div>Success</div>
         <div>
-
-          Success
-
-
-        </div><div>
-          <MimeTabs
-            className={"openapi-tabs__mime"}
-            schemaType={"response"}
-          >
-            <TabItem
-              label={"application/json"}
-              value={"application/json"}
-            >
-              <SchemaTabs
-                className={"openapi-tabs__schema"}
-              >
-                <TabItem
-                  label={"Schema"}
-                  value={"Schema"}
-                >
+          <MimeTabs className={'openapi-tabs__mime'} schemaType={'response'}>
+            <TabItem label={'application/json'} value={'application/json'}>
+              <SchemaTabs className={'openapi-tabs__schema'}>
+                <TabItem label={'Schema'} value={'Schema'}>
                   <details
                     style={{}}
-                    className={"openapi-markdown__details response"}
+                    className={'openapi-markdown__details response'}
                     data-collapsed={false}
                     open={true}
                   >
-                    <summary
-                      style={{}}
-                      className={"openapi-markdown__details-summary-response"}
-                    >
-                      <strong>
-                        Schema
-                      </strong>
-                    </summary><div
-                      style={{"textAlign":"left","marginLeft":"1rem"}}
-                    >
-
-                    </div><ul
-                      style={{"marginLeft":"1rem"}}
-                    >
-                      <SchemaItem
-                        collapsible={true}
-                        className={"schemaItem"}
-                      >
-                        <details
-                          style={{}}
-                          className={"openapi-markdown__details"}
-                        >
-                          <summary
-                            style={{}}
-                          >
-                            <span
-                              className={"openapi-schema__container"}
-                            >
-                              <strong
-                                className={"openapi-schema__property"}
-                              >
-                                data
-                              </strong><span
-                                className={"openapi-schema__name"}
-                              >
-                                 object
-                              </span>
+                    <summary style={{}} className={'openapi-markdown__details-summary-response'}>
+                      <strong>Schema</strong>
+                    </summary>
+                    <div style={{ textAlign: 'left', marginLeft: '1rem' }}></div>
+                    <ul style={{ marginLeft: '1rem' }}>
+                      <SchemaItem collapsible={true} className={'schemaItem'}>
+                        <details style={{}} className={'openapi-markdown__details'}>
+                          <summary style={{}}>
+                            <span className={'openapi-schema__container'}>
+                              <strong className={'openapi-schema__property'}>data</strong>
+                              <span className={'openapi-schema__name'}>object</span>
                             </span>
-                          </summary><div
-                            style={{"marginLeft":"1rem"}}
-                          >
+                          </summary>
+                          <div style={{ marginLeft: '1rem' }}>
                             <SchemaItem
                               collapsible={false}
-                              name={"address"}
+                              name={'address'}
                               required={true}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem><SchemaItem
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
                               collapsible={false}
-                              name={"user_id"}
+                              name={'user_id'}
                               required={true}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem><SchemaItem
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
                               collapsible={false}
-                              name={"name"}
+                              name={'name'}
                               required={true}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem><SchemaItem
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
                               collapsible={false}
-                              name={"description"}
+                              name={'description'}
                               required={false}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem><SchemaItem
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
+                            <SchemaItem
                               collapsible={false}
-                              name={"image_url"}
+                              name={'image_url'}
                               required={false}
-                              schemaName={"string"}
+                              schemaName={'string'}
                               qualifierMessage={undefined}
-                              schema={{"type":"string"}}
-                            >
-
-                            </SchemaItem>
+                              schema={{ type: 'string' }}
+                            ></SchemaItem>
                           </div>
                         </details>
                       </SchemaItem>
                     </ul>
                   </details>
-                </TabItem><TabItem
-                  label={"Example"}
-                  value={"Example"}
-                >
+                </TabItem>
+                <TabItem label={'Example'} value={'Example'}>
                   <ResponseSamples
                     responseExample={'{\n  "data": {\n    "address": "0xc0ffee254729296a45a3885639AC7E10F9d54979",\n    "user_id": "AAWJg3g",\n    "name": "my-audius-app",\n    "description": "my audius app",\n    "image_url": null\n  }\n}\n'}
-                    language={"json"}
-                  >
-
-                  </ResponseSamples>
+                    language={'json'}
+                  ></ResponseSamples>
                 </TabItem>
               </SchemaTabs>
             </TabItem>
           </MimeTabs>
         </div>
-      </TabItem><TabItem
-        label={"400"}
-        value={"400"}
-      >
-        <div>
-
-
-          Bad request
-
-
-        </div><div>
-
-        </div>
-      </TabItem><TabItem
-        label={"404"}
-        value={"404"}
-      >
-        <div>
-
-
-          Not found
-
-
-        </div><div>
-
-        </div>
-      </TabItem><TabItem
-        label={"500"}
-        value={"500"}
-      >
-        <div>
-
-
-          Server error
-
-
-        </div><div>
-
-        </div>
+      </TabItem>
+      <TabItem label={'400'} value={'400'}>
+        <div>Bad request</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'404'} value={'404'}>
+        <div>Not found</div>
+        <div></div>
+      </TabItem>
+      <TabItem label={'500'} value={'500'}>
+        <div>Server error</div>
+        <div></div>
       </TabItem>
     </ApiTabs>
-
   </div>
 </div>

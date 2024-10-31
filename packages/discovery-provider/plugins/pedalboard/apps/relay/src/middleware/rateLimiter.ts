@@ -19,6 +19,7 @@ export const rateLimiterMiddleware = async (
     signerIsUser,
     isAnonymousAllowed,
     isSenderVerifier,
+    signerIsApp,
     logger
   } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
@@ -63,6 +64,8 @@ export const rateLimiterMiddleware = async (
 
   const limit = await determineLimit(
     signerIsUser,
+    signerIsApp,
+    isAnonymousAllowed,
     config.rateLimitAllowList,
     signer
   )
@@ -78,7 +81,7 @@ export const rateLimiterMiddleware = async (
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
-      logger.info({ limit }, 'rate limit hit')
+      logger.info({ limit, signer, isAnonymousAllowed, signerIsUser, operation }, 'rate limit hit')
       rateLimitError(next, 'rate limit hit')
       return
     }
@@ -109,11 +112,15 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 
 const determineLimit = async (
   isUser: boolean,
+  isApp: boolean,
+  isAnonymousAllowed: boolean,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
   const isAllowed = allowList.includes(signer)
   if (isAllowed) return 'allowlist'
   if (isUser) return 'owner'
+  if (isApp) return 'app'
+  if (isAnonymousAllowed) return 'anonymous'
   return 'app'
 }
