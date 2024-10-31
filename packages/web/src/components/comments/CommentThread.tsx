@@ -12,7 +12,6 @@ import {
   LoadingSpinner,
   PlainButton
 } from '@audius/harmony'
-
 import { track, make } from 'services/analytics'
 
 import { CommentBlock } from './CommentBlock'
@@ -97,37 +96,45 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
                 : messages.hideReplies}
             </PlainButton>
           </Box>
-          {hiddenReplies[rootComment.id] ? null : (
-            <Flex
-              direction='column'
-              gap='l'
-              as='ul'
-              aria-label={messages.replies}
-            >
-              {replies.map((reply: ReplyComment) => (
-                <Flex w='100%' key={reply.id} as='li'>
-                  <CommentBlock
-                    commentId={reply.id}
-                    parentCommentId={rootComment.id}
-                  />
-                </Flex>
-              ))}
-            </Flex>
-          )}
+          <Box
+            css={{
+              display: 'grid',
+              gridTemplateRows: hiddenReplies[rootComment.id] ? '0fr' : '1fr',
+              transition: 'grid-template-rows 0.25s ease-out'
+            }}
+          >
+            <Flex direction='column' gap='l' css={{ overflow: 'hidden' }}>
+              <Flex
+                direction='column'
+                gap='l'
+                as='ul'
+                aria-label={messages.replies}
+              >
+                {replies.map((reply: ReplyComment) => (
+                  <Flex w='100%' key={reply.id} as='li'>
+                    <CommentBlock
+                      commentId={reply.id}
+                      parentCommentId={rootComment.id}
+                    />
+                  </Flex>
+                ))}
+              </Flex>
 
-          {hasMoreReplies && !hiddenReplies[rootComment.id] ? (
-            <PlainButton
-              onClick={handleLoadMoreReplies}
-              variant='subdued'
-              css={{ width: 'max-content' }}
-              disabled={isFetchingReplies}
-            >
-              {messages.showMoreReplies}
-              {isFetchingReplies ? (
-                <LoadingSpinner css={{ width: 20, height: 20 }} />
+              {hasMoreReplies ? (
+                <PlainButton
+                  onClick={handleLoadMoreReplies}
+                  variant='subdued'
+                  css={{ width: 'max-content' }}
+                  disabled={isFetchingReplies}
+                >
+                  {messages.showMoreReplies}
+                  {isFetchingReplies ? (
+                    <LoadingSpinner css={{ width: 20, height: 20 }} />
+                  ) : null}
+                </PlainButton>
               ) : null}
-            </PlainButton>
-          ) : null}
+            </Flex>
+          </Box>
         </Flex>
       ) : null}
     </Flex>
