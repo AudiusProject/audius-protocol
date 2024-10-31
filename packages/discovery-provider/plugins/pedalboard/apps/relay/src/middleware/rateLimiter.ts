@@ -63,6 +63,7 @@ export const rateLimiterMiddleware = async (
 
   const limit = await determineLimit(
     signerIsUser,
+    isAnonymousAllowed,
     config.rateLimitAllowList,
     signer
   )
@@ -78,7 +79,7 @@ export const rateLimiterMiddleware = async (
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
-      logger.info({ limit }, 'rate limit hit')
+      logger.info({ limit, signer, isAnonymousAllowed, signerIsUser, operation }, 'rate limit hit')
       rateLimitError(next, 'rate limit hit')
       return
     }
@@ -109,10 +110,12 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 
 const determineLimit = async (
   isUser: boolean,
+  isAnonymous: boolean,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
   const isAllowed = allowList.includes(signer)
+  if (isAnonymous) return 'anonymous'
   if (isAllowed) return 'allowlist'
   if (isUser) return 'owner'
   return 'app'

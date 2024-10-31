@@ -14,6 +14,9 @@ export type RelayRateLimitConfig = {
   app: number;
   // how many times the allowlisted users are limited to
   allowlist: number;
+  // how many times an anonymous request is allowed on this node
+  // anonymous means no user or developer app ex: UserCreate
+  anonymous: number;
 };
 
 export type RateLimiterKey = {
@@ -24,7 +27,7 @@ export type RateLimiterKey = {
 
 // so code is easier to follow
 export type Operation = string;
-export type ValidLimits = "owner" | "app" | "allowlist";
+export type ValidLimits = "owner" | "app" | "allowlist" | "anonymous";
 // operation -> in mem rate limiter
 export type RateLimiters = Map<Operation, RateLimiterMemory>;
 
@@ -108,146 +111,175 @@ const RELAY_RATE_LIMITS = {
   CreateUser: {
     owner: 10,
     app: 5,
+    anonymous: 1000,
     allowlist: 1000,
   },
   UpdateUser: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   VerifyUser: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   CreateTrack: {
     owner: 100,
     app: 20,
     allowlist: 1000,
+    anonymous: 0,
   },
   UpdateTrack: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   DeleteTrack: {
     owner: 100,
     app: 20,
     allowlist: 1000,
+    anonymous: 0,
   },
   CreatePlaylist: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   UpdatePlaylist: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   DeletePlaylist: {
     owner: 100,
     app: 5,
     allowlist: 1000,
+    anonymous: 0,
   },
   FollowUser: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnfollowUser: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   SubscribeUser: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnsubscribeUser: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   SaveTrack: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnsaveTrack: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   RepostTrack: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnrepostTrack: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   DownloadTrack: {
     owner: 2000,
     app: 2000,
     allowlist: 2000,
+    anonymous: 2000,
   },
   SavePlaylist: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnsavePlaylist: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   RepostPlaylist: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   UnrepostPlaylist: {
     owner: 2000,
     app: 10,
     allowlist: 1000,
+    anonymous: 0,
   },
   CreateNotification: {
     owner: 0,
     app: 0,
     allowlist: 1000,
+    anonymous: 0,
   },
   ViewNotification: {
     owner: 1000,
     app: 1000,
     allowlist: 1000,
+    anonymous: 1000,
   },
   ViewPlaylistNotification: {
     owner: 1000,
     app: 1000,
     allowlist: 1000,
+    anonymous: 1000,
   },
   CreateDeveloperApp: {
     owner: 3,
     app: 0,
     allowlist: 1000,
+    anonymous: 0,
   },
   DeleteDeveloperApp: {
     owner: 3,
     app: 0,
     allowlist: 1000,
+    anonymous: 0,
   },
   CreateGrant: {
     owner: 5,
     app: 0,
     allowlist: 1000,
+    anonymous: 0,
   },
   DeleteGrant: {
     owner: 5,
     app: 0,
     allowlist: 1000,
+    anonymous: 0,
   },
 };
