@@ -56,6 +56,26 @@ first_set_new_apps_data = [
             "message": "Creating Audius developer app at 1686252024",
         },
     },
+    {
+        "user_id": 1,
+        "name": "My Fourth App",
+        "description": "Fantastic",
+        "address": "0x94c2f1b214b5c3d2d2e5f5bb9ad4f5a4b6a07bbf",
+        "app_signature": {
+            "signature": "f9d2b5c7e1a4b6c3d8f0e3a7b9d4c1f5e3988745368a3b6d2f9c5b8a4e7d1c3a8b5f0d6e9c7b1d3f4e0a5c8b2d9e3f7c6a1b9d4f2c0e5a7b3f8c6d1b0a9e4c5f37",
+            "message": "Creating Audius developer app at 1686285024",
+        },
+    },
+    {
+        "user_id": 1,
+        "name": "My Fifth Again",
+        "description": "Mambo",
+        "address": "0xd4f8e1b5a7c3e6f9c2d5a4b3e1f6b7d8a9c5b2f1",
+        "app_signature": {
+            "signature": "a7d4e9b2f6c3a1b5d8e0f3c40e5a7b3f8cb9a2d7e5c1f8b3d6a9e4c2f5b1d7e0a6c9f4e3b8d2a1f5c0b6d8e7a3b9c1f2d5a0e4c8b7d9f3a1b4e6c2f8d7b0a5e3c6",
+            "message": "Creating Audius developer app at 1687285024",
+        },
+    },
 ]
 
 second_set_new_apps_data = [
@@ -169,6 +189,42 @@ def test_index_app(app, mocker):
                 )
             },
         ],
+        "CreateAppTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": first_set_new_apps_data[4]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[4]["name"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[4]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[4]["app_signature"]["message"]}"}}
+                        }}""",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppTx6": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": first_set_new_apps_data[5]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[5]["name"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[5]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[5]["app_signature"]["message"]}"}}
+                        }}""",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -215,7 +271,7 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 5
+        assert len(all_apps) == 7
         for expected_app in first_set_new_apps_data:
             found_matches = [
                 item
@@ -443,7 +499,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_apps) == 5
+        assert len(all_apps) == 7
 
     # Test invalid delete app txs
     tx_receipts = {
@@ -513,7 +569,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_apps) == 5
+        assert len(all_apps) == 7
 
     # Test valid delete app txs
     tx_receipts = {
@@ -593,7 +649,7 @@ def test_index_app(app, mocker):
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 5
+        assert len(all_apps) == 7
 
         for expected_app in first_set_new_apps_data:
             found_matches = [
@@ -618,7 +674,7 @@ def test_index_app(app, mocker):
 
     # Test valid create again
     tx_receipts = {
-        "CreateAppTx5": [  # Make sure user 1 can make another app since they now have fewer than 3 non-deleted apps
+        "CreateAppTx6": [  # Make sure user 1 can make another app since they now have fewer than 5 non-deleted apps
             {
                 "args": AttributeDict(
                     {
