@@ -115,8 +115,8 @@ const determineLimit = async (
   signer: string
 ): Promise<ValidLimits> => {
   const isAllowed = allowList.includes(signer)
-  if (isAnonymous) return 'anonymous'
   if (isAllowed) return 'allowlist'
   if (isUser) return 'owner'
+  if (isAnonymous) return 'anonymous'
   return 'app'
 }
