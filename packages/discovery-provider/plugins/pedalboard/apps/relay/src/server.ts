@@ -36,7 +36,7 @@ app.post(
   "/relay",
   incomingRequestLogger,
   validator,
-  rateLimiterMiddleware,
+  // rateLimiterMiddleware,
   antiAbuseMiddleware,
   relayTransaction,
   outgoingRequestLogger

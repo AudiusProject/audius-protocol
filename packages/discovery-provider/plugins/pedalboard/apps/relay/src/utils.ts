@@ -28,6 +28,11 @@ export const isViewNotification = (encodedABI: string): boolean => {
   return decodedAbi.action === 'View' && decodedAbi.entityType === 'Notification'
 }
 
+export const isViewPlaylistNotification = (encodedABI: string): boolean => {
+  const decodedAbi = decodeAbi(encodedABI)
+  return decodedAbi.action === 'ViewPlaylist' && decodedAbi.entityType === 'Notification'
+}
+
 export const unknownToError = (e: unknown): Error => {
   return e instanceof Error ? e : new Error(String(e))
 }
