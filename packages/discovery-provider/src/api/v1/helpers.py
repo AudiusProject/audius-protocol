@@ -351,9 +351,6 @@ def extend_track(track, session=None):
             track["download_conditions"], session
         )
 
-    track["is_stream_gated"] = bool(track.get("stream_conditions", False))
-    track["is_download_gated"] = bool(track.get("download_conditions", False))
-
     return track
 
 
