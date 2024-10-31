@@ -49,7 +49,6 @@ export const userTrackMetadataFromSDK = (
       'id',
       'user_id',
       'followee_favorites',
-      'artwork',
       'favorite_count',
       'is_streamable'
     ]),
