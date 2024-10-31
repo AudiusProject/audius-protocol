@@ -24,11 +24,11 @@ type RemoteProxy struct {
 	logger *common.Logger
 }
 
-func NewRemoteProxy(logger *common.Logger, privKey *ecdsa.PrivateKey, clientBaseUrls []string, retriesPerClient int) *RemoteProxy {
+func NewRemoteProxy(logger *common.Logger, privKey *ecdsa.PrivateKey, clientIpUrls []string, retriesPerClient int) *RemoteProxy {
 	return &RemoteProxy{
 		logger:           logger,
 		self:             privKey,
-		clientUrls:       clientBaseUrls,
+		clientUrls:       clientIpUrls,
 		retriesPerClient: retriesPerClient,
 	}
 }
@@ -37,17 +37,17 @@ func (rp *RemoteProxy) GetIPData(ip string) (*LocationData, error) {
 	attempts := 0
 	for {
 		// shuffle urls so first one configured doesn't always get picked first
-		clientUrls := append([]string(nil), rp.clientUrls...)
-		rand.Shuffle(len(clientUrls), func(i, j int) {
-			clientUrls[i], clientUrls[j] = clientUrls[j], clientUrls[i]
+		clientIpUrls := append([]string(nil), rp.clientUrls...)
+		rand.Shuffle(len(clientIpUrls), func(i, j int) {
+			clientIpUrls[i], clientIpUrls[j] = clientIpUrls[j], clientIpUrls[i]
 		})
 
 		// iterate through all clients
 		// in case of error, continue loop to next client
 		// if all error, increase attempt count
 		// else return the response from the first client
-		for _, client := range clientUrls {
-			res, err := rp.GetIPDataFromClient(client, ip)
+		for _, clientIPUrl := range clientIpUrls {
+			res, err := rp.GetIPDataFromClient(clientIPUrl, ip)
 			if err != nil {
 				logger.Errorf("error getting ip proxy data: %v", err)
 				continue
@@ -64,9 +64,10 @@ func (rp *RemoteProxy) GetIPData(ip string) (*LocationData, error) {
 	return nil, errors.New("exhausted ip proxy requests")
 }
 
+// calls GET url/{ip}
 func (rp *RemoteProxy) GetIPDataFromClient(url, ip string) (*LocationData, error) {
 	logger := rp.logger
-	resp, err := http.Get(fmt.Sprintf("%s/ip/%s", url, ip))
+	resp, err := http.Get(fmt.Sprintf("%s/%s", url, ip))
 	if err != nil {
 		logger.Error("Error requesting IP proxy data:", err)
 		return nil, err
