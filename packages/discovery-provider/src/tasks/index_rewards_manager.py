@@ -648,7 +648,6 @@ def index_rewards_manager(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.debug("index_rewards_manager.py | Acquired lock")
-            time.sleep(500)
             process_solana_rewards_manager(solana_client_manager, db, redis)
             redis.set(
                 redis_keys.solana.reward_manager.last_completed_at,
