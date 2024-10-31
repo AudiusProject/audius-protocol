@@ -42,6 +42,7 @@ def test_get_extended_splits_with_network_cut(app):
             {
                 "track_id": 1,
                 "owner_id": 1,
+                "is_stream_gated": True,
                 "stream_conditions": {
                     "usdc_purchase": {
                         "price": 100,
