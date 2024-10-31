@@ -34,7 +34,7 @@ from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
-    cache_latest_sol_db_tx,
+    cache_sol_db_tx,
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
@@ -102,7 +102,7 @@ class SplTokenTransactionInfo(TypedDict):
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
 def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
-    cache_latest_sol_db_tx(redis, latest_sol_spl_token_db_key, latest_tx)
+    cache_sol_db_tx(redis, latest_sol_spl_token_db_key, latest_tx)
 
 
 def parse_memo_instruction(tx_message: Message) -> str:

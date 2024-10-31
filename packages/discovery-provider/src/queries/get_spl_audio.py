@@ -8,11 +8,7 @@ from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.queries.get_sol_user_bank import SolTxHealthInfo
 from src.tasks.index_spl_token import cache_latest_spl_audio_db_tx
 from src.utils import helpers
-from src.utils.cache_solana_program import (
-    CachedProgramTxInfo,
-    get_cache_latest_sol_program_tx,
-    get_latest_sol_db_tx,
-)
+from src.utils.cache_solana_program import CachedProgramTxInfo, get_cached_sol_tx
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
@@ -35,9 +31,7 @@ def get_latest_spl_audio() -> Optional[Dict]:
 # Retrieve the latest stored value in database for spl audio indexing
 # Cached during processing
 def get_latest_cached_spl_audio_db(redis: Redis) -> Optional[CachedProgramTxInfo]:
-    latest_spl_audio_db = get_cache_latest_sol_program_tx(
-        redis, latest_sol_spl_token_db_key
-    )
+    latest_spl_audio_db = get_cached_sol_tx(redis, latest_sol_spl_token_db_key)
     if not latest_spl_audio_db:
         # If nothing found in cache, pull from db
         token_tx = get_latest_spl_audio()
@@ -56,7 +50,7 @@ def get_latest_cached_spl_audio_db(redis: Redis) -> Optional[CachedProgramTxInfo
 
 def get_latest_cached_spl_audio_program_tx(redis) -> CachedProgramTxInfo:
     # Latest spl audio tx from chain
-    latest_spl_audio_program_tx = get_latest_sol_db_tx(
+    latest_spl_audio_program_tx = get_cached_sol_tx(
         redis, latest_sol_spl_token_program_tx_key
     )
     return latest_spl_audio_program_tx

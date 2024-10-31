@@ -8,11 +8,7 @@ from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.queries.get_sol_user_bank import get_sol_tx_health_info
 from src.tasks.index_rewards_manager import cache_latest_sol_rewards_manager_db_tx
 from src.utils import helpers
-from src.utils.cache_solana_program import (
-    CachedProgramTxInfo,
-    get_cache_latest_sol_program_tx,
-    get_latest_sol_db_tx,
-)
+from src.utils.cache_solana_program import CachedProgramTxInfo, get_cached_sol_tx
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
@@ -39,7 +35,7 @@ def get_latest_sol_rewards_manager() -> Optional[Dict]:
 def get_latest_cached_sol_rewards_manager_db(
     redis: Redis,
 ) -> Optional[CachedProgramTxInfo]:
-    latest_sol_rewards_manager_db = get_cache_latest_sol_program_tx(
+    latest_sol_rewards_manager_db = get_cached_sol_tx(
         redis, latest_sol_rewards_manager_db_tx_key
     )
     if not latest_sol_rewards_manager_db:
@@ -59,7 +55,7 @@ def get_latest_cached_sol_rewards_manager_db(
 
 def get_latest_cached_sol_rewards_manager_program_tx(redis) -> CachedProgramTxInfo:
     # Latest rewards_manager tx from chain
-    latest_sol_rewards_manager_program_tx = get_latest_sol_db_tx(
+    latest_sol_rewards_manager_program_tx = get_cached_sol_tx(
         redis, latest_sol_rewards_manager_program_tx_key
     )
     return latest_sol_rewards_manager_program_tx
@@ -68,4 +64,4 @@ def get_latest_cached_sol_rewards_manager_program_tx(redis) -> CachedProgramTxIn
 def get_sol_rewards_manager_health_info(redis: Redis, current_time_utc: datetime):
     db_cache = get_latest_cached_sol_rewards_manager_db(redis)
     tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
-    return get_sol_tx_health_info(current_time_utc, db_cache, tx_cache)
+    return get_sol_tx_health_info(current_time_utc, None, db_cache, tx_cache)

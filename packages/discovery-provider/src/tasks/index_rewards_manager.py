@@ -42,7 +42,7 @@ from src.solana.solana_parser import (
 )
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
-    cache_latest_sol_db_tx,
+    cache_sol_db_tx,
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
@@ -114,7 +114,7 @@ class RewardManagerTransactionInfo(TypedDict):
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
 def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
-    cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
+    cache_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
 
 
 challenge_type_map_global: Dict[str, TransactionType] = {}

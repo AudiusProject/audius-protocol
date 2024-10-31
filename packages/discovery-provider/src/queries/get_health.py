@@ -18,6 +18,7 @@ from src.queries.get_balances import (
 )
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
+from src.queries.get_sol_payment_router import get_sol_payment_router_health_info
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
@@ -182,9 +183,11 @@ class GetHealthArgs(TypedDict):
     # Number of seconds rewards manager txs are allowed to drift
     rewards_manager_max_drift: Optional[int]
     # Number of seconds user bank txs are allowed to drift
-    user_bank_max_slot_diff: Optional[int]
+    user_bank_max_drift: Optional[int]
     # Number of seconds user bank txs are allowed to drift
     spl_audio_max_drift: Optional[int]
+    # Number of seconds the payment router txs are allowed to drift
+    payment_router_max_drift: Optional[int]
 
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
@@ -205,8 +208,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     reactions_max_last_reaction_drift = args.get("reactions_max_last_reaction_drift")
     plays_count_max_drift = args.get("plays_count_max_drift")
     rewards_manager_max_drift = args.get("rewards_manager_max_drift")
-    user_bank_max_slot_diff = args.get("user_bank_max_slot_diff")
+    user_bank_max_drift = args.get("user_bank_max_drift")
     spl_audio_max_drift = args.get("spl_audio_max_drift")
+    payment_router_max_drift = args.get("payment_router_max_drift")
 
     errors = []
 
@@ -261,11 +265,21 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash = db_block_state["blockhash"]
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    rewards_manager_health_info = get_rewards_manager_health_info(
-        redis, rewards_manager_max_drift
+    current_time_utc = datetime.utcnow()
+    rewards_manager_health_info = format_sol_indexer_health_info(
+        get_sol_rewards_manager_health_info(redis, current_time_utc),
+        rewards_manager_max_drift,
     )
-    user_bank_health_info = get_user_bank_health_info(redis, user_bank_max_slot_diff)
-    spl_audio_info = get_spl_audio_info(redis, spl_audio_max_drift)
+    user_bank_health_info = format_sol_indexer_health_info(
+        get_sol_user_bank_health_info(redis, current_time_utc), user_bank_max_drift
+    )
+    spl_audio_info = format_sol_indexer_health_info(
+        get_spl_audio_health_info(redis, current_time_utc), spl_audio_max_drift
+    )
+    payment_router_health_info = format_sol_indexer_health_info(
+        get_sol_payment_router_health_info(redis, current_time_utc),
+        payment_router_max_drift,
+    )
     reactions_health_info = get_reactions_health_info(
         redis,
         reactions_max_indexing_drift,
@@ -355,6 +369,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "plays": play_health_info,
         "rewards_manager": rewards_manager_health_info,
         "user_bank": user_bank_health_info,
+        "payment_router": payment_router_health_info,
         "openresty_public_key": openresty_public_key,
         "spl_audio_info": spl_audio_info,
         "reactions": reactions_health_info,
@@ -468,7 +483,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if reactions_health_info["is_unhealthy"]:
         errors.append("unhealthy reactions")
     if user_bank_health_info["is_unhealthy"]:
-        errors.append("unhealthy user bank")
+        errors.append("solana user bank indexing behind")
+    if rewards_manager_health_info["is_unhealthy"]:
+        errors.append("solana reward manager indexing behind")
+    if spl_audio_info["is_unhealthy"]:
+        errors.append("solana spl wAUDIO token indexing behind")
+    if payment_router_health_info["is_unhealthy"]:
+        errors.append("solana payment router indexing behinid")
 
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
@@ -573,7 +594,6 @@ PrometheusMetric.register_collector(
 class SolHealthInfo(TypedDict):
     is_unhealthy: bool
     tx_info: Dict
-    time_diff_general: int
 
 
 class PlayHealthInfo(SolHealthInfo):
@@ -642,27 +662,7 @@ def get_play_health_info(
     return {
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
-        "time_diff_general": time_diff_general,
         "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
-    }
-
-
-def get_user_bank_health_info(
-    redis: Redis, max_slot_diff: Optional[int] = None
-) -> SolHealthInfo:
-    if redis is None:
-        raise Exception("Invalid arguments for get_user_bank_health_info")
-
-    current_time_utc = datetime.utcnow()
-
-    tx_health_info = get_sol_user_bank_health_info(redis, current_time_utc)
-    # If user bank indexing max drift provided, perform comparison
-    is_unhealthy = bool(max_slot_diff and max_slot_diff < tx_health_info["slot_diff"])
-
-    return {
-        "is_unhealthy": is_unhealthy,
-        "tx_info": tx_health_info,
-        "time_diff_general": tx_health_info["time_diff"],
     }
 
 
@@ -707,38 +707,20 @@ def get_reactions_health_info(
     }
 
 
-def get_spl_audio_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
-    if redis is None:
-        raise Exception("Invalid arguments for get_spl_audio_info")
-
-    current_time_utc = datetime.utcnow()
-
-    tx_health_info = get_spl_audio_health_info(redis, current_time_utc)
-    # If spl audio indexing max drift provided, perform comparison
-    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
-
-    return {
-        "is_unhealthy": is_unhealthy,
-        "tx_info": tx_health_info,
-        "time_diff_general": tx_health_info["time_diff"],
-    }
-
-
-def get_rewards_manager_health_info(
-    redis: Redis, max_drift: Optional[int] = None
+def format_sol_indexer_health_info(
+    tx_health_info, max_drift: Optional[int] = None
 ) -> SolHealthInfo:
-    if redis is None:
-        raise Exception("Invalid arguments for get_rewards_manager_health_info")
-
-    current_time_utc = datetime.utcnow()
-
-    tx_health_info = get_sol_rewards_manager_health_info(redis, current_time_utc)
-    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
+    # If max drift provided, check if the slots are behind and if so,
+    # make sure the indexer is still processing transactions
+    is_unhealthy = bool(
+        max_drift
+        and max_drift < tx_health_info["time_diff"]
+        and tx_health_info["slot_diff"] > 0
+    )
 
     return {
         "is_unhealthy": is_unhealthy,
         "tx_info": tx_health_info,
-        "time_diff_general": tx_health_info["time_diff"],
     }
 
 
