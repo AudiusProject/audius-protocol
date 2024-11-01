@@ -59,21 +59,21 @@ first_set_new_apps_data = [
     {
         "user_id": 1,
         "name": "My Fourth App",
-        "description": "Fantastic",
-        "address": "0x94c2f1b214b5c3d2d2e5f5bb9ad4f5a4b6a07bbf",
+        "description": "My 4th app description",
+        "address": "0x0b522925421c610f17c7f761aab44c28b176a78c",
         "app_signature": {
-            "signature": "f9d2b5c7e1a4b6c3d8f0e3a7b9d4c1f5e3988745368a3b6d2f9c5b8a4e7d1c3a8b5f0d6e9c7b1d3f4e0a5c8b2d9e3f7c6a1b9d4f2c0e5a7b3f8c6d1b0a9e4c5f37",
-            "message": "Creating Audius developer app at 1686285024",
+            "signature": "1c0ada8bd6a55174734a546e6236e5c2ad96133a450aa9bd69ebb7ae777952f642d3f07ab649de70fa79b9431df8bcd5c7d61395a1f3d35e06dad241f649474a1c",
+            "message": "Creating Audius developer app at 1686252024",
         },
     },
     {
         "user_id": 1,
         "name": "My Fifth Again",
         "description": "Mambo",
-        "address": "0xd4f8e1b5a7c3e6f9c2d5a4b3e1f6b7d8a9c5b2f1",
+        "address": "0xad577654f7610d46364fdec4898dd0418cc5e3af",
         "app_signature": {
-            "signature": "a7d4e9b2f6c3a1b5d8e0f3c40e5a7b3f8cb9a2d7e5c1f8b3d6a9e4c2f5b1d7e0a6c9f4e3b8d2a1f5c0b6d8e7a3b9c1f2d5a0e4c8b7d9f3a1b4e6c2f8d7b0a5e3c6",
-            "message": "Creating Audius developer app at 1687285024",
+            "signature": "4f22c8c0d80426e5d668e482ccfd81df67c9f9e89098ce84c77040492ca85cfc238f128a8fc0e2cbcea981685d5fc9df0428c770a5faf9dec69cd1c687a8b6b51b",
+            "message": "Creating Audius developer app at 1686252024",
         },
     },
 ]
@@ -199,6 +199,7 @@ def test_index_app(app, mocker):
                         "_action": Action.CREATE,
                         "_metadata": f"""{{
                             "name": "{first_set_new_apps_data[4]["name"]}",
+                            "description": "{first_set_new_apps_data[4]["description"]}",
                             "app_signature": {{"signature": "{first_set_new_apps_data[4]["app_signature"]["signature"]}",
                             "message": "{first_set_new_apps_data[4]["app_signature"]["message"]}"}}
                         }}""",
@@ -217,6 +218,7 @@ def test_index_app(app, mocker):
                         "_action": Action.CREATE,
                         "_metadata": f"""{{
                             "name": "{first_set_new_apps_data[5]["name"]}",
+                            "description": "{first_set_new_apps_data[5]["description"]}",
                             "app_signature": {{"signature": "{first_set_new_apps_data[5]["app_signature"]["signature"]}",
                             "message": "{first_set_new_apps_data[5]["app_signature"]["message"]}"}}
                         }}""",
@@ -271,13 +273,14 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 5
+        assert len(all_apps) == 7
         for expected_app in first_set_new_apps_data:
             found_matches = [
                 item
                 for item in all_apps
                 if item.address == expected_app["address"].lower()
             ]
+
             assert len(found_matches) == 1
             res = found_matches[0]
             assert res.user_id == expected_app["user_id"]
@@ -571,7 +574,7 @@ def test_index_app(app, mocker):
         # make sure no new rows were added
         assert len(all_apps) == 7
 
-    # Test valid delete app txs
+    # Test valid delete app txs - test that we delete all the apps
     tx_receipts = {
         "DeleteAppTx1": [
             {
@@ -625,6 +628,34 @@ def test_index_app(app, mocker):
                         "_userId": first_set_new_apps_data[3]["user_id"],
                         "_metadata": f"""{{"address": "{first_set_new_apps_data[3]["address"]}"}}""",
                         "_signer": f"user{first_set_new_apps_data[3]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteAppTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_action": Action.DELETE,
+                        "_userId": first_set_new_apps_data[4]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[4]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[4]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteAppTx6": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_action": Action.DELETE,
+                        "_userId": first_set_new_apps_data[5]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[5]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[5]['user_id']}wallet",
                     }
                 )
             },
@@ -708,7 +739,7 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 6
+        assert len(all_apps) == 8
         for expected_app in second_set_new_apps_data:
             found_matches = [
                 item
