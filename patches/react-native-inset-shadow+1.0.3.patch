@@ -1,0 +1,80 @@
+diff --git a/node_modules/react-native-inset-shadow/src/index.js b/node_modules/react-native-inset-shadow/src/index.js
+index 76dbbc3..e53b8c8 100644
+--- a/node_modules/react-native-inset-shadow/src/index.js
++++ b/node_modules/react-native-inset-shadow/src/index.js
+@@ -7,15 +7,15 @@ import Shadows from './shadows'
+ const InsetShadow = ({ 
+   children,
+   containerStyle,
+-  left,
+-  top,
+-  right,
+-  bottom,
+-  shadowColor,
+-  shadowRadius,
+-  shadowOffset,
+-  shadowOpacity,
+-  elevation
++  left = true,
++  top = true,
++  right = true,
++  bottom = true,
++  shadowColor = 'black',
++  shadowRadius = 3,
++  shadowOffset = 5,
++  shadowOpacity = 0.5,
++  elevation = 5
+ }) => {
+   const shadowProps = {
+     left,
+@@ -60,17 +60,4 @@ InsetShadow.propTypes = {
+   elevation: PropTypes.number,
+ }
+ 
+-InsetShadow.defaultProps = {
+-  containerStyle: {},
+-  left: true,
+-  top: true,
+-  right: true,
+-  bottom: true,
+-  shadowColor: 'black',
+-  shadowRadius: 3,
+-  shadowOffset: 5,
+-  shadowOpacity: 0.5,
+-  elevation: 5,
+-}
+-
+ export default InsetShadow
+diff --git a/node_modules/react-native-inset-shadow/src/shadows.js b/node_modules/react-native-inset-shadow/src/shadows.js
+index 098d975..78fd11b 100644
+--- a/node_modules/react-native-inset-shadow/src/shadows.js
++++ b/node_modules/react-native-inset-shadow/src/shadows.js
+@@ -3,7 +3,13 @@ import Shadow from './shadow'
+ 
+ const shadowTypes = ['left', 'top', 'right', 'bottom']
+ 
+-const Shadows = (props) => {
++const Shadows = ({
++  left = true,
++  top = true,
++  right = true,
++  bottom = true,
++  ...props
++}) => {
+   return shadowTypes.map((shadow, i) => {
+     if(!props[shadow]) {
+       return null
+@@ -22,12 +28,4 @@ const Shadows = (props) => {
+   })
+ }
+ 
+-// default to show all edges
+-Shadows.defaultProps = {
+-  left: true,
+-  top: true,
+-  right: true,
+-  bottom: true
+-}
+-
+ export default Shadows
+\ No newline at end of file
