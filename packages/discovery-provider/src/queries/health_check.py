@@ -51,19 +51,15 @@ def health_check():
         ),
         "plays_count_max_drift": request.args.get("plays_count_max_drift", type=int),
         "reward_manager_max_drift": request.args.get(
-            "reward_manager_max_drift", type=int, default=300
+            "reward_manager_max_drift", type=int
         ),
-        "user_bank_max_drift": request.args.get(
-            "user_bank_max_drift", type=int, default=300
-        ),
-        "spl_token_max_drift": request.args.get(
-            "spl_token_max_drift", type=int, default=300
-        ),
+        "user_bank_max_drift": request.args.get("user_bank_max_drift", type=int),
+        "spl_token_max_drift": request.args.get("spl_token_max_drift", type=int),
         "payment_router_max_drift": request.args.get(
-            "payment_router_max_drift", type=int, default=300
+            "payment_router_max_drift", type=int
         ),
         "aggregate_tips_max_drift": request.args.get(
-            "aggregate_tips_max_drift", type=int, default=300
+            "aggregate_tips_max_drift", type=int
         ),
     }
     try:
