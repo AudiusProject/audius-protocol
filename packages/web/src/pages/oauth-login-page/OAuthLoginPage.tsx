@@ -191,6 +191,7 @@ export const OAuthLoginPage = () => {
     setIsSubmitting(true)
     let signInResponse: SignInResponse
     try {
+      audiusBackendInstance.waitForLibsInit()
       const fpResponse = await fingerprintClient.identify(emailInput, 'web')
       signInResponse = await authService.signIn(
         emailInput,
@@ -219,20 +220,31 @@ export const OAuthLoginPage = () => {
       await authorize({
         account: account.user
       })
-    } catch (err) {
+    } catch (err: any) {
       const error = String(err)
+      const statusCode = err.response?.status
       if (error.includes('403')) {
         setIsSubmitting(false)
         setOtpEmail(emailInput)
         toggleOtpUI(true)
-        return
-      } else if (error.includes('404') || error.includes('401')) {
+      } else if (
+        statusCode === 401 ||
+        statusCode === 404 ||
+        error.includes('invalid user')
+      ) {
         setIsSubmitting(false)
         setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
-        return
+      } else if (statusCode === 400) {
+        setIsSubmitting(false)
+        setAndLogInvalidCredentialsError()
+      } else {
+        setIsSubmitting(false)
+        setAndLogGeneralSubmitError(
+          false,
+          messages.miscError,
+          err instanceof Error ? err : undefined
+        )
       }
-      setIsSubmitting(false)
-      setAndLogInvalidCredentialsError()
     }
   }
 
