@@ -83,7 +83,7 @@ export class DiscoveryNodeSelectorService {
     const list = this.remoteConfigInstance.getRemoteVar(remoteVarKey)
     if (list) {
       try {
-        return new Set<string>(list.split(','))
+        return new Set<string>(list.split(',').map((s) => s.trim()))
       } catch (e) {
         console.error(e)
         return null

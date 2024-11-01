@@ -285,7 +285,15 @@ export const ComposerInput = (props: ComposerInputProps) => {
     submittedRef.current = false
     setUserMentions([])
     setUserIdMap({})
-  }, [getUserMentions, linkEntities, onSubmit, restoreLinks, userIdMap, value])
+  }, [
+    blurOnSubmit,
+    getUserMentions,
+    linkEntities,
+    onSubmit,
+    restoreLinks,
+    userIdMap,
+    value
+  ])
 
   // Submit when pressing enter while not holding shift
   const handleKeyDown = useCallback(

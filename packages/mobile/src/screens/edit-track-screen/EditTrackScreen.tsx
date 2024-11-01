@@ -83,7 +83,9 @@ const useEditTrackSchema = () => {
               .string()
               .regex(/^T-?\d{3}.?\d{3}.?\d{3}.?-?\d$/i, errorMessages.iswc)
               .nullable()
-          )
+          ),
+          cover_original_song_title: z.optional(z.string().nullable()),
+          cover_original_artist: z.optional(z.string().nullable())
         })
         .refine(
           (values) => {
@@ -254,12 +256,19 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       const {
         licenseType: ignoredLicenseType,
         trackArtwork: ignoredTrackArtwork,
+        isCover,
         ...formValues
       } = values
 
       const metadata: TrackMetadataForUpload = {
         ...formValues,
         bpm: formValues.bpm ? Number(formValues.bpm) : null
+      }
+
+      if (isCover) {
+        metadata.cover_original_song_title =
+          metadata.cover_original_song_title ?? ''
+        metadata.cover_original_artist = metadata.cover_original_artist ?? ''
       }
 
       // If track is not unlisted and one of the unlisted visibility fields is false, set to true.

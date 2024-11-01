@@ -62,12 +62,12 @@ import {
     StemParentFromJSONTyped,
     StemParentToJSON,
 } from './StemParent';
-import type { TrackArtwork } from './TrackArtwork';
+import type { TrackArtworkFull } from './TrackArtworkFull';
 import {
-    TrackArtworkFromJSON,
-    TrackArtworkFromJSONTyped,
-    TrackArtworkToJSON,
-} from './TrackArtwork';
+    TrackArtworkFullFromJSON,
+    TrackArtworkFullFromJSONTyped,
+    TrackArtworkFullToJSON,
+} from './TrackArtworkFull';
 import type { TrackSegment } from './TrackSegment';
 import {
     TrackSegmentFromJSON,
@@ -89,10 +89,10 @@ import {
 export interface SearchTrackFull {
     /**
      * 
-     * @type {TrackArtwork}
+     * @type {TrackArtworkFull}
      * @memberof SearchTrackFull
      */
-    artwork: TrackArtwork;
+    artwork: TrackArtworkFull;
     /**
      * 
      * @type {string}
@@ -596,7 +596,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'artwork': TrackArtworkFromJSON(json['artwork']),
+        'artwork': TrackArtworkFullFromJSON(json['artwork']),
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': json['genre'],
         'id': json['id'],
@@ -684,7 +684,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
     }
     return {
         
-        'artwork': TrackArtworkToJSON(value.artwork),
+        'artwork': TrackArtworkFullToJSON(value.artwork),
         'description': value.description,
         'genre': value.genre,
         'id': value.id,

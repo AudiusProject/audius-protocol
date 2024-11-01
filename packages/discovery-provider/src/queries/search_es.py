@@ -106,7 +106,7 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     is_auto_complete = args.get("is_auto_complete")
     only_downloadable = args.get("only_downloadable", False)
-    include_purchaseable = args.get("include_purchaseable", True)
+    include_purchaseable = args.get("include_purchaseable", False)
     genres = format_genres(args.get("genres", []))
     moods = format_moods(args.get("moods", []))
     bpm_min = args.get("bpm_min")
@@ -266,7 +266,7 @@ def search_tags_es(args: dict):
 
     only_downloadable = False
     include_purchaseable = (
-        parse_bool_param(args.get("include_purchaseable", True)) or True
+        parse_bool_param(args.get("include_purchaseable", False)) or False
     )
     only_verified = parse_bool_param(args.get("is_verified", False)) or False
     only_with_downloads = parse_bool_param(args.get("has_downloads", False)) or False
@@ -556,7 +556,7 @@ def track_dsl(
     only_downloadable=False,
     only_with_downloads=False,
     only_purchaseable=False,
-    include_purchaseable=True,
+    include_purchaseable=False,
     only_verified=False,
 ):
     dsl = {

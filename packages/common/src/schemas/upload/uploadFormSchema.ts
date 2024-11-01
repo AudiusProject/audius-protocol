@@ -94,7 +94,7 @@ const DDEXRightsController = z
   .strict()
 
 const premiumMetadataSchema = z.object({
-  is_stream_gated: z.optional(z.boolean()),
+  is_stream_gated: z.optional(z.boolean()).nullable(),
   stream_conditions: z
     .optional(
       z.union([
@@ -105,7 +105,7 @@ const premiumMetadataSchema = z.object({
       ])
     )
     .nullable(),
-  is_download_gated: z.optional(z.boolean()),
+  is_download_gated: z.optional(z.boolean()).nullable(),
   download_conditions: z
     .optional(
       z.union([

@@ -16,6 +16,16 @@ playlist_artwork = ns.model(
     },
 )
 
+playlist_artwork_full = ns.model(
+    "playlist_artwork_full",
+    {
+        "150x150": fields.String,
+        "480x480": fields.String,
+        "1000x1000": fields.String,
+        "mirrors": fields.List(fields.String),
+    },
+)
+
 access = ns.model(
     "access",
     {
@@ -60,6 +70,7 @@ full_playlist_without_tracks_model = ns.clone(
     "playlist_full_without_tracks",
     playlist_model,
     {
+        "artwork": fields.Nested(playlist_artwork_full, allow_null=True),
         "blocknumber": fields.Integer(required=True),
         "created_at": fields.String(required=True),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),

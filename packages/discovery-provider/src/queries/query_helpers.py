@@ -10,7 +10,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 
 from src import exceptions
-from src.api.v1 import helpers as v1Helpers
 from src.gated_content.content_access_checker import content_access_checker
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
@@ -293,20 +292,6 @@ def populate_user_metadata(
     for user in users:
         user_id = user["user_id"]
 
-        # Convert image cid to cids for each image size variant
-        profile_cid = user.get("profile_picture_sizes")
-        if profile_cid:
-            profile_cids = v1Helpers.get_image_cids(
-                user, profile_cid, v1Helpers.PROFILE_PICTURE_SIZES
-            )
-            user["profile_picture_cids"] = profile_cids
-        cover_cid = user.get("cover_photo_sizes")
-        if cover_cid:
-            cover_cids = v1Helpers.get_image_cids(
-                user, cover_cid, v1Helpers.PROFILE_COVER_PHOTO_SIZES
-            )
-            user["cover_photo_cids"] = cover_cids
-
         user_balance = balance_dict.get(user_id, {})
         user[response_name_constants.track_count] = count_dict.get(user_id, {}).get(
             response_name_constants.track_count, 0
@@ -505,14 +490,6 @@ def populate_track_metadata(
 
     for track in tracks:
         track_id = track["track_id"]
-
-        # Convert cover art cid to cids for each image size variant
-        cover_cid = track.get("cover_art_sizes")
-        if cover_cid:
-            cover_cids = v1Helpers.get_image_cids(
-                track["user"], cover_cid, v1Helpers.COVER_ART_SIZES
-            )
-            track["cover_art_cids"] = cover_cids
 
         if track_has_aggregates:
             aggregate_track = track.get("aggregate_track")
@@ -946,14 +923,6 @@ def populate_playlist_metadata(
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
-
-        # Convert cover art cid to cids for each image size variant
-        cover_cid = playlist.get("playlist_image_sizes_multihash")
-        if cover_cid:
-            cover_cids = v1Helpers.get_image_cids(
-                playlist["user"], cover_cid, v1Helpers.COVER_ART_SIZES
-            )
-            playlist["cover_art_cids"] = cover_cids
 
         playlist[response_name_constants.repost_count] = count_dict.get(
             playlist_id, {}

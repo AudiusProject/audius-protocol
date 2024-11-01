@@ -10,6 +10,8 @@ import {
 } from '@audius/harmony-native'
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
@@ -61,14 +63,18 @@ export const TrendingScreen = () => {
 
   return (
     <Screen url='Trending'>
-      <ScreenHeader text='Trending' icon={IconTrending}>
-        <TrendingFilterButton />
-      </ScreenHeader>
+      <ScreenPrimaryContent>
+        <ScreenHeader text='Trending' icon={IconTrending}>
+          <TrendingFilterButton />
+        </ScreenHeader>
+      </ScreenPrimaryContent>
       <ScreenContent>
-        <TopTabNavigator
-          screens={trendingScreens}
-          screenOptions={{ lazy: true }}
-        />
+        <ScreenSecondaryContent>
+          <TopTabNavigator
+            screens={trendingScreens}
+            screenOptions={{ lazy: true }}
+          />
+        </ScreenSecondaryContent>
       </ScreenContent>
     </Screen>
   )

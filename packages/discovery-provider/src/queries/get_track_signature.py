@@ -72,8 +72,8 @@ def get_authed_or_managed_user(
 # Returns None otherwise
 def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
+    is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
-    is_stream_gated = track["stream_conditions"] is not None
     user_data = args.get("user_data")
     user_id = args.get("user_id")
     user_signature = args.get("user_signature")
@@ -116,6 +116,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
+        is_stream_gated=is_stream_gated,
         stream_conditions=track["stream_conditions"],
         owner_id=track["owner_id"],
     )
@@ -148,7 +149,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
 # Returns None otherwise
 def get_track_download_signature(args: GetTrackDownloadSignature):
     track = args["track"]
-    is_download_gated = track["is_download_gated"]
+    is_download_gated = track["download_conditions"] is not None
     title = track["title"]
     is_original = args.get("is_original", False)
     filename = args.get("filename")
@@ -202,6 +203,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
+        is_download_gated=is_download_gated,
         download_conditions=track["download_conditions"],
         owner_id=track["owner_id"],
     )
