@@ -40,6 +40,7 @@ import { ConfirmationModal } from 'components/confirmation-modal'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
+import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
@@ -373,6 +374,7 @@ const ProfilePage = ({
               playTrack={playArtistTrack}
               pauseTrack={pauseArtistTrack}
               actions={tracksActions}
+              variant={LineupVariant.GRID}
             />
           )
         ) : null}

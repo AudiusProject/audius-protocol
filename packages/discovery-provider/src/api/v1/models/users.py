@@ -22,7 +22,26 @@ profile_picture = ns.model(
     {"150x150": fields.String, "480x480": fields.String, "1000x1000": fields.String},
 )
 
+profile_picture_full = ns.model(
+    "profile_picture_full",
+    {
+        "150x150": fields.String,
+        "480x480": fields.String,
+        "1000x1000": fields.String,
+        "mirrors": fields.List(fields.String),
+    },
+)
+
 cover_photo = ns.model("cover_photo", {"640x": fields.String, "2000x": fields.String})
+
+cover_photo_full = ns.model(
+    "cover_photo_full",
+    {
+        "640x": fields.String,
+        "2000x": fields.String,
+        "mirrors": fields.List(fields.String),
+    },
+)
 
 user_model = ns.model(
     "user",
@@ -69,6 +88,8 @@ user_model_full = ns.clone(
     "user_full",
     user_model,
     {
+        "profile_picture": fields.Nested(profile_picture_full, allow_null=True),
+        "cover_photo": fields.Nested(cover_photo_full, allow_null=True),
         "balance": fields.String(required=True),
         "associated_wallets_balance": fields.String(required=True),
         "total_balance": fields.String(required=True),

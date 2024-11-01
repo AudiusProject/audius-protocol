@@ -7,7 +7,10 @@ import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { createUploadTrackMetadataSchema } from '../tracks/types'
+import {
+  createUploadTrackMetadataSchema,
+  USDCPurchaseConditions
+} from '../tracks/types'
 
 export const getAlbumSchema = z.object({
   userId: HashId.optional(),
@@ -46,7 +49,11 @@ export const createUploadAlbumMetadataSchema = () =>
       artists: z.optional(z.array(DDEXResourceContributor).nullable()),
       copyrightLine: z.optional(DDEXCopyright.nullable()),
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable())
+      parentalWarningType: z.optional(z.string().nullable()),
+      isStreamGated: z.optional(z.boolean()),
+      streamConditions: z.optional(USDCPurchaseConditions).nullable(),
+      isDownloadGated: z.optional(z.boolean()),
+      downloadConditions: z.optional(USDCPurchaseConditions).nullable()
     })
     .strict()
 
@@ -58,7 +65,11 @@ const createAlbumTrackMetadataSchema = () =>
   createUploadTrackMetadataSchema().partial({
     genre: true,
     mood: true,
-    tags: true
+    tags: true,
+    isStreamGated: true,
+    streamConditions: true,
+    isDownloadable: true,
+    downloadConditions: true
   })
 
 export const createUploadAlbumSchema = () =>

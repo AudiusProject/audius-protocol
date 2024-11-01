@@ -51,7 +51,10 @@ export const EditTrackModalScreen = () => {
       trackImage && isImageUriSource(trackImage.source)
         ? trackImage.source.uri
         : undefined,
-    isUpload: false
+    isUpload: false,
+    isCover:
+      track.cover_original_artist !== null &&
+      track.cover_original_song_title !== null
   }
 
   return (
