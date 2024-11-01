@@ -71,9 +71,7 @@ export const TrackPriceField = () => {
             ))}
           </Box>
         </Box>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </BoxedTextField>
   )
 }

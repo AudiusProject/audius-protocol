@@ -34,20 +34,18 @@ export const AdvancedScreen = () => {
       variant='white'
     >
       <SubmenuList>
-        {isUnlisted ? <></> : <ReleaseDateField />}
-        {isUpload ? <></> : <KeyBpmField />}
+        {isUnlisted ? null : <ReleaseDateField />}
+        {isUpload ? null : <KeyBpmField />}
         {isCommentsEnabled ? (
           <SwitchRowField
             name='comments_disabled'
             label={messages.disableComments.header}
             description={messages.disableComments.description}
           />
-        ) : (
-          <></>
-        )}
+        ) : null}
         <LicenseTypeField />
         <IsrcField />
-        {isRightsAndCoversEnabled ? <CoverAttributionField /> : <></>}
+        {isRightsAndCoversEnabled ? <CoverAttributionField /> : null}
       </SubmenuList>
     </FormScreen>
   )
