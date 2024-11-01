@@ -181,7 +181,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
 
   const isCover = useMemo(() => {
     // If either is not null or undefined, then it is a cover
-    return !!(coverOriginalSongTitle != null || coverOriginalArtist != null)
+    return coverOriginalSongTitle != null || coverOriginalArtist != null
   }, [coverOriginalSongTitle, coverOriginalArtist])
 
   const initialValues = useMemo(() => {
