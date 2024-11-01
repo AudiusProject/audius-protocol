@@ -7,6 +7,6 @@ index 7279c2a..d798b42 100644
  
    _callListeners = (...args: any) => {
 -    this._listeners.forEach(listener => listener(...args));
-+    this._listeners.forEach(listener => listener?(...args));
++    this._listeners.forEach(listener => listener?.(...args));
    };
  }
