@@ -212,7 +212,7 @@ async function getNewBlasts(
       .from('chat_blast')
       .whereRaw(
         `date_trunc('milliseconds', chat_blast.created_at) > ?
-        AND chat_blast.created_at <= NOW() - INTERVAL '30 seconds'
+        AND chat_blast.created_at <= NOW() - INTERVAL '${config.blastDelay} seconds'
         ORDER BY chat_blast.created_at ASC
         LIMIT 1`,
         lastIndexedBlastTimestamp
