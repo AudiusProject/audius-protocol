@@ -103,8 +103,8 @@ const AdvancedFormSchema = z
     [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
     [BPM]: z.optional(z.string().nullable()),
     [MUSICAL_KEY]: z.optional(z.string().nullable()),
-    [COVER_ORIGINAL_SONG_TITLE]: z.optional(z.string()),
-    [COVER_ORIGINAL_ARTIST]: z.optional(z.string()),
+    [COVER_ORIGINAL_SONG_TITLE]: z.optional(z.string().nullable()),
+    [COVER_ORIGINAL_ARTIST]: z.optional(z.string().nullable()),
     [IS_COVER]: z.optional(z.boolean())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {

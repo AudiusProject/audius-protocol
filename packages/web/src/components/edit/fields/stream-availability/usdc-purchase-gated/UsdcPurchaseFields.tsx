@@ -293,13 +293,9 @@ const PriceField = (props: PriceFieldProps) => {
     [humanizedValue]
   )
 
-  const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback(
-      (e) => {
-        setIsFullyOwnedByUser(e.target.checked)
-      },
-      [setIsFullyOwnedByUser]
-    )
+  const handleBoxClick = useCallback(() => {
+    setIsFullyOwnedByUser(!isFullyOwnedByUser)
+  }, [isFullyOwnedByUser, setIsFullyOwnedByUser])
 
   return (
     <BoxedTextField
@@ -315,13 +311,9 @@ const PriceField = (props: PriceFieldProps) => {
       disabled={disabled}
     >
       {shouldShowRightsDeclaration && (
-        <Box>
+        <Box onClick={handleBoxClick}>
           <Flex alignItems='center' justifyContent='flex-start' mb='s' gap='xs'>
-            <Checkbox
-              name={IS_OWNED_BY_USER}
-              checked={!!isFullyOwnedByUser}
-              onChange={handleCheckboxChange}
-            />
+            <Checkbox name={IS_OWNED_BY_USER} checked={!!isFullyOwnedByUser} />
             <Text variant='title'>
               {messages.publishingRights.checkboxLabel}
             </Text>
