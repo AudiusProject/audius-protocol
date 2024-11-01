@@ -47,7 +47,20 @@ export const createAuthService = ({
     visitorId?: string,
     otp?: string
   ) => {
-    return { walletAddress: '' }
+    // TODO: Support MM here
+    await hedgehogInstance.login({
+      email,
+      username: email,
+      password,
+      visitorId,
+      otp
+    })
+
+    const walletAddress = hedgehogInstance.wallet?.getAddressString()
+    if (!walletAddress) {
+      throw new Error('No wallet returned from successful login call')
+    }
+    return { walletAddress }
   }
 
   const signOut = async () => {

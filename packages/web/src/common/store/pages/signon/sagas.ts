@@ -425,11 +425,13 @@ function* validateEmail(
   }
 }
 
-// TODO-NOW: remove
-// function* refreshHedgehogWallet() {
-//   const hedgehogInstance = yield* getContext('hedgehogInstance')
-//   yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
-// }
+function* refreshHedgehogWallet() {
+  const authService = yield* getContext('authService')
+  yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.refreshWallet
+  ])
+}
 
 function* signUp() {
   const signOn = yield* select(getSignOn)
@@ -660,9 +662,8 @@ function* signUp() {
         }
       },
       function* () {
-        // TODO-NOW
         // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-        // yield* call(refreshHedgehogWallet)
+        yield* call(refreshHedgehogWallet)
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* fetchAccountAsync({ isSignUp: true })
         yield* put(signOnActions.followArtists())
@@ -779,6 +780,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const authService = yield* getContext('authService')
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isElectron = yield* getContext('isElectron')
   const clientOrigin = isNativeMobile
@@ -795,23 +797,19 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       email ?? signOn.email.value,
       clientOrigin
     )
-    const signInResponse = yield* call(
-      audiusBackendInstance.signIn,
-      email ?? signOn.email.value,
-      password ?? signOn.password.value,
-      visitorId ?? fpResponse?.visitorId,
-      otp ?? signOn.otp.value
-    )
 
-    // Login failed entirely (no wallet returned)
-    if (signInResponse.error || !signInResponse.wallet) {
-      yield* put(
-        signOnActions.signInFailed(
-          signInResponse.error,
-          signInResponse.phase,
-          false
-        )
+    let signInResponse
+    try {
+      signInResponse = yield* call(
+        authService.signIn,
+        email ?? signOn.email.value,
+        password ?? signOn.password.value,
+        visitorId ?? fpResponse?.visitorId,
+        otp ?? signOn.otp.value
       )
+    } catch (err) {
+      // Login failed entirely (no wallet returned)
+      yield* put(signOnActions.signInFailed(String(err), 'FIND_WALLET', false))
       const trackEvent = make(Name.SIGN_IN_FINISH, {
         status: 'invalid credentials'
       })
@@ -819,13 +817,10 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
-    // TODO-NOW
-    // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-    // yield* call(refreshHedgehogWallet)
     const account: AccountUserMetadata | null = yield* call(
       userApiFetchSaga.getUserAccount,
       {
-        wallet: signInResponse.wallet
+        wallet: signInResponse.walletAddress
       }
     )
 
@@ -879,8 +874,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     if (failure) {
       yield* put(
         signOnActions.signInFailed(
-          "Couldn't get account",
-          failure.payload.reason,
+          `Couldn't get account: ${failure.payload.reason}`,
+          'FIND_USER',
           failure.payload.reason === 'ACCOUNT_DEACTIVATED'
         )
       )

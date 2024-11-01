@@ -1,7 +1,6 @@
 import {
   LocalStorage,
   AudiusBackend,
-  HedgehogInstance,
   AuthService
 } from '@audius/common/services'
 
