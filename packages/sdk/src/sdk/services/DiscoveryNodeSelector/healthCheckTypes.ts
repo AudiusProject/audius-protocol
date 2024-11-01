@@ -71,73 +71,60 @@ export type HealthCheckResponseData = DeepPartial<{
   num_users_in_lazy_balance_refresh_queue: number
   number_of_cpus: number
   openresty_public_key: string
-  plays: {
-    is_unhealthy: boolean
-    oldest_unarchived_play_created_at: string
-    time_diff_general: number
-    tx_info: {
-      slot_diff: number
-      time_diff: number
-      tx_info: {
-        chain_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-        db_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-      }
-    }
-  }
-  reactions: {
-    indexing_delta: number
-    is_unhealthy: boolean
-    reaction_delta: number
-  }
   received_bytes_per_sec: number
   redis_total_memory: number
-  rewards_manager: {
-    is_unhealthy: number
-    time_diff_general: number
-    tx_info: {
-      slot_diff: number
-      time_diff: number
+  service: string
+  solana_indexers: {
+    aggregate_tips: {
+      is_healthy: boolean
+      last_completed_at: number
+      last_tx: string
+      since_last_completed_at: number
+    }
+    payment_router: {
+      is_healthy: boolean
+      last_completed_at: number
+      last_tx: string
+      since_last_completed_at: number
+    }
+    plays: {
+      is_unhealthy: boolean
+      oldest_unarchived_play_created_at: string
+      time_diff_general: number
       tx_info: {
-        chain_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-        db_tx: {
-          signature: string
-          slot: number
-          timestamp: number
+        slot_diff: number
+        time_diff: number
+        tx_info: {
+          chain_tx: {
+            signature: string
+            slot: number
+            timestamp: number
+          }
+          db_tx: {
+            signature: string
+            slot: number
+            timestamp: number
+          }
         }
       }
     }
-  }
-  service: string
-  spl_audio_info: {
-    is_unhealthy: boolean
-    time_diff_general: number
-    tx_info: {
-      slot_diff: number
-      time_diff: number
-      tx_info: {
-        chain_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-        db_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-      }
+    reward_manager: {
+      is_healthy: boolean
+      last_completed_at: number
+      last_tx: string
+      since_last_completed_at: number
+    }
+    spl_token: {
+      is_healthy: boolean
+      last_completed_at: number
+      last_tx: string
+      since_last_completed_at: number
+    }
+    user_bank: {
+      is_healthy: boolean
+      last_completed_at: number
+      last_tx: string
+      since_last_completed_at: number
     }
   }
   total_memory: number
@@ -147,26 +134,6 @@ export type HealthCheckResponseData = DeepPartial<{
   url: string
   used_memory: number
   user_balances_age_sec: number
-  user_bank: {
-    is_unhealthy: boolean
-    time_diff_general: number
-    tx_info: {
-      slot_diff: number
-      time_diff: number
-      tx_info: {
-        chain_tx: {
-          signature: string
-          slot: number
-          timestamp: number
-        }
-        db_tx: {
-          signature: number
-          slot: string
-          timestamp: number
-        }
-      }
-    }
-  }
   version: string
   web: {
     blockhash: string
