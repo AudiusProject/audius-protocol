@@ -1,7 +1,8 @@
 import {
   LocalStorage,
   AudiusBackend,
-  HedgehogInstance
+  HedgehogInstance,
+  AuthService
 } from '@audius/common/services'
 
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
@@ -20,7 +21,7 @@ const removeLocalStorageItems = async (localStorage: LocalStorage) => {
 export const signOut = async (
   audiusBackendInstance: AudiusBackend,
   localStorage: LocalStorage,
-  hedgehogInstance: HedgehogInstance
+  authService: AuthService
 ) => {
   await removeLocalStorageItems(localStorage)
   await localStorage.clearAudiusUserWalletOverride()
@@ -28,8 +29,9 @@ export const signOut = async (
   await localStorage.clearAudiusAccountUser()
   await localStorage.clearPlaybackRate()
   removeHasRequestedBrowserPermission()
+  // TODO-NOW
   await audiusBackendInstance.signOut()
-  await hedgehogInstance.logout()
+  await authService.signOut()
   clearTheme()
 
   window.location.reload()

@@ -425,10 +425,11 @@ function* validateEmail(
   }
 }
 
-function* refreshHedgehogWallet() {
-  const hedgehogInstance = yield* getContext('hedgehogInstance')
-  yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
-}
+// TODO-NOW: remove
+// function* refreshHedgehogWallet() {
+//   const hedgehogInstance = yield* getContext('hedgehogInstance')
+//   yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
+// }
 
 function* signUp() {
   const signOn = yield* select(getSignOn)
@@ -659,8 +660,9 @@ function* signUp() {
         }
       },
       function* () {
+        // TODO-NOW
         // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-        yield* call(refreshHedgehogWallet)
+        // yield* call(refreshHedgehogWallet)
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* fetchAccountAsync({ isSignUp: true })
         yield* put(signOnActions.followArtists())
@@ -817,8 +819,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
+    // TODO-NOW
     // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-    yield* call(refreshHedgehogWallet)
+    // yield* call(refreshHedgehogWallet)
     const account: AccountUserMetadata | null = yield* call(
       userApiFetchSaga.getUserAccount,
       {

@@ -5,7 +5,7 @@ import { Location } from 'history'
 import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
 
-import { GetWalletAddressesResult, HedgehogInstance } from '~/services'
+import { AuthService } from '~/services'
 
 import {
   AllTrackingEvents,
@@ -78,8 +78,7 @@ export type CommonStoreContext = {
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
-  hedgehogInstance: HedgehogInstance
-  getWalletAddresses: () => Promise<GetWalletAddressesResult>
+  authService: AuthService
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]
