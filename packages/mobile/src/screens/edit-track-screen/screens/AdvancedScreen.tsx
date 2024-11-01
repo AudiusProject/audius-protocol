@@ -22,6 +22,9 @@ export const AdvancedScreen = () => {
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
+  )
 
   return (
     <FormScreen
@@ -31,20 +34,18 @@ export const AdvancedScreen = () => {
       variant='white'
     >
       <SubmenuList>
-        {isUnlisted ? <></> : <ReleaseDateField />}
-        {isUpload ? <></> : <KeyBpmField />}
+        {isUnlisted ? null : <ReleaseDateField />}
+        {isUpload ? null : <KeyBpmField />}
         {isCommentsEnabled ? (
           <SwitchRowField
             name='comments_disabled'
             label={messages.disableComments.header}
             description={messages.disableComments.description}
           />
-        ) : (
-          <></>
-        )}
+        ) : null}
         <LicenseTypeField />
         <IsrcField />
-        <CoverAttributionField />
+        {isRightsAndCoversEnabled ? <CoverAttributionField /> : null}
       </SubmenuList>
     </FormScreen>
   )
