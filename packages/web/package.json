@@ -132,7 +132,7 @@
     "electron-log": "5.2.0",
     "electron-updater": "6.3.9",
     "exif-parser": "0.1.12",
-    "formik": "2.4.1",
+    "formik": "2.4.6",
     "gl-audio-analyser": "1.0.3",
     "gl-buffer": "2.1.2",
     "gl-mat4": "1.2.0",
