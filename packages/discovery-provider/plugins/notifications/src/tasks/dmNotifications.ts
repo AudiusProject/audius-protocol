@@ -188,20 +188,11 @@ async function getNewBlasts(
   }
 
   // First attempt with last indexed blast and user id
-  let messages = await fetchMessages(
+  const messages = await fetchMessages(
     'chat_blast.blast_id = ?',
     '?::INTEGER IS NULL OR to_user_id > ?',
     [lastIndexedBlastId, userId, userId, config.blastUserBatchSize]
   )
-
-  // If no messages found, move to next blast id, with no user id conditions
-  if (!messages?.length) {
-    messages = await fetchMessages(
-      "date_trunc('milliseconds', chat_blast.created_at) > ? ORDER BY chat_blast.created_at ASC LIMIT 1",
-      '1=1',
-      [lastIndexedBlastTimestamp, config.blastUserBatchSize]
-    )
-  }
 
   // Need to calculate pending chat ids for each message for deep linking
   const formattedMessages = messages?.map((message) => {
@@ -211,7 +202,7 @@ async function getNewBlasts(
     }
   })
 
-  // If still no messages after 2nd fetch, attempt to skip to the next blast.
+  // If no messages found, skip to the next blast.
   // If there isn't one, then we've reached the end of the blast table. Cursor
   // should stay the same until new blasts come in.
   let newBlastIdCursor
@@ -220,7 +211,10 @@ async function getNewBlasts(
       .select('blast_id')
       .from('chat_blast')
       .whereRaw(
-        "date_trunc('milliseconds', chat_blast.created_at) > ?",
+        `date_trunc('milliseconds', chat_blast.created_at) > ?
+        AND chat_blast.created_at <= NOW() - INTERVAL '30 seconds'
+        ORDER BY chat_blast.created_at ASC
+        LIMIT 1`,
         lastIndexedBlastTimestamp
       )
       .orderBy('chat_blast.created_at', 'asc')
