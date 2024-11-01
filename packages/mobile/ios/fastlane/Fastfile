@@ -40,7 +40,7 @@ platform :ios do
 
   desc "Get latest Audius version in the app store"
   private_lane :get_latest_app_store_version_number do
-    uri = URI("http://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
+    uri = URI("https://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
     response = Net::HTTP.get_response(uri)
     response_body = JSON.parse(response.body)
     version = response_body["results"][0]["version"]
