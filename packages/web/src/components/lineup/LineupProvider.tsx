@@ -68,7 +68,8 @@ const totalTileHeight = {
   main: 152 + 16,
   section: 124 + 16,
   condensed: 124 + 8,
-  playlist: 350
+  playlist: 350,
+  grid: 140
 }
 
 const innerHeight = typeof window !== 'undefined' ? window.innerHeight : 0
