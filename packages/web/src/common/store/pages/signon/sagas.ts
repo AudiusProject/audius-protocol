@@ -18,7 +18,8 @@ import {
   IntKeys,
   FeatureFlags,
   MAX_HANDLE_LENGTH,
-  getCityAndRegion
+  getCityAndRegion,
+  SignInResponse
 } from '@audius/common/services'
 import {
   accountActions,
@@ -798,7 +799,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       clientOrigin
     )
 
-    let signInResponse
+    let signInResponse: SignInResponse
     try {
       signInResponse = yield* call(
         authService.signIn,
