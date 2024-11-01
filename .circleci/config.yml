@@ -324,10 +324,8 @@ workflows:
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
-            .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
-            package-lock.json run-harmony-workflow true
             .* run-release-workflow false
             .* run-integration-workflow true
             packages/discovery-provider/.* run-discovery-workflow true
@@ -338,11 +336,9 @@ workflows:
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
             packages/common/.* run-protocol-dashboard-workflow true
-            packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
-            packages/eslint-config-audius/.* run-harmony-workflow true
             packages/sdk/.* run-sdk-workflow true
             packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
@@ -386,10 +382,8 @@ workflows:
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
-            .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
-            package-lock.json run-harmony-workflow true
             .* run-release-workflow false
             .* run-integration-workflow true
             packages/discovery-provider/.* run-discovery-workflow true
@@ -399,11 +393,9 @@ workflows:
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
-            packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
-            packages/eslint-config-audius/.* run-harmony-workflow true
             packages/sdk/.* run-sdk-workflow true
             packages/sdk/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
@@ -452,7 +444,6 @@ workflows:
           mapping: |
             .* run-web-workflow true
             .* run-mobile-workflow true
-            .* run-harmony-workflow true
             .* run-embed-workflow true
             .* run-protocol-dashboard-workflow true
           requires:
