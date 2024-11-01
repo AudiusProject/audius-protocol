@@ -137,7 +137,7 @@ export const TrackScreen = () => {
         <VirtualizedScrollView>
           <Flex p='m' gap='2xl'>
             {/* Track Details */}
-            <ScreenPrimaryContent>
+            <ScreenPrimaryContent skeleton={<TrackScreenSkeleton />}>
               <TrackScreenDetailsTile
                 track={track}
                 user={user}

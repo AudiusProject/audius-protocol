@@ -66,6 +66,7 @@ import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
+import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
 import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
@@ -372,7 +373,7 @@ export const CollectionScreenDetailsTile = ({
 
   return (
     <Paper mb='2xl' style={{ overflow: 'hidden' }}>
-      <ScreenPrimaryContent>
+      <ScreenPrimaryContent skeleton={<CollectionScreenSkeleton />}>
         {renderDogEar()}
         <Flex p='l' gap='l' alignItems='center' w='100%'>
           <Text
