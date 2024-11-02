@@ -187,7 +187,7 @@ const TrackEditForm = (
     // we will listen to all changes from the user, rather than just a new image from
     // the backend.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updatedArtwork?.url, setArtworkValue])
+  }, [updatedArtwork, setArtworkValue])
 
   return (
     <Form id={formId}>

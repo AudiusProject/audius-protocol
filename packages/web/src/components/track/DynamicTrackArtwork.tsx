@@ -3,7 +3,7 @@ import { SquareSizes, statusIsNotFinalized, ID } from '@audius/common/models'
 import cn from 'classnames'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './DynamicTrackArtwork.module.css'
 
@@ -29,7 +29,10 @@ export const DynamicTrackArtwork = ({
   size = DynamicTrackArtworkSize.DEFAULT
 }: DynamicTrackArtworkProps) => {
   const { status, data: track } = useGetTrackById({ id })
-  const image = useTrackCoverArt2(id, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt({
+    trackId: id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const loading = statusIsNotFinalized(status) || !track
   return loading ? null : (
     <DynamicImage

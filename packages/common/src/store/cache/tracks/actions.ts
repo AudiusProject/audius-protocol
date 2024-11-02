@@ -1,6 +1,7 @@
+import { TrackMetadataForUpload } from '~/store'
 import { Nullable } from '~/utils'
 
-import { ID, SquareSizes, TrackMetadata, WidthSizes } from '../../../models'
+import { ID, SquareSizes, WidthSizes } from '../../../models'
 export const EDIT_TRACK = 'CACHE/TRACKS/EDIT_TRACK'
 export const EDIT_TRACK_SUCCEEDED = 'CACHE/TRACKS/EDIT_TRACK_SUCCEEDED'
 export const EDIT_TRACK_FAILED = 'CACHE/TRACKS/EDIT_TRACK_FAILED'
@@ -20,7 +21,7 @@ export const SET_TRACK_COMMENT_COUNT = 'CACHE/TRACKS/SET_TRACK_COMMENT_COUNT'
 
 export const SET_PINNED_COMMENT_ID = 'CACHE/TRACKS/SET_PINNED_COMMENT_ID'
 
-export function editTrack(trackId: ID, formFields: TrackMetadata) {
+export function editTrack(trackId: ID, formFields: TrackMetadataForUpload) {
   return { type: EDIT_TRACK, trackId, formFields }
 }
 

@@ -75,11 +75,10 @@ const Artwork = ({
   isLoading,
   coverArtSizes
 }: ArtworkProps) => {
-  const image = useTrackCoverArt(
+  const image = useTrackCoverArt({
     trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <div className={styles.artworkContainer}>

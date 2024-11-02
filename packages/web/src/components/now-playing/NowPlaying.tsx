@@ -228,19 +228,17 @@ const NowPlaying = g(
       title,
       track_id,
       owner_id,
-      _cover_art_sizes,
       has_current_user_saved,
       has_current_user_reposted,
       _co_sign
     } = displayInfo
 
     const { name, handle } = user
-    const image =
-      useTrackCoverArt(
-        track_id,
-        _cover_art_sizes,
-        SquareSizes.SIZE_480_BY_480
-      ) || _cover_art_sizes[SquareSizes.SIZE_480_BY_480]
+    const image = useTrackCoverArt({
+      // TODO(PAY-3570): What is going on with this type being a string?
+      trackId: typeof track_id === 'number' ? track_id : parseInt(track_id),
+      size: SquareSizes.SIZE_480_BY_480
+    })
 
     let playButtonStatus
     if (isBuffering) {

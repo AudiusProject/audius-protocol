@@ -33,7 +33,7 @@ import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import { CategoryView } from './types'
 
@@ -113,7 +113,10 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   const { id } = searchItem
   const { data: track, status } = useGetTrackById({ id })
 
-  const image = useTrackCoverArt2(track?.track_id, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt({
+    trackId: track?.track_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   if (status === Status.LOADING) return <RecentSearchSkeleton />
 

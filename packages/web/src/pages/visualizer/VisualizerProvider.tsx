@@ -39,13 +39,11 @@ const { getTheme } = themeSelectors
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 
 const Artwork = ({ track }: { track?: Track | null }) => {
-  const { track_id, _cover_art_sizes } = track || {}
-
-  const image = useTrackCoverArt(
-    track_id || -1,
-    _cover_art_sizes || null,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const { track_id } = track || {}
+  const image = useTrackCoverArt({
+    trackId: track_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   return <DynamicImage wrapperClassName={styles.artwork} image={image} />
 }
 

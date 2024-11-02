@@ -1,0 +1,122 @@
+import { useState, useEffect, useCallback } from 'react'
+
+import { SquareSizes, Track } from '~/models'
+import { Maybe } from '~/utils/typeUtils'
+
+// Initialize a global image cache
+const IMAGE_CACHE = new Map()
+
+export const useImageSize2 = ({
+  artwork,
+  targetSize,
+  defaultImage
+}: {
+  artwork: Maybe<Track['artwork']>
+  targetSize: SquareSizes
+  defaultImage: string
+}) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+  const preloadImage = (url: string) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.src = url
+      img.onload = () => resolve(url)
+      img.onerror = () => reject(url)
+    })
+  }
+
+  const fetchWithFallback = useCallback(
+    async (url: string) => {
+      const mirrors = [...(artwork?.mirrors ?? [])]
+      let currentUrl = url
+
+      while (mirrors.length > 0) {
+        try {
+          await preloadImage(currentUrl)
+          return currentUrl
+        } catch {
+          const nextMirror = mirrors.shift()
+          if (!nextMirror) throw new Error('No mirror found')
+          const currentHost = new URL(currentUrl).host
+          const nextHost = new URL(nextMirror).host
+          const newUrl = currentUrl.replace(currentHost, nextHost)
+          currentUrl = newUrl
+        }
+      }
+
+      throw new Error('Failed to fetch image from all mirrors')
+    },
+    [artwork?.mirrors]
+  )
+
+  const resolveImageUrl = useCallback(async () => {
+    if (!artwork) {
+      // console.log(`useImageSize: no artwork, loading`)
+      return
+    }
+    const targetUrl = artwork[targetSize]
+    if (!targetUrl) {
+      // console.log(`useImageSize: no target url for ${targetSize}`)
+      setImageUrl(defaultImage)
+      return
+    }
+
+    if (IMAGE_CACHE.has(targetUrl)) {
+      // console.log(`useImageSize: cache hit ${targetUrl}`)
+      setImageUrl(targetUrl)
+      return
+    }
+
+    // Check for smaller size in the cache
+    // If found, set the image url and preload the actual target url
+    const smallerSize = Object.keys(artwork).find(
+      (size) =>
+        parseInt(size) < parseInt(targetSize) &&
+        IMAGE_CACHE.has(artwork[size as SquareSizes])
+    ) as SquareSizes | undefined
+
+    if (smallerSize) {
+      // console.log(
+      //   `useImageSize: cache miss, found smaller ${targetUrl} ${smallerSize}`
+      // )
+      setImageUrl(artwork[smallerSize] ?? null)
+      const finalUrl = await fetchWithFallback(targetUrl)
+      IMAGE_CACHE.set(finalUrl, true)
+      setImageUrl(finalUrl)
+      return
+    }
+
+    // Check for larger size
+    // If found, set the image url to the larger size and return
+    const largerSize = Object.keys(artwork).find(
+      (size) =>
+        parseInt(size) > parseInt(targetSize) &&
+        IMAGE_CACHE.has(artwork[size as SquareSizes])
+    ) as SquareSizes | undefined
+
+    if (largerSize) {
+      // console.log(
+      //   `useImageSize: cache miss, found larger ${targetUrl} ${largerSize}`
+      // )
+      setImageUrl(artwork[largerSize] ?? null)
+      return
+    }
+
+    // Fetch image with fallback mirrors
+    try {
+      // console.log(`useImageSize: cache miss fetch original ${targetUrl}`)
+      const finalUrl = await fetchWithFallback(targetUrl)
+      IMAGE_CACHE.set(finalUrl, true)
+      setImageUrl(finalUrl)
+    } catch {
+      console.error(`Unable to load image ${targetUrl} after retries`)
+    }
+  }, [artwork, targetSize, fetchWithFallback, defaultImage])
+
+  useEffect(() => {
+    resolveImageUrl()
+  }, [resolveImageUrl])
+
+  return imageUrl ?? undefined
+}

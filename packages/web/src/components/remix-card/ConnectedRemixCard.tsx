@@ -35,11 +35,10 @@ const ConnectedRemixCard = g(({ track, user, goToRoute }) => {
     user._profile_picture_sizes,
     SquareSizes.SIZE_150_BY_150
   )
-  const coverArtImage = useTrackCoverArt(
-    track.track_id,
-    track._cover_art_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const coverArtImage = useTrackCoverArt({
+    trackId: track.track_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const goToTrackPage = useCallback(() => {
     goToRoute(track.permalink)
   }, [goToRoute, track])

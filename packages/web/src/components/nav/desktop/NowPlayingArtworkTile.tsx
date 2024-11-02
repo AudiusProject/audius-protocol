@@ -102,16 +102,10 @@ export const NowPlayingArtworkTile = () => {
     }
   })
 
-  const coverArtSizes = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?._cover_art_sizes ?? null
+  const trackCoverArtImage = useTrackCoverArt({
+    trackId: trackId ?? undefined,
+    size: SquareSizes.SIZE_480_BY_480
   })
-
-  const trackCoverArtImage = useTrackCoverArt(
-    trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_480_BY_480,
-    ''
-  )
 
   const handleShowVisualizer = useCallback(
     (event: MouseEvent) => {

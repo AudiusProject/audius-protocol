@@ -11,7 +11,7 @@ import {
 import { ChatBlast } from '@audius/sdk'
 
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { decodeHashId } from 'utils/hashIds'
 
 export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
@@ -28,7 +28,10 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
     decodedId,
     SquareSizes.SIZE_150_BY_150
   )
-  const trackArtwork = useTrackCoverArt2(decodedId, SquareSizes.SIZE_150_BY_150)
+  const trackArtwork = useTrackCoverArt({
+    trackId: decodedId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <Flex justifyContent='space-between' w='100%'>

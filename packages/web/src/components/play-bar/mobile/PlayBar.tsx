@@ -83,11 +83,11 @@ const PlayBar = ({
   })
 
   const image =
-    (useTrackCoverArt(
-      track ? track.track_id : null,
-      track ? track._cover_art_sizes : null,
-      SquareSizes.SIZE_150_BY_150
-    ) ||
+    (useTrackCoverArt({
+      trackId: track ? track.track_id : undefined,
+      size: SquareSizes.SIZE_150_BY_150,
+      defaultImage: ''
+    }) ||
       collectible?.imageUrl) ??
     collectible?.frameUrl ??
     collectible?.gifUrl

@@ -28,7 +28,7 @@ import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/Loading
 import Page from 'components/page/Page'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 const { deleteTrack, editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
@@ -61,7 +61,11 @@ export const EditTrackPage = (props: EditPageProps) => {
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
-    if (!metadata.artwork?.file) {
+    if (
+      metadata.artwork &&
+      'file' in metadata.artwork &&
+      !metadata.artwork?.file
+    ) {
       metadata.artwork = null
     }
     dispatch(editTrack(metadata.track_id, metadata))
@@ -74,10 +78,10 @@ export const EditTrackPage = (props: EditPageProps) => {
     dispatch(pushRoute(`/${track.user.handle}`))
   }
 
-  const coverArtUrl = useTrackCoverArt2(
-    track?.track_id,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+  const coverArtUrl = useTrackCoverArt({
+    trackId: track?.track_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const stemTracks = useSelector((state) => getStems(state, track?.track_id))
   const stemsAsUploads: StemUpload[] = stemTracks

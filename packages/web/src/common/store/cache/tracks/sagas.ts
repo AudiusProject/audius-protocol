@@ -8,7 +8,6 @@ import {
   Collection,
   ID,
   Remix,
-  TrackMetadata,
   StemUploadWithFile,
   Id,
   OptionalId
@@ -202,7 +201,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const track = { ...trackForEdit } as Track & TrackMetadataForUpload
   track.track_id = action.trackId
-  if (track.artwork?.file) {
+  if ('file' in track.artwork && track.artwork?.file) {
     track._cover_art_sizes = {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
@@ -273,7 +272,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
 function* confirmEditTrack(
   trackId: ID,
-  formFields: TrackMetadata,
+  formFields: TrackMetadataForUpload,
   wasUnlisted: boolean,
   isNowListed: boolean,
   currentTrack: Track

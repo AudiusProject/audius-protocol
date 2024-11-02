@@ -237,11 +237,15 @@ function* uploadWorker(
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
       const metadata = toUploadTrackMetadata(track.metadata)
 
+      const artworkFile =
+        track.metadata.artwork && 'file' in track.metadata.artwork
+          ? track.metadata.artwork?.file ?? null
+          : null
       const updatedMetadata = yield* call(
         [libs.Track, libs.Track!.uploadTrackV2],
         userId,
         track.file as File,
-        (track.metadata.artwork?.file ?? null) as File | null,
+        artworkFile as File,
         metadata,
         makeOnProgress(trackIndex, stemIndex, progressChannel)
       )
@@ -426,7 +430,10 @@ export function* handleUploads({
     // Report analytics for each track
     yield* put(
       make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
-        artworkSource: track.metadata.artwork?.source,
+        artworkSource:
+          track.metadata.artwork && 'source' in track.metadata.artwork
+            ? track.metadata.artwork?.source
+            : undefined,
         genre: track.metadata.genre,
         moode: track.metadata.mood,
         size: track.file.size,

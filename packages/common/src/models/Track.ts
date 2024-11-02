@@ -219,7 +219,7 @@ export type TrackMetadata = {
   tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
-  artwork: Nullable<CoverArtSizes> & { mirrors: Nullable<string[]> }
+  artwork: CoverArtSizes & { mirrors?: string[] | undefined }
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizesCids>

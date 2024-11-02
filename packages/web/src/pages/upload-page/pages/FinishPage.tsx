@@ -82,7 +82,10 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
     displayArtwork = false,
     ...otherProps
   } = props
-  const artworkUrl = track.metadata.artwork?.url
+  const artworkUrl =
+    track.metadata.artwork && 'url' in track.metadata.artwork
+      ? track.metadata.artwork?.url
+      : null
 
   return (
     <div className={styles.uploadTrackItem} {...otherProps}>

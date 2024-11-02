@@ -39,11 +39,10 @@ const TrackArt = ({
   trackId: ID
   coverArtSizes: CoverArtSizes
 }) => {
-  const image = useTrackCoverArt(
+  const image = useTrackCoverArt({
     trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+    size: SquareSizes.SIZE_480_BY_480
+  })
   return <DynamicImage wrapperClassName={styles.image} image={image} />
 }
 
