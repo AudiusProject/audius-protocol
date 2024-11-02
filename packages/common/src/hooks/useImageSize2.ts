@@ -6,6 +6,17 @@ import { Maybe } from '~/utils/typeUtils'
 // Initialize a global image cache
 const IMAGE_CACHE = new Map()
 
+/**
+ * Fetches an image from the given artwork object, using fallback mirrors if necessary.
+ * A couple properties:
+ *  If a larger image has already been fetched and is in the case, use it instead
+ *  If a smaller image has already been fetched and is in the cache, use it while fetching the larger one
+ *  If fetching a given image fails, substitute out mirrors and try again
+ * @param artwork - The artwork object to fetch from
+ * @param targetSize - The desired size of the image
+ * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
+ * @returns The url of the image, or undefined if the image is not available
+ */
 export const useImageSize2 = ({
   artwork,
   targetSize,
