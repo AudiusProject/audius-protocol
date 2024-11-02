@@ -1,0 +1,16 @@
+diff --git a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+<<<<<<<< HEAD:packages/mobile/patches/react-native+0.75.4.patch
+index 7279c2a..c3519b2 100644
+========
+index 39b2580..9254996 100644
+>>>>>>>> 9210b67bc4 ([C-3565] Upgrade react-native to 0.76):packages/mobile/patches/react-native+0.76.1.patch
+--- a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
++++ b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+@@ -251,6 +251,6 @@ export class AnimatedEvent {
+   }
+ 
+   _callListeners = (...args: any) => {
+-    this._listeners.forEach(listener => listener(...args));
++    this._listeners.forEach(listener => listener?.(...args));
+   };
+ }
