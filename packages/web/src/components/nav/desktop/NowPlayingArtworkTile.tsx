@@ -1,6 +1,12 @@
-import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
+import {
+  CSSProperties,
+  MouseEvent,
+  ReactNode,
+  useCallback,
+  useEffect
+} from 'react'
 
-import { SquareSizes } from '@audius/common/models'
+import { setDominantColors } from '@audius/common/src/store/average-color/slice'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -24,6 +30,7 @@ import { TrackDogEar } from 'components/track/TrackDogEar'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
+import { dominantColor } from 'utils/imageProcessingUtil'
 import { fullTrackPage } from 'utils/route'
 
 const { getTrackId, getCollectible } = playerSelectors
@@ -121,19 +128,33 @@ export const NowPlayingArtworkTile = () => {
       track: getTrack(state, { id: trackId })
     })
 
-    const coverArtColorMap = dominantTrackColors?.[0] ?? { r: 13, g: 16, b: 18 }
-    return `0 1px 20px -3px rgba(
-        ${coverArtColorMap.r},
-        ${coverArtColorMap.g},
-        ${coverArtColorMap.b}
-        , 0.25)`
+    if (!dominantTrackColors) return null
+    const coverArtColorMap = dominantTrackColors[0] ?? { r: 13, g: 16, b: 18 }
+    return `0 1px 20px -3px rgba(${coverArtColorMap.r}, ${coverArtColorMap.g}, ${coverArtColorMap.b}, 0.25)`
   })
+
+  useEffect(() => {
+    if (coverArtColor) return
+
+    const work = async () => {
+      if (trackCoverArtImage && track?.cover_art_sizes) {
+        const dominantColors = await dominantColor(trackCoverArtImage)
+        dispatch(
+          setDominantColors({
+            multihash: track.cover_art_sizes,
+            colors: dominantColors
+          })
+        )
+      }
+    }
+    work()
+  }, [trackCoverArtImage, dispatch, track, coverArtColor])
 
   if (!permalink || !trackId) return null
 
   const renderCoverArt = () => {
     return (
-      <FadeInUp style={{ boxShadow: coverArtColor }}>
+      <FadeInUp style={coverArtColor ? { boxShadow: coverArtColor } : {}}>
         <Link to={permalink} aria-label={messages.viewTrack}>
           <DynamicImage
             useSkeleton={false}

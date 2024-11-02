@@ -2,7 +2,6 @@ import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
-  SquareSizes,
   Kind,
   Track,
   Collection,
@@ -17,7 +16,6 @@ import {
   Entry,
   getContext,
   accountSelectors,
-  averageColorActions,
   cacheTracksSelectors,
   cacheTracksActions as trackActions,
   cacheUsersSelectors,
@@ -44,7 +42,6 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
-import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { recordEditTrackAnalytics } from './sagaHelpers'
@@ -54,7 +51,6 @@ const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
-const setDominantColors = averageColorActions.setDominantColors
 const { getAccountUser, getUserId } = accountSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
@@ -460,86 +456,8 @@ function* watchDeleteTrack() {
   yield* takeEvery(trackActions.DELETE_TRACK, deleteTrackAsync)
 }
 
-function* watchFetchCoverArt() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const isNativeMobile = yield* getContext('isNativeMobile')
-
-  const inProgress = new Set()
-  yield* takeEvery(
-    trackActions.FETCH_COVER_ART,
-    function* ({
-      trackId,
-      size
-    }: ReturnType<typeof trackActions.fetchCoverArt>) {
-      // Unique on id and size
-      const key = `${trackId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-
-      try {
-        let track: Track | null = yield* call(waitForValue, getTrack, {
-          id: trackId
-        })
-        const user = yield* call(waitForValue, getUser, { id: track!.owner_id })
-        if (!track || !user || (!track.cover_art_sizes && !track.cover_art))
-          return
-        const multihash = track.cover_art_sizes || track.cover_art
-        const coverArtSize = multihash === track.cover_art_sizes ? size : null
-        const url = yield* call(
-          audiusBackendInstance.getImageUrl,
-          multihash,
-          coverArtSize ?? undefined,
-          track.cover_art_cids
-        )
-        track = yield* select(getTrack, { id: trackId })
-        if (!track) return
-        track._cover_art_sizes = {
-          ...track._cover_art_sizes,
-          [coverArtSize || DefaultSizes.OVERRIDE]: url
-        }
-        yield* put(
-          cacheActions.update(Kind.TRACKS, [{ id: trackId, metadata: track }])
-        )
-
-        let smallImageUrl = url
-        if (coverArtSize !== SquareSizes.SIZE_150_BY_150) {
-          smallImageUrl = yield* call(
-            audiusBackendInstance.getImageUrl,
-            multihash,
-            SquareSizes.SIZE_150_BY_150
-          )
-        }
-
-        if (!isNativeMobile) {
-          // Disabling dominant color fetch on mobile because it requires WebWorker
-          // Can revisit this when doing glass morphism on NowPlaying
-          const dominantColors = yield* call(dominantColor, smallImageUrl)
-
-          if (!multihash) return
-          yield* put(
-            setDominantColors({
-              multihash,
-              colors: dominantColors
-            })
-          )
-        }
-      } catch (e) {
-        console.error(`Unable to fetch cover art for track ${trackId}`)
-      } finally {
-        inProgress.delete(key)
-      }
-    }
-  )
-}
-
 const sagas = () => {
-  return [
-    watchAdd,
-    watchEditTrack,
-    watchDeleteTrack,
-    watchFetchCoverArt,
-    watchCacheUpdate
-  ]
+  return [watchAdd, watchEditTrack, watchDeleteTrack, watchCacheUpdate]
 }
 
 export default sagas

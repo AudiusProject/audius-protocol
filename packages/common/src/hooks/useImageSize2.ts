@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { SquareSizes, Track } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
-// Initialize a global image cache
-const IMAGE_CACHE = new Map()
+// Global image cache
+const IMAGE_CACHE = new Set<string>()
 
 /**
  * Fetches an image from the given artwork object, using fallback mirrors if necessary.
@@ -84,7 +84,8 @@ export const useImageSize2 = ({
     const smallerSize = Object.keys(artwork).find(
       (size) =>
         parseInt(size) < parseInt(targetSize) &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes])
+        artwork[size as SquareSizes] &&
+        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
     ) as SquareSizes | undefined
 
     if (smallerSize) {
@@ -93,7 +94,7 @@ export const useImageSize2 = ({
       // )
       setImageUrl(artwork[smallerSize] ?? null)
       const finalUrl = await fetchWithFallback(targetUrl)
-      IMAGE_CACHE.set(finalUrl, true)
+      IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
       return
     }
@@ -103,7 +104,8 @@ export const useImageSize2 = ({
     const largerSize = Object.keys(artwork).find(
       (size) =>
         parseInt(size) > parseInt(targetSize) &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes])
+        artwork[size as SquareSizes] &&
+        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
     ) as SquareSizes | undefined
 
     if (largerSize) {
@@ -118,7 +120,7 @@ export const useImageSize2 = ({
     try {
       // console.log(`useImageSize: cache miss fetch original ${targetUrl}`)
       const finalUrl = await fetchWithFallback(targetUrl)
-      IMAGE_CACHE.set(finalUrl, true)
+      IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
     } catch {
       console.error(`Unable to load image ${targetUrl} after retries`)
