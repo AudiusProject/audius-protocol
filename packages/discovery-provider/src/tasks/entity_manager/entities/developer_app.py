@@ -22,6 +22,7 @@ logger = StructuredLogger(__name__)
 
 MAX_DESCRIPTION_LENGTH = 160
 MAX_IMAGE_URL_LENGTH = 2000
+MAX_APP_COUNT = 5
 
 
 class AppSignature(TypedDict):
@@ -296,7 +297,9 @@ def validate_user_app_count(params: ManageEntityParameters, metadata: dict):
         if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
             num_new_apps_from_user += 1
 
-    user_has_too_many_apps = num_existing_apps_from_user + num_new_apps_from_user >= 3
+    user_has_too_many_apps = (
+        num_existing_apps_from_user + num_new_apps_from_user >= MAX_APP_COUNT
+    )
     if user_has_too_many_apps:
         raise IndexingValidationError(
             "Invalid Create Developer App Transaction, user has too many developer apps"
