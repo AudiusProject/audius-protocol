@@ -140,7 +140,6 @@ export const TrackDetailsTile = ({
   return (
     <View style={styles.root}>
       <TrackDogEar trackId={trackId} />
-      {/* {dogEarType ? <DogEar type={dogEarType} /> : null} */}
       <View style={styles.trackDetails}>
         <TrackImage
           style={styles.trackImage}

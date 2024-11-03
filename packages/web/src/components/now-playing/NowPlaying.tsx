@@ -8,7 +8,6 @@ import {
   FavoriteSource,
   PlaybackSource,
   ModalSource,
-  DogEarType,
   SquareSizes,
   ID
 } from '@audius/common/models'
@@ -41,7 +40,6 @@ import { Dispatch } from 'redux'
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
-import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -51,6 +49,7 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
+import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -443,14 +442,7 @@ const NowPlaying = g(
               onClick={goToTrackPage}
               style={artworkAverageColor}
             >
-              {shouldShowPurchasePreview ? (
-                <div className={styles.borderOffset}>
-                  <DogEar
-                    type={DogEarType.USDC_PURCHASE}
-                    className={styles.dogEar}
-                  />
-                </div>
-              ) : null}
+              <TrackDogEar trackId={track_id} borderOffset={2} />
               <DynamicImage image={image} />
             </div>
           </CoSign>
@@ -462,14 +454,7 @@ const NowPlaying = g(
               ref={artworkRef}
               style={artworkAverageColor}
             >
-              {shouldShowPurchasePreview ? (
-                <div className={styles.borderOffset}>
-                  <DogEar
-                    type={DogEarType.USDC_PURCHASE}
-                    className={styles.dogEar}
-                  />
-                </div>
-              ) : null}
+              <TrackDogEar trackId={track_id as ID} borderOffset={2} />
               <DynamicImage image={image} />
             </div>
           </div>
