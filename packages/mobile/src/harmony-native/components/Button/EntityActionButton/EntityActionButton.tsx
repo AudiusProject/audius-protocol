@@ -106,7 +106,7 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
     <BaseButton
       onPress={handlePress}
       innerProps={{ icon: { animatedProps: animatedIconProps } }}
-      style={[animatedButtonStyles, buttonStyles, style]}
+      style={[buttonStyles, animatedButtonStyles, style]}
       sharedValue={pressed}
       styles={{ text: [textStyles, animatedTextStyles] }}
       {...other}
