@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 7.1.0
+
+### Minor Changes
+
+- 5d76821: Better support for premium albums
+
 ## 7.0.0
 
 ### Major Changes
