@@ -995,16 +995,13 @@ def test_index_verify_users(app, mocker):
                     ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 1
                 )
             ]
-            assert len(verify_user_1_calls) == 1
             bus_mock.assert_has_calls(verify_user_1_calls, any_order=True)
 
-            verify_user_2_calls = [
-                mock.call.dispatch(
-                    ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 2
-                )
-            ]
-            assert len(verify_user_2_calls) == 0
-            bus_mock.assert_not_called(verify_user_1_calls, any_order=True)
+            unwanted_call = mock.call.dispatch(
+                ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 2
+            )
+
+            assert unwanted_call not in bus_mock.mock_calls, "The user is not verified."
 
 
 def test_invalid_user_bio(app, mocker):
