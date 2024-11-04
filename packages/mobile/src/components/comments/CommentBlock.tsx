@@ -86,7 +86,7 @@ export const CommentBlockInternal = (
   const isCommentByArtist = userId === artistId
 
   return (
-    <Animated.View entering={FadeIn.duration(500)}>
+    <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
       <Flex
         direction='row'
         w='100%'

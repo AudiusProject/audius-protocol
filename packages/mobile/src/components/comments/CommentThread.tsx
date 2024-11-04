@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useGetCommentById, useGetCommentRepliesById } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -9,13 +9,20 @@ import {
   type ID,
   type ReplyComment
 } from '@audius/common/models'
+import type { LayoutChangeEvent } from 'react-native/types'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 
 import {
   Box,
   Flex,
   IconCaretDown,
   IconCaretUp,
-  PlainButton
+  PlainButton,
+  useTheme
 } from '@audius/harmony-native'
 import { make, track } from 'app/services/analytics'
 
@@ -29,6 +36,7 @@ type CommentThreadProps = {
 
 export const CommentThread = (props: CommentThreadProps) => {
   const { commentId } = props
+  const { motion } = useTheme()
   const { entityId } = useCurrentCommentSection()
   const { data: rootCommentData } = useGetCommentById(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
@@ -78,6 +86,52 @@ export const CommentThread = (props: CommentThreadProps) => {
     }
   }
 
+  const [repliesHeight, setRepliesHeight] = useState<number | null>(null)
+  const repliesContainerHeight = useSharedValue<number | null>(null)
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      width: '100%',
+      height:
+        repliesContainerHeight.value !== null
+          ? repliesContainerHeight.value
+          : null,
+      overflow: 'hidden'
+    }
+  })
+
+  const handleRepliesLayoutChange = useCallback(
+    (e: LayoutChangeEvent) => {
+      const height = e.nativeEvent.layout.height
+      if (repliesHeight === null || height > repliesHeight) {
+        setRepliesHeight(height)
+        if (repliesContainerHeight.value) {
+          repliesContainerHeight.value = withTiming(height, motion.expressive)
+        }
+      }
+    },
+    [motion.expressive, repliesContainerHeight, repliesHeight]
+  )
+
+  useEffect(() => {
+    if (hiddenReplies[rootComment.id]) {
+      repliesContainerHeight.value = withTiming(0, motion.expressive)
+    } else if (rootComment.replies?.length) {
+      if (repliesHeight) {
+        repliesContainerHeight.value = withTiming(
+          repliesHeight,
+          motion.expressive
+        )
+      }
+    }
+  }, [
+    hiddenReplies,
+    rootComment,
+    motion.expressive,
+    repliesHeight,
+    repliesContainerHeight
+  ])
+
   if (!rootComment || !('id' in rootComment)) return null
 
   const { replyCount } = rootComment
@@ -105,8 +159,8 @@ export const CommentThread = (props: CommentThreadProps) => {
             </PlainButton>
           </Box>
         ) : null}
-        {hiddenReplies[rootComment.id] ? null : (
-          <>
+        <Animated.View style={animatedContainerStyle}>
+          <Box onLayout={handleRepliesLayoutChange}>
             <Flex direction='column' gap='l'>
               {replies?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
@@ -118,8 +172,8 @@ export const CommentThread = (props: CommentThreadProps) => {
               ))}
             </Flex>
 
-            <Flex direction='row' gap='s' alignItems='center'>
-              {hasMoreReplies ? (
+            {hasMoreReplies ? (
+              <Flex direction='row' gap='s' mt='s' alignItems='center'>
                 <PlainButton
                   onPress={handleLoadMoreReplies}
                   variant='subdued'
@@ -127,13 +181,13 @@ export const CommentThread = (props: CommentThreadProps) => {
                 >
                   {messages.showMoreReplies}
                 </PlainButton>
-              ) : null}
-              {isFetchingReplies ? (
-                <LoadingSpinner style={{ width: 20, height: 20 }} />
-              ) : null}
-            </Flex>
-          </>
-        )}
+                {isFetchingReplies ? (
+                  <LoadingSpinner style={{ width: 20, height: 20 }} />
+                ) : null}
+              </Flex>
+            ) : null}
+          </Box>
+        </Animated.View>
       </Flex>
     </>
   )
