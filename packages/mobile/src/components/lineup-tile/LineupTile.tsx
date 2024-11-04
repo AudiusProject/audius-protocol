@@ -100,9 +100,9 @@ export const LineupTile = ({
       {...TileProps}
     >
       {isTrack ? (
-        <TrackDogEar trackId={id} />
+        <TrackDogEar trackId={id} hideUnlocked />
       ) : (
-        <CollectionDogEar collectionId={id} />
+        <CollectionDogEar collectionId={id} hideUnlocked />
       )}
       <View>
         <LineupTileTopRight

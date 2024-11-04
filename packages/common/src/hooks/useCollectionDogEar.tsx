@@ -12,7 +12,7 @@ import { Nullable } from '~/utils'
 
 import { useGatedContentAccess } from './useGatedContent'
 
-export const useCollectionDogEar = (collectionId: ID) => {
+export const useCollectionDogEar = (collectionId: ID, hideUnlocked = false) => {
   const { data: collection } = useGetPlaylistById({ playlistId: collectionId })
   const currentUserId = useSelector(getUserId)
 
@@ -24,14 +24,12 @@ export const useCollectionDogEar = (collectionId: ID) => {
   const { playlist_owner_id, stream_conditions } = collection
 
   const isOwner = playlist_owner_id === currentUserId
-  const unlockedStream = !isOwner && hasStreamAccess
-
-  const isPurchaseable =
-    isContentUSDCPurchaseGated(stream_conditions) && !unlockedStream
+  const hideUnlockedStream = !isOwner && hasStreamAccess && hideUnlocked
+  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
 
   let dogEarType: Nullable<DogEarType> = null
 
-  if (isPurchaseable) {
+  if (isPurchaseable && !hideUnlockedStream) {
     dogEarType = DogEarType.USDC_PURCHASE
   }
 

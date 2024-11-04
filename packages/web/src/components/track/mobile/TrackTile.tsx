@@ -305,7 +305,7 @@ const TrackTile = (props: CombinedProps) => {
         containerClassName
       )}
     >
-      <TrackDogEar trackId={id} />
+      <TrackDogEar trackId={id} hideUnlocked />
       <div className={styles.mainContent} onClick={handleClick}>
         <Text
           variant='body'

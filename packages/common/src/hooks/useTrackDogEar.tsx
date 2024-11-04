@@ -14,7 +14,7 @@ import { Nullable } from '~/utils'
 
 import { useGatedContentAccess } from './useGatedContent'
 
-export const useTrackDogEar = (trackId: ID) => {
+export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
   const { data: track } = useGetTrackById({ id: trackId })
   const currentUserId = useSelector(getUserId)
 
@@ -27,30 +27,23 @@ export const useTrackDogEar = (trackId: ID) => {
   const { owner_id, stream_conditions, download_conditions } = track
 
   const isOwner = owner_id === currentUserId
-  const unlockedStream = !isOwner && hasStreamAccess
-  const unlockedDownload = !isOwner && hasDownloadAccess
+  const hideUnlockedStream = !isOwner && hasStreamAccess && hideUnlocked
+  const hideUnlockedDownload = !isOwner && hasDownloadAccess && hideUnlocked
 
-  const isPurchaseable =
-    isContentUSDCPurchaseGated(stream_conditions) && !unlockedStream
-
-  const isCollectibileGated =
-    isContentCollectibleGated(stream_conditions) && !unlockedStream
-
-  const isSpecialAccess =
-    isContentSpecialAccess(stream_conditions) && !unlockedStream
-
-  const isDownloadGated =
-    isContentUSDCPurchaseGated(download_conditions) && !unlockedDownload
+  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
+  const isCollectibileGated = isContentCollectibleGated(stream_conditions)
+  const isSpecialAccess = isContentSpecialAccess(stream_conditions)
+  const isDownloadGated = isContentUSDCPurchaseGated(download_conditions)
 
   let dogEarType: Nullable<DogEarType> = null
 
-  if (isPurchaseable) {
+  if (isPurchaseable && !hideUnlockedStream) {
     dogEarType = DogEarType.USDC_PURCHASE
-  } else if (isCollectibileGated) {
+  } else if (isCollectibileGated && !hideUnlockedStream) {
     dogEarType = DogEarType.COLLECTIBLE_GATED
-  } else if (isSpecialAccess) {
+  } else if (isSpecialAccess && !hideUnlockedStream) {
     dogEarType = DogEarType.SPECIAL_ACCESS
-  } else if (isDownloadGated) {
+  } else if (isDownloadGated && !hideUnlockedDownload) {
     dogEarType = DogEarType.USDC_EXTRAS
   }
 

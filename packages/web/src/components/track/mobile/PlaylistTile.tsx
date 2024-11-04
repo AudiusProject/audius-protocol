@@ -345,7 +345,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         containerClassName
       )}
     >
-      <CollectionDogEar collectionId={id} borderOffset={0} />
+      <CollectionDogEar collectionId={id} borderOffset={0} hideUnlocked />
       <div
         css={{ overflow: 'hidden' }}
         className={styles.mainContent}

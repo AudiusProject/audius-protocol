@@ -248,8 +248,10 @@ const TrackTile = ({
       >
         {artwork}
       </div>
-      {trackId ? <TrackDogEar trackId={trackId} /> : null}
-      {collectionId ? <CollectionDogEar collectionId={collectionId} /> : null}
+      {trackId ? <TrackDogEar trackId={trackId} hideUnlocked /> : null}
+      {collectionId ? (
+        <CollectionDogEar collectionId={collectionId} hideUnlocked />
+      ) : null}
       <div className={styles.body}>
         <Flex inline direction='column' h='100%' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (
