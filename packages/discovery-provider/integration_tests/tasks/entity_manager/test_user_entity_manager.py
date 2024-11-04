@@ -990,13 +990,21 @@ def test_index_verify_users(app, mocker):
             assert len(all_users) == 2  # no new users indexed
             assert all_users[0].is_verified  # user 1 is verified
             assert not all_users[1].is_verified  # user 2 is not verified
-            calls = [
+            verify_user_1_calls = [
                 mock.call.dispatch(
                     ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 1
                 )
             ]
-            assert len(calls) == 1
-            bus_mock.assert_has_calls(calls, any_order=True)
+            assert len(verify_user_1_calls) == 1
+            bus_mock.assert_has_calls(verify_user_1_calls, any_order=True)
+
+            verify_user_2_calls = [
+                mock.call.dispatch(
+                    ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 2
+                )
+            ]
+            assert len(verify_user_2_calls) == 0
+            bus_mock.assert_not_called(verify_user_1_calls, any_order=True)
 
 
 def test_invalid_user_bio(app, mocker):
