@@ -112,13 +112,16 @@ export enum TrackAccessType {
   USDC_GATED = 'usdc_gated'
 }
 
-export const isContentCollectibleGated = (
-  gatedConditions?: Nullable<AccessConditions>
-): gatedConditions is {
+type CollectibleGated = {
   nft_collection:
     | AccessConditionsEthNFTCollection
     | AccessConditionsSolNFTCollection
-} => !!gatedConditions && 'nft_collection' in (gatedConditions ?? {})
+}
+
+export const isContentCollectibleGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is CollectibleGated =>
+  !!gatedConditions && 'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
   gatedConditions?: Nullable<AccessConditions>
@@ -129,6 +132,11 @@ export const isContentTipGated = (
   gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is TipGatedConditions =>
   !!gatedConditions && 'tip_user_id' in (gatedConditions ?? {})
+
+export const isContentSpecialAccess = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is TipGatedConditions | FollowGatedConditions =>
+  isContentFollowGated(gatedConditions) || isContentTipGated(gatedConditions)
 
 export const isContentUSDCPurchaseGated = (
   gatedConditions?: Nullable<

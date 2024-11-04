@@ -60,7 +60,8 @@ export enum FeatureFlags {
   PAID_SCHEDULED = 'paid_scheduled',
   ONE_TO_MANY_DMS = 'one_to_many_dms',
   NETWORK_CUT_ENABLED = 'network_cut_enabled',
-  SOCIAL_SIGNUP = 'social_signup'
+  SOCIAL_SIGNUP = 'social_signup',
+  RIGHTS_AND_COVERS = 'rights_and_covers'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -136,5 +137,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.COMMENT_POSTING_ENABLED]: false,
   [FeatureFlags.ONE_TO_MANY_DMS]: false,
   [FeatureFlags.NETWORK_CUT_ENABLED]: false,
-  [FeatureFlags.SOCIAL_SIGNUP]: false
+  [FeatureFlags.SOCIAL_SIGNUP]: false,
+  [FeatureFlags.RIGHTS_AND_COVERS]: false
 }

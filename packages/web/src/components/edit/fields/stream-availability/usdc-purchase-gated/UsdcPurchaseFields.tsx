@@ -9,13 +9,12 @@ import {
 import { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  filterDecimalString,
-  padDecimalValue,
   decimalIntegerToHumanReadable,
-  Nullable
+  filterDecimalString,
+  Nullable,
+  padDecimalValue
 } from '@audius/common/utils'
-import { Hint, IconInfo, Checkbox, Text, Box, Flex } from '@audius/harmony'
-import { css } from '@emotion/react'
+import { Hint, IconInfo } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 
@@ -24,14 +23,15 @@ import { useMessages } from 'hooks/useMessages'
 
 import { BoxedTextField } from '../../BoxedTextField'
 import {
-  DOWNLOAD_CONDITIONS,
-  PREVIEW,
-  PRICE,
   ALBUM_TRACK_PRICE,
+  DOWNLOAD_CONDITIONS,
   GateKeeper,
   LAST_GATE_KEEPER,
-  IS_OWNED_BY_USER
+  PREVIEW,
+  PRICE
 } from '../../types'
+
+import { RightsDeclaration } from './RightsDeclaration'
 
 const messagesV1 = {
   price: {
@@ -70,16 +70,7 @@ const messagesV1 = {
   usdc: '(USDC)',
   seconds: '(Seconds)',
   premiumDownloads:
-    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!',
-  publishingRights: {
-    checkboxLabel: 'Direct Publishing Payments',
-    confirmationText:
-      'In order to receive direct publishing payments from Audius, I hereby confirm:',
-    bulletPoints: [
-      'I own all publishing rights to this music, including performance rights',
-      'I am not registered with a Performing Rights Organization or collection society'
-    ]
-  }
+    'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
 const messagesV2 = {
@@ -126,6 +117,7 @@ export type PriceFieldProps = TrackAvailabilityFieldsProps & {
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled, isAlbum, isUpload } = props
+
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
   const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
@@ -227,12 +219,6 @@ const PriceField = (props: PriceFieldProps) => {
     fieldName
   )
 
-  const [
-    { value: isFullyOwnedByUser },
-    _ignored1,
-    { setValue: setIsFullyOwnedByUser }
-  ] = useField<boolean>(IS_OWNED_BY_USER)
-
   const messages = useMessages(
     messagesV1,
     messagesV2,
@@ -289,14 +275,6 @@ const PriceField = (props: PriceFieldProps) => {
     [humanizedValue]
   )
 
-  const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> =
-    useCallback(
-      (e) => {
-        setIsFullyOwnedByUser(e.target.checked)
-      },
-      [setIsFullyOwnedByUser]
-    )
-
   return (
     <BoxedTextField
       {...messaging}
@@ -310,30 +288,7 @@ const PriceField = (props: PriceFieldProps) => {
       onBlur={handlePriceBlur}
       disabled={disabled}
     >
-      {shouldShowRightsDeclaration && (
-        <Box>
-          <Flex alignItems='center' justifyContent='flex-start' mb='s' gap='xs'>
-            <Checkbox
-              name={IS_OWNED_BY_USER}
-              checked={!!isFullyOwnedByUser}
-              onChange={handleCheckboxChange}
-            />
-            <Text variant='title'>
-              {messages.publishingRights.checkboxLabel}
-            </Text>
-          </Flex>
-          <Text variant='body'>
-            {messages.publishingRights.confirmationText}
-          </Text>
-          <Box as='ul' ml='l' p='s' css={css({ listStyleType: 'disc' })}>
-            {messages.publishingRights.bulletPoints.map((point, index) => (
-              <Box as='li' key={index}>
-                <Text variant='body'>{point}</Text>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )}
+      {shouldShowRightsDeclaration ? <RightsDeclaration /> : null}
     </BoxedTextField>
   )
 }

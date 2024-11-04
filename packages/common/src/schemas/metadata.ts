@@ -71,7 +71,8 @@ const trackMetadataSchema = {
   comments_disabled: false,
   comment_count: 0,
   cover_original_song_title: null,
-  cover_original_artist: null
+  cover_original_artist: null,
+  is_owned_by_user: false
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {

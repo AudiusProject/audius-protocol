@@ -207,7 +207,7 @@ GEM
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     jmespath (1.6.2)
-    json (2.6.3)
+    json (2.7.1)
     jwt (2.9.3)
       base64
     mini_magick (4.13.2)
@@ -273,13 +273,14 @@ GEM
       xcpretty (~> 0.2, >= 0.0.7)
 
 PLATFORMS
+  arm64-darwin-24
   ruby
 
 DEPENDENCIES
-  activesupport (>= 6.1.7.5, < 7.1.0)
-  cocoapods (>= 1.13, < 1.15)
+  activesupport (>= 6.1.7.5, != 7.1.0)
+  cocoapods (>= 1.13, != 1.15.1, != 1.15.0)
   fastlane (~> 2.225.0)
   fastlane-plugin-versioning
 
 BUNDLED WITH
-   2.1.4
+   2.5.16

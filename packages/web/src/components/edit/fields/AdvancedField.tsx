@@ -103,8 +103,8 @@ const AdvancedFormSchema = z
     [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable()),
     [BPM]: z.optional(z.string().nullable()),
     [MUSICAL_KEY]: z.optional(z.string().nullable()),
-    [COVER_ORIGINAL_SONG_TITLE]: z.optional(z.string()),
-    [COVER_ORIGINAL_ARTIST]: z.optional(z.string()),
+    [COVER_ORIGINAL_SONG_TITLE]: z.optional(z.string().nullable()),
+    [COVER_ORIGINAL_ARTIST]: z.optional(z.string().nullable()),
     [IS_COVER]: z.optional(z.boolean())
   })
   .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
@@ -179,6 +179,11 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     COVER_ORIGINAL_ARTIST
   )
 
+  const isCover = useMemo(() => {
+    // If either is not null or undefined, then it is a cover
+    return coverOriginalSongTitle != null || coverOriginalArtist != null
+  }, [coverOriginalSongTitle, coverOriginalArtist])
+
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
@@ -195,11 +200,7 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     set(initialValues, COMMENTS_DISABLED, commentsDisabled)
     set(initialValues, COVER_ORIGINAL_SONG_TITLE, coverOriginalSongTitle)
     set(initialValues, COVER_ORIGINAL_ARTIST, coverOriginalArtist)
-    set(
-      initialValues,
-      IS_COVER,
-      !!(coverOriginalSongTitle || coverOriginalArtist)
-    )
+    set(initialValues, IS_COVER, isCover)
     return initialValues as AdvancedFormValues
   }, [
     aiUserId,
@@ -213,7 +214,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     isHidden,
     commentsDisabled,
     coverOriginalSongTitle,
-    coverOriginalArtist
+    coverOriginalArtist,
+    isCover
   ])
 
   const onSubmit = useCallback(
@@ -332,6 +334,16 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
         />
       )
     }
+
+    if (isCover) {
+      value.push(
+        <SelectedValue
+          key={messages.coverAttribution.selectedValue}
+          label={messages.coverAttribution.selectedValue}
+        />
+      )
+    }
+
     return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [
     license,
@@ -340,7 +352,8 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
     aiUserId,
     bpm,
     musicalKey,
-    commentsDisabled
+    commentsDisabled,
+    isCover
   ])
 
   return (
@@ -358,6 +371,9 @@ export const AdvancedField = ({ isUpload }: AdvancedFieldProps) => {
 }
 
 const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
+  )
   const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
     useField({
       name: AI_USER_ID,
@@ -567,47 +583,61 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
         </span>
       </div>
       <Divider />
-      <SwitchRowField
-        name={IS_COVER}
-        header={messages.coverAttribution.toggle.header}
-        description={messages.coverAttribution.toggle.description}
-      >
-        <Box mt='m' p='l' w='100%' borderRadius='m' backgroundColor='surface1'>
-          <Text variant='title' size='m'>
-            {messages.coverAttribution.attribution.header}
-          </Text>
-          <Box mb='m'>
-            <Text variant='body'>
-              {messages.coverAttribution.attribution.description}
-            </Text>
-          </Box>
-          <Flex gap='m'>
-            <TextField
-              name={COVER_ORIGINAL_SONG_TITLE}
-              label={messages.coverAttribution.attribution.originalSongTitle}
-              placeholder={
-                messages.coverAttribution.attribution.originalSongTitle
-              }
-              value={coverOriginalSongTitle || ''}
-              onChange={(e) => {
-                setCoverOriginalSongTitle(e.target.value)
-              }}
-            />
-            <TextField
-              name={COVER_ORIGINAL_ARTIST}
-              label={messages.coverAttribution.attribution.originalSongArtist}
-              placeholder={
-                messages.coverAttribution.attribution.originalSongArtist
-              }
-              value={coverOriginalArtist || ''}
-              onChange={(e) => {
-                setCoverOriginalArtist(e.target.value)
-              }}
-            />
-          </Flex>
-        </Box>
-      </SwitchRowField>
-      <Divider />
+      {isRightsAndCoversEnabled ? (
+        <>
+          <SwitchRowField
+            name={IS_COVER}
+            header={messages.coverAttribution.toggle.header}
+            description={messages.coverAttribution.toggle.description}
+          >
+            <Box
+              mt='m'
+              p='l'
+              w='100%'
+              borderRadius='m'
+              backgroundColor='surface1'
+            >
+              <Text variant='title' size='m'>
+                {messages.coverAttribution.attribution.header}
+              </Text>
+              <Box mb='m'>
+                <Text variant='body'>
+                  {messages.coverAttribution.attribution.description}
+                </Text>
+              </Box>
+              <Flex gap='m'>
+                <TextField
+                  name={COVER_ORIGINAL_SONG_TITLE}
+                  label={
+                    messages.coverAttribution.attribution.originalSongTitle
+                  }
+                  placeholder={
+                    messages.coverAttribution.attribution.originalSongTitle
+                  }
+                  value={coverOriginalSongTitle || ''}
+                  onChange={(e) => {
+                    setCoverOriginalSongTitle(e.target.value)
+                  }}
+                />
+                <TextField
+                  name={COVER_ORIGINAL_ARTIST}
+                  label={
+                    messages.coverAttribution.attribution.originalSongArtist
+                  }
+                  placeholder={
+                    messages.coverAttribution.attribution.originalSongArtist
+                  }
+                  value={coverOriginalArtist || ''}
+                  onChange={(e) => {
+                    setCoverOriginalArtist(e.target.value)
+                  }}
+                />
+              </Flex>
+            </Box>
+          </SwitchRowField>
+          <Divider />
+        </>
+      ) : null}
       <SwitchRowField
         name={IS_AI_ATTRIBUTED}
         header={messages.aiGenerated.header}

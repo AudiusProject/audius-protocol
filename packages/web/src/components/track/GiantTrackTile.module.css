@@ -1,11 +1,3 @@
-.giantTrackTile {
-  width: 100%;
-  max-width: 1080px;
-  text-align: left;
-  user-select: none;
-  margin: 0 auto;
-}
-
 .gatedContent .typeLabel {
   letter-spacing: 2px;
 }

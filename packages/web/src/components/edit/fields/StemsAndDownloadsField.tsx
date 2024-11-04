@@ -2,19 +2,19 @@ import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
-  stemCategoryFriendlyNames,
-  isContentFollowGated,
-  isContentUSDCPurchaseGated,
   AccessConditions,
   DownloadTrackAvailabilityType,
   FollowGatedConditions,
+  isContentFollowGated,
+  isContentUSDCPurchaseGated,
+  StemCategory,
+  stemCategoryFriendlyNames,
   StemUpload,
-  USDCPurchaseConditions,
-  StemCategory
+  USDCPurchaseConditions
 } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconReceive, IconCart } from '@audius/harmony'
+import { IconCart, IconReceive } from '@audius/harmony'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -33,17 +33,18 @@ import {
 } from './StemsAndDownloadsMenuFields'
 import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
-  IS_DOWNLOAD_GATED,
-  DOWNLOAD_CONDITIONS,
-  STREAM_CONDITIONS,
   DOWNLOAD_AVAILABILITY_TYPE,
+  DOWNLOAD_CONDITIONS,
   DOWNLOAD_PRICE_HUMANIZED,
+  GateKeeper,
+  IS_DOWNLOAD_GATED,
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
+  IS_OWNED_BY_USER,
+  LAST_GATE_KEEPER,
   STEMS,
   StemsAndDownloadsFormValues,
-  LAST_GATE_KEEPER,
-  GateKeeper
+  STREAM_CONDITIONS
 } from './types'
 
 const { getUserId } = accountSelectors
@@ -89,6 +90,8 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
+  const [{ value: isOwnedByUser }, , { setValue: setIsOwnedByUser }] =
+    useTrackField<boolean>(IS_OWNED_BY_USER)
 
   /**
    * Download conditions from inside the modal.
@@ -113,6 +116,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
+    set(initialValues, IS_OWNED_BY_USER, isOwnedByUser)
 
     let availabilityType = DownloadTrackAvailabilityType.PUBLIC
     const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
@@ -140,9 +144,10 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
     stemsValue,
     isDownloadGated,
     tempDownloadConditions,
-    savedDownloadConditions,
     streamConditions,
-    lastGateKeeper
+    lastGateKeeper,
+    isOwnedByUser,
+    savedDownloadConditions
   ])
 
   const handleSubmit = useCallback(
@@ -152,6 +157,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const stems = get(values, STEMS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+      const isOwnedByUser = get(values, IS_OWNED_BY_USER)
 
       setIsDownloadable(isDownloadable)
       setisOriginalAvailable(get(values, IS_ORIGINAL_AVAILABLE))
@@ -188,6 +194,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
               ...lastGateKeeper,
               access: 'stemsAndDownloads'
             })
+            setIsOwnedByUser(!!isOwnedByUser)
             break
           }
           case DownloadTrackAvailabilityType.FOLLOWERS: {
@@ -208,13 +215,14 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
       }
     },
     [
-      streamConditions,
+      setIsOwnedByUser,
       setIsDownloadable,
       setisOriginalAvailable,
       setStemsValue,
+      streamConditions,
+      setLastGateKeeper,
       setIsDownloadGated,
-      setDownloadConditions,
-      setLastGateKeeper
+      setDownloadConditions
     ]
   )
 

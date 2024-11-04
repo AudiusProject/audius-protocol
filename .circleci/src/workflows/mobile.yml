@@ -3,12 +3,6 @@ jobs:
   - mobile-init:
       context: Audius Mobile Client
 
-  - mobile-comment-native-code-change:
-      context: Audius Mobile Client
-      filters:
-        branches:
-          ignore: /(^main|^release.*)$/
-
   - mobile-build-staging-ios:
       context: Audius Mobile Client
       requires:

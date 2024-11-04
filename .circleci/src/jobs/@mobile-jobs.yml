@@ -41,22 +41,12 @@ mobile-init:
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
 
-mobile-comment-native-code-change:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: cimg/node:14.20
-  steps:
-    - checkout
-    - mobile-halt-if-no-native-changes
-    - web-pr-comment:
-        comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @dylanjeffers @sliptype'
-
 mobile-build-staging-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -76,7 +66,7 @@ mobile-build-upload-staging-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -95,7 +85,7 @@ mobile-build-production-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -114,7 +104,7 @@ mobile-build-upload-production-ios-if-full-release:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -135,7 +125,7 @@ mobile-deploy-codepush-production-ios-if-ota-release:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -154,7 +144,7 @@ mobile-build-upload-releasecandidate-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -173,7 +163,7 @@ mobile-build-upload-staging-releasecandidate-ios:
   # run on macos so app can be created and signed.
   resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '15.2.0'
+    xcode: '15.4.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail

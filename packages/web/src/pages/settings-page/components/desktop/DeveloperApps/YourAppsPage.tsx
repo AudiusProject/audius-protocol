@@ -14,13 +14,15 @@ import { CreateAppPageProps, CreateAppsPages } from './types'
 
 const { getUserId } = accountSelectors
 
+const maxAppsAllowed = 5
+
 const messages = {
   title: 'Your Apps',
-  description: 'Create your own apps using the Audius API.',
+  description: 'Create your own apps using the Audius SDK.',
   yourAppsTitle: 'Your Apps',
   noApps: "You haven't created any apps yet.",
   newAppButton: 'New',
-  maxAllowedApps: 'Maximum of 3 Apps Created'
+  maxAllowedApps: `Maximum of ${maxAppsAllowed} Apps Created`
 }
 
 type YourAppsPageProps = CreateAppPageProps
@@ -33,7 +35,7 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
     { disabled: !userId }
   )
 
-  const hasMaxAllowedApps = data?.apps.length >= 3
+  const hasMaxAllowedApps = data?.apps.length >= maxAppsAllowed
 
   let createAppButton = (
     <Button

@@ -130,7 +130,7 @@ export const PlainButton = (props: PlainButtonProps) => {
   return (
     <BaseButton
       sharedValue={pressed}
-      style={[animatedButtonStyles, buttonStyles]}
+      style={[buttonStyles, animatedButtonStyles]}
       styles={{ text: textCss, ...styles }}
       innerProps={{
         icon: {

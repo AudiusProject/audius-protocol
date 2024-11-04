@@ -159,6 +159,7 @@ export const createUploadTrackMetadataSchema = () =>
     isDownloadable: z.optional(z.boolean()),
     isOriginalAvailable: z.optional(z.boolean()),
     ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    ddexApp: z.optional(z.string()),
     artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
     resourceContributors: z.optional(
       z.array(DDEXResourceContributor).nullable()
