@@ -5,6 +5,7 @@ import { View } from 'react-native'
 import {
   IconCart,
   IconCollectible,
+  IconReceive,
   IconSpecialAccess
 } from '@audius/harmony-native'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
@@ -73,6 +74,10 @@ export const DogEar = (props: DogEarProps) => {
     },
     [DogEarType.USDC_PURCHASE]: {
       icon: IconCart,
+      colors: [specialLightGreen, specialLightGreen]
+    },
+    [DogEarType.USDC_EXTRAS]: {
+      icon: IconReceive,
       colors: [specialLightGreen, specialLightGreen]
     }
   }[type]

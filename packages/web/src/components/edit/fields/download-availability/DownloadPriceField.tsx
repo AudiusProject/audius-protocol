@@ -13,6 +13,7 @@ import {
 import { useField } from 'formik'
 
 import { BoxedTextField } from '../BoxedTextField'
+import { RightsDeclaration } from '../stream-availability/usdc-purchase-gated/RightsDeclaration'
 import { DOWNLOAD_PRICE } from '../types'
 
 const messages = {
@@ -70,6 +71,8 @@ export const DownloadPriceField = (props: TrackAvailabilityFieldsProps) => {
       onChange={handlePriceChange}
       onBlur={handlePriceBlur}
       disabled={disabled}
-    />
+    >
+      <RightsDeclaration />
+    </BoxedTextField>
   )
 }

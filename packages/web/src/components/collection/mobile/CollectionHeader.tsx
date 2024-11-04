@@ -13,7 +13,7 @@ import {
   OverflowAction,
   PurchaseableContentType
 } from '@audius/common/store'
-import { dayjs, formatReleaseDate, getDogEarType } from '@audius/common/utils'
+import { dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -29,7 +29,6 @@ import cn from 'classnames'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -41,6 +40,7 @@ import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
+import { CollectionDogEar } from '../CollectionDogEar'
 import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
@@ -211,25 +211,9 @@ const CollectionHeader = ({
     )
   }
 
-  const renderDogEar = () => {
-    const DogEarType = getDogEarType({
-      streamConditions,
-      isOwner,
-      hasStreamAccess
-    })
-    if (!loading && DogEarType) {
-      return (
-        <div className={styles.borderOffset}>
-          <DogEar type={DogEarType} />
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
     <Flex direction='column'>
-      {renderDogEar()}
+      {loading ? null : <CollectionDogEar collectionId={collectionId} />}
       <Flex direction='column' alignItems='center' p='l' gap='l'>
         {!isPublished ? (
           shouldShowScheduledRelease ? (

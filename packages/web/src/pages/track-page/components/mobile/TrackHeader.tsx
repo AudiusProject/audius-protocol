@@ -17,11 +17,7 @@ import {
   PurchaseableContentType,
   cacheTracksSelectors
 } from '@audius/common/store'
-import {
-  getDogEarType,
-  Nullable,
-  formatReleaseDate
-} from '@audius/common/utils'
+import { Nullable, formatReleaseDate } from '@audius/common/utils'
 import {
   Flex,
   IconCollectible,
@@ -45,13 +41,13 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
-import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -303,22 +299,6 @@ const TrackHeader = ({
     />
   )
 
-  const renderDogEar = () => {
-    const DogEarType = getDogEarType({
-      streamConditions,
-      isOwner,
-      hasStreamAccess
-    })
-    if (!isLoading && DogEarType) {
-      return (
-        <div className={styles.borderOffset}>
-          <DogEar type={DogEarType} />
-        </div>
-      )
-    }
-    return null
-  }
-
   const renderHeaderText = () => {
     if (isStreamGated) {
       let IconComponent = IconSpecialAccess
@@ -351,7 +331,7 @@ const TrackHeader = ({
 
   return (
     <div className={styles.trackHeader}>
-      {renderDogEar()}
+      <TrackDogEar trackId={trackId} />
       <Flex gap='s' direction='column'>
         {renderHeaderText()}
         {aiAttributedUserId ? (

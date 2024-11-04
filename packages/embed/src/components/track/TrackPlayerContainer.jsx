@@ -135,6 +135,9 @@ const TrackPlayerContainer = ({
 
   const albumArtURL = getArtworkUrl(track)
 
+  const hasPremiumExtras =
+    track.isDownloadGated && instanceOfPurchaseGate(track.downloadConditions)
+
   const props = {
     title: track.title,
     mediaKey,
@@ -151,7 +154,8 @@ const TrackPlayerContainer = ({
     backgroundColor,
     isTwitter,
     streamConditions: track.streamConditions,
-    did404
+    did404,
+    hasPremiumExtras
   }
 
   let trackPlayer

@@ -4,6 +4,7 @@ import {
   IconCart,
   IconCollectible,
   IconLock,
+  IconReceive,
   useTheme,
   ColorTheme,
   Box
@@ -13,6 +14,8 @@ import Rectangle from 'assets/img/dogEarRectangle.svg'
 
 export type DogEarProps = {
   type: DogEarType
+  /** Border width of container surrounding dog ear */
+  borderOffset?: number
   className?: string
 }
 
@@ -24,6 +27,8 @@ const getIcon = (type: DogEarType) => {
       return IconCollectible
     case DogEarType.USDC_PURCHASE:
       return IconCart
+    case DogEarType.USDC_EXTRAS:
+      return IconReceive
     case DogEarType.SPECIAL_ACCESS:
     default:
       return IconSpecialAccess
@@ -37,12 +42,13 @@ const getColor = (type: DogEarType, color: ColorTheme['day']) => {
     case DogEarType.LOCKED:
       return color.special.blue
     case DogEarType.USDC_PURCHASE:
+    case DogEarType.USDC_EXTRAS:
       return color.special.lightGreen
   }
 }
 
 export const DogEar = (props: DogEarProps) => {
-  const { type, className } = props
+  const { type, className, borderOffset = 1 } = props
   const Icon = getIcon(type)
   const { spacing, color } = useTheme()
   const tagColor = getColor(type, color)
@@ -51,8 +57,8 @@ export const DogEar = (props: DogEarProps) => {
     <Box
       css={{
         position: 'absolute',
-        top: 0,
-        left: 0,
+        top: -1 * borderOffset,
+        left: -1 * borderOffset,
         zIndex: 10,
         overflow: 'hidden'
       }}

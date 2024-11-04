@@ -110,10 +110,14 @@ export const CommentForm = (props: CommentFormProps) => {
     { disabled: !replyingToComment }
   )
 
-  const handleSubmit = (message: string, mentions?: CommentMention[]) => {
-    onSubmit(message, mentions)
-    setMessageId((id) => ++id)
-  }
+  const handleSubmit = useCallback(
+    (message: string, mentions?: CommentMention[]) => {
+      onSubmit(message, mentions)
+      setMessageId((id) => ++id)
+      setTimeout(() => ref.current?.blur())
+    },
+    [onSubmit]
+  )
 
   const focusInput = useCallback(() => {
     // setTimeout is required to focus the input on android

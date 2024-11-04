@@ -635,11 +635,12 @@ def verify_user(params: ManageEntityParameters):
             user_record.verified_with_tiktok = True
 
     params.add_record(user_id, user_record)
-    params.challenge_bus.dispatch(
-        ChallengeEvent.connect_verified,
-        params.block_number,
-        params.block_datetime,
-        user_id,
-    )
+    if user_record.is_verified:
+        params.challenge_bus.dispatch(
+            ChallengeEvent.connect_verified,
+            params.block_number,
+            params.block_datetime,
+            user_id,
+        )
 
     return user_record

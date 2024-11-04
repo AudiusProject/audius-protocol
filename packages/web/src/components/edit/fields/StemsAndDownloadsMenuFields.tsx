@@ -31,7 +31,8 @@ import {
   IS_ORIGINAL_AVAILABLE,
   STEMS,
   DOWNLOAD_PRICE,
-  StemsAndDownloadsFormValues
+  StemsAndDownloadsFormValues,
+  IS_OWNED_BY_USER
 } from './types'
 
 const messages = {
@@ -62,7 +63,8 @@ export const stemsAndDownloadsSchema = ({
       [IS_ORIGINAL_AVAILABLE]: z.boolean(),
       [DOWNLOAD_CONDITIONS]: z.any(),
       [STREAM_CONDITIONS]: z.any(),
-      [DOWNLOAD_AVAILABILITY_TYPE]: z.nativeEnum(DownloadTrackAvailabilityType)
+      [DOWNLOAD_AVAILABILITY_TYPE]: z.nativeEnum(DownloadTrackAvailabilityType),
+      [IS_OWNED_BY_USER]: z.boolean()
     })
     .refine(
       (values) => {

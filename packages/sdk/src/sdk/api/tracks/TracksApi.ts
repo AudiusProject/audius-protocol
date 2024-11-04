@@ -119,15 +119,6 @@ export class TracksApi extends GeneratedTracksApi {
       parsedMetadata,
       userId
     )
-    const uploadOptions: { [key: string]: string } = {}
-    if (metadata.previewStartSeconds) {
-      uploadOptions.previewStartSeconds =
-        metadata.previewStartSeconds.toString()
-    }
-
-    if (metadata.placementHosts) {
-      uploadOptions.placement_hosts = metadata.placementHosts
-    }
 
     // Upload track audio and cover art to storage node
     this.logger.info('Uploading track audio and cover art')
@@ -149,7 +140,8 @@ export class TracksApi extends GeneratedTracksApi {
             file: trackFile,
             onProgress,
             template: 'audio',
-            options: uploadOptions
+            options:
+              this.trackUploadHelper.extractMediorumUploadOptions(metadata)
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackAudio', e)
