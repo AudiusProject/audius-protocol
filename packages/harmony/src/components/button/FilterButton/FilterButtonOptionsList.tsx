@@ -97,6 +97,7 @@ export const OptionsList = <Value extends string>({
             }}
             key={option.value}
             {...option}
+            label={option.label ?? option.value}
             onChange={onChange}
             isActive={option.value === activeValue}
           />
