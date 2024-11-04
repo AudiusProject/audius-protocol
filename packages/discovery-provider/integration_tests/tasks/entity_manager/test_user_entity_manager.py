@@ -931,7 +931,7 @@ def test_index_verify_users(app, mocker):
                     )
                 },
             ],
-            "InvalidVerifyUserWrongSigner": [
+            "InvalidVerifyUserNoChallenge": [
                 {
                     "args": AttributeDict(
                         {
