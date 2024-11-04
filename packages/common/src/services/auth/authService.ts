@@ -1,11 +1,12 @@
 import type { LocalStorage } from '../local-storage'
 
-import { createHedgehog } from './hedgehog'
+import { HedgehogConfig, createHedgehog } from './hedgehog'
 import type { IdentityService } from './identity'
 
 export type AuthServiceConfig = {
   identityService: IdentityService
   localStorage: LocalStorage
+  createKey?: HedgehogConfig['createKey']
 }
 
 export type SignInResponse = {
@@ -33,12 +34,14 @@ export type AuthService = {
 
 export const createAuthService = ({
   localStorage,
-  identityService
+  identityService,
+  createKey
 }: AuthServiceConfig): AuthService => {
   const hedgehogInstance = createHedgehog({
     localStorage,
     useLocalStorage: true,
-    identityService
+    identityService,
+    createKey
   })
 
   const signIn = async (
