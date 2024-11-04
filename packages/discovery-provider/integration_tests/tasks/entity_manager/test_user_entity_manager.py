@@ -893,8 +893,12 @@ def test_index_verify_users(app, mocker):
             challenge_event_bus=bus_mock,
         )
 
-        metadata = {
+        verified_metadata = {
             "is_verified": True,
+            "twitter_handle": "twitter handle",
+        }
+        unverified_metadata = {
+            "is_verified": False,
             "twitter_handle": "twitter handle",
         }
 
@@ -907,13 +911,13 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 1,
                             "_action": "Verify",
-                            "_metadata": f'{{"cid": "VerifyUserCid", "data": {json.dumps(metadata)}}}',
+                            "_metadata": f'{{"cid": "VerifyUserCid", "data": {json.dumps(verified_metadata)}}}',
                             "_signer": "0x",
                         }
                     )
                 },
             ],
-            "InvalidVerifyUser": [
+            "InvalidVerifyUserWrongSigner": [
                 {
                     "args": AttributeDict(
                         {
@@ -921,8 +925,22 @@ def test_index_verify_users(app, mocker):
                             "_entityType": "User",
                             "_userId": 2,
                             "_action": "Verify",
-                            "_metadata": f'{{"cid": "InvalidVerifyUserCid", "data": {json.dumps(metadata)}}}',
-                            "_signer": "user1wallet",
+                            "_metadata": f'{{"cid": "InvalidVerifyUserCid", "data": {json.dumps(verified_metadata)}}}',
+                            "_signer": "user1wallet",  # wrong wallet
+                        }
+                    )
+                },
+            ],
+            "InvalidVerifyUserWrongSigner": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": 2,
+                            "_entityType": "User",
+                            "_userId": 2,
+                            "_action": "Verify",
+                            "_metadata": f'{{"cid": "UpdateSocialHandle", "data": {json.dumps(unverified_metadata)}}}',  # should not dispatch challenge
+                            "_signer": "0x",
                         }
                     )
                 },
@@ -977,6 +995,7 @@ def test_index_verify_users(app, mocker):
                     ChallengeEvent.connect_verified, 0, BLOCK_DATETIME, 1
                 )
             ]
+            assert len(calls) == 1
             bus_mock.assert_has_calls(calls, any_order=True)
 
 
