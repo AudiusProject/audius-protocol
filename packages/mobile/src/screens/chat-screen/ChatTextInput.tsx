@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import type { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { decodeHashId } from '@audius/common/utils'
+import type { TextInput as RNTextInput } from 'react-native'
 import { Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -37,6 +38,7 @@ export const ChatTextInput = ({
   // The track and collection ids used to render the composer preview
   const [trackId, setTrackId] = useState<Nullable<ID>>(null)
   const [collectionId, setCollectionId] = useState<Nullable<ID>>(null)
+  const ref = useRef<RNTextInput>(null)
 
   const handleChange = useCallback(
     // (value: string, linkEntities: LinkEntity[]) => {
@@ -56,6 +58,7 @@ export const ChatTextInput = ({
         dispatch(sendMessage({ chatId, message: value }))
         onMessageSent()
         setMessageId((id) => ++id)
+        setTimeout(() => ref.current?.blur())
       }
     },
     [chatId, dispatch, onMessageSent]
@@ -88,6 +91,7 @@ export const ChatTextInput = ({
         }}
       >
         <ComposerInput
+          ref={ref}
           messageId={messageId}
           presetMessage={presetMessage}
           placeholder={messages.startNewMessage}
