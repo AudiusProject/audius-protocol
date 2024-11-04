@@ -53,7 +53,6 @@ function* signOut() {
   yield* call([localStorage, 'clearAudiusUserWalletOverride'])
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
-  // TODO-NOW
   yield* call([audiusBackendInstance, 'signOut'])
   yield* call([authService, authService.signOut])
   for (const storageKey of storageKeysToRemove) {

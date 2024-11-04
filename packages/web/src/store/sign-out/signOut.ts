@@ -28,7 +28,6 @@ export const signOut = async (
   await localStorage.clearAudiusAccountUser()
   await localStorage.clearPlaybackRate()
   removeHasRequestedBrowserPermission()
-  // TODO-NOW
   await audiusBackendInstance.signOut()
   await authService.signOut()
   clearTheme()
