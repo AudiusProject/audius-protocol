@@ -1,5 +1,21 @@
 # @audius/sdk
 
+## 7.0.0
+
+### Major Changes
+
+- db3f11a: BREAKING CHANGE: Removes legacy SDK ('libs') from this package.
+- a2803dd: Update sdk.challenges.generateSpecifier signature
+
+### Patch Changes
+
+- 10668ce: Add location util
+- 3f7424e: Improvements to blast upgrade flow
+- 41b62a5: fix concurrency issue with addRequestSignatureMiddleware
+- 3ad4d63: Chat permissions accepts permit_list
+- 956a9ba: Updated services bootstrap
+- 5c5bdd3: Fix purchasing tracks and albums with external wallet
+
 ## 4.2.0
 
 ### Minor Changes
