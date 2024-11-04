@@ -468,13 +468,16 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         }
       ),
       ...trackFiles.map(
-        async (trackFile) =>
+        async (trackFile, idx) =>
           await retry3(
             async () =>
               await this.storage.uploadFile({
                 file: trackFile,
                 onProgress,
-                template: 'audio'
+                template: 'audio',
+                options: this.trackUploadHelper.extractMediorumUploadOptions(
+                  trackMetadatas[idx]!
+                )
               }),
             (e) => {
               this.logger.info('Retrying uploadTrackAudio', e)
