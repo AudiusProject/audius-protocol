@@ -9,5 +9,6 @@ export const messages = {
   reposted: 'Reposted',
   repostedAndFavorited: 'Reposted & Favorited',
   timeLeft: 'left',
-  loading: 'Loading...'
+  // Hidden behind skeleton
+  loading: '------'
 }

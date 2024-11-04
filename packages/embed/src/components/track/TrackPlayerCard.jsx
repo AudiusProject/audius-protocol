@@ -31,7 +31,8 @@ const TrackPlayerCard = ({
   seekTo,
   backgroundColor,
   isTwitter,
-  streamConditions
+  streamConditions,
+  hasPremiumExtras
 }) => {
   const mobileWebTwitter = isMobileWebTwitter(isTwitter)
   const getBottomWrapperStyle = () =>
@@ -72,8 +73,11 @@ const TrackPlayerCard = ({
       backgroundColor={backgroundColor}
       twitterURL={trackURL}
     >
-      {isGated ? (
-        <DogEar variant={isPurchaseable ? 'purchase' : 'special'} />
+      {isGated || hasPremiumExtras ? (
+        <DogEar
+          size='s'
+          variant={isPurchaseable ? 'purchase' : isGated ? 'special' : 'extras'}
+        />
       ) : null}
       <div className={styles.paddingContainer}>
         <div className={styles.artworkWrapper} style={artworkWrapperStyle}>

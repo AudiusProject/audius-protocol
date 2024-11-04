@@ -6,13 +6,15 @@ import {
   accountSelectors,
   gatedContentActions
 } from '@audius/common/store'
-import { getDogEarType, isLongFormContent } from '@audius/common/utils'
+import { isLongFormContent } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { DogEar } from 'app/components/core'
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { setVisibility } from 'app/store/drawers/slice'
+
+import { CollectionDogEar } from '../core/CollectionDogEar'
+import { TrackDogEar } from '../core/TrackDogEar'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
@@ -78,12 +80,6 @@ export const LineupTile = ({
   const isArtistPick = artist_pick_track_id === id
   const { hasStreamAccess } = useGatedContentAccess(item)
 
-  const dogEarType = getDogEarType({
-    streamConditions,
-    isOwner,
-    hasStreamAccess
-  })
-
   const handlePress = useCallback(() => {
     if (contentId && !hasStreamAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: contentId }))
@@ -103,7 +99,11 @@ export const LineupTile = ({
       scaleTo={scale}
       {...TileProps}
     >
-      {dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null}
+      {isTrack ? (
+        <TrackDogEar trackId={id} hideUnlocked />
+      ) : (
+        <CollectionDogEar collectionId={id} hideUnlocked />
+      )}
       <View>
         <LineupTileTopRight
           duration={duration}

@@ -27,7 +27,8 @@ const TrackPlayerCompact = ({
   duration,
   seekTo,
   backgroundColor,
-  streamConditions
+  streamConditions,
+  hasPremiumExtras
 }) => {
   const isGated = !!streamConditions
   const isPurchaseable =
@@ -54,8 +55,13 @@ const TrackPlayerCompact = ({
         />
       </div>
       <div className={styles.trackInfo}>
-        {isGated ? (
-          <DogEar size='s' variant={isPurchaseable ? 'purchase' : 'special'} />
+        {isGated || hasPremiumExtras ? (
+          <DogEar
+            size='s'
+            variant={
+              isPurchaseable ? 'purchase' : isGated ? 'special' : 'extras'
+            }
+          />
         ) : null}
         <div className={styles.topSection}>
           {isPurchaseable ? <Preview /> : null}

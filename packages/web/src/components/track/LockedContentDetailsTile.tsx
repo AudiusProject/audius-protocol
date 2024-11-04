@@ -7,7 +7,7 @@ import {
   UserMetadata,
   Collection
 } from '@audius/common/models'
-import { getDogEarType, Nullable } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
 import {
   Flex,
   Text,
@@ -19,13 +19,14 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { DogEar } from 'components/dog-ear'
+import { CollectionDogEar } from 'components/collection'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './LockedContentDetailsTile.module.css'
+import { TrackDogEar } from './TrackDogEar'
 
 const messages = {
   by: 'By',
@@ -55,7 +56,6 @@ export const LockedContentDetailsTile = ({
   const isAlbum = 'playlist_id' in metadata
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
   const title = isAlbum ? metadata.playlist_name : metadata.title
-  const downloadConditions = !isAlbum ? metadata.download_conditions : null
   const isDownloadGated = !isAlbum && metadata.is_download_gated
 
   const trackArt = useTrackCoverArt(
@@ -70,10 +70,6 @@ export const LockedContentDetailsTile = ({
   )
   const image = isAlbum ? albumArt : trackArt
 
-  const dogEarType = getDogEarType({
-    streamConditions,
-    downloadConditions
-  })
   const label = `${title} by ${owner.name}`
   const isCollectibleGated = isContentCollectibleGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -114,17 +110,11 @@ export const LockedContentDetailsTile = ({
         image={image}
         aria-label={label}
       />
-      {dogEarType ? (
-        <Flex
-          css={{
-            position: 'absolute',
-            top: -1,
-            left: -1
-          }}
-        >
-          <DogEar type={dogEarType} />
-        </Flex>
-      ) : null}
+      {isAlbum ? (
+        <CollectionDogEar collectionId={contentId} />
+      ) : (
+        <TrackDogEar trackId={contentId} />
+      )}
       <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
           <Flex

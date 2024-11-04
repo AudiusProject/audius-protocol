@@ -1,5 +1,8 @@
-import { useGatedContentAccess } from '@audius/common/hooks'
-import { DogEarType, SquareSizes } from '@audius/common/models'
+import {
+  useDownloadableContentAccess,
+  useGatedContentAccess
+} from '@audius/common/hooks'
+import { SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { averageColorSelectors, playerSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
@@ -7,9 +10,11 @@ import type { Nullable } from '@audius/common/utils'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { DogEar, Shadow } from 'app/components/core'
+import { Shadow } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
+
+import { TrackDogEar } from '../core/TrackDogEar'
 const { getPreviewing } = playerSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
 
@@ -57,11 +62,15 @@ export const Artwork = ({ track }: ArtworkProps) => {
 
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)
+  const canPurchase =
+    track?.stream_conditions &&
+    'usdc_purchase' in track.stream_conditions &&
+    !hasStreamAccess
+  const { shouldDisplayPremiumDownloadLocked } = useDownloadableContentAccess({
+    trackId: track?.track_id ?? 0
+  })
   const shouldShowDogEar =
-    isPreviewing ||
-    (track?.stream_conditions &&
-      'usdc_purchase' in track.stream_conditions &&
-      !hasStreamAccess)
+    isPreviewing || canPurchase || shouldDisplayPremiumDownloadLocked
 
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
@@ -71,7 +80,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
         size={SquareSizes.SIZE_1000_BY_1000}
       />
       {shouldShowDogEar ? (
-        <DogEar type={DogEarType.USDC_PURCHASE} borderOffset={2} />
+        <TrackDogEar trackId={track?.track_id ?? 0} borderOffset={2} />
       ) : null}
     </Shadow>
   )

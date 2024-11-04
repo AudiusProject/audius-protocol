@@ -16,12 +16,6 @@
   margin: 0px auto var(--harmony-unit-3);
 }
 
-.borderOffset {
-  position: absolute;
-  top: calc(-1 * var(--border-width));
-  left: calc(-1 * var(--border-width));
-}
-
 .container.readonly {
   --border-width: 0px;
   min-width: 448px;
@@ -212,10 +206,4 @@
 
 .isHidden {
   visibility: hidden;
-}
-
-.container .gatedDogEarContainer {
-  box-shadow: 0px 0px var(--harmony-unit-2) rgba(0, 0, 0, 0.25),
-    inset var(--harmony-unit-1) var(--harmony-unit-1) var(--harmony-unit-2)
-      rgba(255, 255, 255, 0.2);
 }

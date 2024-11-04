@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react'
 import { useMemo } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   SquareSizes,
   GatedContentType,
@@ -10,7 +9,6 @@ import {
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common/store'
-import { getDogEarType } from '@audius/common/utils'
 import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
@@ -22,13 +20,15 @@ import {
   IconCollectible,
   IconSpecialAccess
 } from '@audius/harmony-native'
-import { DogEar, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+
+import { TrackDogEar } from '../core/TrackDogEar'
 
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
@@ -98,12 +98,6 @@ export const TrackDetailsTile = ({
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
     useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)
-  const { hasStreamAccess } = useGatedContentAccess(track)
-
-  const dogEarType = getDogEarType({
-    hasStreamAccess,
-    streamConditions: track?.stream_conditions
-  })
 
   const type = isUSDCPurchaseGated
     ? GatedContentType.USDC_PURCHASE
@@ -145,7 +139,7 @@ export const TrackDetailsTile = ({
 
   return (
     <View style={styles.root}>
-      {dogEarType ? <DogEar type={dogEarType} /> : null}
+      <TrackDogEar trackId={trackId} />
       <View style={styles.trackDetails}>
         <TrackImage
           style={styles.trackImage}
