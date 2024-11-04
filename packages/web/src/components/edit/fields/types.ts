@@ -69,4 +69,5 @@ export type StemsAndDownloadsFormValues = {
   [DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
   [STREAM_CONDITIONS]: Nullable<AccessConditions>
   [DOWNLOAD_AVAILABILITY_TYPE]: DownloadTrackAvailabilityType
+  [IS_OWNED_BY_USER]: boolean
 }
