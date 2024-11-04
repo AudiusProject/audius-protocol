@@ -18,18 +18,18 @@ import {
   usePremiumContentPurchaseModal,
   PurchaseableContentType
 } from '@audius/common/store'
-import { getDogEarType, removeNullable } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { removeNullable } from '@audius/common/utils'
+import { Flex, Paper, Text } from '@audius/harmony'
 
 import {
   CollectiblesPlaylistTableColumn,
   CollectiblesPlaylistTable
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
+import { CollectionDogEar } from 'components/collection'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
-import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
@@ -206,11 +206,6 @@ const CollectionPage = ({
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
-  const streamConditions =
-    metadata && 'stream_conditions' in metadata
-      ? metadata?.stream_conditions
-      : null
-
   const {
     isEmpty,
     lastModifiedDate,
@@ -243,12 +238,6 @@ const CollectionPage = ({
     [openPremiumContentModal]
   )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
-  const dogEarType =
-    (!collectionLoading &&
-      getDogEarType({
-        streamConditions
-      })) ||
-    undefined
 
   const topSection = (
     <CollectionHeader
@@ -340,12 +329,8 @@ const CollectionPage = ({
       fromOpacity={1}
       scrollableSearch
     >
-      <Tile
-        className={styles.bodyWrapper}
-        size='large'
-        elevation='mid'
-        dogEar={dogEarType}
-      >
+      <Paper column mb='unit-10' css={{ minWidth: 774 }}>
+        <CollectionDogEar collectionId={playlistId} borderOffset={0} />
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
           <EmptyContent
@@ -389,7 +374,7 @@ const CollectionPage = ({
             />
           </div>
         )}
-      </Tile>
+      </Paper>
 
       {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
         <>

@@ -43,14 +43,6 @@ import { TRENDING_BADGE_LIMIT } from 'common/store/pages/track/sagas'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { SsrContext } from 'ssr/SsrContext'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { trackRemixesPage } from 'utils/route'
@@ -370,16 +362,6 @@ class TrackPageProvider extends Component<
     this.props.goToRoute(REPOSTING_USERS_ROUTE)
   }
 
-  onClickReposts = () => {
-    this.props.track && this.props.setRepostUsers(this.props.track.track_id)
-    this.props.setModalVisibility()
-  }
-
-  onClickFavorites = () => {
-    this.props.track && this.props.setFavoriteUsers(this.props.track.track_id)
-    this.props.setModalVisibility()
-  }
-
   render() {
     const {
       track,
@@ -412,9 +394,7 @@ class TrackPageProvider extends Component<
       // Follow Props
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
-      makePublic: this.props.makeTrackPublic,
-      onClickReposts: this.onClickReposts,
-      onClickFavorites: this.onClickFavorites
+      makePublic: this.props.makeTrackPublic
     }
     const releaseDate = track ? track.release_date || track.created_at : ''
     const {
@@ -608,23 +588,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setFavoriteTrackId: (trackId: ID) =>
       dispatch(setFavorite(trackId, FavoriteType.TRACK)),
     record: (event: TrackEvent) => dispatch(event),
-    setRepostUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.REPOST,
-          entityType: UserListEntityType.TRACK,
-          id: trackID
-        })
-      ),
-    setFavoriteUsers: (trackID: ID) =>
-      dispatch(
-        setUsers({
-          userListType: UserListType.FAVORITE,
-          entityType: UserListEntityType.TRACK,
-          id: trackID
-        })
-      ),
-    setModalVisibility: () => dispatch(setVisibility(true)),
     refetchTracksLinup: () => dispatch(trackPageActions.refetchLineup())
   }
 }

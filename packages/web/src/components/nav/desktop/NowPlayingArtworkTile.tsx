@@ -1,7 +1,6 @@
 import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
-import { DogEarType, SquareSizes } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import {
   accountSelectors,
   averageColorSelectors,
@@ -19,15 +18,15 @@ import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 
-import { DogEar } from 'components/dog-ear'
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { TrackDogEar } from 'components/track/TrackDogEar'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { fullTrackPage } from 'utils/route'
 
-const { getTrackId, getCollectible, getPreviewing } = playerSelectors
+const { getTrackId, getCollectible } = playerSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -84,13 +83,6 @@ export const NowPlayingArtworkTile = () => {
     getTrack(state, { id: trackId })
   )
   const isStreamGated = !!track?.is_stream_gated
-  const { hasStreamAccess } = useGatedContentAccess(track)
-  const isPreviewing = useSelector(getPreviewing)
-  const shouldShowPurchaseDogEar =
-    isPreviewing ||
-    (track?.stream_conditions &&
-      'usdc_purchase' in track.stream_conditions &&
-      !hasStreamAccess)
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id
@@ -145,12 +137,6 @@ export const NowPlayingArtworkTile = () => {
 
   if (!permalink || !trackId) return null
 
-  const renderDogEar = () => {
-    return shouldShowPurchaseDogEar ? (
-      <DogEar type={DogEarType.USDC_PURCHASE} />
-    ) : null
-  }
-
   const renderCoverArt = () => {
     return (
       <FadeInUp style={{ boxShadow: coverArtColor }}>
@@ -189,7 +175,7 @@ export const NowPlayingArtworkTile = () => {
       h={208}
       w={208}
     >
-      {renderDogEar()}
+      <TrackDogEar trackId={trackId} />
       {renderCoverArt()}
     </Box>
   )

@@ -1,6 +1,4 @@
-import { useContext } from 'react'
-
-import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import {
   isContentCollectibleGated,
@@ -17,7 +15,6 @@ import {
   IconReceive,
   IconSpecialAccess
 } from '@audius/harmony-native'
-import { SearchContext } from 'app/screens/search-screen/searchState'
 
 import { LineupTileLabel } from './LineupTileLabel'
 
@@ -25,7 +22,7 @@ const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   premium: 'Premium',
-  premiumExtras: 'Extras'
+  extras: 'Extras'
 }
 
 type GatedTrackLabelProps = {
@@ -35,8 +32,6 @@ type GatedTrackLabelProps = {
 export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
   const { trackId } = props
   const { data: track } = useGetTrackById({ id: trackId })
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { active: onSearchScreen } = useContext(SearchContext)
 
   if (!track) return null
 
@@ -44,11 +39,8 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
     is_stream_gated,
     is_download_gated,
     stream_conditions,
-    download_conditions,
-    owner_id
+    download_conditions
   } = track
-
-  const isOwner = owner_id === currentUserId
 
   let message: Maybe<string>
   let Icon: Maybe<IconComponent>
@@ -71,11 +63,13 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
       Icon = IconCart
       color = 'premium'
     }
-  } else if (is_download_gated && onSearchScreen) {
+  } else if (is_download_gated) {
+    message = messages.extras
+    Icon = IconReceive
     if (isContentUSDCPurchaseGated(download_conditions)) {
-      message = messages.premiumExtras
-      Icon = IconReceive
       color = 'premium'
+    } else {
+      color = 'subdued'
     }
   }
 
@@ -84,7 +78,7 @@ export const GatedTrackLabel = (props: GatedTrackLabelProps) => {
   }
 
   return (
-    <LineupTileLabel icon={Icon} color={isOwner ? 'subdued' : color}>
+    <LineupTileLabel icon={Icon} color={color}>
       {message}
     </LineupTileLabel>
   )

@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common/models'
-import {
-  DogEarType,
-  SquareSizes,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
+import { SquareSizes, isContentUSDCPurchaseGated } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors
@@ -25,7 +21,8 @@ import {
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { DogEar, LockedStatusBadge } from '../core'
+import { LockedStatusBadge } from '../core'
+import { CollectionDogEar } from '../core/CollectionDogEar'
 import { CollectionImageV2 } from '../image/CollectionImageV2'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
@@ -85,12 +82,9 @@ export const CollectionCard = (props: CollectionCardProps) => {
   const isOwner = accountId === playlist_owner_id
   const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-  const dogEarType =
-    isPurchase && (!access.stream || isOwner) ? DogEarType.USDC_PURCHASE : null
-
   return (
     <Paper border='default' onPress={handlePress}>
-      {dogEarType ? <DogEar type={dogEarType} /> : null}
+      <CollectionDogEar collectionId={playlist_id} />
       <Flex p='s' gap='s'>
         <CollectionImageV2
           collectionId={playlist_id}

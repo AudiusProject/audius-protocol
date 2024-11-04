@@ -84,12 +84,6 @@
   overflow: hidden;
 }
 
-.borderOffset {
-  position: absolute;
-  left: calc(-1 * var(--border-width));
-  top: calc(-1 * var(--border-width));
-}
-
 .info {
   text-align: center;
   width: 100%;

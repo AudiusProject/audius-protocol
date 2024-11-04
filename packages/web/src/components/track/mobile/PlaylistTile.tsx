@@ -19,8 +19,7 @@ import {
 import {
   Nullable,
   formatCount,
-  formatLineupTileDuration,
-  getDogEarType
+  formatLineupTileDuration
 } from '@audius/common/utils'
 import {
   Box,
@@ -36,7 +35,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
-import { DogEar } from 'components/dog-ear'
+import { CollectionDogEar } from 'components/collection'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -320,12 +319,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     openLockedContentModal
   ])
 
-  const DogEarIconType = getDogEarType({
-    streamConditions,
-    isOwner,
-    hasStreamAccess
-  })
-
   let specialContentLabel = null
   if (isStreamGated) {
     specialContentLabel = (
@@ -352,11 +345,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         containerClassName
       )}
     >
-      {DogEarIconType ? (
-        <div className={styles.borderOffset}>
-          <DogEar type={DogEarIconType} />
-        </div>
-      ) : null}
+      <CollectionDogEar collectionId={id} borderOffset={0} hideUnlocked />
       <div
         css={{ overflow: 'hidden' }}
         className={styles.mainContent}
