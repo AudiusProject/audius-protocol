@@ -1767,7 +1767,7 @@ PODS:
     - React-Core
   - RNReactNativeHapticFeedback (2.2.0):
     - React-Core
-  - RNReanimated (3.15.0):
+  - RNReanimated (3.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1787,10 +1787,32 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 3.15.0)
-    - RNReanimated/worklets (= 3.15.0)
+    - RNReanimated/reanimated (= 3.16.1)
+    - RNReanimated/worklets (= 3.16.1)
     - Yoga
-  - RNReanimated/reanimated (3.15.0):
+  - RNReanimated/reanimated (3.16.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNReanimated/reanimated/apple (= 3.16.1)
+    - Yoga
+  - RNReanimated/reanimated/apple (3.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1811,7 +1833,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated/worklets (3.15.0):
+  - RNReanimated/worklets (3.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1879,7 +1901,7 @@ PODS:
     - Yoga
   - RNShare (10.0.2):
     - React-Core
-  - RNSVG (15.7.1):
+  - RNSVG (15.8.0):
     - React-Core
   - RNZipArchive (7.0.1):
     - React-Core
@@ -2402,11 +2424,11 @@ SPEC CHECKSUMS:
   RNImageCropPicker: 771e2ca319d2cf92e04ebf334ece892ee9a6728f
   RNPermissions: e6379535a4f3166931b2ada9dfe6cdd10c80ae6a
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
-  RNReanimated: dc1c9ba67b938eb02fc293d2e9dafdf8c23233df
+  RNReanimated: 318af83454064b4265cc635ab0cd3e3eed1c272e
   RNScreens: c7ceced6a8384cb9be5e7a5e88e9e714401fd958
   RNSentry: 20fff14a1beee1313d8c3631c54d3e6cced73410
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
-  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
+  RNSVG: 8b1a777d54096b8c2a0fd38fc9d5a454332bbb4d
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
