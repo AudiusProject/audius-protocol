@@ -20,9 +20,7 @@ export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
 
   useEffect(() => {
     if (!isScreenReady) return
-    requestAnimationFrame(() => {
-      setIsPrimaryContentReady(true)
-    })
+    setIsPrimaryContentReady(true)
   }, [isScreenReady, setIsPrimaryContentReady])
 
   return isScreenReady ? <>{children}</> : <>{skeleton ?? null}</>

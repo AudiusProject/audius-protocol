@@ -142,7 +142,8 @@ export const advancedTrackMessages = {
         'If your song is a cover, please provide the original title and creator’s name.',
       originalSongTitle: 'Original Song Title',
       originalSongArtist: 'Original Artist'
-    }
+    },
+    selectedValue: 'Cover'
   }
 }
 

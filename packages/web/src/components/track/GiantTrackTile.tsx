@@ -612,7 +612,10 @@ export const GiantTrackTile = ({
               tag='h3'
               size='s'
               lineHeight='multi'
-              css={(theme) => ({ paddingTop: theme.spacing.m })}
+              css={(theme) => ({
+                paddingTop: theme.spacing.m,
+                userSelect: 'text'
+              })}
             >
               {description}
             </UserGeneratedText>

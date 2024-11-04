@@ -25,6 +25,15 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
             .subquery()
         )
 
+        high_karma_reporters = (
+            session.query(CommentReport.comment_id)
+            .join(AggregateUser, CommentReport.user_id == AggregateUser.user_id)
+            .filter(CommentReport.is_delete == False)
+            .group_by(CommentReport.comment_id)
+            .having(func.sum(AggregateUser.follower_count) >= COMMENT_KARMA_THRESHOLD)
+            .subquery()
+        )
+
         counts = (
             session.query(
                 Comment.entity_id.label("track_id"),
@@ -32,16 +41,19 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
             )
             .outerjoin(track, Comment.entity_id == track.c.track_id)
             .outerjoin(CommentReport, Comment.comment_id == CommentReport.comment_id)
-            .outerjoin(AggregateUser, AggregateUser.user_id == CommentReport.user_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == Comment.user_id)
             .outerjoin(
                 MutedUser,
                 and_(
-                    MutedUser.muted_user_id == Comment.user_id,
+                    MutedUser.muted_user_id
+                    == Comment.user_id,  # filter out comments not muted for this join
                     or_(
                         MutedUser.user_id == current_user_id,
+                        MutedUser.user_id == track.c.owner_id,
                         MutedUser.muted_user_id.in_(muted_by_karma),
                     ),
-                    current_user_id != Comment.user_id,  # show comment to comment owner
+                    current_user_id
+                    != Comment.user_id,  # always show comments to their poster
                 ),
             )
             .filter(
@@ -52,6 +64,7 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
                     and_(
                         CommentReport.user_id != current_user_id,
                         CommentReport.user_id != track.c.owner_id,
+                        Comment.comment_id.notin_(high_karma_reporters),
                     ),
                     CommentReport.is_delete == True,
                 ),
@@ -62,10 +75,6 @@ def get_tracks_comment_count(track_ids, current_user_id, db_session=None):
                 Comment.is_delete == False,
             )
             .group_by(Comment.entity_id)
-            .having(
-                func.coalesce(func.sum(AggregateUser.follower_count), 0)
-                < COMMENT_KARMA_THRESHOLD
-            )
             .all()
         )
 

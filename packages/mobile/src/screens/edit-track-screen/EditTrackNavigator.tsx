@@ -25,6 +25,7 @@ import {
   ReleaseDateScreen,
   KeyBpmScreen
 } from './screens'
+import { CoverAttributionScreen } from './screens/CoverAttributionScreen'
 import { NFTCollectionsScreen } from './screens/NFTCollectionsScreen'
 import { SelectKeyScreen } from './screens/SelectKeyScreen'
 import type { EditTrackFormProps } from './types'
@@ -69,6 +70,10 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
         <Stack.Screen name='KeyBpm' component={KeyBpmScreen} />
+        <Stack.Screen
+          name='CoverAttribution'
+          component={CoverAttributionScreen}
+        />
       </Stack.Navigator>
       <SupportersInfoDrawer />
       <EditAccessConfirmationDrawer />

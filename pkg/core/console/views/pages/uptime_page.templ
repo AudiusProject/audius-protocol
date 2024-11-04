@@ -70,9 +70,13 @@ css recentRollupItem() {
 
 templ (c *Pages) UptimePageHTML(props *UptimePageView) {
 	@c.layout.SiteFrame() {
-		<h1 class="text-xl">
-			SLA Rollup For Blocks { fmt.Sprintf("%d - %d", props.Rollup.BlockStart, props.Rollup.BlockEnd) }
-		</h1>
+        if props.Rollup.BlockEnd > int64(0) {
+            <h1 class="text-xl">
+                SLA Rollup For Blocks { fmt.Sprintf("%d - %d", props.Rollup.BlockStart, props.Rollup.BlockEnd) }
+            </h1>
+        } else {
+            <h1 class="text-xl"> No SLA Rollups have been finalized. </h1>
+        }
 		<div class={ piechart(props.Reports, props.Rollup.BlockEnd-props.Rollup.BlockStart) }></div>
 		<ul>
 			for i, r := range props.Reports {
@@ -82,13 +86,15 @@ templ (c *Pages) UptimePageHTML(props *UptimePageView) {
 				</li>
 			}
 		</ul>
-		<h2 class="text-lg">Explore Rollups</h2>
-		<ul>
-			for _, rr := range props.RecentRollups {
-				<li class={ recentRollupItem() }>
-					<a href={ templ.URL(fmt.Sprintf("/console/sla/%d", rr.ID)) }>{ rr.Time.Time.String() }</a>
-				</li>
-			}
-		</ul>
+        if len(props.RecentRollups) > 0 {
+            <h2 class="text-lg">Explore Recent Rollups</h2>
+            <ul>
+                for _, rr := range props.RecentRollups {
+                    <li class={ recentRollupItem() }>
+                        <a href={ templ.URL(fmt.Sprintf("/console/sla/%d", rr.ID)) }>{ rr.Time.Time.String() }</a>
+                    </li>
+                }
+            </ul>
+        }
 	}
 }

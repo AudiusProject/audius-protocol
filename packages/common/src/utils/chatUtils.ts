@@ -128,7 +128,7 @@ export const matchAudiusLinks = ({
  * @returns string of "title - display name"
  */
 export const formatTrackName = ({ track }: { track: Track }) => {
-  return `${track.title} - ${track.user.name}`
+  return `${track.user.name} - ${track.title}`
 }
 
 /**
@@ -141,7 +141,7 @@ export const formatCollectionName = ({
 }: {
   collection: Playlist
 }) => {
-  return `${collection.playlistName} - ${collection.user.name}`
+  return `${collection.user.name} - ${collection.playlistName}`
 }
 
 /**

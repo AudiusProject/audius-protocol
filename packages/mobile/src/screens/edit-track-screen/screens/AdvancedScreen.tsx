@@ -13,6 +13,7 @@ import {
   ReleaseDateField,
   SubmenuList
 } from '../fields'
+import { CoverAttributionField } from '../fields/CoverAttributionField'
 import { KeyBpmField } from '../fields/KeyBpmField'
 
 export const AdvancedScreen = () => {
@@ -20,6 +21,9 @@ export const AdvancedScreen = () => {
   const [{ value: isUnlisted }] = useField('is_unlisted')
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
+  )
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
   )
 
   return (
@@ -30,19 +34,18 @@ export const AdvancedScreen = () => {
       variant='white'
     >
       <SubmenuList>
-        <LicenseTypeField />
-        <IsrcField />
-        {isUnlisted ? <></> : <ReleaseDateField />}
-        {isUpload ? <></> : <KeyBpmField />}
+        {isUnlisted ? null : <ReleaseDateField />}
+        {isUpload ? null : <KeyBpmField />}
         {isCommentsEnabled ? (
           <SwitchRowField
             name='comments_disabled'
             label={messages.disableComments.header}
             description={messages.disableComments.description}
           />
-        ) : (
-          <></>
-        )}
+        ) : null}
+        <LicenseTypeField />
+        <IsrcField />
+        {isRightsAndCoversEnabled ? <CoverAttributionField /> : null}
       </SubmenuList>
     </FormScreen>
   )

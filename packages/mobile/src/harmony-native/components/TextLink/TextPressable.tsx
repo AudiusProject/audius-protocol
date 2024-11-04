@@ -74,9 +74,7 @@ export const TextPressable = (props: TextLinkProps) => {
           style={[
             style,
             animatedStyles,
-            {
-              textDecorationLine: showUnderline ? 'underline' : 'none'
-            }
+            { textDecorationLine: showUnderline ? 'underline' : 'none' }
           ]}
         >
           {children}

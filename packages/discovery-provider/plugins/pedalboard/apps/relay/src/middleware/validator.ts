@@ -8,7 +8,8 @@ import {
   isTrackDownload,
   isUserCreate,
   isUserDeactivate,
-  isViewNotification
+  isViewNotification,
+  isViewPlaylistNotification
 } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
@@ -125,6 +126,10 @@ export const validator = async (
   }
 
   if (isViewNotification(encodedABI)) {
+    isAnonymousAllowed = true
+  }
+
+  if (isViewPlaylistNotification(encodedABI)) {
     isAnonymousAllowed = true
   }
 
