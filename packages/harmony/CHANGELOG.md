@@ -1,5 +1,13 @@
 # @audius/harmony
 
+## 0.3.1
+
+### Patch Changes
+
+- ae31aee: Minor fixes to CAA defaults, and fix Harmony text component font
+- c805724: Fix Text component to respect theme
+- 1565a01: Fixed formatTrackTimestamp minutes calculation
+
 ## 0.3.0
 
 ### Minor Changes
