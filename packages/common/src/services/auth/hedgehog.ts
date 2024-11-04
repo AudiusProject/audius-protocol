@@ -100,5 +100,17 @@ export const createHedgehog = ({
     })
   }
 
+  // Wrap the original login method to handle ready state
+  const originalLogin = hedgehog.login.bind(hedgehog)
+  hedgehog.login = async (...params: Parameters<typeof originalLogin>) => {
+    hedgehog.ready = false
+    try {
+      const wallet = await originalLogin(...params)
+      return wallet
+    } finally {
+      hedgehog.ready = true
+    }
+  }
+
   return hedgehog as HedgehogInstance
 }
