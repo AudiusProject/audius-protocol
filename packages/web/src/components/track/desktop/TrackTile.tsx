@@ -20,13 +20,13 @@ import {
   Text,
   Flex,
   ProgressBar,
-  Paper,
-  IconStar
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { CollectionDogEar } from 'components/collection'
+import { CollectionAccessTypeLabel } from 'components/collection/CollectionAccessTypeLabel'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -35,12 +35,10 @@ import {
   LockedStatusPill,
   LockedStatusPillProps
 } from '../../locked-status-pill'
-import { GatedTrackLabel } from '../GatedTrackLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
 import { OwnerActionButtons } from '../OwnerActionButtons'
+import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
 import { TrackDogEar } from '../TrackDogEar'
 import { ViewerActionButtons } from '../ViewerActionButtons'
-import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -115,13 +113,11 @@ const TrackTile = ({
   standalone,
   isOwner,
   isUnlisted,
-  isScheduledRelease,
   isStreamGated,
   streamConditions,
   hasStreamAccess,
   listenCount,
   isActive,
-  isArtistPick,
   isDisabled,
   isLoading,
   isPlaying,
@@ -150,7 +146,6 @@ const TrackTile = ({
   isTrack,
   collectionId,
   trackId,
-  releaseDate,
   source
 }: TrackTileProps) => {
   const currentUserId = useSelector(getUserId)
@@ -291,19 +286,10 @@ const TrackTile = ({
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
               <>
-                {isArtistPick ? (
-                  <LineupTileLabel color='accent' icon={IconStar}>
-                    {messages.artistPick}
-                  </LineupTileLabel>
+                {trackId ? <TrackAccessTypeLabel trackId={trackId} /> : null}
+                {collectionId ? (
+                  <CollectionAccessTypeLabel collectionId={collectionId} />
                 ) : null}
-                {!isUnlisted && trackId ? (
-                  <GatedTrackLabel trackId={trackId} />
-                ) : null}
-                <VisibilityLabel
-                  releaseDate={releaseDate}
-                  isUnlisted={isUnlisted}
-                  isScheduledRelease={isScheduledRelease}
-                />
                 {isUnlisted ? null : stats}
               </>
             )}

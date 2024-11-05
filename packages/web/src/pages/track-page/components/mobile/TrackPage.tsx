@@ -247,7 +247,6 @@ const TrackPage = ({
                 {renderMoreByTitle()}
               </Flex>
             }
-            showLeadingElementArtistPick={false}
             // Don't render the first tile in the lineup.
             start={1}
             // Show max 5 loading tiles

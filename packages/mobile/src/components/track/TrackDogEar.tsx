@@ -1,7 +1,7 @@
 import { useTrackDogEar } from '@audius/common/hooks'
 
-import type { DogEarProps } from './DogEar'
-import { DogEar } from './DogEar'
+import type { DogEarProps } from '../core/DogEar'
+import { DogEar } from '../core/DogEar'
 
 type TrackDogEarProps = {
   trackId: number

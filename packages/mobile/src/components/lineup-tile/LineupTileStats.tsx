@@ -8,20 +8,12 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
-import { formatCount, formatReleaseDate } from '@audius/common/utils'
+import { formatCount } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import {
-  IconCalendarMonth,
-  IconHeart,
-  IconVisibilityHidden,
-  IconRepost,
-  IconStar,
-  IconMessage
-} from '@audius/harmony-native'
+import { IconHeart, IconRepost, IconMessage } from '@audius/harmony-native'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
@@ -29,10 +21,10 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { makeStyles, flexRowCentered } from 'app/styles'
 
-import { GatedTrackLabel } from './GatedTrackLabel'
+import { CollectionAccessTypeLabel } from '../collection/CollectionAccessTypeLabel'
+import { TrackAccessTypeLabel } from '../track/TrackAccessTypeLabel'
+
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
-import { LineupTileGatedContentLabel } from './LineupTileGatedContentLabel'
-import { LineupTileLabel } from './LineupTileLabel'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant, LineupTileSource } from './types'
@@ -45,16 +37,6 @@ const formatPlayCount = (playCount?: number) => {
   }
   const suffix = playCount === 1 ? 'Play' : 'Plays'
   return `${formatCount(playCount)} ${suffix}`
-}
-
-const messages = {
-  artistPick: 'Artist Pick',
-  hidden: 'Hidden',
-  releases: (date: string) =>
-    `Releases ${formatReleaseDate({
-      date,
-      withHour: true
-    })}`
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -105,11 +87,7 @@ type Props = {
   hasStreamAccess?: boolean
   streamConditions: Nullable<AccessConditions>
   isOwner: boolean
-  isArtistPick?: boolean
-  showArtistPick?: boolean
-  releaseDate?: string
   source?: LineupTileSource
-  type: 'track' | 'album' | 'playlist'
 }
 
 export const LineupTileStats = ({
@@ -131,11 +109,7 @@ export const LineupTileStats = ({
   hasStreamAccess,
   streamConditions,
   isOwner,
-  isArtistPick,
-  showArtistPick,
-  releaseDate,
-  source,
-  type
+  source
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -173,7 +147,6 @@ export const LineupTileStats = ({
   )
 
   const isReadonly = variant === 'readonly'
-  const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
 
   const renderLockedContentOrPlayCount = () => {
     if (streamConditions && !isOwner) {
@@ -217,31 +190,11 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {showArtistPick && isArtistPick ? (
-          <LineupTileLabel icon={IconStar} color='accent'>
-            {messages.artistPick}
-          </LineupTileLabel>
-        ) : !isUnlisted ? (
-          type === 'track' ? (
-            <GatedTrackLabel trackId={id} />
-          ) : streamConditions ? (
-            <LineupTileGatedContentLabel
-              streamConditions={streamConditions}
-              hasStreamAccess={hasStreamAccess}
-              isOwner={isOwner}
-            />
-          ) : null
-        ) : null}
-        {isUnlisted && isScheduledRelease && releaseDate ? (
-          <LineupTileLabel icon={IconCalendarMonth} color='accent'>
-            {messages.releases(releaseDate)}
-          </LineupTileLabel>
-        ) : null}
-        {isUnlisted && !isScheduledRelease ? (
-          <LineupTileLabel icon={IconVisibilityHidden}>
-            {messages.hidden}
-          </LineupTileLabel>
-        ) : null}
+        {isCollection ? (
+          <CollectionAccessTypeLabel collectionId={id} />
+        ) : (
+          <TrackAccessTypeLabel trackId={id} />
+        )}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
             <>

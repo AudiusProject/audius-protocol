@@ -21,8 +21,8 @@ import {
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { CollectionDogEar } from '../collection/CollectionDogEar'
 import { LockedStatusBadge } from '../core'
-import { CollectionDogEar } from '../core/CollectionDogEar'
 import { CollectionImageV2 } from '../image/CollectionImageV2'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 

@@ -48,8 +48,8 @@ import {
   Text,
   spacing
 } from '@audius/harmony-native'
+import { CollectionDogEar } from 'app/components/collection/CollectionDogEar'
 import { UserGeneratedText } from 'app/components/core'
-import { CollectionDogEar } from 'app/components/core/CollectionDogEar'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
