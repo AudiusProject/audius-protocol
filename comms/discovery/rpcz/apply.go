@@ -452,9 +452,11 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 			websocketPush(userId, receiverUserId, rpcJson, timestamp)
 		}
 	} else if gjson.GetBytes(rpcJson, "method").String() == "chat.blast" {
-		// Add delay before broadcasting blast messages - see PAY-3573
-		time.Sleep(30 * time.Second)
-		websocketPushAll(userId, rpcJson, timestamp)
+		go func() {
+			// Add delay before broadcasting blast messages - see PAY-3573
+			time.Sleep(30 * time.Second)
+			websocketPushAll(userId, rpcJson, timestamp)
+		}()
 	}
 }
 
