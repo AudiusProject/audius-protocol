@@ -317,13 +317,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create playlist {playlist_id} below the offset"
             )
-        parsed_release_date = parse_release_date(params.metadata.get("release_date"))
-        if parsed_release_date and parsed_release_date > datetime.now().astimezone(
-            timezone.utc
-        ):
-            raise IndexingValidationError(
-                f"Cannot create playlist {playlist_id} with a future release date via ddex"
-            )
     else:
         if playlist_id not in params.existing_records["Playlist"]:
             raise IndexingValidationError(
@@ -391,7 +384,6 @@ def create_playlist(params: ManageEntityParameters):
     tracks_with_index_time = []
     last_added_to = None
 
-    ddex_app = None
     created_at = params.block_datetime
     if params.action == Action.CREATE:
         parsed_release_date = parse_release_date(params.metadata.get("release_date"))
@@ -444,7 +436,7 @@ def create_playlist(params: ManageEntityParameters):
         last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
-        ddex_app=ddex_app,
+        ddex_app=params.metadata.get("ddex_app", None),
         ddex_release_ids=params.metadata.get("ddex_release_ids", None),
         artists=params.metadata.get("artists", None),
         copyright_line=params.metadata.get("copyright_line", None),

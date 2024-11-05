@@ -543,8 +543,6 @@ def create_track(params: ManageEntityParameters):
     track_id = params.entity_id
     owner_id = params.user_id
 
-    ddex_app = None
-
     track_record = Track(
         track_id=track_id,
         owner_id=owner_id,
@@ -555,7 +553,7 @@ def create_track(params: ManageEntityParameters):
         updated_at=params.block_datetime,
         release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
-        ddex_app=ddex_app,
+        ddex_app=params.metadata.get("ddex_app", None),
     )
 
     update_track_routes_table(
