@@ -81,7 +81,7 @@ import { usePurchaseSummaryValues } from './hooks/usePurchaseSummaryValues'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { setPurchasePage } = purchaseContentActions
+const { setPurchasePage, ensureUserBankExists } = purchaseContentActions
 
 const messages = {
   buy: 'Buy',
@@ -256,6 +256,9 @@ const RenderForm = ({
   const { submitForm, resetForm } = useFormikContext()
 
   useEffect(() => resetForm, [contentId, resetForm])
+
+  // Pre-create user bank if needed so it's ready by purchase time
+  useEffect(() => dispatch(ensureUserBankExists()), [dispatch])
 
   const {
     usdc_purchase: { price }

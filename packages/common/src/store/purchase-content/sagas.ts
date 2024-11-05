@@ -14,7 +14,7 @@ import bs58 from 'bs58'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import nacl, { BoxKeyPair } from 'tweetnacl'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
@@ -32,8 +32,7 @@ import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
   getRootSolanaAccount,
-  getSolanaConnection,
-  getTokenAccountInfo
+  getSolanaConnection
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
@@ -51,7 +50,11 @@ import {
   onrampCanceled
 } from '~/store/buy-usdc/slice'
 import { BuyUSDCError } from '~/store/buy-usdc/types'
-import { getBuyUSDCRemoteConfig, getUSDCUserBank } from '~/store/buy-usdc/utils'
+import {
+  getBuyUSDCRemoteConfig,
+  getOrCreateUSDCUserBank,
+  pollForTokenAccountInfo
+} from '~/store/buy-usdc/utils'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { getUser } from '~/store/cache/users/selectors'
@@ -87,7 +90,8 @@ import {
   purchaseSucceeded,
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
-  startPurchaseContentFlow
+  startPurchaseContentFlow,
+  ensureUserBankExists
 } from './slice'
 import {
   PurchaseableContentType,
@@ -613,7 +617,6 @@ function* doStartPurchaseContentFlow({
     contentType = PurchaseableContentType.TRACK
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
@@ -663,15 +666,11 @@ function* doStartPurchaseContentFlow({
       throw new Error('Failed to fetch purchasing user id')
     }
 
-    const userBank = yield* call(getUSDCUserBank)
-    const tokenAccountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        mint: 'usdc',
-        tokenAccount: userBank
-      }
-    )
+    const userBank = yield* call(getOrCreateUSDCUserBank)
+    const tokenAccountInfo = yield* call(pollForTokenAccountInfo, {
+      mint: 'usdc',
+      tokenAccount: userBank
+    })
 
     // In the case where there is no amount, the token account was probably
     // just created. Just use 0 for initial balance.
@@ -922,15 +921,11 @@ function* purchaseWithAnything({
     )
 
     // Get the USDC user bank
-    const usdcUserBank = yield* call(getUSDCUserBank)
-    const usdcUserBankTokenAccount = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        mint: 'usdc',
-        tokenAccount: usdcUserBank
-      }
-    )
+    const usdcUserBank = yield* call(getOrCreateUSDCUserBank)
+    const usdcUserBankTokenAccount = yield* call(pollForTokenAccountInfo, {
+      mint: 'usdc',
+      tokenAccount: usdcUserBank
+    })
     if (!usdcUserBankTokenAccount) {
       throw new Error('Failed to fetch USDC user bank token account info')
     }
@@ -1160,6 +1155,17 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
+function* watchEnsureUserBankExists() {
+  yield takeEvery(ensureUserBankExists, function* () {
+    try {
+      yield* call(getOrCreateUSDCUserBank)
+    } catch (e) {
+      // No need to bubble here as later flows will still attempt to create it
+      console.warn(`ensureUserBankExists failed: ${e}`)
+    }
+  })
+}
+
 export default function sagas() {
-  return [watchStartPurchaseContentFlow]
+  return [watchStartPurchaseContentFlow, watchEnsureUserBankExists]
 }
