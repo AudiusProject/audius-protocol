@@ -51,7 +51,6 @@ export type TileProps = {
 export type TrackTileProps = TileProps & {
   title: string
   genre: Genre
-  showArtistPick?: boolean
   showListens?: boolean
   disableActions?: boolean
   showArtworkIcon?: boolean

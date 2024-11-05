@@ -28,7 +28,7 @@ import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { TrackDogEar } from '../core/TrackDogEar'
+import { TrackDogEar } from '../track/TrackDogEar'
 
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors

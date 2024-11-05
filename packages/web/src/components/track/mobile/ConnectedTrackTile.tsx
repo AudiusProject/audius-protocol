@@ -89,7 +89,6 @@ const ConnectedTrackTile = ({
   user,
   ordered,
   trackTileStyles,
-  showArtistPick,
   goToRoute,
   togglePlay,
   isBuffering,
@@ -145,11 +144,9 @@ const ConnectedTrackTile = ({
     ddex_app: ddexApp
   } = trackWithFallback
 
-  const { artist_pick_track_id, user_id, handle, name, is_verified } =
-    getUserWithFallback(user)
+  const { user_id, handle, name, is_verified } = getUserWithFallback(user)
 
   const isOwner = user_id === currentUserId
-  const isArtistPick = showArtistPick && artist_pick_track_id === track_id
 
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -225,7 +222,6 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isArtistPick,
       isDeleted: is_delete || user?.is_deactivated,
       isFavorited: has_current_user_saved,
       isOwner,
@@ -322,8 +318,6 @@ const ConnectedTrackTile = ({
       listenCount={play_count}
       fieldVisibility={field_visibility}
       coSign={_co_sign}
-      // Artist Pick
-      isArtistPick={isArtistPick}
       // Artist
       artistHandle={handle}
       artistName={name}

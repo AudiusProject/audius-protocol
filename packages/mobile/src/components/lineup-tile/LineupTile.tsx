@@ -13,8 +13,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { setVisibility } from 'app/store/drawers/slice'
 
-import { CollectionDogEar } from '../core/CollectionDogEar'
-import { TrackDogEar } from '../core/TrackDogEar'
+import { CollectionDogEar } from '../collection/CollectionDogEar'
+import { TrackDogEar } from '../track/TrackDogEar'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
@@ -51,7 +51,6 @@ export const LineupTile = ({
   commentCount,
   renderImage,
   repostType,
-  showArtistPick,
   showRankIcon,
   title,
   item,
@@ -68,7 +67,7 @@ export const LineupTile = ({
     save_count
   } = item
   const dispatch = useDispatch()
-  const { artist_pick_track_id, user_id } = user
+  const { user_id } = user
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
@@ -77,7 +76,6 @@ export const LineupTile = ({
   const contentType = isTrack ? 'track' : isAlbum ? 'album' : 'playlist'
   const contentId = isTrack ? item.track_id : item.playlist_id
   const streamConditions = item.stream_conditions ?? null
-  const isArtistPick = artist_pick_track_id === id
   const { hasStreamAccess } = useGatedContentAccess(item)
 
   const handlePress = useCallback(() => {
@@ -141,11 +139,7 @@ export const LineupTile = ({
           hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}
           isOwner={isOwner}
-          isArtistPick={isArtistPick}
-          showArtistPick={showArtistPick}
-          releaseDate={item?.release_date ? item.release_date : undefined}
           source={source}
-          type={contentType}
         />
       </View>
       {children}
