@@ -1,16 +1,15 @@
 {
   "genesis_time": "2024-09-05T00:00:00.0000Z",
-  "chain_id": "audius-mainnet-test4",
+  "chain_id": "audius-mainnet-test5",
   "initial_height": "0",
   "consensus_params": {
     "block": {
-      "max_bytes": "104857600",
+      "max_bytes": "15728640",
       "max_gas": "10000000"
     },
     "evidence": {
-      "max_age_num_blocks": "100000",
-      "max_age_duration": "172800000000000",
-      "max_bytes": "104857600"
+      "max_age_num_blocks": "0",
+      "max_age_duration": "0"
     },
     "validator": {
       "pub_key_types": [
@@ -21,8 +20,8 @@
       "app": "0"
     },
     "synchrony": {
-      "precision": "500000000",
-      "message_delay": "2000000000"
+      "precision": "100000000",
+      "message_delay": "500000000"
     },
     "feature": {
       "vote_extensions_enable_height": "0",
