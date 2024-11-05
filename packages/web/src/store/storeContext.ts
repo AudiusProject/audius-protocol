@@ -1,4 +1,4 @@
-import { FeatureFlags, createGetWalletAddresses } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import { setTag, configureScope } from '@sentry/browser'
@@ -7,8 +7,7 @@ import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
-import { hedgehogInstance } from 'services/audius-sdk/hedgehog'
+import { audiusSdk, authService } from 'services/audius-sdk'
 import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
@@ -73,11 +72,7 @@ export const buildStoreContext = ({
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
-  hedgehogInstance,
-  getWalletAddresses: createGetWalletAddresses({
-    localStorage,
-    hedgehogInstance
-  }),
+  authService,
   imageUtils: {
     generatePlaylistArtwork
   },

@@ -18,7 +18,8 @@ import {
   IntKeys,
   FeatureFlags,
   MAX_HANDLE_LENGTH,
-  getCityAndRegion
+  getCityAndRegion,
+  SignInResponse
 } from '@audius/common/services'
 import {
   accountActions,
@@ -426,8 +427,11 @@ function* validateEmail(
 }
 
 function* refreshHedgehogWallet() {
-  const hedgehogInstance = yield* getContext('hedgehogInstance')
-  yield* call([hedgehogInstance, hedgehogInstance.refreshWallet])
+  const authService = yield* getContext('authService')
+  yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.refreshWallet
+  ])
 }
 
 function* signUp() {
@@ -777,6 +781,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const authService = yield* getContext('authService')
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isElectron = yield* getContext('isElectron')
   const clientOrigin = isNativeMobile
@@ -793,23 +798,19 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       email ?? signOn.email.value,
       clientOrigin
     )
-    const signInResponse = yield* call(
-      audiusBackendInstance.signIn,
-      email ?? signOn.email.value,
-      password ?? signOn.password.value,
-      visitorId ?? fpResponse?.visitorId,
-      otp ?? signOn.otp.value
-    )
 
-    // Login failed entirely (no wallet returned)
-    if (signInResponse.error || !signInResponse.wallet) {
-      yield* put(
-        signOnActions.signInFailed(
-          signInResponse.error,
-          signInResponse.phase,
-          false
-        )
+    let signInResponse: SignInResponse
+    try {
+      signInResponse = yield* call(
+        authService.signIn,
+        email ?? signOn.email.value,
+        password ?? signOn.password.value,
+        visitorId ?? fpResponse?.visitorId,
+        otp ?? signOn.otp.value
       )
+    } catch (err) {
+      // Login failed entirely (no wallet returned)
+      yield* put(signOnActions.signInFailed(String(err), 'FIND_WALLET', false))
       const trackEvent = make(Name.SIGN_IN_FINISH, {
         status: 'invalid credentials'
       })
@@ -817,12 +818,10 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
-    // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-    yield* call(refreshHedgehogWallet)
     const account: AccountUserMetadata | null = yield* call(
       userApiFetchSaga.getUserAccount,
       {
-        wallet: signInResponse.wallet
+        wallet: signInResponse.walletAddress
       }
     )
 
@@ -864,6 +863,23 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     // Now that we have verified the user is valid, run the account fetch flow,
     // which will pull cached account data from call above.
     yield* put(accountActions.fetchAccount())
+
+    // Re-setup backend to make sure libs has the correct hedgehog wallet and userId
+    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
+      wallet: signInResponse.walletAddress,
+      userId: user.user_id
+    })
+
+    if (web3Error || libsError) {
+      yield* put(
+        signOnActions.signInFailed(
+          'Failed to setup AudiusBackend',
+          'SETUP',
+          true
+        )
+      )
+      return
+    }
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
@@ -876,8 +892,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     if (failure) {
       yield* put(
         signOnActions.signInFailed(
-          "Couldn't get account",
-          failure.payload.reason,
+          `Couldn't get account: ${failure.payload.reason}`,
+          'FIND_USER',
           failure.payload.reason === 'ACCOUNT_DEACTIVATED'
         )
       )

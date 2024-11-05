@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useMemo, useState } from 'react'
 
+import { accountFromSDK } from '@audius/common/adapters'
 import {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
@@ -7,7 +8,7 @@ import {
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, ErrorLevel, UserMetadata } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { FeatureFlags, SignInResponse } from '@audius/common/services'
 import { accountSelectors, signOutActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -32,6 +33,8 @@ import { AccountListContent } from 'components/nav/desktop/AccountSwitcher/Accou
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { fingerprintClient } from 'services/fingerprint'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 import styles from './OAuthLoginPage.module.css'
@@ -186,46 +189,62 @@ export const OAuthLoginPage = () => {
       return
     }
     setIsSubmitting(true)
-    let signInResponse: any
+    let signInResponse: SignInResponse
     try {
-      signInResponse = await audiusBackendInstance.signIn(
+      audiusBackendInstance.waitForLibsInit()
+      const fpResponse = await fingerprintClient.identify(emailInput, 'web')
+      signInResponse = await authService.signIn(
         emailInput,
         passwordInput,
+        fpResponse?.visitorId,
         otpInput || undefined
       )
-    } catch (err) {
-      setIsSubmitting(false)
-      setAndLogGeneralSubmitError(
-        false,
-        messages.miscError,
-        err instanceof Error ? err : undefined
-      )
-      return
-    }
-    if (
-      !signInResponse.error &&
-      signInResponse.user &&
-      signInResponse.user.name
-    ) {
-      // Success - perform Oauth authorization
-      await authorize({
-        account: signInResponse.user
+
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getUserAccount({
+        wallet: signInResponse.walletAddress
       })
-    } else if (
-      (!signInResponse.error &&
-        signInResponse.user &&
-        !signInResponse.user.name) ||
-      (signInResponse.error && signInResponse.phase === 'FIND_USER')
-    ) {
-      setIsSubmitting(false)
-      setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
-    } else if (signInResponse.error && signInResponse.error.includes('403')) {
-      setIsSubmitting(false)
-      setOtpEmail(emailInput)
-      toggleOtpUI(true)
-    } else {
-      setIsSubmitting(false)
-      setAndLogInvalidCredentialsError()
+      if (!data) {
+        throw new Error('invalid user')
+      }
+      const account = accountFromSDK(data)
+      if (!account || !account.user.handle || !account.user.name) {
+        throw new Error('invalid user')
+      }
+
+      await audiusBackendInstance.setup({
+        wallet: signInResponse.walletAddress,
+        userId: account.user.user_id
+      })
+
+      await authorize({
+        account: account.user
+      })
+    } catch (err: any) {
+      const error = String(err)
+      const statusCode = err.response?.status
+      if (error.includes('403')) {
+        setIsSubmitting(false)
+        setOtpEmail(emailInput)
+        toggleOtpUI(true)
+      } else if (
+        statusCode === 401 ||
+        statusCode === 404 ||
+        error.includes('invalid user')
+      ) {
+        setIsSubmitting(false)
+        setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
+      } else if (statusCode === 400) {
+        setIsSubmitting(false)
+        setAndLogInvalidCredentialsError()
+      } else {
+        setIsSubmitting(false)
+        setAndLogGeneralSubmitError(
+          false,
+          messages.miscError,
+          err instanceof Error ? err : undefined
+        )
+      }
     }
   }
 

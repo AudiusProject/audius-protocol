@@ -35,7 +35,7 @@ const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY, SEARCH_HISTORY_KEY]
 
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))
-  const hedgehogInstance = yield* getContext('hedgehogInstance')
+  const authService = yield* getContext('authService')
 
   // Wait for in-flight set up to resolve
   yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
@@ -54,7 +54,7 @@ function* signOut() {
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
   yield* call([audiusBackendInstance, 'signOut'])
-  yield* call([hedgehogInstance, hedgehogInstance.logout])
+  yield* call([authService, authService.signOut])
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)
   }

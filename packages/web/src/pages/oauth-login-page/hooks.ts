@@ -4,7 +4,7 @@ import {
   Name,
   ErrorLevel,
   statusIsNotFinalized,
-  User
+  UserMetadata
 } from '@audius/common/models'
 import { accountSelectors, CommonState } from '@audius/common/store'
 import { encodeHashId } from '@audius/common/utils'
@@ -318,7 +318,7 @@ export const useOAuthSetup = ({
       account,
       grantCreated
     }: {
-      account: User
+      account: UserMetadata
       grantCreated?: boolean | undefined
     }) => {
       const jwt = await formOAuthResponse({
@@ -452,7 +452,7 @@ export const useOAuthSetup = ({
     verifyDisconnectWalletUser()
   }, [account?.user_id, onError, tx, txParams?.wallet])
 
-  const authorize = async ({ account }: { account: User }) => {
+  const authorize = async ({ account }: { account: UserMetadata }) => {
     let shouldCreateWriteGrant = false
 
     if (scope === 'write') {

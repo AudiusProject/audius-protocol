@@ -1,7 +1,18 @@
+import { createAuthService } from '@audius/common/services'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
-import { hedgehogInstance } from './hedgehog'
+import { createPrivateKey } from '../createPrivateKey'
+import { localStorage } from '../local-storage'
+
+import { identityServiceInstance } from './identity'
+
+export const authService = createAuthService({
+  localStorage,
+  identityService: identityServiceInstance,
+  createKey: createPrivateKey
+})
+const { hedgehogInstance } = authService
 
 export const auth = {
   sign: async (data: string | Uint8Array) => {

@@ -102,7 +102,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
-  const getWalletAddresses = yield getContext('getWalletAddresses')
+  const authService = yield getContext('authService')
 
   const libs = yield call([
     audiusBackendInstance,
@@ -114,7 +114,10 @@ function* onSignedIn({ payload: { account } }) {
   })
 
   if (account && account.handle) {
-    const { web3WalletAddress } = yield call(getWalletAddresses)
+    const { web3WalletAddress } = yield call([
+      authService,
+      authService.getWalletAddresses
+    ])
     const { user: web3User } = yield call(userApiFetchSaga.getUserAccount, {
       wallet: web3WalletAddress
     })
@@ -180,14 +183,15 @@ function* onSignedIn({ payload: { account } }) {
 
 export function* fetchAccountAsync({ isSignUp = false }) {
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
-  const getWalletAddresses = yield getContext('getWalletAddresses')
+  const authService = yield getContext('authService')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
-  const { accountWalletAddress: wallet, web3WalletAddress } = yield call(
-    getWalletAddresses
-  )
+  const { accountWalletAddress: wallet, web3WalletAddress } = yield call([
+    authService,
+    authService.getWalletAddresses
+  ])
 
   if (!wallet) {
     yield put(
