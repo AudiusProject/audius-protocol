@@ -2,7 +2,7 @@ import { useField } from 'formik'
 
 import { Box, Divider, Flex, Text } from '@audius/harmony-native'
 import { Switch } from 'app/components/core'
-import { HarmonyTextField } from 'app/components/fields'
+import { TextField } from 'app/components/fields'
 import { FormScreen } from 'app/screens/form-screen'
 
 const messages = {
@@ -23,8 +23,18 @@ export const IS_COVER = 'isCover'
 export const CoverAttributionScreen = () => {
   const [{ value: isCover }, _ignored, { setValue: setIsCover }] =
     useField<boolean>(IS_COVER)
-  const [{ value: originalSongTitle }] = useField(COVER_ORIGINAL_SONG_TITLE)
-  const [{ value: originalArtist }] = useField(COVER_ORIGINAL_ARTIST)
+  const [{ value: originalSongTitle }, , { setValue: setOriginalSongTitle }] =
+    useField<string | null>(COVER_ORIGINAL_SONG_TITLE)
+  const [{ value: originalArtist }, , { setValue: setOriginalArtist }] =
+    useField<string | null>(COVER_ORIGINAL_ARTIST)
+
+  const handleValueChange = () => {
+    if (isCover) {
+      setOriginalSongTitle(null)
+      setOriginalArtist(null)
+    }
+    setIsCover(!isCover)
+  }
 
   return (
     <FormScreen title={messages.title} variant='white'>
@@ -37,7 +47,7 @@ export const CoverAttributionScreen = () => {
             mb='s'
           >
             <Text variant='title'>{messages.cover}</Text>
-            <Switch value={isCover} onValueChange={setIsCover} />
+            <Switch value={isCover} onValueChange={handleValueChange} />
           </Flex>
           <Text variant='body'>{messages.description}</Text>
         </Box>
@@ -48,19 +58,19 @@ export const CoverAttributionScreen = () => {
             <Box mt='xl'>
               <Text variant='body'>{messages.attribution.header}</Text>
               <Box mt='xl' mb='m'>
-                <HarmonyTextField
+                <TextField
                   label={messages.attribution.originalSongTitle}
                   name={COVER_ORIGINAL_SONG_TITLE}
                   placeholder={messages.attribution.originalSongTitle}
-                  value={originalSongTitle}
+                  value={originalSongTitle ?? ''}
                 />
               </Box>
               <Box>
-                <HarmonyTextField
+                <TextField
                   label={messages.attribution.originalArtist}
                   name={COVER_ORIGINAL_ARTIST}
                   placeholder={messages.attribution.originalArtist}
-                  value={originalArtist}
+                  value={originalArtist ?? ''}
                 />
               </Box>
             </Box>
