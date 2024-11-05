@@ -266,6 +266,17 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		logger.Info("Generated genesis file", "path", genFile)
 	}
 
+	// dynamically voting in validators isn't implemented yet
+	// use this to dynamically set connection values
+	isInitialValidator := false
+	validators := genDoc.Validators
+	for _, validator := range validators {
+		if validator.Address.String() == envConfig.CometKey.PubKey().Address().String() {
+			isInitialValidator = true
+			break
+		}
+	}
+
 	// after succesful setup, setup comet config.toml
 	// postgres indexer config
 	cometConfig.TxIndex.Indexer = "psql"
@@ -275,26 +286,66 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.TxIndex.TableEvents = "core_events"
 	cometConfig.TxIndex.TableAttributes = "core_attributes"
 
-	// db and state config
-	cometConfig.Consensus.TimeoutCommit = 1 * time.Second
-	cometConfig.Consensus.CreateEmptyBlocksInterval = 1 * time.Second
-	cometConfig.Consensus.CreateEmptyBlocks = true
-
 	// mempool
-	cometConfig.Mempool.Recheck = true
-	cometConfig.Mempool.Size = 100000
+	// block size restricted to 10mb
+	// individual tx size restricted to 300kb, this should be able to carry batches of 200-300 plays
+	// 2k txs which is a little over 500mb restriction for the mempool size
+	// this keeps the mempool from taking up too much memory
+	cometConfig.Mempool.MaxTxsBytes = 10485760
+	cometConfig.Mempool.MaxTxBytes = 307200
+	cometConfig.Mempool.Size = 2000
+
+	// consensus
+	// don't recheck mempool transactions, rely on CheckTx and Propose step
+	// set each phase to timeout at 100ms, this might be aggressive but simply put
+	// for blocks to stay around 1s all these steps must add up to less than that
+	// create empty blocks to continue heartbeat at the same interval
+	// empty blocks wait one second to propose since plays should be a steady stream
+	// of txs
+	cometConfig.Mempool.Recheck = false
+	cometConfig.Consensus.TimeoutCommit = 100 * time.Millisecond
+	cometConfig.Consensus.TimeoutPropose = 100 * time.Millisecond
+	cometConfig.Consensus.TimeoutProposeDelta = 50 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevote = 100 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevoteDelta = 50 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommit = 100 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommitDelta = 50 * time.Millisecond
+	cometConfig.Consensus.CreateEmptyBlocks = true
+	cometConfig.Consensus.CreateEmptyBlocksInterval = 1 * time.Second
 
 	// peering
-	cometConfig.P2P.PexReactor = true
+	// pex reactor is off since nodes use persistent peer list at the moment
+	// turn back on for dynamic peer discovery if we don't implement it in
+	// another ethereum based way
+	cometConfig.P2P.PexReactor = false
 	cometConfig.P2P.AddrBookStrict = envConfig.AddrBookStrict
 	if envConfig.PersistentPeers != "" {
 		cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers
 	}
-	if envConfig.Seeds != "" {
-		cometConfig.P2P.Seeds = envConfig.Seeds
-	}
 	if envConfig.ExternalAddress != "" {
 		cometConfig.P2P.ExternalAddress = envConfig.ExternalAddress
+	}
+
+	// p2p
+	// set validators to higher connection settings so they have tighter conns
+	// with each other, this helps get to sub 1s block times
+	cometConfig.P2P.MaxNumOutboundPeers = envConfig.MaxOutboundPeers
+	cometConfig.P2P.MaxNumInboundPeers = envConfig.MaxInboundPeers
+	cometConfig.P2P.AllowDuplicateIP = true
+	if isInitialValidator {
+		cometConfig.P2P.FlushThrottleTimeout = 10 * time.Millisecond
+		cometConfig.P2P.SendRate = 5120000
+		cometConfig.P2P.RecvRate = 5120000
+		cometConfig.P2P.HandshakeTimeout = 3 * time.Second
+		cometConfig.P2P.DialTimeout = 5 * time.Second
+		cometConfig.P2P.PersistentPeersMaxDialPeriod = 15 * time.Second
+	} else {
+		cometConfig.P2P.FlushThrottleTimeout = 100 * time.Millisecond
+		cometConfig.P2P.SendRate = 524288
+		cometConfig.P2P.RecvRate = 524288
+		cometConfig.P2P.HandshakeTimeout = 5 * time.Second
+		cometConfig.P2P.DialTimeout = 10 * time.Second
+		cometConfig.P2P.PersistentPeersMaxDialPeriod = 30 * time.Second
 	}
 
 	// connection settings
@@ -304,9 +355,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	if envConfig.P2PLaddr != "" {
 		cometConfig.P2P.ListenAddress = envConfig.P2PLaddr
 	}
-
-	cometConfig.P2P.MaxNumOutboundPeers = envConfig.MaxOutboundPeers
-	cometConfig.P2P.MaxNumInboundPeers = envConfig.MaxInboundPeers
 
 	return envConfig, cometConfig, nil
 }

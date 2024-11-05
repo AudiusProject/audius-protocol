@@ -1,0 +1,1 @@
+export { AccessTypeLabel } from './AccessTypeLabel'

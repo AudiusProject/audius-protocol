@@ -85,4 +85,16 @@ export class TrackUploadHelper extends BaseAPI {
       audioAnalysisErrorCount: audioResponse.audio_analysis_error_count || 0
     }
   }
+
+  public extractMediorumUploadOptions(metadata: PlaylistTrackMetadata) {
+    const uploadOptions: { [key: string]: string } = {}
+    if (metadata.previewStartSeconds) {
+      uploadOptions.previewStartSeconds =
+        metadata.previewStartSeconds.toString()
+    }
+    if (metadata.placementHosts) {
+      uploadOptions.placement_hosts = metadata.placementHosts
+    }
+    return uploadOptions
+  }
 }

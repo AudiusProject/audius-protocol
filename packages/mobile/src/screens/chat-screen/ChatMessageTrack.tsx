@@ -84,7 +84,6 @@ export const ChatMessageTrack = ({
       togglePlay={togglePlay}
       uid={uid}
       isTrending={false}
-      showArtistPick={false}
       showRankIcon={false}
       styles={styles}
       variant='readonly'

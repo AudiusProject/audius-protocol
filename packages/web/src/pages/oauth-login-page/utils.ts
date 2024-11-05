@@ -1,4 +1,4 @@
-import { SquareSizes, User } from '@audius/common/models'
+import { SquareSizes, UserMetadata } from '@audius/common/models'
 import {
   getErrorMessage,
   decodeHashId,
@@ -108,7 +108,7 @@ export const formOAuthResponse = async ({
   onError,
   txSignature // Only applicable to scope = write_once
 }: {
-  account: User
+  account: UserMetadata
   userEmail?: string | null
   apiKey: string | string[] | null
   onError: () => void
@@ -306,7 +306,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   }) => void
   onWaitForWalletSignature: () => void
   onReceivedWalletSignature: () => void
-  account: User
+  account: UserMetadata
   txParams: ConnectDashboardWalletParams
 }) => {
   if (!window.opener || !originUrl) {
@@ -424,7 +424,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
     errorMessage: string
     error?: Error
   }) => void
-  account: User
+  account: UserMetadata
   txParams: DisconnectDashboardWalletParams
 }) => {
   const sdk = await audiusSdk()

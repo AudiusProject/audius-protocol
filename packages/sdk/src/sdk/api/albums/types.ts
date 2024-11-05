@@ -44,6 +44,7 @@ export const createUploadAlbumMetadataSchema = () =>
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
       ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+      ddexApp: z.optional(z.string()),
       tags: z.optional(z.string()),
       upc: z.optional(z.string()),
       artists: z.optional(z.array(DDEXResourceContributor).nullable()),

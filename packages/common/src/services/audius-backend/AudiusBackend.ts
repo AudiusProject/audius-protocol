@@ -1309,16 +1309,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function signIn(
-    email: string,
-    password: string,
-    visitorId?: string,
-    otp?: string
-  ) {
-    await waitForLibsInit()
-    return audiusLibs.Account.login(email, password, visitorId, otp)
-  }
-
   async function signOut() {
     await waitForLibsInit()
     return audiusLibs.Account.logout()
@@ -2333,7 +2323,6 @@ export const audiusBackend = ({
     setUserHandleForRelay,
     signData,
     signDiscoveryNodeRequest,
-    signIn,
     signOut,
     signUp,
     transferAudioToWAudio,

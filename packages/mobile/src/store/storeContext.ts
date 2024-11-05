@@ -1,4 +1,3 @@
-import { createGetWalletAddresses } from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -17,7 +16,7 @@ import {
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { hedgehogInstance } from 'app/services/sdk/hedgehog'
+import { authService } from 'app/services/sdk/auth'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import {
@@ -65,11 +64,7 @@ export const storeContext: CommonStoreContext = {
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
-  hedgehogInstance,
-  getWalletAddresses: createGetWalletAddresses({
-    localStorage,
-    hedgehogInstance
-  }),
+  authService,
   imageUtils: {
     generatePlaylistArtwork
   },

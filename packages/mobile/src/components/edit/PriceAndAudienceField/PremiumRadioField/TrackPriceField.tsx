@@ -1,3 +1,5 @@
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { useField } from 'formik'
 
 import { Box, Flex } from '@audius/harmony-native'
@@ -30,6 +32,10 @@ export const TrackPriceField = () => {
   const [{ value: isOwnedByUser }, _ignored, { setValue: setIsOwnedByUser }] =
     useField<boolean>(IS_OWNED_BY_USER)
 
+  const { isEnabled: isRightsAndCoversEnabled } = useFeatureFlag(
+    FeatureFlags.RIGHTS_AND_COVERS
+  )
+
   return (
     <BoxedTextField
       title={messages.title}
@@ -44,26 +50,28 @@ export const TrackPriceField = () => {
         </Text>
       }
     >
-      <Box>
-        <Flex
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-          mb='s'
-          gap='xs'
-        >
-          <Text weight='bold'>{messages.publishingRights.checkboxLabel}</Text>
-          <Switch value={isOwnedByUser} onValueChange={setIsOwnedByUser} />
-        </Flex>
-        <Text>{messages.publishingRights.confirmationText}</Text>
-        <Box as='ul' mt='s'>
-          {messages.publishingRights.bulletPoints.map((point) => (
-            <Box key={point} mb='s'>
-              <Text bulleted>{point}</Text>
-            </Box>
-          ))}
+      {isRightsAndCoversEnabled ? (
+        <Box>
+          <Flex
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'
+            mb='s'
+            gap='xs'
+          >
+            <Text weight='bold'>{messages.publishingRights.checkboxLabel}</Text>
+            <Switch value={isOwnedByUser} onValueChange={setIsOwnedByUser} />
+          </Flex>
+          <Text>{messages.publishingRights.confirmationText}</Text>
+          <Box as='ul' mt='s'>
+            {messages.publishingRights.bulletPoints.map((point) => (
+              <Box key={point} mb='s'>
+                <Text bulleted>{point}</Text>
+              </Box>
+            ))}
+          </Box>
         </Box>
-      </Box>
+      ) : null}
     </BoxedTextField>
   )
 }

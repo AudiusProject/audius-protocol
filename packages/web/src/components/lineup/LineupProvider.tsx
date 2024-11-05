@@ -166,12 +166,6 @@ export interface LineupProviderProps {
   leadingElementClassName?: string
 
   /**
-   * Whether to show the artist pick on the leading element.
-   * Defaults to true.
-   */
-  showLeadingElementArtistPick?: boolean
-
-  /**
    * Class name to optionally apply to the container after the leading element
    */
   laggingContainerClassName?: string
@@ -491,7 +485,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineupContainerStyles,
       tileContainerStyles,
       tileStyles,
-      showLeadingElementArtistPick = true,
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
       isTrending = false,
@@ -545,7 +538,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             statSize,
             containerClassName,
             uid: entry.uid,
-            showArtistPick: showLeadingElementArtistPick && !!leadingElementId,
             isLoading: !this.canLoad(index),
             hasLoaded: this.hasLoaded,
             isTrending,

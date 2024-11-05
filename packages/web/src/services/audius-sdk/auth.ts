@@ -1,10 +1,19 @@
+import { createAuthService } from '@audius/common/services'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
-import { hedgehogInstance } from './hedgehog'
+import { localStorage } from '../local-storage'
 
-export const auth = {
+import { identityServiceInstance } from './identity'
+
+export const authService = createAuthService({
+  localStorage,
+  identityService: identityServiceInstance
+})
+const { hedgehogInstance } = authService
+
+export const sdkAuthAdapter = {
   sign: async (data: string | Uint8Array) => {
     await hedgehogInstance.waitUntilReady()
     return await secp.sign(

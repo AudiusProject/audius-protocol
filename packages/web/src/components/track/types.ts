@@ -51,7 +51,6 @@ export type TileProps = {
 export type TrackTileProps = TileProps & {
   title: string
   genre: Genre
-  showArtistPick?: boolean
   showListens?: boolean
   disableActions?: boolean
   showArtworkIcon?: boolean
@@ -249,6 +248,12 @@ export type DesktopTrackTileProps = {
 
   /** Track id if track tile */
   trackId?: ID
+
+  /**
+   * Collection id if playlist tile
+   * Note this is a total hack and we should split out playlist tile from track tile
+   * */
+  collectionId?: ID
 
   /** Additional context for analytics to know which area of the app the track tile is being used */
   source?: ModalSource

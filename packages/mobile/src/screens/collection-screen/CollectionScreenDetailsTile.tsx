@@ -25,7 +25,7 @@ import {
   queueActions,
   collectionPageActions
 } from '@audius/common/store'
-import { formatReleaseDate, getDogEarType } from '@audius/common/utils'
+import { formatReleaseDate } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
@@ -48,7 +48,8 @@ import {
   Text,
   spacing
 } from '@audius/harmony-native'
-import { DogEar, UserGeneratedText } from 'app/components/core'
+import { CollectionDogEar } from 'app/components/collection/CollectionDogEar'
+import { UserGeneratedText } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionMetadataList } from 'app/components/details-tile/CollectionMetadataList'
@@ -344,14 +345,6 @@ export const CollectionScreenDetailsTile = ({
     [play]
   )
 
-  const renderDogEar = () => {
-    const dogEarType = getDogEarType({
-      isOwner,
-      streamConditions
-    })
-    return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
-  }
-
   const handlePressArtistName = useCallback(() => {
     if (!user) {
       return
@@ -374,7 +367,9 @@ export const CollectionScreenDetailsTile = ({
   return (
     <Paper mb='2xl' style={{ overflow: 'hidden' }}>
       <ScreenPrimaryContent skeleton={<CollectionScreenSkeleton />}>
-        {renderDogEar()}
+        {numericCollectionId ? (
+          <CollectionDogEar collectionId={numericCollectionId} />
+        ) : null}
         <Flex p='l' gap='l' alignItems='center' w='100%'>
           <Text
             variant='label'

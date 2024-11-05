@@ -274,7 +274,7 @@ export const Button = (props: ButtonProps) => {
   return (
     <BaseButton
       disabled={isDisabled}
-      style={[animatedButtonStyles, buttonStyles, style]}
+      style={[buttonStyles, animatedButtonStyles, style]}
       sharedValue={pressed}
       styles={{
         text: [textStyles, animatedTextStyles]

@@ -44,9 +44,6 @@ export type LineupItemProps = {
   /** Is this item unlisted (hidden)? */
   isUnlisted?: boolean
 
-  /** Whether or not to show the artist pick indicators */
-  showArtistPick?: boolean
-
   /** Whether to show an icon indicating rank in lineup */
   showRankIcon?: boolean
 

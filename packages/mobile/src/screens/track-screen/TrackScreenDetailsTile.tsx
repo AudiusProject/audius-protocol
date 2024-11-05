@@ -41,12 +41,7 @@ import {
   usePublishConfirmationModal,
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
-import {
-  formatReleaseDate,
-  Genre,
-  getDogEarType,
-  removeNullable
-} from '@audius/common/utils'
+import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -69,7 +64,7 @@ import {
 } from '@audius/harmony-native'
 import CoSign, { Size } from 'app/components/co-sign'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
-import { DogEar, Tag, UserGeneratedText } from 'app/components/core'
+import { Tag, UserGeneratedText } from 'app/components/core'
 import { DeletedTile } from 'app/components/details-tile/DeletedTile'
 import { DetailsProgressInfo } from 'app/components/details-tile/DetailsProgressInfo'
 import { DetailsTileActionButtons } from 'app/components/details-tile/DetailsTileActionButtons'
@@ -80,6 +75,7 @@ import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
 import { TrackMetadataList } from 'app/components/details-tile/TrackMetadataList'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
+import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -485,14 +481,6 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
-  const renderDogEar = () => {
-    const dogEarType = getDogEarType({
-      isOwner,
-      streamConditions
-    })
-    return dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null
-  }
-
   const PreviewButton = () => (
     <Button
       variant='tertiary'
@@ -543,7 +531,7 @@ export const TrackScreenDetailsTile = ({
 
   return (
     <Paper>
-      {renderDogEar()}
+      <TrackDogEar trackId={trackId} />
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
           variant='label'

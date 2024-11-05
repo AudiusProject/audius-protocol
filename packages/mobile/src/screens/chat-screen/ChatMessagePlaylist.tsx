@@ -168,7 +168,6 @@ export const ChatMessagePlaylist = ({
       collection={collection}
       tracks={tracksWithUids}
       isTrending={false}
-      showArtistPick={false}
       showRankIcon={false}
       styles={styles}
       variant='readonly'

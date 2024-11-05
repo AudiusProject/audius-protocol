@@ -131,12 +131,6 @@ export type LineupProps = {
   selfLoad?: boolean
 
   /**
-   * Whether to show the artist pick on the leading element.
-   * Defaults to true.
-   */
-  showLeadingElementArtistPick?: boolean
-
-  /**
    * Which item to start the lineup at (previous items will not be rendered)
    */
   start?: number
@@ -187,10 +181,7 @@ export type TogglePlayConfig = {
 
 export type LineupItemTileProps = Pick<
   LineupProps,
-  | 'isTrending'
-  | 'showLeadingElementArtistPick'
-  | 'leadingElementId'
-  | 'itemStyles'
+  'isTrending' | 'leadingElementId' | 'itemStyles'
 > & {
   rankIconCount: number
   item: LineupItem | LoadingLineupItem

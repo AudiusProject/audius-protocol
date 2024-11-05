@@ -5,7 +5,6 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
-  "private": true,
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.all.json",
     "build": "tsc --build --verbose tsconfig.all.json",

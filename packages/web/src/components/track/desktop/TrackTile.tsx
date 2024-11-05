@@ -11,8 +11,7 @@ import {
 import {
   formatCount,
   Genre,
-  formatLineupTileDuration,
-  getDogEarType
+  formatLineupTileDuration
 } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
@@ -21,13 +20,13 @@ import {
   Text,
   Flex,
   ProgressBar,
-  Paper,
-  IconStar
+  Paper
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { DogEar } from 'components/dog-ear'
+import { CollectionDogEar } from 'components/collection'
+import { CollectionAccessTypeLabel } from 'components/collection/CollectionAccessTypeLabel'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -36,11 +35,10 @@ import {
   LockedStatusPill,
   LockedStatusPillProps
 } from '../../locked-status-pill'
-import { GatedTrackLabel } from '../GatedTrackLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
 import { OwnerActionButtons } from '../OwnerActionButtons'
+import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
+import { TrackDogEar } from '../TrackDogEar'
 import { ViewerActionButtons } from '../ViewerActionButtons'
-import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -115,13 +113,11 @@ const TrackTile = ({
   standalone,
   isOwner,
   isUnlisted,
-  isScheduledRelease,
   isStreamGated,
   streamConditions,
   hasStreamAccess,
   listenCount,
   isActive,
-  isArtistPick,
   isDisabled,
   isLoading,
   isPlaying,
@@ -148,8 +144,8 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
+  collectionId,
   trackId,
-  releaseDate,
   source
 }: TrackTileProps) => {
   const currentUserId = useSelector(getUserId)
@@ -214,14 +210,6 @@ const TrackTile = ({
     }
   }
 
-  const dogEarType = isLoading
-    ? undefined
-    : getDogEarType({
-        hasStreamAccess,
-        isOwner,
-        streamConditions
-      })
-
   const Root = standalone ? Paper : 'div'
 
   return (
@@ -255,10 +243,9 @@ const TrackTile = ({
       >
         {artwork}
       </div>
-      {dogEarType ? (
-        <div className={styles.borderOffset}>
-          <DogEar type={dogEarType} />
-        </div>
+      {trackId ? <TrackDogEar trackId={trackId} hideUnlocked /> : null}
+      {collectionId ? (
+        <CollectionDogEar collectionId={collectionId} hideUnlocked />
       ) : null}
       <div className={styles.body}>
         <Flex inline direction='column' h='100%' justifyContent='space-between'>
@@ -299,19 +286,10 @@ const TrackTile = ({
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
               <>
-                {isArtistPick ? (
-                  <LineupTileLabel color='accent' icon={IconStar}>
-                    {messages.artistPick}
-                  </LineupTileLabel>
+                {trackId ? <TrackAccessTypeLabel trackId={trackId} /> : null}
+                {collectionId ? (
+                  <CollectionAccessTypeLabel collectionId={collectionId} />
                 ) : null}
-                {!isUnlisted && trackId ? (
-                  <GatedTrackLabel trackId={trackId} />
-                ) : null}
-                <VisibilityLabel
-                  releaseDate={releaseDate}
-                  isUnlisted={isUnlisted}
-                  isScheduledRelease={isScheduledRelease}
-                />
                 {isUnlisted ? null : stats}
               </>
             )}

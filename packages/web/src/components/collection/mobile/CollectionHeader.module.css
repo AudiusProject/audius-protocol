@@ -11,12 +11,6 @@
   background-repeat: no-repeat;
 }
 
-.borderOffset {
-  position: absolute;
-  top: calc(-1 * var(--border-width));
-  left: calc(-1 * var(--border-width));
-}
-
 /* Loading */
 
 .loadingSkeleton {
