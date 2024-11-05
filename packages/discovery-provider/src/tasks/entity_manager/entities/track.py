@@ -29,7 +29,6 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     convert_legacy_purchase_access_gate,
     copy_record,
-    is_ddex_signer,
     parse_release_date,
     validate_signer,
 )
@@ -531,9 +530,6 @@ def update_track_record(
 ):
     populate_track_record_metadata(track, metadata, handle, params.action)
 
-    if is_ddex_signer(params.signer):
-        track.ddex_app = params.signer
-
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
@@ -548,8 +544,6 @@ def create_track(params: ManageEntityParameters):
     owner_id = params.user_id
 
     ddex_app = None
-    if is_ddex_signer(params.signer):
-        ddex_app = params.signer
 
     track_record = Track(
         track_id=track_id,
@@ -587,7 +581,7 @@ def create_track(params: ManageEntityParameters):
 
 def validate_update_ddex_track(params: ManageEntityParameters, track_record):
     if track_record.ddex_app:
-        if track_record.ddex_app != params.signer or not is_ddex_signer(params.signer):
+        if track_record.ddex_app != params.signer:
             raise IndexingValidationError(
                 f"Signer {params.signer} does not have permission to {params.action} DDEX track {track_record.track_id}"
             )
