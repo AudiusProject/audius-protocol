@@ -1,5 +1,6 @@
 import { MouseEvent as ReactMouseEvent, useCallback } from 'react'
 
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom-v5-compat'
@@ -11,7 +12,7 @@ import {
   updateRouteOnExit
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
-const { getHasAccount } = accountSelectors
+const { getHasAccount, getAccountStatus } = accountSelectors
 
 /**
  * Like useCallback but designed to be used to redirect unauthenticated users
@@ -23,14 +24,15 @@ export const useAuthenticatedCallback = <T extends (...args: any) => any>(
   onOpenAuthModal?: () => void,
   returnRouteOverride?: string
 ) => {
-  const isSignedIn = useSelector(getHasAccount)
+  const hasAccount = useSelector(getHasAccount)
+  const accountStatus = useSelector(getAccountStatus)
   const dispatch = useDispatch()
   const location = useLocation()
   const returnRoute = returnRouteOverride ?? location.pathname
 
   return useCallback(
     (...args: Parameters<T>) => {
-      if (!isSignedIn) {
+      if (accountStatus !== Status.LOADING && !hasAccount) {
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
@@ -42,7 +44,7 @@ export const useAuthenticatedCallback = <T extends (...args: any) => any>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSignedIn, dispatch, ...deps]
+    [hasAccount, dispatch, ...deps]
   )
 }
 

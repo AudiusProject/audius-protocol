@@ -29,7 +29,6 @@ import { useSelector } from 'react-redux'
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
@@ -99,7 +98,6 @@ export const CommentActionBar = ({
 
   const [currentConfirmationModalType, setCurrentConfirmationModalType] =
     useState<ConfirmationAction | undefined>(undefined)
-  const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
   const [handleMuteCommentNotifications] =

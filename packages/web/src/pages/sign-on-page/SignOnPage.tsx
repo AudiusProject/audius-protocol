@@ -13,7 +13,6 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useLastLocation } from 'react-router-last-location'
 import { useEffectOnce, useLocation, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
