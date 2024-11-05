@@ -1,15 +1,18 @@
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useContext, useEffect, useState } from 'react'
 
 import { useSelectTierInfo } from '@audius/common/hooks'
-import { accountSelectors } from '@audius/common/store'
+import { accountSelectors, relatedArtistsUIActions } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
 import { LayoutAnimation } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
+import { ScreenContext } from 'app/components/core/Screen/ScreenContextProvider'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
+import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { zIndex } from 'app/utils/zIndex'
 
@@ -17,6 +20,10 @@ import { ArtistRecommendations } from '../ArtistRecommendations'
 import { ProfileCoverPhoto } from '../ProfileCoverPhoto'
 import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
+import {
+  ExpandableSectionSkeleton,
+  ProfileScreenSkeleton
+} from '../ProfileScreenSkeleton'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
@@ -25,7 +32,9 @@ import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ExpandedSection } from './ExpandedSection'
 import { TopSupporters } from './TopSupporters'
+
 const getUserId = accountSelectors.getUserId
+const { fetchRelatedArtists } = relatedArtistsUIActions
 
 type ProfileHeaderProps = {
   scrollY: Animated.Value
@@ -33,11 +42,13 @@ type ProfileHeaderProps = {
 
 // Memoized since material-top-tabs triggers unecessary rerenders
 export const ProfileHeader = memo((props: ProfileHeaderProps) => {
+  const dispatch = useDispatch()
   const { scrollY } = props
   const accountId = useSelector(getUserId)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
+  const { isPrimaryContentReady } = useContext(ScreenContext)
 
   const {
     user_id: userId,
@@ -86,6 +97,11 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     }
   }, [shouldExpand, isExpandable, setIsExpandable])
 
+  useEffect(() => {
+    if (!userId || !isPrimaryContentReady) return
+    dispatch(fetchRelatedArtists({ artistId: userId }))
+  }, [dispatch, userId, isPrimaryContentReady])
+
   const handleFollow = useCallback(() => {
     if (!doesCurrentUserFollow) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -107,52 +123,56 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
 
   return (
     <>
-      <ProfileCoverPhoto scrollY={scrollY} />
-      <Box
-        style={css({
-          position: 'absolute',
-          top: spacing.unit13,
-          left: spacing.unit3,
-          zIndex: zIndex.PROFILE_PAGE_PROFILE_PICTURE
-        })}
-        pointerEvents='none'
-      >
-        <ProfilePicture userId={userId} size='xl' />
-      </Box>
-      <Flex
-        column
-        pointerEvents='box-none'
-        backgroundColor='white'
-        pv='s'
-        ph='m'
-        gap='s'
-        borderBottom='default'
-      >
-        <ProfileInfo onFollow={handleFollow} />
-        <OnlineOnly>
-          <ProfileMetrics />
-          {isExpanded ? (
-            <ExpandedSection />
-          ) : (
-            <CollapsedSection
-              isExpandable={isExpandable}
-              setIsExpandable={setIsExpandable}
-            />
-          )}
-          {isExpandable ? (
-            <ExpandHeaderToggleButton
-              isExpanded={isExpanded}
-              onPress={handleToggleExpand}
-            />
-          ) : null}
-          <Divider mh={-12} />
-          {!hasUserFollowed ? null : (
-            <ArtistRecommendations onClose={handleCloseArtistRecs} />
-          )}
-          {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
-          <TopSupporters />
-        </OnlineOnly>
-      </Flex>
+      <ScreenPrimaryContent skeleton={<ProfileScreenSkeleton />}>
+        <ProfileCoverPhoto scrollY={scrollY} />
+        <Box
+          style={css({
+            position: 'absolute',
+            top: spacing.unit13,
+            left: spacing.unit3,
+            zIndex: zIndex.PROFILE_PAGE_PROFILE_PICTURE
+          })}
+          pointerEvents='none'
+        >
+          <ProfilePicture userId={userId} size='xl' />
+        </Box>
+        <Flex
+          column
+          pointerEvents='box-none'
+          backgroundColor='white'
+          pv='s'
+          ph='m'
+          gap='s'
+          borderBottom='default'
+        >
+          <ProfileInfo onFollow={handleFollow} />
+          <OnlineOnly>
+            <ProfileMetrics />
+            <ScreenSecondaryContent skeleton={<ExpandableSectionSkeleton />}>
+              {isExpanded ? (
+                <ExpandedSection />
+              ) : (
+                <CollapsedSection
+                  isExpandable={isExpandable}
+                  setIsExpandable={setIsExpandable}
+                />
+              )}
+              {isExpandable ? (
+                <ExpandHeaderToggleButton
+                  isExpanded={isExpanded}
+                  onPress={handleToggleExpand}
+                />
+              ) : null}
+              <Divider mh={-12} />
+              {!hasUserFollowed ? null : (
+                <ArtistRecommendations onClose={handleCloseArtistRecs} />
+              )}
+              {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
+              <TopSupporters />
+            </ScreenSecondaryContent>
+          </OnlineOnly>
+        </Flex>
+      </ScreenPrimaryContent>
     </>
   )
 })
