@@ -11,6 +11,7 @@ program.command("follow")
     const audiusLibs = await initializeAudiusLibs(from);
 
     try {
+      audiusLibs.EntityManager.setCurrentUserId(audiusLibs.getCurrentUser().userId)
       const response = await audiusLibs.EntityManager.followUser(userId);
 
       if (response.error) {
