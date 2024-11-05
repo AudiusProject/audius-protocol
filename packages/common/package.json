@@ -53,7 +53,7 @@
     "bn.js": "5.1.0",
     "dayjs": "1.10.7",
     "deep-object-diff": "1.1.9",
-    "formik": "2.4.1",
+    "formik": "2.4.6",
     "fxa-common-password-list": "0.0.2",
     "hashids": "2.2.1",
     "immer": "9.0.1",
