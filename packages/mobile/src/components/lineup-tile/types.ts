@@ -9,7 +9,11 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
+import type {
+  RepostType,
+  EnhancedCollectionTrack,
+  LineupBaseActions
+} from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -69,6 +73,9 @@ export type LineupItemProps = {
 
   /** Tell the tile where it's being used */
   source?: LineupTileSource
+
+  /** Object containing lineup actions such as setPage */
+  actions: LineupBaseActions
 }
 
 export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
@@ -151,6 +158,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Analytics context about where this tile is being used */
   source?: LineupTileSource
 
-  /** A UID for the lineup - used to trigger track changes within the lineup */
-  lineupUid?: string
+  /** A UID for the item in the lineup - can be used to trigger track changes within the lineup */
+  uid?: string
+
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions: LineupBaseActions
 }

@@ -58,7 +58,8 @@ export const LineupTile = ({
   variant,
   styles,
   TileProps,
-  lineupUid
+  uid,
+  actions
 }: LineupTileProps) => {
   const {
     has_current_user_reposted,
@@ -129,7 +130,7 @@ export const LineupTile = ({
           hidePlays={hidePlays}
           hideComments={hideComments}
           id={id}
-          lineupUid={lineupUid}
+          uid={uid}
           index={index}
           isCollection={isCollection}
           isTrending={isTrending}
@@ -148,6 +149,7 @@ export const LineupTile = ({
           releaseDate={item?.release_date ? item.release_date : undefined}
           source={source}
           type={contentType}
+          actions={actions}
         />
       </View>
       {children}

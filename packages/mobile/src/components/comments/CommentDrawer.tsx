@@ -3,13 +3,17 @@ import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
-import type { ReplyingAndEditingState } from '@audius/common/context'
+import type {
+  CommentLineupSource,
+  ReplyingAndEditingState
+} from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
+import type { LineupBaseActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -201,7 +205,9 @@ export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
-  lineupUid?: string
+  uid?: string
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions: LineupBaseActions
 }
 
 type CommentDrawerProps = {
@@ -216,7 +222,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     bottomSheetModalRef,
     handleClose,
     autoFocusInput,
-    lineupUid
+    uid,
+    actions
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -253,7 +260,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
             entityId={entityId}
             replyingAndEditingState={replyingAndEditingState}
             setReplyingAndEditingState={setReplyingAndEditingState}
-            lineupUid={lineupUid}
+            uid={uid}
+            lineupActions={actions}
           >
             <CommentDrawerForm
               commentListRef={commentListRef}
@@ -312,7 +320,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
           closeDrawer={handleCloseDrawer}
-          lineupUid={lineupUid}
+          uid={uid}
+          lineupActions={actions}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />

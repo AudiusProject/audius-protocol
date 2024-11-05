@@ -20,7 +20,6 @@ interface CommentDrawerContextState {
   isOpen: boolean
   open: (data: CommentDrawerData) => void
   close: (trackId: ID) => void
-  lineupUid?: string
 }
 
 const CommentDrawerContext = createContext<

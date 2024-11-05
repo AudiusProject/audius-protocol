@@ -20,6 +20,7 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Portal } from '@gorhom/portal'
 import { useSelector } from 'react-redux'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
@@ -249,7 +250,10 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
       <Portal hostName='DrawerPortal'>
         {isVisible ? (
-          <CommentSectionProvider entityId={entityId}>
+          <CommentSectionProvider
+            entityId={entityId}
+            lineupActions={tracksActions}
+          >
             <ActionDrawerWithoutRedux
               rows={rows}
               isOpen={isOpen}

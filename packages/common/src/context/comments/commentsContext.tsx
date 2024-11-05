@@ -30,9 +30,9 @@ import {
   UserTrackMetadata,
   Name
 } from '~/models'
-import { feedPageLineupActions as feedActions } from '~/store'
+import { LineupBaseActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
-import { tracksActions } from '~/store/pages/track/lineup/actions'
+import { play } from '~/store/lineup/actions'
 import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
@@ -54,7 +54,8 @@ type CommentSectionProviderProps<NavigationProp> = {
   ) => void
   navigation?: NavigationProp
   closeDrawer?: () => void
-  lineupUid?: string
+  uid?: string
+  lineupActions: LineupBaseActions
 }
 
 export type ReplyingAndEditingState = {
@@ -81,7 +82,7 @@ type CommentSectionContextType<NavigationProp> = {
   loadMorePages: () => void
   hasNewComments: boolean
   isCommentCountLoading: boolean
-} & CommentSectionProviderProps<NavigationProp>
+} & Omit<CommentSectionProviderProps<NavigationProp>, 'lineupActions' | 'uid'>
 
 export const CommentSectionContext = createContext<
   CommentSectionContextType<any> | undefined
@@ -98,7 +99,8 @@ export function CommentSectionProvider<NavigationProp>(
     setReplyingAndEditingState,
     navigation,
     closeDrawer,
-    lineupUid
+    uid,
+    lineupActions
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
@@ -185,21 +187,18 @@ export function CommentSectionProvider<NavigationProp>(
 
   const playTrack = useCallback(
     (timestampSeconds?: number) => {
-      const uid =
+      const lineupUid =
         // Lineup uid can be passed in from above
-        lineupUid ??
-        // If lineup UID was not provided
+        uid ??
+        // If lineup UID was not provided we can find it from wherever we're currently at
         lineup?.entries?.find?.(
           (lineupEntry) => lineupEntry.id === track?.track_id
         )?.uid
 
-      if (uid === undefined) {
+      console.log({ lineupUid, uid })
+      if (lineupUid === undefined) {
         return
       }
-
-      // When opening the comments drawer from feed we use different actions than on the track page
-      const lineupActions =
-        lineupUid !== undefined ? feedActions : tracksActions
 
       // If a timestamp is provided, we should seek to that timestamp
       if (timestampSeconds !== undefined) {
@@ -213,20 +212,21 @@ export function CommentSectionProvider<NavigationProp>(
             }
           )
         } else {
-          dispatch(lineupActions.play(uid))
+          dispatch(lineupActions.play(lineupUid))
           setTimeout(() => dispatch(seek({ seconds: timestampSeconds })), 100)
         }
       } else {
-        dispatch(lineupActions.play(uid))
+        dispatch(lineupActions.play(lineupUid))
       }
     },
     [
       dispatch,
       hasStreamAccess,
       lineup?.entries,
-      lineupUid,
+      lineupActions,
       openPremiumContentPurchaseModal,
-      track
+      track,
+      uid
     ]
   )
 

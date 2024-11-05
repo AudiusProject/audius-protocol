@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { CommentLineupSource } from '@audius/common/context'
 import { isContentUSDCPurchaseGated, Name } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
 import {
@@ -7,7 +8,7 @@ import {
   favoritesUserListActions,
   PurchaseableContentType
 } from '@audius/common/store'
-import type { RepostType } from '@audius/common/store'
+import type { RepostType, LineupBaseActions } from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import moment from 'moment'
@@ -112,7 +113,9 @@ type Props = {
   releaseDate?: string
   source?: LineupTileSource
   type: 'track' | 'album' | 'playlist'
-  lineupUid?: string
+  uid?: string
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions: LineupBaseActions
 }
 
 export const LineupTileStats = ({
@@ -139,7 +142,8 @@ export const LineupTileStats = ({
   releaseDate,
   source,
   type,
-  lineupUid
+  uid,
+  actions
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -162,7 +166,13 @@ export const LineupTileStats = ({
   const { open } = useCommentDrawer()
 
   const handlePressComments = useCallback(() => {
-    open({ entityId: id, navigation, autoFocusInput: false, lineupUid })
+    open({
+      entityId: id,
+      navigation,
+      autoFocusInput: false,
+      uid,
+      actions
+    })
     track(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
@@ -170,7 +180,7 @@ export const LineupTileStats = ({
         source: 'lineup'
       })
     )
-  }, [id, lineupUid, navigation, open])
+  }, [actions, id, navigation, open, uid])
 
   const downloadStatusIndicator = isCollection ? (
     <CollectionDownloadStatusIndicator size='s' collectionId={id} />
