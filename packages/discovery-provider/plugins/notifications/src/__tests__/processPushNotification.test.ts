@@ -137,8 +137,7 @@ describe('Push Notifications', () => {
       blastTimestamp
     )
 
-    // Blasts are only sent after config.blastDelay seconds
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000 * 1.5))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
     // Ensure this only produces one notif from the blast, no dup notifs from the blast fan-out
     // as 1-1 message notifs should ignore blasts
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(4)
@@ -154,7 +153,7 @@ describe('Push Notifications', () => {
         })
       }
     )
-  }, 50000)
+  }, 40000)
 
   test('Process chat blast notification', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
@@ -193,7 +192,7 @@ describe('Push Notifications', () => {
       messageTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000 * 1.5))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // Expect 1 follow notif and 1 blast message notif
     // expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
@@ -253,7 +252,7 @@ describe('Push Notifications', () => {
 
     // No new notifications
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
-  }, 50000)
+  }, 40000)
 
   test('Test many blasts ', async () => {
     config.blastUserBatchSize = 2
@@ -295,7 +294,9 @@ describe('Push Notifications', () => {
       blastTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000 * 1.5))
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
 
     let notifsSoFar = numInitialFollowers * 2
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(notifsSoFar)
@@ -337,7 +338,9 @@ describe('Push Notifications', () => {
       { follower_user_id: 2, followee_user_id: 0 }
     ])
 
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000))
+    await new Promise((r) =>
+      setTimeout(r, config.pollInterval * (numUsers - 1))
+    )
 
     // Expect 3 more blast notifs + 1 follow notif
     notifsSoFar = numInitialFollowers * 3 + 1
@@ -394,7 +397,7 @@ describe('Push Notifications', () => {
         })
       )
     }
-  }, 50000)
+  }, 40000)
 
   // Clients may not allow blasts to be sent with audience size 0, but technically
   // this is not restricted at the protocol layer. This test is to ensure that the processor
@@ -454,7 +457,7 @@ describe('Push Notifications', () => {
       blastTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000 * 1.5))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // Now expect to see follow notif + 1 blast notif
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
@@ -470,7 +473,7 @@ describe('Push Notifications', () => {
         })
       }
     )
-  }, 50000)
+  })
 
   test('Does not send DM notifications when sender is receiver', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
@@ -508,7 +511,7 @@ describe('Push Notifications', () => {
     // expanded timeout because timeout was faster than delay
     // see 'Does not send DM reaction notifications created fewer than delay minutes ago' test for why
     // the spy might not have been called
-    await new Promise((r) => setTimeout(r, config.blastDelay * 1000 * 1.5))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 5))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
@@ -541,7 +544,7 @@ describe('Push Notifications', () => {
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
     expect(sendPushNotificationSpy).not.toHaveBeenCalled()
-  }, 50000)
+  }, 40000)
 
   test('Does not send DM notifications created fewer than delay minutes ago', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
