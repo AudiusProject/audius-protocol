@@ -385,11 +385,6 @@ def create_playlist(params: ManageEntityParameters):
     last_added_to = None
 
     created_at = params.block_datetime
-    if params.action == Action.CREATE:
-        parsed_release_date = parse_release_date(params.metadata.get("release_date"))
-        if parsed_release_date:
-            created_at = str(parsed_release_date)  # type: ignore
-
     for track in tracks:
         if "track" not in track or "time" not in track:
             raise IndexingValidationError(
