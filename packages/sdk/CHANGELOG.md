@@ -1,5 +1,12 @@
 # @audius/sdk
 
+## 7.1.1
+
+### Patch Changes
+
+- Updated dependencies [aef5021]
+  - @audius/eth@0.0.1
+
 ## 7.1.0
 
 ### Minor Changes
