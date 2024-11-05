@@ -196,6 +196,8 @@ export function CommentSectionProvider<NavigationProp>(
       if (uid === undefined) {
         return
       }
+
+      // When opening the comments drawer from feed we use different actions than on the track page
       const lineupActions =
         lineupUid !== undefined ? feedActions : tracksActions
 

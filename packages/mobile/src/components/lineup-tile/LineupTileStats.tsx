@@ -163,8 +163,6 @@ export const LineupTileStats = ({
 
   const handlePressComments = useCallback(() => {
     open({ entityId: id, navigation, autoFocusInput: false, lineupUid })
-    // TODO: open drawer instead
-    // navigation.push('Track', { id, showComments: true })
     track(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
