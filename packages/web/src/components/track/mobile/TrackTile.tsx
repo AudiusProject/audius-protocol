@@ -27,7 +27,6 @@ import {
   IconTrending,
   Text,
   Flex,
-  IconStar,
   IconMessage
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -44,10 +43,9 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
-import { GatedTrackLabel } from '../GatedTrackLabel'
 import { LineupTileLabel } from '../LineupTileLabel'
+import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
 import { TrackDogEar } from '../TrackDogEar'
-import { VisibilityLabel } from '../VisibilityLabel'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -188,9 +186,6 @@ const TrackTile = (props: CombinedProps) => {
     isActive,
     isMatrix,
     userId,
-    isArtistPick,
-    isScheduledRelease,
-    releaseDate,
     isOwner,
     isUnlisted,
     isLoading,
@@ -393,18 +388,7 @@ const TrackTile = (props: CombinedProps) => {
               index={index}
               isVisible={isTrending && !showSkeleton}
             />
-            {isArtistPick ? (
-              <LineupTileLabel color='accent' icon={IconStar}>
-                {messages.artistPick}
-              </LineupTileLabel>
-            ) : !isUnlisted && id ? (
-              <GatedTrackLabel trackId={id} />
-            ) : null}
-            <VisibilityLabel
-              releaseDate={releaseDate}
-              isUnlisted={isUnlisted}
-              isScheduledRelease={isScheduledRelease}
-            />
+            {id ? <TrackAccessTypeLabel trackId={id} /> : null}
             {!(
               props.repostCount ||
               props.saveCount ||

@@ -35,6 +35,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { ImageProps } from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
+import { TrackAccessTypeLabel } from 'app/components/track/TrackAccessTypeLabel'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -293,6 +294,7 @@ export const TrackTileComponent = ({
       item={track}
       user={user}
       variant={variant}
+      accessLabel={<TrackAccessTypeLabel trackId={track_id} />}
     />
   )
 }

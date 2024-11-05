@@ -14,7 +14,7 @@ import { Shadow } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 
-import { TrackDogEar } from '../core/TrackDogEar'
+import { TrackDogEar } from '../track/TrackDogEar'
 const { getPreviewing } = playerSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
 

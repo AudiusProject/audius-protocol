@@ -326,7 +326,6 @@ const TrackPage = ({
                       : undefined
                   }
                   lineupContainerStyles={styles.width100}
-                  showLeadingElementArtistPick={false}
                   applyLeadingElementStylesToSkeleton
                   // Don't render the first tile in the lineup since it's actually the "giant"
                   // track tile this page is about.

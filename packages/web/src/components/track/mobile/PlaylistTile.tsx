@@ -24,7 +24,6 @@ import {
 import {
   Box,
   Flex,
-  IconVisibilityHidden,
   IconVolumeLevel2 as IconVolume,
   Text
 } from '@audius/harmony'
@@ -36,6 +35,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { CollectionDogEar } from 'components/collection'
+import { CollectionAccessTypeLabel } from 'components/collection/CollectionAccessTypeLabel'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -43,8 +43,6 @@ import { PlaylistTileProps } from 'components/track/types'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
-import { GatedContentLabel } from '../GatedContentLabel'
-import { LineupTileLabel } from '../LineupTileLabel'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -319,24 +317,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     openLockedContentModal
   ])
 
-  let specialContentLabel = null
-  if (isStreamGated) {
-    specialContentLabel = (
-      <GatedContentLabel
-        streamConditions={streamConditions}
-        hasStreamAccess={!!hasStreamAccess}
-        isOwner={isOwner}
-      />
-    )
-  }
-  if (isPrivate) {
-    specialContentLabel = (
-      <LineupTileLabel icon={IconVisibilityHidden}>
-        {messages.hidden}
-      </LineupTileLabel>
-    )
-  }
-
   return (
     <div
       className={cn(
@@ -415,7 +395,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 isVisible={isTrending && shouldShow}
                 showCrown={showRankIcon}
               />
-              {isReadonly ? specialContentLabel : null}
+              <CollectionAccessTypeLabel collectionId={id} />
               {shouldShowStats ? (
                 <>
                   <Flex

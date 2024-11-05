@@ -76,7 +76,6 @@ type OwnProps = {
   containerClassName?: string
   size: TrackTileSize
   statSize: 'small' | 'large'
-  showArtistPick: boolean
   ordered: boolean
   togglePlay: (uid: UID, id: ID) => void
   isLoading: boolean
@@ -98,7 +97,6 @@ const ConnectedTrackTile = ({
   track,
   user,
   ordered,
-  showArtistPick,
   togglePlay,
   isBuffering,
   isPlaying,
@@ -126,7 +124,6 @@ const ConnectedTrackTile = ({
   const {
     is_delete,
     is_unlisted: isUnlisted,
-    is_scheduled_release: isScheduledRelease,
     is_stream_gated: isStreamGated,
     stream_conditions: streamConditions,
     track_id: trackId,
@@ -146,13 +143,11 @@ const ConnectedTrackTile = ({
     _cover_art_sizes,
     play_count,
     duration,
-    release_date: releaseDate,
     ddex_app: ddexApp
   } = trackWithFallback
 
   const {
     user_id,
-    artist_pick_track_id,
     name,
     handle,
     is_deactivated: isOwnerDeactivated
@@ -166,7 +161,6 @@ const ConnectedTrackTile = ({
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
-  const isArtistPick = showArtistPick && artist_pick_track_id === trackId
   const hasPreview = !!track?.preview_cid
 
   const { isFetchingNFTAccess, hasStreamAccess } =
@@ -236,7 +230,7 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isArtistPick,
+      isArtistPick: false,
       isDeleted: is_delete || isOwnerDeactivated,
       isFavorited,
       isOwner,
@@ -418,7 +412,6 @@ const ConnectedTrackTile = ({
       isReposted={isReposted}
       isOwner={isOwner}
       isUnlisted={isUnlisted}
-      isScheduledRelease={isScheduledRelease}
       isStreamGated={isStreamGated}
       streamConditions={streamConditions}
       hasStreamAccess={hasStreamAccess}
@@ -427,7 +420,6 @@ const ConnectedTrackTile = ({
       isMatrixMode={isMatrix()}
       listenCount={play_count}
       isActive={isActive}
-      isArtistPick={isArtistPick}
       isPlaying={isTrackPlaying}
       artwork={artwork}
       rightActions={rightActions}
@@ -453,7 +445,6 @@ const ConnectedTrackTile = ({
       permalink={permalink}
       trackId={trackId}
       isTrack
-      releaseDate={releaseDate}
     />
   )
 

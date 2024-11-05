@@ -106,7 +106,6 @@ export const ChatMessageTrack = ({
       hasLoaded={() => {}}
       isTrending={false}
       showRankIcon={false}
-      showArtistPick={false}
       isActive={isTrackPlaying}
       variant='readonly'
       source={ModalSource.DirectMessageTrackTile}

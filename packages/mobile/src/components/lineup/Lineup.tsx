@@ -139,7 +139,6 @@ const LineupTileView = memo(function LineupTileView({
   item,
   index,
   isTrending,
-  showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
   togglePlay,
@@ -160,7 +159,6 @@ const LineupTileView = memo(function LineupTileView({
           {...item}
           index={index}
           isTrending={isTrending}
-          showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
           showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
           onPress={onPress}
@@ -179,7 +177,6 @@ const LineupItemTile = memo(function LineupItemTile({
   item,
   index,
   isTrending,
-  showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
   togglePlay,
@@ -197,7 +194,6 @@ const LineupItemTile = memo(function LineupItemTile({
         item={item}
         index={index}
         isTrending={isTrending}
-        showLeadingElementArtistPick={showLeadingElementArtistPick}
         leadingElementId={leadingElementId}
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
@@ -232,7 +228,6 @@ export const Lineup = ({
   rankIconCount = 0,
   refresh: refreshProp,
   refreshing: refreshingProp = false,
-  showLeadingElementArtistPick = true,
   start = 0,
   variant = LineupVariant.MAIN,
   listKey,
@@ -401,7 +396,6 @@ export const Lineup = ({
           isTrending={isTrending}
           leadingElementId={leadingElementId}
           rankIconCount={rankIconCount}
-          showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
           onPress={onPressItem}
           itemStyles={itemStyles}
@@ -412,7 +406,6 @@ export const Lineup = ({
       isTrending,
       leadingElementId,
       rankIconCount,
-      showLeadingElementArtistPick,
       togglePlay,
       onPressItem,
       itemStyles
@@ -466,7 +459,7 @@ export const Lineup = ({
       return result
     }
 
-    if (leadingElementId && showLeadingElementArtistPick) {
+    if (leadingElementId) {
       const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
       const result: Section[] = [
@@ -492,7 +485,6 @@ export const Lineup = ({
     lineup,
     pageItemCount,
     leadingElementId,
-    showLeadingElementArtistPick,
     start,
     limit
   ])
