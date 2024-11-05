@@ -23,8 +23,6 @@ import {
 } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
-  IconCrown,
-  IconTrending,
   Text,
   Flex,
   IconMessage
@@ -35,6 +33,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
+import { EntityRank } from 'components/lineup/EntityRank'
 import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -43,7 +42,6 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
-import { LineupTileLabel } from '../LineupTileLabel'
 import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
 import { TrackDogEar } from '../TrackDogEar'
 import { messages } from '../trackTileMessages'
@@ -152,23 +150,6 @@ const formatCoSign = ({
   return messages.reposted
 }
 
-export const RankIcon = ({
-  showCrown,
-  index,
-  isVisible = true
-}: {
-  showCrown: boolean
-  index: number
-  isVisible?: boolean
-  className?: string
-}) => {
-  return isVisible ? (
-    <LineupTileLabel icon={showCrown ? IconCrown : IconTrending} color='accent'>
-      {`${index + 1}`}
-    </LineupTileLabel>
-  ) : null
-}
-
 const TrackTile = (props: CombinedProps) => {
   const {
     id,
@@ -193,7 +174,6 @@ const TrackTile = (props: CombinedProps) => {
     listenCount,
     streamConditions,
     hasStreamAccess,
-    isTrending,
     showRankIcon,
     permalink,
     duration,
@@ -383,10 +363,9 @@ const TrackTile = (props: CombinedProps) => {
         ) : null}
         <Text variant='body' size='xs' className={styles.statsRow}>
           <div className={styles.stats}>
-            <RankIcon
-              showCrown={showRankIcon}
+            <EntityRank
+              type={showRankIcon ? 'crown' : 'trending'}
               index={index}
-              isVisible={isTrending && !showSkeleton}
             />
             {id ? <TrackAccessTypeLabel trackId={id} /> : null}
             {!(
