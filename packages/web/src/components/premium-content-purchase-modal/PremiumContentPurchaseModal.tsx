@@ -64,8 +64,7 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
-const { cleanup, setPurchasePage, ensureUserBankExists } =
-  purchaseContentActions
+const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
@@ -257,8 +256,8 @@ export const PremiumContentPurchaseModal = () => {
   // On form mount, pre-create user bank if needed and check for any usdc stuck
   // in root wallet from an aborted withdrawal
   useEffect(() => {
-    dispatch(ensureUserBankExists)
-    dispatch(startRecoveryIfNecessary)
+    dispatch(eagerCreateUserBank())
+    dispatch(startRecoveryIfNecessary())
   }, [dispatch])
 
   const handleClose = useCallback(() => {

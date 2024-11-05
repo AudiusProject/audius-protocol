@@ -91,7 +91,7 @@ import {
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
   startPurchaseContentFlow,
-  ensureUserBankExists
+  eagerCreateUserBank
 } from './slice'
 import {
   PurchaseableContentType,
@@ -1155,17 +1155,16 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
-function* watchEnsureUserBankExists() {
-  yield takeEvery(ensureUserBankExists, function* () {
+function* watchEagerCreateUserBank() {
+  yield takeEvery(eagerCreateUserBank, function* () {
     try {
       yield* call(getOrCreateUSDCUserBank)
     } catch (e) {
-      // No need to bubble here as later flows will still attempt to create it
-      console.warn(`ensureUserBankExists failed: ${e}`)
+      console.error(`eagerCreateUserBank failed: ${e}`)
     }
   })
 }
 
 export default function sagas() {
-  return [watchStartPurchaseContentFlow, watchEnsureUserBankExists]
+  return [watchStartPurchaseContentFlow, watchEagerCreateUserBank]
 }

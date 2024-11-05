@@ -94,9 +94,9 @@ export function* pollForTokenAccountInfo({
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   let retries = 0
-  let tokenAccount
-  while (retries < maxRetryCount && !tokenAccount) {
-    tokenAccount = yield* call(
+  let result
+  while (retries < maxRetryCount && !result) {
+    result = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,
       getTokenAccountInfoArgs
@@ -104,10 +104,12 @@ export function* pollForTokenAccountInfo({
     retries += 1
     yield* delay(retryDelayMs)
   }
-  if (!tokenAccount) {
-    throw new Error('Failed to fetch USDC user bank token account info')
+  if (!result) {
+    throw new Error(
+      `Failed to fetch USDC user bank token account info for ${getTokenAccountInfoArgs.tokenAccount.toString()}`
+    )
   }
-  return tokenAccount
+  return result
 }
 
 export function* getBuyUSDCRemoteConfig() {

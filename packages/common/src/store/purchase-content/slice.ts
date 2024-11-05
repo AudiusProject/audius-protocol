@@ -111,7 +111,7 @@ const slice = createSlice({
       state.error = action.payload.error
     },
     cleanup: () => initialState,
-    ensureUserBankExists: (_state) => {}
+    eagerCreateUserBank: (_state) => {}
   }
 })
 
@@ -124,7 +124,7 @@ export const {
   purchaseCanceled,
   purchaseContentFlowFailed,
   cleanup,
-  ensureUserBankExists
+  eagerCreateUserBank
 } = slice.actions
 
 export default slice.reducer
