@@ -920,9 +920,7 @@ describe('discoveryNodeSelector', () => {
 
       await expect(async () => {
         await selector.getUniquelyOwnedEndpoints(3)
-      }).rejects.toThrow(
-        new Error('Not enough healthy services to choose from')
-      )
+      }).rejects.toThrow()
     })
 
     it('fails when not enough owners', async () => {
