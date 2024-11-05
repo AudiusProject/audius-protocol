@@ -29,6 +29,7 @@ jobs:
               - 'packages/sdk/**'
               - 'packages/sp-actions/**'
               - 'packages/spl/**'
+              - 'packages/eth/**'
 
   publish-packages:
     name: Publish Packages to NPM
