@@ -57,7 +57,8 @@ export const LineupTile = ({
   isPlayingUid,
   variant,
   styles,
-  TileProps
+  TileProps,
+  lineupUid
 }: LineupTileProps) => {
   const {
     has_current_user_reposted,
@@ -128,6 +129,7 @@ export const LineupTile = ({
           hidePlays={hidePlays}
           hideComments={hideComments}
           id={id}
+          lineupUid={lineupUid}
           index={index}
           isCollection={isCollection}
           isTrending={isTrending}

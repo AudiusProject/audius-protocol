@@ -29,6 +29,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { makeStyles, flexRowCentered } from 'app/styles'
 
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
+
 import { GatedTrackLabel } from './GatedTrackLabel'
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
 import { LineupTileGatedContentLabel } from './LineupTileGatedContentLabel'
@@ -110,6 +112,7 @@ type Props = {
   releaseDate?: string
   source?: LineupTileSource
   type: 'track' | 'album' | 'playlist'
+  lineupUid?: string
 }
 
 export const LineupTileStats = ({
@@ -135,7 +138,8 @@ export const LineupTileStats = ({
   showArtistPick,
   releaseDate,
   source,
-  type
+  type,
+  lineupUid
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -155,8 +159,12 @@ export const LineupTileStats = ({
     navigation.push('Reposts', { id, repostType })
   }, [dispatch, id, navigation, repostType])
 
+  const { open } = useCommentDrawer()
+
   const handlePressComments = useCallback(() => {
-    navigation.push('Track', { id, showComments: true })
+    open({ entityId: id, navigation, autoFocusInput: false, lineupUid })
+    // TODO: open drawer instead
+    // navigation.push('Track', { id, showComments: true })
     track(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
@@ -164,7 +172,7 @@ export const LineupTileStats = ({
         source: 'lineup'
       })
     )
-  }, [id, navigation])
+  }, [id, lineupUid, navigation, open])
 
   const downloadStatusIndicator = isCollection ? (
     <CollectionDownloadStatusIndicator size='s' collectionId={id} />

@@ -150,4 +150,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Analytics context about where this tile is being used */
   source?: LineupTileSource
+
+  /** A UID for the lineup - used to trigger track changes within the lineup */
+  lineupUid?: string
 }

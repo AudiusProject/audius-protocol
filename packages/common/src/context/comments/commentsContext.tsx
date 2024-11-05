@@ -30,6 +30,7 @@ import {
   UserTrackMetadata,
   Name
 } from '~/models'
+import { feedPageLineupActions as feedActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 import { getLineup } from '~/store/pages/track/selectors'
@@ -53,6 +54,7 @@ type CommentSectionProviderProps<NavigationProp> = {
   ) => void
   navigation?: NavigationProp
   closeDrawer?: () => void
+  lineupUid?: string
 }
 
 export type ReplyingAndEditingState = {
@@ -95,7 +97,8 @@ export function CommentSectionProvider<NavigationProp>(
     replyingAndEditingState,
     setReplyingAndEditingState,
     navigation,
-    closeDrawer
+    closeDrawer,
+    lineupUid
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
   const {
@@ -182,7 +185,19 @@ export function CommentSectionProvider<NavigationProp>(
 
   const playTrack = useCallback(
     (timestampSeconds?: number) => {
-      const uid = lineup?.entries?.[0]?.uid
+      const uid =
+        // Lineup uid can be passed in from above
+        lineupUid ??
+        // If lineup UID was not provided
+        lineup?.entries?.find?.(
+          (lineupEntry) => lineupEntry.id === track?.track_id
+        )?.uid
+
+      if (uid === undefined) {
+        return
+      }
+      const lineupActions =
+        lineupUid !== undefined ? feedActions : tracksActions
 
       // If a timestamp is provided, we should seek to that timestamp
       if (timestampSeconds !== undefined) {
@@ -196,17 +211,18 @@ export function CommentSectionProvider<NavigationProp>(
             }
           )
         } else {
-          dispatch(tracksActions.play(uid))
+          dispatch(lineupActions.play(uid))
           setTimeout(() => dispatch(seek({ seconds: timestampSeconds })), 100)
         }
       } else {
-        dispatch(tracksActions.play(uid))
+        dispatch(lineupActions.play(uid))
       }
     },
     [
       dispatch,
       hasStreamAccess,
       lineup?.entries,
+      lineupUid,
       openPremiumContentPurchaseModal,
       track
     ]

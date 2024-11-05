@@ -201,6 +201,7 @@ export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
+  lineupUid?: string
 }
 
 type CommentDrawerProps = {
@@ -214,7 +215,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     navigation,
     bottomSheetModalRef,
     handleClose,
-    autoFocusInput
+    autoFocusInput,
+    lineupUid
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -251,6 +253,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
             entityId={entityId}
             replyingAndEditingState={replyingAndEditingState}
             setReplyingAndEditingState={setReplyingAndEditingState}
+            lineupUid={lineupUid}
           >
             <CommentDrawerForm
               commentListRef={commentListRef}
@@ -309,6 +312,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
           closeDrawer={handleCloseDrawer}
+          lineupUid={lineupUid}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />
