@@ -3,15 +3,18 @@ import json
 import logging
 import re
 from datetime import datetime
-from typing import Dict, List, Literal, TypedDict, Union, cast
+from typing import Dict, List, TypedDict, Union, cast
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
-from flask.globals import request
 from flask_restx import inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
+from src.gated_content.signature import (
+    GatedContentSignature,
+    get_gated_content_signature,
+)
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
@@ -20,10 +23,6 @@ from src.queries.get_notifications import (
     default_valid_notification_types,
 )
 from src.queries.get_support_for_user import SupportResponse
-from src.queries.get_track_signature import (
-    get_track_download_signature,
-    get_track_stream_signature,
-)
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
@@ -33,7 +32,6 @@ from src.queries.query_helpers import (
     SortMethod,
 )
 from src.queries.reactions import ReactionResponse
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
@@ -362,24 +360,7 @@ def extend_track(track, session=None, current_user_id=None):
             track["download_conditions"], session
         )
 
-    # Add track stream URL and mirrors
-    track["stream"] = get_content_url_with_mirrors(
-        track, requested_access="stream", current_user_id=current_user_id
-    )
-
-    # Add track preview URL and mirrors
-    track["preview"] = get_content_url_with_mirrors(
-        track,
-        requested_access="preview",
-        current_user_id=current_user_id,
-    )
-
-    # Add track download URL and mirrors
-    track["download"] = get_content_url_with_mirrors(
-        track,
-        requested_access="download",
-        current_user_id=current_user_id,
-    )
+    get_content_urls_with_mirrors(track, current_user_id)
 
     return track
 
@@ -389,44 +370,66 @@ class UrlWithMirrors(TypedDict):
     mirrors: List[str]
 
 
+def get_content_urls_with_mirrors(track: dict, current_user_id: int):
+    stream_signature = (
+        get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": track["track_cid"],
+                "type": "track",
+                "user_id": current_user_id,
+                "is_gated": track["is_stream_gated"],
+            }
+        )
+        if track.get("track_cid") and track.get("access", {}).get("stream", False)
+        else None
+    )
+
+    preview_signature = (
+        get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": track["preview_cid"],
+                "type": "track",
+                "user_id": current_user_id,
+                "is_gated": False,
+            }
+        )
+        if track.get("preview_cid")
+        else None
+    )
+
+    download_signature = (
+        get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": track["orig_cid"],
+                "type": "track",
+                "user_id": current_user_id,
+                "is_gated": track["is_download_gated"],
+            }
+        )
+        if track.get("orig_cid") and track.get("access", {}).get("download")
+        else None
+    )
+
+    placement_hosts = track.get("placement_hosts", None)
+    track["stream"] = get_content_url_with_mirrors(
+        stream_signature, track.get("track_cid"), placement_hosts
+    )
+    track["download"] = get_content_url_with_mirrors(
+        download_signature, track.get("orig_cid"), placement_hosts
+    )
+    track["preview"] = get_content_url_with_mirrors(
+        preview_signature, track.get("preview_cid"), placement_hosts
+    )
+
+
 def get_content_url_with_mirrors(
-    track: dict,
-    requested_access: Literal["stream", "download", "preview"],
-    current_user_id: int | None,
+    signature: GatedContentSignature | None, cid: str | None, placement_hosts=None
 ) -> UrlWithMirrors:
-    user_message = request.headers.get(MESSAGE_HEADER)
-    user_signature = request.headers.get(SIGNATURE_HEADER)
-    gated_content_signature = None
-    if requested_access == "stream":
-        gated_content_signature = get_track_stream_signature(
-            {
-                "track": track,
-                "is_preview": requested_access == "preview",
-                "user_id": current_user_id,
-                "user_data": user_message,
-                "user_signature": user_signature,
-                "nft_access_signature": None,
-                "filename": None,
-            }
-        )
-    elif requested_access == "download":
-        gated_content_signature = get_track_download_signature(
-            {
-                "track": track,
-                "is_original": True,
-                "user_id": current_user_id,
-                "user_data": user_message,
-                "user_signature": user_signature,
-                "nft_access_signature": None,
-                "filename": track["orig_filename"],
-            }
-        )
-
-    if not gated_content_signature:
+    if not signature or not cid:
         return {"url": None, "mirrors": []}
-
-    signature = gated_content_signature["signature"]
-    cid = gated_content_signature["cid"]
     params = {"signature": json.dumps(signature)}
 
     base_path = f"tracks/cidstream/{cid}"
@@ -435,24 +438,21 @@ def get_content_url_with_mirrors(
 
     content_nodes = []
     # if track has placement_hosts, use that instead
-    placement_hosts = track.get("placement_hosts", None)
     if placement_hosts:
         content_nodes = placement_hosts.split(",")
     else:
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track CID {cid}. Please investigate."
+        if healthy_nodes:
+            rendezvous = RendezvousHash(
+                *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
             )
-            return {"url": None, "mirrors": []}
 
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-        )
-
-        content_nodes = rendezvous.get_n(REPLICATION_FACTOR, cid)
+            content_nodes = rendezvous.get_n(REPLICATION_FACTOR, cid)
 
     if len(content_nodes) == 0:
+        logger.warning(
+            f"helpers.py | get_content_url_with_mirrors | No Content Nodes found for CID {cid}"
+        )
         return {"url": None, "mirrors": []}
 
     # Add additional query parameters
