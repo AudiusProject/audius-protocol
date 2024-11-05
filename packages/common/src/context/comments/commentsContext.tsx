@@ -195,7 +195,6 @@ export function CommentSectionProvider<NavigationProp>(
           (lineupEntry) => lineupEntry.id === track?.track_id
         )?.uid
 
-      console.log({ lineupUid, uid })
       if (lineupUid === undefined) {
         return
       }
