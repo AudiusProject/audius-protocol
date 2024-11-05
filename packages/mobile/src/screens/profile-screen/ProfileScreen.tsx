@@ -5,7 +5,6 @@ import {
   profilePageActions,
   profilePageSelectors,
   reachabilitySelectors,
-  relatedArtistsUIActions,
   shareModalUIActions,
   modalsActions,
   profilePageTracksLineupActions,
@@ -24,21 +23,16 @@ import {
   IconShare
 } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
+import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ProfileHeader } from './ProfileHeader'
-import {
-  ProfileHeaderSkeleton,
-  ProfileScreenSkeleton,
-  ProfileTabsSkeleton
-} from './ProfileScreenSkeleton'
+import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
-const { fetchRelatedArtists } = relatedArtistsUIActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
@@ -73,6 +67,7 @@ export const ProfileScreen = () => {
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
+  const isScreenReady = useIsScreenReady()
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
@@ -105,13 +100,9 @@ export const ProfileScreen = () => {
   }) as ProfilePageTabs
 
   const fetchProfile = useCallback(() => {
+    if (!isScreenReady) return
     dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
-  }, [dispatch, handleLower, id])
-
-  useEffect(() => {
-    if (!profile?.user_id) return
-    dispatch(fetchRelatedArtists({ artistId: profile.user_id }))
-  }, [dispatch, profile?.user_id])
+  }, [dispatch, handleLower, id, isScreenReady])
 
   useFocusEffect(setCurrentUser)
 
@@ -201,32 +192,32 @@ export const ProfileScreen = () => {
       url={handle && `/${encodeUrlName(handle)}`}
     >
       <ScreenContent isOfflineCapable>
-        <ScreenPrimaryContent skeleton={<ProfileHeaderSkeleton />}>
-          {!profile ? (
-            <ProfileScreenSkeleton />
-          ) : (
-            <>
-              <View style={styles.navigator}>
-                {isNotReachable ? (
-                  <>
-                    {renderHeader()}
-                    <OfflinePlaceholder />
-                  </>
-                ) : (
-                  <>
-                    <PortalHost name='PullToRefreshPortalHost' />
+        {!profile ? (
+          <ProfileScreenSkeleton />
+        ) : (
+          <>
+            <View style={styles.navigator}>
+              {isNotReachable ? (
+                <>
+                  {renderHeader()}
+                  <OfflinePlaceholder />
+                </>
+              ) : (
+                <>
+                  <PortalHost name='PullToRefreshPortalHost' />
+                  {renderHeader()}
+                  <ScreenSecondaryContent>
                     <ProfileTabNavigator
-                      renderHeader={renderHeader}
                       animatedValue={scrollY}
                       refreshing={isRefreshing}
                       onRefresh={handleRefresh}
                     />
-                  </>
-                )}
-              </View>
-            </>
-          )}
-        </ScreenPrimaryContent>
+                  </ScreenSecondaryContent>
+                </>
+              )}
+            </View>
+          </>
+        )}
       </ScreenContent>
     </Screen>
   )
