@@ -20,6 +20,10 @@ import { ArtistRecommendations } from '../ArtistRecommendations'
 import { ProfileCoverPhoto } from '../ProfileCoverPhoto'
 import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
+import {
+  ExpandableSectionSkeleton,
+  ProfileScreenSkeleton
+} from '../ProfileScreenSkeleton'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfile } from '../selectors'
@@ -119,7 +123,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
 
   return (
     <>
-      <ScreenPrimaryContent>
+      <ScreenPrimaryContent skeleton={<ProfileScreenSkeleton />}>
         <ProfileCoverPhoto scrollY={scrollY} />
         <Box
           style={css({
@@ -144,7 +148,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
           <ProfileInfo onFollow={handleFollow} />
           <OnlineOnly>
             <ProfileMetrics />
-            <ScreenSecondaryContent>
+            <ScreenSecondaryContent skeleton={<ExpandableSectionSkeleton />}>
               {isExpanded ? (
                 <ExpandedSection />
               ) : (

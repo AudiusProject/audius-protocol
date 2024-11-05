@@ -30,7 +30,10 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ProfileHeader } from './ProfileHeader'
-import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
+import {
+  ProfileScreenSkeleton,
+  ProfileTabsSkeleton
+} from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -206,7 +209,7 @@ export const ProfileScreen = () => {
                 <>
                   <PortalHost name='PullToRefreshPortalHost' />
                   {renderHeader()}
-                  <ScreenSecondaryContent>
+                  <ScreenSecondaryContent skeleton={<ProfileTabsSkeleton />}>
                     <ProfileTabNavigator
                       animatedValue={scrollY}
                       refreshing={isRefreshing}

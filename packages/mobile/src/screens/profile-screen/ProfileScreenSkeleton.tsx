@@ -1,10 +1,9 @@
 import { memo } from 'react'
 
-import { css } from '@emotion/native'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Box, Flex } from '@audius/harmony-native'
+import { Flex } from '@audius/harmony-native'
 import { LineupTileSkeleton } from 'app/components/lineup-tile'
 import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
@@ -130,6 +129,26 @@ const BioSkeleton = memo(() => {
   )
 })
 
+export const ExpandableSectionSkeleton = memo(() => {
+  const styles = useStyles()
+  return (
+    <Flex column gap='s'>
+      <Flex row wrap='wrap'>
+        <BioSkeleton />
+      </Flex>
+      <View style={styles.tierAndSocials}>
+        <Skeleton style={styles.tier} />
+        <View style={styles.socialLinks}>
+          <Skeleton style={styles.socialLink} />
+          <Skeleton style={styles.socialLink} />
+          <Skeleton style={styles.socialLink} />
+        </View>
+      </View>
+      {/* TODO: add tip button and supporters skeletons */}
+    </Flex>
+  )
+})
+
 export const ProfileHeaderSkeleton = memo(() => {
   const styles = useStyles()
   const statSkeleton = <Skeleton style={styles.stat} />
@@ -154,17 +173,6 @@ export const ProfileHeaderSkeleton = memo(() => {
           {statSkeleton}
           {statSkeleton}
         </Flex>
-        <Flex row wrap='wrap'>
-          <BioSkeleton />
-        </Flex>
-        <View style={styles.tierAndSocials}>
-          <Skeleton style={styles.tier} />
-          <View style={styles.socialLinks}>
-            <Skeleton style={styles.socialLink} />
-            <Skeleton style={styles.socialLink} />
-            <Skeleton style={styles.socialLink} />
-          </View>
-        </View>
       </Flex>
     </Flex>
   )
@@ -191,8 +199,9 @@ export const ProfileTabsSkeleton = memo(() => {
 
 export const ProfileScreenSkeleton = memo(() => {
   return (
-    <Flex column backgroundColor='white'>
+    <Flex column h='100%'>
       <ProfileHeaderSkeleton />
+      <ExpandableSectionSkeleton />
       <ProfileTabsSkeleton />
     </Flex>
   )
