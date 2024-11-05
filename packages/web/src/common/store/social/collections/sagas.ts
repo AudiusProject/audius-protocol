@@ -63,7 +63,7 @@ export function* repostCollectionAsync(
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -189,7 +189,7 @@ export function* undoRepostCollectionAsync(
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -312,7 +312,7 @@ export function* saveSmartCollection(
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
@@ -344,7 +344,7 @@ export function* saveCollectionAsync(
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return

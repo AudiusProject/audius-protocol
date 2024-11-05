@@ -12,15 +12,14 @@ import { Avatar, Flex } from '@audius/harmony'
 import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { useToggle } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
-import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { make, track } from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
+
+import { useCommentActionCallback } from './useCommentActionCallback'
 
 type CommentFormValues = {
   commentMessage: string
@@ -52,15 +51,13 @@ export const CommentForm = ({
 }: CommentFormProps) => {
   const { currentUserId, entityId, entityType } = useCurrentCommentSection()
   const isMobile = useIsMobile()
-  const { requiresAccount } = useRequiresAccountCallback()
-  const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
 
   const [messageId, setMessageId] = useState(0) // Message id is used to reset the composer input
   const currentlyPlayingTrackId = useSelector(playerSelectors.getTrackId)
   const [postComment] = usePostComment()
   const [editComment] = useEditComment()
-  const location = useLocation()
 
+  const location = useLocation()
   useEffect(() => {
     // Reset input text when the location changes
     setMessageId((prev) => prev + 1)
@@ -85,40 +82,15 @@ export const CommentForm = ({
     }
   }
 
-  const handleClickInput = useCallback(() => {
-    if (isMobile) {
-      toggleIsMobileAppDrawer()
-      track(
-        make({
-          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
-          trackId: entityId
-        })
-      )
-    } else {
-      if (currentUserId === undefined) {
-        requiresAccount()
-        track(
-          make({
-            eventName: Name.COMMENTS_OPEN_AUTH_MODAL,
-            trackId: entityId
-          })
-        )
-      }
-      track(
-        make({
-          eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
-          trackId: entityId,
-          source: 'comment_input'
-        })
-      )
-    }
-  }, [
-    isMobile,
-    toggleIsMobileAppDrawer,
-    entityId,
-    currentUserId,
-    requiresAccount
-  ])
+  const [handleClickInput, mobileAppDrawer] = useCommentActionCallback(() => {
+    track(
+      make({
+        eventName: Name.COMMENTS_FOCUS_COMMENT_INPUT,
+        trackId: entityId,
+        source: 'comment_input'
+      })
+    )
+  }, [entityId])
 
   const profileImage = useProfilePicture(
     currentUserId ?? null,
@@ -139,10 +111,6 @@ export const CommentForm = ({
     // Incrementing the message id "clears" the input value
     setMessageId((prev) => prev + 1)
   }
-
-  const handleCloseMobileAppDrawer = useCallback(() => {
-    toggleIsMobileAppDrawer()
-  }, [toggleIsMobileAppDrawer])
 
   const handleAddMention = useCallback((userId: ID) => {
     track(
@@ -208,10 +176,7 @@ export const CommentForm = ({
           blurOnSubmit={true}
         />
       </Flex>
-      <DownloadMobileAppDrawer
-        isOpen={isMobileAppDrawerOpen}
-        onClose={handleCloseMobileAppDrawer}
-      />
+      {mobileAppDrawer}
     </>
   )
 }

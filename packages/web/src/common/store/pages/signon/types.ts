@@ -71,7 +71,7 @@ export default interface SignOnPageState {
   startedSignUpProcess: boolean
   finishedPhase1: boolean
   finishedSignUpProcess: boolean
-  routeOnExit: boolean
+  routeOnExit: string
   page: number
   referrer: ID
   welcomeModalShown: boolean
