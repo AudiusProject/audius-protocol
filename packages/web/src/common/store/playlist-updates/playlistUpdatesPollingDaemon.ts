@@ -23,6 +23,6 @@ export function* playlistUpdatesPollingDaemon() {
 
   yield* take(fetchAccountSucceeded.type)
 
-  yield* fork(visibilityPollingDaemon, fetchPlaylistUpdates())
-  yield* fork(foregroundPollingDaemon, fetchPlaylistUpdates(), pollingInterval)
+  // yield* fork(visibilityPollingDaemon, fetchPlaylistUpdates())
+  // yield* fork(foregroundPollingDaemon, fetchPlaylistUpdates(), pollingInterval)
 }

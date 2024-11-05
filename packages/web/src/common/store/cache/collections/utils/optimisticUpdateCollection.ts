@@ -13,6 +13,7 @@ export function* optimisticUpdateCollection(collection: Collection) {
     optimisticCollection._cover_art_sizes = coverArtSizes
   }
 
+  console.log('optimisticCollection', optimisticCollection)
   yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       { id: optimisticCollection.playlist_id, metadata: optimisticCollection }

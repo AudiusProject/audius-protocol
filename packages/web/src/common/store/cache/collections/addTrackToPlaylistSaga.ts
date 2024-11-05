@@ -67,7 +67,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  let playlist = yield* select(getCollection, { id: playlistId })
+  const playlist = yield* select(getCollection, { id: playlistId })
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
   const track = yield* select(getTrack, { id: trackId })
 
@@ -89,26 +89,31 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     currentBlockNumber
   )) as { timestamp: number }
 
-  playlist.playlist_contents = {
-    track_ids: playlist.playlist_contents.track_ids.concat({
-      track: action.trackId,
-      metadata_time: currentBlock?.timestamp as number,
-      time: 0,
-      uid: trackUid
-    })
+  // Create a new playlist object with the updated contents
+  let newPlaylist = {
+    ...playlist,
+    playlist_contents: {
+      track_ids: [
+        ...playlist.playlist_contents.track_ids,
+        {
+          track: action.trackId,
+          metadata_time: currentBlock?.timestamp as number,
+          time: 0,
+          uid: trackUid
+        }
+      ]
+    },
+    track_count: playlist.track_count + 1
   }
-
-  const count = playlist.track_count + 1
-  playlist.track_count = count
 
   // Optimistic update #1 to show track in playlist quickly
-  if (isNative) {
-    yield* call(optimisticUpdateCollection, playlist)
-  }
+  // if (isNative) {
+  yield* call(optimisticUpdateCollection, newPlaylist)
+  // }
 
-  playlist = yield* call(
+  newPlaylist = yield* call(
     updatePlaylistArtwork,
-    playlist,
+    newPlaylist,
     playlistTracks,
     { added: track },
     {
@@ -118,15 +123,15 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   )
 
   // Optimistic update #2 to show updated artwork
-  yield* call(optimisticUpdateCollection, playlist)
+  yield* call(optimisticUpdateCollection, newPlaylist)
 
   yield* call(
     confirmAddTrackToPlaylist,
     userId,
     action.playlistId,
     action.trackId,
-    count,
-    playlist
+    newPlaylist.track_count,
+    newPlaylist
   )
 
   yield* put(
@@ -152,7 +157,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
 
   yield* put(
     toast({
-      content: messages.addedTrack(playlist.is_album ? 'album' : 'playlist')
+      content: messages.addedTrack(newPlaylist.is_album ? 'album' : 'playlist')
     })
   )
 }

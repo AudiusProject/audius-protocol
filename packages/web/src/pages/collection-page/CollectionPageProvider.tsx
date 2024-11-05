@@ -180,7 +180,7 @@ class CollectionPage extends Component<
     })
   }
 
-  componentDidUpdate(prevProps: CollectionPageProps) {
+  componentDidUpdate_(prevProps: CollectionPageProps) {
     const {
       collection: metadata,
       userUid,
@@ -764,6 +764,8 @@ class CollectionPage extends Component<
       isAlbum: metadata?.is_album,
       permalink: metadata?.permalink
     })
+    console.log(tracks.entries.length)
+    console.log(metadata?.playlist_contents.length)
 
     const childProps = {
       title,
