@@ -52,16 +52,6 @@ export function fetchCoverArt(trackId: ID, size: WidthSizes | SquareSizes) {
   return { type: FETCH_COVER_ART, trackId, size }
 }
 
-export function fetchStreamUrls(trackIds: ID[]) {
-  return { type: FETCH_STREAM_URLS, trackIds }
-}
-
-export function setStreamUrls(streamUrls: {
-  [trackId: ID]: string | undefined // The value should only be undefined if the stream URL had an error
-}) {
-  return { type: SET_STREAM_URLS, streamUrls }
-}
-
 export const incrementTrackCommentCount = (
   trackId: ID,
   commentCountIncrement: number
