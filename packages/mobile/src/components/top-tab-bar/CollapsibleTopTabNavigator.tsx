@@ -11,6 +11,8 @@ import type { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
 
+import { useScreenContext } from '../core/Screen/ScreenContextProvider'
+
 const Tab = createMaterialCollapsibleTopTabNavigator()
 
 type CollapsibleTabNavigatorContextProps = {
@@ -87,6 +89,10 @@ export const CollapsibleTabNavigator = ({
     () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
     [renderHeader, animatedValue, headerHeight]
   )
+
+  const { isPrimaryContentReady } = useScreenContext()
+
+  if (!isPrimaryContentReady) return <>{renderHeader()}</>
 
   return (
     <Tab.Navigator

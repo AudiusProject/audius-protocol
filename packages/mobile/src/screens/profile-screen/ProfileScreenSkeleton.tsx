@@ -1,8 +1,10 @@
 import { memo } from 'react'
 
+import { css } from '@emotion/native'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
+import { Box, Flex } from '@audius/harmony-native'
 import { LineupTileSkeleton } from 'app/components/lineup-tile'
 import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
@@ -16,8 +18,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   profilePicture: {
     position: 'absolute',
-    top: 37,
-    left: 11,
+    top: 52,
+    left: 12,
     zIndex: 101,
 
     height: 82,
@@ -128,37 +130,33 @@ const BioSkeleton = memo(() => {
   )
 })
 
-export const ProfileScreenSkeleton = memo(() => {
+export const ProfileHeaderSkeleton = memo(() => {
   const styles = useStyles()
-
   const statSkeleton = <Skeleton style={styles.stat} />
 
-  const lineupTile = (
-    <View style={styles.lineupTile}>
-      <LineupTileSkeleton />
-    </View>
-  )
-
   return (
-    <View style={styles.root}>
-      <Skeleton style={styles.coverPhoto} />
+    <Flex column>
+      <Skeleton height={96} />
       <Skeleton style={styles.profilePicture} />
-      <View style={styles.header}>
-        <View style={styles.info}>
-          <View>
+      <Flex p='l' gap='s'>
+        <Flex row justifyContent='space-between'>
+          <Flex mt='3xl'>
             <Skeleton style={styles.name} />
             <Skeleton style={styles.handle} />
-          </View>
-          <Skeleton style={styles.actionButton} />
-        </View>
-        <View style={styles.stats}>
+          </Flex>
+          <Flex row gap='s'>
+            <Skeleton height={32} width={32} />
+            <Skeleton height={32} width={120} />
+          </Flex>
+        </Flex>
+        <Flex row>
           {statSkeleton}
           {statSkeleton}
           {statSkeleton}
-        </View>
-        <View style={styles.bio}>
+        </Flex>
+        <Flex row wrap='wrap'>
           <BioSkeleton />
-        </View>
+        </Flex>
         <View style={styles.tierAndSocials}>
           <Skeleton style={styles.tier} />
           <View style={styles.socialLinks}>
@@ -167,11 +165,35 @@ export const ProfileScreenSkeleton = memo(() => {
             <Skeleton style={styles.socialLink} />
           </View>
         </View>
-      </View>
-      <View style={styles.tabs}></View>
-      {lineupTile}
-      {lineupTile}
-      {lineupTile}
+      </Flex>
+    </Flex>
+  )
+})
+
+export const ProfileTabsSkeleton = memo(() => {
+  const styles = useStyles()
+
+  const lineupTile = (
+    <View style={styles.lineupTile}>
+      <LineupTileSkeleton />
     </View>
+  )
+
+  return (
+    <>
+      <Skeleton style={styles.tabs} />
+      {lineupTile}
+      {lineupTile}
+      {lineupTile}
+    </>
+  )
+})
+
+export const ProfileScreenSkeleton = memo(() => {
+  return (
+    <Flex column backgroundColor='white'>
+      <ProfileHeaderSkeleton />
+      <ProfileTabsSkeleton />
+    </Flex>
   )
 })
