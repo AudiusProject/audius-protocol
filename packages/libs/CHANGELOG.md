@@ -1,5 +1,11 @@
 # @audius/sdk
 
+## 6.0.4
+
+### Patch Changes
+
+- @audius/sdk@7.1.1
+
 ## 6.0.3
 
 ### Patch Changes
