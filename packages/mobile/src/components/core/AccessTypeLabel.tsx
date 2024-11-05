@@ -1,3 +1,4 @@
+import { AccessType } from '@audius/common/models'
 import { formatReleaseDate } from '@audius/common/utils'
 import { getLocalTimezone } from 'utils/dateUtils'
 
@@ -12,16 +13,6 @@ import {
   IconSpecialAccess,
   IconCollectible
 } from '@audius/harmony-native'
-
-export enum AccessType {
-  SCHEDULED_RELEASE = 'scheduled_release',
-  HIDDEN = 'hidden',
-  PREMIUM = 'premium',
-  PREMIUM_EXTRAS = 'premium_extras',
-  SPECIAL_ACCESS = 'special_access',
-  COLLECTIBLE_GATED = 'collectible_gated',
-  EXTRAS = 'extras'
-}
 
 type AccessTypeLabelProps = {
   type?: AccessType

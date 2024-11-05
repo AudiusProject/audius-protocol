@@ -150,7 +150,8 @@ const ConnectedTrackTile = ({
     user_id,
     name,
     handle,
-    is_deactivated: isOwnerDeactivated
+    is_deactivated: isOwnerDeactivated,
+    artist_pick_track_id
   } = getUserWithFallback(user)
 
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
@@ -162,6 +163,7 @@ const ConnectedTrackTile = ({
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
   const hasPreview = !!track?.preview_cid
+  const isArtistPick = artist_pick_track_id === trackId
 
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
@@ -230,7 +232,7 @@ const ConnectedTrackTile = ({
       includeRepost: hasStreamAccess,
       includeShare: true,
       includeTrackPage: true,
-      isArtistPick: false,
+      isArtistPick,
       isDeleted: is_delete || isOwnerDeactivated,
       isFavorited,
       isOwner,
