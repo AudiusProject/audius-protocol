@@ -307,6 +307,7 @@ immutable_playlist_fields = immutable_fields | {
     "playlist_id",
     "playlist_owner_id",
     "is_album",
+    "ddex_app",
 }
 
 immutable_track_fields = immutable_fields | {
@@ -318,6 +319,7 @@ immutable_track_fields = immutable_fields | {
     "duration",
     "is_available",
     "audio_analysis_error_count",
+    "ddex_app",
 }
 
 immutable_user_fields = immutable_fields | {

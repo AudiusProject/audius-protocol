@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
@@ -563,16 +562,6 @@ def get_address_from_signature(signature):
         message_hash, signature=signature["signature"]
     )
     return app_address.lower()
-
-
-def is_ddex_signer(signer):
-    # TODO read from a table in the db after implementing UI to register a DDEX node
-    ddex_apps = os.getenv("audius_ddex_apps")
-    if ddex_apps:
-        return signer.removeprefix("0x").lower() in (
-            address.lower() for address in ddex_apps.split(",")
-        )
-    return False
 
 
 def parse_release_date(release_date_str):

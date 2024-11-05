@@ -22,7 +22,6 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     convert_legacy_purchase_access_gate,
     copy_record,
-    is_ddex_signer,
     parse_release_date,
     validate_signer,
 )
@@ -318,16 +317,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot create playlist {playlist_id} below the offset"
             )
-        if is_ddex_signer(params.signer):
-            parsed_release_date = parse_release_date(
-                params.metadata.get("release_date")
-            )
-            if parsed_release_date and parsed_release_date > datetime.now().astimezone(
-                timezone.utc
-            ):
-                raise IndexingValidationError(
-                    f"Cannot create playlist {playlist_id} with a future release date via ddex"
-                )
     else:
         if playlist_id not in params.existing_records["Playlist"]:
             raise IndexingValidationError(
@@ -395,17 +384,7 @@ def create_playlist(params: ManageEntityParameters):
     tracks_with_index_time = []
     last_added_to = None
 
-    ddex_app = None
     created_at = params.block_datetime
-    if is_ddex_signer(params.signer):
-        ddex_app = params.signer
-        if params.action == Action.CREATE:
-            parsed_release_date = parse_release_date(
-                params.metadata.get("release_date")
-            )
-            if parsed_release_date:
-                created_at = str(parsed_release_date)  # type: ignore
-
     for track in tracks:
         if "track" not in track or "time" not in track:
             raise IndexingValidationError(
@@ -452,7 +431,7 @@ def create_playlist(params: ManageEntityParameters):
         last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
-        ddex_app=ddex_app,
+        ddex_app=params.metadata.get("ddex_app", None),
         ddex_release_ids=params.metadata.get("ddex_release_ids", None),
         artists=params.metadata.get("artists", None),
         copyright_line=params.metadata.get("copyright_line", None),
@@ -503,9 +482,7 @@ def dispatch_challenge_playlist_upload(
 
 def validate_update_ddex_playlist(params: ManageEntityParameters, playlist_record):
     if playlist_record.ddex_app:
-        if playlist_record.ddex_app != params.signer or not is_ddex_signer(
-            params.signer
-        ):
+        if playlist_record.ddex_app != params.signer:
             raise IndexingValidationError(
                 f"Signer {params.signer} does not have permission to {params.action} DDEX playlist {playlist_record.playlist_id}"
             )
@@ -709,9 +686,6 @@ def populate_playlist_record_metadata(
 
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
-
-    if is_ddex_signer(params.signer):
-        playlist_record.ddex_app = params.signer
 
     params.logger.debug(
         f"playlist.py | EntityManager | Updated playlist record {playlist_record}"
