@@ -32,7 +32,6 @@ import {
 } from '~/models'
 import { LineupBaseActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
-import { play } from '~/store/lineup/actions'
 import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
