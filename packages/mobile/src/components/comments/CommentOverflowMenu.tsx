@@ -33,7 +33,6 @@ import {
 } from '../action-drawer'
 import { ConfirmationDrawerWithoutRedux } from '../drawers'
 
-
 const { getUser } = cacheUsersSelectors
 
 type CommentOverflowMenuProps = {
@@ -251,10 +250,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
 
       <Portal hostName='DrawerPortal'>
         {isVisible ? (
-          <CommentSectionProvider
-            entityId={entityId}
-            lineupActions={tracksActions}
-          >
+          <CommentSectionProvider entityId={entityId}>
             <ActionDrawerWithoutRedux
               rows={rows}
               isOpen={isOpen}

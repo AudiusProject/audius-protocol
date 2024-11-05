@@ -54,7 +54,7 @@ type CommentSectionProviderProps<NavigationProp> = {
   navigation?: NavigationProp
   closeDrawer?: () => void
   uid?: string
-  lineupActions: LineupBaseActions
+  lineupActions?: LineupBaseActions
 }
 
 export type ReplyingAndEditingState = {
@@ -194,7 +194,7 @@ export function CommentSectionProvider<NavigationProp>(
           (lineupEntry) => lineupEntry.id === track?.track_id
         )?.uid
 
-      if (lineupUid === undefined) {
+      if (lineupUid === undefined || lineupActions === undefined) {
         return
       }
 
