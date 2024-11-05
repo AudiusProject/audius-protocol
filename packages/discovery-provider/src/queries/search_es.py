@@ -1354,7 +1354,7 @@ def map_user(user, current_user):
 
 def map_track(track, current_user):
     track = populate_track_or_playlist_metadata_es(track, current_user)
-    track = extend_track(track)
+    track = extend_track(track, current_user_id=current_user["user_id"])
     return track
 
 

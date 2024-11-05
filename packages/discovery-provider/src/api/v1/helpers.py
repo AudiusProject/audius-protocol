@@ -1,10 +1,13 @@
 import asyncio
+import json
 import logging
 import re
 from datetime import datetime
-from typing import Dict, Union, cast
+from typing import Dict, List, Literal, TypedDict, Union, cast
+from urllib.parse import quote, urlencode, urljoin
 
 import requests
+from flask.globals import request
 from flask_restx import inputs, reqparse
 
 from src import api_helpers
@@ -17,6 +20,10 @@ from src.queries.get_notifications import (
     default_valid_notification_types,
 )
 from src.queries.get_support_for_user import SupportResponse
+from src.queries.get_track_signature import (
+    get_track_download_signature,
+    get_track_stream_signature,
+)
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
@@ -26,6 +33,7 @@ from src.queries.query_helpers import (
     SortMethod,
 )
 from src.queries.reactions import ReactionResponse
+from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
@@ -39,6 +47,9 @@ logger = logging.getLogger(__name__)
 PROFILE_PICTURE_SIZES = ["150x150", "480x480", "1000x1000"]
 PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
 COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
+# How many nodes a file is replicated to
+# See: https://github.com/AudiusProject/audius-protocol/blob/3d223085b07b53073c475992f54315ae826dc91d/pkg/mediorum/mediorum.go#L125
+REPLICATION_FACTOR = 4
 
 
 def camel_to_snake(name):
@@ -303,7 +314,7 @@ def add_track_artwork(track):
     return track
 
 
-def extend_track(track, session=None):
+def extend_track(track, session=None, current_user_id=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
@@ -351,7 +362,106 @@ def extend_track(track, session=None):
             track["download_conditions"], session
         )
 
+    # Add track stream URL and mirrors
+    track["stream"] = get_content_url_with_mirrors(
+        track, requested_access="stream", current_user_id=current_user_id
+    )
+
+    # Add track preview URL and mirrors
+    track["preview"] = get_content_url_with_mirrors(
+        track,
+        requested_access="preview",
+        current_user_id=current_user_id,
+    )
+
+    # Add track download URL and mirrors
+    track["download"] = get_content_url_with_mirrors(
+        track,
+        requested_access="download",
+        current_user_id=current_user_id,
+    )
+
     return track
+
+
+class UrlWithMirrors(TypedDict):
+    url: str | None
+    mirrors: List[str]
+
+
+def get_content_url_with_mirrors(
+    track: dict,
+    requested_access: Literal["stream", "download", "preview"],
+    current_user_id: int | None,
+) -> UrlWithMirrors:
+    user_message = request.headers.get(MESSAGE_HEADER)
+    user_signature = request.headers.get(SIGNATURE_HEADER)
+    gated_content_signature = None
+    if requested_access == "stream":
+        gated_content_signature = get_track_stream_signature(
+            {
+                "track": track,
+                "is_preview": requested_access == "preview",
+                "user_id": current_user_id,
+                "user_data": user_message,
+                "user_signature": user_signature,
+                "nft_access_signature": None,
+                "filename": None,
+            }
+        )
+    elif requested_access == "download":
+        gated_content_signature = get_track_download_signature(
+            {
+                "track": track,
+                "is_original": True,
+                "user_id": current_user_id,
+                "user_data": user_message,
+                "user_signature": user_signature,
+                "nft_access_signature": None,
+                "filename": track["orig_filename"],
+            }
+        )
+
+    if not gated_content_signature:
+        return {"url": None, "mirrors": []}
+
+    signature = gated_content_signature["signature"]
+    cid = gated_content_signature["cid"]
+    params = {"signature": json.dumps(signature)}
+
+    base_path = f"tracks/cidstream/{cid}"
+    query_string = urlencode(params, quote_via=quote)
+    path = f"{base_path}?{query_string}"
+
+    content_nodes = []
+    # if track has placement_hosts, use that instead
+    placement_hosts = track.get("placement_hosts", None)
+    if placement_hosts:
+        content_nodes = placement_hosts.split(",")
+    else:
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
+            logger.error(
+                f"tracks.py | stream | No healthy Content Nodes found when streaming track CID {cid}. Please investigate."
+            )
+            return {"url": None, "mirrors": []}
+
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+
+        content_nodes = rendezvous.get_n(REPLICATION_FACTOR, cid)
+
+    if len(content_nodes) == 0:
+        return {"url": None, "mirrors": []}
+
+    # Add additional query parameters
+    joined_url = urljoin(content_nodes[0], path)
+
+    return {
+        "url": joined_url,
+        "mirrors": content_nodes[1:],
+    }
 
 
 def get_encoded_track_id(track):

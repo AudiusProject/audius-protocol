@@ -131,7 +131,7 @@ def get_single_track(track_id, current_user_id, endpoint_ns, exclude_gated=True)
     tracks = get_tracks(args)
     if not tracks:
         abort_not_found(track_id, endpoint_ns)
-    single_track = extend_track(tracks[0])
+    single_track = extend_track(tracks[0], current_user_id=current_user_id)
     return success_response(single_track)
 
 
@@ -351,11 +351,13 @@ class FullBulkTracks(Resource):
         # For backwards compatibility, the old handle/slug route returned an object, not an array
         # Manually handle marshalling to accomodate while also allowing new SDK to have array as return type
         if handle and slug:
-            tracks = extend_track(tracks[0])
+            tracks = extend_track(tracks[0], current_user_id=current_user_id)
             response, status = success_response(tracks)
             return marshal(response, full_track_response), status
         else:
-            tracks = [extend_track(track) for track in tracks]
+            tracks = [
+                extend_track(track, current_user_id=current_user_id) for track in tracks
+            ]
             response, status = success_response(tracks)
             return marshal(response, full_tracks_response), status
 
@@ -1519,13 +1521,16 @@ class FullRemixableTracks(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
+        current_user_id = get_current_user_id(args)
         args = {
-            "current_user_id": get_current_user_id(args),
+            "current_user_id": current_user_id,
             "limit": get_default_max(args.get("limit"), 25, 100),
             "with_users": args.get("with_users", False),
         }
         tracks = get_remixable_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -1558,7 +1563,10 @@ class FullRemixesRoute(Resource):
             "offset": format_offset(request_args),
         }
         response = get_remixes_of(args)
-        response["tracks"] = list(map(extend_track, response["tracks"]))
+        response["tracks"] = [
+            extend_track(track, current_user_id=current_user_id)
+            for track in response["tracks"]
+        ]
         return success_response(response)
 
 
@@ -1591,7 +1599,9 @@ class FullRemixingRoute(Resource):
             "offset": format_offset(request_args),
         }
         tracks = get_remix_track_parents(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -1636,13 +1646,16 @@ class BestNewReleases(Resource):
     def get(self):
         request_args = best_new_releases_parser.parse_args()
         window = request_args.get("window")
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
         }
         tracks = get_top_followee_windowed("track", window, args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -1695,16 +1708,20 @@ class UnderTheRadar(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = under_the_radar_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "tracks_only": request_args.get("tracks_only"),
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
             "offset": format_offset(request_args),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "filter": request_args.get("filter"),
         }
         feed_results = get_feed(args)
-        feed_results = list(map(extend_track, feed_results))
+        feed_results = [
+            extend_track(track, current_user_id=current_user_id)
+            for track in feed_results
+        ]
         return success_response(feed_results)
 
 
@@ -1782,14 +1799,17 @@ class FeelingLucky(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = feeling_lucky_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, max_limit=100, default_limit=25),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "min_followers": request_args.get("min_followers"),
         }
         tracks = get_random_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -1977,7 +1997,7 @@ class GetTrackAccessInfo(Resource):
         download_conditions = get_extended_purchase_gate(
             gate=raw["download_conditions"]
         )
-        track = extend_track(raw)
+        track = extend_track(raw, current_user_id)
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions
         return success_response(track)

@@ -4,7 +4,10 @@ import urllib.parse
 from typing import Optional, TypedDict
 
 from src.gated_content.content_access_checker import content_access_checker
-from src.gated_content.signature import get_gated_content_signature
+from src.gated_content.signature import (
+    GatedContentSignature,
+    get_gated_content_signature,
+)
 from src.models.tracks.track import Track
 from src.queries.get_authed_user import get_authed_user
 from src.queries.get_managed_users import is_active_manager
@@ -30,6 +33,11 @@ class GetTrackDownloadSignature(TypedDict):
     user_id: Optional[int]
     user_signature: Optional[str]
     nft_access_signature: Optional[str]
+
+
+class StreamSignature(TypedDict):
+    signature: GatedContentSignature | None
+    cid: str
 
 
 def get_authed_or_managed_user(
@@ -70,7 +78,7 @@ def get_authed_or_managed_user(
 
 # Returns a dictionary {signature, cid} if user has stream access
 # Returns None otherwise
-def get_track_stream_signature(args: GetTrackStreamSignature):
+def get_track_stream_signature(args: GetTrackStreamSignature) -> StreamSignature | None:
     track = args["track"]
     is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
@@ -164,13 +172,13 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     user_signature = args.get("user_signature")
     nft_access_signature = args.get("nft_access_signature")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
-    if not cid:
+    if not cid or not track.get("is_downloadable", False):
         return None
 
     cid = cid.strip()
     authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
 
-    # all non-download-gated tracks should be publicly available
+    # all non-download-gated downloadable tracks should be publicly available
     if not is_download_gated:
         signature = get_gated_content_signature(
             {

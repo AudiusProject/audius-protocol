@@ -348,7 +348,10 @@ def _get_trending_playlists_with_session(
                 track_id = playlist["tracks"][i]["track_id"]
                 populated = populated_track_map[track_id]
                 playlist["tracks"][i] = populated
-            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
+            playlist["tracks"] = [
+                extend_track(track, current_user_id=current_user_id)
+                for track in playlist["tracks"]
+            ]
 
     # re-sort playlists to original order, because populate_playlist_metadata
     # unsorts.

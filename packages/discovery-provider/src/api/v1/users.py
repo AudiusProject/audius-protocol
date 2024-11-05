@@ -472,7 +472,9 @@ class TrackList(Resource):
             filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -533,7 +535,9 @@ class FullTrackList(Resource):
             filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
 
@@ -570,7 +574,9 @@ class HandleFullTrackList(Resource):
             "filter_tracks": filter_tracks,
         }
         tracks = get_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
     @full_ns.doc(
@@ -639,7 +645,9 @@ class HandleFullAITrackList(Resource):
             "ai_attributed_only": True,
         }
         tracks = get_tracks(args)
-        tracks = list(map(extend_track, tracks))
+        tracks = [
+            extend_track(track, current_user_id=current_user_id) for track in tracks
+        ]
         return success_response(tracks)
 
     @full_ns.doc(

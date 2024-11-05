@@ -31,4 +31,4 @@ def get_trending(args, strategy):
         args["current_user_id"] = decoded_id
 
     tracks = get_trending_tracks(args, strategy)
-    return list(map(extend_track, tracks))
+    return [extend_track(track, current_user_id=current_user_id) for track in tracks]
