@@ -157,45 +157,31 @@ async function getNewBlasts(
   }
   const userId = lastIndexedBlastUserId
 
-  const fetchMessages = async (
-    blastCondition: string,
-    userCondition: string,
-    params
-  ) => {
-    const messages = await discoveryDB.raw(
-      `
-      WITH blast AS (
-        SELECT * FROM chat_blast WHERE ${blastCondition}
-      ),
-      targ AS (
-        SELECT
-          blast_id,
-          from_user_id,
-          to_user_id,
-          blast.created_at
-        FROM blast
-        JOIN chat_blast_audience(blast.blast_id) USING (blast_id)
-        WHERE chat_allowed(from_user_id, to_user_id)
-        AND (${userCondition})
-        ORDER BY to_user_id ASC
-        LIMIT ?
-      )
-      SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
-      `,
-      params
+  const messages = await discoveryDB.raw(
+    `
+    WITH blast AS (
+      SELECT * FROM chat_blast WHERE chat_blast.blast_id = ?
+    ),
+    targ AS (
+      SELECT
+        blast_id,
+        from_user_id,
+        to_user_id,
+        blast.created_at
+      FROM blast
+      JOIN chat_blast_audience(blast.blast_id) USING (blast_id)
+      WHERE chat_allowed(from_user_id, to_user_id)
+      AND ?::INTEGER IS NULL OR to_user_id > ?
+      ORDER BY to_user_id ASC
+      LIMIT ?
     )
-    return messages.rows
-  }
-
-  // First attempt with last indexed blast and user id
-  const messages = await fetchMessages(
-    'chat_blast.blast_id = ?',
-    '?::INTEGER IS NULL OR to_user_id > ?',
+    SELECT blast_id, from_user_id AS sender_user_id, to_user_id AS receiver_user_id, created_at FROM targ;
+    `,
     [lastIndexedBlastId, userId, userId, config.blastUserBatchSize]
   )
 
   // Need to calculate pending chat ids for each message for deep linking
-  const formattedMessages = messages?.map((message) => {
+  const formattedMessages = messages?.rows?.map((message) => {
     return {
       ...message,
       chat_id: makeChatId([message.sender_user_id, message.receiver_user_id])
@@ -206,25 +192,24 @@ async function getNewBlasts(
   // If there isn't one, then we've reached the end of the blast table. Cursor
   // should stay the same until new blasts come in.
   let newBlastIdCursor
-  if (!messages?.length) {
+  let newUserIdCursor
+  if (!formattedMessages?.length) {
     const blastIdResult = await discoveryDB
       .select('blast_id')
       .from('chat_blast')
       .whereRaw(
         `date_trunc('milliseconds', chat_blast.created_at) > ?
-        AND chat_blast.created_at <= NOW() - INTERVAL '${config.blastDelay} seconds'
-        ORDER BY chat_blast.created_at ASC
-        LIMIT 1`,
+        AND chat_blast.created_at <= NOW() - INTERVAL '${config.blastDelay} seconds'`,
         lastIndexedBlastTimestamp
       )
       .orderBy('chat_blast.created_at', 'asc')
       .first()
-    newBlastIdCursor = blastIdResult?.blast_id ?? lastIndexedBlastId
+    newBlastIdCursor = blastIdResult ? blastIdResult.blast_id : lastIndexedBlastId
+    newUserIdCursor = blastIdResult ? null : lastIndexedBlastUserId
   } else {
     newBlastIdCursor = formattedMessages[0].blast_id
+    newUserIdCursor = formattedMessages.at(-1).receiver_user_id
   }
-
-  const newUserIdCursor = formattedMessages.at(-1)?.receiver_user_id ?? null
 
   return {
     lastIndexedBlastId: newBlastIdCursor,
@@ -254,14 +239,14 @@ function setLastIndexedTimestamp(
 function setLastIndexedBlastIds(
   redis: RedisClientType,
   blastId?: string,
-  userId?: number
+  userId?: number | null
 ) {
   if (blastId) {
     redis.set(config.lastIndexedBlastIdRedisKey, blastId)
   }
-  if (userId) {
-    redis.set(config.lastIndexedBlastUserIdRedisKey, userId)
-  }
+  userId === null 
+    ? redis.del(config.lastIndexedBlastUserIdRedisKey)
+    : redis.set(config.lastIndexedBlastUserIdRedisKey, userId)
 }
 
 enum DMPhase {
