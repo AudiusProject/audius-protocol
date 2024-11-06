@@ -151,10 +151,7 @@ export const userTrackMetadataFromSDK = (
     pinned_comment_id: input.pinnedCommentId ?? null,
     is_owned_by_user: input.isOwnedByUser,
     cover_original_artist: input.coverOriginalArtist ?? null,
-    cover_original_song_title: input.coverOriginalSongTitle ?? null,
-    stream: input.stream,
-    preview: input.preview,
-    download: input.download
+    cover_original_song_title: input.coverOriginalSongTitle ?? null
   }
 
   return newTrack
