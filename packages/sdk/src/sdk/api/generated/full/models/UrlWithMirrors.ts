@@ -25,7 +25,7 @@ export interface UrlWithMirrors {
      * @type {string}
      * @memberof UrlWithMirrors
      */
-    url: string;
+    url?: string;
     /**
      * 
      * @type {Array<string>}
@@ -39,7 +39,6 @@ export interface UrlWithMirrors {
  */
 export function instanceOfUrlWithMirrors(value: object): value is UrlWithMirrors {
     let isInstance = true;
-    isInstance = isInstance && "url" in value && value["url"] !== undefined;
     isInstance = isInstance && "mirrors" in value && value["mirrors"] !== undefined;
 
     return isInstance;
@@ -55,7 +54,7 @@ export function UrlWithMirrorsFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'url': json['url'],
+        'url': !exists(json, 'url') ? undefined : json['url'],
         'mirrors': json['mirrors'],
     };
 }

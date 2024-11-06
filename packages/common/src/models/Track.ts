@@ -279,15 +279,15 @@ export type TrackMetadata = {
 
   // API returned URLS
   stream?: {
-    url: Nullable<string>
+    url?: string
     mirrors: string[]
   }
   download?: {
-    url: Nullable<string>
+    url?: string
     mirrors: string[]
   }
   preview?: {
-    url: Nullable<string>
+    url?: string
     mirrors: string[]
   }
 } & Timestamped

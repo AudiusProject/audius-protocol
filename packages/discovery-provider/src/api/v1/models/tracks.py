@@ -139,7 +139,7 @@ cover_art = ns.model(
 url_with_mirrors = ns.model(
     "url_with_mirrors",
     {
-        "url": fields.String(required=True),
+        "url": fields.String(),
         "mirrors": fields.List(fields.String, required=True),
     },
 )
