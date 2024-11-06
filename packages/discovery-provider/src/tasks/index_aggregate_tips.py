@@ -1,10 +1,11 @@
 import itertools
 import logging
 import operator
+from datetime import datetime, timezone
 from typing import List, TypedDict
 
 from redis import Redis
-from sqlalchemy import func, text
+from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
 from src.models.users.supporter_rank_up import SupporterRankUp
@@ -12,10 +13,7 @@ from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_constants import (
-    latest_sol_aggregate_tips_slot_key,
-    latest_sol_user_bank_slot_key,
-)
+from src.utils.redis_constants import redis_keys
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
@@ -194,15 +192,15 @@ def index_rank_ups(
 
 
 def _update_aggregate_tips(session: Session, redis: Redis):
-    latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
     prev_slot = get_last_indexed_checkpoint(session, AGGREGATE_TIPS)
-    max_slot_result = session.query(func.max(UserTip.slot)).one()
-    max_slot = int(max_slot_result[0]) if max_slot_result[0] is not None else 0
-
-    if prev_slot == max_slot:
-        if latest_user_bank_slot is not None:
-            redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
-        return
+    max_slot_result = (
+        session.query(UserTip.slot, UserTip.signature)
+        .order_by(UserTip.slot.desc())
+        .one()
+    )
+    max_slot, last_tip_signature = (
+        max_slot_result if max_slot_result[0] is not None else (0, None)
+    )
 
     ranks_before = _get_ranks(session, prev_slot, max_slot)
     update_aggregate_table(
@@ -215,8 +213,11 @@ def _update_aggregate_tips(session: Session, redis: Redis):
     )
     ranks_after = _get_ranks(session, prev_slot, max_slot)
     index_rank_ups(session, ranks_before, ranks_after, max_slot)
-    if latest_user_bank_slot is not None:
-        redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
+    redis.set(redis_keys.solana.aggregate_tips.last_tx, last_tip_signature)
+    redis.set(
+        redis_keys.solana.aggregate_tips.last_completed_at,
+        datetime.now(timezone.utc).timestamp(),
+    )
 
 
 # ####### CELERY TASKS ####### #
