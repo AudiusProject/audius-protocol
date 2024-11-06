@@ -199,9 +199,7 @@ export const Table = ({
   )
 
   const prevSortValue = useRef<string | null>(null)
-  const sortValue = useMemo(() => {
-    return sortBy[0] ? `${sortBy[0].id}${sortBy[0].desc}` : null
-  }, [sortBy])
+  const sortValue = sortBy[0] ? `${sortBy[0].id}${sortBy[0].desc}` : null
 
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
   // - This can be updated if we need multiple sorters in the future
