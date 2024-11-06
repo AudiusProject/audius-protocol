@@ -50,7 +50,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { emptyStringGuard } from 'pages/track-page/utils'
 import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
@@ -142,7 +142,7 @@ const LockedGatedContentSection = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
 
-  const handlePurchase = useAuthenticatedCallback(() => {
+  const handlePurchase = useRequiresAccountCallback(() => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
@@ -159,7 +159,7 @@ const LockedGatedContentSection = ({
     premiumModalSource
   ])
 
-  const handleSendTip = useAuthenticatedCallback(() => {
+  const handleSendTip = useRequiresAccountCallback(() => {
     dispatch(
       beginTip({ user: tippedUser, source: tipSource, trackId: contentId })
     )
@@ -176,7 +176,7 @@ const LockedGatedContentSection = ({
     setLockedContentModalVisibility
   ])
 
-  const handleFollow = useAuthenticatedCallback(() => {
+  const handleFollow = useRequiresAccountCallback(() => {
     if (isContentFollowGated(streamConditions)) {
       dispatch(
         socialActions.followUser(

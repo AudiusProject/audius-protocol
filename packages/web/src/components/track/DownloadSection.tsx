@@ -37,9 +37,9 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Expandable } from 'components/expandable/Expandable'
 import {
-  useAuthenticatedCallback,
-  useAuthenticatedClickCallback
-} from 'hooks/useAuthenticatedCallback'
+  useRequiresAccountCallback,
+  useRequiresAccountOnClick
+} from 'hooks/useRequiresAccount'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { audiusSdk } from 'services/audius-sdk'
 
@@ -101,7 +101,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
-  const handlePurchaseClick = useAuthenticatedClickCallback((_event) => {
+  const handlePurchaseClick = useRequiresAccountOnClick((_event) => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
@@ -111,7 +111,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     )
   }, [])
 
-  const handleDownload = useAuthenticatedCallback(
+  const handleDownload = useRequiresAccountCallback(
     ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip

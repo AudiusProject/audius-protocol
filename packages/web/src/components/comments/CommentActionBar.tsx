@@ -28,7 +28,7 @@ import { useSelector } from 'react-redux'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
@@ -104,7 +104,7 @@ export const CommentActionBar = ({
     useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
-  const handleReact = useAuthenticatedCallback(
+  const handleReact = useRequiresAccountCallback(
     () => {
       reactToComment(commentId, !isCurrentUserReacted)
     },

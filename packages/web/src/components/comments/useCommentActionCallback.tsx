@@ -7,7 +7,7 @@ import { useToggle } from 'react-use'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
 
 export const useCommentActionCallback = <T extends (...args: any[]) => any>(
@@ -18,7 +18,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
   const location = useLocation()
   const { currentUserId, entityId } = useCurrentCommentSection()
   const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
-  const { requiresAccount } = useRequiresAccountCallback(
+  const { requiresAccount } = useRequiresAccountFn(
     isMobile ? location.pathname : `${location.pathname}?showComments=true`
   )
 
