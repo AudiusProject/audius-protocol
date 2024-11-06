@@ -18,7 +18,6 @@ import {
   INCREMENT_TRACK_COMMENT_COUNT,
   SET_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
-  SET_STREAM_URLS,
   SET_PINNED_COMMENT_ID,
   incrementTrackCommentCount,
   setPermalink,
