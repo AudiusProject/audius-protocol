@@ -3,10 +3,7 @@ import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
-import type {
-  CommentLineupSource,
-  ReplyingAndEditingState
-} from '@audius/common/context'
+import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection

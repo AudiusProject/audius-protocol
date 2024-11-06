@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { CommentLineupSource } from '@audius/common/context'
 import { isContentUSDCPurchaseGated, Name } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
 import {
@@ -22,10 +21,10 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { makeStyles, flexRowCentered } from 'app/styles'
 
-import { useCommentDrawer } from '../comments/CommentDrawerContext'
-
 import { CollectionAccessTypeLabel } from '../collection/CollectionAccessTypeLabel'
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
 import { TrackAccessTypeLabel } from '../track/TrackAccessTypeLabel'
+
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
@@ -115,11 +114,7 @@ export const LineupTileStats = ({
   hasStreamAccess,
   streamConditions,
   isOwner,
-  isArtistPick,
-  showArtistPick,
-  releaseDate,
   source,
-  type,
   uid,
   actions
 }: Props) => {
