@@ -23,6 +23,7 @@ import {
   IconShare
 } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
+import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
@@ -30,10 +31,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ProfileHeader } from './ProfileHeader'
-import {
-  ProfileScreenSkeleton,
-  ProfileTabsSkeleton
-} from './ProfileScreenSkeleton'
+import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -202,21 +200,20 @@ export const ProfileScreen = () => {
             <View style={styles.navigator}>
               {isNotReachable ? (
                 <>
-                  {renderHeader()}
                   <OfflinePlaceholder />
                 </>
               ) : (
-                <>
+                <ScreenPrimaryContent skeleton={<ProfileScreenSkeleton />}>
                   <PortalHost name='PullToRefreshPortalHost' />
-                  {renderHeader()}
-                  <ScreenSecondaryContent skeleton={<ProfileTabsSkeleton />}>
+                  <ScreenSecondaryContent skeleton={<ProfileScreenSkeleton />}>
                     <ProfileTabNavigator
+                      renderHeader={renderHeader}
                       animatedValue={scrollY}
                       refreshing={isRefreshing}
                       onRefresh={handleRefresh}
                     />
                   </ScreenSecondaryContent>
-                </>
+                </ScreenPrimaryContent>
               )}
             </View>
           </>
