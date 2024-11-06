@@ -1,4 +1,4 @@
-import { ChangeEvent, Component, ComponentType, useEffect } from 'react'
+import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
   Name,
