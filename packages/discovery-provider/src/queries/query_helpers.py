@@ -46,9 +46,8 @@ redis = redis_connection.get_redis()
 
 
 # ####### VARS ####### #
-# How many nodes a file is replicated to
-# See: https://github.com/AudiusProject/audius-protocol/blob/3d223085b07b53073c475992f54315ae826dc91d/pkg/mediorum/mediorum.go#L125
-REPLICATION_FACTOR = 4
+# number of mirror CNs to return for stream, preview, and download URLs
+mirrorCount = 2
 
 defaultLimit = 100
 minLimit = 1
@@ -655,7 +654,7 @@ def get_content_url_with_mirrors(
                 *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
             )
 
-            content_nodes = rendezvous.get_n(REPLICATION_FACTOR, cid)
+            content_nodes = rendezvous.get_n(mirrorCount, cid)
 
     if len(content_nodes) == 0:
         logger.warning(
