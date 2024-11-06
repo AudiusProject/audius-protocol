@@ -1,4 +1,8 @@
-import { SignTypedDataVersion, signTypedData } from '@metamask/eth-sig-util'
+import {
+  SignTypedDataVersion,
+  signTypedData,
+  personalSign
+} from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
@@ -30,8 +34,11 @@ export class AppAuth implements AuthService {
     })
   }
 
-  hashAndSign: (data: string) => Promise<string> = () => {
-    throw new Error('AppAuth does not support hashAndSign')
+  hashAndSign: (data: string) => Promise<string> = async (data) => {
+    return personalSign({
+      privateKey: Buffer.from(this.apiSecret, 'hex'),
+      data: keccak_256(data)
+    })
   }
 
   // TODO: replace this with a typed version of signature schemas
