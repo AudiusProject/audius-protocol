@@ -34,8 +34,8 @@ import {
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
-  IconShare,
-  Button
+  Button,
+  IconMessage
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { useToast } from 'app/hooks/useToast'
@@ -193,6 +193,8 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
+        OverflowAction.VIEW_COMMENTS,
+        OverflowAction.SHARE,
         isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
         !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
         isLongFormContent
@@ -298,10 +300,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     )
   }
 
-  const renderShareButton = () => {
+  const renderCommentsButton = () => {
     return (
       <IconButton
-        icon={IconShare}
+        icon={IconMessage}
         onPress={handleShare}
         size='l'
         aria-label={messages.shareLabel}
@@ -330,7 +332,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         {renderCastButton()}
         {shouldShowActions ? renderRepostButton() : null}
         {shouldShowActions ? renderFavoriteButton() : null}
-        {shouldShowActions ? renderShareButton() : null}
+        {shouldShowActions ? renderCommentsButton() : null}
         {renderOptionsButton()}
       </View>
     </View>

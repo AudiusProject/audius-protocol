@@ -1,7 +1,9 @@
+import type { Track } from '@audius/common/models'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
-  OverflowSource
+  OverflowSource,
+  cacheTracksSelectors
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -12,9 +14,13 @@ import type { ActionDrawerRow } from '../action-drawer/ActionDrawer'
 import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
 import ProfileOverflowMenuDrawer from './ProfileOverflowMenuDrawer'
 import TrackOverflowMenuDrawer from './TrackOverflowMenuDrawer'
+
+const { getTrack } = cacheTracksSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 
-const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
+const overflowRowConfig = (
+  track: Track | null | undefined
+): Record<OverflowAction, ActionDrawerRow> => ({
   [OverflowAction.REPOST]: { text: 'Repost' },
   [OverflowAction.UNREPOST]: { text: 'Unrepost' },
   [OverflowAction.FAVORITE]: { text: 'Favorite' },
@@ -54,11 +60,26 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.MARK_AS_UNPLAYED]: { text: 'Mark as Unplayed' },
   [OverflowAction.PURCHASE_TRACK]: { text: 'Purchase Track' },
   [OverflowAction.SET_ARTIST_PICK]: { text: 'Set as Artist Pick' },
-  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' }
-}
+  [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' },
+  [OverflowAction.VIEW_COMMENTS]: {
+    text:
+      track?.comment_count !== undefined
+        ? `View (${track?.comment_count}) Comments`
+        : 'View Comments' // slightly better than incorrectly showing a 0 count
+  }
+})
 
 export const OverflowMenuDrawer = () => {
   const overflowMenu = useSelector(getMobileOverflowModal)
+
+  const track = useSelector((state) =>
+    getTrack(state, {
+      id:
+        overflowMenu.id !== null && overflowMenu !== undefined
+          ? +overflowMenu.id
+          : undefined
+    })
+  )
 
   if (!overflowMenu?.id) {
     return <></>
@@ -78,7 +99,7 @@ export const OverflowMenuDrawer = () => {
     <OverflowDrawerComponent
       render={(callbacks) => {
         const rows = (overflowActions ?? []).map((action) => ({
-          ...overflowRowConfig[action],
+          ...overflowRowConfig(track)[action],
           callback: callbacks[action]
         }))
         return <ActionDrawer modalName='Overflow' rows={rows} />

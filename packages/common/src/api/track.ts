@@ -12,7 +12,10 @@ const trackApi = createApi({
   endpoints: {
     getTrackById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId?: Nullable<ID> },
+        {
+          id,
+          currentUserId
+        }: { id: ID | null | undefined; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
         if (!id || id === -1) return null
