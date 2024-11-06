@@ -202,8 +202,13 @@ export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
-  uid?: string
-  /** Object containing lineup actions such as play, togglePlay, setPage */
+  uid: string
+  /** Object containing lineup/player actions such as play, togglePlay, setPage
+   *  Typically these are lineup actions -
+   *  but playerActions are used when the comments were opened from NowPlaying.
+   *  In that scenario the comments are always for the currently playing track,
+   *  so it doesnt need to worry about changing lineups
+   */
   actions?: LineupBaseActions | typeof playerActions
 }
 

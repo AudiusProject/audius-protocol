@@ -130,7 +130,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         uid: currentQueueItem.uid as string
       })
     }
-  }, [currentQueueItem.uid, navigation, open, track.track_id])
+  }, [currentQueueItem.uid, navigation, open, track?.track_id])
 
   if (!track || !user) {
     return null

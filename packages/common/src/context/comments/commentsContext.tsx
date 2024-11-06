@@ -30,9 +30,8 @@ import {
   UserTrackMetadata,
   Name
 } from '~/models'
-import { LineupBaseActions } from '~/store'
+import { LineupBaseActions, playerActions } from '~/store'
 import { getUserId } from '~/store/account/selectors'
-import { getLineup } from '~/store/pages/track/selectors'
 import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
@@ -54,7 +53,13 @@ type CommentSectionProviderProps<NavigationProp> = {
   navigation?: NavigationProp
   closeDrawer?: () => void
   uid?: string
-  lineupActions?: LineupBaseActions
+  /** Object containing lineup/player actions such as play, togglePlay, setPage
+   *  Typically these are lineup actions -
+   *  but playerActions are used when the comments were opened from NowPlaying.
+   *  In that scenario the comments are always for the currently playing track,
+   *  so it doesnt need to worry about changing lineups
+   */
+  lineupActions?: LineupBaseActions | typeof playerActions
 }
 
 export type ReplyingAndEditingState = {
@@ -98,7 +103,7 @@ export function CommentSectionProvider<NavigationProp>(
     setReplyingAndEditingState,
     navigation,
     closeDrawer,
-    uid,
+    uid: lineupUid,
     lineupActions
   } = props
   const { data: track } = useGetTrackById({ id: entityId })
@@ -154,8 +159,6 @@ export function CommentSectionProvider<NavigationProp>(
 
   const dispatch = useDispatch()
 
-  const lineup = useSelector(getLineup)
-
   const { hasStreamAccess } = useGatedContentAccess(track!)
 
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -186,14 +189,6 @@ export function CommentSectionProvider<NavigationProp>(
 
   const playTrack = useCallback(
     (timestampSeconds?: number) => {
-      const lineupUid =
-        // Lineup uid can be passed in from above
-        uid ??
-        // If lineup UID was not provided we can find it from wherever we're currently at
-        lineup?.entries?.find?.(
-          (lineupEntry) => lineupEntry.id === track?.track_id
-        )?.uid
-
       if (lineupUid === undefined || lineupActions === undefined) {
         return
       }
@@ -220,11 +215,10 @@ export function CommentSectionProvider<NavigationProp>(
     [
       dispatch,
       hasStreamAccess,
-      lineup?.entries,
       lineupActions,
+      lineupUid,
       openPremiumContentPurchaseModal,
-      track,
-      uid
+      track
     ]
   )
 

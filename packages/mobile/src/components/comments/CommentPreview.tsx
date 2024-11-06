@@ -6,7 +6,9 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
+import { getLineup } from '@audius/common/store/pages/track/selectors'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
@@ -144,6 +146,9 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   const navigation = useNavigation()
   const { open } = useCommentDrawer()
 
+  const lineup = useSelector(getLineup)
+  const trackUid = lineup?.entries?.[0]?.uid
+
   const openCommentDrawer = useCallback(
     (args: { autoFocusInput?: boolean } = {}) => {
       const { autoFocusInput } = args
@@ -151,10 +156,11 @@ export const CommentPreview = (props: CommentPreviewProps) => {
         entityId,
         navigation,
         autoFocusInput,
+        uid: trackUid,
         actions: tracksActions
       })
     },
-    [open, entityId, navigation]
+    [open, entityId, navigation, trackUid]
   )
 
   useEffectOnce(() => {
@@ -164,7 +170,11 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   })
 
   return (
-    <CommentSectionProvider entityId={entityId} lineupActions={tracksActions}>
+    <CommentSectionProvider
+      entityId={entityId}
+      lineupActions={tracksActions}
+      uid={trackUid}
+    >
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l'>
