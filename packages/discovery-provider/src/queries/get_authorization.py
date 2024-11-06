@@ -4,7 +4,19 @@ from src.utils.auth_middleware import recover_authority_from_signature_headers
 
 
 def is_authorized_request(user_id: int):
-    """Returns true if the request was signed by an authority that has been granted access by the given user"""
+    """Returns true if the request was signed by an authority that the user has granted access
+
+    TODO: Make this take in a a `scope` parameter and add scopes to grants.
+
+    "Authority" here refers to the signer of the request that is attempting to claim it has
+    the authority to do a certain action.
+
+    This function differs from `is_active_manager` in that:
+    1. It works for non-users (eg. dev apps).
+    2. It doesn't depend on query helpers (preventing circular dependency).
+    3. It doesn't take in the authed user ID, instead getting it directly from request headers.
+    """
+
     # Get the authority (the wallet and/or user that signed the request)
     authority_user_id, authority_wallet = recover_authority_from_signature_headers()
 

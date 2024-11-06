@@ -496,7 +496,7 @@ def populate_track_metadata(
     comment_counts = get_tracks_comment_count(track_ids, current_user_id, session)
 
     # has current user unlocked gated tracks?
-    # if so, also populate corresponding signatures.
+    # if so, also populate corresponding stream/download URLs with signatures.
     # if no current user (guest), populate access based on track stream/download conditions
     _populate_gated_content_metadata(session, tracks, current_user_id)
 
@@ -673,6 +673,14 @@ def get_content_url_with_mirrors(
 
 
 def _populate_gated_content_metadata(session, entities, current_user_id):
+    """Checks if `current_user_id` has access to each entity and populates relevant fields.
+
+    Responsible for populating the `access` field of both tracks and playlists.
+
+    Additionally responsible for populating `download`, `preview`, `stream`
+    fields of tracks with direct to content node URLs and mirrors.
+    """
+
     if not entities:
         return
     if not current_user_id:
