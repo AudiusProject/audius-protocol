@@ -198,7 +198,7 @@ def _update_aggregate_tips(session: Session, redis: Redis):
         .order_by(UserTip.slot.desc())
         .one()
     )
-    (max_slot, last_tip_signature) = (
+    max_slot, last_tip_signature = (
         max_slot_result if max_slot_result[0] is not None else (0, None)
     )
 
