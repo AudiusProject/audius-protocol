@@ -1,3 +1,5 @@
+from flask import has_request_context
+
 from src.models.grants.grant import Grant
 from src.utils import db_session
 from src.utils.auth_middleware import recover_authority_from_signature_headers
@@ -16,6 +18,10 @@ def is_authorized_request(user_id: int):
     2. It doesn't depend on query helpers (preventing circular dependency).
     3. It doesn't take in the authed user ID, instead getting it directly from request headers.
     """
+
+    # If not in request context, we won't have headers
+    if not has_request_context():
+        return False
 
     # Get the authority (the wallet and/or user that signed the request)
     authority_user_id, authority_wallet = recover_authority_from_signature_headers()
