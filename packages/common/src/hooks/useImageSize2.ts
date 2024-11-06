@@ -62,18 +62,18 @@ export const useImageSize2 = ({
 
   const resolveImageUrl = useCallback(async () => {
     if (!artwork) {
-      // console.log(`useImageSize: no artwork, loading`)
+      console.debug(`useImageSize: no artwork, loading`)
       return
     }
     const targetUrl = artwork[targetSize]
     if (!targetUrl) {
-      // console.log(`useImageSize: no target url for ${targetSize}`)
+      console.debug(`useImageSize: no target url for ${targetSize}`)
       setImageUrl(defaultImage)
       return
     }
 
     if (IMAGE_CACHE.has(targetUrl)) {
-      // console.log(`useImageSize: cache hit ${targetUrl}`)
+      console.debug(`useImageSize: cache hit ${targetUrl}`)
       setImageUrl(targetUrl)
       return
     }
@@ -87,17 +87,6 @@ export const useImageSize2 = ({
         IMAGE_CACHE.has(artwork[size as SquareSizes]!)
     ) as SquareSizes | undefined
 
-    if (smallerSize) {
-      // console.log(
-      //   `useImageSize: cache miss, found smaller ${targetUrl} ${smallerSize}`
-      // )
-      setImageUrl(artwork[smallerSize] ?? null)
-      const finalUrl = await fetchWithFallback(targetUrl)
-      IMAGE_CACHE.add(finalUrl)
-      setImageUrl(finalUrl)
-      return
-    }
-
     // Check for larger size
     // If found, set the image url to the larger size and return
     const largerSize = Object.keys(artwork).find(
@@ -108,16 +97,27 @@ export const useImageSize2 = ({
     ) as SquareSizes | undefined
 
     if (largerSize) {
-      // console.log(
-      //   `useImageSize: cache miss, found larger ${targetUrl} ${largerSize}`
-      // )
+      console.debug(
+        `useImageSize: cache miss, found larger ${targetUrl} ${largerSize}`
+      )
       setImageUrl(artwork[largerSize] ?? null)
+      return
+    }
+
+    if (smallerSize) {
+      console.debug(
+        `useImageSize: cache miss, found smaller ${targetUrl} ${smallerSize}`
+      )
+      setImageUrl(artwork[smallerSize] ?? null)
+      const finalUrl = await fetchWithFallback(targetUrl)
+      IMAGE_CACHE.add(finalUrl)
+      setImageUrl(finalUrl)
       return
     }
 
     // Fetch image with fallback mirrors
     try {
-      // console.log(`useImageSize: cache miss fetch original ${targetUrl}`)
+      console.debug(`useImageSize: cache miss fetch original ${targetUrl}`)
       const finalUrl = await fetchWithFallback(targetUrl)
       IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
