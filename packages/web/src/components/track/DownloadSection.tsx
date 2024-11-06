@@ -36,11 +36,11 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Expandable } from 'components/expandable/Expandable'
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   useRequiresAccountCallback,
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'

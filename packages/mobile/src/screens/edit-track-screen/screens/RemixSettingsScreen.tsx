@@ -261,7 +261,9 @@ export const RemixSettingsScreen = () => {
             <Text {...labelProps}>{messages.hideRemixes}</Text>
             <Switch
               value={!remixesVisible}
-              onValueChange={(value) => setRemixesVisible(!value)}
+              onValueChange={(value) => {
+                setRemixesVisible(!value)
+              }}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>
