@@ -30,13 +30,16 @@ export const CoverAttributionScreen = () => {
   const [{ value: originalArtist }, , { setValue: setOriginalArtist }] =
     useField<string | null>(COVER_ORIGINAL_ARTIST)
 
-  const handleValueChange = useCallback(() => {
-    if (isCover) {
-      setOriginalSongTitle(null)
-      setOriginalArtist(null)
-    }
-    setIsCover(!isCover)
-  }, [isCover, setOriginalSongTitle, setOriginalArtist, setIsCover])
+  const handleValueChange = useCallback(
+    (value: boolean) => {
+      if (isCover) {
+        setOriginalSongTitle(null)
+        setOriginalArtist(null)
+      }
+      setIsCover(value)
+    },
+    [isCover, setOriginalSongTitle, setOriginalArtist, setIsCover]
+  )
 
   return (
     <FormScreen title={messages.title} variant='white'>
