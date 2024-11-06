@@ -35,7 +35,8 @@ const { getAccountBalance } = walletSelectors
 const { sendTip, fetchUserSupporter, refreshSupport } = tippingActions
 const { getOptimisticSupporters, getOptimisticSupporting, getSendUser } =
   tippingSelectors
-const getAccountUser = accountSelectors.getAccountUser
+
+const { getUserId } = accountSelectors
 
 const messages = {
   sendTip: 'Send Tip',
@@ -60,7 +61,7 @@ export const SendTipScreen = () => {
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatch = useDispatch()
 
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const supportersMap = useSelector(getOptimisticSupporters)
   const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
@@ -75,34 +76,34 @@ export const SendTipScreen = () => {
   } = useGetFirstOrTopSupporter({
     tipAmount,
     accountBalance,
-    account,
+    accountUserId,
     receiver,
     supportingMap,
     supportersMap
   })
 
   useEffect(() => {
-    if (shouldFetchUserSupporter && account && receiver) {
+    if (shouldFetchUserSupporter && accountUserId && receiver) {
       dispatch(
         fetchUserSupporter({
-          currentUserId: account.user_id,
+          currentUserId: accountUserId,
           userId: receiver.user_id,
-          supporterUserId: account.user_id
+          supporterUserId: accountUserId
         })
       )
     }
-  }, [shouldFetchUserSupporter, account, receiver, dispatch])
+  }, [shouldFetchUserSupporter, accountUserId, receiver, dispatch])
 
   useEffect(() => {
-    if (shouldFetchSupportersForReceiver && account && receiver) {
+    if (shouldFetchSupportersForReceiver && accountUserId && receiver) {
       dispatch(
         refreshSupport({
-          senderUserId: account.user_id,
+          senderUserId: accountUserId,
           receiverUserId: receiver.user_id
         })
       )
     }
-  }, [shouldFetchSupportersForReceiver, account, receiver, dispatch])
+  }, [shouldFetchSupportersForReceiver, accountUserId, receiver, dispatch])
 
   const handleBack = useCallback(() => {
     navigation.goBack()

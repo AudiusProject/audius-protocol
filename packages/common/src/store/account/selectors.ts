@@ -51,6 +51,10 @@ export const getAccountHasTracks = createSelector(
       ? null // still loading
       : hasTracks || (user ? user.track_count > 0 : false)
 )
+export const getAccountFolloweeCount = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.followee_count ?? null
+)
 export const getAccountCollectibles = createSelector(
   [internalGetAccountUser],
   (user) => [
