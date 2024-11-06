@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useField } from 'formik'
 
 import { Box, Divider, Flex, Text } from '@audius/harmony-native'
@@ -28,13 +30,13 @@ export const CoverAttributionScreen = () => {
   const [{ value: originalArtist }, , { setValue: setOriginalArtist }] =
     useField<string | null>(COVER_ORIGINAL_ARTIST)
 
-  const handleValueChange = () => {
+  const handleValueChange = useCallback(() => {
     if (isCover) {
       setOriginalSongTitle(null)
       setOriginalArtist(null)
     }
     setIsCover(!isCover)
-  }
+  }, [isCover, setOriginalSongTitle, setOriginalArtist, setIsCover])
 
   return (
     <FormScreen title={messages.title} variant='white'>
