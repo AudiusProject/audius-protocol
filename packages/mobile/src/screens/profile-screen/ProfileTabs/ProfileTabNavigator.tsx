@@ -22,11 +22,16 @@ import { CollectiblesTab } from './CollectiblesTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { RepostsTab } from './RepostsTab'
 import { TracksTab } from './TracksTab'
+import { ReactNode } from 'react'
 
 // Height of a typical profile header
 const INITIAL_PROFILE_HEADER_HEIGHT = 1081
 
 type ProfileTabNavigatorProps = {
+  /**
+   * Function that renders the collapsible header
+   */
+  renderHeader: () => ReactNode
   /**
    * Animated value to capture scrolling. If unset, an
    * animated value is created.
@@ -38,6 +43,7 @@ type ProfileTabNavigatorProps = {
 }
 
 export const ProfileTabNavigator = ({
+  renderHeader,
   animatedValue,
   refreshing,
   onRefresh
@@ -103,6 +109,7 @@ export const ProfileTabNavigator = ({
   if (isArtist) {
     return (
       <CollapsibleTabNavigator
+        renderHeader={renderHeader}
         animatedValue={animatedValue}
         headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
       >
@@ -117,6 +124,7 @@ export const ProfileTabNavigator = ({
 
   return (
     <CollapsibleTabNavigator
+      renderHeader={renderHeader}
       animatedValue={animatedValue}
       headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
     >
