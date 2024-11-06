@@ -30,7 +30,7 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
     { disabled: userId == null }
   )
   const excludedUserIds = useMemo(() => {
-    const res: number[] = managers.map((m) => m.manager.user_id)
+    const res: number[] = managers?.map((m) => m.manager.user_id) ?? []
     if (userId) {
       res.push(userId)
     }

@@ -39,7 +39,7 @@ import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
@@ -218,7 +218,7 @@ const TrackTile = (props: CombinedProps) => {
     }
   }, [trackId, dispatch, setModalVisibility])
 
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickPill = useRequiresAccountOnClick(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },

@@ -355,7 +355,7 @@ class FullBulkTracks(Resource):
             response, status = success_response(tracks)
             return marshal(response, full_track_response), status
         else:
-            tracks = [extend_track(track) for track in tracks]
+            tracks = list(map(extend_track, tracks))
             response, status = success_response(tracks)
             return marshal(response, full_tracks_response), status
 
@@ -1519,8 +1519,9 @@ class FullRemixableTracks(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
+        current_user_id = get_current_user_id(args)
         args = {
-            "current_user_id": get_current_user_id(args),
+            "current_user_id": current_user_id,
             "limit": get_default_max(args.get("limit"), 25, 100),
             "with_users": args.get("with_users", False),
         }
@@ -1636,10 +1637,11 @@ class BestNewReleases(Resource):
     def get(self):
         request_args = best_new_releases_parser.parse_args()
         window = request_args.get("window")
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
         }
         tracks = get_top_followee_windowed("track", window, args)
         tracks = list(map(extend_track, tracks))
@@ -1695,12 +1697,13 @@ class UnderTheRadar(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = under_the_radar_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "tracks_only": request_args.get("tracks_only"),
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, 100, 25),
             "offset": format_offset(request_args),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "filter": request_args.get("filter"),
         }
         feed_results = get_feed(args)
@@ -1782,10 +1785,11 @@ class FeelingLucky(Resource):
     @cache(ttl_sec=10)
     def get(self):
         request_args = feeling_lucky_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
         args = {
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, max_limit=100, default_limit=25),
-            "user_id": get_current_user_id(request_args),
+            "user_id": current_user_id,
             "min_followers": request_args.get("min_followers"),
         }
         tracks = get_random_tracks(args)

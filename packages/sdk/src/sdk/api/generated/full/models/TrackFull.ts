@@ -74,6 +74,12 @@ import {
     TrackSegmentFromJSONTyped,
     TrackSegmentToJSON,
 } from './TrackSegment';
+import type { UrlWithMirrors } from './UrlWithMirrors';
+import {
+    UrlWithMirrorsFromJSON,
+    UrlWithMirrorsFromJSONTyped,
+    UrlWithMirrorsToJSON,
+} from './UrlWithMirrors';
 import type { UserFull } from './UserFull';
 import {
     UserFullFromJSON,
@@ -543,6 +549,24 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     isOwnedByUser: boolean;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof TrackFull
+     */
+    stream: UrlWithMirrors;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof TrackFull
+     */
+    download: UrlWithMirrors;
+    /**
+     * 
+     * @type {UrlWithMirrors}
+     * @memberof TrackFull
+     */
+    preview: UrlWithMirrors;
 }
 
 /**
@@ -584,6 +608,9 @@ export function instanceOfTrackFull(value: object): value is TrackFull {
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isDownloadGated" in value && value["isDownloadGated"] !== undefined;
     isInstance = isInstance && "isOwnedByUser" in value && value["isOwnedByUser"] !== undefined;
+    isInstance = isInstance && "stream" in value && value["stream"] !== undefined;
+    isInstance = isInstance && "download" in value && value["download"] !== undefined;
+    isInstance = isInstance && "preview" in value && value["preview"] !== undefined;
 
     return isInstance;
 }
@@ -674,6 +701,9 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'coverOriginalSongTitle': !exists(json, 'cover_original_song_title') ? undefined : json['cover_original_song_title'],
         'coverOriginalArtist': !exists(json, 'cover_original_artist') ? undefined : json['cover_original_artist'],
         'isOwnedByUser': json['is_owned_by_user'],
+        'stream': UrlWithMirrorsFromJSON(json['stream']),
+        'download': UrlWithMirrorsFromJSON(json['download']),
+        'preview': UrlWithMirrorsFromJSON(json['preview']),
     };
 }
 
@@ -762,6 +792,9 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'cover_original_song_title': value.coverOriginalSongTitle,
         'cover_original_artist': value.coverOriginalArtist,
         'is_owned_by_user': value.isOwnedByUser,
+        'stream': UrlWithMirrorsToJSON(value.stream),
+        'download': UrlWithMirrorsToJSON(value.download),
+        'preview': UrlWithMirrorsToJSON(value.preview),
     };
 }
 

@@ -1,7 +1,7 @@
 import concurrent.futures
-import datetime
 import logging
 import time
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Callable, Dict, List, Optional, TypedDict, cast
 
@@ -41,19 +41,11 @@ from src.solana.solana_parser import (
     parse_instruction_data,
 )
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    cache_latest_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import get_solana_tx_token_balance_changes
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_cache import get_solana_transaction_key
-from src.utils.redis_constants import (
-    latest_sol_rewards_manager_db_tx_key,
-    latest_sol_rewards_manager_program_tx_key,
-    latest_sol_rewards_manager_slot_key,
-)
+from src.utils.redis_constants import redis_keys
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -109,12 +101,6 @@ class RewardManagerTransactionInfo(TypedDict):
     slot: int
     timestamp: int | None
     transfer_instruction: Optional[RewardTransferInstruction]
-
-
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
-    cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
 
 
 challenge_type_map_global: Dict[str, TransactionType] = {}
@@ -348,7 +334,7 @@ def process_batch_sol_reward_manager_txs(
         challenge_disbursements = []
         audio_tx_histories = []
         for tx in reward_manager_txs:
-            timestamp = datetime.datetime.utcfromtimestamp(float(tx["timestamp"] or 0))
+            timestamp = datetime.utcfromtimestamp(float(tx["timestamp"] or 0))
             # Add transaction
             session.add(
                 RewardManagerTransaction(
@@ -573,7 +559,6 @@ def process_transaction_signatures(
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
     last_tx_sig: Optional[str] = None
-    last_tx: Optional[RewardManagerTransactionInfo] = None
     if transaction_signatures and transaction_signatures[-1]:
         last_tx_sig = transaction_signatures[-1][0]
 
@@ -599,12 +584,7 @@ def process_transaction_signatures(
                     parsed_solana_transfer_instruction = future.result()
                     if parsed_solana_transfer_instruction is not None:
                         transfer_instructions.append(parsed_solana_transfer_instruction)
-                        if (
-                            last_tx_sig
-                            and last_tx_sig
-                            == parsed_solana_transfer_instruction["tx_sig"]
-                        ):
-                            last_tx = parsed_solana_transfer_instruction
+
                 except Exception as exc:
                     logger.error(f"index_rewards_manager.py | {exc}")
                     raise exc
@@ -615,17 +595,7 @@ def process_transaction_signatures(
         logger.debug(
             f"index_rewards_manager.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
-
-    if last_tx:
-        cache_latest_sol_rewards_manager_db_tx(
-            redis,
-            {
-                "signature": last_tx["tx_sig"],
-                "slot": last_tx["slot"],
-                "timestamp": last_tx["timestamp"],
-            },
-        )
-    return last_tx
+        return last_tx_sig
 
 
 def process_solana_rewards_manager(
@@ -641,12 +611,6 @@ def process_solana_rewards_manager(
         logger.error("index_rewards_manager.py | reward manager account missing")
         return
 
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
-    try:
-        latest_global_slot = solana_client_manager.get_slot()
-    except:
-        logger.error("index_rewards_manager.py | Failed to get slot")
-
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
         solana_client_manager,
@@ -659,13 +623,11 @@ def process_solana_rewards_manager(
     if transaction_signatures:
         logger.debug(f"index_rewards_manager.py | {transaction_signatures}")
 
-    last_tx = process_transaction_signatures(
+    last_tx_sig = process_transaction_signatures(
         solana_client_manager, db, redis, transaction_signatures
     )
-    if last_tx:
-        redis.set(latest_sol_rewards_manager_slot_key, last_tx["slot"])
-    elif latest_global_slot is not None:
-        redis.set(latest_sol_rewards_manager_slot_key, latest_global_slot)
+    if last_tx_sig:
+        redis.set(redis_keys.solana.reward_manager.last_tx, last_tx_sig)
 
 
 # ####### CELERY TASKS ####### #
@@ -682,19 +644,15 @@ def index_rewards_manager(self):
     update_lock = redis.lock("solana_rewards_manager_lock", timeout=14400)
 
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            REWARDS_MANAGER_PROGRAM,
-            latest_sol_rewards_manager_program_tx_key,
-        )
-
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.debug("index_rewards_manager.py | Acquired lock")
             process_solana_rewards_manager(solana_client_manager, db, redis)
+            redis.set(
+                redis_keys.solana.reward_manager.last_completed_at,
+                datetime.now(timezone.utc).timestamp(),
+            )
         else:
             logger.debug("index_rewards_manager.py | Failed to acquire lock")
     except Exception as e:

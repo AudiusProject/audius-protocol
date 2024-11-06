@@ -57,7 +57,7 @@ export function* repostTrackAsync(
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -216,7 +216,7 @@ export function* undoRepostTrackAsync(
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
@@ -328,7 +328,7 @@ export function* saveTrackAsync(
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
@@ -482,7 +482,7 @@ export function* unsaveTrackAsync(
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }

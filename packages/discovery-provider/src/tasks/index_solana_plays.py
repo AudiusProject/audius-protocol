@@ -23,7 +23,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
-    cache_latest_sol_db_tx,
+    cache_sol_db_tx,
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
@@ -153,7 +153,7 @@ class PlayInfo(TypedDict):
 
 
 def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
-    cache_latest_sol_db_tx(redis, latest_sol_play_db_tx_key, latest_tx)
+    cache_sol_db_tx(redis, latest_sol_play_db_tx_key, latest_tx)
 
 
 # Check for both SECP and SignerGroup
