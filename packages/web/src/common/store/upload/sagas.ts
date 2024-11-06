@@ -70,6 +70,7 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
+const { getUserId, getAccountUser } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
@@ -767,8 +768,7 @@ export function* uploadCollection(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   yield waitForAccount()
-  const account = yield* select(accountSelectors.getAccountUser)
-  const userId = account!.user_id
+  const userId = (yield* select(getUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
 
@@ -1021,7 +1021,7 @@ export function* uploadMultipleTracks(
   }
 
   // Make sure track count changes for this user
-  const account = yield* select(accountSelectors.getAccountUser)
+  const account = yield* select(getAccountUser)
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',

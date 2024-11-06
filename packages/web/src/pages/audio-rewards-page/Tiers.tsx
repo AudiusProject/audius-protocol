@@ -30,7 +30,7 @@ import { useSelector } from 'utils/reducer'
 import styles from './Tiers.module.css'
 const { show } = musicConfettiActions
 const { pressDiscord } = vipDiscordModalActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 const messages = {
   title: '$AUDIO VIP TIERS',
@@ -350,8 +350,8 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
 
 /** Tile with multiple tiers */
 const Tiers = () => {
-  const accountUser = useSelector(getAccountUser)
-  const userId = accountUser?.user_id ?? 0
+  const accountUserId = useSelector(getUserId)
+  const userId = accountUserId ?? 0
   const { tier } = useSelectTierInfo(userId)
 
   const dispatch = useDispatch()

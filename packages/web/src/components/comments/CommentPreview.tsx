@@ -20,6 +20,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 
@@ -133,7 +134,7 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   }, [showComments, track, dispatch, searchParams, history])
 
   return (
-    <CommentSectionProvider entityId={entityId}>
+    <CommentSectionProvider entityId={entityId} lineupActions={tracksActions}>
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader />
         <CommentPreviewContent />

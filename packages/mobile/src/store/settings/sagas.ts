@@ -110,8 +110,8 @@ function* watchGetPushNotificationSettings() {
     settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
     function* () {
       yield* call(waitForRead)
-      const account = yield* select(getAccountUser)
-      if (!account) return
+      const hasAccount = yield* select(getHasAccount)
+      if (!hasAccount) return
 
       try {
         const settings = yield* call(

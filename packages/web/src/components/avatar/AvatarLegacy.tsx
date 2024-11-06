@@ -11,7 +11,7 @@ import { useSelector } from 'utils/reducer'
 import styles from './AvatarLegacy.module.css'
 
 const { SIGN_IN_PAGE, profilePage } = route
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const { getUser } = cacheUsersSelectors
 
@@ -46,8 +46,8 @@ export const AvatarLegacy = (props: AvatarProps) => {
 
   const name = useSelector((state) => {
     const user = getUser(state, { id: userId })
-    const currentUser = getAccountUser(state)
-    return user?.user_id === currentUser?.user_id ? messages.your : user?.name
+    const currentUserId = getUserId(state)
+    return user?.user_id === currentUserId ? messages.your : user?.name
   })
 
   return (

@@ -7,7 +7,7 @@ import { accountSelectors, remoteConfigSelectors } from '@audius/common/store'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { useSelector } from 'utils/reducer'
 const { isRemoteConfigLoaded } = remoteConfigSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getHasAccount } = accountSelectors
 
 export const useFlag = createUseFeatureFlagHook({
   remoteConfigInstance,
@@ -16,11 +16,11 @@ export const useFlag = createUseFeatureFlagHook({
     if (value === null) return window.localStorage.removeItem(key)
     window.localStorage.setItem(key, value)
   },
-  useHasAccount: () => !!useSelector(getAccountUser),
+  useHasAccount: () => useSelector(getHasAccount),
   useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded)
 })
 export const useRemoteVar = createUseRemoteVarHook({
   remoteConfigInstance,
-  useHasAccount: () => !!useSelector(getAccountUser),
+  useHasAccount: () => useSelector(getHasAccount),
   useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded)
 })

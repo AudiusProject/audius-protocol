@@ -188,6 +188,8 @@ export type LineupItemTileProps = Pick<
   index: number
   togglePlay: ({ uid, id, source }: TogglePlayConfig) => void
   onPress?: (id: ID) => void
+  /** Object containing lineup actions such as play, setPage, togglePlay */
+  actions: LineupBaseActions
 }
 
 export type LineupTileViewProps = Omit<LineupItemTileProps, 'item'> & {

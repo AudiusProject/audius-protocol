@@ -129,6 +129,13 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	return nil
 }
 
+func (ss *MediorumServer) haveInMyBucket(fileName string) bool {
+	shardedCid := cidutil.ShardCID(fileName)
+	ctx := context.Background()
+	exists, _ := ss.bucket.Exists(ctx, shardedCid)
+	return exists
+}
+
 func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file io.Reader) error {
 	// logger := ss.logger.With()
 	if peer == ss.Config.Self.Host {

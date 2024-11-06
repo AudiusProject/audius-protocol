@@ -27,12 +27,10 @@ describe('health_check', () => {
         version: '1.2.3',
         service: 'discovery-node',
         block_difference: 0,
-        solana_indexers: {
-          plays: {
-            is_unhealthy: false,
-            tx_info: {
-              slot_diff: 100
-            }
+        plays: {
+          is_unhealthy: false,
+          tx_info: {
+            slot_diff: 100
           }
         }
       },
@@ -55,12 +53,10 @@ describe('health_check', () => {
         version: '1.2.3',
         service: 'discovery-node',
         block_difference: 100,
-        solana_indexers: {
-          plays: {
-            is_unhealthy: false,
-            tx_info: {
-              slot_diff: 100
-            }
+        plays: {
+          is_unhealthy: false,
+          tx_info: {
+            slot_diff: 100
           }
         }
       },

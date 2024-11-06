@@ -10,7 +10,7 @@ import { useSelector } from 'utils/reducer'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE } = route
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 const { getTheme } = themeSelectors
 
 const messages = {
@@ -20,7 +20,7 @@ const messages = {
 
 export const NavHeader = () => {
   const { spacing } = useTheme()
-  const account = useSelector(getAccountUser)
+  const hasAccount = useSelector(getHasAccount)
 
   const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
 
@@ -49,7 +49,7 @@ export const NavHeader = () => {
           ]}
         />
       </Link>
-      {account ? (
+      {hasAccount ? (
         <Flex justifyContent='center' alignItems='center' gap='s'>
           <NavMenuButton />
           <NotificationsButton />

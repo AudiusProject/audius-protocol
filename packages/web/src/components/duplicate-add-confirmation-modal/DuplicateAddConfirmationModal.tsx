@@ -27,7 +27,7 @@ import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 const { getPlaylistId, getTrackId } = duplicateAddConfirmationModalUISelectors
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 const { collectionPage } = route
 
 const messages = {
@@ -49,7 +49,7 @@ export const DuplicateAddConfirmationModal = () => {
   const playlist = useSelector((state) =>
     getCollection(state, { id: playlistId })
   )
-  const account = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
   const [isOpen, setIsOpen] = useModalState('DuplicateAddConfirmation')
   const collectionType = playlist?.is_album ? 'album' : 'playlist'
 
@@ -60,13 +60,13 @@ export const DuplicateAddConfirmationModal = () => {
   const handleAdd = useCallback(() => {
     if (trackId && playlistId) {
       dispatch(addTrackToPlaylist(trackId, playlistId))
-      if (account) {
+      if (accountHandle) {
         toast(
           <ToastLinkContent
             text={messages.addedToast(collectionType)}
             linkText={messages.view}
             link={collectionPage(
-              account.handle,
+              accountHandle,
               playlist?.playlist_name,
               playlistId,
               playlist?.permalink,
@@ -84,7 +84,7 @@ export const DuplicateAddConfirmationModal = () => {
     playlistId,
     onClose,
     dispatch,
-    account,
+    accountHandle,
     toast,
     collectionType,
     playlist?.playlist_name,

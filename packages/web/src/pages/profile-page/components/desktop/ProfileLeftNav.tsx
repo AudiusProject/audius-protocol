@@ -22,7 +22,7 @@ import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTop
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import styles from './ProfilePage.module.css'
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 const messages = {
   aboutYou: 'About You',
@@ -92,7 +92,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     isOwner
   } = props
 
-  const accountUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
 
   const renderTipAudioButton = (_: any, style: object) => (
     <animated.div className={styles.tipAudioButtonContainer} style={style}>
@@ -196,7 +196,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
         />
-        {!accountUser || accountUser.user_id !== userId ? (
+        {accountUserId !== userId ? (
           <OpacityTransition render={renderTipAudioButton} />
         ) : null}
         {allowAiAttribution ? (

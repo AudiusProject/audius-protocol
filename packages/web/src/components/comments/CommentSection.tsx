@@ -10,6 +10,7 @@ import { FeatureFlags } from '@audius/common/services'
 import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSearchParams } from 'react-router-dom-v5-compat'
+import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useMainContentRef } from 'pages/MainContentContext'
@@ -169,7 +170,7 @@ export const CommentSection = (props: CommentSectionProps) => {
   const { entityId, commentSectionRef } = props
 
   return (
-    <CommentSectionProvider entityId={entityId}>
+    <CommentSectionProvider entityId={entityId} lineupActions={tracksActions}>
       <CommentSectionInner commentSectionRef={commentSectionRef} />
     </CommentSectionProvider>
   )

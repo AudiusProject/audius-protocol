@@ -30,7 +30,7 @@ const messages = {
   title: 'New Message'
 }
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { getUserList: getFollowersUserList } = followersUserListSelectors
 const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
@@ -41,7 +41,7 @@ export const CreateChatModal = () => {
   )
 
   const dispatch = useDispatch()
-  const currentUser = useSelector(getAccountUser)
+  const currentUserId = useSelector(getUserId)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { onCancelAction, presetMessage, defaultUserList } = data
@@ -58,15 +58,15 @@ export const CreateChatModal = () => {
   }, [onCancelAction, dispatch])
 
   const loadMore = useCallback(() => {
-    if (currentUser) {
+    if (currentUserId) {
       if (defaultUserList === 'chats') {
         dispatch(fetchMoreChats())
       } else {
-        dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+        dispatch(followersUserListActions.setFollowers(currentUserId))
         dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
       }
     }
-  }, [dispatch, defaultUserList, currentUser])
+  }, [dispatch, defaultUserList, currentUserId])
 
   const handleOpenInboxUnavailableModal = useCallback(
     (user: User) => {

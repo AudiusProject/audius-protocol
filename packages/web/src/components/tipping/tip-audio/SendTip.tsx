@@ -53,7 +53,7 @@ const { getOptimisticSupporters, getOptimisticSupporting, getSendUser } =
   tippingSelectors
 const { beginTip, resetSend, fetchUserSupporter, sendTip } = tippingActions
 const { startBuyAudioFlow } = buyAudioActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 const messages = {
   availableToSend: 'AVAILABLE TO SEND',
@@ -87,7 +87,7 @@ const TopBanner = (props: TopBannerProps) => {
 
 export const SendTip = () => {
   const dispatch = useDispatch()
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const supportersMap = useSelector(getOptimisticSupporters)
   const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
@@ -111,7 +111,7 @@ export const SendTip = () => {
   } = useGetFirstOrTopSupporter({
     tipAmount,
     accountBalance: accountBalance ?? (new BN('0') as BNWei),
-    account,
+    accountUserId,
     receiver,
     supportingMap,
     supportersMap
@@ -125,16 +125,16 @@ export const SendTip = () => {
   )
 
   useEffect(() => {
-    if (shouldFetchUserSupporter && account && receiver) {
+    if (shouldFetchUserSupporter && accountUserId && receiver) {
       dispatch(
         fetchUserSupporter({
-          currentUserId: account.user_id,
+          currentUserId: accountUserId,
           userId: receiver.user_id,
-          supporterUserId: account.user_id
+          supporterUserId: accountUserId
         })
       )
     }
-  }, [shouldFetchUserSupporter, account, receiver, dispatch])
+  }, [shouldFetchUserSupporter, accountUserId, receiver, dispatch])
 
   useEffect(() => {
     const zeroWei = stringWeiToBN('0' as StringWei)
