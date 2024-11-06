@@ -34,7 +34,7 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
-const { getAccountUser, getAccountStatus } = accountSelectors
+const { getAccountStatus, getUserId } = accountSelectors
 
 export const useParsedQueryParams = () => {
   const { search } = useLocation()
@@ -194,8 +194,8 @@ export const useOAuthSetup = ({
     const status = getAccountStatus(state)
     return statusIsNotFinalized(status)
   })
-  const account = useSelector(getAccountUser)
-  const isLoggedIn = Boolean(account)
+  const accountUserId = useSelector(getUserId)
+  const isLoggedIn = Boolean(accountUserId)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [queryParamsError, setQueryParamsError] = useState<string | null>(
     initError
@@ -400,7 +400,7 @@ export const useOAuthSetup = ({
       let appAlreadyAuthorized
       try {
         appAlreadyAuthorized = await getIsAppAuthorized({
-          userId: encodeHashId(account!.user_id), // We know account exists because isLoggedIn is true
+          userId: encodeHashId(accountUserId!), // We know account exists because isLoggedIn is true
           apiKey: apiKey as string
         })
       } catch (e) {
@@ -420,7 +420,7 @@ export const useOAuthSetup = ({
     }
     getInitialAuthorizationStatus()
   }, [
-    account,
+    accountUserId,
     apiKey,
     formResponseAndRedirect,
     history,
@@ -433,12 +433,12 @@ export const useOAuthSetup = ({
   useEffect(() => {
     const verifyDisconnectWalletUser = async () => {
       if (
-        account?.user_id != null &&
+        accountUserId != null &&
         txParams?.wallet != null &&
         tx === 'disconnect_dashboard_wallet'
       ) {
         const isCorrectUser = await getIsUserConnectedToDashboardWallet({
-          userId: account?.user_id,
+          userId: accountUserId,
           wallet: txParams.wallet
         })
         if (!isCorrectUser) {
@@ -450,7 +450,7 @@ export const useOAuthSetup = ({
       }
     }
     verifyDisconnectWalletUser()
-  }, [account?.user_id, onError, tx, txParams?.wallet])
+  }, [accountUserId, onError, tx, txParams?.wallet])
 
   const authorize = async ({ account }: { account: UserMetadata }) => {
     let shouldCreateWriteGrant = false

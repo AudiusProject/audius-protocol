@@ -17,7 +17,7 @@ import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
 const { getSendTipData } = tippingSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId, getAccountERCWallet, getUserHandle } = accountSelectors
 
 const messages = {
   sending: 'SENDING',
@@ -30,13 +30,15 @@ const messages = {
 
 export const TipSent = () => {
   const record = useRecord()
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
+  const accountHandle = useSelector(getUserHandle)
+  const accountErcWallet = useSelector(getAccountERCWallet)
   const sendTipData = useSelector(getSendTipData)
   const { user: recipient, amount: sendAmount, source } = sendTipData
 
   const handleShareClick = useCallback(async () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
-    if (account && recipient) {
+    if (accountUserId && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
       if (recipient.twitter_handle) {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
@@ -46,7 +48,7 @@ export const TipSent = () => {
 
       const [senderWallet, recipientWallet] = await Promise.all([
         deriveUserBankAddress(audiusBackendInstance, {
-          ethAddress: account.erc_wallet
+          ethAddress: accountErcWallet ?? undefined
         }),
         deriveUserBankAddress(audiusBackendInstance, {
           ethAddress: recipient.erc_wallet
@@ -57,7 +59,7 @@ export const TipSent = () => {
         make(Name.TIP_AUDIO_TWITTER_SHARE, {
           senderWallet,
           recipientWallet,
-          senderHandle: account.handle,
+          senderHandle: accountHandle ?? '',
           recipientHandle: recipient.handle,
           amount: sendAmount,
           device: 'web',
@@ -65,7 +67,15 @@ export const TipSent = () => {
         })
       )
     }
-  }, [account, recipient, record, sendAmount, source])
+  }, [
+    sendAmount,
+    accountUserId,
+    recipient,
+    accountErcWallet,
+    record,
+    accountHandle,
+    source
+  ])
 
   const renderSentAudio = () => (
     <div className={styles.modalContentHeader}>

@@ -20,7 +20,7 @@ import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserHandle, getUserId } = accountSelectors
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -28,13 +28,14 @@ const formatMonth = (date: moment.Moment | string) =>
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
 ) {
-  const account = yield* call(waitForValue, getAccountUser)
+  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUserId = yield* call(waitForValue, getUserId)
   const { offset, limit } = action.payload
 
   try {
     const tracks = yield* call(retrieveUserTracks, {
-      handle: account.handle,
-      currentUserId: account.user_id,
+      handle: accountHandle,
+      currentUserId: accountUserId,
       offset,
       limit,
       getUnlisted: true
@@ -52,20 +53,21 @@ function* fetchDashboardAsync(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(waitForRead)
 
-  const account = yield* call(waitForValue, getAccountUser)
+  const accountHandle = yield* call(waitForValue, getUserHandle)
+  const accountUserId = yield* call(waitForValue, getUserId)
   yield* fork(pollForBalance)
 
   const { offset, limit } = action.payload
   try {
     const data = yield* all([
       call(retrieveUserTracks, {
-        handle: account.handle,
-        currentUserId: account.user_id,
+        handle: accountHandle,
+        currentUserId: accountUserId,
         offset,
         limit,
         getUnlisted: true
       }),
-      call(audiusBackendInstance.getPlaylists, account.user_id, [])
+      call(audiusBackendInstance.getPlaylists, accountUserId, [])
     ])
     // Casting necessary because yield* all is not typed well
     const tracks = data[0] as Track[]
@@ -104,7 +106,7 @@ function* fetchDashboardListenDataAsync(
 ) {
   const { start, end } = action.payload
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const account = yield* call(waitForValue, getAccountUser)
+  const accountUserId = yield* call(waitForValue, getUserId)
   const listenData: {
     [key: string]: {
       totalListens: number
@@ -113,7 +115,7 @@ function* fetchDashboardListenDataAsync(
     }
   } = yield* call(
     audiusBackendInstance.getUserListenCountsMonthly,
-    account.user_id,
+    accountUserId,
     start,
     end
   )

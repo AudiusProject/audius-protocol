@@ -25,7 +25,7 @@ import NavBar from './NavBar'
 const { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
 const { getNotificationUnviewedCount } = notificationsSelectors
-const { getAccountUser, getAccountStatus } = accountSelectors
+const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -33,7 +33,7 @@ type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
 
 const ConnectedNavBar = ({
   goToRoute,
-  account,
+  hasAccount,
   accountStatus,
   history,
   searchStatus,
@@ -77,7 +77,7 @@ const ConnectedNavBar = ({
 
   return (
     <NavBar
-      isSignedIn={!!account}
+      isSignedIn={hasAccount}
       isLoading={accountStatus === Status.LOADING}
       signUp={signUp}
       notificationCount={notificationCount}
@@ -94,7 +94,7 @@ const ConnectedNavBar = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountUser(state),
+    hasAccount: getHasAccount(state),
     accountStatus: getAccountStatus(state),
     searchStatus: getSearchStatus(state),
     notificationCount: getNotificationUnviewedCount(state)

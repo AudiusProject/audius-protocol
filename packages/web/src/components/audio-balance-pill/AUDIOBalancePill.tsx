@@ -16,14 +16,14 @@ import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
 import styles from './AUDIOBalancePill.module.css'
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 type AudioPillProps = {
   className?: string
 }
 
 export const AudioBalancePill = ({ className }: AudioPillProps) => {
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const totalBalance = useTotalBalanceWithFallback()
   const positiveTotalBalance = !isNullOrUndefined(totalBalance)
     ? totalBalance.gt(new BN(0))
@@ -31,7 +31,7 @@ export const AudioBalancePill = ({ className }: AudioPillProps) => {
 
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
-  const { tier } = useSelectTierInfo(account?.user_id ?? 0)
+  const { tier } = useSelectTierInfo(accountUserId ?? 0)
   const audioBadge = audioTierMapPng[tier]
 
   return (

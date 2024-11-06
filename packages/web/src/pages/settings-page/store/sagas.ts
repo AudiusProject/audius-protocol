@@ -28,9 +28,9 @@ function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      const account = yield* select(accountSelectors.getAccountUser)
+      const hasAccount = yield* select(accountSelectors.getHasAccount)
 
-      if (!isBrowserPushAvailable || !account) return
+      if (!isBrowserPushAvailable || !hasAccount) return
       const settings = yield* call(
         audiusBackendInstance.getBrowserPushNotificationSettings
       )
@@ -78,8 +78,8 @@ function* watchToogleBrowserPushNotification() {
     actions.SET_BROWSER_NOTIFICATION_ENABLED,
     function* (action: actions.SetBrowserNotificationEnabled) {
       try {
-        const account = yield* select(accountSelectors.getAccountUser)
-        if (!account) return
+        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        if (!hasAccount) return
 
         if (isPushManagerAvailable) {
           const subscription = yield* call(getPushManagerBrowserSubscription)
@@ -210,8 +210,8 @@ function* watchUpdateNotificationSettings() {
     actions.TOGGLE_NOTIFICATION_SETTING,
     function* (action: actions.ToggleNotificationSetting) {
       try {
-        const account = yield* select(accountSelectors.getAccountUser)
-        if (!account) return
+        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        if (!hasAccount) return
 
         let isOn: boolean | null | undefined | Permission = action.isOn
         if (isOn === undefined) {

@@ -17,7 +17,7 @@ const parseToBNWei = (tipAmount: StringAudio) => {
 type UseGetSupportProps = {
   tipAmount: string
   accountBalance: BNWei
-  account: Nullable<User>
+  accountUserId: Nullable<ID>
   receiver: Nullable<User>
   supportingMap: SupportingMap
   supportersMap: SupportersMap
@@ -26,7 +26,7 @@ type UseGetSupportProps = {
 export const useGetFirstOrTopSupporter = ({
   tipAmount,
   accountBalance,
-  account,
+  accountUserId,
   receiver,
   supportingMap,
   supportersMap
@@ -52,10 +52,10 @@ export const useGetFirstOrTopSupporter = ({
    * how much is left to tip to become top supporter
    */
   useEffect(() => {
-    if (!account || !receiver) return
+    if (!accountUserId || !receiver) return
     if (supportingAmount) return
 
-    const supportingForAccount = supportingMap[account.user_id] ?? null
+    const supportingForAccount = supportingMap[accountUserId] ?? null
     const accountSupportingReceiver =
       supportingForAccount?.[receiver.user_id] ?? null
     if (accountSupportingReceiver) {
@@ -63,7 +63,7 @@ export const useGetFirstOrTopSupporter = ({
     } else {
       setShouldFetchUserSupporter(true)
     }
-  }, [account, receiver, supportingAmount, supportingMap])
+  }, [accountUserId, receiver, supportingAmount, supportingMap])
 
   /**
    * Get user who is top supporter to later check whether it is
@@ -107,9 +107,9 @@ export const useGetFirstOrTopSupporter = ({
    * Check whether or not to display prompt to become top or first supporter
    */
   useEffect(() => {
-    if (hasInsufficientBalance || !account || !topSupporter) return
+    if (hasInsufficientBalance || !accountUserId || !topSupporter) return
 
-    const isAlreadyTopSupporter = account.user_id === topSupporter.sender_id
+    const isAlreadyTopSupporter = accountUserId === topSupporter.sender_id
     if (isAlreadyTopSupporter) return
 
     const topSupporterAmountWei = stringWeiToBN(topSupporter.amount)
@@ -130,7 +130,7 @@ export const useGetFirstOrTopSupporter = ({
     }
   }, [
     hasInsufficientBalance,
-    account,
+    accountUserId,
     topSupporter,
     supportingAmount,
     accountBalance

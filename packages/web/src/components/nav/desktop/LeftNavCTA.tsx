@@ -16,10 +16,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { AppState } from 'store/types'
 
 const { SIGN_UP_PAGE, UPLOAD_PAGE } = route
-const { getAccountStatus, getAccountUser } = accountSelectors
+const { getAccountStatus, getHasAccount } = accountSelectors
 const { resetState: resetUploadState } = uploadActions
 const { getIsUploading } = uploadSelectors
 
@@ -32,7 +31,7 @@ const messages = {
 export const LeftNavCTA = () => {
   const dispatch = useDispatch()
   const record = useRecord()
-  const isSignedIn = useSelector((state: AppState) => !!getAccountUser(state))
+  const isSignedIn = useSelector(getHasAccount)
   const accountStatus = useSelector(getAccountStatus)
   const isUploading = useSelector(getIsUploading)
 

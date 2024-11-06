@@ -22,7 +22,7 @@ import {
   recoverUsdcFromRootWallet,
   relayTransaction
 } from '~/services/audius-backend/solana'
-import { getAccountUser } from '~/store/account/selectors'
+import { getAccountUser, getHasAccount } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getFeePayer } from '~/store/solana/selectors'
 import {
@@ -404,8 +404,8 @@ function* doBuyUSDC({
 
 function* recoverPurchaseIfNecessary() {
   yield* waitForRead()
-  const user = yield* select(getAccountUser)
-  if (!user) return
+  const hasAccount = yield* select(getHasAccount)
+  if (!hasAccount) return
 
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')

@@ -15,7 +15,7 @@ import type { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTa
 import { makeStyles } from 'app/styles'
 
 const { getCompletionStages } = challengesSelectors
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 
 const messages = {
   profileCheckNameAndHandle: 'Name & Handle',
@@ -63,19 +63,19 @@ export const ProfileCompletionChecks = ({
   isComplete: boolean
   onClose: () => void
 }) => {
-  const currentUser = useSelector(getAccountUser)
+  const currentUserHandle = useSelector(getUserHandle)
   const completionStages = useSelector(getCompletionStages)
   const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const goToProfile = useCallback(() => {
     onClose()
-    if (currentUser?.handle) {
-      navigation.navigate('Profile', { handle: currentUser.handle })
+    if (currentUserHandle) {
+      navigation.navigate('Profile', { handle: currentUserHandle })
     }
-  }, [currentUser, onClose, navigation])
+  }, [currentUserHandle, onClose, navigation])
 
-  if (!currentUser || !currentUser?.handle) {
+  if (!currentUserHandle || !currentUserHandle) {
     return null
   }
   const config: Record<string, boolean> = {

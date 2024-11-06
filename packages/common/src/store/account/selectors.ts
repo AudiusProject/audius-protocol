@@ -70,6 +70,11 @@ export const getAccountERCWallet = createSelector(
   (user) => user?.erc_wallet ?? null
 )
 
+export const getAccountSplWallet = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.spl_usdc_payout_wallet ?? null
+)
+
 /**
  * Gets the account and full playlist metadatas.
  * TODO: Add handle directly to playlist metadata so we don't need to join against users.
