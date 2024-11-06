@@ -19,7 +19,7 @@ const { getTrack } = cacheTracksSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 
 const overflowRowConfig = (
-  track: Track | null | undefined
+  commentCount: number | undefined
 ): Record<OverflowAction, ActionDrawerRow> => ({
   [OverflowAction.REPOST]: { text: 'Repost' },
   [OverflowAction.UNREPOST]: { text: 'Unrepost' },
@@ -63,8 +63,8 @@ const overflowRowConfig = (
   [OverflowAction.UNSET_ARTIST_PICK]: { text: 'Unset as Artist Pick' },
   [OverflowAction.VIEW_COMMENTS]: {
     text:
-      track?.comment_count !== undefined
-        ? `View (${track?.comment_count}) Comments`
+      commentCount !== undefined
+        ? `View (${commentCount}) Comments`
         : 'View Comments' // slightly better than incorrectly showing a 0 count
   }
 })
@@ -72,13 +72,14 @@ const overflowRowConfig = (
 export const OverflowMenuDrawer = () => {
   const overflowMenu = useSelector(getMobileOverflowModal)
 
-  const track = useSelector((state) =>
-    getTrack(state, {
-      id:
-        overflowMenu.id !== null && overflowMenu !== undefined
-          ? +overflowMenu.id
-          : undefined
-    })
+  const commentCount = useSelector(
+    (state) =>
+      getTrack(state, {
+        id:
+          overflowMenu.id !== null && overflowMenu !== undefined
+            ? +overflowMenu.id
+            : undefined
+      })?.comment_count
   )
 
   if (!overflowMenu?.id) {
@@ -99,7 +100,7 @@ export const OverflowMenuDrawer = () => {
     <OverflowDrawerComponent
       render={(callbacks) => {
         const rows = (overflowActions ?? []).map((action) => ({
-          ...overflowRowConfig(track)[action],
+          ...overflowRowConfig(commentCount)[action],
           callback: callbacks[action]
         }))
         return <ActionDrawer modalName='Overflow' rows={rows} />
