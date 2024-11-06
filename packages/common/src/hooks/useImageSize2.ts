@@ -7,11 +7,10 @@ import { Maybe } from '~/utils/typeUtils'
 const IMAGE_CACHE = new Set<string>()
 
 /**
- * Fetches an image from the given artwork object, using fallback mirrors if necessary.
- * A couple properties:
- *  If a larger image has already been fetched and is in the case, use it instead
- *  If a smaller image has already been fetched and is in the cache, use it while fetching the larger one
- *  If fetching a given image fails, substitute out mirrors and try again
+ * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
+ *  - If a larger image has already been fetched and is in the case, use it instead
+ *  - If a smaller image has already been fetched and is in the cache, use it while fetching the larger one
+ *  - If fetching a given image fails, substitute out mirrors and try again
  * @param artwork - The artwork object to fetch from
  * @param targetSize - The desired size of the image
  * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
@@ -49,8 +48,8 @@ export const useImageSize2 = ({
         } catch {
           const nextMirror = mirrors.shift()
           if (!nextMirror) throw new Error('No mirror found')
-          const currentHost = new URL(currentUrl).host
-          const nextHost = new URL(nextMirror).host
+          const currentHost = new URL(currentUrl).hostname
+          const nextHost = new URL(nextMirror).hostname
           const newUrl = currentUrl.replace(currentHost, nextHost)
           currentUrl = newUrl
         }

@@ -14,7 +14,6 @@ import {
 import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
-  averageColorSelectors,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -52,7 +51,10 @@ import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import {
+  useTrackCoverArt,
+  useTrackCoverArtDominantColor
+} from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
 import {
@@ -75,7 +77,6 @@ const { open } = mobileOverflowMenuUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
 
@@ -133,8 +134,7 @@ const NowPlaying = g(
     repost,
     undoRepost,
     clickOverflow,
-    goToRoute,
-    dominantColors
+    goToRoute
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
@@ -381,16 +381,18 @@ const NowPlaying = g(
       }
     }
 
-    const dominantColor = dominantColors ? dominantColors[0] : null
-    const artworkAverageColor = dominantColor
-      ? {
-          boxShadow: `0 1px 15px -5px rgba(
-          ${dominantColor.r},
-          ${dominantColor.g},
-          ${dominantColor.b}
-          , 1)`
-        }
-      : {}
+    const dominantColor = useTrackCoverArtDominantColor({
+      trackId: track?.track_id
+    })
+
+    const artworkAverageColor = {
+      boxShadow: `0 1px 15px -5px rgba(
+        ${dominantColor?.r},
+        ${dominantColor?.g},
+        ${dominantColor?.b},
+        ${dominantColor ? 0.25 : 0})`,
+      transition: 'box-shadow 0.3s ease-in-out'
+    }
 
     const matrix = isMatrix()
     const darkMode = isDarkMode()
@@ -582,10 +584,7 @@ function makeMapStateToProps() {
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
-      isBuffering: getBuffering(state),
-      dominantColors: getDominantColorsByTrack(state, {
-        track: currentQueueItem.track
-      })
+      isBuffering: getBuffering(state)
     }
   }
   return mapStateToProps

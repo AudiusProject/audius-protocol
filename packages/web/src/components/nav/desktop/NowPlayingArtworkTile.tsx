@@ -1,15 +1,8 @@
-import {
-  CSSProperties,
-  MouseEvent,
-  ReactNode,
-  useCallback,
-  useEffect
-} from 'react'
+import { CSSProperties, MouseEvent, ReactNode, useCallback } from 'react'
 
-import { setDominantColors } from '@audius/common/src/store/average-color/slice'
+import { SquareSizes } from '@audius/common/models'
 import {
   accountSelectors,
-  averageColorSelectors,
   cacheTracksSelectors,
   playerSelectors,
   CommonState
@@ -27,16 +20,17 @@ import { Link, useHistory } from 'react-router-dom'
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { TrackDogEar } from 'components/track/TrackDogEar'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import {
+  useTrackCoverArt,
+  useTrackCoverArtDominantColor
+} from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
-import { dominantColor } from 'utils/imageProcessingUtil'
 import { fullTrackPage } from 'utils/route'
 
 const { getTrackId, getCollectible } = playerSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
-const { getDominantColorsByTrack } = averageColorSelectors
 
 const messages = {
   viewTrack: 'View currently playing track',
@@ -123,38 +117,24 @@ export const NowPlayingArtworkTile = () => {
     [pathname, dispatch]
   )
 
-  const coverArtColor = useSelector((state: CommonState) => {
-    const dominantTrackColors = getDominantColorsByTrack(state, {
-      track: getTrack(state, { id: trackId })
-    })
-
-    if (!dominantTrackColors) return null
-    const coverArtColorMap = dominantTrackColors[0] ?? { r: 13, g: 16, b: 18 }
-    return `0 1px 20px -3px rgba(${coverArtColorMap.r}, ${coverArtColorMap.g}, ${coverArtColorMap.b}, 0.25)`
+  const coverArtColor = useTrackCoverArtDominantColor({
+    trackId: trackId ?? undefined
   })
-
-  useEffect(() => {
-    if (coverArtColor) return
-
-    const work = async () => {
-      if (trackCoverArtImage && track?.cover_art_sizes) {
-        const dominantColors = await dominantColor(trackCoverArtImage)
-        dispatch(
-          setDominantColors({
-            multihash: track.cover_art_sizes,
-            colors: dominantColors
-          })
-        )
-      }
-    }
-    work()
-  }, [trackCoverArtImage, dispatch, track, coverArtColor])
 
   if (!permalink || !trackId) return null
 
   const renderCoverArt = () => {
     return (
-      <FadeInUp style={coverArtColor ? { boxShadow: coverArtColor } : {}}>
+      <FadeInUp
+        style={{
+          boxShadow: `0px 3px 4px 0px rgba(
+            ${coverArtColor?.r},
+            ${coverArtColor?.g},
+            ${coverArtColor?.b},
+            ${coverArtColor ? 0.25 : 0})`,
+          transition: 'box-shadow 0.3s ease-in-out'
+        }}
+      >
         <Link to={permalink} aria-label={messages.viewTrack}>
           <DynamicImage
             useSkeleton={false}
