@@ -14,7 +14,7 @@ import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import './CheckPage.module.css'
 
 const { SIGN_IN_PAGE, TRENDING_PAGE } = route
-const { getAccountUser, getAccountStatus } = accountSelectors
+const { getUserHandle, getAccountStatus } = accountSelectors
 
 declare global {
   interface Window {
@@ -27,21 +27,21 @@ const COGNITO_TEMPLATE_ID = env.COGNITO_TEMPLATE_ID
 
 const CheckPage = () => {
   const dispatch = useDispatch()
-  const account = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
   const accountStatus = useSelector(getAccountStatus)
   const scriptLoaded = useScript(COGNITO_SCRIPT_URL)
   const [didOpen, setDidOpen] = useState(false)
 
   useEffect(() => {
-    if (accountStatus !== Status.LOADING && !account) {
+    if (accountStatus !== Status.LOADING && !accountHandle) {
       dispatch(pushRoute(SIGN_IN_PAGE))
     }
-  }, [account, accountStatus, dispatch])
+  }, [accountHandle, accountStatus, dispatch])
 
   useEffect(() => {
     if (
       accountStatus !== Status.LOADING &&
-      account &&
+      accountHandle &&
       scriptLoaded &&
       !didOpen
     ) {
@@ -61,7 +61,7 @@ const CheckPage = () => {
           publishableKey: COGNITO_KEY,
           templateId: COGNITO_TEMPLATE_ID,
           user: {
-            customerReference: account.handle,
+            customerReference: accountHandle,
             signature
           }
         })
@@ -80,7 +80,7 @@ const CheckPage = () => {
       }
       run()
     }
-  }, [account, accountStatus, scriptLoaded, didOpen, dispatch])
+  }, [accountHandle, accountStatus, scriptLoaded, didOpen, dispatch])
 
   // This component need not render anything
   return null

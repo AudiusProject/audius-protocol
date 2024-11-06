@@ -10,7 +10,7 @@ import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 /**
  * Adds users from track metadata to cache.
@@ -22,8 +22,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const accountUser = yield* select(getAccountUser)
-  const currentUserId = accountUser?.user_id
+  const currentUserId = yield* select(getUserId)
   let users = metadataArray
     .filter((m) => m.user)
     .map((m) => {

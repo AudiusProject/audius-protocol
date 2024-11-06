@@ -30,7 +30,7 @@ const {
   setBrowserNotificationSettingsOn
 } = settingsPageActions
 
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 const setBrowerPushPermissionConfirmationModal = setVisibility({
   modal: 'BrowserPushPermissionConfirmation',
@@ -44,8 +44,8 @@ export function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
   if (isMobile || isElectron() || !shouldRequestBrowserPermission()) return
   setHasRequestedBrowserPermission()
-  const account = yield* select(getAccountUser)
-  if (!account) return
+  const hasAccount = yield* select(getHasAccount)
+  if (!hasAccount) return
   const browserPermission = yield* call(fetchBrowserPushNotificationStatus)
   if (browserPermission === Permission.DEFAULT) {
     yield* put(setBrowerPushPermissionConfirmationModal)

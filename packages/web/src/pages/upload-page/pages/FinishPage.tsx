@@ -35,7 +35,7 @@ import { CollectionFormState, TrackFormState } from '../types'
 import styles from './FinishPage.module.css'
 
 const { profilePage, collectionPage } = route
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 
 const messages = {
@@ -108,7 +108,7 @@ export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
   const upload = useSelector((state: CommonState) => state.upload)
-  const user = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
   const fullUploadPercent = useSelector(getCombinedUploadPercentage)
   const dispatch = useDispatch()
 
@@ -169,13 +169,13 @@ export const FinishPage = (props: FinishPageProps) => {
             )
           : ''
       default:
-        if (!upload.tracks || upload.tracks.length > 1) {
-          return profilePage(user!.handle)
+        if (accountHandle && (!upload.tracks || upload.tracks.length > 1)) {
+          return profilePage(accountHandle)
         } else {
           return upload.tracks?.[0].metadata.permalink
         }
     }
-  }, [upload.completedEntity, upload.tracks, uploadType, user])
+  }, [upload.completedEntity, upload.tracks, uploadType, accountHandle])
 
   const dispatchVisitEvent = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))

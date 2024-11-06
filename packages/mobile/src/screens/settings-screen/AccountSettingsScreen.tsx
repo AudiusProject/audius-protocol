@@ -35,7 +35,7 @@ import { AccountSettingsItem } from './AccountSettingsItem'
 const { resendRecoveryEmail } = recoveryEmailActions
 const { getRecoveryEmailStatus } = recoveryEmailSelectors
 const { setVisibility } = modalsActions
-const { getAccountUser } = accountSelectors
+const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 const messages = {
   title: 'Account',
@@ -80,7 +80,9 @@ export const AccountSettingsScreen = () => {
   const styles = useStyles()
   const { toast } = useToast()
   const dispatch = useDispatch()
-  const accountUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
+  const accountHandle = useSelector(getUserHandle)
+  const accountName = useSelector(getUserName)
   const recoveryEmailStatus = useSelector(getRecoveryEmailStatus)
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
@@ -119,9 +121,7 @@ export const AccountSettingsScreen = () => {
     )
   }, [dispatch])
 
-  if (!accountUser) return null
-
-  const { name, handle } = accountUser
+  if (!accountUserId) return null
 
   return (
     <Screen
@@ -134,11 +134,11 @@ export const AccountSettingsScreen = () => {
         <ScrollView>
           <View style={styles.header}>
             <ProfilePicture
-              userId={accountUser.user_id}
+              userId={accountUserId}
               style={css({ width: 128, height: 128 })}
             />
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.handle}>@{handle}</Text>
+            <Text style={styles.name}>{accountName}</Text>
+            <Text style={styles.handle}>@{accountHandle}</Text>
           </View>
           <AccountSettingsItem
             title={messages.recoveryTitle}

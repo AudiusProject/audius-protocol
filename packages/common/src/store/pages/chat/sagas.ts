@@ -18,7 +18,7 @@ import { ulid } from 'ulid'
 import { Name } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { getAccountUser, getUserId } from '~/store/account/selectors'
+import { getHasAccount, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
@@ -337,8 +337,8 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const user = yield* select(getAccountUser)
-    if (!user) {
+    const hasAccount = yield* select(getHasAccount)
+    if (!hasAccount) {
       throw new Error('User not found')
     }
     yield* call([sdk.chats, sdk.chats.react], {

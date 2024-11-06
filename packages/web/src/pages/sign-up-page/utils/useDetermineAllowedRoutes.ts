@@ -11,7 +11,7 @@ import { EditingStatus } from 'common/store/pages/signon/types'
 import { env } from 'services/env'
 
 const { FEED_PAGE, SignUpPath } = route
-const { getAccountUser } = accountSelectors
+const { getHasAccount, getAccountFolloweeCount } = accountSelectors
 
 const isDevEnvironment =
   env.ENVIRONMENT === 'development' ||
@@ -25,8 +25,8 @@ const isDevEnvironment =
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const user = useSelector(getAccountUser)
-  const hasAccount = !!user
+  const followeeCount = useSelector(getAccountFolloweeCount)
+  const hasAccount = useSelector(getHasAccount)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
@@ -39,7 +39,7 @@ export const useDetermineAllowedRoute = () => {
     isAllowedRoute: boolean
     correctedRoute: string
   } => {
-    if (user?.followee_count && user?.followee_count >= 3) {
+    if (followeeCount && followeeCount >= 3) {
       setIsWelcomeModalOpen(true)
       return {
         allowedRoutes: [],

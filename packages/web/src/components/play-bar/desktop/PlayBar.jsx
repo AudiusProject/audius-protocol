@@ -63,7 +63,7 @@ const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
   tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
@@ -339,7 +339,7 @@ class PlayBar extends Component {
       artistUserId = user.user_id
       isVerified = user.is_verified
       profilePictureSizes = user._profile_picture_sizes
-      isOwner = this.props.accountUser?.user_id === user.user_id
+      isOwner = this.props.accountUserId === user.user_id
       duration = audioPlayer.getDuration()
     }
 
@@ -493,7 +493,7 @@ const makeMapStateToProps = () => {
 
     return {
       seek: getSeek(state),
-      accountUser: getAccountUser(state),
+      accountUserId: getUserId(state),
       currentQueueItem: getCurrentQueueItem(state),
       playCounter: getCounter(state),
       collectible: getCollectible(state),

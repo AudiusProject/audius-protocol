@@ -27,7 +27,7 @@ import { SenderDetails } from './SenderDetails'
 const { setShowTip, fetchRecentTips } = tippingActions
 const { getShowTip, getTipToDisplay } = tippingSelectors
 const { getUsers } = cacheUsersSelectors
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   tile: {
@@ -50,7 +50,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export const FeedTipTile = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const account = useSelector(getAccountUser)
+  const accountId = useSelector(getUserId)
 
   const showTip = useSelector(getShowTip)
 
@@ -72,17 +72,17 @@ export const FeedTipTile = () => {
   const handlePressClose = useCallback(async () => {
     await storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id || -1)
     dispatch(setShowTip({ show: false }))
-    if (account && tipToDisplay) {
+    if (accountId && tipToDisplay) {
       track(
         make({
           eventName: EventNames.TIP_FEED_TILE_DISMISS,
-          accountId: `${account.user_id}`,
+          accountId: `${accountId}`,
           receiverId: `${tipToDisplay.receiver_id}`,
           device: 'native'
         })
       )
     }
-  }, [dispatch, account, tipToDisplay])
+  }, [dispatch, accountId, tipToDisplay])
 
   if (!showTip) {
     return null

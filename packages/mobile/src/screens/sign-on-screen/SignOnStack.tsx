@@ -20,7 +20,7 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
@@ -38,8 +38,7 @@ export const SignOnStack = (props: SignOnStackProps) => {
     })
 
   const signUpState = useSelector(getSignOn)
-  const user = useSelector(getAccountUser)
-  const hasAccount = !!user
+  const hasAccount = useSelector(getHasAccount)
 
   const pastPhase1 = signUpState.finishedPhase1 || hasAccount
 

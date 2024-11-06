@@ -12,7 +12,7 @@ import { MountPlacement } from 'components/types'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const { getUser } = cacheUsersSelectors
 
@@ -45,8 +45,8 @@ export const Avatar = (props: AvatarProps) => {
 
   const userName = useSelector((state) => {
     const user = getUser(state, { id: userId })
-    const currentUser = getAccountUser(state)
-    return user?.user_id === currentUser?.user_id ? messages.your : user?.name
+    const currentUserId = getUserId(state)
+    return user?.user_id === currentUserId ? messages.your : user?.name
   })
 
   const label = `${messages.goTo} ${userName} ${messages.profile}`

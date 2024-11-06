@@ -1,5 +1,4 @@
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
-import type { User } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
@@ -29,7 +28,7 @@ import { AccountDetails } from './AccountDetails'
 import { LeftNavLink } from './LeftNavLink'
 import { VanityMetrics } from './VanityMetrics'
 
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
 const isStaging = env.ENVIRONMENT === 'staging'
@@ -51,8 +50,8 @@ type AccountDrawerProps = DrawerContentComponentProps & {
 
 export const LeftNavDrawer = (props: AccountDrawerProps) => {
   const { navigation: drawerHelpers, ...other } = props
-  const accountUser = useSelector(getAccountUser) as User
-  if (!accountUser) return null
+  const hasAccount = useSelector(getHasAccount)
+  if (!hasAccount) return null
 
   return (
     <AppDrawerContextProvider drawerHelpers={drawerHelpers} {...other}>

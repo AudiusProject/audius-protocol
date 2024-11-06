@@ -40,7 +40,7 @@ import styles from './FeedTipTile.module.css'
 const { beginTip, fetchRecentTips, setShowTip } = tippingActions
 const { getUsers } = cacheUsersSelectors
 const { getShowTip, getTipToDisplay } = tippingSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 const messages = {
   wasTippedBy: 'Was Tipped By',
@@ -154,24 +154,24 @@ const SendTipButton = ({ user, hideName = false }: SendTipButtonProps) => {
 const DismissTipButton = () => {
   const dispatch = useDispatch()
   const record = useRecord()
-  const account = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const tipToDisplay = useSelector(getTipToDisplay)
 
   const handleClick = useCallback(async () => {
     dispatch(setShowTip({ show: false }))
     if (tipToDisplay) {
       storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id)
-      if (account) {
+      if (accountUserId) {
         record(
           make(Name.TIP_FEED_TILE_DISMISS, {
-            accountId: `${account.user_id}`,
+            accountId: `${accountUserId}`,
             receiverId: `${tipToDisplay.receiver_id}`,
             device: 'web'
           })
         )
       }
     }
-  }, [dispatch, account, tipToDisplay, record])
+  }, [dispatch, accountUserId, tipToDisplay, record])
 
   return (
     <IconButton
