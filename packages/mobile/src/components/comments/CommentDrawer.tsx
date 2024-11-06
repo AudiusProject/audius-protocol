@@ -204,7 +204,7 @@ export type CommentDrawerData = {
   autoFocusInput?: boolean
   uid?: string
   /** Object containing lineup actions such as play, togglePlay, setPage */
-  actions: LineupBaseActions
+  actions?: LineupBaseActions
 }
 
 type CommentDrawerProps = {

@@ -72,7 +72,7 @@ export type LineupItemProps = {
   source?: LineupTileSource
 
   /** Object containing lineup actions such as setPage */
-  actions: LineupBaseActions
+  actions?: LineupBaseActions
 }
 
 export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
@@ -159,5 +159,5 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   uid?: string
 
   /** Object containing lineup actions such as play, togglePlay, setPage */
-  actions: LineupBaseActions
+  actions?: LineupBaseActions
 }
