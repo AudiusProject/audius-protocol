@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type { Animated } from 'react-native'
 
 import {
@@ -22,7 +24,6 @@ import { CollectiblesTab } from './CollectiblesTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { RepostsTab } from './RepostsTab'
 import { TracksTab } from './TracksTab'
-import { ReactNode } from 'react'
 
 // Height of a typical profile header
 const INITIAL_PROFILE_HEADER_HEIGHT = 1081
